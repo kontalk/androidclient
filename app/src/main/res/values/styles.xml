@@ -43,16 +43,15 @@
 
     <style name="AvatarListItemSubtitleStyle" parent="android:TextAppearance.Small" />
 
-
     <style name="PinnedHeader">
-        <item name="android:background">?android:colorBackground</item>
+        <item name="android:background">?android:attr/colorBackground</item>
         <item name="android:gravity">center_vertical|left</item>
-        <item name="android:paddingLeft">10dp</item>
-        <item name="android:paddingRight">10dp</item>
+        <item name="android:paddingLeft">14dp</item>
         <item name="android:textAllCaps" tools:targetApi="ice_cream_sandwich">true</item>
         <item name="textAllCaps">true</item>
-        <item name="android:textColor">#FF000000</item>
-        <item name="android:textSize">14sp</item>
         <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/pinned_header_text</item>
+        <item name="android:textSize">20sp</item>
     </style>
+
 </resources>

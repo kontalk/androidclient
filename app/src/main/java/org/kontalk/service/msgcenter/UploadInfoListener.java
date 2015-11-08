@@ -47,7 +47,7 @@ class UploadInfoListener extends MessageCenterPacketListener {
             node + ", uri = " + info.getUri());
 
         // resend pending messages
-        resendPendingMessages(true);
+        resendPendingMessages(true, false);
     }
 }
 

@@ -21,10 +21,12 @@ package org.kontalk.ui.adapter;
 import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView.RecyclerListener;
+import android.widget.AlphabetIndexer;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -43,7 +45,9 @@ public class ContactsListAdapter extends SearchablePinnedHeaderCursorListViewAda
     private OnContentChangedListener mOnContentChangedListener;
 
     public ContactsListAdapter(Context context, ListView list) {
-        super(context, null, Contact.COLUMN_DISPLAY_NAME, false);
+        super(context, null, false);
+        setSectionIndexer(new AlphabetIndexer(null, Contact.COLUMN_DISPLAY_NAME,
+            "#ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
         mFactory = LayoutInflater.from(context);
 
         list.setRecyclerListener(new RecyclerListener() {
@@ -59,9 +63,20 @@ public class ContactsListAdapter extends SearchablePinnedHeaderCursorListViewAda
         void onContentChanged(ContactsListAdapter adapter);
     }
 
+    public void setPinnedHeader(Context context) {
+        final TypedValue typedValue = new TypedValue();
+
+        context.getTheme().resolveAttribute(android.R.attr.colorBackground, typedValue, true);
+        int pinnedHeaderBackgroundColor = context.getResources().getColor(typedValue.resourceId);
+        setPinnedHeaderBackgroundColor(pinnedHeaderBackgroundColor);
+
+        int textColor = context.getResources().getColor(R.color.pinned_header_text);
+        setPinnedHeaderTextColor(textColor);
+    }
+
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        final View inflated = mFactory.inflate(R.layout.contacts_list_item, null);
+        final View inflated = mFactory.inflate(R.layout.contacts_list_item, parent, false);
         final ViewHolder holder = new ViewHolder();
         holder.headerView = (TextView) inflated.findViewById(R.id.header_text);
         holder.text1 = (TextView) inflated.findViewById(android.R.id.text1);

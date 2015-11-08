@@ -28,7 +28,7 @@ task checkstyle(type: Checkstyle){
 
 android {
     compileSdkVersion 23
-    buildToolsVersion '23.0.1'
+    buildToolsVersion '23.0.2'
 
     defaultConfig {
         applicationId "org.kontalk"
@@ -117,15 +117,13 @@ dependencies {
     compile 'com.github.castorflex.smoothprogressbar:library:1.1.0'
     compile 'com.nispok:snackbar:2.11.0'
     compile 'de.hdodenhof:circleimageview:2.0.0'
-    compile "com.twotoasters.SectionCursorAdapter:library:1.0.1"
+    compile 'com.github.vlivanov:ListViewVariants:f606578467'
+    compile ("com.github.acappelli:CircularReveal:e36ac3faa1") {
+        transitive = true;
+    }
 
     googleplayCompile "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
     googleplayCompile "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"
 
     testCompile 'junit:junit:4.+'
-
-    compile "com.github.acappelli:ListViewVariants:v.1.0.1"
-    compile ("com.github.acappelli:CircularReveal:e36ac3faa1") {
-        transitive = true;
-    }
 }

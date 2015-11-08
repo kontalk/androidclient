@@ -18,6 +18,7 @@
 
 <resources>
     <string name="app_name">Kontalk</string>
+    <string name="app_name_offline">Kontalk (offline)</string>
     <string name="app_description">Community-driven instant messaging network</string>
     <string name="service_name">Message Center</string>
     <string name="authenticator_name">Authentication Service</string>

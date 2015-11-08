@@ -51,6 +51,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.AsyncQueryHandler;
 import android.content.BroadcastReceiver;
+import android.content.ClipData;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -1050,7 +1051,10 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         Intent pictureIntent;
 
         if (!MediaStorage.isStorageAccessFrameworkAvailable()) {
-            pictureIntent = new Intent(Intent.ACTION_GET_CONTENT);
+            pictureIntent = new Intent(Intent.ACTION_GET_CONTENT)
+                .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+                .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+                    | Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
         else {
             pictureIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -1058,7 +1062,9 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
         pictureIntent
             .addCategory(Intent.CATEGORY_OPENABLE)
-            .setType("image/*");
+            .setType("image/*")
+            .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+            .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
 
         Intent chooser = null;
         try {
@@ -1216,12 +1222,16 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     }
 
     private void startQuery(boolean reloadConversation, boolean progress) {
+        startQuery(reloadConversation, progress, 0);
+    }
+
+    private void startQuery(boolean reloadConversation, boolean progress, long count) {
         try {
             if (progress)
                 getActivity().setProgressBarIndeterminateVisibility(true);
 
             CompositeMessage.startQuery(mQueryHandler, MESSAGE_LIST_QUERY_TOKEN,
-                    threadId);
+                    threadId, count, 0);
 
             if (reloadConversation)
                 Conversation.startQuery(mQueryHandler,
@@ -1303,8 +1313,8 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == SELECT_ATTACHMENT_OPENABLE) {
             if (resultCode == Activity.RESULT_OK) {
-                Uri uri = null;
-                String mime = null;
+                Uri[] uris = null;
+                String[] mimes = null;
 
                 // returning from camera
                 if (data == null) {
@@ -1314,12 +1324,14 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                      * for taking pictures.
                      */
                     if (mCurrentPhoto != null) {
-                        uri = Uri.fromFile(mCurrentPhoto);
+                        Uri uri = Uri.fromFile(mCurrentPhoto);
                         // notify media scanner
                         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
                         mediaScanIntent.setData(uri);
                         getActivity().sendBroadcast(mediaScanIntent);
                         mCurrentPhoto = null;
+
+                        uris = new Uri[] { uri };
                     }
                 }
                 else {
@@ -1327,16 +1339,36 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                         mCurrentPhoto.delete();
                         mCurrentPhoto = null;
                     }
-                    uri = data.getData();
-                    mime = data.getType();
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN && data.getClipData() != null) {
+                        ClipData cdata = data.getClipData();
+                        uris = new Uri[cdata.getItemCount()];
+
+                        for (int i = 0; i < uris.length; i++) {
+                            ClipData.Item item = cdata.getItemAt(i);
+                            uris[i] = item.getUri();
+                        }
+                    }
+                    else {
+                        uris = new Uri[] { data.getData() };
+                        mimes = new String[] { data.getType() };
+                    }
 
                     // SAF available, request persistable permissions
                     if (MediaStorage.isStorageAccessFrameworkAvailable()) {
-                        MediaStorage.requestPersistablePermissions(getActivity(), data);
+                        for (Uri uri : uris) {
+                            if (uri != null && !"file".equals(uri.getScheme())) {
+                                MediaStorage.requestPersistablePermissions(getActivity(), uri);
+                            }
+                        }
                     }
                 }
 
-                if (uri != null) {
+                for (int i = 0 ; uris != null && i < uris.length; i++) {
+                    Uri uri = uris[i];
+                    String mime = (mimes != null && mimes.length >= uris.length) ?
+                        mimes[i] : null;
+
                     if (mime == null || mime.startsWith("*/")
                             || mime.endsWith("/*")) {
                         mime = MediaStorage.getType(getActivity(), uri);

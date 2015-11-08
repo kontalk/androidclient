@@ -93,19 +93,19 @@ abstract class MessageCenterPacketListener implements StanzaListener {
 
     protected void sendBroadcast(Intent intent) {
         MessageCenterService instance = mInstance.get();
-        if (instance != null)
+        if (instance != null && instance.isStarted())
             instance.mLocalBroadcastManager.sendBroadcast(intent);
     }
 
     protected void registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
         MessageCenterService instance = mInstance.get();
-        if (instance != null)
+        if (instance != null && instance.isStarted())
             instance.mLocalBroadcastManager.registerReceiver(receiver, filter);
     }
 
     protected void unregisterReceiver(BroadcastReceiver receiver) {
         MessageCenterService instance = mInstance.get();
-        if (instance != null)
+        if (instance != null && instance.isStarted())
             instance.mLocalBroadcastManager.unregisterReceiver(receiver);
     }
 
@@ -137,16 +137,16 @@ abstract class MessageCenterPacketListener implements StanzaListener {
             instance.mUploadServices.put(name, url);
     }
 
-    protected void resendPendingMessages(boolean retrying) {
+    protected void resendPendingMessages(boolean retrying, boolean forcePending) {
         MessageCenterService instance = mInstance.get();
         if (instance != null)
-            instance.resendPendingMessages(retrying);
+            instance.resendPendingMessages(retrying, forcePending);
     }
 
-    protected void resendPending(boolean retrying) {
+    protected void resendPending(boolean retrying, boolean forcePending, String to) {
         MessageCenterService instance = mInstance.get();
         if (instance != null) {
-            instance.resendPendingMessages(retrying);
+            instance.resendPendingMessages(retrying, forcePending, to);
             instance.resendPendingReceipts();
         }
     }

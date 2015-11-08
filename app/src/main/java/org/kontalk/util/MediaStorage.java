@@ -426,8 +426,7 @@ public abstract class MediaStorage {
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
-    public static void requestPersistablePermissions(Context context, Intent intent) {
-        final Uri uri = intent.getData();
+    public static void requestPersistablePermissions(Context context, Uri uri) {
         context.getContentResolver().takePersistableUriPermission(uri,
             Intent.FLAG_GRANT_READ_URI_PERMISSION);
     }

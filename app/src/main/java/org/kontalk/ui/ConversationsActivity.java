@@ -18,12 +18,6 @@
 
 package org.kontalk.ui;
 
-import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.MaterialDialog;
 
@@ -32,16 +26,13 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.InputType;
@@ -55,7 +46,6 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.authenticator.LegacyAuthentication;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
-import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.msgcenter.MessageCenterService;
@@ -288,6 +278,9 @@ public class ConversationsActivity extends ToolbarActivity
     public void onResume() {
         super.onResume();
 
+        // set title for offline mode
+        setOfflineModeTitle();
+
         final Context context = getApplicationContext();
         new Thread(new Runnable() {
             @Override
@@ -326,6 +319,14 @@ public class ConversationsActivity extends ToolbarActivity
                     openConversation(uri);
             }
         }
+    }
+
+    public void setOfflineModeTitle() {
+        setTitle(MessageCenterService.isOfflineMode(this));
+    }
+
+    public void setTitle(boolean offline) {
+        setTitle(offline ? R.string.app_name_offline : R.string.app_name);
     }
 
     public ConversationListFragment getListFragment() {
@@ -434,85 +435,9 @@ public class ConversationsActivity extends ToolbarActivity
             case android.R.id.home:
                 onBackPressed();
                 return true;
-            case R.id.menu_invite:
-                startInvite();
-                return true;
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    private void startInvite() {
-        Intent shareIntent = new Intent(Intent.ACTION_SEND);
-        shareIntent.setType(TextComponent.MIME_TYPE);
-        shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.text_invite_message));
-
-        List<ResolveInfo> resInfo = getPackageManager().queryIntentActivities(shareIntent, 0);
-        // having size=1 means that we are the only handlers
-        if (resInfo != null && resInfo.size() > 1) {
-            List<Intent> targets = new ArrayList<Intent>();
-
-            for (ResolveInfo resolveInfo : resInfo) {
-                String packageName = resolveInfo.activityInfo.packageName;
-
-                if (!getPackageName().equals(packageName)) {
-                    // copy intent and add resolved info
-                    Intent targetShareIntent = new Intent(shareIntent);
-                    targetShareIntent
-                            .setPackage(packageName)
-                            .setComponent(new ComponentName(
-                                    packageName, resolveInfo.activityInfo.name))
-                            .putExtra("org.kontalk.invite.label", resolveInfo.loadLabel(getPackageManager()));
-
-                    targets.add(targetShareIntent);
-                }
-            }
-
-            // initial intents are added before of the main intent, so we remove the last one here
-            Intent chooser = Intent.createChooser(targets.remove(targets.size() - 1), getString(R.string.menu_invite));
-            Collections.sort(targets, new DisplayNameComparator());
-            // remove custom extras
-            for (Intent intent : targets)
-                intent.removeExtra("org.kontalk.invite.label");
-
-            Parcelable[] extraIntents = new Parcelable[targets.size()];
-            targets.toArray(extraIntents);
-            chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
-
-            startActivity(chooser);
-        }
-
-        else {
-            // no activity to handle invitation
-            Toast.makeText(this, R.string.warn_invite_no_app,
-                    Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void showOnFirstVisit() {
-        if (!Preferences.getContactsListVisited(this))
-            Toast.makeText(this, R.string.msg_do_refresh,
-                    Toast.LENGTH_LONG).show();
-    }
-
-    public static class DisplayNameComparator implements
-            Comparator<Intent> {
-        public DisplayNameComparator() {
-            mCollator.setStrength(Collator.PRIMARY);
-        }
-
-        public final int compare(Intent a, Intent b) {
-            CharSequence sa = a.getCharSequenceExtra("org.kontalk.invite.label");
-            if (sa == null)
-                sa = a.getComponent().getClassName();
-            CharSequence sb = b.getCharSequenceExtra("org.kontalk.invite.label");
-            if (sb == null)
-                sb = b.getComponent().getClassName();
-
-            return mCollator.compare(sa.toString(), sb.toString());
-        }
-
-        private final Collator mCollator = Collator.getInstance();
     }
 
 }

@@ -21,6 +21,7 @@ package org.kontalk.data;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 import com.amulyakhare.textdrawable.TextDrawable;
@@ -33,12 +34,14 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.ContentObserver;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Handler;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.PhoneLookup;
@@ -176,6 +179,17 @@ public class Contact {
 
     private final static ContactCache cache = new ContactCache();
 
+    public static void init(Context context, Handler handler) {
+        context.getContentResolver().registerContentObserver(Contacts.CONTENT_URI, false,
+            new ContentObserver(handler) {
+                @Override
+                public void onChange(boolean selfChange) {
+                    invalidate();
+                }
+            }
+        );
+    }
+
     private Contact(long contactId, String lookupKey, String name, String number, String jid, boolean blocked) {
         mContactId = contactId;
         mLookupKey = lookupKey;
@@ -264,7 +278,7 @@ public class Contact {
             .width(context.getResources().getDimensionPixelSize(R.dimen.avatar_size))
             .height(context.getResources().getDimensionPixelSize(R.dimen.avatar_size))
             .endConfig()
-            .buildRect(contact.mName.substring(0, 1),
+            .buildRect(contact.mName.substring(0, 1).toUpperCase(Locale.US),
                 ColorGenerator.MATERIAL.getColor(contact.mJID));
     }
 

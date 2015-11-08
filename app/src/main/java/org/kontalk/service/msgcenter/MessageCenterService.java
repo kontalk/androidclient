@@ -1109,7 +1109,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 // already connected: resend pending messages
                 if (isConnected)
-                    resendPendingMessages(false);
+                    resendPendingMessages(false, false);
             }
 
             else if (ACTION_BLOCKLIST.equals(action)) {
@@ -1230,8 +1230,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         roster.addRosterLoadedListener(new RosterLoadedListener() {
             @Override
             public void onRosterLoaded(Roster roster) {
+                // send pending subscription replies
+                sendPendingSubscriptionReplies();
                 // resend failed and pending messages
-                resendPendingMessages(false);
+                resendPendingMessages(false, false);
                 // resend failed and pending received receipts
                 resendPendingReceipts();
                 // roster has been loaded
@@ -1300,9 +1302,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         sendPresence();
         // discovery
         discovery();
-        // pending messages and receipts will be sent when roster will be loaded
-        // send pending subscription replies
-        sendPendingSubscriptionReplies();
 
         // helper is not needed any more
         mHelper = null;
@@ -1413,12 +1412,20 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return p;
     }
 
+    void resendPendingMessages(boolean retrying, boolean forcePending) {
+        resendPendingMessages(retrying, forcePending, null);
+    }
+
     /**
      * Queries for pending messages and send them through.
      * @param retrying if true, we are retrying to send media messages after
      * receiving upload info (non-media messages will be filtered out)
+     * @param forcePending true to include pending user review messages
+     * @param to filter by recipient (optional)
      */
-    void resendPendingMessages(boolean retrying) {
+    void resendPendingMessages(boolean retrying, boolean forcePending, String to) {
+        String[] filterArgs = null;
+
         StringBuilder filter = new StringBuilder()
             .append(Messages.DIRECTION)
             .append('=')
@@ -1434,7 +1441,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             .append(" AND ")
             .append(Messages.STATUS)
             .append("<>")
-            .append(Messages.STATUS_NOTDELIVERED)
+            .append(Messages.STATUS_NOTDELIVERED);
+
+        // filter out pending messages
+        if (!forcePending) filter
             .append(" AND ")
             .append(Messages.STATUS)
             .append("<>")
@@ -1447,6 +1457,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             .append(" IS NULL AND ")
             .append(Messages.ATTACHMENT_LOCAL_URI)
             .append(" IS NOT NULL");
+
+        if (to != null) {
+            filter
+                .append(" AND ")
+                .append(Messages.PEER)
+                .append("=?");
+            filterArgs = new String[] { to };
+        }
 
         Cursor c = getContentResolver().query(Messages.CONTENT_URI,
             new String[]{
@@ -1463,8 +1481,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Messages.ATTACHMENT_COMPRESS,
                 // TODO Messages.ATTACHMENT_SECURITY_FLAGS,
             },
-            filter.toString(),
-            null, Messages._ID);
+            filter.toString(), filterArgs,
+            Messages._ID);
 
         while (c.moveToNext()) {
             long id = c.getLong(0);
@@ -2133,7 +2151,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return mHelper != null;
     }
 
-    private static boolean isOfflineMode(Context context) {
+    public static boolean isOfflineMode(Context context) {
         return Preferences.getOfflineMode(context);
     }
 

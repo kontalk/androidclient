@@ -410,4 +410,5 @@
 
 <string name="title_confirm_cancel_registration">Annullare la registrazione?</string>
     <string name="confirm_cancel_registration">Se torni indietro ora dovrai ricominciare da capo. Se vuoi cambiare app, usa il tasto home del tuo dispositivo.</string>
+    <string name="app_name_offline">Kontalk (offline)</string>
     </resources>

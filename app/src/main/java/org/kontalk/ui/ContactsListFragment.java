@@ -47,7 +47,6 @@ import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -56,7 +55,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import lb.library.PinnedHeaderListView;
@@ -110,7 +108,10 @@ public class ContactsListFragment extends Fragment implements
         super.onViewCreated(view, savedInstanceState);
 
         mList = (PinnedHeaderListView) view.findViewById(android.R.id.list);
-        mList.setPinnedHeaderView(LayoutInflater.from(getActivity()).inflate(R.layout.pinned_header_listview_side_header, mList, false));
+
+        View pinnedHeaderView = LayoutInflater.from(view.getContext())
+            .inflate(R.layout.pinned_header_listview_side_header, mList, false);
+        mList.setPinnedHeaderView(pinnedHeaderView);
         mList.setEmptyView(view.findViewById(android.R.id.empty));
 
         mRefresher = (SwipeRefreshLayout) view.findViewById(R.id.refresher);
@@ -150,9 +151,7 @@ public class ContactsListFragment extends Fragment implements
         Activity parent = getActivity();
 
         mListAdapter = new ContactsListAdapter(parent, mList);
-        int pinnedHeaderBackgroundColor = getResources().getColor(getResIdFromAttribute(getActivity(), android.R.attr.colorBackground));
-        mListAdapter.setPinnedHeaderBackgroundColor(pinnedHeaderBackgroundColor);
-        mListAdapter.setPinnedHeaderTextColor(getResources().getColor(R.color.pinned_header_text));
+        mListAdapter.setPinnedHeader(parent);
         mList.setEnableHeaderTransparencyChanges(true);
 
         mListAdapter.setOnContentChangedListener(this);
@@ -339,14 +338,6 @@ public class ContactsListFragment extends Fragment implements
         }
 
         private final Collator mCollator = Collator.getInstance();
-    }
-
-    public static int getResIdFromAttribute(final Activity activity, final int attr) {
-        if (attr == 0)
-            return 0;
-        final TypedValue typedValue = new TypedValue();
-        activity.getTheme().resolveAttribute(attr, typedValue, true);
-        return typedValue.resourceId;
     }
 
 }

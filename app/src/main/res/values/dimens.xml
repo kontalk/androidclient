@@ -23,6 +23,7 @@
     <dimen name="conv_list_margin_left">8dp</dimen>
 
     <dimen name="avatar_list_item_height">72dp</dimen>
+    <dimen name="indexed_list_margin">48dp</dimen>
 
     <dimen name="min_emoji_drawer_height">120dp</dimen>
     <dimen name="emoji_drawer_default_height">200dp</dimen>

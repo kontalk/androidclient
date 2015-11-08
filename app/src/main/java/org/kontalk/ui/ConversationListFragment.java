@@ -478,25 +478,30 @@ public class ConversationListFragment extends ActionModeListFragment
 
     /** Updates offline mode menu. */
     private void updateOffline() {
-        Context context = getActivity();
+        ConversationsActivity context = getParentActivity();
         if (mOfflineMenu != null && context != null) {
             boolean offlineMode = Preferences.getOfflineMode(context);
+            // set menu
             int icon = (offlineMode) ? R.drawable.ic_menu_start_conversation :
                 android.R.drawable.ic_menu_close_clear_cancel;
             int title = (offlineMode) ? R.string.menu_online : R.string.menu_offline;
             mOfflineMenu.setIcon(icon);
             mOfflineMenu.setTitle(title);
+            // set window title
+            context.setTitle(offlineMode);
         }
     }
 
     private void switchOfflineMode() {
-        Context ctx = getActivity();
-        boolean currentMode = Preferences.getOfflineMode(ctx);
-        Preferences.switchOfflineMode(ctx);
-        updateOffline();
-        // notify the user about the change
-        int text = (currentMode) ? R.string.going_online : R.string.going_offline;
-        Toast.makeText(ctx, text, Toast.LENGTH_SHORT).show();
+        ConversationsActivity ctx = getParentActivity();
+        if (ctx != null) {
+            boolean currentMode = Preferences.getOfflineMode(ctx);
+            Preferences.switchOfflineMode(ctx);
+            updateOffline();
+            // notify the user about the change
+            int text = (currentMode) ? R.string.going_online : R.string.going_offline;
+            Toast.makeText(ctx, text, Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

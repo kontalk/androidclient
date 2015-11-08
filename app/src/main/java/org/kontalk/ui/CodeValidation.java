@@ -41,6 +41,7 @@ import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.client.NumberValidator.NumberValidatorListener;
 import org.kontalk.crypto.PersonalKey;
+import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.util.Preferences;
 
@@ -191,6 +192,13 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         RetainData data = new RetainData();
         data.validator = mValidator;
         return data;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // start a users resync in the meantime
+        UsersProvider.resync(this);
     }
 
     @Override
