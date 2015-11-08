@@ -410,4 +410,5 @@
 
 <string name="title_confirm_cancel_registration">Voleu cancel·lar el registre?</string>
     <string name="confirm_cancel_registration">Si utilitzeu el botó de tornar enrere haureu de fer el registre partint de zero. Si necessiteu alternar amb una altra aplicació, podeu utilitzar el botó d\'inici.</string>
+    <string name="app_name_offline">Kontalk (fora de línia)</string>
     </resources>
