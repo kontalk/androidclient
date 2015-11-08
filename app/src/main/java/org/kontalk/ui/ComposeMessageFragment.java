@@ -1200,12 +1200,16 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     }
 
     private void startQuery(boolean reloadConversation, boolean progress) {
+        startQuery(reloadConversation, progress, 0);
+    }
+
+    private void startQuery(boolean reloadConversation, boolean progress, long count) {
         try {
             if (progress)
                 getActivity().setProgressBarIndeterminateVisibility(true);
 
             CompositeMessage.startQuery(mQueryHandler, MESSAGE_LIST_QUERY_TOKEN,
-                    threadId);
+                    threadId, count, 0);
 
             if (reloadConversation)
                 Conversation.startQuery(mQueryHandler,
