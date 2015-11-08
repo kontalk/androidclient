@@ -42,7 +42,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:src="@drawable/ic_launcher" />
+            android:src="@mipmap/ic_launcher" />
 
         <TextView
             style="@android:style/TextAppearance.Large"
@@ -65,6 +65,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="12dp"
             android:autoLink="email"
+            android:gravity="center_horizontal"
             android:linksClickable="true"/>
 
         <TextView
@@ -80,6 +81,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="12dp"
             android:autoLink="email"
+            android:gravity="center_horizontal"
             android:linksClickable="true"/>
 
         <TextView
@@ -95,6 +97,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="12dp"
             android:autoLink="email"
+            android:gravity="center_horizontal"
             android:linksClickable="true"/>
 
     </LinearLayout>

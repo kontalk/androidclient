@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="actionbar_title_size">16dp</dimen>
-    <dimen name="actionbar_subtitle_size">12dp</dimen>
-    <dimen name="actionbar_height">42dp</dimen>
-    <dimen name="actionbar_item_width">42dp</dimen>
     <dimen name="message_text_width">200dp</dimen>
 </resources>

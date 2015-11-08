@@ -16,10 +16,9 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<PreferenceScreen
-  xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:key="pref_key_network_settings" android:title="@string/pref_network_settings">
-        <EditTextPreference
+        <com.afollestad.materialdialogs.prefs.MaterialEditTextPreference
             android:dialogTitle="@string/pref_network_uri"
             android:positiveButtonText="@android:string/ok"
             android:negativeButtonText="@android:string/cancel"
@@ -31,41 +30,18 @@
             android:key="pref_push_notifications"
             android:summary="@string/pref_title_push_notifications"
             android:title="@string/pref_push_notifications"
-            android:defaultValue="@bool/pref_default_push_notifications"/>
+            android:defaultValue="@bool/pref_default_push_notifications"
+            android:layout="@layout/md_preference_custom"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_messaging_settings"
         android:title="@string/pref_messaging_settings">
-        <PreferenceScreen android:title="@string/pref_privacy_settings"
-            android:persistent="false">
-            <CheckBoxPreference android:key="pref_encrypt"
-                android:summaryOff="@string/pref_title_off_encrypt"
-                android:summaryOn="@string/pref_title_on_encrypt"
-                android:title="@string/pref_encrypt"
-                android:defaultValue="@bool/pref_default_encrypt"/>
-            <!--
-            <CheckBoxPreference android:key="pref_encrypt_userdata"
-                android:summaryOff="@string/pref_title_off_encrypt_userdata"
-                android:summaryOn="@string/pref_title_on_encrypt_userdata"
-                android:title="@string/pref_encrypt_userdata"
-                android:defaultValue="true"/>
-             -->
-            <CheckBoxPreference android:key="pref_auto_accept_subscriptions"
-                android:title="@string/pref_auto_accept_subscriptions"
-                android:summary="@string/pref_title_auto_accept_subscriptions"
-                android:defaultValue="@bool/pref_default_auto_accept_subscriptions"/>
-            <CheckBoxPreference android:key="pref_send_typing"
-                android:title="@string/pref_send_typing"
-                android:defaultValue="@bool/pref_default_send_typing"/>
-            <!--
-            <CheckBoxPreference android:key="pref_hide_presence"
-                android:summaryOff="@string/pref_title_off_hide_presence"
-                android:summaryOn="@string/pref_title_on_hide_presence"
-                android:title="@string/pref_hide_presence"
-                android:defaultValue="false"/>
-             -->
-        </PreferenceScreen>
-        <EditTextPreference android:key="pref_remove_prefix"
+        <Preference android:key="pref_privacy_settings"
+            android:title="@string/pref_privacy_settings"
+            android:persistent="false"
+            android:layout="@layout/md_preference_custom"/>
+        <com.afollestad.materialdialogs.prefs.MaterialEditTextPreference
+            android:key="pref_remove_prefix"
             android:dialogTitle="@string/pref_remove_prefix"
             android:positiveButtonText="@android:string/ok"
             android:negativeButtonText="@android:string/cancel"
@@ -76,23 +52,27 @@
             android:summaryOff="@string/pref_title_off_sync_sim_contacts"
             android:summaryOn="@string/pref_title_on_sync_sim_contacts"
             android:title="@string/pref_sync_sim_contacts"
-            android:defaultValue="@bool/pref_default_sync_sim_contacts"/>
+            android:defaultValue="@bool/pref_default_sync_sim_contacts"
+            android:layout="@layout/md_preference_custom"/>
         <CheckBoxPreference android:key="pref_sync_nonvisible_contacts"
             android:summaryOff="@string/pref_title_off_sync_invisible_contacts"
             android:summaryOn="@string/pref_title_on_sync_invisible_contacts"
             android:title="@string/pref_sync_invisible_contacts"
-            android:defaultValue="@bool/pref_default_sync_invisible_contacts"/>
+            android:defaultValue="@bool/pref_default_sync_invisible_contacts"
+            android:layout="@layout/md_preference_custom"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_maintenance"
         android:title="@string/pref_maintenance">
-        <ListPreference android:key="pref_idle_time"
+        <com.afollestad.materialdialogs.prefs.MaterialListPreference
+            android:key="pref_idle_time"
             android:title="@string/pref_idle_time"
             android:summary="@string/pref_title_idle_time"
             android:entries="@array/idle_time_labels"
             android:entryValues="@array/idle_time_values"
             android:defaultValue="@integer/pref_default_idle_time"/>
-        <ListPreference android:key="pref_wakeup_time"
+        <com.afollestad.materialdialogs.prefs.MaterialListPreference
+            android:key="pref_wakeup_time"
             android:title="@string/pref_wakeup_time"
             android:summary="@string/pref_title_wakeup_time"
             android:entries="@array/wakeup_time_labels"
@@ -100,26 +80,30 @@
             android:defaultValue="@integer/pref_default_wakeup_time"/>
         <CheckBoxPreference android:key="pref_accept_any_certificate"
             android:title="@string/pref_accept_any_certificate"
-            android:defaultValue="@bool/pref_default_accept_any_certificate"/>
+            android:defaultValue="@bool/pref_default_accept_any_certificate"
+            android:layout="@layout/md_preference_custom"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_other"
         android:title="@string/pref_other">
         <Preference android:key="pref_help"
-            android:title="@string/pref_help">
+            android:title="@string/pref_help"
+            android:layout="@layout/md_preference_custom">
             <intent
                 android:action="android.intent.action.VIEW"
                 android:data="@string/help_url" />
         </Preference>
         <Preference android:key="pref_donate"
-            android:title="@string/pref_donate">
+            android:title="@string/pref_donate"
+            android:layout="@layout/md_preference_custom">
             <intent
              android:targetClass="org.kontalk.ui.AboutActivity"
              android:targetPackage="org.kontalk"
              android:action="org.kontalk.DONATION" />
         </Preference>
         <Preference android:key="pref_about"
-            android:title="@string/pref_about">
+            android:title="@string/pref_about"
+            android:layout="@layout/md_preference_custom">
             <intent
              android:targetClass="org.kontalk.ui.AboutActivity"
              android:targetPackage="org.kontalk" />

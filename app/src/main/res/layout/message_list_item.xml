@@ -22,6 +22,7 @@
     android:paddingTop="2dip"
     android:paddingBottom="2dip"
     android:paddingLeft="5dp"
+    android:paddingRight="5dp"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
 
@@ -35,59 +36,9 @@
         android:layout_marginBottom="5dp"
         android:textAllCaps="true"/>
 
-    <LinearLayout android:id="@+id/message_view_parent"
+    <ViewStub android:id="@+id/balloon_stub"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/date_header"
-        android:orientation="horizontal">
-
-        <LinearLayout android:id="@+id/balloon_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="right">
-
-            <org.kontalk.ui.view.MessageContentLayout
-                android:id="@+id/content"
-                android:orientation="vertical"
-                android:maxWidth="@dimen/message_text_width"
-                android:layout_marginLeft="2dp"
-                android:layout_marginRight="2dp"
-                android:layout_weight="1"
-                android:layout_width="wrap_content"
-                android:layout_height="0dp"/>
-
-            <LinearLayout android:id="@+id/status_box"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:baselineAligned="false"
-                android:layout_marginRight="2dp"
-                android:layout_marginBottom="2dp"
-                android:gravity="right|bottom" >
-
-                <ImageView android:id="@+id/status_indicator"
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:adjustViewBounds="false"
-                    android:visibility="gone" />
-
-                <ImageView android:id="@+id/warning_icon"
-                    android:visibility="gone"
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:src="@drawable/ic_msg_warning" />
-
-                <TextView android:id="@+id/date_view"
-                    style="@android:style/TextAppearance.Small"
-                    android:textSize="@dimen/dateview_text_size"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-    </LinearLayout>
+        android:layout_below="@id/date_header"/>
 
 </org.kontalk.ui.view.MessageListItem>

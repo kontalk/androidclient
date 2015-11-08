@@ -26,6 +26,7 @@ package org.kontalk.service;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.PrivateKey;
@@ -59,7 +60,7 @@ import org.kontalk.message.CompositeMessage;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.MessageCenterService;
-import org.kontalk.ui.ConversationList;
+import org.kontalk.ui.ConversationsActivity;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.ProgressNotificationBuilder;
 import org.kontalk.util.MediaStorage;
@@ -81,7 +82,7 @@ public class DownloadService extends IntentService implements DownloadListener {
     private static final String TAG = MessageCenterService.TAG;
 
     /** A map to avoid duplicate downloads. */
-    private static final Map<String, Long> sQueue = new LinkedHashMap<String, Long>();
+    private static final Map<String, Long> sQueue = new LinkedHashMap<>();
 
     public static final String ACTION_DOWNLOAD_URL = "org.kontalk.action.DOWNLOAD_URL";
     public static final String ACTION_DOWNLOAD_ABORT = "org.kontalk.action.DOWNLOAD_ABORT";
@@ -213,7 +214,7 @@ public class DownloadService extends IntentService implements DownloadListener {
         Log.d(TAG, "starting foreground progress notification");
         mTotalBytes = totalBytes;
 
-        Intent ni = new Intent(getApplicationContext(), ConversationList.class);
+        Intent ni = new Intent(getApplicationContext(), ConversationsActivity.class);
         // FIXME this intent should actually open the ComposeMessage activity
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
                 NOTIFICATION_ID_DOWNLOADING, ni, 0);
@@ -278,7 +279,7 @@ public class DownloadService extends IntentService implements DownloadListener {
 
                     File outFile = new File(destination + ".new");
                     out = new FileOutputStream(outFile);
-                    List<DecryptException> errors = new LinkedList<DecryptException>();
+                    List<DecryptException> errors = new LinkedList<>();
                     coder.decryptFile(in, true, out, errors);
 
                     // TODO process errors
@@ -302,15 +303,17 @@ public class DownloadService extends IntentService implements DownloadListener {
             }
             finally {
                 try {
-                    in.close();
+                    if (in != null)
+                        in.close();
                 }
-                catch (Exception e) {
+                catch (IOException e) {
                     // ignored
                 }
                 try {
-                    out.close();
+                    if (out != null)
+                        out.close();
                 }
-                catch (Exception e) {
+                catch (IOException e) {
                     // ignored
                 }
             }
@@ -330,7 +333,7 @@ public class DownloadService extends IntentService implements DownloadListener {
         stopForeground();
 
         // notify only if conversation is not open
-        if (!mPeer.equals(MessagingNotification.getPaused())) {
+        if (!MessagingNotification.isPaused(mPeer)) {
 
             // detect mime type if not available
             if (mime == null)
@@ -350,6 +353,7 @@ public class DownloadService extends IntentService implements DownloadListener {
                 .setContentText(getString(R.string.notify_text_download_completed))
                 .setTicker(getString(R.string.notify_ticker_download_completed))
                 .setContentIntent(pi)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setAutoCancel(true);
 
             // notify!!
@@ -368,7 +372,7 @@ public class DownloadService extends IntentService implements DownloadListener {
 
     private void errorNotification(String ticker, String text) {
         // create intent for download error notification
-        Intent i = new Intent(this, ConversationList.class);
+        Intent i = new Intent(this, ConversationsActivity.class);
         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
                 NOTIFICATION_ID_DOWNLOAD_ERROR, i, 0);
@@ -379,6 +383,8 @@ public class DownloadService extends IntentService implements DownloadListener {
             .setContentTitle(getString(R.string.notify_title_download_error))
             .setContentText(text)
             .setTicker(ticker)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setCategory(NotificationCompat.CATEGORY_ERROR)
             .setContentIntent(pi)
             .setAutoCancel(true);
 

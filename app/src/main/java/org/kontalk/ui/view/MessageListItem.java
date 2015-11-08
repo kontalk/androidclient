@@ -18,7 +18,10 @@
 
 package org.kontalk.ui.view;
 
-import android.app.AlertDialog;
+import java.util.regex.Pattern;
+
+import com.afollestad.materialdialogs.AlertDialogWrapper;
+
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -26,28 +29,19 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.text.style.URLSpan;
 import android.util.AttributeSet;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.Checkable;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.kontalk.R;
-import org.kontalk.crypto.Coder;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
-import org.kontalk.message.MessageComponent;
-import org.kontalk.message.TextComponent;
-import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
-
-import java.util.List;
-import java.util.regex.Pattern;
 
 
 /**
@@ -55,24 +49,17 @@ import java.util.regex.Pattern;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class MessageListItem extends RelativeLayout {
-
-    static private Drawable sDefaultContactImage;
-
-    private LayoutInflater mInflater;
+public class MessageListItem extends RelativeLayout implements Checkable {
 
     private CompositeMessage mMessage;
-    private MessageContentLayout mContent;
-    private ImageView mStatusIcon;
-    private ImageView mWarningIcon;
-    private TextView mDateView;
-    private LinearLayout mBalloonView;
-    private LinearLayout mParentView;
+    // for message details
+    private String mPeer;
 
-    private ImageView mAvatarIncoming;
-    private ImageView mAvatarOutgoing;
+    private MessageListItemTheme mBalloonTheme;
 
     private TextView mDateHeader;
+
+    private boolean mChecked;
 
     /*
     private LeadingMarginSpan mLeadingMarginSpan;
@@ -90,68 +77,23 @@ public class MessageListItem extends RelativeLayout {
 
     public MessageListItem(Context context) {
         super(context);
-        init(context);
     }
 
     public MessageListItem(final Context context, AttributeSet attrs) {
         super(context, attrs);
-        init(context);
-    }
-
-    private void init(Context context) {
-        if (sDefaultContactImage == null) {
-            sDefaultContactImage = context.getResources().getDrawable(R.drawable.ic_contact_picture);
-        }
-
-        mInflater = LayoutInflater.from(context);
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-
-        mContent = (MessageContentLayout) findViewById(R.id.content);
-        mStatusIcon = (ImageView) findViewById(R.id.status_indicator);
-        mWarningIcon = (ImageView) findViewById(R.id.warning_icon);
-        mBalloonView = (LinearLayout) findViewById(R.id.balloon_view);
-        mDateView = (TextView) findViewById(R.id.date_view);
-        mAvatarIncoming = (ImageView) findViewById(R.id.avatar_incoming);
-        mAvatarOutgoing = (ImageView) findViewById(R.id.avatar_outgoing);
-        mParentView = (LinearLayout) findViewById(R.id.message_view_parent);
-
         mDateHeader = (TextView) findViewById(R.id.date_header);
+    }
 
-        if (isInEditMode()) {
-            //mTextView.setText("Test messaggio\nCiao zio!\nBelluuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu!!");
-            //mTextView.setText("TEST");
-            //mTextView.setText(":-)");
-            /* INCOMING
-            //setGravity(Gravity.LEFT);
-            if (mBalloonView != null) {
-                mBalloonView.setBackgroundResource(R.drawable.balloon_classic_incoming);
-            }
-            mDateView.setText("28 Nov");
-            */
-
-            /* OUTGOING */
-            if (mStatusIcon != null) {
-                mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
-                mStatusIcon.setVisibility(VISIBLE);
-            }
-            if (mStatusIcon != null)
-                mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
-            mWarningIcon.setVisibility(VISIBLE);
-            setGravity(Gravity.RIGHT);
-            if (mBalloonView != null) {
-                mBalloonView.setBackgroundResource(R.drawable.balloon_classic_outgoing);
-            }
-            mDateView.setText("16:25");
-            if (mAvatarIncoming != null) {
-                mAvatarIncoming.setVisibility(GONE);
-                mAvatarOutgoing.setVisibility(VISIBLE);
-                mAvatarOutgoing.setImageResource(R.drawable.ic_contact_picture);
-            }
-        }
+    public void afterInflate(int direction) {
+        ViewStub stub = (ViewStub) findViewById(R.id.balloon_stub);
+        String theme = Preferences.getBalloonTheme(getContext());
+        mBalloonTheme = MessageListItemThemeFactory.createTheme(theme, direction);
+        mBalloonTheme.inflate(stub);
     }
 
     public final void bind(Context context, final CompositeMessage msg,
@@ -160,118 +102,55 @@ public class MessageListItem extends RelativeLayout {
 
         mMessage = msg;
 
-        if (MessageUtils.isSameDate(mMessage.getTimestamp(), previous)) {
+        // FIXME this might not work
+        mChecked = false;
+
+        long msgTs = MessageUtils.getMessageTimestamp(mMessage);
+        if (MessageUtils.isSameDate(msgTs, previous)) {
             mDateHeader.setVisibility(View.GONE);
         }
         else {
-            mDateHeader.setText(MessageUtils.formatDateString(context, mMessage.getTimestamp()));
+            mDateHeader.setText(MessageUtils.formatDateString(context, msgTs));
             mDateHeader.setVisibility(View.VISIBLE);
         }
 
-        if (msg.isEncrypted()) {
-            // FIXME this is not good
-            TextContentView view = TextContentView.obtain(mInflater, mContent, true);
+        mBalloonTheme.setSecurityFlags(mMessage.getSecurityFlags());
 
-            String text = getResources().getString(R.string.text_encrypted);
-            view.bind(mMessage.getDatabaseId(), new TextComponent(text), contact, highlight);
-            mContent.addContent(view);
+        if (mMessage.getSender() != null) {
+            mBalloonTheme.setIncoming(contact);
+
+            Contact c = Contact.findByUserId(context, msg.getSender(true));
+            if (c != null)
+                mPeer = c.getNumber();
+            if (mPeer == null)
+                mPeer = msg.getSender(true);
+        }
+        else {
+            mBalloonTheme.setOutgoing(contact, mMessage.getStatus());
+            Contact c = Contact.findByUserId(context, msg.getRecipients().get(0));
+            if (c != null)
+                mPeer = c.getNumber();
+            if (mPeer == null)
+                mPeer = msg.getRecipients().get(0);
+        }
+
+        mBalloonTheme.setTimestamp(formatTimestamp());
+
+        if (msg.isEncrypted()) {
+            mBalloonTheme.setEncryptedContent(mMessage.getDatabaseId());
         }
 
         else {
             // process components
-            List<MessageComponent<?>> components = msg.getComponents();
-            for (MessageComponent<?> cmp : components) {
-                MessageContentView<?> view = MessageContentViewFactory
-                    .createContent(mInflater, mContent, cmp, mMessage.getDatabaseId(),
-                        contact, highlight, args);
-
-                mContent.addContent(view);
+            Object[] argsAppend = null;
+            if (args != null) {
+                argsAppend = new Object[args.length+1];
+                System.arraycopy(args, 0, argsAppend, 0, args.length);
+                argsAppend[args.length] = mBalloonTheme;
             }
+            mBalloonTheme.processComponents(mMessage.getDatabaseId(),
+                highlight, msg.getComponents(), argsAppend);
         }
-
-        int resId = 0;
-        int statusId = 0;
-
-        int securityFlags = mMessage.getSecurityFlags();
-
-        if (Coder.isError(securityFlags)) {
-            mWarningIcon.setImageResource(R.drawable.ic_msg_security);
-            mWarningIcon.setVisibility(VISIBLE);
-        }
-        else {
-            mWarningIcon.setImageResource(R.drawable.ic_msg_warning);
-            mWarningIcon.setVisibility((securityFlags != Coder.SECURITY_CLEARTEXT) ? GONE : VISIBLE);
-        }
-
-        if (mMessage.getSender() != null) {
-            if (mBalloonView != null) {
-                mBalloonView.setBackgroundResource(Preferences
-                        .getBalloonResource(getContext(), Messages.DIRECTION_IN));
-            }
-            mParentView.setGravity(Gravity.LEFT);
-
-            if (mAvatarIncoming != null) {
-                mAvatarOutgoing.setVisibility(GONE);
-                mAvatarIncoming.setVisibility(VISIBLE);
-                mAvatarIncoming.setImageDrawable(contact != null ?
-                    contact.getAvatar(context, sDefaultContactImage) : sDefaultContactImage);
-            }
-        }
-        else {
-            if (mBalloonView != null) {
-                mBalloonView.setBackgroundResource(Preferences
-                        .getBalloonResource(getContext(), Messages.DIRECTION_OUT));
-            }
-            mParentView.setGravity(Gravity.RIGHT);
-
-            if (mAvatarOutgoing != null) {
-                mAvatarIncoming.setVisibility(GONE);
-                mAvatarOutgoing.setVisibility(VISIBLE);
-                // TODO show own profile picture
-                mAvatarOutgoing.setImageDrawable(sDefaultContactImage);
-            }
-
-            // status icon
-            if (mMessage.getSender() == null)
-            switch (mMessage.getStatus()) {
-                case Messages.STATUS_SENDING:
-                // use pending icon even for errors
-                case Messages.STATUS_ERROR:
-                case Messages.STATUS_PENDING:
-                    resId = R.drawable.ic_msg_pending;
-                    statusId = R.string.msg_status_sending;
-                    break;
-                case Messages.STATUS_RECEIVED:
-                    resId = R.drawable.ic_msg_delivered;
-                    statusId = R.string.msg_status_delivered;
-                    break;
-                // here we use the error icon
-                case Messages.STATUS_NOTACCEPTED:
-                    resId = R.drawable.ic_msg_error;
-                    statusId = R.string.msg_status_notaccepted;
-                    break;
-                case Messages.STATUS_SENT:
-                    resId = R.drawable.ic_msg_sent;
-                    statusId = R.string.msg_status_sent;
-                    break;
-                case Messages.STATUS_NOTDELIVERED:
-                    resId = R.drawable.ic_msg_notdelivered;
-                    statusId = R.string.msg_status_notdelivered;
-                    break;
-            }
-        }
-
-        if (resId > 0) {
-            mStatusIcon.setImageResource(resId);
-            mStatusIcon.setVisibility(VISIBLE);
-            mStatusIcon.setContentDescription(getResources().getString(statusId));
-        }
-        else {
-            mStatusIcon.setImageDrawable(null);
-            mStatusIcon.setVisibility(GONE);
-        }
-
-        mDateView.setText(formatTimestamp());
     }
 
     /*
@@ -352,34 +231,42 @@ public class MessageListItem extends RelativeLayout {
     */
 
     private CharSequence formatTimestamp() {
-        long serverTime = mMessage.getServerTimestamp();
-        long ts = serverTime > 0 ? serverTime : mMessage.getTimestamp();
-
-        return MessageUtils.formatTimeString(getContext(), ts);
+        return MessageUtils.formatTimeString(getContext(), MessageUtils.getMessageTimestamp(mMessage));
     }
 
     public final void unbind() {
         // TODO mMessage.recycle();
         mMessage = null;
+        mBalloonTheme.unload();
+    }
 
-        int c = mContent.getChildCount();
-        for (int i = 0; i < c; i++) {
-            MessageContentView<?> view = (MessageContentView<?>) mContent.getChildAt(0);
-            mContent.removeView((View) view);
-            view.unbind();
-        }
+    @Override
+    public boolean isChecked() {
+        return mChecked;
+    }
+
+    @Override
+    public void setChecked(boolean checked) {
+        mChecked = checked;
+
+        int backgroundId;
+
+        if (mChecked)
+            backgroundId = R.drawable.list_selected_holo_light;
+        else
+            backgroundId = 0;
+
+        setBackgroundResource(backgroundId);
+    }
+
+    @Override
+    public void toggle() {
+        setChecked(!mChecked);
     }
 
     // Thanks to Google Mms app :)
     public void onClick() {
-        TextContentView textContent = null;
-        int c = mContent.getChildCount();
-        for (int i = 0; i < c; i++) {
-            MessageContentView<?> view = (MessageContentView<?>) mContent.getChildAt(0);
-            if (view instanceof TextContentView) {
-                textContent = (TextContentView) view;
-            }
-        }
+        TextContentView textContent = mBalloonTheme.getTextContentView();
 
         if (textContent == null)
             return;
@@ -388,18 +275,21 @@ public class MessageListItem extends RelativeLayout {
         final URLSpan[] spans = textContent.getUrls();
 
         if (spans.length == 0) {
-            // TODO show the message details dialog
+            // show the message details dialog
+            MessageUtils.showMessageDetails(getContext(), mMessage, mPeer);
         }
         else if (spans.length == 1) {
+            // show link opener
             spans[0].onClick(textContent);
         }
         else {
+            // complex stuff (media)
             ArrayAdapter<URLSpan> adapter =
-                new ArrayAdapter<URLSpan>(mInflater.getContext(), android.R.layout.select_dialog_item, spans) {
+                new ArrayAdapter<URLSpan>(getContext(), android.R.layout.select_dialog_item, spans) {
                     @Override
                     public View getView(int position, View convertView, ViewGroup parent) {
                         View v = super.getView(position, convertView, parent);
-                        Context context = mInflater.getContext();
+                        Context context = getContext();
                         try {
                             URLSpan span = getItem(position);
                             String url = span.getURL();
@@ -426,7 +316,7 @@ public class MessageListItem extends RelativeLayout {
                     }
                 };
 
-            AlertDialog.Builder b = new AlertDialog.Builder(mInflater.getContext());
+            AlertDialogWrapper.Builder b = new AlertDialogWrapper.Builder(getContext());
 
             final TextContentView textView = textContent;
             DialogInterface.OnClickListener click = new DialogInterface.OnClickListener() {

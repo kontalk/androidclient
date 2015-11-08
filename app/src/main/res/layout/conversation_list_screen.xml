@@ -20,4 +20,4 @@
     android:id="@+id/fragment_conversation_list"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-  xmlns:android="http://schemas.android.com/apk/res/android" />
+    xmlns:android="http://schemas.android.com/apk/res/android" />

@@ -19,9 +19,13 @@
 package org.kontalk.util;
 
 import java.io.StringReader;
+import java.util.Date;
 
+import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.util.PacketParserUtils;
+import org.jivesoftware.smackx.delay.packet.DelayInformation;
 import org.jxmpp.util.XmppStringUtils;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -72,7 +76,7 @@ public class XMPPUtils {
                     in_xmpp = true;
 
                 else if ("message".equals(parser.getName()) && in_xmpp) {
-                    msg = (Message) PacketParserUtils.parseMessage(parser);
+                    msg = PacketParserUtils.parseMessage(parser);
                 }
             }
 
@@ -84,6 +88,21 @@ public class XMPPUtils {
         }
 
         return msg;
+    }
+
+    public static Date getStanzaDelay(Stanza packet) {
+        ExtensionElement _delay = packet.getExtension("delay", "urn:xmpp:delay");
+        if (_delay == null)
+            _delay = packet.getExtension("x", "jabber:x:delay");
+
+        Date stamp = null;
+        if (_delay != null) {
+            if (_delay instanceof DelayInformation) {
+                stamp = ((DelayInformation) _delay).getStamp();
+            }
+        }
+
+        return stamp;
     }
 
     public static boolean isLocalJID(String jid, String host) {

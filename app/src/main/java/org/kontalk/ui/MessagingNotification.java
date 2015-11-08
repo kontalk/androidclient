@@ -21,6 +21,8 @@ package org.kontalk.ui;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jxmpp.util.XmppStringUtils;
+
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
@@ -29,6 +31,7 @@ import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 
 import android.accounts.Account;
@@ -42,7 +45,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.Typeface;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
@@ -135,8 +138,8 @@ public class MessagingNotification {
         sPaused = jid;
     }
 
-    public static String getPaused() {
-        return sPaused;
+    public static boolean isPaused(String jid) {
+        return sPaused != null && sPaused.equalsIgnoreCase(XmppStringUtils.parseBareJid(jid));
     }
 
     private static boolean supportsBigNotifications() {
@@ -370,9 +373,9 @@ public class MessagingNotification {
 
                 // avatar
                 if (contact != null) {
-                    BitmapDrawable avatar = (BitmapDrawable) contact.getAvatar(context, null);
+                    Drawable avatar = contact.getAvatar(context);
                     if (avatar != null)
-                        builder.setLargeIcon(avatar.getBitmap());
+                        builder.setLargeIcon(MessageUtils.drawableToBitmap(avatar));
                 }
             }
 
@@ -389,7 +392,7 @@ public class MessagingNotification {
             Intent ni;
             // more than one unread conversation - open ConversationList
             if (convs.size() > 1) {
-                ni = new Intent(context, ConversationList.class);
+                ni = new Intent(context, ConversationsActivity.class);
                 ni.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_SINGLE_TOP
                     | Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -429,9 +432,9 @@ public class MessagingNotification {
             builder.setTicker(accumulator.getTicker());
             Contact contact = accumulator.getContact();
             if (contact != null) {
-                BitmapDrawable avatar = (BitmapDrawable) contact.getAvatar(context, null);
+                Drawable avatar = contact.getAvatar(context);
                 if (avatar != null)
-                    builder.setLargeIcon(avatar.getBitmap());
+                    builder.setLargeIcon(MessageUtils.drawableToBitmap(avatar));
             }
             builder.setNumber(accumulator.unreadCount);
             builder.setSmallIcon(R.drawable.ic_stat_notify);
@@ -447,7 +450,7 @@ public class MessagingNotification {
         }
 
         // features (priority, category)
-        setFeatures(builder);
+        setFeatures(context, builder);
 
         nm.notify(NOTIFICATION_ID_MESSAGES, builder.build());
 
@@ -481,10 +484,10 @@ public class MessagingNotification {
         builder.setDefaults(defaults);
     }
 
-    private static void setFeatures(NotificationCompat.Builder builder) {
+    private static void setFeatures(Context context, NotificationCompat.Builder builder) {
         builder.setPriority(NotificationCompat.PRIORITY_HIGH);
-        // FIXME this can't be used with appcompat v21
-        //builder.setCategory(NotificationCompat.CATEGORY_MESSAGE);
+        builder.setCategory(NotificationCompat.CATEGORY_MESSAGE);
+        builder.setColor(context.getResources().getColor(R.color.app_accent));
     }
 
     /** Triggers a notification for a chat invitation. */
@@ -519,15 +522,15 @@ public class MessagingNotification {
 
         // include an avatar if any
         if (contact != null) {
-            BitmapDrawable avatar = (BitmapDrawable) contact.getAvatar(context, null);
+            Drawable avatar = contact.getAvatar(context);
             if (avatar != null)
-                builder.setLargeIcon(avatar.getBitmap());
+                builder.setLargeIcon(MessageUtils.drawableToBitmap(avatar));
         }
 
         // defaults (sound, vibration, lights)
         setDefaults(context, builder);
         // features (priority, category)
-        setFeatures(builder);
+        setFeatures(context, builder);
 
         // fire it up!
         NotificationManager nm = (NotificationManager) context
@@ -552,7 +555,7 @@ public class MessagingNotification {
     /** Fires an authentication error notification. */
     public static void authenticationError(Context context) {
         // notification will open the conversation
-        Intent ni = ConversationList.authenticationErrorWarning(context);
+        Intent ni = ConversationsActivity.authenticationErrorWarning(context);
         PendingIntent pi = PendingIntent.getActivity(context,
             NOTIFICATION_ID_AUTH_ERROR, ni, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -673,7 +676,7 @@ public class MessagingNotification {
             Intent ni;
             // more than one unread conversation - open ConversationList
             if (convCount > 1) {
-                ni = new Intent(mContext, ConversationList.class);
+                ni = new Intent(mContext, ConversationsActivity.class);
                 ni.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_SINGLE_TOP
                     | Intent.FLAG_ACTIVITY_CLEAR_TOP);

@@ -25,7 +25,6 @@ import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.NumberValidator;
-import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.message.TextComponent;
@@ -36,26 +35,20 @@ import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.XMPPUtils;
 
-import android.annotation.TargetApi;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -64,7 +57,7 @@ import android.widget.Toast;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class ComposeMessage extends ActionBarActivity {
+public class ComposeMessage extends ToolbarActivity implements ComposeMessageParent {
     public static final String TAG = ComposeMessage.class.getSimpleName();
 
     private static final int REQUEST_CONTACT_PICKER = 9721;
@@ -85,8 +78,6 @@ public class ComposeMessage extends ActionBarActivity {
     private Intent sendIntent;
 
     private ComposeMessageFragment mFragment;
-    private TextView mTitleView;
-    private TextView mSubtitleView;
 
     /**
      * True if the window has lost focus the last time
@@ -97,8 +88,6 @@ public class ComposeMessage extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-
         setContentView(R.layout.compose_message_screen);
 
         setupActionBar();
@@ -107,37 +96,20 @@ public class ComposeMessage extends ActionBarActivity {
         mFragment = (ComposeMessageFragment) getSupportFragmentManager()
             .findFragmentById(R.id.fragment_compose_message);
 
-        View customView = getSupportActionBar().getCustomView();
-        mTitleView = (TextView) customView.findViewById(R.id.title);
-        mSubtitleView = (TextView) customView.findViewById(R.id.summary);
-
         Bundle args = processIntent(savedInstanceState);
         mFragment.setMyArguments(args);
     }
 
-    @TargetApi(android.os.Build.VERSION_CODES.HONEYCOMB)
     private void setupActionBar() {
-        ActionBar bar = getSupportActionBar();
-        bar.setDisplayShowHomeEnabled(true);
-        bar.setCustomView(R.layout.compose_message_action_view);
-        bar.setDisplayShowCustomEnabled(true);
-        bar.setDisplayHomeAsUpEnabled(true);
-        bar.setHomeButtonEnabled(true);
-
-        // hack to remove padding from activity icon
-
-        int homeId;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
-            homeId = android.R.id.home;
-        else
-            homeId = android.support.v7.appcompat.R.id.home;
-
-        ImageView icon = (ImageView) findViewById(homeId);
-        if (icon != null) {
-            FrameLayout.LayoutParams iconLp = (FrameLayout.LayoutParams) icon.getLayoutParams();
-            iconLp.topMargin = iconLp.bottomMargin = 0;
-            icon.setLayoutParams(iconLp);
-        }
+        Toolbar toolbar = super.setupToolbar(true);
+        // TODO find a way to use a colored selector
+        toolbar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mFragment == null || !mFragment.isActionModeActive())
+                    onTitleClick();
+            }
+        });
     }
 
     @Override
@@ -146,43 +118,38 @@ public class ComposeMessage extends ActionBarActivity {
 
         switch (itemId) {
             case android.R.id.home:
-                onAvatarClick();
+                onHomeClick();
                 return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    /** Sets custom title. Pass null to any of the arguments to skip setting it. */
-    public void setTitle(CharSequence title, CharSequence subtitle, Contact contact) {
+    @Override
+    public void setTitle(CharSequence title, CharSequence subtitle) {
+        ActionBar bar = getSupportActionBar();
         if (title != null)
-            mTitleView.setText(title);
+            bar.setTitle(title);
         if (subtitle != null)
-            mSubtitleView.setText(subtitle);
-        if (contact != null) {
-            Drawable avatar = contact.getAvatar(this, null);
-            if (avatar == null)
-                avatar = getResources().getDrawable(R.drawable.ic_contact_picture);
-
-            getSupportActionBar().setIcon(avatar);
-        }
+            bar.setSubtitle(subtitle);
     }
 
+    @Override
     public void setUpdatingSubtitle() {
-        setUpdatingSubtitle(mSubtitleView);
+        ActionBar bar = getSupportActionBar();
+        CharSequence current = bar.getSubtitle();
+        // no need to set updating status if no text is displayed
+        if (current != null && current.length() > 0) {
+            bar.setSubtitle(applyUpdatingStyle(current));
+        }
     }
 
-    static void setUpdatingSubtitle(TextView view) {
-        CharSequence current = view.getText();
-        // no need to set updating status if no text is displayed
-        if (current.length() > 0) {
-            // we call toString() to strip any existing span
-            SpannableString status = new SpannableString(current.toString());
-            status.setSpan(sUpdatingTextSpan,
-                0, status.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-            view.setText(status);
-        }
+    static CharSequence applyUpdatingStyle(CharSequence text) {
+        // we call toString() to strip any existing span
+        SpannableString status = new SpannableString(text.toString());
+        status.setSpan(sUpdatingTextSpan,
+            0, status.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return status;
     }
 
     @Override
@@ -191,12 +158,12 @@ public class ComposeMessage extends ActionBarActivity {
             super.onBackPressed();
     }
 
-    private void onAvatarClick() {
+    private void onHomeClick() {
         finish();
-        startActivity(new Intent(this, ConversationList.class));
+        startActivity(new Intent(this, ConversationsActivity.class));
     }
 
-    public void onTitleboxClick(View view) {
+    public void onTitleClick() {
         if (mFragment != null)
             mFragment.viewContact();
     }
@@ -227,7 +194,7 @@ public class ComposeMessage extends ActionBarActivity {
 
                 // two-panes UI: start conversation list
                 if (Kontalk.hasTwoPanesUI(this) && Intent.ACTION_VIEW.equals(action)) {
-                    Intent startIntent = new Intent(getApplicationContext(), ConversationList.class);
+                    Intent startIntent = new Intent(getApplicationContext(), ConversationsActivity.class);
                     startIntent.setAction(Intent.ACTION_VIEW);
                     startIntent.setData(uri);
                     startActivity(startIntent);
@@ -270,7 +237,7 @@ public class ComposeMessage extends ActionBarActivity {
 
                     // two-panes UI: start conversation list
                     if (Kontalk.hasTwoPanesUI(this)) {
-                        Intent startIntent = new Intent(getApplicationContext(), ConversationList.class);
+                        Intent startIntent = new Intent(getApplicationContext(), ConversationsActivity.class);
                         startIntent.setAction(ACTION_VIEW_USERID);
                         startIntent.setData(Threads.getUri(jid));
                         startActivity(startIntent);
@@ -376,7 +343,6 @@ public class ComposeMessage extends ActionBarActivity {
         // TODO one day it will be like this
         // Intent i = new Intent(Intent.ACTION_PICK, Users.CONTENT_URI);
         Intent i = new Intent(this, ContactsListActivity.class);
-        i.putExtra("picker", true);
         startActivityForResult(i, REQUEST_CONTACT_PICKER);
     }
 
@@ -433,7 +399,9 @@ public class ComposeMessage extends ActionBarActivity {
             }
 
             else {
-                sendMedia((Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM));
+                Uri uri = sendIntent.getParcelableExtra(Intent.EXTRA_STREAM);
+                if (uri != null)
+                    sendMedia(uri);
             }
         }
 

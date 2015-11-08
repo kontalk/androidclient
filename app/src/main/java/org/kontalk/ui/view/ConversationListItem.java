@@ -39,6 +39,7 @@ import android.widget.Checkable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+
 public class ConversationListItem extends AvatarListItem implements Checkable {
 
     private static final StyleSpan STYLE_BOLD = new StyleSpan(Typeface.BOLD);
@@ -47,11 +48,10 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
     private TextView mSubjectView;
     private TextView mFromView;
     private TextView mDateView;
-    //private View mAttachmentView;
     private ImageView mErrorIndicator;
     private TextView mCounterView;
 
-    private boolean mChecked = false;
+    private boolean mChecked;
 
     public ConversationListItem(Context context) {
         super(context);
@@ -69,7 +69,6 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
         mSubjectView = (TextView) findViewById(R.id.subject);
 
         mDateView = (TextView) findViewById(R.id.date);
-        //mAttachmentView = findViewById(R.id.attachment);
         mErrorIndicator = (ImageView) findViewById(R.id.error);
         mCounterView = (TextView) findViewById(R.id.counter);
 
@@ -88,6 +87,7 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
 
     public final void bind(Context context, final Conversation conv) {
         mConversation = conv;
+        // FIXME this might not work
         mChecked = false;
 
         String recipient = null;
@@ -138,9 +138,7 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
             String source = (draft != null) ? draft : conv.getSubject();
 
             if (source != null) {
-                text = new SpannableString(source);
-                if (conv.getUnreadCount() > 0)
-                    ((Spannable) text).setSpan(STYLE_BOLD, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                text = source;
             }
 
             else if (conv.isEncrypted()) {
@@ -151,6 +149,11 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
                 // determine from mime type
                 text = CompositeMessage.getSampleTextContent(conv.getMime());
             }
+        }
+
+        if (conv.getUnreadCount() > 0) {
+            text = new SpannableString(text);
+            ((Spannable) text).setSpan(STYLE_BOLD, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
         }
 
         mSubjectView.setText(text);
@@ -223,12 +226,14 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
     public void setChecked(boolean checked) {
         mChecked = checked;
 
-        /** TODO checked conversation item
+        int backgroundId;
+
         if (mChecked)
-            setBackgroundResource(R.color.conversation_active_background);
+            backgroundId = R.drawable.list_selected_holo_light;
         else
-            setBackgroundResource(0);
-         */
+            backgroundId = 0;
+
+        setBackgroundResource(backgroundId);
     }
 
     @Override

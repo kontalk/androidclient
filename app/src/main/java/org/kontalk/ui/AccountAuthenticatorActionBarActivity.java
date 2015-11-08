@@ -19,7 +19,6 @@ package org.kontalk.ui;
 import android.accounts.AccountAuthenticatorResponse;
 import android.accounts.AccountManager;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 
 
 /**
@@ -36,7 +35,7 @@ import android.support.v7.app.ActionBarActivity;
  * is never set or if it is set to null then error {@link android.accounts.AccountManager#ERROR_CODE_CANCELED}
  * will be called on the response.
  */
-public class AccountAuthenticatorActionBarActivity extends ActionBarActivity {
+public class AccountAuthenticatorActionBarActivity extends ToolbarActivity {
     private AccountAuthenticatorResponse mAccountAuthenticatorResponse = null;
     private Bundle mResultBundle = null;
 

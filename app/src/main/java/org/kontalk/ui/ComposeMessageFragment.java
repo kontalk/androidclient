@@ -20,11 +20,23 @@ package org.kontalk.ui;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.afollestad.materialdialogs.simplelist.MaterialSimpleListAdapter;
+import com.afollestad.materialdialogs.simplelist.MaterialSimpleListItem;
+import com.akalipetis.fragment.ActionModeListFragment;
+import com.akalipetis.fragment.MultiChoiceModeListener;
+import com.nispok.snackbar.Snackbar;
+import com.nispok.snackbar.SnackbarManager;
+import com.nispok.snackbar.enums.SnackbarType;
+import com.nispok.snackbar.listeners.ActionClickListener;
 
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
@@ -36,9 +48,10 @@ import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.AsyncQueryHandler;
 import android.content.BroadcastReceiver;
+import android.content.ClipData;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -53,7 +66,6 @@ import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDiskIOException;
 import android.database.sqlite.SQLiteException;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -64,25 +76,21 @@ import android.os.Handler;
 import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.view.ActionMode;
 import android.text.ClipboardManager;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.util.Log;
-import android.util.TypedValue;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -116,8 +124,6 @@ import org.kontalk.ui.view.AudioContentViewControl;
 import org.kontalk.ui.view.AudioPlayerControl;
 import org.kontalk.ui.view.ComposerBar;
 import org.kontalk.ui.view.ComposerListener;
-import org.kontalk.ui.view.IconContextMenu;
-import org.kontalk.ui.view.IconContextMenu.IconContextMenuOnClickListener;
 import org.kontalk.ui.view.MessageListItem;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
@@ -137,10 +143,11 @@ import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK
  * @author Daniele Ricci
  * @author Andrea Cappelli
  */
-public class ComposeMessageFragment extends ListFragment implements
-        ComposerListener, View.OnLongClickListener, IconContextMenuOnClickListener,
+public class ComposeMessageFragment extends ActionModeListFragment implements
+        ComposerListener, View.OnLongClickListener,
         // TODO these two interfaces should be handled by an inner class
-        AudioDialog.AudioDialogListener, AudioPlayerControl {
+        AudioDialog.AudioDialogListener, AudioPlayerControl,
+        MultiChoiceModeListener {
     private static final String TAG = ComposeMessage.TAG;
 
     private static final int MESSAGE_LIST_QUERY_TOKEN = 8720;
@@ -166,15 +173,11 @@ public class ComposeMessageFragment extends ListFragment implements
         }
     }
 
-    /** Context menu group ID for this fragment. */
-    private static final int CONTEXT_MENU_GROUP_ID = 2;
-
     /* Attachment chooser stuff. */
-    private static final int CONTEXT_MENU_ATTACHMENT = 1;
-    private static final int ATTACHMENT_ACTION_PICTURE = 1;
-    private static final int ATTACHMENT_ACTION_CONTACT = 2;
-    private static final int ATTACHMENT_ACTION_AUDIO = 3;
-    private IconContextMenu attachmentMenu;
+    private static final int ATTACHMENT_ACTION_PICTURE = 0;
+    private static final int ATTACHMENT_ACTION_CONTACT = 1;
+    private static final int ATTACHMENT_ACTION_AUDIO = 2;
+    private Dialog attachmentMenu;
 
     private ComposerBar mComposer;
 
@@ -203,13 +206,13 @@ public class ComposeMessageFragment extends ListFragment implements
     private String mLastActivityRequestId;
     private String mVersionRequestId;
 
-    /** MediaPlayer */
-    private MediaPlayer mPlayer;
-    private int mStatus = AudioContentView.STATUS_IDLE;
-    private long mMediaPlayerMessageId;
+    /** Media player stuff. */
+    private int mMediaPlayerStatus = AudioContentView.STATUS_IDLE;
     private Handler mHandler;
     private Runnable mMediaPlayerUpdater;
     private AudioContentViewControl mAudioControl;
+
+    /** Audio recording dialog. */
     private AudioDialog mAudioDialog;
 
     private PeerObserver mPeerObserver;
@@ -222,6 +225,8 @@ public class ComposeMessageFragment extends ListFragment implements
     private boolean mOfflineModeWarned;
     private CharSequence mCurrentStatus;
     private boolean mIsTyping;
+
+    private int mCheckedItemCount;
 
     /** Returns a new fragment instance from a picked contact. */
     public static ComposeMessageFragment fromUserId(Context context, String userId) {
@@ -264,27 +269,20 @@ public class ComposeMessageFragment extends ListFragment implements
 
         ListView list = getListView();
         list.setFastScrollEnabled(true);
-        registerForContextMenu(list);
 
-        mComposer = (ComposerBar) getView().findViewById(R.id.composer_bar);
-        mComposer.setComposerListener(this);
-
-        // footer (for tablet presence status)
-        mStatusText = (TextView) getView().findViewById(R.id.status_text);
+        setMultiChoiceModeListener(this);
 
         // set custom background (if any)
+        ImageView background = (ImageView) getView().findViewById(R.id.background);
         Drawable bg = Preferences.getConversationBackground(getActivity());
         if (bg != null) {
-            ImageView background = (ImageView) getView().findViewById(R.id.background);
-            list.setCacheColorHint(Color.TRANSPARENT);
-            list.setBackgroundColor(Color.TRANSPARENT);
+            background.setScaleType(ImageView.ScaleType.CENTER_CROP);
             background.setImageDrawable(bg);
         }
-
-        mComposer.setRootView(getView().findViewById(R.id.root_view));
-
-        Configuration config = getResources().getConfiguration();
-        mComposer.onKeyboardStateChanged(config.keyboardHidden == KEYBOARDHIDDEN_NO);
+        else {
+            background.setScaleType(ImageView.ScaleType.FIT_XY);
+            background.setImageResource(R.drawable.app_background_tile);
+        }
 
         processArguments(savedInstanceState);
     }
@@ -309,6 +307,11 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     public void reload() {
+        // be sure to cancel all queries
+        stopQuery();
+        // hide the warning bar
+        hideWarning();
+        // reload data
         processArguments(null);
         onFocus(false);
     }
@@ -316,7 +319,20 @@ public class ComposeMessageFragment extends ListFragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.compose_message, container, false);
+        View view = inflater.inflate(R.layout.compose_message, container, false);
+
+        mComposer = (ComposerBar) view.findViewById(R.id.composer_bar);
+        mComposer.setComposerListener(this);
+
+        // footer (for tablet presence status)
+        mStatusText = (TextView) view.findViewById(R.id.status_text);
+
+        mComposer.setRootView(view);
+
+        Configuration config = getResources().getConfiguration();
+        mComposer.onKeyboardStateChanged(config.keyboardHidden == KEYBOARDHIDDEN_NO);
+
+        return view;
     }
 
     private final MessageListAdapter.OnContentChangedListener mContentChangedListener = new MessageListAdapter.OnContentChangedListener() {
@@ -331,10 +347,250 @@ public class ComposeMessageFragment extends ListFragment implements
         super.onCreate(savedInstanceState);
 
         setHasOptionsMenu(true);
-        mQueryHandler = new MessageListQueryHandler();
+        mQueryHandler = new MessageListQueryHandler(this);
         mHandler = new Handler();
 
         // list adapter creation is post-poned
+    }
+
+    public boolean isActionModeActive() {
+        return mCheckedItemCount > 0;
+    }
+
+    @Override
+    public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+        if (checked)
+            mCheckedItemCount++;
+        else
+            mCheckedItemCount--;
+        mode.setTitle(getResources()
+            .getQuantityString(R.plurals.context_selected,
+                mCheckedItemCount, mCheckedItemCount));
+
+        mode.invalidate();
+    }
+
+    @Override
+    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+        MenuInflater inflater = mode.getMenuInflater();
+        inflater.inflate(R.menu.compose_message_ctx, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+        MenuItem retryMenu = menu.findItem(R.id.menu_retry);
+        MenuItem shareMenu = menu.findItem(R.id.menu_share);
+        MenuItem copyTextMenu = menu.findItem(R.id.menu_copy_text);
+        MenuItem detailsMenu = menu.findItem(R.id.menu_details);
+        MenuItem openMenu = menu.findItem(R.id.menu_open);
+        MenuItem dlMenu = menu.findItem(R.id.menu_download);
+        MenuItem cancelDlMenu = menu.findItem(R.id.menu_cancel_download);
+        MenuItem decryptMenu = menu.findItem(R.id.menu_decrypt);
+
+        // initial status
+        retryMenu.setVisible(false);
+        shareMenu.setVisible(false);
+        copyTextMenu.setVisible(false);
+        detailsMenu.setVisible(false);
+        openMenu.setVisible(false);
+        dlMenu.setVisible(false);
+        cancelDlMenu.setVisible(false);
+        decryptMenu.setVisible(false);
+
+        boolean singleItem = (mCheckedItemCount == 1);
+        if (singleItem) {
+            CompositeMessage msg = getCheckedItem();
+
+            // message waiting for user review
+            if (msg.getStatus() == Messages.STATUS_PENDING) {
+                retryMenu.setVisible(true);
+            }
+
+            // some commands can be used only on unencrypted messages
+            if (!msg.isEncrypted()) {
+                AttachmentComponent attachment = (AttachmentComponent) msg
+                    .getComponent(AttachmentComponent.class);
+                TextComponent text = (TextComponent) msg
+                    .getComponent(TextComponent.class);
+
+                // sharing media messages has no purpose if media file hasn't been
+                // retrieved yet
+                if (text != null || attachment == null || attachment.getLocalUri() != null)
+                    shareMenu.setVisible(true);
+
+                // non-empty text: copy text to clipboard
+                if (text != null && !TextUtils.isEmpty(text.getContent()))
+                    copyTextMenu.setVisible(true);
+
+                if (attachment != null) {
+
+                    // message has a local uri - add open file entry
+                    if (attachment.getLocalUri() != null) {
+                        int resId;
+                        if (attachment instanceof ImageComponent)
+                            resId = R.string.view_image;
+                        else if (attachment instanceof  AudioComponent)
+                            resId = R.string.open_audio;
+                        else
+                            resId = R.string.open_file;
+
+                        openMenu.setTitle(resId);
+                        openMenu.setVisible(true);
+                    }
+
+                    // message has a fetch url - add download control entry
+                    if (msg.getDirection() == Messages.DIRECTION_IN && attachment.getFetchUrl() != null) {
+                        if (!DownloadService.isQueued(attachment.getFetchUrl())) {
+                            int string;
+                            // already fetched
+                            if (attachment.getLocalUri() != null)
+                                string = R.string.download_again;
+                            else
+                                string = R.string.download_file;
+
+                            dlMenu.setTitle(string);
+                            dlMenu.setVisible(true);
+                        }
+                        else {
+                            cancelDlMenu.setVisible(true);
+                        }
+                    }
+
+
+                }
+
+            }
+
+            else {
+
+                decryptMenu.setVisible(true);
+
+            }
+
+            detailsMenu.setVisible(true);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_delete: {
+                // using clone because listview returns its original copy
+                deleteSelectedMessages(SystemUtils
+                    .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
+                mode.finish();
+                return true;
+            }
+
+            case R.id.menu_retry: {
+                CompositeMessage msg = getCheckedItem();
+                retryMessage(msg);
+                mode.finish();
+                return true;
+            }
+
+            case R.id.menu_share: {
+                CompositeMessage msg = getCheckedItem();
+                shareMessage(msg);
+                mode.finish();
+                return true;
+            }
+
+            case R.id.menu_copy_text: {
+                CompositeMessage msg = getCheckedItem();
+
+                TextComponent txt = (TextComponent) msg
+                    .getComponent(TextComponent.class);
+
+                String text = (txt != null) ? txt.getContent() : "";
+
+                ClipboardManager cpm = (ClipboardManager) getActivity()
+                    .getSystemService(Context.CLIPBOARD_SERVICE);
+                cpm.setText(text);
+
+                Toast.makeText(getActivity(), R.string.message_text_copied,
+                    Toast.LENGTH_SHORT).show();
+                mode.finish();
+                return true;
+            }
+
+            case R.id.menu_decrypt: {
+                CompositeMessage msg = getCheckedItem();
+                decryptMessage(msg);
+                mode.finish();
+                return true;
+            }
+
+            case R.id.menu_open: {
+                CompositeMessage msg = getCheckedItem();
+                openFile(msg);
+                mode.finish();
+                return true;
+            }
+
+            case R.id.menu_download: {
+                CompositeMessage msg = getCheckedItem();
+                startDownload(msg);
+                mode.finish();
+                return true;
+            }
+
+            case R.id.menu_cancel_download: {
+                CompositeMessage msg = getCheckedItem();
+                stopDownload(msg);
+                mode.finish();
+                return true;
+            }
+
+            case R.id.menu_details: {
+                CompositeMessage msg = getCheckedItem();
+                showMessageDetails(msg);
+                mode.finish();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void onDestroyActionMode(ActionMode mode) {
+        mCheckedItemCount = 0;
+        getListView().clearChoices();
+        mListAdapter.notifyDataSetChanged();
+    }
+
+    private CompositeMessage getCheckedItem() {
+        if (mCheckedItemCount != 1)
+            throw new IllegalStateException("checked items count must be exactly 1");
+
+        Cursor cursor = (Cursor) mListAdapter.getItem(getCheckedItemPosition());
+        return CompositeMessage.fromCursor(getActivity(), cursor);
+    }
+
+    private int getCheckedItemPosition() {
+        SparseBooleanArray checked = getListView().getCheckedItemPositions();
+        return checked.keyAt(checked.indexOfValue(true));
+    }
+
+    private void deleteSelectedMessages(final SparseBooleanArray checked) {
+        new AlertDialogWrapper
+            .Builder(getActivity())
+            .setMessage(R.string.confirm_will_delete_messages)
+            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Context ctx = getActivity();
+                    for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
+                        if (checked.get(i))
+                            CompositeMessage.deleteFromCursor(ctx, (Cursor) mListAdapter.getItem(i));
+                    }
+                    mListAdapter.notifyDataSetChanged();
+                }
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
     }
 
     /** Sends out a binary message. */
@@ -555,6 +811,10 @@ public class ComposeMessageFragment extends ListFragment implements
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        // action mode is active - no processing
+        if (isActionModeActive())
+            return true;
+
         switch (item.getItemId()) {
             case R.id.call_contact:
                 startActivity(new Intent(Intent.ACTION_CALL, Uri.parse("tel:"
@@ -590,56 +850,62 @@ public class ComposeMessageFragment extends ListFragment implements
 
     @Override
     public void onListItemClick(ListView listView, View view, int position, long id) {
-        MessageListItem item = (MessageListItem) view;
-        final CompositeMessage msg = item.getMessage();
+        int choiceMode = listView.getChoiceMode();
+        if (choiceMode == ListView.CHOICE_MODE_NONE || choiceMode == ListView.CHOICE_MODE_SINGLE) {
+            MessageListItem item = (MessageListItem) view;
+            final CompositeMessage msg = item.getMessage();
 
-        AttachmentComponent attachment = (AttachmentComponent) msg
+            AttachmentComponent attachment = (AttachmentComponent) msg
                 .getComponent(AttachmentComponent.class);
 
-        if (attachment != null && (attachment.getFetchUrl() != null || attachment.getLocalUri() != null)) {
+            if (attachment != null && (attachment.getFetchUrl() != null || attachment.getLocalUri() != null)) {
 
-            // outgoing message or already fetched
-            if (attachment.getLocalUri() != null) {
-                // open file
-                openFile(msg);
-            }
-            else {
-                // info & download dialog
-                CharSequence message = MessageUtils
-                    .getFileInfoMessage(getActivity(), msg,
-                        mUserPhone != null ? mUserPhone : mUserJID);
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
-                    .setTitle(R.string.title_file_info)
-                    .setMessage(message)
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .setCancelable(true);
-
-                if (!DownloadService.isQueued(attachment.getFetchUrl())) {
-                    DialogInterface.OnClickListener startDL = new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            // start file download
-                            startDownload(msg);
-                        }
-                    };
-                    builder.setPositiveButton(R.string.download, startDL);
+                // outgoing message or already fetched
+                if (attachment.getLocalUri() != null) {
+                    // open file
+                    openFile(msg);
                 }
                 else {
-                    DialogInterface.OnClickListener stopDL = new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            // cancel file download
-                            stopDownload(msg);
-                        }
-                    };
-                    builder.setPositiveButton(R.string.download_cancel, stopDL);
-                }
+                    // info & download dialog
+                    CharSequence message = MessageUtils
+                        .getFileInfoMessage(getActivity(), msg,
+                            mUserPhone != null ? mUserPhone : mUserJID);
 
-                builder.show();
+                    AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(getActivity())
+                        .setTitle(R.string.title_file_info)
+                        .setMessage(message)
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .setCancelable(true);
+
+                    if (!DownloadService.isQueued(attachment.getFetchUrl())) {
+                        DialogInterface.OnClickListener startDL = new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // start file download
+                                startDownload(msg);
+                            }
+                        };
+                        builder.setPositiveButton(R.string.download, startDL);
+                    }
+                    else {
+                        DialogInterface.OnClickListener stopDL = new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // cancel file download
+                                stopDownload(msg);
+                            }
+                        };
+                        builder.setPositiveButton(R.string.download_cancel, stopDL);
+                    }
+
+                    builder.show();
+                }
+            }
+
+            else {
+                item.onClick();
             }
         }
-
         else {
-            item.onClick();
+            super.onListItemClick(listView, view, position, id);
         }
     }
 
@@ -687,22 +953,6 @@ public class ComposeMessageFragment extends ListFragment implements
         }
     }
 
-    /** Listener for attachment type chooser. */
-    @Override
-    public void onClick(int id) {
-        switch (id) {
-            case ATTACHMENT_ACTION_PICTURE:
-                selectImageAttachment();
-                break;
-            case ATTACHMENT_ACTION_CONTACT:
-                selectContactAttachment();
-                break;
-            case ATTACHMENT_ACTION_AUDIO:
-                selectAudioAttachment();
-                break;
-        }
-    }
-
     public void viewContact() {
         if (mConversation != null) {
             Contact contact = mConversation.getContact();
@@ -733,14 +983,44 @@ public class ComposeMessageFragment extends ListFragment implements
     /** Starts dialog for attachment selection. */
     public void selectAttachment() {
         if (attachmentMenu == null) {
-            attachmentMenu = new IconContextMenu(getActivity(), CONTEXT_MENU_ATTACHMENT);
-            attachmentMenu.addItem(getResources(), R.string.attachment_picture, R.drawable.ic_launcher_gallery, ATTACHMENT_ACTION_PICTURE);
-            attachmentMenu.addItem(getResources(), R.string.attachment_contact, R.drawable.ic_launcher_contacts, ATTACHMENT_ACTION_CONTACT);
-            if (AudioDialog.isSupported(getActivity()))
-                attachmentMenu.addItem(getResources(), R.string.attachment_audio, R.drawable.ic_launcher_audio, ATTACHMENT_ACTION_AUDIO);
-            attachmentMenu.setOnClickListener(this);
+            Context ctx = getActivity();
+            MaterialSimpleListAdapter menu = new MaterialSimpleListAdapter(ctx);
+            menu.add(new MaterialSimpleListItem.Builder(ctx)
+                .content(R.string.attachment_picture)
+                .icon(R.drawable.ic_attach_picture)
+                .build());
+            menu.add(new MaterialSimpleListItem.Builder(ctx)
+                .content(R.string.attachment_contact)
+                .icon(R.drawable.ic_attach_contact)
+                .build());
+            if (AudioDialog.isSupported(ctx)) {
+                menu.add(new MaterialSimpleListItem.Builder(ctx)
+                    .content(R.string.attachment_audio)
+                    .icon(R.drawable.ic_attach_audio)
+                    .build());
+            }
+
+            attachmentMenu = new MaterialDialog.Builder(ctx)
+                .adapter(menu, new MaterialDialog.ListCallback() {
+                    @Override
+                    public void onSelection(MaterialDialog dialog, View view, int id, CharSequence text) {
+                        switch (id) {
+                            case ATTACHMENT_ACTION_PICTURE:
+                                selectImageAttachment();
+                                break;
+                            case ATTACHMENT_ACTION_CONTACT:
+                                selectContactAttachment();
+                                break;
+                            case ATTACHMENT_ACTION_AUDIO:
+                                selectAudioAttachment();
+                                break;
+                        }
+                        dialog.dismiss();
+                    }
+                })
+                .build();
         }
-        attachmentMenu.createMenu(getString(R.string.menu_attachment)).show();
+        attachmentMenu.show();
     }
 
     /** Starts activity for an image attachment. */
@@ -749,7 +1029,10 @@ public class ComposeMessageFragment extends ListFragment implements
         Intent pictureIntent;
 
         if (!MediaStorage.isStorageAccessFrameworkAvailable()) {
-            pictureIntent = new Intent(Intent.ACTION_GET_CONTENT);
+            pictureIntent = new Intent(Intent.ACTION_GET_CONTENT)
+                .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+                .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+                    | Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
         else {
             pictureIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -757,7 +1040,9 @@ public class ComposeMessageFragment extends ListFragment implements
 
         pictureIntent
             .addCategory(Intent.CATEGORY_OPENABLE)
-            .setType("image/*");
+            .setType("image/*")
+            .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+            .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
 
         Intent chooser = null;
         try {
@@ -796,28 +1081,42 @@ public class ComposeMessageFragment extends ListFragment implements
     private void selectAudioAttachment() {
         // create audio fragment if needed
         AudioFragment audio = getAudioFragment();
+        // stop everything
+        if (mAudioControl != null) {
+            resetAudio(mAudioControl);
+        }
+        else {
+            audio.resetPlayer();
+            audio.setMessageId(-1);
+        }
+        // show dialog
         mAudioDialog = new AudioDialog(getActivity(), audio, this);
         mAudioDialog.show();
     }
 
     private AudioFragment getAudioFragment() {
-        FragmentManager fm = getFragmentManager();
-        AudioFragment fragment = (AudioFragment) fm
-            .findFragmentByTag("audio");
+        AudioFragment fragment = findAudioFragment();
         if (fragment == null) {
             fragment = new AudioFragment();
+            FragmentManager fm = getActivity().getSupportFragmentManager();
             fm.beginTransaction()
                 .add(fragment, "audio")
                 .commit();
+            // commit immediately please
+            fm.executePendingTransactions();
         }
 
         return fragment;
     }
 
+    private AudioFragment findAudioFragment() {
+        FragmentManager fm = getFragmentManager();
+        return (AudioFragment) fm
+            .findFragmentByTag("audio");
+    }
+
     private void deleteThread() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.confirm_delete_thread);
-        builder.setIcon(android.R.drawable.ic_dialog_alert);
+        AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(getActivity());
         builder.setMessage(R.string.confirm_will_delete_thread);
         builder.setPositiveButton(android.R.string.ok,
                 new DialogInterface.OnClickListener() {
@@ -838,54 +1137,35 @@ public class ComposeMessageFragment extends ListFragment implements
         builder.create().show();
     }
 
-    private void deleteMessage(final long id) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.confirm_delete_message);
-        builder.setIcon(android.R.drawable.ic_dialog_alert);
-        builder.setMessage(R.string.confirm_will_delete_message);
-        builder.setPositiveButton(android.R.string.ok,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        try {
-                            getActivity().getContentResolver().delete(
-                                ContentUris.withAppendedId(
-                                    Messages.CONTENT_URI, id), null, null);
-                        }
-                        catch (SQLiteDiskIOException e) {
-                            Log.w(TAG, "error deleting message");
-                            Toast.makeText(getActivity(), R.string.error_delete_message,
-                                Toast.LENGTH_LONG).show();
-                        }
-                    }
-                });
-        builder.setNegativeButton(android.R.string.cancel, null);
-        builder.create().show();
-    }
-
     private void blockUser() {
-        new AlertDialog.Builder(getActivity())
-            .setTitle(R.string.menu_block_user)
-            .setMessage(R.string.msg_block_user_warning)
-            .setPositiveButton(R.string.menu_block_user, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
+        new MaterialDialog.Builder(getActivity())
+            .title(R.string.title_block_user_warning)
+            .content(R.string.msg_block_user_warning)
+            .positiveText(R.string.menu_block_user)
+            .positiveColorRes(R.color.button_danger)
+            .negativeText(android.R.string.cancel)
+            .callback(new MaterialDialog.ButtonCallback() {
+                @Override
+                public void onPositive(MaterialDialog dialog) {
                     setPrivacy(PRIVACY_BLOCK);
                 }
             })
-            .setNegativeButton(android.R.string.cancel, null)
             .show();
     }
 
     private void unblockUser() {
-        new AlertDialog.Builder(getActivity())
-            .setTitle(R.string.menu_unblock_user)
-            .setMessage(R.string.msg_unblock_user_warning)
-            .setPositiveButton(R.string.menu_unblock_user, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
+        new MaterialDialog.Builder(getActivity())
+            .title(R.string.title_unblock_user_warning)
+            .content(R.string.msg_unblock_user_warning)
+            .positiveText(R.string.menu_unblock_user)
+            .positiveColorRes(R.color.button_danger)
+            .negativeText(android.R.string.cancel)
+            .callback(new MaterialDialog.ButtonCallback() {
+                @Override
+                public void onPositive(MaterialDialog dialog) {
                     setPrivacy(PRIVACY_UNBLOCK);
                 }
             })
-            .setNegativeButton(android.R.string.cancel, null)
             .show();
     }
 
@@ -919,205 +1199,17 @@ public class ComposeMessageFragment extends ListFragment implements
         getActivity().startService(i);
     }
 
-    private static final int MENU_RETRY = 1;
-    private static final int MENU_SHARE = 2;
-    private static final int MENU_COPY_TEXT = 3;
-    private static final int MENU_DECRYPT = 4;
-    private static final int MENU_OPEN = 5;
-    private static final int MENU_DOWNLOAD = 6;
-    private static final int MENU_CANCEL_DOWNLOAD = 7;
-    private static final int MENU_DETAILS = 8;
-    private static final int MENU_DELETE = 9;
-
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v,
-            ContextMenuInfo menuInfo) {
-        AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
-        MessageListItem vitem = (MessageListItem) info.targetView;
-        CompositeMessage msg = vitem.getMessage();
-
-        menu.setHeaderTitle(R.string.title_message_options);
-
-        // message waiting for user review
-        if (msg.getStatus() == Messages.STATUS_PENDING) {
-            menu.add(CONTEXT_MENU_GROUP_ID, MENU_RETRY, MENU_RETRY, R.string.resend);
-        }
-
-        // some commands can be used only on unencrypted messages
-        if (!msg.isEncrypted()) {
-
-            AttachmentComponent attachment = (AttachmentComponent) msg
-                    .getComponent(AttachmentComponent.class);
-            TextComponent text = (TextComponent) msg
-                    .getComponent(TextComponent.class);
-
-            // sharing media messages has no purpose if media file hasn't been
-            // retrieved yet
-            if (text != null || (attachment != null ? attachment.getLocalUri() != null : true)) {
-                menu.add(CONTEXT_MENU_GROUP_ID, MENU_SHARE, MENU_SHARE, R.string.share);
-            }
-
-            // non-empty text: copy text to clipboard
-            if (text != null && !TextUtils.isEmpty(text.getContent())) {
-                menu.add(CONTEXT_MENU_GROUP_ID, MENU_COPY_TEXT, MENU_COPY_TEXT,
-                        R.string.copy_message_text);
-            }
-
-            if (attachment != null) {
-
-                // message has a local uri - add open file entry
-                if (attachment.getLocalUri() != null) {
-                    int resId;
-                    if (attachment instanceof ImageComponent)
-                        resId = R.string.view_image;
-                    else if (attachment instanceof  AudioComponent)
-                        resId = R.string.open_audio;
-                    else
-                        resId = R.string.open_file;
-
-                    menu.add(CONTEXT_MENU_GROUP_ID, MENU_OPEN, MENU_OPEN, resId);
-                }
-
-                // message has a fetch url - add download control entry
-                if (msg.getDirection() == Messages.DIRECTION_IN && attachment.getFetchUrl() != null) {
-                    int id, string;
-                    if (!DownloadService.isQueued(attachment.getFetchUrl())) {
-                        // already fetched
-                        if (attachment.getLocalUri() != null)
-                            string = R.string.download_again;
-                        else
-                            string = R.string.download_file;
-                        id = MENU_DOWNLOAD;
-                    }
-                    else {
-                        string = R.string.download_cancel;
-                        id = MENU_CANCEL_DOWNLOAD;
-                    }
-                    menu.add(CONTEXT_MENU_GROUP_ID, id, id, string);
-                }
-
-
-            }
-
-        }
-
-        else {
-
-            menu.add(CONTEXT_MENU_GROUP_ID, MENU_DECRYPT, MENU_DECRYPT,
-                    R.string.decrypt_message);
-
-        }
-
-        menu.add(CONTEXT_MENU_GROUP_ID, MENU_DETAILS, MENU_DETAILS, R.string.menu_message_details);
-        menu.add(CONTEXT_MENU_GROUP_ID, MENU_DELETE, MENU_DELETE, R.string.delete_message);
-    }
-
-    @Override
-    public boolean onContextItemSelected(android.view.MenuItem item) {
-        // not our context
-        if (item.getGroupId() != CONTEXT_MENU_GROUP_ID)
-            return false;
-
-        AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
-                .getMenuInfo();
-        MessageListItem v = (MessageListItem) info.targetView;
-        CompositeMessage msg = v.getMessage();
-
-        switch (item.getItemId()) {
-            case MENU_SHARE: {
-                Intent i = null;
-                AttachmentComponent attachment = (AttachmentComponent) msg
-                        .getComponent(AttachmentComponent.class);
-
-                if (attachment != null) {
-                    i = ComposeMessage.sendMediaMessage(attachment.getLocalUri(),
-                            attachment.getMime());
-                }
-
-                else {
-                    TextComponent txt = (TextComponent) msg
-                            .getComponent(TextComponent.class);
-
-                    if (txt != null)
-                        i = ComposeMessage.sendTextMessage(txt.getContent());
-                }
-
-                if (i != null)
-                    startActivity(i);
-                else
-                    // TODO ehm...
-                    Log.w(TAG, "error sharing message");
-
-                return true;
-            }
-
-            case MENU_COPY_TEXT: {
-                TextComponent txt = (TextComponent) msg
-                        .getComponent(TextComponent.class);
-
-                String text = (txt != null) ? txt.getContent() : "";
-
-                ClipboardManager cpm = (ClipboardManager) getActivity()
-                        .getSystemService(Context.CLIPBOARD_SERVICE);
-                cpm.setText(text);
-
-                Toast.makeText(getActivity(), R.string.message_text_copied,
-                        Toast.LENGTH_SHORT).show();
-                return true;
-            }
-
-            case MENU_DECRYPT: {
-                decryptMessage(msg);
-                return true;
-            }
-
-            case MENU_RETRY: {
-                retryMessage(msg);
-                return true;
-            }
-
-            case MENU_DOWNLOAD: {
-                startDownload(msg);
-                return true;
-            }
-
-            case MENU_CANCEL_DOWNLOAD: {
-                stopDownload(msg);
-                return true;
-            }
-
-            case MENU_DETAILS: {
-                CharSequence messageDetails = MessageUtils.getMessageDetails(
-                        getActivity(), msg, mUserPhone != null ? mUserPhone : mUserJID);
-                new AlertDialog.Builder(getActivity())
-                        .setTitle(R.string.title_message_details)
-                        .setMessage(messageDetails)
-                        .setPositiveButton(android.R.string.ok, null)
-                        .setCancelable(true).show();
-                return true;
-            }
-
-            case MENU_DELETE: {
-                deleteMessage(msg.getDatabaseId());
-                return true;
-            }
-
-            case MENU_OPEN: {
-                openFile(msg);
-                return true;
-            }
-        }
-
-        return super.onContextItemSelected(item);
-    }
-
     private void startQuery(boolean reloadConversation, boolean progress) {
+        startQuery(reloadConversation, progress, 0);
+    }
+
+    private void startQuery(boolean reloadConversation, boolean progress, long count) {
         try {
             if (progress)
                 getActivity().setProgressBarIndeterminateVisibility(true);
 
             CompositeMessage.startQuery(mQueryHandler, MESSAGE_LIST_QUERY_TOKEN,
-                    threadId);
+                    threadId, count, 0);
 
             if (reloadConversation)
                 Conversation.startQuery(mQueryHandler,
@@ -1129,12 +1221,49 @@ public class ComposeMessageFragment extends ListFragment implements
         }
     }
 
+    private void stopQuery() {
+        if (mQueryHandler != null) {
+            // be sure to cancel all queries
+            mQueryHandler.abort();
+        }
+    }
+
+    private void showMessageDetails(CompositeMessage msg) {
+        MessageUtils.showMessageDetails(getActivity(), msg,
+            mUserPhone != null ? mUserPhone : mUserJID);
+    }
+
+    private void shareMessage(CompositeMessage msg) {
+        Intent i = null;
+        AttachmentComponent attachment = (AttachmentComponent) msg
+            .getComponent(AttachmentComponent.class);
+
+        if (attachment != null) {
+            i = ComposeMessage.sendMediaMessage(attachment.getLocalUri(),
+                attachment.getMime());
+        }
+
+        else {
+            TextComponent txt = (TextComponent) msg
+                .getComponent(TextComponent.class);
+
+            if (txt != null)
+                i = ComposeMessage.sendTextMessage(txt.getContent());
+        }
+
+        if (i != null)
+            startActivity(i);
+        else
+            // TODO ehm...
+            Log.w(TAG, "error sharing message");
+    }
+
     private void loadConversationMetadata(Uri uri) {
         threadId = ContentUris.parseId(uri);
         mConversation = Conversation.loadFromId(getActivity(), threadId);
         if (mConversation == null) {
             Log.w(TAG, "conversation for thread " + threadId + " not found!");
-            startActivity(new Intent(getActivity(), ConversationList.class));
+            startActivity(new Intent(getActivity(), ConversationsActivity.class));
             getActivity().finish();
             return;
         }
@@ -1162,8 +1291,8 @@ public class ComposeMessageFragment extends ListFragment implements
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == SELECT_ATTACHMENT_OPENABLE) {
             if (resultCode == Activity.RESULT_OK) {
-                Uri uri = null;
-                String mime = null;
+                Uri[] uris = null;
+                String[] mimes = null;
 
                 // returning from camera
                 if (data == null) {
@@ -1173,12 +1302,14 @@ public class ComposeMessageFragment extends ListFragment implements
                      * for taking pictures.
                      */
                     if (mCurrentPhoto != null) {
-                        uri = Uri.fromFile(mCurrentPhoto);
+                        Uri uri = Uri.fromFile(mCurrentPhoto);
                         // notify media scanner
                         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
                         mediaScanIntent.setData(uri);
                         getActivity().sendBroadcast(mediaScanIntent);
                         mCurrentPhoto = null;
+
+                        uris = new Uri[] { uri };
                     }
                 }
                 else {
@@ -1186,16 +1317,36 @@ public class ComposeMessageFragment extends ListFragment implements
                         mCurrentPhoto.delete();
                         mCurrentPhoto = null;
                     }
-                    uri = data.getData();
-                    mime = data.getType();
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN && data.getClipData() != null) {
+                        ClipData cdata = data.getClipData();
+                        uris = new Uri[cdata.getItemCount()];
+
+                        for (int i = 0; i < uris.length; i++) {
+                            ClipData.Item item = cdata.getItemAt(i);
+                            uris[i] = item.getUri();
+                        }
+                    }
+                    else {
+                        uris = new Uri[] { data.getData() };
+                        mimes = new String[] { data.getType() };
+                    }
 
                     // SAF available, request persistable permissions
                     if (MediaStorage.isStorageAccessFrameworkAvailable()) {
-                        MediaStorage.requestPersistablePermissions(getActivity(), data);
+                        for (Uri uri : uris) {
+                            if (uri != null && !"file".equals(uri.getScheme())) {
+                                MediaStorage.requestPersistablePermissions(getActivity(), uri);
+                            }
+                        }
                     }
                 }
 
-                if (uri != null) {
+                for (int i = 0 ; uris != null && i < uris.length; i++) {
+                    Uri uri = uris[i];
+                    String mime = (mimes != null && mimes.length >= uris.length) ?
+                        mimes[i] : null;
+
                     if (mime == null || mime.startsWith("*/")
                             || mime.endsWith("/*")) {
                         mime = MediaStorage.getType(getActivity(), uri);
@@ -1258,6 +1409,8 @@ public class ComposeMessageFragment extends ListFragment implements
         if (mAudioDialog != null) {
             mAudioDialog.onSaveInstanceState(out);
         }
+        // audio player stuff
+        out.putInt("mediaPlayerStatus", mMediaPlayerStatus);
     }
 
     private void processArguments(Bundle savedInstanceState) {
@@ -1360,6 +1513,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 }
                 else {
                     mUserName = mUserJID;
+                    mUserPhone = null;
                 }
             }
         }
@@ -1368,7 +1522,7 @@ public class ComposeMessageFragment extends ListFragment implements
         if (mArguments != null) {
             String title = mUserName;
             //if (mUserPhone != null) title += " <" + mUserPhone + ">";
-            setActivityTitle(title, "", null);
+            setActivityTitle(title, "");
         }
 
         // update conversation stuff
@@ -1393,7 +1547,7 @@ public class ComposeMessageFragment extends ListFragment implements
                     }
                 };
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(getActivity());
                 builder.
                     setTitle(R.string.title_user_not_found)
                     .setMessage(R.string.message_user_not_found)
@@ -1406,20 +1560,27 @@ public class ComposeMessageFragment extends ListFragment implements
         }
     }
 
-    public void setActivityTitle(CharSequence title, CharSequence status, Contact contact) {
-        Activity parent = getActivity();
-        if (parent instanceof ComposeMessage)
-            ((ComposeMessage) parent).setTitle(title, status, contact);
-        else if (title != null)
-            parent.setTitle(title);
+    public void setActivityTitle(CharSequence title, CharSequence status) {
+        if (mStatusText != null) {
+            // tablet UI - ignore title
+            mStatusText.setText(status);
+        }
+        else {
+            ComposeMessageParent parent = (ComposeMessageParent) getActivity();
+            parent.setTitle(title, status);
+        }
     }
 
     public void setActivityStatusUpdating() {
-        Activity parent = getActivity();
-        if (parent instanceof ComposeMessage)
-            ((ComposeMessage) parent).setUpdatingSubtitle();
-        else if (mStatusText != null) {
-            ComposeMessage.setUpdatingSubtitle(mStatusText);
+        if (mStatusText != null) {
+            CharSequence text = mStatusText.getText();
+            if (text != null && text.length() > 0) {
+                mStatusText.setText(ComposeMessage.applyUpdatingStyle(text));
+            }
+        }
+        else {
+            ComposeMessageParent parent = (ComposeMessageParent) getActivity();
+            parent.setUpdatingSubtitle();
         }
     }
 
@@ -1487,9 +1648,6 @@ public class ComposeMessageFragment extends ListFragment implements
             // new conversation -- observe peer Uri
             registerPeerObserver();
         }
-
-        // update contact icon
-        setActivityTitle(null, null, mConversation.getContact());
 
         // setup invitation bar
         boolean visible = (mConversation.getRequestStatus() == Threads.REQUEST_WAITING);
@@ -1675,14 +1833,12 @@ public class ComposeMessageFragment extends ListFragment implements
         text.append(fingerprint);
         text.setSpan(MessageUtils.STYLE_BOLD, start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        AlertDialog.Builder builder = new AlertDialog
+        AlertDialogWrapper.Builder builder = new AlertDialogWrapper
             .Builder(getActivity())
-            .setIcon(android.R.drawable.ic_dialog_info)
             .setMessage(text);
 
         if (informationOnly) {
-            builder.setPositiveButton(android.R.string.ok, null)
-                .setTitle(R.string.title_invitation);
+            builder.setTitle(R.string.title_invitation);
         }
         else {
             DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
@@ -1712,11 +1868,7 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     private void hideWarning() {
-        LinearLayout root = (LinearLayout) getView().findViewById(R.id.container);
-        TextView warning = (TextView) root.findViewById(R.id.warning_bar);
-        if (warning != null) {
-            root.removeView(warning);
-        }
+        SnackbarManager.dismiss();
     }
 
     private void trustKeyChange() {
@@ -1727,76 +1879,106 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     private void showKeyChangedWarning() {
-        showWarning(getText(R.string.warning_public_key), new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        switch (which) {
-                            case DialogInterface.BUTTON_POSITIVE:
-                                // hide warning bar
-                                hideWarning();
-                                // trust new key
-                                trustKeyChange();
-                                break;
-                            case DialogInterface.BUTTON_NEUTRAL:
-                                showIdentityDialog(false);
-                                break;
-                            case DialogInterface.BUTTON_NEGATIVE:
-                                // hide warning bar
-                                hideWarning();
-                                // block user immediately
-                                setPrivacy(PRIVACY_BLOCK);
-                                break;
+        Activity context = getActivity();
+        if (context != null) {
+            showWarning(context.getText(R.string.warning_public_key), new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            switch (which) {
+                                case DialogInterface.BUTTON_POSITIVE:
+                                    // hide warning bar
+                                    hideWarning();
+                                    // trust new key
+                                    trustKeyChange();
+                                    break;
+                                case DialogInterface.BUTTON_NEUTRAL:
+                                    showIdentityDialog(false);
+                                    break;
+                                case DialogInterface.BUTTON_NEGATIVE:
+                                    // hide warning bar
+                                    hideWarning();
+                                    // block user immediately
+                                    setPrivacy(PRIVACY_BLOCK);
+                                    break;
+                            }
                         }
-                    }
-                };
-                new AlertDialog.Builder(getActivity())
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .setTitle(R.string.title_public_key_warning)
-                    .setMessage(R.string.msg_public_key_warning)
-                    .setPositiveButton(R.string.button_accept, listener)
-                    .setNeutralButton(R.string.button_identity, listener)
-                    .setNegativeButton(R.string.button_block, listener)
-                    .show();
-            }
-        }, WarningType.FATAL);
+                    };
+                    new AlertDialogWrapper.Builder(getActivity())
+                        .setTitle(R.string.title_public_key_warning)
+                        .setMessage(R.string.msg_public_key_warning)
+                        .setPositiveButton(R.string.button_accept, listener)
+                        .setNeutralButton(R.string.button_identity, listener)
+                        .setNegativeButton(R.string.button_block, listener)
+                        .show();
+                }
+            }, WarningType.FATAL);
+        }
     }
 
-    private void showWarning(CharSequence text, View.OnClickListener listener, WarningType type) {
-        LinearLayout root = (LinearLayout) getView().findViewById(R.id.container);
-        TextView warning = (TextView) root.findViewById(R.id.warning_bar);
-        if (warning == null) {
-            warning = (TextView) LayoutInflater.from(getActivity())
-                .inflate(R.layout.warning_bar, root, false);
-            root.addView(warning, 0);
-        }
-        else {
-            // check type priority
-            WarningType oldType = (WarningType) warning.getTag();
+    private void showWarning(CharSequence text, final View.OnClickListener listener, WarningType type) {
+        View view = getView();
+        Activity context = getActivity();
+        if (view == null || context == null)
+            return;
+
+        Snackbar bar = SnackbarManager.getCurrentSnackbar();
+        if (bar != null) {
+            WarningType oldType = (WarningType) bar.getTag();
             if (oldType != null && oldType.getValue() > type.getValue())
                 return;
+
+            bar.dismiss();
         }
-        int textId = 0;
+
+        bar = Snackbar.with(context)
+            .type(SnackbarType.MULTI_LINE)
+            .text(text)
+            .duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE)
+            .dismissOnActionClicked(false)
+            .allowMultipleActionClicks(true);
+
+        if (listener != null) {
+            bar.swipeToDismiss(false)
+                .actionLabel(R.string.warning_button_details)
+                .actionListener(new ActionClickListener() {
+                    @Override
+                    public void onActionClicked(Snackbar snackbar) {
+                        listener.onClick(null);
+                    }
+                });
+        }
+        else {
+            bar.swipeToDismiss(true)
+                .animation(false);
+        }
+
         int colorId = 0;
+        int textColorId = 0;
         switch (type) {
             case FATAL:
-                textId = android.R.attr.textAppearanceSmallInverse;
+                textColorId = R.color.warning_bar_text_fatal;
                 colorId = R.color.warning_bar_background_fatal;
                 break;
             case WARNING:
-                textId = android.R.attr.textAppearanceSmall;
+                textColorId = R.color.warning_bar_text_warning;
                 colorId = R.color.warning_bar_background_warning;
                 break;
         }
-        final TypedValue typedValue = new TypedValue();
-        getActivity().getTheme().resolveAttribute(textId, typedValue, true);
-        warning.setTextAppearance(getActivity(), typedValue.resourceId);
-        warning.setBackgroundColor(getResources().getColor(colorId));
-        warning.setTag(type);
-        warning.setOnClickListener(listener);
-        warning.setText(text);
+
+        bar.setTag(type);
+        bar
+            .color(getResources().getColor(colorId))
+            .textColor(getResources().getColor(textColorId));
+
+        if (listener != null) {
+            SnackbarManager.show(bar);
+        }
+        else {
+            SnackbarManager.show(bar, (ViewGroup) view.findViewById(R.id.warning_bar));
+        }
     }
 
     private void subscribePresence() {
@@ -2084,9 +2266,9 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     private void setStatusText(CharSequence text) {
-        Activity parent = getActivity();
+        ComposeMessageParent parent = (ComposeMessageParent) getActivity();
         if (parent instanceof ComposeMessage)
-            setActivityTitle(null, text, null);
+            setActivityTitle(null, text);
         else {
             if (mStatusText != null)
                 mStatusText.setText(text);
@@ -2105,7 +2287,7 @@ public class ComposeMessageFragment extends ListFragment implements
     private synchronized void unregisterPeerObserver() {
         if (mPeerObserver != null) {
             getActivity().getContentResolver().unregisterContentObserver(
-                    mPeerObserver);
+                mPeerObserver);
             mPeerObserver = null;
         }
     }
@@ -2278,11 +2460,16 @@ public class ComposeMessageFragment extends ListFragment implements
         MessageCenterService.release(getActivity());
 
         // release audio player
-        if (mPlayer != null) {
+        AudioFragment audio = findAudioFragment();
+        if (audio != null) {
             stopMediaPlayerUpdater();
-            mMediaPlayerMessageId = -1;
-            mPlayer.release();
-            mPlayer = null;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                if (!getActivity().isChangingConfigurations()) {
+                    audio.setMessageId(-1);
+                    audio.finish(true);
+                }
+            }
         }
     }
 
@@ -2293,9 +2480,7 @@ public class ComposeMessageFragment extends ListFragment implements
         if (mListAdapter != null)
             mListAdapter.changeCursor(null);
 
-        // be sure to cancel all queries
-        mQueryHandler.cancelOperation(MESSAGE_LIST_QUERY_TOKEN);
-        mQueryHandler.cancelOperation(CONVERSATION_QUERY_TOKEN);
+        stopQuery();
     }
 
     @Override
@@ -2378,94 +2563,6 @@ public class ComposeMessageFragment extends ListFragment implements
         return false;
     }
 
-    /** The conversation list query handler. */
-    // TODO convert to static class and use a weak reference to the context
-    private final class MessageListQueryHandler extends AsyncQueryHandler {
-        public MessageListQueryHandler() {
-            super(getActivity().getApplicationContext().getContentResolver());
-        }
-
-        @Override
-        protected synchronized void onQueryComplete(int token, Object cookie,
-                Cursor cursor) {
-            if (cursor == null || isFinishing()) {
-                // close cursor - if any
-                if (cursor != null)
-                    cursor.close();
-
-                Log.e(TAG, "query aborted or error!");
-                unregisterPeerObserver();
-                mListAdapter.changeCursor(null);
-                return;
-            }
-
-            switch (token) {
-                case MESSAGE_LIST_QUERY_TOKEN:
-
-                    // no messages to show - exit
-                    if (cursor.getCount() == 0
-                            && (mConversation == null ||
-                                // no draft
-                                (mConversation.getDraft() == null &&
-                                // no subscription request
-                                mConversation.getRequestStatus() != Threads.REQUEST_WAITING &&
-                                // no text in compose entry
-                                mComposer.getText().length() == 0))) {
-
-                        Log.i(TAG, "no data to view - exit");
-
-                        // close conversation
-                        closeConversation();
-
-                    }
-                    else {
-                        // see if we have to scroll to a specific message
-                        int newSelectionPos = -1;
-
-                        Bundle args = myArguments();
-                        if (args != null) {
-                            long msgId = args.getLong(ComposeMessage.EXTRA_MESSAGE,
-                                    -1);
-                            if (msgId > 0) {
-
-                                cursor.moveToPosition(-1);
-                                while (cursor.moveToNext()) {
-                                    long curId = cursor.getLong(CompositeMessage.COLUMN_ID);
-                                    if (curId == msgId) {
-                                        newSelectionPos = cursor.getPosition();
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-
-                        mListAdapter.changeCursor(cursor);
-                        if (newSelectionPos > 0)
-                            getListView().setSelection(newSelectionPos);
-
-                        getActivity().setProgressBarIndeterminateVisibility(false);
-                        updateUI();
-                    }
-
-                    break;
-
-                case CONVERSATION_QUERY_TOKEN:
-                    if (cursor.moveToFirst()) {
-                        mConversation = Conversation.createFromCursor(
-                                getActivity(), cursor);
-                        onConversationCreated();
-                    }
-
-                    cursor.close();
-
-                    break;
-
-                default:
-                    Log.e(TAG, "onQueryComplete called with unknown token " + token);
-            }
-        }
-    }
-
     public Conversation getConversation() {
         return mConversation;
     }
@@ -2499,7 +2596,7 @@ public class ComposeMessageFragment extends ListFragment implements
         }
         // using fragments...
         else {
-            ConversationList activity = (ConversationList) getActivity();
+            ConversationsActivity activity = (ConversationsActivity) getActivity();
             activity.getListFragment().endConversation(this);
         }
     }
@@ -2509,6 +2606,17 @@ public class ComposeMessageFragment extends ListFragment implements
             mOfflineModeWarned = true;
             Toast.makeText(getActivity(), R.string.warning_offline_mode,
                 Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void textChanged(CharSequence text) {
+        Snackbar bar = SnackbarManager.getCurrentSnackbar();
+        if (bar != null) {
+            WarningType type = (WarningType) bar.getTag();
+            if (type != null && type.getValue() < WarningType.FATAL.getValue()) {
+                bar.dismiss();
+            }
         }
     }
 
@@ -2525,8 +2633,9 @@ public class ComposeMessageFragment extends ListFragment implements
 
     @Override
     public void buttonClick(File audioFile, AudioContentViewControl view, long messageId) {
-        if (mMediaPlayerMessageId == messageId) {
-            switch (mStatus) {
+        AudioFragment audio = getAudioFragment();
+        if (audio.getMessageId() == messageId) {
+            switch (mMediaPlayerStatus) {
                 case AudioContentView.STATUS_PLAYING:
                     pauseAudio(view);
                     break;
@@ -2538,7 +2647,7 @@ public class ComposeMessageFragment extends ListFragment implements
             }
         }
         else {
-            switch (mStatus) {
+            switch (mMediaPlayerStatus) {
                 case AudioContentView.STATUS_IDLE:
                     if (prepareAudio(audioFile, view, messageId))
                         playAudio(view, messageId);
@@ -2555,28 +2664,29 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     private boolean prepareAudio(File audioFile, final AudioContentViewControl view, final long messageId) {
-        if (mPlayer == null)
-            mPlayer = new MediaPlayer();
-
         stopMediaPlayerUpdater();
         try {
-            mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            mPlayer.setDataSource(audioFile.getAbsolutePath());
-            mPlayer.prepare();
+            AudioFragment audio = getAudioFragment();
+            final MediaPlayer player = audio.getPlayer();
+            player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            player.setDataSource(audioFile.getAbsolutePath());
+            player.prepare();
 
             // prepare was successful
-            mMediaPlayerMessageId = messageId;
+            audio.setMessageId(messageId);
             mAudioControl = view;
 
-            view.prepare(mPlayer.getDuration());
-            mPlayer.seekTo(view.getPosition());
+            view.prepare(player.getDuration());
+            player.seekTo(view.getPosition());
             view.setProgressChangeListener(true);
-            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
                     stopMediaPlayerUpdater();
                     view.end();
-                    mPlayer.seekTo(0);
+                    AudioFragment audio = findAudioFragment();
+                    if (audio != null)
+                        audio.seekPlayerTo(0);
                     setAudioStatus(AudioContentView.STATUS_ENDED);
                 }
             });
@@ -2591,35 +2701,37 @@ public class ComposeMessageFragment extends ListFragment implements
     @Override
     public void playAudio(AudioContentViewControl view, long messageId) {
         view.play();
-        mPlayer.start();
+        findAudioFragment().getPlayer().start();
         setAudioStatus(AudioContentView.STATUS_PLAYING);
         startMediaPlayerUpdater(view);
     }
 
     private void updatePosition(AudioContentViewControl view) {
-        view.updatePosition(mPlayer.getCurrentPosition());
+        view.updatePosition(findAudioFragment().getPlayer().getCurrentPosition());
     }
 
     @Override
     public void pauseAudio(AudioContentViewControl view) {
         view.pause();
-        mPlayer.pause();
+        findAudioFragment().getPlayer().pause();
         stopMediaPlayerUpdater();
         setAudioStatus(AudioContentView.STATUS_PAUSED);
     }
 
     private void resetAudio(AudioContentViewControl view) {
-        if (view != null){
+        if (view != null) {
             stopMediaPlayerUpdater();
             view.end();
         }
-        if (mPlayer != null)
-            mPlayer.reset();
-        mMediaPlayerMessageId = -1;
+        AudioFragment audio = findAudioFragment();
+        if (audio != null) {
+            audio.resetPlayer();
+            audio.setMessageId(-1);
+        }
     }
 
     private void setAudioStatus(int audioStatus) {
-        mStatus = audioStatus;
+        mMediaPlayerStatus = audioStatus;
     }
 
     @Override
@@ -2629,45 +2741,44 @@ public class ComposeMessageFragment extends ListFragment implements
 
     @Override
     public void onBind(long messageId, final AudioContentViewControl view) {
-        if (mMediaPlayerMessageId == messageId) {
+        final AudioFragment audio = findAudioFragment();
+        if (audio != null && audio.getMessageId() == messageId) {
             mAudioControl = view;
-            if (mPlayer != null) {
-                mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                    @Override
-                    public void onCompletion(MediaPlayer mp) {
-                        stopMediaPlayerUpdater();
-                        view.end();
-                        mPlayer.seekTo(0);
-                        setAudioStatus(AudioContentView.STATUS_ENDED);
-                    }
-                });
+            audio.getPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    stopMediaPlayerUpdater();
+                    view.end();
+                    audio.seekPlayerTo(0);
+                    setAudioStatus(AudioContentView.STATUS_ENDED);
+                }
+            });
 
-                view.setProgressChangeListener(true);
-                view.prepare(mPlayer.getDuration());
-                if (mPlayer.isPlaying()) {
-                    startMediaPlayerUpdater(view);
-                    view.play();
-                }
-                else {
-                    view.pause();
-                }
+            view.setProgressChangeListener(true);
+            view.prepare(audio.getPlayer().getDuration());
+            if (audio.isPlaying()) {
+                startMediaPlayerUpdater(view);
+                view.play();
+            }
+            else {
+                view.pause();
             }
         }
     }
 
     @Override
     public void onUnbind(long messageId, AudioContentViewControl view) {
-        if (mMediaPlayerMessageId == messageId) {
+        AudioFragment audio = findAudioFragment();
+        if (audio != null && audio.getMessageId() == messageId) {
             mAudioControl = null;
-            if (mPlayer != null) {
-                mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                    @Override
-                    public void onCompletion(MediaPlayer mp) {
-                        mPlayer.seekTo(0);
-                        setAudioStatus(AudioContentView.STATUS_ENDED);
-                    }
-                });
-            }
+            MediaPlayer player = audio.getPlayer();
+            player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    getAudioFragment().seekPlayerTo(0);
+                    setAudioStatus(AudioContentView.STATUS_ENDED);
+                }
+            });
 
             view.setProgressChangeListener(false);
             if (!MessagesProvider.exists(getActivity(), messageId)) {
@@ -2682,12 +2793,15 @@ public class ComposeMessageFragment extends ListFragment implements
 
     @Override
     public boolean isPlaying() {
-        return mPlayer.isPlaying();
+        AudioFragment audio = findAudioFragment();
+        return audio != null && audio.isPlaying();
     }
 
     @Override
     public void seekTo(int position) {
-        mPlayer.seekTo(position);
+        AudioFragment audio = findAudioFragment();
+        if (audio != null)
+            audio.seekPlayerTo(position);
     }
 
     private void startMediaPlayerUpdater(final AudioContentViewControl view) {
@@ -2706,6 +2820,112 @@ public class ComposeMessageFragment extends ListFragment implements
         if (mMediaPlayerUpdater != null) {
             mHandler.removeCallbacks(mMediaPlayerUpdater);
             mMediaPlayerUpdater = null;
+        }
+    }
+
+    /** The conversation list query handler. */
+    private static final class MessageListQueryHandler extends AsyncQueryHandler {
+        private WeakReference<ComposeMessageFragment> mParent;
+        private boolean mCancel;
+
+        public MessageListQueryHandler(ComposeMessageFragment parent) {
+            super(parent.getActivity().getApplicationContext().getContentResolver());
+            mParent = new WeakReference<>(parent);
+        }
+
+        @Override
+        public synchronized void startQuery(int token, Object cookie, Uri uri, String[] projection, String selection, String[] selectionArgs, String orderBy) {
+            mCancel = false;
+            super.startQuery(token, cookie, uri, projection, selection, selectionArgs, orderBy);
+        }
+
+        @Override
+        protected synchronized void onQueryComplete(int token, Object cookie, Cursor cursor) {
+            ComposeMessageFragment parent = mParent.get();
+            if (parent == null || cursor == null || parent.isFinishing() || mCancel) {
+                // close cursor - if any
+                if (cursor != null)
+                    cursor.close();
+
+                mCancel = false;
+                if (parent != null) {
+                    parent.unregisterPeerObserver();
+                    parent.mListAdapter.changeCursor(null);
+                }
+                return;
+            }
+
+            switch (token) {
+                case MESSAGE_LIST_QUERY_TOKEN:
+
+                    // no messages to show - exit
+                    if (cursor.getCount() == 0
+                        && (parent.mConversation == null ||
+                        // no draft
+                        (parent.mConversation.getDraft() == null &&
+                            // no subscription request
+                            parent.mConversation.getRequestStatus() != Threads.REQUEST_WAITING &&
+                            // no text in compose entry
+                            parent.mComposer.getText().length() == 0))) {
+
+                        Log.i(TAG, "no data to view - exit");
+
+                        // close conversation
+                        parent.closeConversation();
+
+                    }
+                    else {
+                        // see if we have to scroll to a specific message
+                        int newSelectionPos = -1;
+
+                        Bundle args = parent.myArguments();
+                        if (args != null) {
+                            long msgId = args.getLong(ComposeMessage.EXTRA_MESSAGE,
+                                -1);
+                            if (msgId > 0) {
+
+                                cursor.moveToPosition(-1);
+                                while (cursor.moveToNext()) {
+                                    long curId = cursor.getLong(CompositeMessage.COLUMN_ID);
+                                    if (curId == msgId) {
+                                        newSelectionPos = cursor.getPosition();
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        parent.mListAdapter.changeCursor(cursor);
+                        if (newSelectionPos > 0)
+                            parent.getListView().setSelection(newSelectionPos);
+
+                        parent.getActivity().setProgressBarIndeterminateVisibility(false);
+                        parent.updateUI();
+                    }
+
+                    break;
+
+                case CONVERSATION_QUERY_TOKEN:
+                    if (cursor.moveToFirst()) {
+                        parent.mConversation = Conversation.createFromCursor(
+                            parent.getActivity(), cursor);
+                        parent.onConversationCreated();
+                    }
+
+                    cursor.close();
+
+                    break;
+
+                default:
+                    Log.e(TAG, "onQueryComplete called with unknown token " + token);
+            }
+
+        }
+
+        public synchronized void abort() {
+            mCancel = true;
+            cancelOperation(MESSAGE_LIST_QUERY_TOKEN);
+            cancelOperation(CONVERSATION_QUERY_TOKEN);
         }
     }
 

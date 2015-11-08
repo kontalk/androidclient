@@ -38,7 +38,6 @@ import org.jivesoftware.smack.filter.StanzaFilter;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.sm.predicates.ForMatchingPredicateOrAfterXStanzas;
-import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
@@ -185,6 +184,19 @@ public class KontalkConnection extends XMPPTCPConnection {
         catch (Exception e) {
             Log.w(TAG, "unable to setup SSL connection", e);
         }
+    }
+
+    @Override
+    protected void processPacket(Stanza packet) {
+        if (packet instanceof Message) {
+            /*
+             * We are receiving a message. Suspend SM ack replies because we
+             * want to wait for our message listener to be invoked and have time
+             * to store the message to the database.
+             */
+            suspendSmAck();
+        }
+        super.processPacket(packet);
     }
 
     /**

@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.zip.ZipInputStream;
 
 import org.jivesoftware.smack.AbstractXMPPConnection;
@@ -346,6 +348,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     /** Service handler. */
     Handler mHandler;
+    /** Task execution pool. Generally used by packet listeners. */
+    private ExecutorService mThreadPool;
 
     /** Idle handler. */
     IdleConnectionHandler mIdleHandler;
@@ -359,7 +363,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private boolean mFirstStart = true;
 
     /** Messages waiting for server receipt (packetId: internalStorageId). */
-    Map<String, Long> mWaitingReceipt = new HashMap<String, Long>();
+    Map<String, Long> mWaitingReceipt = new HashMap<>();
 
     private RegenerateKeyPairListener mKeyPairRegenerator;
     private ImportKeyPairListener mKeyPairImporter;
@@ -382,7 +386,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         public IdleConnectionHandler(MessageCenterService service, int refCount, Looper looper) {
             super(looper);
-            s = new WeakReference<MessageCenterService>(service);
+            s = new WeakReference<>(service);
             mRefCount = refCount;
 
             // set idle handler for the first idle message
@@ -433,15 +437,21 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 if ((now - service.getLastReceivedStanza()) >= FAST_PING_TIMEOUT) {
                     if (!service.fastReply()) {
                         Log.v(TAG, "test ping failed");
-                        AndroidAdaptiveServerPingManager
-                            .getInstanceFor(service.mConnection, service)
-                            .pingFailed();
+                        XMPPConnection conn = service.mConnection;
+                        if (conn != null) {
+                            AndroidAdaptiveServerPingManager
+                                .getInstanceFor(conn, service)
+                                .pingFailed();
+                        }
                         restart(service.getApplicationContext());
                     }
                     else {
-                        AndroidAdaptiveServerPingManager
-                            .getInstanceFor(service.mConnection, service)
-                            .pingSuccess();
+                        XMPPConnection conn = service.mConnection;
+                        if (conn != null) {
+                            AndroidAdaptiveServerPingManager
+                                .getInstanceFor(conn, service)
+                                .pingSuccess();
+                        }
                     }
                 }
                 return true;
@@ -495,7 +505,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         removeMessages(MSG_IDLE);
                         removeMessages(MSG_INACTIVE);
                         Looper.myQueue().addIdleHandler(IdleConnectionHandler.this);
-                        queueInactive();
+
+                        // trigger inactive timer only if connected
+                        // the authenticated callback will ensure it will trigger anyway
+                        MessageCenterService service = s.get();
+                        if (service != null && !service.isInactive() && service.isConnected()) {
+                            queueInactive();
+                        }
                     }
                 });
             }
@@ -599,6 +615,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         registerInactivity();
     }
 
+    void queueTask(Runnable task) {
+        if (mThreadPool != null) {
+            mThreadPool.execute(task);
+        }
+    }
+
     private void createIdleHandler() {
         HandlerThread thread = new HandlerThread("IdleThread", Process.THREAD_PRIORITY_BACKGROUND);
         thread.start();
@@ -661,7 +683,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Log.d(TAG, "destroying message center");
         quit(false);
         // deactivate ping manager
-        AndroidAdaptiveServerPingManager.onDestroy(this);
+        AndroidAdaptiveServerPingManager.onDestroy();
         // destroy roster store
         mRosterStore.onDestroy();
         // unregister screen off listener for manual inactivation
@@ -695,6 +717,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // reset the reference counter
             int refCount = ((Kontalk) getApplicationContext()).getReferenceCounter();
             mIdleHandler.reset(refCount);
+        }
+
+        // stop all running tasks
+        if (mThreadPool != null) {
+            mThreadPool.shutdownNow();
+            mThreadPool = null;
         }
 
         // disable listeners
@@ -937,11 +965,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 if (canConnect && isConnected) {
                     final String id = intent.getStringExtra(EXTRA_PACKET_ID);
                     String type = intent.getStringExtra(EXTRA_TYPE);
-                    String to = intent.getStringExtra(EXTRA_TO);
+                    final String to = intent.getStringExtra(EXTRA_TO);
 
                     if ("probe".equals(type)) {
                         // probing is actually looking into the roster
-                        Roster roster = getRoster();
+                        final Roster roster = getRoster();
 
                         if (to == null) {
                             for (RosterEntry entry : roster.getEntries()) {
@@ -952,7 +980,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             broadcastMyPresence(id);
                         }
                         else {
-                            broadcastPresence(roster, to, id);
+                            queueTask(new Runnable() {
+                                @Override
+                                public void run() {
+                                    broadcastPresence(roster, to, id);
+                                }
+                            });
                         }
                     }
                     else {
@@ -1076,7 +1109,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 // already connected: resend pending messages
                 if (isConnected)
-                    resendPendingMessages(false);
+                    resendPendingMessages(false, false);
             }
 
             else if (ACTION_BLOCKLIST.equals(action)) {
@@ -1125,6 +1158,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 mPushService.isServiceAvailable();
             // reset waiting messages
             mWaitingReceipt.clear();
+
+            // setup task execution pool
+            mThreadPool = Executors.newCachedThreadPool();
 
             mInactive = false;
 
@@ -1194,8 +1230,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         roster.addRosterLoadedListener(new RosterLoadedListener() {
             @Override
             public void onRosterLoaded(Roster roster) {
+                // send pending subscription replies
+                sendPendingSubscriptionReplies();
                 // resend failed and pending messages
-                resendPendingMessages(false);
+                resendPendingMessages(false, false);
                 // resend failed and pending received receipts
                 resendPendingReceipts();
                 // roster has been loaded
@@ -1264,9 +1302,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         sendPresence();
         // discovery
         discovery();
-        // pending messages and receipts will be sent when roster will be loaded
-        // send pending subscription replies
-        sendPendingSubscriptionReplies();
 
         // helper is not needed any more
         mHelper = null;
@@ -1377,12 +1412,20 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return p;
     }
 
+    void resendPendingMessages(boolean retrying, boolean forcePending) {
+        resendPendingMessages(retrying, forcePending, null);
+    }
+
     /**
      * Queries for pending messages and send them through.
      * @param retrying if true, we are retrying to send media messages after
      * receiving upload info (non-media messages will be filtered out)
+     * @param forcePending true to include pending user review messages
+     * @param to filter by recipient (optional)
      */
-    void resendPendingMessages(boolean retrying) {
+    void resendPendingMessages(boolean retrying, boolean forcePending, String to) {
+        String[] filterArgs = null;
+
         StringBuilder filter = new StringBuilder()
             .append(Messages.DIRECTION)
             .append('=')
@@ -1398,7 +1441,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             .append(" AND ")
             .append(Messages.STATUS)
             .append("<>")
-            .append(Messages.STATUS_NOTDELIVERED)
+            .append(Messages.STATUS_NOTDELIVERED);
+
+        // filter out pending messages
+        if (!forcePending) filter
             .append(" AND ")
             .append(Messages.STATUS)
             .append("<>")
@@ -1412,8 +1458,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             .append(Messages.ATTACHMENT_LOCAL_URI)
             .append(" IS NOT NULL");
 
+        if (to != null) {
+            filter
+                .append(" AND ")
+                .append(Messages.PEER)
+                .append("=?");
+            filterArgs = new String[] { to };
+        }
+
         Cursor c = getContentResolver().query(Messages.CONTENT_URI,
-            new String[] {
+            new String[]{
                 Messages._ID,
                 Messages.MESSAGE_ID,
                 Messages.PEER,
@@ -1427,8 +1481,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Messages.ATTACHMENT_COMPRESS,
                 // TODO Messages.ATTACHMENT_SECURITY_FLAGS,
             },
-            filter.toString(),
-            null, Messages._ID);
+            filter.toString(), filterArgs,
+            Messages._ID);
 
         while (c.moveToNext()) {
             long id = c.getLong(0);
@@ -1756,7 +1810,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (!isAuthorized(to)) {
             Log.i(TAG, "not subscribed to " + to + ", not sending message");
             // warn user: message will not be sent
-            if (!retrying && to.equalsIgnoreCase(MessagingNotification.getPaused())) {
+            if (!retrying && MessagingNotification.isPaused(to)) {
                 Toast.makeText(this, R.string.warn_not_subscribed,
                     Toast.LENGTH_LONG).show();
             }
@@ -1770,7 +1824,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         catch (Exception pgpe) {
             Log.w(TAG, "no personal key available - not allowed to send messages");
             // warn user: message will not be sent
-            if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
+            if (MessagingNotification.isPaused(to)) {
                 Toast.makeText(this, R.string.warn_no_personal_key,
                     Toast.LENGTH_LONG).show();
             }
@@ -1907,7 +1961,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 catch (IllegalArgumentException noPublicKey) {
                     // warn user: message will be not sent
-                    if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
+                    if (MessagingNotification.isPaused(to)) {
                         Toast.makeText(this, R.string.warn_no_public_key,
                             Toast.LENGTH_LONG).show();
                     }
@@ -1915,7 +1969,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 catch (GeneralSecurityException e) {
                     // warn user: message will not be sent
-                    if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
+                    if (MessagingNotification.isPaused(to)) {
                         Toast.makeText(this, R.string.warn_encryption_failed,
                             Toast.LENGTH_LONG).show();
                     }
@@ -1991,12 +2045,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         final Context context = getApplicationContext();
         new Thread(new Runnable() {
             public void run() {
-            UsersProvider.markRegistered(context, sender);
+                try {
+                    UsersProvider.markRegistered(context, sender);
+                }
+                catch (SQLiteConstraintException e) {
+                    // this might happen during an online/offline switch
+                }
             }
         }).start();
 
         // fire notification only if message was actually inserted to database
-        if (msgUri != null && !sender.equalsIgnoreCase(MessagingNotification.getPaused())) {
+        if (msgUri != null && !MessagingNotification.isPaused(sender)) {
             // update notifications (delayed)
             MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
         }
@@ -2092,7 +2151,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return mHelper != null;
     }
 
-    private static boolean isOfflineMode(Context context) {
+    public static boolean isOfflineMode(Context context) {
         return Preferences.getOfflineMode(context);
     }
 

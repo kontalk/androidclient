@@ -1,8 +1,13 @@
+sudo: false
 language: android
 android:
   components:
-    - build-tools-22.0.1
-    - android-22
+    - tools
+    - build-tools-23.0.2
+    - android-23
+    - extra-android-m2repository
+    - extra-google-m2repository
+    - extra-google-google_play_services
   licences:
     - 'android-sdk-license-.+'
 script: ./gradlew build

@@ -145,7 +145,6 @@
   <string name="msg_draft_saved">Mensagem guardada como rascunho.</string>
   <string name="send_mime_not_supported">Tipo de ficheiro não suportado.</string>
   <string name="button_validate">Solicitar um código de verificação</string>
-  <string name="button_validation_code">Eu já tenho um código de verificação</string>
   <string name="button_validation_register">Verificar</string>
   <string name="notify_ticker_download_completed">Transferência completada</string>
   <string name="notify_title_download_completed">Transferência completada</string>
@@ -258,7 +257,6 @@
   <string name="security_error_integrity_check">\u0020(verificação de integridade)</string>
   <string name="security_error_public_key_unavail">\u0020(chave pública não disponível)</string>
   <string name="title_invitation">Convite de conversa</string>
-  <string name="text_invitation_unknown">Pedido por\n%1$s\nImpressão digital: %2$s</string>
   <string name="button_accept">Aceitar</string>
   <string name="button_block">Bloquear</string>
 </resources>

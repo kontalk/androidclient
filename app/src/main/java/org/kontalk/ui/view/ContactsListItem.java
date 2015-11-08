@@ -22,6 +22,7 @@ import org.kontalk.R;
 import org.kontalk.data.Contact;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.widget.TextView;
 
@@ -29,6 +30,7 @@ import android.widget.TextView;
 public class ContactsListItem extends AvatarListItem {
 
     private Contact mContact;
+    private TextView mHeader;
     private TextView mText1;
     private TextView mText2;
 
@@ -44,6 +46,7 @@ public class ContactsListItem extends AvatarListItem {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
+        mHeader = (TextView) findViewById(R.id.header_text);
         mText1 = (TextView) findViewById(android.R.id.text1);
         mText2 = (TextView) findViewById(android.R.id.text2);
 
@@ -58,7 +61,12 @@ public class ContactsListItem extends AvatarListItem {
 
         loadAvatar(contact);
 
-        mText1.setText(contact.getName());
+        if (!TextUtils.isEmpty(contact.getName())) {
+            mText1.setText(contact.getName());
+        } else {
+            mText1.setText(contact.getNumber());
+        }
+
         String text2 = contact.getStatus();
         if (text2 == null) {
             text2 = contact.getNumber();

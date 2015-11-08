@@ -18,13 +18,17 @@
 
 package org.kontalk.ui;
 
-import android.app.AlertDialog;
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
+
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,6 +40,7 @@ import org.kontalk.R;
  * A password input dialog supporting double input with verification.
  * @author Daniele Ricci
  */
+// TODO convert to material dialog
 public class PasswordInputDialog {
 
     private PasswordInputDialog() {
@@ -45,7 +50,7 @@ public class PasswordInputDialog {
         public void onClick(DialogInterface dialog, int which, String password);
     }
 
-    public static class Builder extends AlertDialog.Builder {
+    public static class Builder extends MaterialDialog.Builder {
 
         private Context mContext;
         private EditText mPassword1;
@@ -69,35 +74,40 @@ public class PasswordInputDialog {
             return this;
         }
 
-        @NonNull
-        public Builder setTitle(CharSequence title) {
-            return (Builder) super.setTitle(title);
+        @Override
+        public Builder title(@NonNull CharSequence title) {
+            return (Builder) super.title(title);
         }
 
-        @NonNull
-        public Builder setTitle(int titleId) {
-            return (Builder) super.setTitle(titleId);
+        @Override
+        public Builder title(int titleRes) {
+            return (Builder) super.title(titleRes);
         }
 
-        public Builder setPositiveButton(int textId, OnPasswordInputListener listener) {
-            return setPositiveButton(mContext.getText(textId), listener);
+        @Override
+        public Builder content(int contentRes) {
+            return (Builder) super.content(contentRes);
         }
 
-        public Builder setPositiveButton(CharSequence text, final OnPasswordInputListener listener) {
+        public Builder positiveText(int positiveRes, OnPasswordInputListener listener) {
+            return positiveText(mContext.getText(positiveRes), listener);
+        }
+
+        public Builder positiveText(CharSequence message, OnPasswordInputListener listener) {
             mListener = listener;
-            return (Builder) super.setPositiveButton(text, null);
+            return (Builder) super.positiveText(message);
         }
 
         @NonNull
         @Override
-        public AlertDialog create() {
-            final AlertDialog dialog = super.create();
-            InputDialog.requestInputMethod(dialog);
+        public MaterialDialog build() {
+            final MaterialDialog dialog = super.build();
+            requestInputMethod(dialog);
 
             if (mListener != null) {
                 dialog.setOnShowListener(new DialogInterface.OnShowListener() {
                     public void onShow(DialogInterface iDialog) {
-                        Button button = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+                        View button = dialog.getActionButton(DialogAction.POSITIVE);
                         button.setOnClickListener(new View.OnClickListener() {
                             public void onClick(View v) {
                                 String password1 = mPassword1.getText().toString();
@@ -145,7 +155,12 @@ public class PasswordInputDialog {
             if (prompt2 > 0)
                 ((TextView) view.findViewById(R.id.prompt2)).setText(prompt2);
 
-            setView(view);
+            customView(view, false);
+        }
+
+        static void requestInputMethod(Dialog dialog) {
+            Window window = dialog.getWindow();
+            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         }
 
     }

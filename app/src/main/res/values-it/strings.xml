@@ -36,8 +36,8 @@
   <string name="pref_network_settings">Impostazioni di rete</string>
   <string name="pref_network_uri">Indirizzo server manuale</string>
   <string name="pref_title_network_uri">In questo modo annullerai la gestione automatica dei server</string>
-  <string name="number_validation_intro1">Inserisci il tuo nome, seleziona il tuo prefisso internazionale e inserisci il tuo numero di cellulare. Ti sarà spedito un SMS con un codice di verifica. Il tuo numero sarà usato una sola volta, dopodiché sarà scartato.</string>
-  <string name="number_validation_intro2">Se non puoi ricevere SMS su questo dispositivo, inserisci un altro numero che possiedi e potrai inserire il codice di verifica che riceverai.</string>
+  <string name="number_validation_intro1">Inserisci il tuo nome, seleziona il tuo prefisso internazionale e inserisci il tuo numero di cellulare. Ti saranno fornite ulteriori istruzioni nella prossima schermata.</string>
+  <string name="number_validation_intro2">Se non puoi ricevere SMS su questo dispositivo, inserisci un altro numero che possiedi: associeremo il numero a questo dispositivo.</string>
   <string name="code_validation_intro">Dovresti ricevere un SMS o una chiamata da questo numero a breve:</string>
   <string name="code_validation_intro2">Inserisci il codice che ricevi o senti qui sotto.</string>
   <string name="code_validation_intro_manual">Inserisci il codice di verifica che hai ricevuto. Ricorda che un codice di verifica può essere usato una volta sola.</string>
@@ -45,12 +45,12 @@
   <string name="hint_validation_number">Il tuo numero</string>
   <string name="hint_validation_code">Codice di verifica</string>
   <string name="warn_invalid_number">Inserisci un numero di telefono valido.</string>
-  <string name="msg_validating_phone">Richiesta SMS di verifica…</string>
+  <string name="msg_validating_phone">Registrazione in corso…</string>
   <string name="msg_initializing">Registrazione al network di Kontalk…</string>
   <string name="msg_authenticated">Registrazione sul network effettuata!</string>
   <string name="share">Condividi</string>
   <string name="resend">Riprova invio</string>
-  <string name="copy_message_text">Copia testo messaggio</string>
+  <string name="copy_message_text">Copia testo</string>
   <string name="delete_message">Elimina messaggio</string>
   <string name="confirm_delete_all">Elimina tutte le chat</string>
   <string name="confirm_will_delete_all">Tutte le chat saranno eliminate.</string>
@@ -70,7 +70,7 @@
   <string name="hint_open_kbd_to_compose">Apri la tastiera per scrivere</string>
   <string name="view_image">Visualizza immagine</string>
   <string name="title_message_options">Opzioni messaggio</string>
-  <string name="menu_message_details">Dettagli messaggio</string>
+  <string name="menu_message_details">Dettagli</string>
   <string name="title_message_details">Dettagli messaggio</string>
   <string name="message_type_label">Type:\u0020</string>
   <string name="text_message">Messaggio di testo</string>
@@ -150,8 +150,7 @@
   <string name="peer_unknown">(sconosciuto)</string>
   <string name="msg_draft_saved">Messaggio salvato come bozza.</string>
   <string name="send_mime_not_supported">Tipo di file non è supportato.</string>
-  <string name="button_validate">Richiedi codice di verifica</string>
-  <string name="button_validation_code">Ho già un codice di verifica</string>
+  <string name="button_validate">Registrati</string>
   <string name="button_validation_register">Verifica</string>
   <string name="notify_ticker_download_completed">Download completato</string>
   <string name="notify_title_download_completed">Download completato</string>
@@ -173,13 +172,13 @@
   <string name="menu_refresh">Aggiorna</string>
   <string name="menu_invite">Invita utenti</string>
   <string name="title_error">Errore</string>
-  <string name="msg_do_refresh">Usa il pulsante aggiorna per aggiornare la lista contatti.</string>
+  <string name="msg_do_refresh">Tira verso il basso per aggiornare la lista contatti.</string>
   <string name="msg_sync_progress">Aggiornamento lista contatti in corso…</string>
   <string name="err_sync_failed">Impossibile aggiornare la lista contatti. Riprova più tardi.</string>
   <string name="err_sync_nonetwork">Rete non disponibile. Riprova più tardi.</string>
   <string name="text_invite_message">Ciao! Prova il nuovo messenger gratuito Kontalk! Lo trovi su Google Play Store https://play.google.com/store/apps/details?id=org.kontalk</string>
   <string name="text_contacts_empty">I nuovi utenti saranno automaticamente aggiunti a questa lista.\n\nUsa <b>Menu</b> &gt; <b>Invita utenti</b> per inviare un messaggio di invito a qualcuno.</string>
-  <string name="text_conversations_empty">Per iniziare a scrivere messaggi usa l\'icona <b>nuovo messaggio</b> in alto.</string>
+  <string name="text_conversations_empty">Per iniziare a scrivere messaggi usa il pulsante <b>nuovo messaggio</b> in basso.</string>
   <string name="notify_ticker_external_storage">Memoria esterna non disponibile</string>
   <string name="notify_text_external_storage">Impossibile scrivere sulla memoria esterna.</string>
   <string name="title_user_not_found">Utente non trovato</string>
@@ -276,8 +275,8 @@
   <string name="going_offline">Entro in modalità offline.</string>
   <string name="going_online">Entro in modalità online.</string>
   <string name="pref_other">Altro</string>
-  <string name="pref_donate">Donazione</string>
-  <string name="pref_about">Informazioni</string>
+  <string name="pref_donate">Dona</string>
+  <string name="pref_about">Info</string>
   <string name="title_about">Informazioni</string>
   <string name="title_donation">Donazione</string>
   <string name="title_credits">Riconoscimenti</string>
@@ -342,11 +341,11 @@
   <string name="msg_delete_account_progress">Cancellazione account…</string>
   <string name="msg_user_blocked">L\'utente è stato bloccato.</string>
   <string name="msg_user_unblocked">L\'utente è stato sbloccato.</string>
-  <string name="msg_block_user_warning"><b>LEGGERE ATTENTAMENTE!</b>\nStai per bloccare questo utente. Se deciderai di farlo, questo utente non potrà più inviarti messaggi finché non lo sbloccherai. Inoltre, entrambi non sarete più in grado di conoscere l\'orario dell\'ultimo accesso dell\'altro. Il blocco impedirà anche l\'invio di messaggi da parte tua all\'utente che stai per bloccare.</string>
-  <string name="msg_unblock_user_warning"><b>LEGGERE ATTENTAMENTE!</b>\nStai per sbloccare questo utente. L\'utente potrà inviarti messaggi e conoscere l\'orario del tuo ultimo accesso.</string>
+  <string name="msg_block_user_warning">Stai per bloccare questo utente. Se deciderai di farlo, questo utente non potrà più inviarti messaggi finché non lo sbloccherai. Inoltre, entrambi non sarete più in grado di conoscere l\'orario dell\'ultimo accesso dell\'altro. Il blocco impedirà anche l\'invio di messaggi da parte tua all\'utente che stai per bloccare.</string>
+  <string name="msg_unblock_user_warning">Stai per sbloccare questo utente. L\'utente potrà inviarti messaggi e conoscere l\'orario del tuo ultimo accesso.</string>
   <string name="notification_text_more">Clicca qui per saperne di più</string>
   <string name="title_auth_error">Errore di autenticazione</string>
-  <string name="msg_auth_error"><b>ATTENZIONE!</b>\nL\'autenticazione ad un server di Kontalk è fallita durante l\'ultimo tentativo di connessione. Potrebbe essere un problema temporeaneo del server oppure, più probabilmente, il server sta rifiutando la tua chiave personale. Ti raccomandiamo di cancellare il tuo account e di registrarti nuovamente (tuttavia perderai tutti i tuoi messaggi).</string>
+  <string name="msg_auth_error">L\'autenticazione ad un server di Kontalk è fallita durante l\'ultimo tentativo di connessione. Potrebbe essere un problema temporeaneo del server oppure, più probabilmente, il server sta rifiutando la tua chiave personale. Ti raccomandiamo di cancellare il tuo account e di registrarti nuovamente (tuttavia perderai tutti i tuoi messaggi).</string>
   <string name="warn_invite_no_app">Nessuna applicazione trovata per invitare altri utenti.</string>
   <string name="pref_text_enter">Tasto invio</string>
   <string name="pref_title_text_enter">Definisce il comportamento del tasto invio</string>
@@ -368,7 +367,7 @@
   <string name="pref_title_image_resize">Comprimi le immagini prima di inviarle</string>
   <string name="err_server_invalid_format">Formato indirizzo non valido.</string>
   <string name="err_no_contacts_app">Nessuna applicazione per i contatti trovata.</string>
-  <string name="warning_public_key">ATTENZIONE! La chiave personale per questo utente è cambiata! Clicca qui per maggiori dettagli.</string>
+  <string name="warning_public_key">La chiave personale di questo utente è cambiata!</string>
   <string name="title_public_key_warning">Chiave personale</string>
   <string name="msg_public_key_warning">La chiave personale per questo utente è cambiata. Verifica che l\'utente abbia reinstallato Kontalk o che abbia rigenerato la sua chiave intenzionalmente, altrimenti la comunicazione potrebbe essere compromessa!</string>
 <string name="title_user_exists">Account esistente</string>
@@ -391,4 +390,25 @@
     <string name="err_import_keypair_uid_mismatch">La chiave importata non corrisponde al numero di telefono inserito.</string>
     <string name="hint_ptt">Tieni premuto sul microfono per registrare.</string>
     <string name="err_audio_record_noaudio">Nessun suono registrato.</string>
+    <string name="msg_importing_key">Importazione chiave personale…</string>
+    <string name="menu_manual_verification">Hai già un codice?</string>
+    <string name="code_validation_intro_missed_call">Dovresti ricevere a breve una chiamata persa da questo numero. <b>NON RISPONDERE ALLA CHIAMATA.</b></string>
+    <string name="code_validation_intro2_missed_call">Inserisci le ultime %d cifre del numero che ti chiamerà.</string>
+    <string name="button_validation_fallback">Non ricevi la chiamata?</string>
+    <string name="title_fallback">Problemi?</string>
+    <string name="msg_fallback">Proveremo un altro modo per verificare il tuo numero di telefono.</string>
+    <string name="confirm_will_delete_threads">Le chat selezionate saranno eliminate.</string>
+    <string name="confirm_will_delete_messages">I messaggi selezionati saranno eliminati.</string>
+    <string name="pref_balloon_label_hangout">Hangout</string>
+    <string name="title_block_user_warning">Bloccare l\'utente?</string>
+    <string name="title_unblock_user_warning">Sbloccare l\'utente?</string>
+    <string name="warning_button_details">DETTAGLI</string>
+    <plurals name="context_selected">
+	<item quantity="one">1 selezionato</item>
+	<item quantity="other">%d selezionati</item>
+</plurals>
+
+<string name="title_confirm_cancel_registration">Annullare la registrazione?</string>
+    <string name="confirm_cancel_registration">Se torni indietro ora dovrai ricominciare da capo. Se vuoi cambiare app, usa il tasto home del tuo dispositivo.</string>
+    <string name="app_name_offline">Kontalk (offline)</string>
     </resources>

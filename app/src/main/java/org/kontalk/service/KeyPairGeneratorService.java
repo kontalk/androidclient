@@ -25,7 +25,7 @@ import java.lang.ref.WeakReference;
 
 import org.kontalk.R;
 import org.kontalk.crypto.PersonalKey;
-import org.kontalk.ui.ConversationList;
+import org.kontalk.ui.ConversationsActivity;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -97,7 +97,7 @@ public class KeyPairGeneratorService extends Service {
     }
 
     private void startForeground() {
-        Intent ni = new Intent(getApplicationContext(), ConversationList.class);
+        Intent ni = new Intent(getApplicationContext(), ConversationsActivity.class);
         // FIXME this intent should actually open the ComposeMessage activity
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
             NOTIFICATION_ID_KEYPAIR_GEN, ni, 0);

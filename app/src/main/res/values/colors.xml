@@ -17,6 +17,11 @@
  -->
 
 <resources>
+    <!-- application colors -->
+    <color name="app_primary">#2196F3</color>
+    <color name="app_primary_dark">#1976D2</color>
+    <color name="app_accent">#03A9F4</color>
+
     <!-- Widget background -->
     <drawable name="light_blue_background">#ffecfbff</drawable>
 
@@ -45,9 +50,14 @@
     <color name="date_stamp_background">#ff33B5E5</color>
     <color name="date_stamp_text">#dddddd</color>
 
-    <color name="warning_bar_background_fatal">#dd1812</color>
-    <color name="warning_bar_background_warning">#ffc107</color>
+    <color name="warning_bar_background_fatal">#f44336</color>
+    <color name="warning_bar_text_fatal">@android:color/white</color>
+    <color name="warning_bar_background_warning">#ffa726</color>
+    <color name="warning_bar_text_warning">@android:color/black</color>
     
     <color name="notification_name_color">@android:color/white</color>
 
+    <color name="button_danger">#f44336</color>
+
+    <color name="pinned_header_text">#a7a7a7</color>
 </resources>

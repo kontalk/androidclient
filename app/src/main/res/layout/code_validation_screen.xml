@@ -17,64 +17,89 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:scrollbars="vertical" >
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent">
+    <include layout="@layout/toolbar_simple"/>
+    <fr.castorflex.android.smoothprogressbar.SmoothProgressBar
+        android:id="@+id/progressbar"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:layout_alignBottom="@+id/toolbar"
+        android:visibility="gone"
+        android:indeterminate="true"
+        android:interpolator="@anim/progressbar_interpolator"
+        app:spb_color="@color/warning_bar_background_warning"/>
 
-    <LinearLayout
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:padding="18dip" >
+        android:layout_height="fill_parent"
+        android:scrollbars="vertical"
+        android:layout_below="@id/toolbar">
 
-        <TextView
+        <LinearLayout
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:paddingLeft="20dip"
-            android:paddingRight="20dip"
-            android:paddingBottom="10dip"
-            android:id="@+id/code_validation_intro"
-            android:text="@string/code_validation_intro" />
-
-        <TextView
-            android:id="@+id/code_validation_sender"
-            style="?android:attr/textAppearanceLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="fill_parent"
-            android:paddingLeft="20dip"
-            android:paddingRight="20dip"
-            android:paddingBottom="10dip"
-            android:layout_marginLeft="-20dp"
-            android:layout_marginStart="-20dp"
-            android:gravity="center"
-            android:drawableLeft="@drawable/ic_menu_call"
-            android:drawableStart="@drawable/ic_menu_call" />
-
-        <TextView
-            android:id="@+id/code_validation_intro2"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:paddingLeft="20dip"
-            android:paddingRight="20dip"
-            android:paddingBottom="10dip"
-            android:text="@string/code_validation_intro2" />
-
-        <EditText
-            android:id="@+id/validation_code"
-            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dip"
-            android:hint="@string/hint_validation_code"
-            android:inputType="phone" />
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:padding="18dip" >
 
-        <Button
-            android:id="@+id/send_button"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:onClick="validateCode"
-            android:text="@string/button_validation_register" />
-    </LinearLayout>
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:paddingLeft="20dip"
+                android:paddingRight="20dip"
+                android:paddingBottom="10dip"
+                android:id="@+id/code_validation_intro"
+                android:text="@string/code_validation_intro" />
 
-</ScrollView>
+            <TextView
+                android:id="@+id/code_validation_sender"
+                style="?android:attr/textAppearanceLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:paddingLeft="20dip"
+                android:paddingRight="20dip"
+                android:paddingBottom="10dip"
+                android:layout_marginLeft="-20dp"
+                android:layout_marginStart="-20dp"
+                android:gravity="center"
+                android:drawableLeft="@drawable/ic_menu_call"
+                android:drawableStart="@drawable/ic_menu_call" />
+
+            <TextView
+                android:id="@+id/code_validation_intro2"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:paddingLeft="20dip"
+                android:paddingRight="20dip"
+                android:paddingBottom="10dip"
+                android:text="@string/code_validation_intro2" />
+
+            <EditText
+                android:id="@+id/validation_code"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dip"
+                android:hint="@string/hint_validation_code"
+                android:inputType="phone" />
+
+            <Button
+                android:id="@+id/send_button"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:onClick="validateCode"
+                android:text="@string/button_validation_register" />
+
+            <Button
+                android:id="@+id/fallback_button"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:onClick="doFallback"
+                android:text="@string/button_validation_fallback" />
+
+        </LinearLayout>
+
+    </ScrollView>
+</RelativeLayout>

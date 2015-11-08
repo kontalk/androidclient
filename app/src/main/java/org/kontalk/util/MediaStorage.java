@@ -83,11 +83,6 @@ public abstract class MediaStorage {
     private static final String COMPRESS_FILENAME_FORMAT = "compress_%d.jpg";
     private static final int COMPRESSION_QUALITY = 85;
 
-    // @deprecated
-    static {
-        removeNoMediaFix(PICTURES_ROOT);
-    }
-
     public static boolean isExternalStorageAvailable() {
         return Environment.getExternalStorageState()
             .equals(Environment.MEDIA_MOUNTED);
@@ -252,11 +247,6 @@ public abstract class MediaStorage {
         return new File(PICTURES_ROOT, "IMG_" + timeStamp + "." + extension);
     }
 
-    @Deprecated
-    private static void removeNoMediaFix(File path) {
-        new File(path, ".nomedia").delete();
-    }
-
     /** Creates a temporary 3gp file. */
     public static File getOutgoingAudioFile() throws IOException {
         return getOutgoingAudioFile(new Date());
@@ -395,7 +385,13 @@ public abstract class MediaStorage {
             return null;
         }
 
-        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, w, h, true);
+        Bitmap scaledBitmap;
+        try {
+            scaledBitmap = Bitmap.createScaledBitmap(bitmap, w, h, true);
+        }
+        finally {
+            bitmap.recycle();
+        }
 
         // check for rotation data
         scaledBitmap = bitmapOrientation(context, uri, scaledBitmap);
@@ -430,11 +426,9 @@ public abstract class MediaStorage {
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
-    public static void requestPersistablePermissions(Context context, Intent intent) {
-        final int takeFlags = intent.getFlags()
-                & (Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        final Uri uri = intent.getData();
-        context.getContentResolver().takePersistableUriPermission(uri, takeFlags);
+    public static void requestPersistablePermissions(Context context, Uri uri) {
+        context.getContentResolver().takePersistableUriPermission(uri,
+            Intent.FLAG_GRANT_READ_URI_PERMISSION);
     }
 
     public static void scanFile(Context context, File file, String mime) {

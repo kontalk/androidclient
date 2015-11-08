@@ -21,8 +21,7 @@ package org.kontalk.client;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -37,30 +36,19 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.params.ClientPNames;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.SingleClientConnManager;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.util.EntityUtils;
+import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
+
+import android.content.Context;
+import android.util.Log;
 
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.service.DownloadListener;
@@ -68,9 +56,6 @@ import org.kontalk.util.InternalTrustStore;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.ProgressOutputStreamEntity;
-
-import android.content.Context;
-import android.util.Log;
 
 
 /**
@@ -89,8 +74,9 @@ public class ClientHTTPConnection {
     private final PrivateKey mPrivateKey;
     private final X509Certificate mCertificate;
 
-    private HttpRequestBase currentRequest;
-    private HttpClient mConnection;
+    private HttpsURLConnection currentRequest;
+    private final static int CONNECT_TIMEOUT = 15000;
+    private final static int READ_TIMEOUT = 40000;
 
     public ClientHTTPConnection(Context context, PrivateKey privateKey, X509Certificate bridgeCert) {
         mContext = context;
@@ -100,7 +86,7 @@ public class ClientHTTPConnection {
 
     public void abort() {
         if (currentRequest != null)
-            currentRequest.abort();
+            currentRequest.disconnect();
     }
 
     /**
@@ -108,9 +94,38 @@ public class ClientHTTPConnection {
      * @param url URL to download
      * @return the request object
      */
-    private HttpRequestBase prepareURLDownload(String url) throws IOException {
-        HttpGet req = new HttpGet(url);
-        return req;
+    private HttpsURLConnection prepareURLDownload(String url, boolean acceptAnyCertificate) throws IOException {
+        HttpsURLConnection conn = (HttpsURLConnection) new URL(url).openConnection();
+        try {
+            setupClient(conn, acceptAnyCertificate);
+        }
+        catch (Exception e) {
+            throw innerException("error setting up SSL connection", e);
+        }
+        return conn;
+    }
+
+    private IOException innerException(String detail, Throwable cause) {
+        IOException ie = new IOException(detail);
+        ie.initCause(cause);
+        return ie;
+    }
+
+    private void setupClient(HttpsURLConnection conn, boolean acceptAnyCertificate)
+            throws CertificateException, UnrecoverableKeyException,
+            NoSuchAlgorithmException, KeyStoreException,
+            KeyManagementException, NoSuchProviderException,
+            IOException {
+
+        // bug caused by Lighttpd
+        conn.setRequestProperty("Expect", "100-continue");
+        conn.setConnectTimeout(CONNECT_TIMEOUT);
+        conn.setReadTimeout(READ_TIMEOUT);
+        conn.setDoInput(true);
+        conn.setSSLSocketFactory(setupSSLSocketFactory(mContext,
+            mPrivateKey, mCertificate, acceptAnyCertificate));
+        if (acceptAnyCertificate)
+            conn.setHostnameVerifier(new AllowAllHostnameVerifier());
     }
 
     public static SSLSocketFactory setupSSLSocketFactory(Context context,
@@ -125,59 +140,49 @@ public class ClientHTTPConnection {
         keystore.load(null, null);
         keystore.setKeyEntry("private", privateKey, null, new Certificate[] { certificate });
 
-        // load merged truststore (system + internal)
-        KeyStore truststore = InternalTrustStore.getTrustStore(context);
+        // key managers
+        KeyManagerFactory kmFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        kmFactory.init(keystore, null);
+        KeyManager[] km = kmFactory.getKeyManagers();
 
-        if (acceptAnyCertificate)
-            return new BlackholeSSLSocketFactory(keystore, null, truststore);
+        // trust managers
+        TrustManager[] tm;
 
-        else
-            return new SSLSocketFactory(keystore, null, truststore);
-    }
+        if (acceptAnyCertificate) {
+            tm = new TrustManager[] {
+                new X509TrustManager() {
+                    @Override
+                    public X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
 
-    /**
-     * Executes the given request.
-     * @param request the request
-     * @return the response
-     * @throws IOException
-     */
-    private HttpResponse execute(HttpRequestBase request) throws IOException {
-        // execute!
-        try {
-            if (mConnection == null) {
-                SchemeRegistry registry = new SchemeRegistry();
-                try {
-                    registry.register(new Scheme("http",  PlainSocketFactory.getSocketFactory(), 80));
+                    @Override
+                    public void checkServerTrusted(X509Certificate[] chain, String authType)
+                        throws CertificateException {
+                    }
 
-                    boolean acceptAnyCertificate = Preferences.getAcceptAnyCertificate(mContext);
-                    registry.register(new Scheme("https", setupSSLSocketFactory(mContext,
-                        mPrivateKey, mCertificate, acceptAnyCertificate), 443));
+                    @Override
+                    public void checkClientTrusted(X509Certificate[] chain, String authType)
+                        throws CertificateException {
+                    }
                 }
-                catch (Exception e) {
-                    IOException ie = new IOException("unable to create keystore");
-                    ie.initCause(e);
-                    throw ie;
-                }
-
-                HttpParams params = new BasicHttpParams();
-                // handle redirects :)
-                params.setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
-                // HttpClient bug caused by Lighttpd
-                params.setBooleanParameter("http.protocol.expect-continue", false);
-
-                // create connection manager
-                ClientConnectionManager connMgr = new SingleClientConnManager(params, registry);
-
-                mConnection = new DefaultHttpClient(connMgr, params);
-            }
-            return mConnection.execute(request);
+            };
         }
-        catch (ClientProtocolException e) {
-            IOException ie = new IOException("client protocol error");
-            ie.initCause(e);
-            throw ie;
+        else {
+            // load merged truststore (system + internal)
+            KeyStore trustStore = InternalTrustStore.getTrustStore(context);
+
+            // builtin keystore
+            TrustManagerFactory tmFactory = TrustManagerFactory
+                .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            tmFactory.init(trustStore);
+
+            tm = tmFactory.getTrustManagers();
         }
 
+        SSLContext ctx = SSLContext.getInstance("TLS");
+        ctx.init(km, tm, null);
+        return ctx.getSocketFactory();
     }
 
     /**
@@ -189,48 +194,44 @@ public class ClientHTTPConnection {
     }
 
     private void _download(String url, File defaultBase, Date timestamp, DownloadListener listener) throws IOException {
-        currentRequest = prepareURLDownload(url);
-        HttpResponse response = execute(currentRequest);
+        boolean acceptAnyCertificate = Preferences.getAcceptAnyCertificate(mContext);
+        currentRequest = prepareURLDownload(url, acceptAnyCertificate);
 
-        int code = response.getStatusLine().getStatusCode();
+        int code = currentRequest.getResponseCode();
         // HTTP/1.1 200 OK -- other codes should throw Exceptions
         if (code == 200) {
-            HttpEntity _entity = response.getEntity();
-            if (_entity != null) {
-                // use a more suitable filename, taking only the extension
-                Header contentType = _entity.getContentType();
-                File destination = null;
-                if (contentType != null) {
-                    destination = CompositeMessage.getIncomingFile(contentType.getValue(),
-                        timestamp != null ? timestamp : new Date());
-                }
-
-                // still having problems?
-                if (destination == null) {
-                    Header disp = response.getFirstHeader("Content-Disposition");
-                    String name = parseContentDisposition(disp.getValue());
-                    if (name == null)
-                        // very bad hack to overcome server bad behaviour
-                        name = MediaStorage.UNKNOWN_FILENAME;
-
-                    destination = new File(defaultBase, name);
-                }
-
-                // we need to wrap the entity to monitor the download progress
-                ProgressOutputStreamEntity entity = new ProgressOutputStreamEntity(_entity, url, destination, listener);
-                FileOutputStream out = new FileOutputStream(destination);
-                entity.writeTo(out);
-                out.close();
-                return;
+            // use a more suitable filename, taking only the extension
+            String contentType = currentRequest.getContentType();
+            File destination = null;
+            if (contentType != null) {
+                destination = CompositeMessage.getIncomingFile(contentType,
+                    timestamp != null ? timestamp : new Date());
             }
+
+            // still having problems?
+            if (destination == null) {
+                String name = null;
+                String disp = currentRequest.getHeaderField("Content-Disposition");
+                if (disp != null)
+                    name = parseContentDisposition(disp);
+
+                if (name == null) {
+                    // very bad hack to overcome server bad behaviour
+                    name = MediaStorage.UNKNOWN_FILENAME;
+                }
+
+                destination = new File(defaultBase, name);
+            }
+
+            // we need to wrap the entity to monitor the download progress
+            ProgressOutputStreamEntity entity = new ProgressOutputStreamEntity(currentRequest, url, destination, listener);
+            FileOutputStream out = new FileOutputStream(destination);
+            entity.writeTo(out);
+            out.close();
+            return;
         }
 
         Log.d(TAG, "invalid response: " + code);
-        HttpEntity entity = response.getEntity();
-        if (entity != null) {
-            Log.w(TAG, EntityUtils.toString(entity));
-            entity.consumeContent();
-        }
         listener.error(url, null, new IOException("invalid response: " + code));
     }
 
@@ -251,46 +252,6 @@ public class ClientHTTPConnection {
             // This function is defined as returning null when it can't parse the header
         }
         return null;
-    }
-
-    /** A socket factory for accepting any SSL certificate. */
-    private static final class BlackholeSSLSocketFactory extends SSLSocketFactory {
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-
-        public BlackholeSSLSocketFactory(KeyStore keystore, String keystorePassword, KeyStore truststore)
-                throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException, UnrecoverableKeyException {
-            super(keystore, keystorePassword, truststore);
-
-            TrustManager tm = new X509TrustManager() {
-                public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-                }
-
-                public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-                }
-
-                public X509Certificate[] getAcceptedIssuers() {
-                    return null;
-                }
-            };
-
-            // key managers
-            KeyManager[] km;
-            KeyManagerFactory kmFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            kmFactory.init(keystore, null);
-            km = kmFactory.getKeyManagers();
-
-            sslContext.init(km, new TrustManager[] { tm }, null);
-        }
-
-        @Override
-        public Socket createSocket(Socket socket, String host, int port, boolean autoClose) throws IOException, UnknownHostException {
-            return sslContext.getSocketFactory().createSocket(socket, host, port, autoClose);
-        }
-
-        @Override
-        public Socket createSocket() throws IOException {
-            return sslContext.getSocketFactory().createSocket();
-        }
     }
 
 }

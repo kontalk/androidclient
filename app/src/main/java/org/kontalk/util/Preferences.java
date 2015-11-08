@@ -29,7 +29,6 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.crypto.PersonalKey;
-import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.msgcenter.MessageCenterService;
 
@@ -66,6 +65,12 @@ public final class Preferences {
 
     public static void init(Context context) {
         sPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+
+        // set the new default theme if this is the first upgrade
+        String newTheme = context.getString(R.string.pref_default_balloons);
+        if (!getBooleanOnce(context, "has_new_theme." + newTheme))
+            sPreferences.edit().putString("pref_balloons", newTheme)
+                .commit();
     }
 
     public static void setCachedCustomBackground(Drawable customBackground) {
@@ -124,6 +129,12 @@ public final class Preferences {
         if (!value)
             sPreferences.edit().putBoolean(key, true).commit();
         return value;
+    }
+
+    public static boolean setRingtone(Context context, String uri) {
+        return sPreferences.edit()
+            .putString("pref_ringtone", uri)
+            .commit();
     }
 
     public static String getServerURI(Context context) {
@@ -249,24 +260,11 @@ public final class Preferences {
             .getString(R.string.pref_default_font_size));
     }
 
-    public static int getBalloonResource(Context context, int direction) {
+    public static String getBalloonTheme(Context context) {
         if (sBalloonTheme == null)
             sBalloonTheme = getString(context, "pref_balloons", context
                 .getString(R.string.pref_default_balloons));
-
-        if ("iphone".equals(sBalloonTheme))
-            return direction == Messages.DIRECTION_IN ?
-                R.drawable.balloon_iphone_incoming :
-                    R.drawable.balloon_iphone_outgoing;
-        else if ("old_classic".equals(sBalloonTheme))
-            return direction == Messages.DIRECTION_IN ?
-                R.drawable.balloon_old_classic_incoming :
-                    R.drawable.balloon_old_classic_outgoing;
-
-        // all other cases
-        return direction == Messages.DIRECTION_IN ?
-            R.drawable.balloon_classic_incoming :
-                R.drawable.balloon_classic_outgoing;
+        return sBalloonTheme;
     }
 
     public static String getStatusMessage(Context context) {
@@ -516,7 +514,7 @@ public final class Preferences {
     public static boolean saveRegistrationProgress(Context context, String name,
         String phoneNumber, PersonalKey key, String passphrase,
         byte[] importedPublicKey, byte[] importedPrivateKey, String serverUri,
-        String sender) {
+        String sender, boolean force) {
         return sPreferences.edit()
             .putString("registration_name", name)
             .putString("registration_phone", phoneNumber)
@@ -528,6 +526,7 @@ public final class Preferences {
             .putString("registration_passphrase", passphrase)
             .putString("registration_server", serverUri)
             .putString("registration_sender", sender)
+            .putBoolean("registration_force", force)
             .commit();
     }
 
@@ -550,6 +549,7 @@ public final class Preferences {
                 p.importedPrivateKey = Base64.decode(importedPrivateKey, Base64.NO_WRAP);
 
             p.sender = getString(context, "registration_sender", null);
+            p.force = getBoolean(context, "registration_force", false);
 
             return p;
         }
@@ -565,6 +565,7 @@ public final class Preferences {
             .remove("registration_importedprivatekey")
             .remove("registration_passphrase")
             .remove("registration_server")
+            .remove("registration_force")
             .commit();
     }
 
@@ -577,6 +578,7 @@ public final class Preferences {
         public byte[] importedPrivateKey;
         public EndpointServer server;
         public String sender;
+        public boolean force;
     }
 
     /** Recent statuses database helper. */

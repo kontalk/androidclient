@@ -16,22 +16,26 @@ task checkstyle(type: Checkstyle){
         '*/java/org/kontalk/billing/ProductDetails.java',
         '*/java/org/kontalk/billing/Purchase.java'
     // 3rd-party code
-    exclude '**/IconContextMenu.java', '**/CircularSeekBar.java',
-        '**/KeyboardAwareRelativeLayout.java', '**/FrameLayoutFixed.java'
+    exclude '**/CircularSeekBar.java',
+        '**/KeyboardAwareRelativeLayout.java', '**/FrameLayoutFixed.java',
+        '**/AbsListViewScrollDetector.java', '**/NoCacheMiniDnsResolver.java',
+        '**/XMPPTCPConnection.java',
+        'main/java/com/**'
     def configProps = ['baseDir': projectDir.absolutePath]
     configProperties configProps
     classpath = files()
 }
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion '22.0.1'
+    compileSdkVersion 23
+    buildToolsVersion '23.0.2'
 
     defaultConfig {
         applicationId "org.kontalk"
-        versionCode 55
-        versionName "3.0.2-preview"
+        versionCode 77
+        versionName "3.1.1-preview"
         targetSdkVersion 22
+        resConfigs "en", "de", "fr", "it", "es", "ca", "cs", "el", "fa", "gl", "ja", "nl", "pt", "ru", "sr", "zh-rCN"
         resValue "string", "account_type", applicationId + '.account'
         buildConfigField "String", "ACCOUNT_TYPE", '"org.kontalk.account"'
     }
@@ -55,6 +59,8 @@ android {
                 signingConfig signingConfigs.release
         }
         debug {
+            minifyEnabled true
+            proguardFile 'proguard.cfg'
         }
     }
 
@@ -84,19 +90,32 @@ dependencies {
     }
     compile project(':emojicon:library')
 
-    compile 'com.android.support:appcompat-v7:20.0.0'
+    compile "com.android.support:appcompat-v7:$appcompatVersion"
+    compile "com.android.support:design:$appcompatVersion"
     compile "com.madgag.spongycastle:core:$spongyCastleVersion"
     compile "com.madgag.spongycastle:prov:$spongyCastleVersion"
     compile "com.madgag.spongycastle:pkix:$spongyCastleVersion"
     compile "com.madgag.spongycastle:pg:$spongyCastleVersion"
-    compile 'com.googlecode.libphonenumber:libphonenumber:7.0.7'
+    compile 'com.googlecode.libphonenumber:libphonenumber:7.1.0'
     compile 'com.nineoldandroids:library:2.4.0'
-    compile 'com.google.zxing:core:3.2.0'
+    compile 'com.google.zxing:core:3.2.1'
     compile 'com.segment.backo:backo:1.0.0'
     compile "org.igniterealtime.smack:smack-experimental:$smackVersion"
     compile "org.igniterealtime.smack:smack-android-extensions:$smackVersion"
+    compile 'com.github.machinarius:preferencefragment:0.1.1'
+    compile('com.afollestad.material-dialogs:core:0.8.5.0@aar') {
+        transitive = true
+    }
+    compile('com.afollestad.material-dialogs:commons:0.8.5.0@aar') {
+        transitive = true
+    }
+    compile 'com.github.castorflex.smoothprogressbar:library:1.1.0'
+    compile 'com.nispok:snackbar:2.11.0'
+    compile 'de.hdodenhof:circleimageview:2.0.0'
+    compile 'com.github.vlivanov:ListViewVariants:f606578467'
 
-    googleplayCompile 'com.google.android.gms:play-services-base:6.5.87'
+    googleplayCompile "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
+    googleplayCompile "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"
 
     testCompile 'junit:junit:4.+'
 }

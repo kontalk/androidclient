@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- Kontalk Android client
+     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+<resources>
+  <string name="app_name">Kontalk</string>
+<string name="app_description">شبکه‌ی پیام‌رسانی آنی جامعه‌محور</string>
+    <string name="service_name">مرکز پیام</string>
+    <string name="sync_service_name">همگام‌سازی مخاطب‌ها</string>
+    <string name="yes">بله</string>
+    <string name="no">نه</string>
+    <string name="send">فرستادن</string>
+    <string name="menu_delete_all">حذف گپ‌ها</string>
+    <string name="menu_search">جستجو</string>
+    <string name="mykey_activity_title">کلید شخصی من</string>
+    <string name="authenticator_name">سرویس احراز هویت</string>
+    <string name="download_service">بارگیری سرویس</string>
+    <string name="menu_compose">نوشتن</string>
+    <string name="menu_settings">تنظیمات</string>
+    <string name="menu_offline">آفلاین شدن</string>
+    <string name="menu_online">برخط شدن</string>
+    <string name="menu_import_key">درون‌ریزی کلید</string>
+    <string name="pref_network_settings">تنظیمات شبکه</string>
+    <string name="pref_network_uri">نشانی کارساز دستی</string>
+    <string name="pref_title_network_uri">این مدیریت خودکار فهرست کارساز را نادیده خواهد گرفت</string>
+    <string name="number_validation_intro1">لطفاً نامتان را وارد کنید، کد کشورتان را انتخاب کنید و شماره‌ی تلفن همراه‌تان را وارد کنید. دستورهای بیش‌تر در صفحه‌ی بعد ارائه می‌شود.</string>
+    <string name="number_validation_intro2">اگر شما نمی‌توانید روی این دستگاه تماس‌ها یا پیامک دریافت کنید، یک شماره‌ی تلفن که مالک آن هستید وارد کنید: ما آن شماره را به این دستگاه پیوند خواهیم داد.</string>
+    <string name="code_validation_intro">پس از اندکی شما باید یک پیامک یا یک تماس از این شماره دریافت کنید:</string>
+    <string name="code_validation_intro2">لطفاً کدی را که دریافت می‌کنید یا می‌شنوید وارد کنید.</string>
+    <string name="code_validation_intro_missed_call">پس از اندکی شما باید یک تماس از دست رفته از این شماره دریافت کنید. <b>لطفاً تماس را پاسخ ندهید.</b></string>
+    <string name="code_validation_intro2_missed_call">لطفاً آخرین %d رقم از شماره‌ای را که به وسیله‌ی آن با شما تماس گرفته خواهد شد وارد کنید.</string>
+    <string name="code_validation_intro_manual">لطفاً کد تأیید را که دریافت کردید وارد کنید. لطفاً توجه داشته باشید که یک کد تأیید تنها یک‌بار استفاده می‌شود.</string>
+    <string name="hint_validation_name">نام شما</string>
+    <string name="hint_validation_number">شماره‌ی شما</string>
+    <string name="hint_validation_code">کد تأیید</string>
+    <string name="warn_invalid_number">لطفاً یک شماره‌ی تلفن درست وارد کنید.</string>
+    <string name="msg_validating_phone">در حال درخواست ثبت‌نام…</string>
+    <string name="msg_importing_key">در حال درون‌ریزی کلید شخصی…</string>
+    <string name="msg_initializing">در حال ثبت‌نام در شبکه‌ی Kontalk…</string>
+    <string name="msg_authenticated">در شبکه ثبت‌نام شد!</string>
+    <string name="share">اشتراک‌گذاری</string>
+    <string name="resend">فرستادن دوباره</string>
+    <string name="copy_message_text">رونوشت متن پیام</string>
+    <string name="delete_message">حذف پیام</string>
+    <string name="confirm_delete_all">حذف همه‌ی گپ‌ها</string>
+    <string name="confirm_will_delete_all">همه‌ی گپ‌ها حذف خواهند شد.</string>
+    <string name="sending_message">در حال فرستادن پیام…</string>
+    <string name="message_text_copied">متن پیام رونوشت شد.</string>
+    <string name="call">تماس</string>
+    <string name="view_contact">نمایش مخاطب</string>
+    <string name="view_conversation">نمایش گپ</string>
+    <string name="delete_thread">حذف گپ</string>
+    <string name="confirm_delete_thread">حذف گپ</string>
+    <string name="confirm_will_delete_thread">همه‌ی گپ حذف خواهد شد.</string>
+    <string name="new_messages">پیام‌های تازه</string>
+    <string name="unread_messages">%d پیام خوانده نشده</string>
+    <string name="only_one_account_supported">تنها یک حساب Kontalk پشتیبانی می‌شود.</string>
+    <string name="hint_enter_text">متن‌تان را این‌جا وارد کنید</string>
+    <string name="hint_type_to_compose"/>
+    <string name="hint_open_kbd_to_compose">تخته‌کلید را برای نوشتن پیام باز کنید</string>
+    <string name="view_image">نمایش نگاره</string>
+    <string name="title_message_options">گزینه‌های پیام</string>
+    <string name="menu_message_details">نمایش جزئیات پیام‌ها</string>
+    <string name="title_message_details">جزئیات پیام</string>
+    <string name="message_type_label">"گونه: "</string>
+    <string name="text_message">پیام متنی</string>
+    <string name="image_message">پیام نگاره‌ای</string>
+    <string name="audio_message">پیام شنیداری</string>
+    <string name="from_label">"از: "</string>
+    <string name="to_address_label">"به: "</string>
+    <string name="sent_label">"فرستاده شده "</string>
+    <string name="received_label">"دریافت شده: "</string>
+    <string name="error_label">"خطا: "</string>
+    <string name="sending_label">"فرستادن: "</string>
+    <string name="refused_label">"پذیرفته نشد: "</string>
+    <string name="notdelivered_label">"تحویل داده نشد: "</string>
+    <string name="delivered_label">"تحویل داده شد: "</string>
+    <string name="encrypted_label">"رمزنگاری شده: "</string>
+    <string name="security_label">"امنیت: "</string>
+    <string name="size_label">"اندازه: "</string>
+    <string name="size_unknown">(نامشخص)</string>
+    <string name="title_file_info">اطلاعات پرونده</string>
+    <string name="pref_title_restart_msgcenter">از این استفاده کنید اگر مرکز پیام به درستی کار نمی‌کند</string>
+    <string name="pref_idle_time">جدا شدن هنگام بی‌کاری</string>
+    <string name="pref_title_idle_time">مدت انتظار پیش از جداشدن به دلیل عدم فعالیت</string>
+    <string name="pref_wakeup_time">اتصال دوباره به کارساز</string>
+    <string name="pref_title_wakeup_time">مدت انتظار پیش از اتصال مجدد به دلیل یک دوره‌ی عدم فعالیت. تنها اگر push notifications در دسترس نباشد کار می‌کند</string>
+    <string name="pref_maintenance">نگه‌داری</string>
+    <string name="pref_regenerate_keypair">بازسازی کلید شخصی</string>
+    <string name="menu_manual_verification">پیش از این یک کد داشته‌اید؟</string>
+    <string name="pref_restart_msgcenter">باز‌آغازی مرکز پیام</string>
+    <string name="pref_title_regenerate_keypair">در صورتی که کلید شخصی‌تان به خطر افتاده است از این استفاده کنید.</string>
+    <string name="pref_regenerate_keypair_confirm">جفت‌کلیدی تازه تولید خواهد شد و به حساب‌تان اختصاص داده خواهد شد.</string>
+    <string name="contacts_list_title">مخاطبی را برگزینید</string>
+    <string name="pref_messaging_settings">تنظیمات پیام‌رسانی</string>
+    <string name="pref_privacy_settings">تنظیمات حریم خصوصی</string>
+    <string name="pref_encrypt">رمزنگاری پیام‌ها</string>
+    <string name="pref_title_on_encrypt">از اکنون تمامی پیام‌ها رمزنگاری خواهند شد</string>
+    <string name="pref_title_off_encrypt">از اکنون تمامی پیام‌ها به صورت متن واضح فرستاده خواهد شد</string>
+    <string name="pref_encrypt_userdata">رمزنگاری داده‌های شخصی</string>
+    <string name="pref_title_on_encrypt_userdata">پیام وضعیت تنها برای کاربرهایی که شماره‌ی تلفن شما را دارند نمایان می‌شود</string>
+    <string name="pref_title_off_encrypt_userdata">پیام وضعیت برای همه نمایان خواهد شد</string>
+    <string name="pref_auto_accept_subscriptions">پذیرش خودکار دعوت‌ها</string>
+    <string name="pref_title_auto_accept_subscriptions">پذیرش خودکار دعوت‌های گپ با دیگر کاربرها</string>
+    <string name="pref_send_typing">فرستادن اعلان در حال نوشتن</string>
+    <string name="pref_hide_presence">پنهان‌سازی حضور</string>
+    <string name="pref_title_on_hide_presence">کاربرها شما را برخط نخواهند دید</string>
+    <string name="pref_title_off_hide_presence">کاربرها شما را برخط خواهند دید و هم‌چنین زمان آخرین باری که متصل شدید</string>
+    <string name="contact_not_registered">به نظر می‌رسد مخاطب در Kontalk ثبت نشده است.</string>
+    </resources>

@@ -21,9 +21,12 @@ package org.kontalk.sync;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jxmpp.util.XmppStringUtils;
@@ -102,6 +105,10 @@ public class Syncer {
         public byte[] publicKey;
         public boolean blocked;
         public boolean presence;
+        /** True if found during roster match. */
+        public boolean matched;
+        /** Discard this entry: it has not been found on server. */
+        public boolean discarded;
     }
 
     // FIXME this class should handle most recent/available presence stanzas
@@ -120,6 +127,8 @@ public class Syncer {
         private int presenceCount;
         private int pubkeyCount;
         private int rosterCount;
+        /** Packet id list for not matched contacts (in roster but not matched on server). */
+        private Set<String> notMatched = new HashSet<>();
         private boolean blocklistReceived;
 
         public PresenceBroadcastReceiver(List<String> jidList, Syncer notifyTo) {
@@ -150,6 +159,14 @@ public class Syncer {
                             item.presence = true;
                             // increment presence count
                             presenceCount++;
+                            // check user existance (only if subscription is "both")
+                            if (!item.matched && intent.getBooleanExtra(MessageCenterService.EXTRA_SUBSCRIBED_FROM, false) &&
+                                intent.getBooleanExtra(MessageCenterService.EXTRA_SUBSCRIBED_TO, false)) {
+                                // verify actual user existance through last activity
+                                String lastActivityId = StringUtils.randomString(6);
+                                MessageCenterService.requestLastActivity(context, item.from, lastActivityId);
+                                notMatched.add(lastActivityId);
+                            }
                         }
                     }
                 }
@@ -173,6 +190,7 @@ public class Syncer {
                             for (String jid : list) {
                                 PresenceItem p = new PresenceItem();
                                 p.from = jid;
+                                p.matched = true;
                                 response.add(p);
                             }
                         }
@@ -220,7 +238,7 @@ public class Syncer {
                     }
 
                     // done with presence data and blocklist
-                    if (pubkeyCount == presenceCount && blocklistReceived)
+                    if (pubkeyCount == presenceCount && blocklistReceived && notMatched.size() == 0)
                         finish();
 
                 }
@@ -248,8 +266,29 @@ public class Syncer {
                 }
 
                 // done with presence data and blocklist
-                if (pubkeyCount >= presenceCount)
+                if (pubkeyCount >= presenceCount && notMatched.size() == 0)
                     finish();
+            }
+
+            // last activity (for user existance verification)
+            else if (MessageCenterService.ACTION_LAST_ACTIVITY.equals(action)) {
+                String requestId = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
+                if (notMatched.contains(requestId)) {
+                    notMatched.remove(requestId);
+
+                    String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
+                    if (type != null && type.equalsIgnoreCase(IQ.Type.error.toString())) {
+                        // user does not exist!
+                        String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                        // discard entry
+                        discardPresenceItem(jid);
+                        // unsubscribe!
+                        unsubscribe(context, jid);
+
+                        if (pubkeyCount >= presenceCount && blocklistReceived && notMatched.size() == 0)
+                            finish();
+                    }
+                }
             }
 
             // connected! Retry...
@@ -272,6 +311,15 @@ public class Syncer {
             }
         }
 
+        private void discardPresenceItem(String jid) {
+            for (PresenceItem item : response) {
+                if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(jid)) {
+                    item.discarded = true;
+                    return;
+                }
+            }
+        }
+
         private PresenceItem getPresenceItem(String jid) {
             for (PresenceItem item : response) {
                 if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(jid))
@@ -283,6 +331,14 @@ public class Syncer {
             item.from = jid;
             response.add(item);
             return item;
+        }
+
+        private void unsubscribe(Context context, String jid) {
+            Intent i = new Intent(context, MessageCenterService.class);
+            i.setAction(MessageCenterService.ACTION_PRESENCE);
+            i.putExtra(MessageCenterService.EXTRA_TO, jid);
+            i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.unsubscribe.name());
+            context.startService(i);
         }
 
         private int getRosterParts(List<String> jidList) {
@@ -431,6 +487,7 @@ public class Syncer {
             f.addAction(MessageCenterService.ACTION_ROSTER_MATCH);
             f.addAction(MessageCenterService.ACTION_PUBLICKEY);
             f.addAction(MessageCenterService.ACTION_BLOCKLIST);
+            f.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
             f.addAction(MessageCenterService.ACTION_CONNECTED);
             lbm.registerReceiver(receiver, f);
 
@@ -476,6 +533,8 @@ public class Syncer {
                 registeredValues.put(Users.REGISTERED, 1);
                 for (int i = 0; i < res.size(); i++) {
                     PresenceItem entry = res.get(i);
+                    if (entry.discarded)
+                        continue;
 
                     final RawPhoneNumberEntry data = lookupNumbers
                         .get(XmppStringUtils.parseLocalpart(entry.from));
@@ -528,8 +587,10 @@ public class Syncer {
                         else {
                             registeredValues.putNull(Users.FINGERPRINT);
                             registeredValues.putNull(Users.PUBLIC_KEY);
-                            if (entry.rosterName != null)
+                            // use roster name if no contact data available
+                            if (data == null && entry.rosterName != null) {
                                 registeredValues.put(Users.DISPLAY_NAME, entry.rosterName);
+                            }
                         }
 
                         // blocked status

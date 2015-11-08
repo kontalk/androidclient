@@ -91,6 +91,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private final String mName;
     private final String mPhone;
     private boolean mForce;
+    private boolean mFallback;
     private PersonalKey mKey;
     private PGPKeyPairRing mKeyRing;
     private X509Certificate mBridgeCert;
@@ -139,8 +140,12 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         }
     }
 
-    public void setForce(boolean mForce) {
-        this.mForce = mForce;
+    public void setForce(boolean force) {
+        mForce = force;
+    }
+
+    public void setFallback(boolean fallback) {
+        mFallback = fallback;
     }
 
     @Override
@@ -156,6 +161,24 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
     public EndpointServer getServer() {
         return mConnector.getServer();
+    }
+
+    public static boolean isMissedCall(String senderId) {
+        // very quick way to check if we are using missed call based verification
+        return senderId != null && senderId.endsWith("???");
+    }
+
+    public static int getChallengeLength(String senderId) {
+        int count = 0;
+        if (senderId != null) {
+            for (int i = senderId.length()-1; i >= 0; i--) {
+                if (senderId.charAt(i) == '?')
+                    count++;
+                else
+                    break;
+            }
+        }
+        return count;
     }
 
     public synchronized void start() {
@@ -237,7 +260,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                                 for (FormField field : iter) {
                                     if (field.getVariable().equals("from")) {
                                         String smsFrom = field.getValues().get(0);
-                                        Log.d(TAG, "using sms sender id: " + smsFrom);
+                                        Log.d(TAG, "using sender id: " + smsFrom);
                                         mListener.onValidationRequested(NumberValidator.this, smsFrom);
 
                                         // prevent error handling
@@ -498,10 +521,18 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
         if (mForce) {
             FormField force = new FormField("force");
-            force.setLabel("Phone number");
+            force.setLabel("Force registration");
             force.setType(FormField.Type.bool);
             force.addValue(String.valueOf(mForce));
             form.addField(force);
+        }
+
+        if (mFallback) {
+            FormField fallback = new FormField("fallback");
+            fallback.setLabel("Fallback");
+            fallback.setType(FormField.Type.bool);
+            fallback.addValue(String.valueOf(mFallback));
+            form.addField(fallback);
         }
 
         iq.addExtension(form.getDataFormToSend());

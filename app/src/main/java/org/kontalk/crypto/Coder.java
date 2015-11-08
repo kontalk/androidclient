@@ -21,7 +21,9 @@ package org.kontalk.crypto;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.GeneralSecurityException;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -76,6 +78,8 @@ public abstract class Coder {
     /** Basic encryption (e.g. PGP). */
     public static final int SECURITY_BASIC = SECURITY_BASIC_ENCRYPTED | SECURITY_BASIC_SIGNED;
 
+    /** How much time to consider a message timestamp drifted (and thus compromised). */
+    public static final long TIMEDIFF_THRESHOLD = TimeUnit.DAYS.toMillis(1);
 
     /** Encrypts a string. */
     public abstract byte[] encryptText(CharSequence text) throws GeneralSecurityException;
@@ -84,9 +88,8 @@ public abstract class Coder {
     public abstract byte[] encryptStanza(CharSequence xml) throws GeneralSecurityException;
 
     /** Decrypts a byte array which should content text. */
-    public abstract void decryptText(byte[] encrypted, boolean verify,
-            StringBuilder out, StringBuilder mime, List<DecryptException> errors)
-                    throws GeneralSecurityException;
+    public abstract DecryptOutput decryptText(byte[] encrypted, boolean verify)
+        throws GeneralSecurityException;
 
     /** Encrypts a file. */
     public abstract void encryptFile(InputStream input, OutputStream output) throws GeneralSecurityException;
@@ -105,6 +108,20 @@ public abstract class Coder {
             (securityFlags & SECURITY_ERROR_DECRYPT_FAILED) != 0 ||
             (securityFlags & SECURITY_ERROR_INTEGRITY_CHECK) != 0 ||
             (securityFlags & SECURITY_ERROR_PUBLIC_KEY_UNAVAILABLE) != 0;
+    }
+
+    public static final class DecryptOutput {
+        public final String mime;
+        public final String cleartext;
+        public final Date timestamp;
+        public final List<DecryptException> errors;
+
+        DecryptOutput(String cleartext, String mime, Date timestamp, List<DecryptException> errors) {
+            this.cleartext = cleartext;
+            this.mime = mime;
+            this.timestamp = timestamp;
+            this.errors = errors;
+        }
     }
 
 }

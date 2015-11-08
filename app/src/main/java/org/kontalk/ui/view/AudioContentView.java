@@ -38,7 +38,6 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import org.kontalk.R;
-import org.kontalk.data.Contact;
 import org.kontalk.message.AudioComponent;
 
 
@@ -89,7 +88,8 @@ public class AudioContentView extends RelativeLayout
         mTime = (TextView) findViewById(R.id.balloon_audio_time);
     }
 
-    public void bind(long messageId, AudioComponent component, Contact contact, Pattern highlight) {
+    @Override
+    public void bind(long messageId, AudioComponent component, Pattern highlight) {
         mComponent = component;
         mMessageId = messageId;
 
@@ -105,11 +105,13 @@ public class AudioContentView extends RelativeLayout
         mAudioPlayerControl.onBind(messageId, this);
     }
 
+    @Override
     public void unbind() {
         clear();
         mAudioPlayerControl.onUnbind(mMessageId, this);
     }
 
+    @Override
     public AudioComponent getComponent() {
         return mComponent;
     }
@@ -121,6 +123,15 @@ public class AudioContentView extends RelativeLayout
 
     private void clear() {
         mComponent = null;
+    }
+
+    // FIXME this is crap
+    private void setTheme(MessageListItemTheme theme) {
+        if (theme.isFullWidth()) {
+            RelativeLayout.LayoutParams params = (LayoutParams) mSeekBar.getLayoutParams();
+            params.width = LayoutParams.MATCH_PARENT;
+            // no layout has been requested yet - mSeekBar.setLayoutParams(params);
+        }
     }
 
     @Override
@@ -229,11 +240,14 @@ public class AudioContentView extends RelativeLayout
         }
     }
 
-    public static AudioContentView create(LayoutInflater inflater, ViewGroup parent, AudioPlayerControl control) {
+    public static AudioContentView create(LayoutInflater inflater, ViewGroup parent, AudioPlayerControl control, MessageListItemTheme theme) {
         AudioContentView view = (AudioContentView) inflater.inflate(R.layout.message_content_audio,
                 parent, false);
-        if (view != null)
+        if (view != null) {
             view.mAudioPlayerControl = control;
+            view.setTheme(theme);
+        }
         return view;
     }
+
 }

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Kontalk Android client
+<?xml version="1.0" encoding="utf-8"?><!-- Kontalk Android client
      Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
@@ -16,68 +15,43 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<resources xmlns:android="http://schemas.android.com/apk/res/android">
-  <!-- default theme selector -->
-  <style name="Theme.Light" parent="@style/Theme.AppCompat.Light">
-    <item name="actionBarStyle">@style/Widget.Light.ActionBar.Blue.Bold</item>
-    <item name="actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
-  </style>
+<resources xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
 
-  <style name="Theme.Light.Subtitle" parent="@style/Theme.Light">
-      <item name="actionBarStyle">@style/Widget.Light.ActionBar.Blue</item>
-  </style>
+    <style name="TextAppearance.Widget.ConversationCountBadge" parent="@android:style/TextAppearance.Small.Inverse">
+        <item name="android:textAppearance">?android:attr/textAppearanceSmallInverse</item>
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:background">@drawable/conversation_badge</item>
+        <item name="android:paddingLeft">4dp</item>
+        <item name="android:paddingRight">4dp</item>
+    </style>
 
-  <style name="Widget.Light.ActionBar.Blue" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
-    <item name="background">@drawable/titlebar_bg</item>
-    <item name="android:background">@drawable/titlebar_bg</item>
-    <item name="titleTextStyle">@style/TextAppearance.Widget.ActionBar.Title.Inverse</item>
-    <item name="subtitleTextStyle">@style/TextAppearance.Widget.ActionBar.Subtitle.Inverse</item>
-  </style>
+    <style name="AvatarListItemStyle">
+        <item name="android:layout_width">@dimen/avatar_size</item>
+        <item name="android:layout_height">@dimen/avatar_size</item>
+        <item name="android:layout_marginLeft">16dp</item>
+        <item name="android:layout_marginRight">16dp</item>
+        <item name="android:layout_marginTop">16dp</item>
+    </style>
 
-  <style name="Widget.Light.ActionBar.Blue.Bold" parent="@style/Widget.Light.ActionBar.Blue">
-    <item name="titleTextStyle">@style/TextAppearance.Widget.ActionBar.Title.Inverse.Bold</item>
-  </style>
+    <style name="AvatarListItemTextStyle" parent="android:TextAppearance.Medium">
+        <item name="android:textSize">16sp</item>
+        <item name="android:paddingTop">16dp</item>
+        <item name="android:layout_marginRight">5dip</item>
+    </style>
 
-  <style name="TextAppearance.Widget.ActionBar.Title.Inverse.Bold"
-      parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title.Inverse">
-      <item name="android:textStyle">bold</item>
-  </style>
+    <style name="AvatarListItemSubtitleStyle" parent="android:TextAppearance.Small" />
 
-  <style name="TextAppearance.Widget.ActionBar.Title.Inverse"
-      parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title.Inverse">
-  </style>
-
-  <style name="TextAppearance.Widget.ActionBar.Subtitle.Inverse"
-      parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Subtitle.Inverse">
-  </style>
-
-  <style name="Widget.ActionButton.Overflow" parent="@style/Widget.AppCompat.ActionButton.Overflow">
-    <item name="android:src">@drawable/ic_menu_overflow</item>
-  </style>
-
-  <!--
-  <style name="Widget.ProgressBar" parent="android:Widget.ProgressBar.Inverse">
-    <item name="android:minWidth">24dip</item>
-    <item name="android:maxWidth">24dip</item>
-    <item name="android:minHeight">24dip</item>
-    <item name="android:maxHeight">24dip</item>
-    <item name="android:layout_marginRight">24dip</item>
-  </style>
-   -->
-
-  <!-- default light-to-dark theme selector -->
-  <style name="Theme.Light2" parent="@android:style/Theme"/>
-
-  <style name="TextAppearance.Widget.ConversationCountBadge"
-      parent="@android:style/TextAppearance.Small.Inverse">
-    <item name="android:textAppearance">?android:attr/textAppearanceSmallInverse</item>
-    <item name="android:textColor">#ffffff</item>
-    <item name="android:textSize">12sp</item>
-    <item name="android:textStyle">bold</item>
-    <item name="android:background">@drawable/conversation_badge</item>
-    <item name="android:paddingLeft">4dp</item>
-    <item name="android:paddingRight">4dp</item>
-
-  </style>
+    <style name="PinnedHeader">
+        <item name="android:background">?android:attr/colorBackground</item>
+        <item name="android:gravity">center_vertical|left</item>
+        <item name="android:paddingLeft">14dp</item>
+        <item name="android:textAllCaps" tools:targetApi="ice_cream_sandwich">true</item>
+        <item name="textAllCaps">true</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/pinned_header_text</item>
+        <item name="android:textSize">20sp</item>
+    </style>
 
 </resources>

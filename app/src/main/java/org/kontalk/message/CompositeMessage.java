@@ -378,11 +378,23 @@ public class CompositeMessage {
         return msg;
     }
 
-    public static void startQuery(AsyncQueryHandler handler, int token, long threadId) {
+    public static void deleteFromCursor(Context context, Cursor cursor) {
+        context.getContentResolver().delete(ContentUris
+            .withAppendedId(Messages.CONTENT_URI,
+                cursor.getLong(COLUMN_ID)), null, null);
+    }
+
+    public static void startQuery(AsyncQueryHandler handler, int token, long threadId, long count, long lastId) {
+        Uri.Builder builder = ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId)
+            .buildUpon()
+            .appendQueryParameter("count", String.valueOf(count));
+        if (lastId > 0) {
+            builder.appendQueryParameter("last", String.valueOf(lastId));
+        }
+
         // cancel previous operations
         handler.cancelOperation(token);
-        handler.startQuery(token, null,
-                ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId),
+        handler.startQuery(token, lastId > 0 ? "append" : null, builder.build(),
                 MESSAGE_LIST_PROJECTION, null, null, Messages.DEFAULT_SORT_ORDER);
     }
 

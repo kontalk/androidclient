@@ -23,7 +23,6 @@ import org.kontalk.R;
 import android.app.SearchManager;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.view.MenuItem;
 
 
@@ -31,7 +30,7 @@ import android.view.MenuItem;
  * Activity wrapper for {@link SearchFragment}.
  * @author Daniele Ricci
  */
-public class SearchActivity extends ActionBarActivity {
+public class SearchActivity extends ToolbarActivity {
     public static final String TAG = SearchActivity.class.getSimpleName();
 
     private SearchFragment mFragment;
@@ -41,7 +40,7 @@ public class SearchActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.search_list_screen);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        setupToolbar(true);
 
         mFragment = (SearchFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_search_list);
@@ -60,7 +59,7 @@ public class SearchActivity extends ActionBarActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 finish();
-                startActivity(new Intent(this, ConversationList.class));
+                startActivity(new Intent(this, ConversationsActivity.class));
                 return true;
 
             default:

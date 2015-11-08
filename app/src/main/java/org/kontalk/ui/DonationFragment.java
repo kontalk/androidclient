@@ -34,8 +34,10 @@ import org.kontalk.billing.OnPurchaseFinishedListener;
 import org.kontalk.billing.QueryInventoryFinishedListener;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
+import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.MaterialDialog;
+
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -160,7 +162,7 @@ public class DonationFragment extends Fragment implements OnClickListener {
         if (pm.resolveActivity(intent, 0) != null)
             startActivity(intent);
         else
-            new AlertDialog
+            new AlertDialogWrapper
                 .Builder(getActivity())
                 .setTitle(R.string.title_bitcoin_dialog)
                 .setMessage(getString(R.string.text_bitcoin_dialog, address))
@@ -183,7 +185,7 @@ public class DonationFragment extends Fragment implements OnClickListener {
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.paypal_url))));
     }
 
-    private void setupGoogle(final ProgressDialog progress) {
+    private void setupGoogle(final Dialog progress) {
         if (mBillingService == null) {
             mBillingService = BillingServiceManager.getInstance(getActivity());
             mBillingService.enableDebugLogging(BuildConfig.DEBUG);
@@ -191,7 +193,7 @@ public class DonationFragment extends Fragment implements OnClickListener {
             mBillingService.startSetup(new OnBillingSetupFinishedListener() {
                 public void onSetupFinished(BillingResult result) {
                     if (!result.isSuccess()) {
-                        alert(R.string.title_error, getString(R.string.iab_error_setup, result.getResponse()));
+                        alert(getString(R.string.iab_error_setup, result.getResponse()));
                         mBillingService = null;
                         progress.dismiss();
                         return;
@@ -207,7 +209,7 @@ public class DonationFragment extends Fragment implements OnClickListener {
         }
     }
 
-    private void queryInventory(final ProgressDialog progress) {
+    private void queryInventory(final Dialog progress) {
         final String[] iabItems = getResources().getStringArray(R.array.iab_items);
 
         QueryInventoryFinishedListener gotInventoryListener = new QueryInventoryFinishedListener() {
@@ -218,7 +220,7 @@ public class DonationFragment extends Fragment implements OnClickListener {
                 progress.dismiss();
 
                 if (result.isFailure()) {
-                    alert(R.string.title_error, getString(R.string.iab_error_query, result.getResponse()));
+                    alert(getString(R.string.iab_error_query, result.getResponse()));
                 }
 
                 else {
@@ -265,8 +267,7 @@ public class DonationFragment extends Fragment implements OnClickListener {
         final String[] iabItems = getResources().getStringArray(R.array.iab_items);
 
         // show dialog with choices
-        new AlertDialog.Builder(getActivity())
-            .setTitle(R.string.title_donation)
+        new AlertDialogWrapper.Builder(getActivity())
             .setItems(dialogItems, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     // start the purchase
@@ -281,9 +282,12 @@ public class DonationFragment extends Fragment implements OnClickListener {
 
     private void donateGoogle() {
         // progress dialog
-        ProgressDialog dialog = ProgressDialog.show(getActivity(), getString(R.string.title_donation),
-            getString(R.string.msg_connecting_iab), true, true,
-            new DialogInterface.OnCancelListener() {
+        Dialog dialog = new MaterialDialog.Builder(getActivity())
+            .content(R.string.msg_connecting_iab)
+            .cancelable(true)
+            .progress(true, 0)
+            .cancelListener(new DialogInterface.OnCancelListener() {
+                @Override
                 public void onCancel(DialogInterface dialog) {
                     // FIXME this doesn't seem to work in some cases
                     if (mBillingService != null) {
@@ -291,7 +295,8 @@ public class DonationFragment extends Fragment implements OnClickListener {
                         mBillingService = null;
                     }
                 }
-            });
+            })
+            .show();
 
         setupGoogle(dialog);
     }
@@ -306,10 +311,9 @@ public class DonationFragment extends Fragment implements OnClickListener {
         }
     }
 
-    private void alert(int title, String message) {
-        new AlertDialog
+    private void alert(String message) {
+        new AlertDialogWrapper
             .Builder(getActivity())
-            .setTitle(title)
             .setMessage(message)
             .setNeutralButton(android.R.string.ok, null)
             .show();

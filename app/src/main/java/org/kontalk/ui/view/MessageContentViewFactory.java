@@ -21,7 +21,6 @@ package org.kontalk.ui.view;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
-import org.kontalk.data.Contact;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.message.MessageComponent;
@@ -45,7 +44,7 @@ public class MessageContentViewFactory {
     @SuppressWarnings("unchecked")
     public static <T> MessageContentView<T> createContent(LayoutInflater inflater,
             ViewGroup parent, T component, long messageId,
-            Contact contact, Pattern highlight, Object... args) {
+            Pattern highlight, Object... args) {
 
         // using conditionals to avoid reflection
         MessageContentView<T> view = null;
@@ -57,14 +56,15 @@ public class MessageContentViewFactory {
             view = (MessageContentView<T>) ImageContentView.create(inflater, parent);
         }
         else if (component instanceof AudioComponent) {
-            view = (MessageContentView<T>) AudioContentView.create(inflater, parent, (AudioPlayerControl) args[0]);
+            view = (MessageContentView<T>) AudioContentView.create(inflater, parent,
+                (AudioPlayerControl) args[0], (MessageListItemTheme) args[1]);
         }
         else if (component instanceof VCardComponent) {
             view = (MessageContentView<T>) VCardContentView.create(inflater, parent);
         }
 
         if (view != null)
-            view.bind(messageId, component, contact, highlight);
+            view.bind(messageId, component, highlight);
 
         return view;
     }

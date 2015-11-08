@@ -43,12 +43,14 @@
     </string-array>
 
     <string-array name="balloons_values" translate="false">
+        <item>hangout</item>
         <item>classic</item>
         <item>old_classic</item>
         <item>iphone</item>
     </string-array>
 
     <string-array name="balloons_labels">
+        <item>@string/pref_balloon_label_hangout</item>
         <item>@string/pref_balloon_label_classic</item>
         <item>@string/pref_balloon_label_classic_old</item>
         <item>@string/pref_balloon_label_iphone</item>

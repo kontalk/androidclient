@@ -22,9 +22,11 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.roster.RosterEntry;
+import org.jivesoftware.smack.sm.StreamManagementException;
 
 import org.kontalk.Kontalk;
 import org.kontalk.client.EndpointServer;
@@ -83,21 +85,27 @@ abstract class MessageCenterPacketListener implements StanzaListener {
         return (instance != null) ? instance.getRosterEntry(jid) : null;
     }
 
-    protected void sendBroadcast(Intent intent) {
+    protected void queueTask(Runnable task) {
         MessageCenterService instance = mInstance.get();
         if (instance != null)
+            instance.queueTask(task);
+    }
+
+    protected void sendBroadcast(Intent intent) {
+        MessageCenterService instance = mInstance.get();
+        if (instance != null && instance.isStarted())
             instance.mLocalBroadcastManager.sendBroadcast(intent);
     }
 
     protected void registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
         MessageCenterService instance = mInstance.get();
-        if (instance != null)
+        if (instance != null && instance.isStarted())
             instance.mLocalBroadcastManager.registerReceiver(receiver, filter);
     }
 
     protected void unregisterReceiver(BroadcastReceiver receiver) {
         MessageCenterService instance = mInstance.get();
-        if (instance != null)
+        if (instance != null && instance.isStarted())
             instance.mLocalBroadcastManager.unregisterReceiver(receiver);
     }
 
@@ -129,16 +137,16 @@ abstract class MessageCenterPacketListener implements StanzaListener {
             instance.mUploadServices.put(name, url);
     }
 
-    protected void resendPendingMessages(boolean retrying) {
+    protected void resendPendingMessages(boolean retrying, boolean forcePending) {
         MessageCenterService instance = mInstance.get();
         if (instance != null)
-            instance.resendPendingMessages(retrying);
+            instance.resendPendingMessages(retrying, forcePending);
     }
 
-    protected void resendPending(boolean retrying) {
+    protected void resendPending(boolean retrying, boolean forcePending, String to) {
         MessageCenterService instance = mInstance.get();
         if (instance != null) {
-            instance.resendPendingMessages(retrying);
+            instance.resendPendingMessages(retrying, forcePending, to);
             instance.resendPendingReceipts();
         }
     }
@@ -202,6 +210,18 @@ abstract class MessageCenterPacketListener implements StanzaListener {
         MessageCenterService instance = mInstance.get();
         if (instance != null)
             instance.endKeyPairImport();
+    }
+
+    protected void resumeSmAck() {
+        MessageCenterService instance = mInstance.get();
+        if (instance != null && instance.mConnection != null) {
+            try {
+                instance.mConnection.resumeSmAck();
+            }
+            catch (SmackException ignored) {
+                // we don't really care
+            }
+        }
     }
 
 }

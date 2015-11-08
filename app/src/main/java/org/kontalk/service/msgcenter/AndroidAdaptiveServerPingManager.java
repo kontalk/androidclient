@@ -202,12 +202,12 @@ public class AndroidAdaptiveServerPingManager extends AbstractAdaptiveServerPing
         Preferences.setPingAlarmBackoff(mContext, mNextIncrease);
     }
 
-    public static void onConnected(Context context) {
+    public static void onConnected() {
         synchronized (INSTANCES) {
-            Iterator<XMPPConnection> it = INSTANCES.keySet().iterator();
+            Iterator<Map.Entry<XMPPConnection, AndroidAdaptiveServerPingManager>> it = INSTANCES.entrySet().iterator();
             while (it.hasNext()) {
-                final XMPPConnection connection = it.next();
-                getInstanceFor(connection, context).onConnectivityChanged();
+                AndroidAdaptiveServerPingManager instance = it.next().getValue();
+                instance.onConnectivityChanged();
             }
         }
     }
@@ -215,12 +215,12 @@ public class AndroidAdaptiveServerPingManager extends AbstractAdaptiveServerPing
     /**
      * Unregister the alarm broadcast receiver and cancel the alarm.
      */
-    public static void onDestroy(Context context) {
+    public static void onDestroy() {
         synchronized (INSTANCES) {
-            Iterator<XMPPConnection> it = INSTANCES.keySet().iterator();
+            Iterator<Map.Entry<XMPPConnection, AndroidAdaptiveServerPingManager>> it = INSTANCES.entrySet().iterator();
             while (it.hasNext()) {
-                final XMPPConnection connection = it.next();
-                getInstanceFor(connection, context).disable();
+                AndroidAdaptiveServerPingManager instance = it.next().getValue();
+                instance.disable();
             }
         }
     }

@@ -23,10 +23,15 @@ import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.ui.adapter.ConversationListAdapter;
+import org.kontalk.ui.view.AbsListViewScrollDetector;
 import org.kontalk.ui.view.ConversationListItem;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.SystemUtils;
 
-import android.app.AlertDialog;
+import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.akalipetis.fragment.ActionModeListFragment;
+import com.akalipetis.fragment.MultiChoiceModeListener;
+
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -37,28 +42,26 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDiskIOException;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
+import android.support.v7.view.ActionMode;
 import android.util.Log;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ListView;
 import android.widget.Toast;
 
 
-public class ConversationListFragment extends ListFragment implements Contact.ContactChangeListener {
-    private static final String TAG = ConversationList.TAG;
+public class ConversationListFragment extends ActionModeListFragment
+        implements Contact.ContactChangeListener, MultiChoiceModeListener {
+    private static final String TAG = ConversationsActivity.TAG;
 
     private static final int THREAD_LIST_QUERY_TOKEN = 8720;
-
-    /** Context menu group ID for this fragment. */
-    private static final int CONTEXT_MENU_GROUP_ID = 1;
 
     private ThreadListQueryHandler mQueryHandler;
     private ConversationListAdapter mListAdapter;
@@ -70,16 +73,96 @@ public class ConversationListFragment extends ListFragment implements Contact.Co
     /** Offline mode menu item. */
     private MenuItem mOfflineMenu;
 
+    private View mAction;
+    private boolean mActionVisible;
+
+    private int mCheckedItemCount;
+
     private final ConversationListAdapter.OnContentChangedListener mContentChangedListener =
         new ConversationListAdapter.OnContentChangedListener() {
         public void onContentChanged(ConversationListAdapter adapter) {
-            startQuery();
+            if (!isFinishing())
+                startQuery();
         }
     };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.conversation_list, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        mAction = view.findViewById(R.id.action);
+        mAction.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                chooseContact();
+            }
+        });
+        mActionVisible = true;
+
+        getListView().setOnScrollListener(new AbsListViewScrollDetector() {
+            @Override
+            public void onScrollUp() {
+                if (mActionVisible) {
+                    mActionVisible = false;
+                    if (isAnimating())
+                        mAction.clearAnimation();
+
+                    Animation anim = AnimationUtils.loadAnimation(getActivity(), R.anim.exit_to_bottom);
+                    anim.setAnimationListener(new Animation.AnimationListener() {
+                        @Override
+                        public void onAnimationStart(Animation animation) {
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+                            mAction.clearAnimation();
+                            mAction.setVisibility(View.GONE);
+                        }
+
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {
+                        }
+                    });
+                    mAction.startAnimation(anim);
+                }
+            }
+
+            @Override
+            public void onScrollDown() {
+                if (!mActionVisible) {
+                    mActionVisible = true;
+                    if (isAnimating())
+                        mAction.clearAnimation();
+
+                    Animation anim = AnimationUtils.loadAnimation(getActivity(), R.anim.enter_from_bottom);
+                    mAction.startAnimation(anim);
+                    anim.setAnimationListener(new Animation.AnimationListener() {
+                        @Override
+                        public void onAnimationStart(Animation animation) {
+                            mAction.setVisibility(View.VISIBLE);
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+                            mAction.clearAnimation();
+                        }
+
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {
+                        }
+                    });
+                }
+            }
+
+            private boolean isAnimating() {
+                return mAction.getAnimation() != null;
+            }
+        });
     }
 
     @Override
@@ -105,7 +188,7 @@ public class ConversationListFragment extends ListFragment implements Contact.Co
         }
 
         setListAdapter(mListAdapter);
-        registerForContextMenu(list);
+        setMultiChoiceModeListener(this);
     }
 
     @Override
@@ -146,11 +229,10 @@ public class ConversationListFragment extends ListFragment implements Contact.Co
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()) {
-            case R.id.menu_compose:
-                chooseContact();
-                return true;
+        if (isActionModeActive())
+            return true;
 
+        switch(item.getItemId()) {
             case R.id.menu_status:
                 StatusActivity.start(getActivity());
                 return true;
@@ -160,8 +242,7 @@ public class ConversationListFragment extends ListFragment implements Contact.Co
                 final boolean currentMode = Preferences.getOfflineMode(ctx);
                 if (!currentMode && !Preferences.getOfflineModeUsed(ctx)) {
                     // show offline mode warning
-                    new AlertDialog.Builder(ctx)
-                        .setTitle(R.string.title_offline_mode_warning)
+                    new AlertDialogWrapper.Builder(ctx)
                         .setMessage(R.string.message_offline_mode_warning)
                         .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
@@ -202,60 +283,50 @@ public class ConversationListFragment extends ListFragment implements Contact.Co
         return super.onOptionsItemSelected(item);
     }
 
-    private static final int MENU_OPEN_THREAD = 1;
-    private static final int MENU_VIEW_CONTACT = 2;
-    private static final int MENU_DELETE_THREAD = 3;
-
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-        AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
-        ConversationListItem vitem = (ConversationListItem) info.targetView;
-        Conversation conv = vitem.getConversation();
-        if (conv != null) {
-            Contact contact = conv.getContact();
-            String title;
-            if (contact != null)
-                title = contact.getName() != null ? contact.getName() : contact.getNumber();
-            else
-                title = conv.getRecipient();
-
-            menu.setHeaderTitle(title);
-            menu.add(CONTEXT_MENU_GROUP_ID, MENU_OPEN_THREAD, MENU_OPEN_THREAD, R.string.view_conversation);
-            if (contact != null && contact.getId() > 0)
-                menu.add(CONTEXT_MENU_GROUP_ID, MENU_VIEW_CONTACT, MENU_VIEW_CONTACT, R.string.view_contact);
-            menu.add(CONTEXT_MENU_GROUP_ID, MENU_DELETE_THREAD, MENU_DELETE_THREAD, R.string.delete_thread);
-        }
+    public boolean isActionModeActive() {
+        return mCheckedItemCount > 0;
     }
 
     @Override
-    public boolean onContextItemSelected(android.view.MenuItem item) {
-        // not our context
-        if (item.getGroupId() != CONTEXT_MENU_GROUP_ID)
-            return false;
+    public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+        if (checked)
+            mCheckedItemCount++;
+        else
+            mCheckedItemCount--;
+        mode.setTitle(getResources()
+            .getQuantityString(R.plurals.context_selected,
+                mCheckedItemCount, mCheckedItemCount));
+    }
 
-        AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-        ConversationListItem vitem = (ConversationListItem) info.targetView;
-        Conversation conv = vitem.getConversation();
-
-        switch (item.getItemId()) {
-            case MENU_OPEN_THREAD:
-                ConversationList parent = getParentActivity();
-                if (parent != null)
-                    parent.openConversation(conv, info.position);
-                return true;
-
-            case MENU_VIEW_CONTACT:
-                Contact contact = conv.getContact();
-                if (contact != null)
-                    startActivity(new Intent(Intent.ACTION_VIEW, contact.getUri()));
-                return true;
-
-            case MENU_DELETE_THREAD:
-                deleteThread(conv.getThreadId());
-                return true;
+    @Override
+    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+        if (item.getItemId() == R.id.menu_delete) {
+            // using clone because listview returns its original copy
+            deleteSelectedThreads(SystemUtils
+                .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
+            mode.finish();
+            return true;
         }
+        return false;
+    }
 
-        return super.onContextItemSelected(item);
+    @Override
+    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+        MenuInflater inflater = mode.getMenuInflater();
+        inflater.inflate(R.menu.conversation_list_ctx, menu);
+        return true;
+    }
+
+    @Override
+    public void onDestroyActionMode(ActionMode mode) {
+        mCheckedItemCount = 0;
+        getListView().clearChoices();
+        mListAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+        return false;
     }
 
     private void launchDonate() {
@@ -269,10 +340,27 @@ public class ConversationListFragment extends ListFragment implements Contact.Co
         startActivity(i);
     }
 
+    private void deleteSelectedThreads(final SparseBooleanArray checked) {
+        new AlertDialogWrapper
+            .Builder(getActivity())
+            .setMessage(R.string.confirm_will_delete_threads)
+            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Context ctx = getActivity();
+                    for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
+                        if (checked.get(i))
+                            Conversation.deleteFromCursor(ctx, (Cursor) mListAdapter.getItem(i));
+                    }
+                    mListAdapter.notifyDataSetChanged();
+                }
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
+    }
+
     private void deleteThread(final long threadId) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.confirm_delete_thread);
-        builder.setIcon(android.R.drawable.ic_dialog_alert);
+        AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(getActivity());
         builder.setMessage(R.string.confirm_will_delete_thread);
         builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override
@@ -293,15 +381,13 @@ public class ConversationListFragment extends ListFragment implements Contact.Co
     }
 
     public void chooseContact() {
-        ConversationList parent = getParentActivity();
+        ConversationsActivity parent = getParentActivity();
         if (parent != null)
             parent.showContactPicker();
     }
 
     private void deleteAll() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.confirm_delete_all);
-        builder.setIcon(android.R.drawable.ic_dialog_alert);
+        AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(getActivity());
         builder.setMessage(R.string.confirm_will_delete_all);
         builder.setPositiveButton(android.R.string.ok, new OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
@@ -313,8 +399,8 @@ public class ConversationListFragment extends ListFragment implements Contact.Co
         builder.create().show();
     }
 
-    public ConversationList getParentActivity() {
-        return (ConversationList) getActivity();
+    public ConversationsActivity getParentActivity() {
+        return (ConversationsActivity) getActivity();
     }
 
     public void startQuery() {
@@ -352,12 +438,18 @@ public class ConversationListFragment extends ListFragment implements Contact.Co
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        ConversationListItem cv = (ConversationListItem) v;
-        Conversation conv = cv.getConversation();
+        int choiceMode = l.getChoiceMode();
+        if (choiceMode == ListView.CHOICE_MODE_NONE || choiceMode == ListView.CHOICE_MODE_SINGLE) {
+            ConversationListItem cv = (ConversationListItem) v;
+            Conversation conv = cv.getConversation();
 
-        ConversationList parent = getParentActivity();
-        if (parent != null)
-            parent.openConversation(conv, position);
+            ConversationsActivity parent = getParentActivity();
+            if (parent != null)
+                parent.openConversation(conv, position);
+        }
+        else {
+            super.onListItemClick(l, v, position, id);
+        }
     }
 
     /** Used only in fragment contexts. */
@@ -386,25 +478,30 @@ public class ConversationListFragment extends ListFragment implements Contact.Co
 
     /** Updates offline mode menu. */
     private void updateOffline() {
-        Context context = getActivity();
+        ConversationsActivity context = getParentActivity();
         if (mOfflineMenu != null && context != null) {
             boolean offlineMode = Preferences.getOfflineMode(context);
+            // set menu
             int icon = (offlineMode) ? R.drawable.ic_menu_start_conversation :
                 android.R.drawable.ic_menu_close_clear_cancel;
             int title = (offlineMode) ? R.string.menu_online : R.string.menu_offline;
             mOfflineMenu.setIcon(icon);
             mOfflineMenu.setTitle(title);
+            // set window title
+            context.setTitle(offlineMode);
         }
     }
 
     private void switchOfflineMode() {
-        Context ctx = getActivity();
-        boolean currentMode = Preferences.getOfflineMode(ctx);
-        Preferences.switchOfflineMode(ctx);
-        updateOffline();
-        // notify the user about the change
-        int text = (currentMode) ? R.string.going_online : R.string.going_offline;
-        Toast.makeText(ctx, text, Toast.LENGTH_SHORT).show();
+        ConversationsActivity ctx = getParentActivity();
+        if (ctx != null) {
+            boolean currentMode = Preferences.getOfflineMode(ctx);
+            Preferences.switchOfflineMode(ctx);
+            updateOffline();
+            // notify the user about the change
+            int text = (currentMode) ? R.string.going_online : R.string.going_offline;
+            Toast.makeText(ctx, text, Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

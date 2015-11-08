@@ -27,6 +27,7 @@ import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.ui.view.AudioPlayerControl;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.ui.view.MessageListItem;
+import org.kontalk.util.MessageUtils;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -37,6 +38,7 @@ import android.view.ViewGroup;
 import android.widget.AbsListView.RecyclerListener;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
+
 
 public class MessageListAdapter extends CursorAdapter {
 
@@ -73,12 +75,13 @@ public class MessageListAdapter extends CursorAdapter {
 
         MessageListItem headerView = (MessageListItem) view;
         CompositeMessage msg = CompositeMessage.fromCursor(context, cursor);
-        if (msg.getDirection() == Messages.DIRECTION_IN && mContact == null)
+        if (msg.getDirection() == Messages.DIRECTION_IN &&
+                (mContact == null || !mContact.getJID().equalsIgnoreCase(msg.getSender())))
             mContact = Contact.findByUserId(context, msg.getSender());
 
         long previous = -1;
         if (cursor.moveToPrevious()) {
-            previous = cursor.getLong(CompositeMessage.COLUMN_TIMESTAMP);
+            previous = MessageUtils.getMessageTimestamp(cursor);
             cursor.moveToNext();
         }
 
@@ -86,8 +89,24 @@ public class MessageListAdapter extends CursorAdapter {
     }
 
     @Override
+    public int getItemViewType(int position) {
+        Cursor c = (Cursor) getItem(position);
+        return c.getInt(CompositeMessage.COLUMN_DIRECTION);
+    }
+
+    @Override
+    public int getViewTypeCount() {
+        // incoming+outgoing
+        return 2;
+    }
+
+    @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        return mFactory.inflate(R.layout.message_list_item, parent, false);
+        int type = cursor.getInt(CompositeMessage.COLUMN_DIRECTION);
+        MessageListItem view = (MessageListItem) mFactory
+            .inflate(R.layout.message_list_item, parent, false);
+        view.afterInflate(type);
+        return view;
     }
 
     public interface OnContentChangedListener {

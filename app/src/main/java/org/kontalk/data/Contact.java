@@ -21,7 +21,11 @@ package org.kontalk.data;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
+
+import com.amulyakhare.textdrawable.TextDrawable;
+import com.amulyakhare.textdrawable.util.ColorGenerator;
 
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
@@ -30,18 +34,21 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.ContentObserver;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Handler;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.PhoneLookup;
 import android.support.v4.util.LruCache;
 import android.util.Log;
 
+import org.kontalk.R;
 import org.kontalk.crypto.PGPLazyPublicKeyRingLoader;
 import org.kontalk.provider.MyUsers.Keys;
 import org.kontalk.provider.MyUsers.Users;
@@ -94,7 +101,7 @@ public class Contact {
 
     private boolean mBlocked;
 
-    private BitmapDrawable mAvatar;
+    private Drawable mAvatar;
     private byte [] mAvatarData;
 
     private String mFingerprint;
@@ -171,6 +178,17 @@ public class Contact {
     }
 
     private final static ContactCache cache = new ContactCache();
+
+    public static void init(Context context, Handler handler) {
+        context.getContentResolver().registerContentObserver(Contacts.CONTENT_URI, false,
+            new ContentObserver(handler) {
+                @Override
+                public void onChange(boolean selfChange) {
+                    invalidate();
+                }
+            }
+        );
+    }
 
     private Contact(long contactId, String lookupKey, String name, String number, String jid, boolean blocked) {
         mContactId = contactId;
@@ -254,6 +272,16 @@ public class Contact {
         mVersion = version;
     }
 
+    private static Drawable generateRandomAvatar(Context context, Contact contact) {
+        return TextDrawable.builder()
+            .beginConfig()
+            .width(context.getResources().getDimensionPixelSize(R.dimen.avatar_size))
+            .height(context.getResources().getDimensionPixelSize(R.dimen.avatar_size))
+            .endConfig()
+            .buildRect(contact.mName.substring(0, 1).toUpperCase(Locale.US),
+                ColorGenerator.MATERIAL.getColor(contact.mJID));
+    }
+
     public void getAvatarAsync(final Context context, final ContactCallback callback) {
         if (mAvatar != null) {
             callback.avatarLoaded(this, mAvatar);
@@ -263,7 +291,7 @@ public class Contact {
             new Thread(new Runnable() {
                 public void run() {
                     try {
-                        Drawable avatar = getAvatar(context, null);
+                        Drawable avatar = getAvatar(context);
                         callback.avatarLoaded(Contact.this, avatar);
                     }
                     catch (Exception e) {
@@ -275,7 +303,7 @@ public class Contact {
         }
     }
 
-    public synchronized Drawable getAvatar(Context context, Drawable defaultValue) {
+    public synchronized Drawable getAvatar(Context context) {
         if (mAvatar == null) {
             if (mAvatarData == null) {
                 Uri uri = getUri();
@@ -288,7 +316,11 @@ public class Contact {
                 mAvatar = new BitmapDrawable(context.getResources(), b);
             }
         }
-        return mAvatar != null ? mAvatar : defaultValue;
+
+        if (mAvatar == null)
+            mAvatar = generateRandomAvatar(context, this);
+
+        return mAvatar;
     }
 
     private void clear() {
@@ -329,8 +361,17 @@ public class Contact {
         }
     }
 
+    /** Returns the text to be used in a list view section indexer. */
+    public static String getStringForSection(Cursor cursor) {
+        String name = cursor.getString(COLUMN_DISPLAY_NAME);
+        if (name == null)
+            name = cursor.getString(COLUMN_NUMBER);
+
+        return name.substring(0, 1).toUpperCase();
+    }
+
     /** Builds a contact from a UsersProvider cursor. */
-    public static Contact fromUsersCursor(Context context, Cursor cursor) {
+    public static Contact fromUsersCursor(Cursor cursor) {
         // try the cache
         String jid = cursor.getString(COLUMN_JID);
         Contact c = cache.get(jid);
@@ -460,7 +501,8 @@ public class Contact {
 
     public static Cursor queryContacts(Context context) {
         return context.getContentResolver().query(Users.CONTENT_URI, ALL_CONTACTS_PROJECTION,
-            Users.REGISTERED + " <> 0", null, Users.DISPLAY_NAME);
+            Users.REGISTERED + " <> 0", null,
+            Users.DISPLAY_NAME + " COLLATE NOCASE," + Users.NUMBER + " COLLATE NOCASE");
     }
 
 }

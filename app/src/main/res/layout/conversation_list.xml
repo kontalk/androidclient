@@ -16,8 +16,8 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
 
@@ -30,6 +30,9 @@
         android:background="@color/compose_message_list_background"
         android:cacheColorHint="@color/compose_message_list_background"
         android:transcriptMode="disabled"
+        android:divider="@null"
+        android:dividerHeight="0dp"
+        android:clipToPadding="false"
         android:fadingEdgeLength="8dp">
         <!-- Preview: listitem=@layout/conversation_list_item -->
     </ListView>
@@ -43,4 +46,19 @@
         android:text="@string/text_conversations_empty"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
-</LinearLayout>
+    <android.support.design.widget.FloatingActionButton
+        android:contentDescription="@string/menu_compose"
+        android:id="@+id/action"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:src="@drawable/ic_create_white"
+        android:layout_gravity="bottom|right|end"
+        android:layout_marginBottom="@dimen/action_button_margin"
+        android:layout_marginRight="@dimen/action_button_margin"
+        android:layout_marginEnd="@dimen/action_button_margin"
+        app:elevation="6dp"
+        app:pressedTranslationZ="12dp"
+        app:fabSize="normal"/>
+
+</FrameLayout>

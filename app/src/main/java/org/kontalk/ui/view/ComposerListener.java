@@ -45,4 +45,7 @@ public interface ComposerListener {
     /** Asks the parent to stop all sounds. */
     void stopAllSounds();
 
+    /** Text has been changed. */
+    void textChanged(CharSequence text);
+
 }

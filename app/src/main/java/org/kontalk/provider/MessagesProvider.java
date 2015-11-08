@@ -47,7 +47,6 @@ import android.database.DatabaseUtils;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.util.Log;
 
@@ -367,7 +366,7 @@ public class MessagesProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection,
             String[] selectionArgs, String sortOrder) {
-        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+        SQLitePagedQueryBuilder qb = new SQLitePagedQueryBuilder();
 
         switch (sUriMatcher.match(uri)) {
             case MESSAGES:
@@ -405,6 +404,27 @@ public class MessagesProvider extends ContentProvider {
                 break;
 
             case CONVERSATIONS_ID:
+                // page row count
+                int count = 0;
+                // last ID (scrolling cursor)
+                int lastId = 0;
+
+                try {
+                    lastId = Integer.parseInt(uri.getQueryParameter("last"));
+                }
+                catch (Exception ignored) {
+                }
+                try {
+                    count = Integer.parseInt(uri.getQueryParameter("count"));
+                }
+                catch (Exception ignored) {
+                }
+
+                // setup page if requested
+                if (count > 0) {
+                    qb.setPage(count, Messages._ID, lastId);
+                }
+
                 qb.setTables(TABLE_MESSAGES);
                 qb.setProjectionMap(messagesProjectionMap);
                 qb.appendWhere(Messages.THREAD_ID + "=" + uri.getPathSegments().get(1));
@@ -807,7 +827,7 @@ public class MessagesProvider extends ContentProvider {
                             if (doUpdateFulltext) {
                                 int direction = c.getInt(2);
                                 int encrypted = c.getInt(3);
-                                if ((direction == Messages.DIRECTION_IN) ? (encrypted == 0) : true)
+                                if (direction != Messages.DIRECTION_IN || encrypted == 0)
                                     updateFulltext(db, c.getLong(1), threadId, c.getBlob(4));
                             }
                         }
@@ -1053,6 +1073,7 @@ public class MessagesProvider extends ContentProvider {
                 Messages.BODY_MIME,
                 Messages.ATTACHMENT_MIME,
                 Messages.TIMESTAMP,
+                Messages.SERVER_TIMESTAMP,
             }, Messages.THREAD_ID + " = ?", new String[] { String.valueOf(threadId) },
             null, null, Messages.INVERTED_SORT_ORDER, "1");
 
@@ -1066,7 +1087,10 @@ public class MessagesProvider extends ContentProvider {
 
                 setThreadContent(c.getBlob(3), c.getString(4), c.getString(5), v);
 
-                v.put(Threads.TIMESTAMP, c.getLong(6));
+                // use server timestamp if present
+                long ts = c.getLong(7);
+                v.put(Threads.TIMESTAMP, ts > 0 ? ts : c.getLong(6));
+
                 rc = db.update(TABLE_THREADS, v, Threads._ID + " = ?", new String[] { String.valueOf(threadId) });
                 if (rc > 0) {
                     notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
@@ -1261,7 +1285,7 @@ public class MessagesProvider extends ContentProvider {
         ContentValues values = new ContentValues(1);
         values.put(Messages.ATTACHMENT_FETCH_URL, fetchUrl);
         context.getContentResolver().update(Messages.CONTENT_URI, values,
-                Messages._ID + " = " + msgId, null);
+            Messages._ID + " = " + msgId, null);
     }
 
     public static boolean exists(Context context, long msgId) {

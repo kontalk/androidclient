@@ -18,38 +18,51 @@
 
 <org.kontalk.ui.view.ContactsListItem xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="?android:attr/listPreferredItemHeight"
-    android:paddingRight="10dip" >
+    android:layout_height="wrap_content"
+    android:minHeight="@dimen/avatar_list_item_height"
+    android:paddingRight="?attr/listPreferredItemPaddingRight"
+    android:paddingEnd="?attr/listPreferredItemPaddingRight">
 
-    <android.widget.QuickContactBadge
-        android:id="@+id/avatar"
-        android:layout_marginLeft="7dip"
-        android:layout_centerVertical="true"
-        style="?android:attr/quickContactBadgeStyleWindowSmall" />
+    <FrameLayout
+        android:id="@+id/header_container"
+        android:layout_width="@dimen/indexed_list_margin"
+        android:layout_height="match_parent"
+        android:background="?android:attr/colorBackground">
+        <include layout="@layout/pinned_header_listview_side_header" />
+    </FrameLayout>
 
-    <TextView android:id="@android:id/text1"
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:singleLine="true"
-        android:layout_marginTop="6dip"
-        android:layout_marginRight="5dip"
-        android:layout_marginLeft="7dip"
-        android:layout_alignParentTop="true"
-        android:layout_toRightOf="@id/avatar"
-        android:layout_alignWithParentIfMissing="true"
-        android:ellipsize="marquee"  />
+        android:minHeight="@dimen/avatar_list_item_height"
+        android:layout_toRightOf="@+id/header_container">
 
-    <TextView android:id="@android:id/text2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:singleLine="true"
-        android:layout_marginBottom="10dip"
-        android:layout_marginLeft="7dip"
-        android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@id/avatar"
-        android:layout_alignWithParentIfMissing="true"
-        android:ellipsize="end" />
+        <org.kontalk.ui.view.CircleContactBadge
+            android:id="@+id/avatar"
+            style="@style/AvatarListItemStyle" />
+
+        <TextView
+            android:id="@android:id/text1"
+            style="@style/AvatarListItemTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignWithParentIfMissing="true"
+            android:layout_toRightOf="@id/avatar"
+            android:ellipsize="marquee"
+            android:singleLine="true" />
+
+        <TextView
+            android:id="@android:id/text2"
+            style="@style/AvatarListItemSubtitleStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignWithParentIfMissing="true"
+            android:paddingBottom="16dp"
+            android:layout_below="@android:id/text1"
+            android:layout_toRightOf="@id/avatar"
+            android:maxLines="2"
+            android:ellipsize="end"/>
+    </RelativeLayout>
 
 </org.kontalk.ui.view.ContactsListItem>

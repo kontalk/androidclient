@@ -34,7 +34,7 @@
 
     <!-- appearance settings defaults -->
     <string name="pref_default_font_size">medium</string>
-    <string name="pref_default_balloons">classic</string>
+    <string name="pref_default_balloons">hangout</string>
     <string name="pref_default_text_enter">default</string>
 
     <!-- media settings defaults -->

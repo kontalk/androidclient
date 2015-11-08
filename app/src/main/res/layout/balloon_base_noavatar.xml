@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/message_view_parent"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+
+    <LinearLayout android:id="@+id/balloon_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="right">
+
+        <org.kontalk.ui.view.MessageContentLayout
+            android:id="@+id/content"
+            android:orientation="vertical"
+            android:maxWidth="@dimen/message_text_width"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
+            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"/>
+
+        <LinearLayout android:id="@+id/status_box"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:orientation="horizontal"
+                      android:baselineAligned="false"
+                      android:layout_marginRight="2dp"
+                      android:layout_marginBottom="2dp"
+                      android:gravity="right|bottom" >
+
+            <ImageView android:id="@+id/status_indicator"
+                       android:layout_width="16dp"
+                       android:layout_height="16dp"
+                       android:adjustViewBounds="false"
+                       android:visibility="gone" />
+
+            <ImageView android:id="@+id/warning_icon"
+                       android:visibility="gone"
+                       android:layout_width="16dp"
+                       android:layout_height="16dp"
+                       android:src="@drawable/ic_msg_warning" />
+
+            <TextView android:id="@+id/date_view"
+                      style="@android:style/TextAppearance.Small"
+                      android:textSize="@dimen/dateview_text_size"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

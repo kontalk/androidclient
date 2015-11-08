@@ -28,7 +28,6 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import org.kontalk.R;
-import org.kontalk.data.Contact;
 import org.kontalk.message.TextComponent;
 import org.kontalk.util.Preferences;
 
@@ -68,6 +67,8 @@ public class TextContentView extends EmojiconTextView
     private boolean mEncryptionPlaceholder;
     private BackgroundColorSpan mHighlightColorSpan;  // set in ctor
 
+    private boolean mMeasureHack;
+
     public TextContentView(Context context) {
         super(context);
         init(context);
@@ -94,16 +95,22 @@ public class TextContentView extends EmojiconTextView
      * http://stackoverflow.com/questions/7439748/why-is-wrap-content-in-multiple-line-textview-filling-parent
      */
 
+    void enableMeasureHack(boolean enabled) {
+        mMeasureHack = enabled;
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        Layout layout = getLayout();
-        if (layout != null) {
-            int width = (int) Math.ceil(getMaxLineWidth(layout))
+        if (mMeasureHack) {
+            Layout layout = getLayout();
+            if (layout != null) {
+                int width = (int) Math.ceil(getMaxLineWidth(layout))
                     + getCompoundPaddingLeft() + getCompoundPaddingRight();
-            int height = getMeasuredHeight();
-            setMeasuredDimension(width, height);
+                int height = getMeasuredHeight();
+                setMeasuredDimension(width, height);
+            }
         }
     }
 
@@ -118,11 +125,12 @@ public class TextContentView extends EmojiconTextView
         return max_width;
     }
 
-    public void bind(long databaseId, TextComponent component, Contact contact, Pattern highlight) {
+    @Override
+    public void bind(long databaseId, TextComponent component, Pattern highlight) {
         mComponent = component;
         Context context = getContext();
 
-        SpannableStringBuilder formattedMessage = formatMessage(contact, highlight);
+        SpannableStringBuilder formattedMessage = formatMessage(highlight);
         String size = Preferences.getFontSize(context);
         int sizeId;
         if (size.equals("small"))
@@ -152,10 +160,12 @@ public class TextContentView extends EmojiconTextView
         setText(formattedMessage);
     }
 
+    @Override
     public void unbind() {
         recycle();
     }
 
+    @Override
     public TextComponent getComponent() {
         return mComponent;
     }
@@ -170,7 +180,7 @@ public class TextContentView extends EmojiconTextView
         return mEncryptionPlaceholder;
     }
 
-    private SpannableStringBuilder formatMessage(final Contact contact, final Pattern highlight) {
+    private SpannableStringBuilder formatMessage(final Pattern highlight) {
         SpannableStringBuilder buf;
 
         String textContent = mComponent.getContent();

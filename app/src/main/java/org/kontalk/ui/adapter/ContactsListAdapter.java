@@ -18,24 +18,27 @@
 
 package org.kontalk.ui.adapter;
 
+import android.content.Context;
+import android.database.Cursor;
+import android.util.Log;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AbsListView.RecyclerListener;
+import android.widget.AlphabetIndexer;
+import android.widget.ListView;
+import android.widget.TextView;
+
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.ui.ContactsListActivity;
 import org.kontalk.ui.view.ContactsListItem;
-import org.kontalk.ui.view.MessageListItem;
 
-import android.content.Context;
-import android.database.Cursor;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.CursorAdapter;
-import android.widget.ListView;
-import android.widget.AbsListView.RecyclerListener;
+import lb.library.cursor.SearchablePinnedHeaderCursorListViewAdapter;
 
 
-public class ContactsListAdapter extends CursorAdapter {
+public class ContactsListAdapter extends SearchablePinnedHeaderCursorListViewAdapter {
     private static final String TAG = ContactsListActivity.TAG;
 
     private final LayoutInflater mFactory;
@@ -43,36 +46,67 @@ public class ContactsListAdapter extends CursorAdapter {
 
     public ContactsListAdapter(Context context, ListView list) {
         super(context, null, false);
+        setSectionIndexer(new AlphabetIndexer(null, Contact.COLUMN_DISPLAY_NAME,
+            "#ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
         mFactory = LayoutInflater.from(context);
 
         list.setRecyclerListener(new RecyclerListener() {
             public void onMovedToScrapHeap(View view) {
-                if (view instanceof MessageListItem) {
+                if (view instanceof ContactsListItem) {
                     ((ContactsListItem) view).unbind();
                 }
             }
         });
     }
 
+    public interface OnContentChangedListener {
+        void onContentChanged(ContactsListAdapter adapter);
+    }
+
+    public void setPinnedHeader(Context context) {
+        final TypedValue typedValue = new TypedValue();
+
+        context.getTheme().resolveAttribute(android.R.attr.colorBackground, typedValue, true);
+        int pinnedHeaderBackgroundColor = context.getResources().getColor(typedValue.resourceId);
+        setPinnedHeaderBackgroundColor(pinnedHeaderBackgroundColor);
+
+        int textColor = context.getResources().getColor(R.color.pinned_header_text);
+        setPinnedHeaderTextColor(textColor);
+    }
+
+    @Override
+    public View newView(Context context, Cursor cursor, ViewGroup parent) {
+        final View inflated = mFactory.inflate(R.layout.contacts_list_item, parent, false);
+        final ViewHolder holder = new ViewHolder();
+        holder.headerView = (TextView) inflated.findViewById(R.id.header_text);
+        holder.text1 = (TextView) inflated.findViewById(android.R.id.text1);
+        holder.text2 = (TextView) inflated.findViewById(android.R.id.text2);
+        inflated.setTag(holder);
+        return inflated;
+    }
+
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
+        super.bindView(view, context, cursor);
+
         if (!(view instanceof ContactsListItem)) {
             Log.e(TAG, "Unexpected bound view: " + view);
             return;
         }
 
         ContactsListItem headerView = (ContactsListItem) view;
-        Contact contact = Contact.fromUsersCursor(context, cursor);
+        Contact contact = Contact.fromUsersCursor(cursor);
         headerView.bind(context, contact);
     }
 
     @Override
-    public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        return mFactory.inflate(R.layout.contacts_list_item, parent, false);
+    protected TextView findHeaderView(View itemView) {
+        return ((ViewHolder) itemView.getTag()).headerView;
     }
 
-    public interface OnContentChangedListener {
-        void onContentChanged(ContactsListAdapter adapter);
+    @Override
+    protected Cursor getFilterCursor(CharSequence charSequence) {
+        return null;
     }
 
     public void setOnContentChangedListener(OnContentChangedListener l) {
@@ -85,5 +119,9 @@ public class ContactsListAdapter extends CursorAdapter {
         if (c != null && !c.isClosed() && mOnContentChangedListener != null) {
             mOnContentChangedListener.onContentChanged(this);
         }
+    }
+
+    private static class ViewHolder {
+        public TextView headerView, text1, text2;
     }
 }

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/message_view_parent"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout android:id="@+id/balloon_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="12dp"
+        android:layout_marginStart="12dp"
+        android:layout_toLeftOf="@+id/avatar"
+        android:layout_toStartOf="@+id/avatar"
+        android:orientation="vertical"
+        android:gravity="end">
+
+        <org.kontalk.ui.view.MessageContentLayout
+            android:id="@+id/content"
+            android:orientation="vertical"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
+            android:layout_gravity="end"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <LinearLayout android:id="@+id/status_box"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:baselineAligned="false"
+            android:layout_marginEnd="2dp"
+            android:layout_marginRight="2dp"
+            android:layout_marginBottom="2dp"
+            android:gravity="end|bottom" >
+
+            <ImageView android:id="@+id/status_indicator"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:adjustViewBounds="false"
+                android:visibility="gone" />
+
+            <ImageView android:id="@+id/warning_icon"
+                android:visibility="gone"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_msg_warning" />
+
+            <TextView android:id="@+id/date_view"
+                style="@android:style/TextAppearance.Small"
+                android:textSize="@dimen/dateview_text_size"
+                android:singleLine="true"
+                android:ellipsize="none"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <org.kontalk.ui.view.CircleContactBadge
+        android:id="@+id/avatar"
+        android:layout_gravity="top"
+        android:layout_height="48dp"
+        android:layout_width="48dp"
+        android:layout_alignTop="@+id/balloon_view"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="4dp"/>
+
+</RelativeLayout>

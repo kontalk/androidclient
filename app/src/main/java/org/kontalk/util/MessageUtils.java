@@ -21,8 +21,13 @@ package org.kontalk.util;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.format.DateUtils;
@@ -60,10 +65,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+
+import com.afollestad.materialdialogs.AlertDialogWrapper;
+
+import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_TIMESTAMP;
 
 
 public final class MessageUtils {
@@ -82,8 +90,8 @@ public final class MessageUtils {
                 DateUtils.FORMAT_CAP_AMPM;
 
         return DateUtils.getRelativeDateTimeString(context, when,
-                DateUtils.SECOND_IN_MILLIS, DateUtils.DAY_IN_MILLIS * 2,
-                format_flags);
+            DateUtils.SECOND_IN_MILLIS, DateUtils.DAY_IN_MILLIS * 2,
+            format_flags);
     }
 
     public static String formatDateString(Context context, long when) {
@@ -164,6 +172,16 @@ public final class MessageUtils {
         a += tm.getOffset(a);
         b += tm.getOffset(b);
         return (a / MILLISECONDS_IN_DAY) == (b / MILLISECONDS_IN_DAY);
+    }
+
+    public static long getMessageTimestamp(CompositeMessage msg) {
+        long serverTime = msg.getServerTimestamp();
+        return serverTime > 0 ? serverTime : msg.getTimestamp();
+    }
+
+    public static long getMessageTimestamp(Cursor c) {
+        long serverTime = c.getLong(CompositeMessage.COLUMN_SERVER_TIMESTAMP);
+        return serverTime > 0 ? serverTime : c.getLong(CompositeMessage.COLUMN_TIMESTAMP);
     }
 
     public static String bytesToHex(byte[] data) {
@@ -265,7 +283,16 @@ public final class MessageUtils {
         return details.toString();
     }
 
-    public static CharSequence getMessageDetails(Context context, CompositeMessage msg, String decodedPeer) {
+    public static void showMessageDetails(Context context, CompositeMessage msg, String decodedPeer) {
+        CharSequence messageDetails = MessageUtils.getMessageDetails(
+            context, msg, decodedPeer);
+        new AlertDialogWrapper.Builder(context)
+            .setTitle(R.string.title_message_details)
+            .setMessage(messageDetails)
+            .setCancelable(true).show();
+    }
+
+    private static CharSequence getMessageDetails(Context context, CompositeMessage msg, String decodedPeer) {
         SpannableStringBuilder details = new SpannableStringBuilder();
         Resources res = context.getResources();
         int direction = msg.getDirection();
@@ -549,19 +576,21 @@ public final class MessageUtils {
             Coder coder = UsersProvider.getDecryptCoder(context, server, key, msg.getSender(true));
 
             // decrypt
-            StringBuilder mimeFound = new StringBuilder();
-            StringBuilder clearText = new StringBuilder();
-            List<DecryptException> errors = new LinkedList<DecryptException>();
-            coder.decryptText(encryptedData, true, clearText, mimeFound, errors);
+            Coder.DecryptOutput result = coder.decryptText(encryptedData, true);
 
             String contentText;
 
-            if (XMPPUtils.XML_XMPP_TYPE.equalsIgnoreCase(mimeFound.toString())) {
-                m = XMPPUtils.parseMessageStanza(clearText.toString());
+            if (XMPPUtils.XML_XMPP_TYPE.equalsIgnoreCase(result.mime)) {
+                m = XMPPUtils.parseMessageStanza(result.cleartext);
+
+                if (result.timestamp != null && !checkDriftedDelay(m, result.timestamp))
+                    result.errors.add(new DecryptException(DECRYPT_EXCEPTION_INVALID_TIMESTAMP,
+                        "Drifted timestamp"));
+
                 contentText = m.getBody();
             }
             else {
-                contentText = clearText.toString();
+                contentText = result.cleartext;
             }
 
             // clear componenets (we are adding new ones)
@@ -570,11 +599,11 @@ public final class MessageUtils {
             if (contentText != null)
                 msg.addComponent(new TextComponent(contentText));
 
-            if (errors.size() > 0) {
+            if (result.errors.size() > 0) {
 
                 int securityFlags = msg.getSecurityFlags();
 
-                for (DecryptException err : errors) {
+                for (DecryptException err : result.errors) {
 
                     int code = err.getCode();
                     switch (code) {
@@ -728,6 +757,19 @@ public final class MessageUtils {
         }
     }
 
+    private static boolean checkDriftedDelay(Message m, Date expected) {
+        Date stamp = XMPPUtils.getStanzaDelay(m);
+        if (stamp != null) {
+            long time = stamp.getTime();
+            long now = expected.getTime();
+            long diff = Math.abs(now - time);
+            return (diff < Coder.TIMEDIFF_THRESHOLD);
+        }
+
+        // no timestamp found
+        return true;
+    }
+
     /** Fills in a {@link ContentValues} object from the given message. */
     public static void fillContentValues(ContentValues values, CompositeMessage msg) {
         byte[] content = null;
@@ -799,6 +841,28 @@ public final class MessageUtils {
         values.put(Messages.SECURITY_FLAGS, msg.getSecurityFlags());
 
         values.put(Messages.SERVER_TIMESTAMP, msg.getServerTimestamp());
+    }
+
+    public static Bitmap drawableToBitmap(Drawable drawable) {
+        Bitmap bitmap;
+
+        if (drawable instanceof BitmapDrawable) {
+            BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+            if(bitmapDrawable.getBitmap() != null) {
+                return bitmapDrawable.getBitmap();
+            }
+        }
+
+        if(drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) {
+            bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888); // Single color bitmap will be created of 1x1 pixel
+        } else {
+            bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        }
+
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        return bitmap;
     }
 
 }

@@ -36,8 +36,8 @@
   <string name="pref_network_settings">Parámetres de la xarxa</string>
   <string name="pref_network_uri">Adreça del servidor (manual)</string>
   <string name="pref_title_network_uri">Això desactivarà la gestió automàtica de la llista de servidors</string>
-  <string name="number_validation_intro1">Per favor, introduïu el nom, trieu el codi del país i escriviu el número de mòbil. Vos enviarem un SMS amb el codi de verificació. El número de telèfon s\'usarà una sola vegada i després serà eliminat.</string>
-  <string name="number_validation_intro2">Si no podeu rebre SMS en aquest dispositiu, introduïu el número d\'un telèfon vostre i escriviu el codi de verificació que rebreu via SMS.</string>
+  <string name="number_validation_intro1">Per favor, introduïu el nom, trieu el codi del país i escriviu el número de mòbil. A la següent pantalla hi haurà més instruccions.</string>
+  <string name="number_validation_intro2">Si no podeu rebre SMS en aquest dispositiu, introduïu el número d\'un telèfon vostre: associarem el número a aquest dispositiu.</string>
   <string name="code_validation_intro">Tot seguit hauríeu de rebre un SMS o una trucada des d\'aquest número:</string>
   <string name="code_validation_intro2">Per favor escriviu a sota el codi que heu rebut.</string>
   <string name="code_validation_intro_manual">Per favor, escriviu el codi de verificació que heu rebut. Recordeu que cada codi només es pot fer servir una vegada.</string>
@@ -45,12 +45,12 @@
   <string name="hint_validation_number">El vostre número</string>
   <string name="hint_validation_code">Codi de verificació</string>
   <string name="warn_invalid_number">Per favor, escriviu un número de teléfon vàlid.</string>
-  <string name="msg_validating_phone">S\'està sol·licitant el codi SMS de verificació…</string>
+  <string name="msg_validating_phone">Fent la petició de registre…</string>
   <string name="msg_initializing">S\'està fent el registre a la xarxa Kontalk…</string>
   <string name="msg_authenticated">S\'ha registrat a la xarxa!</string>
   <string name="share">Comparteix</string>
   <string name="resend">Torna a enviar</string>
-  <string name="copy_message_text">Copia el text del missatge</string>
+  <string name="copy_message_text">Copia el text</string>
   <string name="delete_message">Esborra el missatge</string>
   <string name="confirm_delete_all">Elimina totes les converses</string>
   <string name="confirm_will_delete_all">S\'eliminaran totes les converses.</string>
@@ -70,7 +70,7 @@
   <string name="hint_open_kbd_to_compose">Utilitzeu el teclat per a redactar un missatge</string>
   <string name="view_image">Mostra la imatge</string>
   <string name="title_message_options">Opcions del missatge</string>
-  <string name="menu_message_details">Mira els detalls del missatge</string>
+  <string name="menu_message_details">Detalls</string>
   <string name="title_message_details">Detalls del missatge</string>
   <string name="message_type_label">"Tipus: "</string>
   <string name="text_message">Missatge de text</string>
@@ -116,7 +116,7 @@
   <string name="pref_title_on_hide_presence">La resta d\'usuaris no sabrà que esteu en línia</string>
   <string name="pref_title_off_hide_presence">La resta d\'usuaris veuran quan esteu en línia i quan va ser l\'última connexió</string>
   <string name="contact_not_registered">Aquest contacte no sembla registrat a Kontalk.</string>
-  <string name="error_store_outbox">No ha estat possible desar el missatge a la safata d\'eixida.</string>
+  <string name="error_store_outbox">No ha estat possible desar el missatge a la safata d\'eixida. Hi ha espai lliure a la memòria?</string>
   <string name="decrypt_message">Desxifra el missatge</string>
   <string name="download_file">Descarrega el fitxer</string>
   <string name="download_again">Torna a descarregar</string>
@@ -150,8 +150,7 @@
   <string name="peer_unknown">(desconegut)</string>
   <string name="msg_draft_saved">El missatge s\'ha desat com a esborrany.</string>
   <string name="send_mime_not_supported">Aquest tipus de fitxer no està suportat.</string>
-  <string name="button_validate">Sol·licita el codi de verificació</string>
-  <string name="button_validation_code">Ja tinc codi de verificació</string>
+  <string name="button_validate">Registre</string>
   <string name="button_validation_register">Verifica</string>
   <string name="notify_ticker_download_completed">Descàrrega completa</string>
   <string name="notify_title_download_completed">Descàrrega completa</string>
@@ -173,15 +172,13 @@
   <string name="menu_refresh">Actualitza</string>
   <string name="menu_invite">Convida usuaris</string>
   <string name="title_error">Error</string>
-  <string name="msg_do_refresh">Premeu el botó \'refresca\' per a actualitzar la llista de contactes.</string>
+  <string name="msg_do_refresh">Estireu per a actualitzar la llista de contactes.</string>
   <string name="msg_sync_progress">S\'està actualitzant la llista de contactes…</string>
   <string name="err_sync_failed">No ha estat possible actualitzar la llista de contactes. Per favor, torneu a intentar-ho més tard.</string>
   <string name="err_sync_nonetwork">La xarxa no està disponible. Per favor, intenteu-ho més tard.</string>
   <string name="text_invite_message">Ei! Proveu Kontalk (és a Google Play Store), una aplicació de missatgeria lliure i gratuïta! https://play.google.com/store/apps/details?id=org.kontalk</string>
-  <string name="text_contacts_empty">Els nou usuaris s'afegiran automàticament a aquesta llista.
-
-Useu <b>Menu</b> &amp;gt; <b>Convida usuaris</b> per a enviar un missatge d\\\'invitació a algú.</string>
-  <string name="text_conversations_empty">Per a començar a escriure missatges useu la icona <b>missatge nou</b> que hi ha dalt.</string>
+  <string name="text_contacts_empty">Els nou usuaris s\'afegiran automàticament a aquesta llista.\n\nUseu <b>Menu</b> &gt; <b>Convida usuaris</b> per a enviar un missatge d\'invitació a algú.</string>
+  <string name="text_conversations_empty">Per a començar a escriure missatges useu el botó <b>missatge nou</b> de sota.</string>
   <string name="notify_ticker_external_storage">L\'emmagatzematge extern no està disponible</string>
   <string name="notify_text_external_storage">No ha estat possible escriure a l\'emmagatzematge extern.</string>
   <string name="title_user_not_found">No s\'ha trobat l\'usuari</string>
@@ -204,7 +201,7 @@ Useu <b>Menu</b> &amp;gt; <b>Convida usuaris</b> per a enviar un missatge d\\\'i
   <string name="attachment_download">Descàrrega del fitxer adjunt</string>
   <string name="attachment_upload">Càrrega del fitxer adjunt</string>
   <string name="seen_moment_ago_label">fa una estona</string>
-  <string name="seen_online_label">Treballa en línia</string>
+  <string name="seen_online_label">està en línia</string>
   <string name="seen_typing_label">està escrivint…</string>
   <string name="invitation_sent_label">invitació pendent</string>
   <string name="pref_custom_background">Fons personalitzat</string>
@@ -344,11 +341,11 @@ Useu <b>Menu</b> &amp;gt; <b>Convida usuaris</b> per a enviar un missatge d\\\'i
   <string name="msg_delete_account_progress">S\'està suprimint el vostre compte…</string>
   <string name="msg_user_blocked">S\'ha blocat l\'usuari.</string>
   <string name="msg_user_unblocked">S\'ha desblocat l\'usuari.</string>
-  <string name="msg_block_user_warning"><b>LLEGIU ATENTAMENT. GRÀCIES.</b>\nA punt de blocar l\'usuari. Si ho feu, aquest usuari no podrà enviar-vos cap missatge fins que el desbloqueu. Tampoc podrà veure el vostre estat ni l\'última connexió, i tampoc podreu veure el seu estat. Com a efecte secundari, tampoc podreu enviar-li cap missatge.</string>
-  <string name="msg_unblock_user_warning"><b>LLEGIU ATENTAMENT. GRÀCIES.</b>\nA punt de desblocar l\'usuari. Si el desbloqueu podrà enviar-vos missatges i veure el vostre estat i l\'última connexió.</string>
+  <string name="msg_block_user_warning">Esteu a punt de blocar aquest usuari. Si ho feu, aquest usuari no podrà enviar-vos cap missatge fins que el desbloqueu. Tampoc podrà veure el vostre estat ni l\'última connexió, i tampoc podreu veure el seu estat. Com a efecte secundari, tampoc podreu enviar-li cap missatge.</string>
+  <string name="msg_unblock_user_warning">Esteu a punt de desblocar aquest usuari. Si el desbloqueu podrà enviar-vos missatges i veure el vostre estat i l\'última connexió.</string>
   <string name="notification_text_more">Toque ací si en voleu més informació</string>
   <string name="title_auth_error">Error d\'autenticació</string>
-  <string name="msg_auth_error"><b>WARNING!</b>\nL\'autenticació amb el servidor de Kontalk va fallar l\'última vegada. Podria ser una fallada temporal del servidor o, més probablement, que el servidor haja refusat la vostra clau personal. La millor solució és esborrar el vostre compte de Kontalk des de la configuració d\'Android i tornar a donar-vos d\'alta (perdreu tots els missatges, això sí).</string>
+  <string name="msg_auth_error">L\'autenticació amb el servidor de Kontalk va fallar l\'última vegada. Podria ser una fallada temporal del servidor o, més probablement, que el servidor haja refusat la vostra clau personal. La millor solució és esborrar el vostre compte de Kontalk des de la configuració d\'Android i tornar a donar-vos d\'alta (perdreu tots els missatges, això sí).</string>
   <string name="warn_invite_no_app">No hi ha cap aplicació disponible per a convidar usuaris.</string>
   <string name="pref_text_enter">Botó retorn</string>
   <string name="pref_title_text_enter">Trieu el comportament del botó retorn al teclat</string>
@@ -370,7 +367,7 @@ Useu <b>Menu</b> &amp;gt; <b>Convida usuaris</b> per a enviar un missatge d\\\'i
   <string name="pref_title_image_resize">Redimensiona les imatges abans d\'enviar-les</string>
   <string name="err_server_invalid_format">Format d\'adreça no vàlid.</string>
   <string name="err_no_contacts_app">No s\'ha trobat l\'app de gestió de contactes.</string>
-  <string name="warning_public_key">ALERTA! La clau personal d\'aquest usuari ha canviat! Feu clic ací si en voleu més informació.</string>
+  <string name="warning_public_key">La clau personal d\'aquest usuari ha canviat inesperadament!</string>
   <string name="title_public_key_warning">La clau personal ha canviat</string>
   <string name="msg_public_key_warning">La clau personal d\'aquest usuari ha canviat. Per favor, esbrineu si l\'usuari ha reinstal·lat Kontalk o si ha regenerat la clau deliberadament; si no, la comunicació podria haver estat compromesa!</string>
 <string name="title_user_exists">L\'usuari ja existeix</string>
@@ -378,11 +375,40 @@ Useu <b>Menu</b> &amp;gt; <b>Convida usuaris</b> per a enviar un missatge d\\\'i
     <string name="pref_help">Ajuda</string>
     <string name="err_no_contact">Usuari no trobat.</string>
 
-    <string name="warning_older_version">La teva col·lega està utilitzant una versió antiga de Kontalk. Algunes funcionalitats poden no estar operatives.</string>
-    <string name="warning_user_blocked">Has bloquejat a aquest usuari.</string>
+    <string name="warning_older_version">Aquest contacte està utilitzant una versió antiga de Kontalk. Algunes funcionalitats poden no estar operatives.</string>
+    <string name="warning_user_blocked">Has bloquejat aquest usuari.</string>
 
     <string name="about_credits_devteam"><b>Kontalk ha arribat a tu gràcies a:</b></string>
     <string name="about_credits_gfx"><b>Gràfics/Iconografia</b></string>
     <string name="about_credits_translators"><b>Traductors</b></string>
 
-</resources>
+<string name="error_delete_thread">No es pot eliminar la conversa.</string>
+    <string name="error_delete_message">No es pot eliminar el missatge.</string>
+    <string name="err_validation_nonetwork">No hi ha accés a internet. Kontalk no pot funcionar sense connexió a internet.</string>
+    <string name="title_nonetwork">No hi ha connexió a Internet</string>
+    <string name="err_custom_background">S\'ha produït un error en configurar el fons. Si us plau, proveu amb una altra imatge.</string>
+    <string name="err_import_keypair_uid_mismatch">La clau importada no coincideix amb el número de telèfon que ha introduït.</string>
+    <string name="hint_ptt">Mantingui premut el botó de micro per gravar.</string>
+    <string name="err_audio_record_noaudio">No s\'ha enregistrat cap àudio.</string>
+    <string name="msg_importing_key">Important la clau personal…</string>
+    <string name="code_validation_intro_missed_call">En breu tindrà una trucada perduda d\'aquest número. <b>PER FAVOR NO RESPONGUI A LA TRUCADA.</b></string>
+    <string name="code_validation_intro2_missed_call">Si us plau, inseriu els últims %d dígits del número de la trucada perduda.</string>
+    <string name="button_validation_fallback">No ha rebut cap trucada?</string>
+    <string name="title_fallback">Hi ha algun problema?</string>
+    <string name="msg_fallback">Intentarem verificar el seu número de telèfon d\'una altra manera.</string>
+    <string name="menu_manual_verification">Ja té un codi?</string>
+    <string name="confirm_will_delete_threads">S\'eliminaran els xats seleccionats.</string>
+    <string name="confirm_will_delete_messages">S\'eliminaran els missatges seleccionats.</string>
+    <string name="pref_balloon_label_hangout">Reunió</string>
+    <string name="title_block_user_warning">Esteu segurs de voler bloquejar a aquest usuari?</string>
+    <string name="title_unblock_user_warning">Esteu segurs de voler desbloquejar a aquest usuari?</string>
+    <string name="warning_button_details">DETALLS</string>
+    <plurals name="context_selected">
+	<item quantity="one">1 seleccionat</item>
+	<item quantity="other">%d seleccionats</item>
+</plurals>
+
+<string name="title_confirm_cancel_registration">Voleu cancel·lar el registre?</string>
+    <string name="confirm_cancel_registration">Si utilitzeu el botó de tornar enrere haureu de fer el registre partint de zero. Si necessiteu alternar amb una altra aplicació, podeu utilitzar el botó d\'inici.</string>
+    <string name="app_name_offline">Kontalk (fora de línia)</string>
+    </resources>

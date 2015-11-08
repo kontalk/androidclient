@@ -23,20 +23,20 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
 import org.kontalk.service.DownloadListener;
 
 
-public class ProgressOutputStreamEntity implements HttpEntity {
+public class ProgressOutputStreamEntity {
+    private static final int BUFFER_SIZE = 1024 * 2;
 
-    private final HttpEntity mParent;
+    private final HttpURLConnection mParent;
     private final String mUrl;
     private final File mFile;
     private final DownloadListener mListener;
 
-    public ProgressOutputStreamEntity(HttpEntity parent,
+    public ProgressOutputStreamEntity(HttpURLConnection parent,
             String url, File file, final DownloadListener listener) {
         mParent = parent;
         mUrl = url;
@@ -44,52 +44,31 @@ public class ProgressOutputStreamEntity implements HttpEntity {
         mListener = listener;
     }
 
-    @Override
-    public void consumeContent() throws IOException {
-        mParent.consumeContent();
+    private void _writeTo(OutputStream outstream) throws IOException {
+        InputStream instream = mParent.getInputStream();
+        try {
+            final byte[] buffer = new byte[BUFFER_SIZE];
+            int l;
+            while ((l = instream.read(buffer)) != -1) {
+                outstream.write(buffer, 0, l);
+            }
+        }
+        finally {
+            if (instream != null) {
+                try {
+                    instream.close();
+                }
+                catch (IOException ignored) {
+                }
+            }
+        }
     }
 
-    @Override
-    public InputStream getContent() throws IOException, IllegalStateException {
-        return mParent.getContent();
-    }
-
-    @Override
-    public Header getContentEncoding() {
-        return mParent.getContentEncoding();
-    }
-
-    @Override
-    public long getContentLength() {
-        return mParent.getContentLength();
-    }
-
-    @Override
-    public Header getContentType() {
-        return mParent.getContentType();
-    }
-
-    @Override
-    public boolean isChunked() {
-        return mParent.isChunked();
-    }
-
-    @Override
-    public boolean isRepeatable() {
-        return mParent.isRepeatable();
-    }
-
-    @Override
-    public boolean isStreaming() {
-        return mParent.isStreaming();
-    }
-
-    @Override
     public void writeTo(OutputStream outstream) throws IOException {
         mListener.start(mUrl, mFile, mParent.getContentLength());
-        mParent.writeTo(new CountingOutputStream(outstream, mUrl, mFile, mListener));
-        Header mime = mParent.getContentType();
-        mListener.completed(mUrl, mime != null ? mime.getValue() : null, mFile);
+        _writeTo(new CountingOutputStream(outstream, mUrl, mFile, mListener));
+        String mime = mParent.getContentType();
+        mListener.completed(mUrl, mime, mFile);
     }
 
     private static final class CountingOutputStream extends FilterOutputStream {

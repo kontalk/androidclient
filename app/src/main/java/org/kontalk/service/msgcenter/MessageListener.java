@@ -31,7 +31,6 @@ import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
-import org.jivesoftware.smackx.delay.packet.DelayInformation;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 
@@ -49,6 +48,7 @@ import org.kontalk.message.VCardComponent;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.XMPPUtils;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -93,71 +93,61 @@ class MessageListener extends MessageCenterPacketListener {
             i.putExtra(EXTRA_TO, m.getTo());
             sendBroadcast(i);
 
-            // non-active notifications are not to be processed as messages
-            if (chatstate != null && !chatstate.getElementName().equals(ChatState.active.name()))
-                return;
+            // non-active chat states are not to be processed as messages
+            if (chatstate == null || chatstate.getElementName().equals(ChatState.active.name())) {
 
-            // delayed deliver extension is the first the be processed
-            // because it's used also in delivery receipts
-            ExtensionElement _delay = m.getExtension("delay", "urn:xmpp:delay");
-            if (_delay == null)
-                _delay = m.getExtension("x", "jabber:x:delay");
+                // delayed deliver extension is the first the be processed
+                // because it's used also in delivery receipts
+                Date stamp = XMPPUtils.getStanzaDelay(m);
 
-            Date stamp = null;
-            if (_delay != null) {
-                if (_delay instanceof DelayInformation) {
-                    stamp = ((DelayInformation) _delay).getStamp();
-                }
-            }
+                long serverTimestamp;
+                if (stamp != null)
+                    serverTimestamp = stamp.getTime();
+                else
+                    serverTimestamp = System.currentTimeMillis();
 
-            long serverTimestamp;
-            if (stamp != null)
-                serverTimestamp = stamp.getTime();
-            else
-                serverTimestamp = System.currentTimeMillis();
+                DeliveryReceipt deliveryReceipt = DeliveryReceipt.from(m);
 
-            DeliveryReceipt deliveryReceipt = DeliveryReceipt.from(m);
+                // delivery receipt
+                if (deliveryReceipt != null) {
+                    synchronized (waitingReceipt) {
+                        String id = m.getStanzaId();
+                        Long _msgId = waitingReceipt.get(id);
+                        long msgId = (_msgId != null) ? _msgId : 0;
+                        ContentResolver cr = getContext().getContentResolver();
 
-            // delivery receipt
-            if (deliveryReceipt != null) {
-                synchronized (waitingReceipt) {
-                    String id = m.getStanzaId();
-                    Long _msgId = waitingReceipt.get(id);
-                    long msgId = (_msgId != null) ? _msgId : 0;
-                    ContentResolver cr = getContext().getContentResolver();
+                        // message has been delivered: check if we have previously stored the server id
+                        if (msgId > 0) {
+                            ContentValues values = new ContentValues(3);
+                            values.put(Messages.MESSAGE_ID, deliveryReceipt.getId());
+                            values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
+                            values.put(Messages.STATUS_CHANGED, serverTimestamp);
+                            cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
+                                values, selectionOutgoing, null);
 
-                    // message has been delivered: check if we have previously stored the server id
-                    if (msgId > 0) {
-                        ContentValues values = new ContentValues(3);
-                        values.put(Messages.MESSAGE_ID, deliveryReceipt.getId());
-                        values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
-                        values.put(Messages.STATUS_CHANGED, serverTimestamp);
-                        cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
-                            values, selectionOutgoing, null);
-
-                        waitingReceipt.remove(id);
-                    }
-                    else {
-                        // FIXME this could lead to fake delivery receipts because message IDs are client-generated
-                        Uri msg = Messages.getUri(deliveryReceipt.getId());
-                        ContentValues values = new ContentValues(2);
-                        values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
-                        values.put(Messages.STATUS_CHANGED, serverTimestamp);
-                        cr.update(msg, values, selectionOutgoing, null);
+                            waitingReceipt.remove(id);
+                        }
+                        else {
+                            // FIXME this could lead to fake delivery receipts because message IDs are client-generated
+                            Uri msg = Messages.getUri(deliveryReceipt.getId());
+                            ContentValues values = new ContentValues(2);
+                            values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
+                            values.put(Messages.STATUS_CHANGED, serverTimestamp);
+                            cr.update(msg, values, selectionOutgoing, null);
+                        }
                     }
                 }
-            }
 
-            // incoming message
-            else {
-                String msgId = m.getStanzaId();
-                if (msgId == null)
-                    msgId = MessageUtils.messageId();
+                // incoming message
+                else {
+                    String msgId = m.getStanzaId();
+                    if (msgId == null)
+                        msgId = MessageUtils.messageId();
 
-                String body = m.getBody();
+                    String body = m.getBody();
 
-                // create message
-                CompositeMessage msg = new CompositeMessage(
+                    // create message
+                    CompositeMessage msg = new CompositeMessage(
                         getContext(),
                         msgId,
                         serverTimestamp,
@@ -166,110 +156,110 @@ class MessageListener extends MessageCenterPacketListener {
                         Coder.SECURITY_CLEARTEXT
                     );
 
-                ExtensionElement _encrypted = m.getExtension(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE);
+                    ExtensionElement _encrypted = m.getExtension(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE);
 
-                if (_encrypted != null && _encrypted instanceof E2EEncryption) {
-                    E2EEncryption mEnc = (E2EEncryption) _encrypted;
-                    byte[] encryptedData = mEnc.getData();
+                    if (_encrypted != null && _encrypted instanceof E2EEncryption) {
+                        E2EEncryption mEnc = (E2EEncryption) _encrypted;
+                        byte[] encryptedData = mEnc.getData();
 
-                    // encrypted message
-                    msg.setEncrypted(true);
-                    msg.setSecurityFlags(Coder.SECURITY_BASIC);
+                        // encrypted message
+                        msg.setEncrypted(true);
+                        msg.setSecurityFlags(Coder.SECURITY_BASIC);
 
-                    if (encryptedData != null) {
+                        if (encryptedData != null) {
 
-                        // decrypt message
-                        try {
-                            MessageUtils.decryptMessage(getContext(),
+                            // decrypt message
+                            try {
+                                MessageUtils.decryptMessage(getContext(),
                                     getServer(), msg, encryptedData);
-                        }
+                            }
 
-                        catch (Exception exc) {
-                            Log.e(MessageCenterService.TAG, "decryption failed", exc);
+                            catch (Exception exc) {
+                                Log.e(MessageCenterService.TAG, "decryption failed", exc);
 
-                            // raw component for encrypted data
-                            // reuse security flags
-                            msg.clearComponents();
-                            msg.addComponent(new RawComponent(encryptedData, true, msg.getSecurityFlags()));
+                                // raw component for encrypted data
+                                // reuse security flags
+                                msg.clearComponents();
+                                msg.addComponent(new RawComponent(encryptedData, true, msg.getSecurityFlags()));
+                            }
+
                         }
+                    }
+
+                    else {
+
+                        // use message body
+                        if (body != null)
+                            msg.addComponent(new TextComponent(body));
 
                     }
-                }
 
-                else {
+                    // TODO duplicated code (MessageUtils#decryptMessage)
 
-                    // use message body
-                    if (body != null)
-                        msg.addComponent(new TextComponent(body));
+                    // out of band data
+                    ExtensionElement _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
+                    if (_media != null && _media instanceof OutOfBandData) {
+                        File previewFile = null;
 
-                }
+                        OutOfBandData media = (OutOfBandData) _media;
+                        String mime = media.getMime();
+                        String fetchUrl = media.getUrl();
+                        long length = media.getLength();
+                        boolean encrypted = media.isEncrypted();
 
-                // TODO duplicated code (MessageUtils#decryptMessage)
+                        // bits-of-binary for preview
+                        ExtensionElement _preview = m.getExtension(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE);
+                        if (_preview != null && _preview instanceof BitsOfBinary) {
+                            BitsOfBinary preview = (BitsOfBinary) _preview;
+                            String previewMime = preview.getType();
+                            if (previewMime == null)
+                                previewMime = MediaStorage.THUMBNAIL_MIME_NETWORK;
 
-                // out of band data
-                ExtensionElement _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
-                if (_media != null && _media instanceof OutOfBandData) {
-                    File previewFile = null;
+                            String filename = null;
 
-                    OutOfBandData media = (OutOfBandData) _media;
-                    String mime = media.getMime();
-                    String fetchUrl = media.getUrl();
-                    long length = media.getLength();
-                    boolean encrypted = media.isEncrypted();
+                            if (ImageComponent.supportsMimeType(mime)) {
+                                filename = ImageComponent.buildMediaFilename(msgId, previewMime);
+                            }
 
-                    // bits-of-binary for preview
-                    ExtensionElement _preview = m.getExtension(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE);
-                    if (_preview != null && _preview instanceof BitsOfBinary) {
-                        BitsOfBinary preview = (BitsOfBinary) _preview;
-                        String previewMime = preview.getType();
-                        if (previewMime == null)
-                            previewMime = MediaStorage.THUMBNAIL_MIME_NETWORK;
+                            else if (VCardComponent.supportsMimeType(mime)) {
+                                filename = VCardComponent.buildMediaFilename(msgId, previewMime);
+                            }
 
-                        String filename = null;
+                            try {
+                                if (filename != null) previewFile =
+                                    MediaStorage.writeInternalMedia(getContext(),
+                                        filename, preview.getContents());
+                            }
+                            catch (IOException e) {
+                                Log.w(MessageCenterService.TAG, "error storing thumbnail", e);
+                            }
+                        }
+
+                        MessageComponent<?> attachment = null;
 
                         if (ImageComponent.supportsMimeType(mime)) {
-                            filename = ImageComponent.buildMediaFilename(msgId, previewMime);
+                            // cleartext only for now
+                            attachment = new ImageComponent(mime, previewFile, null, fetchUrl, length,
+                                encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
                         }
 
                         else if (VCardComponent.supportsMimeType(mime)) {
-                            filename = VCardComponent.buildMediaFilename(msgId, previewMime);
+                            // cleartext only for now
+                            attachment = new VCardComponent(previewFile, null, fetchUrl, length,
+                                encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
                         }
 
-                        try {
-                            if (filename != null) previewFile =
-                                MediaStorage.writeInternalMedia(getContext(),
-                                    filename, preview.getContents());
+                        else if (AudioComponent.supportsMimeType(mime)) {
+                            attachment = new AudioComponent(mime, null, fetchUrl, length,
+                                encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
                         }
-                        catch (IOException e) {
-                            Log.w(MessageCenterService.TAG, "error storing thumbnail", e);
-                        }
-                    }
 
-                    MessageComponent<?> attachment = null;
+                        // TODO other types
 
-                    if (ImageComponent.supportsMimeType(mime)) {
-                        // cleartext only for now
-                        attachment = new ImageComponent(mime, previewFile, null, fetchUrl, length,
-                            encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-                    }
+                        if (attachment != null)
+                            msg.addComponent(attachment);
 
-                    else if (VCardComponent.supportsMimeType(mime)) {
-                        // cleartext only for now
-                        attachment = new VCardComponent(previewFile, null, fetchUrl, length,
-                            encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-                    }
-
-                    else if (AudioComponent.supportsMimeType(mime)) {
-                        attachment = new AudioComponent(mime, null, fetchUrl, length,
-                            encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-                    }
-
-                    // TODO other types
-
-                    if (attachment != null)
-                        msg.addComponent(attachment);
-
-                    // add a dummy body if none was found
+                        // add a dummy body if none was found
                     /*
                     if (body == null) {
                         msg.addComponent(new TextComponent(CompositeMessage
@@ -278,15 +268,16 @@ class MessageListener extends MessageCenterPacketListener {
                     }
                     */
 
+                    }
+
+                    Uri msgUri = incoming(msg);
+
+                    if (m.hasExtension(DeliveryReceiptRequest.ELEMENT, DeliveryReceipt.NAMESPACE)) {
+                        // send ack :)
+                        sendReceipt(msgUri, msgId, from, waitingReceipt);
+                    }
+
                 }
-
-                Uri msgUri = incoming(msg);
-
-                if (m.hasExtension(DeliveryReceiptRequest.ELEMENT, DeliveryReceipt.NAMESPACE)) {
-                    // send ack :)
-                    sendReceipt(msgUri, msgId, from, waitingReceipt);
-                }
-
             }
         }
 
@@ -338,6 +329,9 @@ class MessageListener extends MessageCenterPacketListener {
                 }
             }
         }
+
+        // we saved the message, restore SM ack
+        resumeSmAck();
     }
 
     private void sendReceipt(Uri msgUri, String msgId, String from, Map<String, Long> waitingReceipt) {

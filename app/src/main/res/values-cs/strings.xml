@@ -36,8 +36,8 @@
   <string name="pref_network_settings">Nastavení sítě</string>
   <string name="pref_network_uri">Zadat adresu serveru ručně</string>
   <string name="pref_title_network_uri">Toto nastavení má přednost před automatickou správou seznamu serverů</string>
-  <string name="number_validation_intro1">Zadejte prosím své jméno, zvolte svou národní předvolbu a zadejte své mobilní telefonní číslo. Bude vám zaslána SMS zpráva s ověřovacím kódem. Vaše telefonní číslo bude použito pouze v tomto jednom případě a následně bude zapomenuto.</string>
-  <string name="number_validation_intro2">Pokud nemůžete přijmout SMS na tomto zařízení, zadejte telefonní číslo, které vám patří, a zadejte ověřovací kód, který vám přijde v SMS.</string>
+  <string name="number_validation_intro1">Zadejte prosím své jméno, zvolte svou národní předvolbu a zadejte své mobilní telefonní číslo. Více instrukcí bude poskytnuto na následující obrazovce.</string>
+  <string name="number_validation_intro2">Pokud nemůžete přijmout hovor nebo SMS na tomto zařízení, zadejte telefonní číslo, které vám patří: propojíme toto číslo s tímto zařízením.</string>
   <string name="code_validation_intro">Zanedlouho by vám měla z tohoto čísla přijít SMS nebo hovor:</string>
   <string name="code_validation_intro2">Níže prosím zadejte kód, který vám přišel nebo byl přečten.</string>
   <string name="code_validation_intro_manual">Zadejte prosím ověřovací kód, který jste obdrželi. Ověřovací kód může být použit pouze jednou.</string>
@@ -45,12 +45,12 @@
   <string name="hint_validation_number">Vaše číslo</string>
   <string name="hint_validation_code">Ověřovací kód</string>
   <string name="warn_invalid_number">Zadejte prosím platné telefonní číslo.</string>
-  <string name="msg_validating_phone">Odesílám požadavek na SMS s ověřovacím kódem…</string>
+  <string name="msg_validating_phone">Odesílám požadavek na registraci…</string>
   <string name="msg_initializing">Probíhá registrace do Kontalk sítě…</string>
   <string name="msg_authenticated">Byli jste zaregistrováni do sítě!</string>
   <string name="share">Sdílet</string>
   <string name="resend">Odeslat znovu</string>
-  <string name="copy_message_text">Zkopírovat text zprávy</string>
+  <string name="copy_message_text">Zkopírovat text</string>
   <string name="delete_message">Smazat zprávu</string>
   <string name="confirm_delete_all">Smazat všechny konverzace</string>
   <string name="confirm_will_delete_all">Všechny konverzace budou smazány.</string>
@@ -70,7 +70,7 @@
   <string name="hint_open_kbd_to_compose">Pro napsání zprávy otevřete klávesnici</string>
   <string name="view_image">Zobrazit obrázek</string>
   <string name="title_message_options">Možnosti zprávy</string>
-  <string name="menu_message_details">Zobrazit podrobnosti zprávy</string>
+  <string name="menu_message_details">Podrobnosti</string>
   <string name="title_message_details">Podrobnosti zprávy</string>
   <string name="message_type_label">Typ:\u0020</string>
   <string name="text_message">Textová zpráva</string>
@@ -150,8 +150,7 @@
   <string name="peer_unknown">(neznámý)</string>
   <string name="msg_draft_saved">Zpráva byla uložena jako rozepsaná.</string>
   <string name="send_mime_not_supported">Tento typ souboru není podporován.</string>
-  <string name="button_validate">Požádat o ověřovací kód</string>
-  <string name="button_validation_code">Již mám ověřovací kód</string>
+  <string name="button_validate">Registrovat</string>
   <string name="button_validation_register">Ověřit</string>
   <string name="notify_ticker_download_completed">Stahování bylo dokončeno</string>
   <string name="notify_title_download_completed">Stahování bylo dokončeno</string>
@@ -173,13 +172,13 @@
   <string name="menu_refresh">Aktualizovat</string>
   <string name="menu_invite">Pozvat uživatele</string>
   <string name="title_error">Chyba</string>
-  <string name="msg_do_refresh">Pro aktualizaci seznamu kontaktů použijte aktualizační tlačítko.</string>
+  <string name="msg_do_refresh">Pro aktualizaci seznamu kontaktů potáhněte dolů.</string>
   <string name="msg_sync_progress">Aktualizuji seznam kontaktů…</string>
   <string name="err_sync_failed">Nepodařilo se aktualizovat seznam kontaktů. Zkuste to prosím později.</string>
   <string name="err_sync_nonetwork">Síť není dostupná. Zkuste to prosím později.</string>
   <string name="text_invite_message">Ahoj! Vyzkoušej Kontalk na Google Play, aplikaci pro posílání zpráv zdarma! https://play.google.com/store/apps/details?id=org.kontalk</string>
   <string name="text_contacts_empty">Noví uživatelé budou automaticky přidáni do tohoto seznamu.\n\nPoužijte <b>Menu</b> &gt; <b>Pozvat uživatele</b> a pošlete někomu pozvánku.</string>
-  <string name="text_conversations_empty">Pokud chcete začít psát zprávu, použijte ikonu <b>nová zpráva</b> výše.</string>
+  <string name="text_conversations_empty">Pokud chcete začít psát zprávu, použijte tlačítko <b>nová zpráva</b> níže.</string>
   <string name="notify_ticker_external_storage">Externí úložiště není dostupné</string>
   <string name="notify_text_external_storage">Nepodařilo se zapsat do externího úložiště.</string>
   <string name="title_user_not_found">Uživatel nebyl nalezen</string>
@@ -342,11 +341,11 @@
   <string name="msg_delete_account_progress">Probíhá mazání vašeho účtu…</string>
   <string name="msg_user_blocked">Uživatel byl zablokován.</string>
   <string name="msg_user_unblocked">Uživatel byl odblokován.</string>
-  <string name="msg_block_user_warning"><b>ČTĚTE PROSÍM POZORNĚ!</b>\nChystáte se zablokovat tohoto uživatele. Pokud budete pokračovat, tento uživatel vám nebude moci poslat žádnou zprávu ani soubor dokud ho neodblokujete. Tento uživatel také neuvidí váš status a čas, kdy jste byl/a naposledy online, a vy zase neuvidíte jeho status. Jako vedlejší efekt nebudete moci ani vy poslat tomuto uživateli žádnou zprávu nebo soubor.</string>
-  <string name="msg_unblock_user_warning"><b>ČTĚTE PROSÍM POZORNĚ!</b>\nChystáte se odblokovat tohoto uživatele. Odblokování tomuto uživateli umožní posílat vám zprávy a vidět váš status a čas, kdy jste byl/a naposledy online.</string>
+  <string name="msg_block_user_warning">Chystáte se zablokovat tohoto uživatele. Pokud budete pokračovat, tento uživatel vám nebude moci poslat žádnou zprávu ani soubor dokud ho neodblokujete. Tento uživatel také neuvidí váš status a čas, kdy jste byl/a naposledy online, a vy zase neuvidíte jeho status. Jako vedlejší efekt nebudete moci ani vy poslat tomuto uživateli žádnou zprávu nebo soubor.</string>
+  <string name="msg_unblock_user_warning">Chystáte se odblokovat tohoto uživatele. Odblokování tomuto uživateli umožní posílat vám zprávy a vidět váš status a čas, kdy jste byl/a naposledy online.</string>
   <string name="notification_text_more">Klepněte zde, pokud chcete vědět víc</string>
   <string name="title_auth_error">Chyba při autentizaci</string>
-  <string name="msg_auth_error"><b>UPOZORNĚNÍ!</b>\nPři posledním pokusu o přihlášení k serveru Kontalk došlo k chybě. Může to být buď dočasnou nedostupností serveru, nebo, pravděpodobněji, server odmítá váš osobní klíč. Doporučujeme smazat váš Kontalk účet ze systému Android a zaregistrovat se znovu (přijdete ale o všechny zprávy v Kontalku).</string>
+  <string name="msg_auth_error">Při posledním pokusu o přihlášení k serveru Kontalk došlo k chybě. Může to být buď dočasnou nedostupností serveru, nebo, pravděpodobněji, server odmítá váš osobní klíč. Doporučujeme smazat váš Kontalk účet ze systému Android a zaregistrovat se znovu (přijdete ale o všechny zprávy v Kontalku).</string>
   <string name="warn_invite_no_app">Není dostupná žádná aplikace na pozvání uživatelů.</string>
   <string name="pref_text_enter">klávesa Enter</string>
   <string name="pref_title_text_enter">Zvolte chování klávesy Enter na klávesnici</string>
@@ -368,7 +367,7 @@
   <string name="pref_title_image_resize">Před odesláním měnit velikost obrázků</string>
   <string name="err_server_invalid_format">Neplatný formát adresy.</string>
   <string name="err_no_contacts_app">Nebyla nalezena žádná aplikace pro výběr kontaktů.</string>
-  <string name="warning_public_key">POZOR! Osobní klíč tohoto uživatele se neočekávaně změnil! Klikněte sem pro podrobnosti.</string>
+  <string name="warning_public_key">Osobní klíč tohoto uživatele se neočekávaně změnil!</string>
   <string name="title_public_key_warning">Došlo ke změně osobního klíče</string>
   <string name="msg_public_key_warning">Osobní klíč tohoto uživatele se změnil. Ověřte prosím s tímto uživatelem, jestli reinstaloval Kontalk nebo si záměrně vygeneroval nový klíč, v opačném případě může být ohrožena bezpečnost komunikace!</string>
 <string name="title_user_exists">Uživatel existuje</string>
@@ -391,4 +390,25 @@
     <string name="err_audio_record_noaudio">Nebyl zaznamenán žádný zvuk.</string>
     <string name="err_custom_background">Při nastavení pozadí došlo k chybě. Zkuste prosím jiný obrázek.</string>
     <string name="hint_ptt">Pro nahrávání stiskněte a držte mikrofon.</string>
-    </resources>
+    <string name="msg_importing_key">Importuji osobní klíč…</string>
+    <string name="code_validation_intro_missed_call">Zanedlouho byste měli obdržet zmeškaný hovor z tohoto čísla. <b>NEZVEDEJTE PROSÍM TENTO HOVOR.</b></string>
+    <string name="code_validation_intro2_missed_call">Vložte prosím posledních %d číslic z čísla, které vám zavolá.</string>
+    <string name="button_validation_fallback">Hovor nepřichází?</string>
+    <string name="title_fallback">Máte potíže?</string>
+    <string name="msg_fallback">Zkusíme jiný způsob, jak ověřit vaše telefonní číslo.</string>
+    <string name="menu_manual_verification">Už máte kód?</string>
+    <string name="confirm_will_delete_threads">Označené konverzace budou smazány.</string>
+    <string name="confirm_will_delete_messages">Označené zprávy budou smazány.</string>
+    <string name="pref_balloon_label_hangout">Hangout</string>
+    <string name="title_block_user_warning">Opravdu zablokovat tohoto uživatele?</string>
+    <string name="title_unblock_user_warning">Opravdu odblokovat tohoto uživatele?</string>
+    <string name="warning_button_details">DETAILY</string>
+    <string name="title_confirm_cancel_registration">Zrušit registraci?</string>
+    <string name="confirm_cancel_registration">Pokud stisknete tlačítko Zpět, budete muset začít registraci od začátku. Pokud se potřebujete přepnout do jiné aplikace, použijte tlačítko Domů.</string>
+    <plurals name="context_selected">
+	<item quantity="one">1 označený</item>
+	<item quantity="few">%d označené</item>
+	<item quantity="other">%d označených</item>
+</plurals>
+
+</resources>

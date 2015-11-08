@@ -20,24 +20,21 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
-    android:layout_height="?android:attr/listPreferredItemHeight"
-    android:paddingRight="10dip" >
+    android:layout_height="wrap_content"
+    android:minHeight="@dimen/avatar_list_item_height"
+    android:paddingRight="?attr/listPreferredItemPaddingRight"
+    android:paddingEnd="?attr/listPreferredItemPaddingRight">
     <!-- android:background="@drawable/conversation_item_background_unread" -->
 
-    <android.widget.QuickContactBadge
+    <org.kontalk.ui.view.CircleContactBadge
         android:id="@+id/avatar"
-        android:layout_marginLeft="@dimen/conv_list_margin_left"
-        android:layout_centerVertical="true"
-        style="?android:attr/quickContactBadgeStyleWindowSmall" />
+        style="@style/AvatarListItemStyle"/>
 
     <TextView android:id="@+id/from"
+        style="@style/AvatarListItemTextStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
         android:singleLine="true"
-        android:layout_marginTop="6dip"
-        android:layout_marginRight="5dip"
-        android:layout_marginLeft="7dip"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@id/avatar"
         android:layout_toLeftOf="@+id/date"
@@ -45,28 +42,18 @@
         android:ellipsize="marquee" />
         <!-- android:src="@drawable/ic_list_alert_sms_failed" -->
 
-    <ImageView android:id="@+id/attachment"
-        android:layout_marginLeft="3dip"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:visibility="gone"
-        android:layout_toLeftOf="@+id/emblems"
-        android:layout_alignBottom="@+id/date"
-        />
-        <!-- android:src="@drawable/ic_attachment_universal_small" -->
-
-    <com.rockerhieu.emojicon.EmojiconTextView android:id="@+id/subject"
+    <com.rockerhieu.emojicon.EmojiconTextView
+        style="@style/AvatarListItemSubtitleStyle"
+        android:id="@+id/subject"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
         android:singleLine="true"
-        android:layout_marginBottom="10dip"
-        android:layout_marginLeft="7dip"
-        android:layout_alignParentBottom="true"
         android:layout_toRightOf="@id/avatar"
+        android:layout_below="@id/from"
         android:layout_alignWithParentIfMissing="true"
         android:layout_toLeftOf="@+id/emblems"
         app:emojiconSize="@dimen/emoji_listitem_size"
+        app:emojiconAlignment="baseline"
         android:ellipsize="marquee" />
 
     <TextView
@@ -76,21 +63,21 @@
         android:layout_alignTop="@+id/from"
         android:layout_alignBottom="@+id/from"
         android:layout_alignParentRight="true"
-        android:gravity="center_vertical"
+        android:paddingTop="16dp"
         android:singleLine="true"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textColor="@color/grayed_out" />
 
     <FrameLayout android:id="@+id/emblems"
         android:layout_width="wrap_content"
-        android:layout_height="22dip"
+        android:layout_height="20dip"
         android:layout_marginLeft="4dip"
         android:layout_alignRight="@+id/date"
         android:layout_alignTop="@+id/subject">
 
 	    <ImageView
 	        android:id="@+id/error"
-	        android:layout_width="22dip"
+	        android:layout_width="20dip"
 	        android:layout_height="fill_parent"
 	        android:visibility="gone" />
 
@@ -98,7 +85,7 @@
 	        android:id="@+id/counter"
             style="@style/TextAppearance.Widget.ConversationCountBadge"
 	        android:layout_width="wrap_content"
-	        android:minWidth="22dip"
+	        android:minWidth="20dip"
 	        android:layout_height="fill_parent"
 	        android:gravity="center"
 	        android:visibility="gone" />

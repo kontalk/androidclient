@@ -22,9 +22,8 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.ProgressDialog;
+import com.afollestad.materialdialogs.AlertDialogWrapper;
+
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -56,6 +55,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.NumberParseException.ErrorType;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -107,6 +107,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public static final int REQUEST_MANUAL_VALIDATION = 771;
     public static final int REQUEST_VALIDATION_CODE = 772;
 
+    public static final int RESULT_FALLBACK = RESULT_FIRST_USER+1;
+
     public static final String PARAM_FROM_INTERNAL = "org.kontalk.internal";
 
     public static final String PARAM_PUBLICKEY = "org.kontalk.publickey";
@@ -118,8 +120,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private Spinner mCountryCode;
     private EditText mPhone;
     private Button mValidateButton;
-    private Button mInsertCode;
-    private ProgressDialog mProgress;
+    private MaterialDialog mProgress;
     private CharSequence mProgressMessage;
     private NumberValidator mValidator;
     private Handler mHandler;
@@ -131,9 +132,12 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private String mPassphrase;
     private byte[] mImportedPublicKey;
     private byte[] mImportedPrivateKey;
+    private boolean mForce;
 
     private LocalBroadcastManager lbm;
 
+    /** Will be true when resuming for a fallback registration. */
+    private boolean mClearState;
     private boolean mFromInternal;
     /** Runnable for delaying initial manual sync starter. */
     private Runnable mSyncStart;
@@ -186,6 +190,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.number_validation);
+        setupToolbar(false);
 
         mAccountManager = AccountManager.get(this);
         mHandler = new Handler();
@@ -199,7 +204,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         mCountryCode = (Spinner) findViewById(R.id.phone_cc);
         mPhone = (EditText) findViewById(R.id.phone_number);
         mValidateButton = (Button) findViewById(R.id.button_validate);
-        mInsertCode = (Button) findViewById(R.id.button_validation_code);
 
         // populate country codes
         final CountryCodesAdapter ccList = new CountryCodesAdapter(this, R.layout.country_item, R.layout.country_dropdown_item);
@@ -324,12 +328,15 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case R.id.menu_settings: {
-                Intent intent = new Intent(this, BootstrapPreferences.class);
-                startActivityIfNeeded(intent, -1);
+                PreferencesActivity.start(this);
                 break;
             }
             case R.id.menu_import_key: {
                 importKey();
+                break;
+            }
+            case R.id.menu_manual_verification: {
+                validateCode();
                 break;
             }
             default:
@@ -342,14 +349,19 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     protected void onStart() {
         super.onStart();
 
-        Preferences.RegistrationProgress saved;
-        try {
-            saved = Preferences.getRegistrationProgress(this);
-        }
-        catch (Exception e) {
-            Log.w(TAG, "unable to restore registration progress");
+        Preferences.RegistrationProgress saved = null;
+        if (mClearState) {
             Preferences.clearRegistrationProgress(this);
-            saved = null;
+            mClearState = false;
+        }
+        else {
+            try {
+                saved = Preferences.getRegistrationProgress(this);
+            }
+            catch (Exception e) {
+                Log.w(TAG, "unable to restore registration progress");
+                Preferences.clearRegistrationProgress(this);
+            }
         }
         if (saved != null) {
             mName = saved.name;
@@ -430,11 +442,17 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_MANUAL_VALIDATION && resultCode == RESULT_OK) {
-            finishLogin(data.getStringExtra(PARAM_SERVER_URI),
-                data.getByteArrayExtra(PARAM_PRIVATEKEY),
-                data.getByteArrayExtra(PARAM_PUBLICKEY),
-                true);
+        if (requestCode == REQUEST_MANUAL_VALIDATION) {
+            if (resultCode == RESULT_OK) {
+                finishLogin(data.getStringExtra(PARAM_SERVER_URI),
+                    data.getByteArrayExtra(PARAM_PRIVATEKEY),
+                    data.getByteArrayExtra(PARAM_PUBLICKEY),
+                    true);
+            }
+            else if (resultCode == RESULT_FALLBACK) {
+                mClearState = true;
+                startValidation(data.getBooleanExtra("force", false), true);
+            }
         }
     }
 
@@ -476,16 +494,14 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     private void enableControls(boolean enabled) {
         mValidateButton.setEnabled(enabled);
-        mInsertCode.setEnabled(enabled);
         mCountryCode.setEnabled(enabled);
         mPhone.setEnabled(enabled);
     }
 
-    private void error(int title, int message) {
-        new AlertDialog.Builder(this)
-            .setTitle(title)
+    private void error(int message) {
+        new AlertDialogWrapper.Builder(this)
             .setMessage(message)
-            .setNeutralButton(android.R.string.ok, null)
+            .setPositiveButton(android.R.string.ok, null)
             .show();
     }
 
@@ -497,7 +513,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         if (!importing) {
             mName = mNameText.getText().toString().trim();
             if (mName.length() == 0) {
-                error(R.string.title_no_name, R.string.msg_no_name);
+                error(R.string.msg_no_name);
                 return false;
             }
         }
@@ -528,7 +544,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 }
             }
             catch (NumberParseException e1) {
-                error(R.string.title_invalid_number, R.string.msg_invalid_number);
+                error(R.string.msg_invalid_number);
                 return false;
             }
 
@@ -556,23 +572,24 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         return true;
     }
 
-    private void startValidation(boolean force) {
+    private void startValidation(boolean force, boolean fallback) {
+        mForce = force;
         enableControls(false);
 
-        if (!checkInput(false) || !startValidationNormal(null, force, false)) {
+        if (!checkInput(false) || !startValidationNormal(null, force, fallback, false)) {
             enableControls(true);
         }
     }
 
-    private boolean startValidationNormal(String manualServer, boolean force, boolean testImport) {
+    private boolean startValidationNormal(String manualServer, boolean force, boolean fallback, boolean testImport) {
         if (!SystemUtils.isNetworkConnectionAvailable(this)) {
-            error(R.string.title_nonetwork, R.string.err_validation_nonetwork);
+            error(R.string.err_validation_nonetwork);
             return false;
         }
 
         // start async request
         Log.d(TAG, "phone number checked, sending validation request");
-        startProgress();
+        startProgress(testImport ? getText(R.string.msg_importing_key) : null);
 
         EndpointServer.EndpointServerProvider provider;
         if (manualServer != null) {
@@ -588,6 +605,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             imported ? null : mKey, mPassphrase);
         mValidator.setListener(this);
         mValidator.setForce(force);
+        mValidator.setFallback(fallback);
         if (imported)
             mValidator.importKey(mImportedPrivateKey, mImportedPublicKey);
 
@@ -605,15 +623,11 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
      */
     public void validatePhone(View v) {
         keepScreenOn(true);
-        startValidation(false);
+        startValidation(false, false);
     }
 
-    /**
-     * Opens manual validation window immediately.
-     * Also used by the view definition as the {@link OnClickListener}.
-     * @param v not used
-     */
-    public void validateCode(View v) {
+    /** Opens manual validation window immediately. */
+    public void validateCode() {
         if (checkInput(false))
             startValidationCode(REQUEST_VALIDATION_CODE, null);
     }
@@ -626,8 +640,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             // TODO allow for manual validation too
             // TODO we should verify the number against the user ID
 
-            new AlertDialog.Builder(this)
-                .setTitle(R.string.pref_import_keypair)
+            new AlertDialogWrapper.Builder(this)
                 .setMessage(getString(R.string.msg_import_keypair, PersonalKeyImporter.KEYPACK_FILENAME))
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -666,11 +679,18 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     private void importAskPassphrase(final ZipInputStream zip) {
-        new InputDialog.Builder(this,
-                InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
-            .setTitle(R.string.title_passphrase)
-            .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
+        new MaterialDialog.Builder(this)
+            .title(R.string.title_passphrase)
+            .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
+            .input(null, null, new MaterialDialog.InputCallback() {
+                @Override
+                public void onInput(MaterialDialog dialog, CharSequence input) {
+                    startImport(zip, dialog.getInputEditText().getText().toString());
+                }
+            })
+            .callback(new MaterialDialog.ButtonCallback() {
+                @Override
+                public void onNegative(MaterialDialog dialog) {
                     try {
                         zip.close();
                     }
@@ -679,12 +699,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                     }
                 }
             })
-            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    startImport(zip, InputDialog.getInputText
-                        ((Dialog) dialog).toString());
-                }
-            })
+            .negativeText(android.R.string.cancel)
+            .positiveText(android.R.string.ok)
             .show();
     }
 
@@ -759,7 +775,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mPassphrase = passphrase;
 
             // begin usual validation
-            if (!startValidationNormal(manualServer, true, true)) {
+            // TODO implement fallback usage
+            if (!startValidationNormal(manualServer, true, false, true)) {
                 enableControls(true);
             }
         }
@@ -777,27 +794,28 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     private void startProgress(CharSequence message) {
         if (mProgress == null) {
-            mProgress = new NonSearchableProgressDialog(this);
-            mProgress.setIndeterminate(true);
+            mProgress = new NonSearchableDialog.Builder(this)
+                .progress(true, 0)
+                .cancelListener(new OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        keepScreenOn(false);
+                        Toast.makeText(NumberValidation.this, R.string.msg_validation_canceled, Toast.LENGTH_LONG).show();
+                        abort();
+                    }
+                })
+                .dismissListener(new OnDismissListener() {
+                    public void onDismiss(DialogInterface dialog) {
+                        // remove sync starter
+                        if (mSyncStart != null) {
+                            mHandler.removeCallbacks(mSyncStart);
+                            mSyncStart = null;
+                        }
+                    }
+                })
+                .build();
             mProgress.setCanceledOnTouchOutside(false);
             setProgressMessage(message != null ? message : getText(R.string.msg_validating_phone));
-            mProgress.setOnCancelListener(new OnCancelListener() {
-                @Override
-                public void onCancel(DialogInterface dialog) {
-                    keepScreenOn(false);
-                    Toast.makeText(NumberValidation.this, R.string.msg_validation_canceled, Toast.LENGTH_LONG).show();
-                    abort();
-                }
-            });
-            mProgress.setOnDismissListener(new OnDismissListener() {
-                public void onDismiss(DialogInterface dialog) {
-                    // remove sync starter
-                    if (mSyncStart != null) {
-                        mHandler.removeCallbacks(mSyncStart);
-                        mSyncStart = null;
-                    }
-                }
-            });
         }
         mProgress.show();
     }
@@ -823,6 +841,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             abortProgress(true);
         }
 
+        mForce = false;
         if (mValidator != null) {
             mValidator.shutdown();
             mValidator = null;
@@ -840,7 +859,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
         if (mProgress != null) {
             mProgressMessage = message;
-            mProgress.setMessage(message);
+            mProgress.setContent(message);
         }
     }
 
@@ -859,7 +878,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
                 // if we have been called internally, start ConversationList
                 if (mFromInternal)
-                    startActivity(new Intent(getApplicationContext(), ConversationList.class));
+                    startActivity(new Intent(getApplicationContext(), ConversationsActivity.class));
 
                 Toast.makeText(getApplicationContext(), R.string.msg_authenticated, Toast.LENGTH_LONG).show();
 
@@ -1010,14 +1029,12 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     private void userExistsWarning() {
-        new AlertDialog.Builder(this)
-            .setTitle(R.string.title_user_exists)
-            .setIcon(android.R.drawable.ic_dialog_alert)
+        new AlertDialogWrapper.Builder(this)
             .setMessage(R.string.err_validation_user_exists)
             .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    startValidation(true);
+                    startValidation(true, false);
                 }
             })
             .setNegativeButton(android.R.string.cancel, null)
@@ -1052,13 +1069,14 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             Preferences.saveRegistrationProgress(this,
                 mName, mPhoneNumber, mKey, mPassphrase,
                 mImportedPublicKey, mImportedPrivateKey,
-                serverUri, sender);
+                serverUri, sender, mForce);
         }
 
         Intent i = new Intent(NumberValidation.this, CodeValidation.class);
         i.putExtra("requestCode", requestCode);
         i.putExtra("name", mName);
         i.putExtra("phone", mPhoneNumber);
+        i.putExtra("force", mForce);
         i.putExtra("passphrase", mPassphrase);
         i.putExtra("importedPublicKey", mImportedPublicKey);
         i.putExtra("importedPrivateKey", mImportedPrivateKey);

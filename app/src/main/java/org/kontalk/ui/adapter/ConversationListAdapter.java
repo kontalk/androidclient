@@ -20,7 +20,7 @@ package org.kontalk.ui.adapter;
 
 import org.kontalk.R;
 import org.kontalk.data.Conversation;
-import org.kontalk.ui.ConversationList;
+import org.kontalk.ui.ConversationsActivity;
 import org.kontalk.ui.view.ConversationListItem;
 import org.kontalk.ui.view.MessageListItem;
 
@@ -36,7 +36,7 @@ import android.widget.ListView;
 
 
 public class ConversationListAdapter extends CursorAdapter {
-    private static final String TAG = ConversationList.TAG;
+    private static final String TAG = ConversationsActivity.TAG;
 
     private final LayoutInflater mFactory;
     private OnContentChangedListener mOnContentChangedListener;
