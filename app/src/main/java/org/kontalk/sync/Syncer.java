@@ -34,6 +34,7 @@ import org.spongycastle.openpgp.PGPPublicKey;
 
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;
+import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
@@ -44,6 +45,7 @@ import android.content.IntentFilter;
 import android.content.SyncResult;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Process;
 import android.os.RemoteException;
 import android.provider.ContactsContract;
@@ -472,6 +474,15 @@ public class Syncer {
                 Log.e(TAG, "contact delete error", e);
                 syncResult.databaseError = true;
             }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+                try {
+                    syncResult.stats.numDeletes += deleteProfile(account, provider);
+                }
+                catch (Exception e) {
+                    Log.e(TAG, "profile delete error", e);
+                    syncResult.databaseError = true;
+                }
+            }
 
             commit(usersProvider, syncResult);
         }
@@ -528,6 +539,15 @@ public class Syncer {
                     syncResult.databaseError = true;
                     return;
                 }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+                    try {
+                        syncResult.stats.numDeletes += deleteProfile(account, provider);
+                    }
+                    catch (Exception e) {
+                        Log.e(TAG, "profile delete error", e);
+                        syncResult.databaseError = true;
+                    }
+                }
 
                 ContentValues registeredValues = new ContentValues();
                 registeredValues.put(Users.REGISTERED, 1);
@@ -542,8 +562,7 @@ public class Syncer {
                         // add contact
                         addContact(account,
                                 getDisplayName(provider, data.lookupKey, data.number),
-                                data.number, data.jid, operations, op);
-                        op++;
+                                data.number, data.jid, operations, op++);
                     }
                     else {
                         syncResult.stats.numSkippedEntries++;
@@ -618,8 +637,18 @@ public class Syncer {
                         registeredValues.remove(Users.DISPLAY_NAME);
 
                         // if this is our own contact, trust our own key later
-                        if (Authenticator.isSelfJID(mContext, entry.from))
+                        if (Authenticator.isSelfJID(mContext, entry.from)) {
                             ownContactJid = entry.from;
+
+                            // register our profile while we're at it
+                            if (data != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+                                // add contact
+                                addProfile(account,
+                                    // FIXME shouldn't we be using the profile display name?
+                                    getDisplayName(provider, data.lookupKey, data.number),
+                                    data.number, data.jid, operations, op++);
+                            }
+                        }
                     }
                     catch (Exception e) {
                         Log.e(TAG, "error updating users database", e);
@@ -737,6 +766,16 @@ public class Syncer {
             .build(), null, null);
     }
 
+    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+    private int deleteProfile(Account account, ContentProviderClient provider)
+            throws RemoteException {
+        return provider.delete(ContactsContract.Profile.CONTENT_RAW_CONTACTS_URI.buildUpon()
+            .appendQueryParameter(ContactsContract.CALLER_IS_SYNCADAPTER, "true")
+            .appendQueryParameter(RawContacts.ACCOUNT_NAME, account.name)
+            .appendQueryParameter(RawContacts.ACCOUNT_TYPE, account.type)
+            .build(), null, null);
+    }
+
     /*
     private int deleteContact(Account account, long rawContactId) {
         Uri uri = ContentUris.withAppendedId(RawContacts.CONTENT_URI, rawContactId)
@@ -766,18 +805,42 @@ public class Syncer {
             Log.d(TAG, "adding contact \"" + username + "\" <" + phone + ">");
         }
 
-        ContentProviderOperation.Builder builder;
-        final int opIndex = index * 3;
+        // create our RawContact
+        operations.add(insertRawContact(account, username, phone, jid,
+            RawContacts.CONTENT_URI).build());
+
+        // add contact data
+        addContactData(username, phone, operations, index);
+    }
+
+    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+    private void addProfile(Account account, String username, String phone, String jid,
+            List<ContentProviderOperation> operations, int index) {
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "adding profile \"" + username + "\" <" + phone + ">");
+        }
 
         // create our RawContact
-        builder = ContentProviderOperation.newInsert(RawContacts.CONTENT_URI)
+        operations.add(insertRawContact(account, username, phone, jid,
+            ContactsContract.Profile.CONTENT_RAW_CONTACTS_URI).build());
+
+        // add contact data
+        addContactData(username, phone, operations, index);
+    }
+
+    private ContentProviderOperation.Builder insertRawContact(Account account, String username, String phone, String jid, Uri uri) {
+        return ContentProviderOperation.newInsert(uri)
             .withValue(RawContacts.AGGREGATION_MODE, RawContacts.AGGREGATION_MODE_DEFAULT)
             .withValue(RawContacts.ACCOUNT_NAME, account.name)
             .withValue(RawContacts.ACCOUNT_TYPE, account.type)
             .withValue(RAW_COLUMN_DISPLAY_NAME, username)
             .withValue(RAW_COLUMN_PHONE, phone)
             .withValue(RAW_COLUMN_USERID, jid);
-        operations.add(builder.build());
+    }
+
+    private void addContactData(String username, String phone, List<ContentProviderOperation> operations, int index) {
+        ContentProviderOperation.Builder builder;
+        final int opIndex = index * 3;
 
         // create a Data record of common type 'StructuredName' for our RawContact
         builder = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
