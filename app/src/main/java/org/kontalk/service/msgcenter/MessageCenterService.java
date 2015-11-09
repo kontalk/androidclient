@@ -249,6 +249,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     // common parameters
     public static final String EXTRA_PACKET_ID = "org.kontalk.packet.id";
     public static final String EXTRA_TYPE = "org.kontalk.packet.type";
+    public static final String EXTRA_ERROR_CONDITION = "org.kontalk.packet.error.condition";
 
     // use with org.kontalk.action.PRESENCE/SUBSCRIBED
     public static final String EXTRA_FROM = "org.kontalk.stanza.from";
