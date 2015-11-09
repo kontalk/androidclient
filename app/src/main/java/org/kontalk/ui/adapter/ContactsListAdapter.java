@@ -122,6 +122,8 @@ public class ContactsListAdapter extends SearchablePinnedHeaderCursorListViewAda
     }
 
     private static class ViewHolder {
-        public TextView headerView, text1, text2;
+        public TextView headerView;
+        public TextView text1;
+        public TextView text2;
     }
 }

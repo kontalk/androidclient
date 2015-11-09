@@ -26,7 +26,6 @@ import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.roster.RosterEntry;
-import org.jivesoftware.smack.sm.StreamManagementException;
 
 import org.kontalk.Kontalk;
 import org.kontalk.client.EndpointServer;
