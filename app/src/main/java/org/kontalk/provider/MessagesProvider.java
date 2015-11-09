@@ -1128,7 +1128,7 @@ public class MessagesProvider extends ContentProvider {
 
     /* Transactions compatibility layer */
 
-    @TargetApi(11)
+    @TargetApi(android.os.Build.VERSION_CODES.HONEYCOMB)
     private void beginTransaction(SQLiteDatabase db) {
         if (android.os.Build.VERSION.SDK_INT >= 11)
             db.beginTransactionNonExclusive();

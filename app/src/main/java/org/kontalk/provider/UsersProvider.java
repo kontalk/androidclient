@@ -593,8 +593,7 @@ public class UsersProvider extends ContentProvider {
                 String fingerprint = null;
                 byte[] publicKeyData = null;
                 try {
-                    PersonalKey myKey = ((Kontalk) getContext().getApplicationContext())
-                        .getPersonalKey();
+                    PersonalKey myKey = Kontalk.get(getContext()).getPersonalKey();
                     if (myKey != null) {
                         fingerprint = myKey.getFingerprint();
                         publicKeyData = myKey.getEncodedPublicKeyRing();
@@ -949,7 +948,7 @@ public class UsersProvider extends ContentProvider {
 
     /* Transactions compatibility layer */
 
-    @TargetApi(11)
+    @TargetApi(android.os.Build.VERSION_CODES.HONEYCOMB)
     private void beginTransaction(SQLiteDatabase db) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
             db.beginTransactionNonExclusive();

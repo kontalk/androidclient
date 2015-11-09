@@ -24,6 +24,7 @@ import java.util.Date;
 import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smack.packet.XMPPError;
 import org.jivesoftware.smack.util.PacketParserUtils;
 import org.jivesoftware.smackx.delay.packet.DelayInformation;
 import org.jxmpp.util.XmppStringUtils;
@@ -103,6 +104,14 @@ public class XMPPUtils {
         }
 
         return stamp;
+    }
+
+    public static XMPPError.Condition getErrorCondition(Stanza packet) {
+        return packet.getError() != null ? packet.getError().getCondition() : null;
+    }
+
+    public static boolean checkError(Stanza packet, XMPPError.Condition condition) {
+        return packet.getError() != null && packet.getError().getCondition() == condition;
     }
 
     public static boolean isLocalJID(String jid, String host) {
