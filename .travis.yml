@@ -10,4 +10,4 @@ android:
     - extra-google-google_play_services
   licences:
     - 'android-sdk-license-.+'
-script: ./gradlew build
+script: ./gradlew --info build
