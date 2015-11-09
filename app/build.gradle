@@ -32,8 +32,8 @@ android {
 
     defaultConfig {
         applicationId "org.kontalk"
-        versionCode 77
-        versionName "3.1.1-preview"
+        versionCode 78
+        versionName "3.1.1"
         targetSdkVersion 22
         resConfigs "en", "de", "fr", "it", "es", "ca", "cs", "el", "fa", "gl", "ja", "nl", "pt", "ru", "sr", "zh-rCN"
         resValue "string", "account_type", applicationId + '.account'
