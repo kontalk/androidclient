@@ -24,11 +24,15 @@ import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_SECONDS;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TYPE;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_ERROR_CONDITION;
 
 import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smack.packet.XMPPError;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
 
 import android.content.Intent;
+
+import org.kontalk.util.XMPPUtils;
 
 
 /**
@@ -51,6 +55,10 @@ class LastActivityListener extends MessageCenterPacketListener {
         i.putExtra(EXTRA_FROM, p.getFrom());
         i.putExtra(EXTRA_TO, p.getTo());
         i.putExtra(EXTRA_SECONDS, p.getIdleTime());
+
+        XMPPError.Condition errCondition = XMPPUtils.getErrorCondition(packet);
+        if (errCondition != null)
+            i.putExtra(EXTRA_ERROR_CONDITION, errCondition.toString());
 
         sendBroadcast(i);
     }
