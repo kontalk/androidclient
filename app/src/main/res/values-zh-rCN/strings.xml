@@ -37,21 +37,21 @@
     <string name="pref_network_settings">网络设置</string>
     <string name="pref_network_uri">手动设置服务器地址</string>
     <string name="pref_title_network_uri">这将会覆盖服务器列表的自动管理</string>
-    <string name="number_validation_intro1">请输入您的用户名，选择您的国家代码并输入您的手机号码。下一个屏幕将提供更多的指示。</string>
-    <string name="number_validation_intro2">如果您无法在该设备上收到通话或者短信验证，请输入您拥有的手机号码：我们能帮助你将该号码关联到此设备。</string>
-    <string name="code_validation_intro">您应该能马上从该号码收到短信或者来电：</string>
-    <string name="code_validation_intro2">请在下面输入您收到或者听到的代码。</string>
-    <string name="code_validation_intro_missed_call">您应该能马上从该号码收到一个未接来电。<b>请不要接听该来电。</b></string>
-    <string name="code_validation_intro2_missed_call">请输入将与您通话的最后%d个数字的号码。</string>
-    <string name="code_validation_intro_manual">请输入您收到的验证码。请注意验证码只能被使用一次。</string>
-    <string name="hint_validation_name">您的姓名</string>
-    <string name="hint_validation_number">您的电话号码</string>
+    <string name="number_validation_intro1">请输入你的用户名，选择你的国家代码并输入手机号码。下一个屏幕将提供更多的指示。</string>
+    <string name="number_validation_intro2">如果你无法在该设备上收到通话或者短信验证，请输入你拥有的手机号码：我们能帮助你将该号码关联到此设备。</string>
+    <string name="code_validation_intro">你应该能马上从该号码收到短信或者来电：</string>
+    <string name="code_validation_intro2">请在下面输入你收到或者听到的代码。</string>
+    <string name="code_validation_intro_missed_call">你应该能马上从该号码收到一个未接来电。<b>请不要接听该来电。</b></string>
+    <string name="code_validation_intro2_missed_call">请输入将与你通话的最后%d个数字的号码。</string>
+    <string name="code_validation_intro_manual">请输入你收到的验证码。请注意验证码只能被使用一次。</string>
+    <string name="hint_validation_name">你的姓名</string>
+    <string name="hint_validation_number">你的电话号码</string>
     <string name="hint_validation_code">验证码</string>
     <string name="warn_invalid_number">请输入一个有效的手机号码。</string>
     <string name="msg_validating_phone">正在请求注册……</string>
     <string name="msg_importing_key">正在导入个人密匙……</string>
     <string name="title_confirm_cancel_registration">取消注册？</string>
-    <string name="confirm_cancel_registration">若您返回，您将不得不重新开始注册。如果您需要切换至另一个应用，请按下设备上面的主页键。</string>
+    <string name="confirm_cancel_registration">若你返回，你将不得不重新开始注册。如果你需要切换至另一个应用，请按下设备上面的主页键。</string>
     <string name="msg_initializing">正在注册到Kontalk网络……</string>
     <string name="msg_authenticated">已经注册到网络！</string>
     <string name="share">分享</string>
@@ -72,7 +72,7 @@
     <string name="new_messages">新消息</string>
     <string name="unread_messages">%d条未读消息</string>
     <string name="only_one_account_supported">仅支持一个Kontalk账户。</string>
-    <string name="hint_enter_text">这里输入您的消息</string>
+    <string name="hint_enter_text">这里输入你的消息</string>
     <string name="hint_type_to_compose">输入以撰写</string>
     <string name="hint_open_kbd_to_compose">打开键盘以撰写消息</string>
     <string name="view_image">查看图片</string>
@@ -105,8 +105,8 @@
     <string name="pref_title_wakeup_time">非活动状态开启后，重连服务器需要的等待时间。仅当推送服务不可用的时候工作</string>
     <string name="pref_maintenance">维护</string>
     <string name="pref_regenerate_keypair">重新生成个人密匙</string>
-    <string name="pref_title_regenerate_keypair">假定您的个人密匙被泄露后使用</string>
-    <string name="pref_regenerate_keypair_confirm">一个新的密匙对将会生成并被分配到您的账户。您的旧密匙将会失效。</string>
+    <string name="pref_title_regenerate_keypair">假定你的个人密匙被泄露后使用</string>
+    <string name="pref_regenerate_keypair_confirm">一个新的密匙对将会生成并被分配到你的账户。你的旧密匙将会失效。</string>
     <string name="contacts_list_title">选择联系人</string>
     <string name="pref_messaging_settings">消息设置</string>
     <string name="pref_privacy_settings">隐私设置</string>
@@ -114,16 +114,16 @@
     <string name="pref_title_on_encrypt">所有的消息将从现在开始加密</string>
     <string name="pref_title_off_encrypt">所有的消息将从现在开始明文传输</string>
     <string name="pref_encrypt_userdata">加密个人数据</string>
-    <string name="pref_title_on_encrypt_userdata">仅当用户拥有您的手机号码时，才显示状态信息</string>
+    <string name="pref_title_on_encrypt_userdata">仅当用户拥有你的手机号码时，才显示状态信息</string>
     <string name="pref_title_off_encrypt_userdata">任何人都将看到状态信息</string>
     <string name="pref_auto_accept_subscriptions">自动接受邀请</string>
     <string name="pref_title_auto_accept_subscriptions">自动接受用户发出的聊天要求</string>
     <string name="pref_send_typing">发送正在输入的提示</string>
     <string name="pref_hide_presence">隐身</string>
-    <string name="pref_title_on_hide_presence">用户将无法看到您在线</string>
-    <string name="pref_title_off_hide_presence">用户将看到您在线，以及最后一次连接的时间</string>
+    <string name="pref_title_on_hide_presence">用户将无法看到你在线</string>
+    <string name="pref_title_off_hide_presence">用户将看到你在线，以及最后一次连接的时间</string>
     <string name="contact_not_registered">看起来联系人并没有在Kontalk网络注册。</string>
-    <string name="error_store_outbox">无法将消息存储到发件箱。或许您的存储器空间已经满了？</string>
+    <string name="error_store_outbox">无法将消息存储到发件箱。或许你的存储器空间已经满了？</string>
     <string name="error_delete_thread">无法删除讨论。</string>
     <string name="error_delete_message">无法删除消息。</string>
     <string name="decrypt_message">解密消息</string>
@@ -138,7 +138,7 @@
     <string name="pref_title_disabled_push_notifications">该设备不支持推送服务</string>
     <string name="pref_push_notifications">推送服务</string>
     <string name="hint_search_full">搜索消息</string>
-    <string name="hint_search_quickbox">您消息中的文本</string>
+    <string name="hint_search_quickbox">你消息中的文本</string>
     <string name="title_search">搜索：\"%s\"</string>
     <string name="pref_notification_settings">提醒设置</string>
     <string name="pref_enable_notifications">提醒</string>
@@ -153,12 +153,12 @@
     <string name="err_authentication_failed">验证码遭到拒绝。验证失败。</string>
     <string name="err_validation_failed">手机号码验证失败。</string>
     <string name="err_validation_retry_later">尝试次数过多。请等待数分钟后重试。</string>
-    <string name="msg_validation_canceled">验证取消。但是您会收到短信验证。</string>
+    <string name="msg_validation_canceled">验证取消。但是你会收到短信验证。</string>
     <string name="err_validation_error">验证期间发生了一个错误。请稍后重试。</string>
     <string name="err_validation_nonetwork">没有可用的因特网连接。Kontalk需要一个活动的因特网连接才能工作。</string>
     <string name="err_validation_network_error">无法连接到服务器。请稍后重试。</string>
     <string name="err_validation_server_not_supported">选择的服务器不支持注册。请在设置页面设置新的服务器。</string>
-    <string name="err_validation_user_exists"><b>您使用的手机号码已经被注册到了Kontalk.</b>如果您已经注册了另一个设备，继续注册将会将原始设备从Kontalk网络注销。请参考我们的文档，有关如何在多设备间复制账户。选择确定强制继续。</string>
+    <string name="err_validation_user_exists"><b>你使用的手机号码已经被注册到了Kontalk.</b>如果你已经注册了另一个设备，继续注册将会将原始设备从Kontalk网络注销。请参考我们的文档，有关如何在多设备间复制账户。选择确定强制继续。</string>
     <string name="text_encrypted">（已加密）</string>
     <string name="peer_unknown">（未知）</string>
     <string name="msg_draft_saved">消息已被存为草稿。</string>
@@ -183,8 +183,8 @@
     <string name="msg_invalid_code">请输入有效的代码。</string>
     <string name="title_nonetwork">没有因特网连接</string>
     <string name="title_fallback">遇见问题？</string>
-    <string name="msg_fallback">我们将会尝试另一种办法验证您的手机号码。</string>
-    <string name="title_no_name">您的姓名</string>
+    <string name="msg_fallback">我们将会尝试另一种办法验证你的手机号码。</string>
+    <string name="title_no_name">你的姓名</string>
     <string name="msg_no_name">请输入用户名。</string>
     <string name="menu_refresh">刷新</string>
     <string name="menu_invite">邀请用户</string>
@@ -269,10 +269,10 @@
     <string name="pref_title_export_keypair">导出个人密匙和登录证书到外置存储器</string>
     <string name="pref_import_keypair">导入个人密匙</string>
     <string name="pref_title_import_keypair">导入个人密匙和登录证书从外置存储器</string>
-    <string name="msg_import_keypair">Kontalk将从外置存储器的%s导入您的密匙。确认该文件存在，且是有效的已导出的密匙归档文件。</string>
+    <string name="msg_import_keypair">Kontalk将从外置存储器的%s导入你的密匙。确认该文件存在，且是有效的已导出的密匙归档文件。</string>
     <string name="msg_import_keypair_complete">个人密匙导入完成。</string>
     <string name="err_import_keypair_failed">个人密匙导入失败。</string>
-    <string name="err_import_keypair_uid_mismatch">导入的密匙与您所输入的电话号码不匹配。</string>
+    <string name="err_import_keypair_uid_mismatch">导入的密匙与你所输入的电话号码不匹配。</string>
     <string name="title_passphrase">密码</string>
 
     <string name="msg_status_sending">正在发送</string>
@@ -295,13 +295,13 @@
     <string name="chooser_select_link">选择动作</string>
 
     <string name="status_activity_title">状态消息</string>
-    <string name="hint_status_entry">这里输入您的状态消息</string>
+    <string name="hint_status_entry">这里输入你的状态消息</string>
     <string name="header_recent_status">最近使用过的状态消息</string>
 
     <string name="title_offline_mode_warning">离线模式</string>
-    <string name="message_offline_mode_warning">直到您返回在线模式，Kontalk在离线模式下将不会连接到服务器。您将不能发送或者接收消息，用户将看到您离线。</string>
+    <string name="message_offline_mode_warning">直到你返回在线模式，Kontalk在离线模式下将不会连接到服务器。你将不能发送或者接收消息，用户将看到你离线。</string>
 
-    <string name="warning_offline_mode">离线模式已激活。待您重新在线时，消息将被发送。</string>
+    <string name="warning_offline_mode">离线模式已激活。待你重新在线时，消息将被发送。</string>
     <string name="going_offline">正在进入离线。</string>
     <string name="going_online">正在进入在线。</string>
 
@@ -337,7 +337,7 @@
 
     <string name="msg_xmpp_upgrading">正在升级……</string>
     <string name="title_no_personal_key">没有个人密匙</string>
-    <string name="msg_no_personal_key">当前有一个个人密匙不存在（可能是因为您刚刚有过升级）。除非您不再生成个人密匙，否则你将无法登进Kontalk网络。请关闭Kontalk重新打开，输入您的用户名。</string>
+    <string name="msg_no_personal_key">当前有一个个人密匙不存在（可能是因为你刚刚有过升级）。除非你不再生成个人密匙，否则你将无法登进Kontalk网络。请关闭Kontalk重新打开，输入你的用户名。</string>
     <string name="msg_keypair_exported">个人密匙与登录证书已被导出至外置存储器。</string>
 
     <string name="security_status_good">良</string>
@@ -362,7 +362,7 @@
 
     <string name="msg_connecting_iab">正在连接至Play商店……</string>
     <string name="msg_iab_thankyou">谢谢！</string>
-    <string name="msg_iab_thankyou_warning">出了点故障，但捐赠已收到。谢谢您！</string>
+    <string name="msg_iab_thankyou_warning">出了点故障，但捐赠已收到。谢谢你！</string>
 
     <string name="iab_error_setup">设置应用内部计费过程发生错误 （%d）</string>
     <string name="iab_error_query">应用内部支付清单查询已失败。（%d）</string>
@@ -385,21 +385,21 @@
 
     <string name="pref_accept_any_certificate">接受任意SSL证书</string>
 
-    <string name="pref_delete_account">删除您的账户</string>
-    <string name="msg_delete_account">删除您的账户也会删掉您所有的消息记录。您在本服务器的账户将会在数星期后自动删除。</string>
-    <string name="msg_delete_account_progress">正在删除您的账户……</string>
+    <string name="pref_delete_account">删除你的账户</string>
+    <string name="msg_delete_account">删除你的账户也会删掉你所有的消息记录。你在本服务器的账户将会在数星期后自动删除。</string>
+    <string name="msg_delete_account_progress">正在删除你的账户……</string>
 
     <string name="msg_user_blocked">用户已经被禁止通信。</string>
     <string name="msg_user_unblocked">用户已经被解禁。</string>
     <string name="title_block_user_warning">确实要禁止该用户么？</string>
-    <string name="msg_block_user_warning">您将要禁止该用户。如果您这么做的话，除非您解禁他/她，该用户将无法发送给您任何消息或是媒体文件。该用户同时也不再能看到您的状态或是上一次登陆的时间，您也将无法看到他/她的状态。负面效应是，您也无法发送任何消息或是媒体文件给他/她。</string>
+    <string name="msg_block_user_warning">你将要禁止该用户。如果你这么做的话，除非你解禁他/她，该用户将无法发送给你任何消息或是媒体文件。该用户同时也不再能看到你的状态或是上一次登陆的时间，你也将无法看到他/她的状态。负面效应是，你也无法发送任何消息或是媒体文件给他/她。</string>
     <string name="title_unblock_user_warning">确实要解禁该用户么？</string>
-    <string name="msg_unblock_user_warning">您即将解禁该用户。解禁将会允许他/她给您发送消息，并且能看到您的状态和上次的登录时间。</string>
+    <string name="msg_unblock_user_warning">你即将解禁该用户。解禁将会允许他/她给你发送消息，并且能看到你的状态和上次的登录时间。</string>
 
     <string name="notification_text_more">触摸此处了解更多</string>
 
     <string name="title_auth_error">验证错误</string>
-    <string name="msg_auth_error">上一次我们尝试连接Kontalk服务器的验证已失败。可能是临时的服务器故障或者更高的概率是，服务器拒绝了您的个人密匙。我们建议你从安卓的系统设置里面删除Kontalk账户，重新注册一遍（尽管这会使得您丢失所有保存在Kontalk里的信息）。</string>
+    <string name="msg_auth_error">上一次我们尝试连接Kontalk服务器的验证已失败。可能是临时的服务器故障或者更高的概率是，服务器拒绝了你的个人密匙。我们建议你从安卓的系统设置里面删除Kontalk账户，重新注册一遍（尽管这会使得你丢失所有保存在Kontalk里的信息）。</string>
 
     <string name="warn_invite_no_app">没有有效的应用来邀请用户。</string>
 
@@ -439,9 +439,9 @@
     <string name="title_public_key_warning">个人密匙已改变</string>
     <string name="msg_public_key_warning">该用户的个人密匙已改变。请与该用户验证，他/她是否有意识地重新安装了Kontalk或是重新生成了他/她的密匙，否则会话可能已经泄露！</string>
 
-    <string name="warning_user_blocked">用户已被您禁止。</string>
+    <string name="warning_user_blocked">用户已被你禁止。</string>
 
-    <string name="about_credits_devteam"><b>为您创造Kontalk的人：</b></string>
+    <string name="about_credits_devteam"><b>为你创造Kontalk的人：</b></string>
     <string name="about_credits_gfx"><b>美工</b></string>
     <string name="about_credits_translators"><b>译者</b></string>
 
