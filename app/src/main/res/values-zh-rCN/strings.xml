@@ -450,4 +450,5 @@
 	<item quantity="other"/>
 </plurals>
 
-</resources>
+<string name="app_name_offline">Kontalk (离线)</string>
+    </resources>
