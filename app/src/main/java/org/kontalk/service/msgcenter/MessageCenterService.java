@@ -200,6 +200,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_IMPORT_KEYPAIR = "org.kontalk.action.IMPORT_KEYPAIR";
 
     /**
+     * Broadcasted when private key was uploaded to server.
+     * Send this intent to upload your private key.
+     */
+    public static final String ACTION_UPLOAD_PRIVATEKEY = "org.kontalk.action.UPLOAD_PRIVATEKEY";
+
+    /**
      * Broadcasted when a presence subscription has been accepted.
      * Send this intent to accept a presence subscription.
      */
@@ -279,6 +285,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     // used with org.kontalk.action.IMPORT_KEYPAIR
     public static final String EXTRA_KEYPACK = "org.kontalk.keypack";
     public static final String EXTRA_PASSPHRASE = "org.kontalk.passphrase";
+
+    // use with org.kontalk.action.UPLOAD_PRIVATEKEY
+    public static final String EXTRA_PRIVATE_KEY = "org.kontalk.privatekey";
+    public static final String EXTRA_TOKEN = "org.kontalk.token";
 
     // used with org.kontalk.action.VERSION
     public static final String EXTRA_VERSION_NAME = "org.kontalk.version.name";
@@ -858,6 +868,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 // passphrase to decrypt files
                 String passphrase = intent.getStringExtra(EXTRA_PASSPHRASE);
                 beginKeyPairImport(file, passphrase);
+            }
+
+            else if (ACTION_UPLOAD_PRIVATEKEY.equals(action)) {
+                // encrypted private key to be uploaded
+                byte[] privateKey = intent.getByteArrayExtra(EXTRA_PRIVATE_KEY);
+                beginUploadPrivateKey(privateKey);
             }
 
             else if (ACTION_CONNECTED.equals(action)) {
@@ -1713,7 +1729,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         values.put(Threads.REQUEST_STATUS, Threads.REQUEST_NONE);
 
         getContentResolver().update(Requests.CONTENT_URI,
-            values, CommonColumns.PEER + "=?", new String[]{to});
+                values, CommonColumns.PEER + "=?", new String[]{to});
     }
 
     private void sendPrivacyListCommand(final String to, final int action) {
@@ -2135,6 +2151,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
+    private void beginUploadPrivateKey(byte[] privateKeyData) {
+        PrivateKeyUploadListener uploadListener = new PrivateKeyUploadListener(this, privateKeyData);
+        uploadListener.uploadAndListen();
+    }
+
     private boolean canTest() {
         long now = SystemClock.elapsedRealtime();
         return ((now - mLastTest) > MIN_TEST_INTERVAL);
@@ -2326,6 +2347,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.setAction(MessageCenterService.ACTION_IMPORT_KEYPAIR);
         i.putExtra(EXTRA_KEYPACK, keypack);
         i.putExtra(EXTRA_PASSPHRASE, passphrase);
+        context.startService(i);
+    }
+
+    public static void uploadPrivateKey(final Context context, byte[] privateKeyData) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_UPLOAD_PRIVATEKEY);
+        i.putExtra(EXTRA_PRIVATE_KEY, privateKeyData);
         context.startService(i);
     }
 
