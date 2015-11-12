@@ -410,4 +410,5 @@
 	<item quantity="other">%d sélectionné</item>
 </plurals>
 
-</resources>
+<string name="app_name_offline">Kontalk (hors ligne)</string>
+    </resources>
