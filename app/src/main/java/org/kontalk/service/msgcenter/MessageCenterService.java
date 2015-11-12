@@ -21,7 +21,9 @@ package org.kontalk.service.msgcenter;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.math.BigInteger;
 import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -128,6 +130,7 @@ import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
+import org.spongycastle.openpgp.PGPException;
 
 
 /**
@@ -287,7 +290,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_PASSPHRASE = "org.kontalk.passphrase";
 
     // use with org.kontalk.action.UPLOAD_PRIVATEKEY
-    public static final String EXTRA_PRIVATE_KEY = "org.kontalk.privatekey";
+    public static final String EXTRA_EXPORT_PASSPHRASE = "org.kontalk.export_passphrase";
     public static final String EXTRA_TOKEN = "org.kontalk.token";
 
     // used with org.kontalk.action.VERSION
@@ -872,8 +875,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             else if (ACTION_UPLOAD_PRIVATEKEY.equals(action)) {
                 // encrypted private key to be uploaded
-                byte[] privateKey = intent.getByteArrayExtra(EXTRA_PRIVATE_KEY);
-                beginUploadPrivateKey(privateKey);
+                String exportPassprase = intent.getStringExtra(EXTRA_EXPORT_PASSPHRASE);
+                beginUploadPrivateKey(exportPassprase);
             }
 
             else if (ACTION_CONNECTED.equals(action)) {
@@ -2151,7 +2154,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
-    private void beginUploadPrivateKey(byte[] privateKeyData) {
+    private void beginUploadPrivateKey(String exportPasshrase) {
+
+        String passphrase = Kontalk.get(this).getCachedPassphrase();
+
+        byte[] privateKeyData;
+        try {
+            privateKeyData = Authenticator.getPrivateKeyExportData(this, passphrase, exportPasshrase);
+        } catch (PGPException | IOException e) {
+            Log.e(TAG, "unable to load private key data", e);
+            return;
+        }
+
         PrivateKeyUploadListener uploadListener = new PrivateKeyUploadListener(this, privateKeyData);
         uploadListener.uploadAndListen();
     }
@@ -2350,10 +2364,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
-    public static void uploadPrivateKey(final Context context, byte[] privateKeyData) {
+    public static void uploadPrivateKey(final Context context, String exportPassphrase) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_UPLOAD_PRIVATEKEY);
-        i.putExtra(EXTRA_PRIVATE_KEY, privateKeyData);
+        i.putExtra(EXTRA_EXPORT_PASSPHRASE, exportPassphrase);
         context.startService(i);
     }
 
