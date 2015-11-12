@@ -19,7 +19,7 @@ import java.util.List;
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_UPLOAD_PRIVATEKEY;
 
 /**
- * Uploader and listener for private key upload.
+ * Uploader and response listener for private key transfer.
  * @author Alexander Bikadorov
  */
 public class PrivateKeyUploadListener extends MessageCenterPacketListener {
@@ -45,8 +45,6 @@ public class PrivateKeyUploadListener extends MessageCenterPacketListener {
 
         // prepare public key packet
         Stanza iq = prepareKeyPacket();
-        if (iq == null)
-            return;
 
         // setup packet filter for response
         StanzaFilter filter = new StanzaIdFilter(iq.getStanzaId());
@@ -63,12 +61,16 @@ public class PrivateKeyUploadListener extends MessageCenterPacketListener {
         getConnection().removeAsyncStanzaListener(this);
 
         IQ iq = (IQ) packet;
-        if (iq.getType() != IQ.Type.result)
+        if (iq.getType() != IQ.Type.result) {
+            finish(null);
             return;
+        }
 
         DataForm response = iq.getExtension("x", "jabber:x:data");
-        if (response == null)
+        if (response == null) {
+            finish(null);
             return;
+        }
 
         String token = null;
         List<FormField> fields = response.getFields();
@@ -79,9 +81,10 @@ public class PrivateKeyUploadListener extends MessageCenterPacketListener {
             }
         }
 
-        if (TextUtils.isEmpty(token))
-            return;
+        finish(token);
+    }
 
+    private void finish(String token) {
         Intent i = new Intent(ACTION_UPLOAD_PRIVATEKEY);
         i.putExtra(MessageCenterService.EXTRA_TOKEN, token);
         sendBroadcast(i);
