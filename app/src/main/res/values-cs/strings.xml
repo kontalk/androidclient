@@ -411,4 +411,5 @@
 	<item quantity="other">%d označených</item>
 </plurals>
 
-</resources>
+<string name="app_name_offline">Kontalk (offline)</string>
+    </resources>
