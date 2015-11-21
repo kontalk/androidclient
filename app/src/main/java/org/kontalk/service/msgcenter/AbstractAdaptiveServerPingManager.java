@@ -52,6 +52,11 @@ public abstract class AbstractAdaptiveServerPingManager extends Manager {
      * Interval for the next increase.
      */
     protected long mNextIncrease;
+    /**
+     * Successful ping streak. Used for computing when the next increase attempt
+     * will be made.
+     */
+    protected long mPingStreak;
 
     protected AbstractAdaptiveServerPingManager(XMPPConnection connection) {
         super(connection);
@@ -76,6 +81,9 @@ public abstract class AbstractAdaptiveServerPingManager extends Manager {
     public void pingFailed() {
         long interval;
 
+        // ping has failed, reset ping streak
+        mPingStreak = 0;
+
         if (mLastSuccessInterval > 0) {
             // we were trying an increase, go back to previous value
             interval = mLastSuccessInterval;
@@ -99,6 +107,9 @@ public abstract class AbstractAdaptiveServerPingManager extends Manager {
         long nextAlarm = mInterval;
         long now = getElapsedRealtime();
 
+        // we got a successful ping, increase ping streak
+        mPingStreak += mInterval;
+
         if (mLastSuccessInterval > 0) {
             // interval increase was successful, reset backoff
             setNextIncreaseInterval(mInterval);
@@ -107,8 +118,7 @@ public abstract class AbstractAdaptiveServerPingManager extends Manager {
         }
         // try an increase only if we previously had a successful ping
         else if (mLastSuccess > 0) {
-            long diff = now - mLastSuccess;
-            if (diff >= mNextIncrease) {
+            if (mPingStreak >= mNextIncrease) {
                 // we are trying an increase, store the last successful interval
                 mLastSuccessInterval = mInterval;
 
