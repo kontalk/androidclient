@@ -93,8 +93,7 @@ public class AndroidAdaptiveServerPingManager extends AbstractAdaptiveServerPing
     private Context mContext;
     private PendingIntent mPendingIntent;
 
-    @Override
-    public void onConnectionCompleted() {
+    private void setupOnConnectionCompleted() {
         if (mContext != null) {
             // setup first alarm using last value from preference
             setupPing(Preferences.getPingAlarmInterval(mContext, AlarmManager.INTERVAL_HALF_HOUR));
@@ -107,8 +106,14 @@ public class AndroidAdaptiveServerPingManager extends AbstractAdaptiveServerPing
     }
 
     @Override
+    public void onConnectionCompleted() {
+        setupOnConnectionCompleted();
+        mPingStreak = 0;
+    }
+
+    @Override
     public void onConnectivityChanged() {
-        onConnectionCompleted();
+        setupOnConnectionCompleted();
     }
 
     @Override
