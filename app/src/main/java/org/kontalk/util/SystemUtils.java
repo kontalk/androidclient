@@ -27,8 +27,6 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -44,6 +42,7 @@ import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
 
+import org.kontalk.BuildConfig;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 
@@ -79,43 +78,13 @@ public final class SystemUtils {
         return true;
     }
 
-    public static PackageInfo getPackageInfo(Context context) throws PackageManager.NameNotFoundException {
-        return context.getPackageManager()
-            .getPackageInfo(context.getPackageName(), 0);
-    }
-
-    public static String getVersionName(Context context) {
-        try {
-            PackageInfo pInfo = SystemUtils.getPackageInfo(context);
-            return pInfo.versionName;
-        }
-        catch (PackageManager.NameNotFoundException e) {
-            // shouldn't happen
-            return null;
-        }
-    }
-
     public static int getVersionCode(Context context) {
-        try {
-            PackageInfo pInfo = SystemUtils.getPackageInfo(context);
-            return pInfo.versionCode;
-        }
-        catch (PackageManager.NameNotFoundException e) {
-            // shouldn't happen
-            return 0;
-        }
+        return BuildConfig.VERSION_CODE;
     }
 
     public static String getVersionFullName(Context context) {
-        try {
-            PackageInfo pInfo = SystemUtils.getPackageInfo(context);
-            return context.getString(R.string.about_version,
-                pInfo.versionName, pInfo.versionCode);
-        }
-        catch (PackageManager.NameNotFoundException e) {
-            // shouldn't happen
-            return null;
-        }
+        return context.getString(R.string.about_version,
+            BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE);
     }
 
     public static Point getDisplaySize(Context context) {

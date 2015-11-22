@@ -191,7 +191,7 @@
             android:layout="@layout/md_preference_custom">
             <intent
              android:targetClass="org.kontalk.ui.AboutActivity"
-             android:targetPackage="org.kontalk"
+             android:targetPackage="@string/application_id"
              android:action="org.kontalk.DONATION" />
         </Preference>
         <Preference android:key="pref_about"
@@ -199,7 +199,7 @@
             android:layout="@layout/md_preference_custom">
             <intent
              android:targetClass="org.kontalk.ui.AboutActivity"
-             android:targetPackage="org.kontalk" />
+             android:targetPackage="@string/application_id" />
         </Preference>
     </PreferenceCategory>
 
