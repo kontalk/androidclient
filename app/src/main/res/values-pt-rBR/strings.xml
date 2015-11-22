@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
@@ -15,18 +15,17 @@
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
-
 <resources>
   <string name="app_name">Kontalk</string>
-  <string name="app_description">Rede de mensagens instantâneas dirigida pela comunidade</string>
+  <string name="app_description">Rede de mensagens instantâneas mantida pela comunidade</string>
   <string name="service_name">Centro de mensagens</string>
   <string name="authenticator_name">Serviço de autenticação</string>
   <string name="sync_service_name">Sincronizar contactos</string>
-  <string name="download_service">Serviço de transferência</string>
+  <string name="download_service">Serviço de download</string>
   <string name="yes">Sim</string>
   <string name="no">Não</string>
   <string name="menu_compose">Escrever</string>
-  <string name="menu_delete_all">Apagar tópicos</string>
+  <string name="menu_delete_all">Excluir conversas</string>
   <string name="menu_search">Pesquisar</string>
   <string name="menu_settings">Configurações</string>
   <string name="menu_offline">Desconectar</string>
@@ -171,7 +170,7 @@
   <string name="err_sync_failed">Não foi possível recarregar a lista de contactos. Por favor, tente mais tarde.</string>
   <string name="err_sync_nonetwork">Rede não disponível. Por favor, tente mais tarde.</string>
   <string name="text_invite_message">Olá! Dê uma olhada no Kontalk na Google Play Store, um app de mensagens livre! https://play.google.com/store/apps/details?id=org.kontalk</string>
-  <string name="text_contacts_empty">Os novos usuários serão automaticamente acrescentados a esta lista.\n\nUse <b>Menu</b> > <b>Convidar usuários</b> para enviar uma mensagem de convite para alguém.</string>
+  <string name="text_contacts_empty">Os novos usuários serão automaticamente acrescentados a esta lista.\n\nUse <b>Menu</b> &gt; <b>Convidar usuários</b> para enviar uma mensagem de convite para alguém.</string>
   <string name="text_conversations_empty">Para começar a escrever mensagens use o ícone <b>nova mensagem</b> acima.</string>
   <string name="notify_ticker_external_storage">Armazenamento externo não disponível</string>
   <string name="notify_text_external_storage">Não foi possível gravar para um armazenamento externo.</string>
@@ -259,4 +258,7 @@
   <string name="title_invitation">Convite de conversa</string>
   <string name="button_accept">Aceitar</string>
   <string name="button_block">Bloquear</string>
-</resources>
+<string name="app_name_offline">Kontalk (offline)</string>
+    <string name="mykey_activity_title">Minha chave pessoal</string>
+    <string name="menu_import_key">Importar chave</string>
+    </resources>
