@@ -104,6 +104,9 @@ public class Kontalk extends Application {
     public void onCreate() {
         super.onCreate();
 
+        Log.v(TAG, "package name: " + getString(R.string.application_id));
+        Log.v(TAG, "account type: " + getString(R.string.account_type));
+
         // register security provider
         PGP.registerProvider();
 

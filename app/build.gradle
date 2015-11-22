@@ -36,8 +36,9 @@ android {
         versionName "3.1.1"
         targetSdkVersion 22
         resConfigs "en", "de", "fr", "it", "es", "ca", "cs", "el", "fa", "gl", "ja", "nl", "pt", "ru", "sr", "zh-rCN"
+        resValue "string", "application_id", applicationId
         resValue "string", "account_type", applicationId + '.account'
-        buildConfigField "String", "ACCOUNT_TYPE", '"org.kontalk.account"'
+        buildConfigField "String", "ACCOUNT_TYPE", '"' + applicationId + '.account"'
     }
 
     if (project.hasProperty('RELEASE_STORE_FILE')) {
@@ -59,6 +60,10 @@ android {
                 signingConfig signingConfigs.release
         }
         debug {
+            applicationIdSuffix '.debug'
+            resValue "string", "application_id", defaultConfig.applicationId + '.debug'
+            resValue "string", "account_type", defaultConfig.applicationId + '.debug.account'
+            buildConfigField "String", "ACCOUNT_TYPE", '"' + defaultConfig.applicationId + '.debug.account"'
             minifyEnabled true
             proguardFile 'proguard.cfg'
         }
