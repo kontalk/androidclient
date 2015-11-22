@@ -36,8 +36,9 @@ android {
         versionName "3.2-preview"
         targetSdkVersion 22
         resConfigs "en", "de", "fr", "it", "es", "ca", "cs", "el", "fa", "gl", "ja", "nl", "pt", "ru", "sr", "zh-rCN"
+        resValue "string", "application_id", applicationId
         resValue "string", "account_type", applicationId + '.account'
-        buildConfigField "String", "ACCOUNT_TYPE", '"org.kontalk.account"'
+        buildConfigField "String", "ACCOUNT_TYPE", '"' + applicationId + '.account"'
     }
 
     if (project.hasProperty('RELEASE_STORE_FILE')) {
@@ -59,6 +60,10 @@ android {
                 signingConfig signingConfigs.release
         }
         debug {
+            applicationIdSuffix '.debug'
+            resValue "string", "application_id", defaultConfig.applicationId + '.debug'
+            resValue "string", "account_type", defaultConfig.applicationId + '.debug.account'
+            buildConfigField "String", "ACCOUNT_TYPE", '"' + defaultConfig.applicationId + '.debug.account"'
             minifyEnabled true
             proguardFile 'proguard.cfg'
         }
@@ -96,6 +101,7 @@ dependencies {
     compile "com.madgag.spongycastle:prov:$spongyCastleVersion"
     compile "com.madgag.spongycastle:pkix:$spongyCastleVersion"
     compile "com.madgag.spongycastle:pg:$spongyCastleVersion"
+    compile 'info.guardianproject.netcipher:netcipher:1.2'
     compile 'com.googlecode.libphonenumber:libphonenumber:7.1.1'
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'com.google.zxing:core:3.2.1'
