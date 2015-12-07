@@ -402,8 +402,8 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         if (singleItem) {
             CompositeMessage msg = getCheckedItem();
 
-            // message waiting for user review
-            if (msg.getStatus() == Messages.STATUS_PENDING) {
+            // message waiting for user review or not delivered
+            if (msg.getStatus() == Messages.STATUS_PENDING || msg.getStatus() == Messages.STATUS_NOTDELIVERED) {
                 retryMenu.setVisible(true);
             }
 
