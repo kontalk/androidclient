@@ -119,7 +119,6 @@ dependencies {
     compile 'com.nispok:snackbar:2.11.0'
     compile 'de.hdodenhof:circleimageview:2.0.0'
     compile 'com.github.vlivanov:ListViewVariants:f606578467'
-    compile 'com.ibm.icu:icu4j:56.1'
 
     googleplayCompile "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
     googleplayCompile "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"

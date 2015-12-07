@@ -22,8 +22,6 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
-import com.ibm.icu.text.AlphabeticIndex;
-
 
 /**
  * This utility class provides specialized handling for locale specific
@@ -32,14 +30,6 @@ import com.ibm.icu.text.AlphabeticIndex;
  */
 public class ContactLocaleUtils {
     public static final String TAG = "ContactLocale";
-
-    public static final Locale LOCALE_ARABIC = new Locale("ar");
-    public static final Locale LOCALE_GREEK = new Locale("el");
-    public static final Locale LOCALE_HEBREW = new Locale("he");
-    // Serbian and Ukrainian labels are complementary supersets of Russian
-    public static final Locale LOCALE_SERBIAN = new Locale("sr");
-    public static final Locale LOCALE_UKRAINIAN = new Locale("uk");
-    public static final Locale LOCALE_THAI = new Locale("th");
 
     /**
      * This class is the default implementation and should be the base class
@@ -54,56 +44,10 @@ public class ContactLocaleUtils {
         private static final String EMPTY_STRING = "";
         private static final String NUMBER_STRING = "#";
 
-        protected final AlphabeticIndex.ImmutableIndex mAlphabeticIndex;
-        private final int mAlphabeticIndexBucketCount;
-        private final int mNumberBucketIndex;
-        private final boolean mUsePinyinTransliterator;
+        public String getBucketLabel(String name) {
+            if (name.length() == 0)
+                return EMPTY_STRING;
 
-        public ContactLocaleUtilsBase(LocaleSet locales) {
-            // AlphabeticIndex.getBucketLabel() uses a binary search across
-            // the entire label set so care should be taken about growing this
-            // set too large. The following set determines for which locales
-            // we will show labels other than your primary locale. General rules
-            // of thumb for adding a locale: should be a supported locale; and
-            // should not be included if from a name it is not deterministic
-            // which way to label it (so eg Chinese cannot be added because
-            // the labeling of a Chinese character varies between Simplified,
-            // Traditional, and Japanese locales). Use English only for all
-            // Latin based alphabets. Ukrainian and Serbian are chosen for
-            // Cyrillic because their alphabets are complementary supersets
-            // of Russian.
-            final Locale secondaryLocale = locales.getSecondaryLocale();
-            mUsePinyinTransliterator = locales.isPrimaryLocaleSimplifiedChinese() ||
-                locales.isSecondaryLocaleSimplifiedChinese();
-            AlphabeticIndex ai = new AlphabeticIndex(locales.getPrimaryLocale())
-                .setMaxLabelCount(300);
-            if (secondaryLocale != null) {
-                ai.addLabels(secondaryLocale);
-            }
-            mAlphabeticIndex = ai.addLabels(Locale.ENGLISH)
-                .addLabels(Locale.JAPANESE)
-                .addLabels(Locale.KOREAN)
-                .addLabels(LOCALE_THAI)
-                .addLabels(LOCALE_ARABIC)
-                .addLabels(LOCALE_HEBREW)
-                .addLabels(LOCALE_GREEK)
-                .addLabels(LOCALE_UKRAINIAN)
-                .addLabels(LOCALE_SERBIAN)
-                .buildImmutableIndex();
-            mAlphabeticIndexBucketCount = mAlphabeticIndex.getBucketCount();
-            mNumberBucketIndex = mAlphabeticIndexBucketCount - 1;
-        }
-
-        /**
-         * Returns the bucket index for the specified string. AlphabeticIndex
-         * sorts strings into buckets numbered in order from 0 to N, where the
-         * exact value of N depends on how many representative index labels are
-         * used in a particular locale. This routine adds one additional bucket
-         * for phone numbers. It attempts to detect phone numbers and shifts
-         * the bucket indexes returned by AlphabeticIndex in order to make room
-         * for the new # bucket, so the returned range becomes 0 to N+1.
-         */
-        public int getBucketIndex(String name) {
             boolean prefixIsNumeric = false;
             final int length = name.length();
             int offset = 0;
@@ -123,51 +67,10 @@ public class ContactLocaleUtils {
                 offset += Character.charCount(codePoint);
             }
             if (prefixIsNumeric) {
-                return mNumberBucketIndex;
-            }
-
-            /**
-             * ICU 55 AlphabeticIndex doesn't support Simplified Chinese
-             * as a secondary locale so it is necessary to use the
-             * Pinyin transliterator. We also use this for a Simplified
-             * Chinese primary locale because it gives more accurate letter
-             * buckets. b/19835686
-             */
-            if (mUsePinyinTransliterator) {
-                name = HanziToPinyin.getInstance().transliterate(name);
-            }
-            final int bucket = mAlphabeticIndex.getBucketIndex(name);
-            if (bucket < 0) {
-                return -1;
-            }
-            if (bucket >= mNumberBucketIndex) {
-                return bucket + 1;
-            }
-            return bucket;
-        }
-
-        /**
-         * Returns the number of buckets in use (one more than AlphabeticIndex
-         * uses, because this class adds a bucket for phone numbers).
-         */
-        public int getBucketCount() {
-            return mAlphabeticIndexBucketCount + 1;
-        }
-
-        /**
-         * Returns the label for the specified bucket index if a valid index,
-         * otherwise returns an empty string. '#' is returned for the phone
-         * number bucket; for all others, the AlphabeticIndex label is returned.
-         */
-        public String getBucketLabel(int bucketIndex) {
-            if (bucketIndex < 0 || bucketIndex >= getBucketCount()) {
-                return EMPTY_STRING;
-            } else if (bucketIndex == mNumberBucketIndex) {
                 return NUMBER_STRING;
-            } else if (bucketIndex > mNumberBucketIndex) {
-                --bucketIndex;
             }
-            return mAlphabeticIndex.getBucket(bucketIndex).getLabel();
+
+            return name.substring(0, name.offsetByCodePoints(0, 1));
         }
     }
 
@@ -183,15 +86,9 @@ public class ContactLocaleUtils {
     private static class JapaneseContactUtils extends ContactLocaleUtilsBase {
         // \u4ed6 is Japanese character 他 ("misc")
         private static final String JAPANESE_MISC_LABEL = "\u4ed6";
-        private final int mMiscBucketIndex;
 
-        public JapaneseContactUtils(LocaleSet locales) {
-            super(locales);
-            // Determine which bucket AlphabeticIndex is lumping unclassified
-            // Japanese characters into by looking up the bucket index for
-            // a representative Kanji/CJK unified ideograph (\u65e5 is the
-            // character '日').
-            mMiscBucketIndex = super.getBucketIndex("\u65e5");
+        public JapaneseContactUtils() {
+            super();
         }
 
         // Set of UnicodeBlocks for unified CJK (Chinese) characters and
@@ -228,44 +125,11 @@ public class ContactLocaleUtils {
             return CJ_BLOCKS.contains(UnicodeBlock.of(codePoint));
         }
 
-        /**
-         * Returns the bucket index for the specified string. Adds an
-         * additional 'misc' bucket for Kanji characters to the base class set.
-         */
         @Override
-        public int getBucketIndex(String name) {
-            final int bucketIndex = super.getBucketIndex(name);
-            if ((bucketIndex == mMiscBucketIndex &&
-                 !isChineseOrJapanese(Character.codePointAt(name, 0))) ||
-                bucketIndex > mMiscBucketIndex) {
-                return bucketIndex + 1;
-            }
-            return bucketIndex;
-        }
-
-        /**
-         * Returns the number of buckets in use (one more than the base class
-         * uses, because this class adds a bucket for Kanji).
-         */
-        @Override
-        public int getBucketCount() {
-            return super.getBucketCount() + 1;
-        }
-
-        /**
-         * Returns the label for the specified bucket index if a valid index,
-         * otherwise returns an empty string. '他' is returned for unclassified
-         * Kanji; for all others, the label determined by the base class is
-         * returned.
-         */
-        @Override
-        public String getBucketLabel(int bucketIndex) {
-            if (bucketIndex == mMiscBucketIndex) {
+        public String getBucketLabel(String name) {
+            if (!isChineseOrJapanese(Character.codePointAt(name, 0)))
                 return JAPANESE_MISC_LABEL;
-            } else if (bucketIndex > mMiscBucketIndex) {
-                --bucketIndex;
-            }
-            return super.getBucketLabel(bucketIndex);
+            return super.getBucketLabel(name);
         }
     }
 
@@ -282,8 +146,8 @@ public class ContactLocaleUtils {
      */
     private static class SimplifiedChineseContactUtils
         extends ContactLocaleUtilsBase {
-        public SimplifiedChineseContactUtils(LocaleSet locales) {
-            super(locales);
+        public SimplifiedChineseContactUtils() {
+            super();
         }
     }
 
@@ -301,11 +165,11 @@ public class ContactLocaleUtils {
             mLocales = locales;
         }
         if (mLocales.isPrimaryLanguage(JAPANESE_LANGUAGE)) {
-            mUtils = new JapaneseContactUtils(mLocales);
+            mUtils = new JapaneseContactUtils();
         } else if (mLocales.isPrimaryLocaleSimplifiedChinese()) {
-            mUtils = new SimplifiedChineseContactUtils(mLocales);
+            mUtils = new SimplifiedChineseContactUtils();
         } else {
-            mUtils = new ContactLocaleUtilsBase(mLocales);
+            mUtils = new ContactLocaleUtilsBase();
         }
     }
 
@@ -330,15 +194,7 @@ public class ContactLocaleUtils {
         }
     }
 
-    public int getBucketIndex(String name) {
-        return mUtils.getBucketIndex(name);
-    }
-
-    public String getBucketLabel(int bucketIndex) {
-        return mUtils.getBucketLabel(bucketIndex);
-    }
-
     public String getLabel(String name) {
-        return getBucketLabel(getBucketIndex(name));
+        return mUtils.getBucketLabel(name);
     }
 }
