@@ -231,6 +231,7 @@ public class ComposerBar extends RelativeLayout implements
             public void afterTextChanged(Editable s) {
             }
         };
+        mTextEntry.addTextChangedListener(mChatStateListener);
 
         mTextEntry.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -617,6 +618,11 @@ public class ComposerBar extends RelativeLayout implements
         if (isEmojiVisible()) {
             hideEmojiDrawer();
         }
+    }
+
+    /** Returns true if typing message was sent. */
+    public boolean isComposeSent() {
+        return mComposeSent;
     }
 
     @Override

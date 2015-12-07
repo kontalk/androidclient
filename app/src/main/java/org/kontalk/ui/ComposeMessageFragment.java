@@ -2446,7 +2446,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                     Toast.LENGTH_LONG).show();
         }
 
-        if (Preferences.getSendTyping(getActivity())) {
+        if (mComposer.isComposeSent()) {
             // send inactive state notification
             if (mAvailableResources.size() > 0)
                 MessageCenterService.sendChatState(getActivity(), mUserJID, ChatState.inactive);
