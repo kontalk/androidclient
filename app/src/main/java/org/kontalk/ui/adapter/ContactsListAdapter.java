@@ -18,24 +18,27 @@
 
 package org.kontalk.ui.adapter;
 
+import com.android.contacts.common.list.ContactsSectionIndexer;
+
 import android.content.Context;
 import android.database.Cursor;
+import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView.RecyclerListener;
-import android.widget.AlphabetIndexer;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import lb.library.cursor.SearchablePinnedHeaderCursorListViewAdapter;
+
 import org.kontalk.R;
 import org.kontalk.data.Contact;
+import org.kontalk.provider.MyUsers;
 import org.kontalk.ui.ContactsListActivity;
 import org.kontalk.ui.view.ContactsListItem;
-
-import lb.library.cursor.SearchablePinnedHeaderCursorListViewAdapter;
 
 
 public class ContactsListAdapter extends SearchablePinnedHeaderCursorListViewAdapter {
@@ -46,8 +49,6 @@ public class ContactsListAdapter extends SearchablePinnedHeaderCursorListViewAda
 
     public ContactsListAdapter(Context context, ListView list) {
         super(context, null, false);
-        setSectionIndexer(new AlphabetIndexer(null, Contact.COLUMN_DISPLAY_NAME,
-            "#ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
         mFactory = LayoutInflater.from(context);
 
         list.setRecyclerListener(new RecyclerListener() {
@@ -107,6 +108,32 @@ public class ContactsListAdapter extends SearchablePinnedHeaderCursorListViewAda
     @Override
     protected Cursor getFilterCursor(CharSequence charSequence) {
         return null;
+    }
+
+    @Override
+    public void changeCursor(Cursor cursor) {
+        super.changeCursor(cursor);
+        // create indexer
+        updateIndexer(cursor);
+    }
+
+    private void updateIndexer(Cursor cursor) {
+        if (cursor == null) {
+            setSectionIndexer(null);
+            return;
+        }
+
+        Bundle bundle = cursor.getExtras();
+        if (bundle.containsKey(MyUsers.Users.EXTRA_INDEX_TITLES) &&
+            bundle.containsKey(MyUsers.Users.EXTRA_INDEX_COUNTS)) {
+            String sections[] = bundle.getStringArray(MyUsers.Users.EXTRA_INDEX_TITLES);
+            int counts[] = bundle.getIntArray(MyUsers.Users.EXTRA_INDEX_COUNTS);
+
+            setSectionIndexer(new ContactsSectionIndexer(sections, counts));
+        }
+        else {
+            setSectionIndexer(null);
+        }
     }
 
     public void setOnContentChangedListener(OnContentChangedListener l) {

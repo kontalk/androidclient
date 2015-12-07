@@ -55,6 +55,8 @@ public class MyUsers {
         public static final String LAST_SEEN = "last_seen";
         public static final String BLOCKED = "blocked";
 
+        // uri parameter for indexed cursor
+        public static final String EXTRA_INDEX = "org.kontalk.provider.extra.INDEX";
         // uri parameter for update: triggers a complete resync
         public static final String RESYNC = "resync";
         // uri parameter for update: used with resync, triggers a complete sync
@@ -68,6 +70,10 @@ public class MyUsers {
         // uri parameter for insert: discard name and number when updating
         // (e.g. update a subscription entry from an existing contact)
         public static final String DISCARD_NAME = "discardName";
+
+        // results by EXTRA_INDEX
+        public static final String EXTRA_INDEX_COUNTS = "org.kontalk.provider.extra.INDEX_COUNTS";
+        public static final String EXTRA_INDEX_TITLES = "org.kontalk.provider.extra.INDEX_TITLES";
     }
 
     public static final class Keys implements CommonColumns {
