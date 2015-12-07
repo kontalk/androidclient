@@ -177,7 +177,9 @@ public abstract class MediaStorage {
                     m.postRotate(orientation);
 
                     Bitmap rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
-                    bitmap.recycle();
+                    // createBitmap might return the input bitmap which we don't want to recycle
+                    if (rotated != bitmap)
+                        bitmap.recycle();
                     bitmap = rotated;
 
                 }
