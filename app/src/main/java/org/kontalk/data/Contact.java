@@ -500,7 +500,9 @@ public class Contact {
     }
 
     public static Cursor queryContacts(Context context) {
-        return context.getContentResolver().query(Users.CONTENT_URI, ALL_CONTACTS_PROJECTION,
+        return context.getContentResolver().query(Users.CONTENT_URI.buildUpon()
+                .appendQueryParameter(Users.EXTRA_INDEX, "true").build(),
+            ALL_CONTACTS_PROJECTION,
             Users.REGISTERED + " <> 0", null,
             Users.DISPLAY_NAME + " COLLATE NOCASE," + Users.NUMBER + " COLLATE NOCASE");
     }
