@@ -405,11 +405,14 @@ public class ConversationListFragment extends ActionModeListFragment
 
     public void startQuery() {
         Cursor c = null;
-        try {
-            c = Conversation.startQuery(getActivity());
-        }
-        catch (SQLiteException e) {
-            Log.e(TAG, "query error", e);
+        Context ctx = getActivity();
+        if (ctx != null) {
+            try {
+                c = Conversation.startQuery(ctx);
+            }
+            catch (SQLiteException e) {
+                Log.e(TAG, "query error", e);
+            }
         }
         mQueryHandler.onQueryComplete(THREAD_LIST_QUERY_TOKEN, null, c);
     }
