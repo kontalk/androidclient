@@ -402,8 +402,8 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         if (singleItem) {
             CompositeMessage msg = getCheckedItem();
 
-            // message waiting for user review
-            if (msg.getStatus() == Messages.STATUS_PENDING) {
+            // message waiting for user review or not delivered
+            if (msg.getStatus() == Messages.STATUS_PENDING || msg.getStatus() == Messages.STATUS_NOTDELIVERED) {
                 retryMenu.setVisible(true);
             }
 
@@ -2446,7 +2446,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                     Toast.LENGTH_LONG).show();
         }
 
-        if (Preferences.getSendTyping(getActivity())) {
+        if (mComposer.isComposeSent()) {
             // send inactive state notification
             if (mAvailableResources.size() > 0)
                 MessageCenterService.sendChatState(getActivity(), mUserJID, ChatState.inactive);
