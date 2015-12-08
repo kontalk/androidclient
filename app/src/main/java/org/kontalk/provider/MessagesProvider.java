@@ -64,6 +64,7 @@ public class MessagesProvider extends ContentProvider {
     private static final String TABLE_FULLTEXT = "fulltext";
     private static final String TABLE_THREADS = "threads";
     private static final String TABLE_GROUPS = "groups";
+    private static final String TABLE_GROUP_MEMBERS = "group_members";
 
     private static final String TABLE_THREADS_GROUPS = TABLE_THREADS +
         " LEFT OUTER JOIN " + TABLE_GROUPS + " ON " +
@@ -78,8 +79,10 @@ public class MessagesProvider extends ContentProvider {
     private static final int MESSAGES_SERVERID = 6;
     private static final int CONVERSATIONS_ID = 7;
     private static final int CONVERSATIONS_ALL_ID = 8;
-    private static final int FULLTEXT_ID = 9;
-    private static final int REQUESTS = 10;
+    private static final int GROUPS = 9;
+    private static final int GROUPS_MEMBERS = 10;
+    private static final int FULLTEXT_ID = 11;
+    private static final int REQUESTS = 12;
 
     private DatabaseHelper dbHelper;
     private static final UriMatcher sUriMatcher;
@@ -163,14 +166,25 @@ public class MessagesProvider extends ContentProvider {
 
         private static final String _SCHEMA_GROUPS = "(" +
             "group_id TEXT NOT NULL, " +
-            "group_peer TEXT NOT NULL, " +
+            "group_owner TEXT NOT NULL, " +
             "thread_id INTEGER NOT NULL," +
-            "PRIMARY KEY (group_id, group_peer)" +
+            "PRIMARY KEY (group_id, group_owner)" +
+            ")";
+
+        /** This table will contain the groups definitions.*/
+        private static final String SCHEMA_GROUPS =
+            "CREATE TABLE " + TABLE_GROUPS + " " + _SCHEMA_GROUPS;
+
+        private static final String _SCHEMA_GROUP_MEMBERS = "(" +
+            "group_id TEXT NOT NULL, " +
+            "group_owner TEXT NOT NULL, " +
+            "group_peer TEXT NOT NULL, " +
+            "PRIMARY KEY (group_id, group_owner, group_peer)" +
             ")";
 
         /** This table will contain the groups participants .*/
-        private static final String SCHEMA_GROUPS =
-            "CREATE TABLE " + TABLE_GROUPS + " " + _SCHEMA_GROUPS;
+        private static final String SCHEMA_GROUPS_MEMBERS =
+            "CREATE TABLE " + TABLE_GROUP_MEMBERS + " " + _SCHEMA_GROUP_MEMBERS;
 
         /** This table will contain every text message to speed-up full text searches. */
         private static final String SCHEMA_FULLTEXT =
@@ -297,7 +311,8 @@ public class MessagesProvider extends ContentProvider {
         };
 
         private static final String[] SCHEMA_UPGRADE_V8 = {
-            SCHEMA_GROUPS
+            SCHEMA_GROUPS,
+            SCHEMA_GROUPS_MEMBERS,
         };
 
         private Context mContext;
@@ -312,6 +327,7 @@ public class MessagesProvider extends ContentProvider {
             db.execSQL(SCHEMA_MESSAGES);
             db.execSQL(SCHEMA_THREADS);
             db.execSQL(SCHEMA_GROUPS);
+            db.execSQL(SCHEMA_GROUPS_MEMBERS);
             db.execSQL(SCHEMA_FULLTEXT);
             db.execSQL(SCHEMA_MESSAGES_INDEX);
             db.execSQL(SCHEMA_MESSAGES_TIMESTAMP_IDX);
@@ -450,10 +466,13 @@ public class MessagesProvider extends ContentProvider {
 
     @Override
     public synchronized Uri insert(Uri uri, ContentValues initialValues) {
+        if (initialValues == null)
+            throw new IllegalArgumentException("No data");
+
         // only messages and requests virtual table can be inserted
         int match = sUriMatcher.match(uri);
-        if (match != MESSAGES && match != REQUESTS) { throw new IllegalArgumentException("Unknown URI " + uri); }
-        if (initialValues == null) { throw new IllegalArgumentException("No data"); }
+        if (match != MESSAGES && match != REQUESTS && match != GROUPS && match != GROUPS_MEMBERS)
+            throw new IllegalArgumentException("Unknown URI " + uri);
 
         // if this column is present, we'll insert the thread only
         String draft = initialValues.getAsString(Threads.DRAFT);
@@ -476,8 +495,27 @@ public class MessagesProvider extends ContentProvider {
 
             // create the thread first
             long threadId = updateThreads(db, values, notifications, match == REQUESTS);
+            values.put(Messages.THREAD_ID, threadId);
 
-            if (draft != null || match == REQUESTS) {
+            if (match == GROUPS) {
+                // notify thread change
+                notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
+                // notify conversation change
+                notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
+
+                db.insertOrThrow(TABLE_GROUPS, null, values);
+                success = setTransactionSuccessful(db);
+                return ContentUris.withAppendedId(Threads.CONTENT_URI, threadId);
+            }
+
+            else if (match == GROUPS_MEMBERS) {
+                // TODO shouldn't we notify someone?
+                db.insertOrThrow(TABLE_GROUP_MEMBERS, null, values);
+                success = setTransactionSuccessful(db);
+                return ContentUris.withAppendedId(Threads.CONTENT_URI, threadId);
+            }
+
+            else if (draft != null || match == REQUESTS) {
                 // notify thread change
                 notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
                 // notify conversation change
@@ -494,8 +532,6 @@ public class MessagesProvider extends ContentProvider {
                     return null;
 
             }
-
-            values.put(Messages.THREAD_ID, threadId);
 
             // insert the new message now!
             long rowId = db.insertOrThrow(TABLE_MESSAGES, null, values);
@@ -1310,6 +1346,8 @@ public class MessagesProvider extends ContentProvider {
         sUriMatcher.addURI(AUTHORITY, TABLE_MESSAGES + "/*", MESSAGES_SERVERID);
         sUriMatcher.addURI(AUTHORITY, "conversations", CONVERSATIONS_ALL_ID);
         sUriMatcher.addURI(AUTHORITY, "conversations/#", CONVERSATIONS_ID);
+        sUriMatcher.addURI(AUTHORITY, TABLE_GROUPS, GROUPS);
+        sUriMatcher.addURI(AUTHORITY, TABLE_GROUPS + "/members", GROUPS_MEMBERS);
         sUriMatcher.addURI(AUTHORITY, TABLE_FULLTEXT, FULLTEXT_ID);
         sUriMatcher.addURI(AUTHORITY, "requests", REQUESTS);
 
@@ -1359,6 +1397,7 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Threads.DRAFT, Threads.DRAFT);
         threadsProjectionMap.put(Threads.REQUEST_STATUS, Threads.REQUEST_STATUS);
         threadsProjectionMap.put(Groups.GROUP_ID, Groups.GROUP_ID);
+        threadsProjectionMap.put(Groups.GROUP_OWNER, Groups.GROUP_OWNER);
 
         fulltextProjectionMap = new HashMap<String, String>();
         fulltextProjectionMap.put(Fulltext.THREAD_ID, Fulltext.THREAD_ID);

@@ -18,14 +18,18 @@
 
 package org.kontalk.data;
 
+import org.jivesoftware.smack.util.StringUtils;
+
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.ui.MessagingNotification;
 
 import android.content.AsyncQueryHandler;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 
 
 /**
@@ -48,6 +52,7 @@ public class Conversation {
         Threads.DRAFT,
         Threads.REQUEST_STATUS,
         Threads.Groups.GROUP_ID,
+        Threads.Groups.GROUP_OWNER,
     };
 
     private static final int COLUMN_ID = 0;
@@ -62,6 +67,7 @@ public class Conversation {
     private static final int COLUMN_DRAFT = 9;
     private static final int COLUMN_REQUEST_STATUS = 10;
     private static final int COLUMN_GROUP_ID = 11;
+    private static final int COLUMN_GROUP_OWNER = 12;
 
     private final Context mContext;
 
@@ -82,6 +88,7 @@ public class Conversation {
 
     // from groups table
     private String mGroupId;
+    private String mGroupOwner;
     private String[] mGroupPeers;
 
     private Conversation(Context context) {
@@ -107,6 +114,7 @@ public class Conversation {
             mRequestStatus = c.getInt(COLUMN_REQUEST_STATUS);
 
             mGroupId = c.getString(COLUMN_GROUP_ID);
+            mGroupOwner = c.getString(COLUMN_GROUP_OWNER);
             // group peers are loaded on demand
 
             loadContact();
@@ -226,6 +234,10 @@ public class Conversation {
         return mGroupId;
     }
 
+    public String getGroupOwner() {
+        return mGroupOwner;
+    }
+
     public String[] getGroupPeers() {
         return mGroupPeers;
     }
@@ -263,6 +275,36 @@ public class Conversation {
     public static Cursor startQuery(Context context, long threadId) {
         return context.getContentResolver().query(Threads.CONTENT_URI,
                 ALL_THREADS_PROJECTION, Threads._ID + " = " + threadId, null, null);
+    }
+
+    /**
+     * Turns a 1-to-1 conversation into a group chat.
+     * @return the given thread ID or a newly created thread ID.
+     */
+    public static long initGroupChat(Context context, long threadId, String owner, String[] members) {
+        String gid = StringUtils.randomString(20);
+
+        // insert group
+        ContentValues values = new ContentValues();
+        values.put(Threads.Groups.GROUP_ID, gid);
+        values.put(Threads.Groups.GROUP_OWNER, owner);
+        if (threadId > 0)
+            values.put(Threads.Groups.THREAD_ID, threadId);
+
+        Uri threadUri = context.getContentResolver()
+            .insert(Threads.Groups.CONTENT_URI, values);
+        threadId = ContentUris.parseId(threadUri);
+        values.remove(Threads.Groups.THREAD_ID);
+
+        // insert group members
+        for (String member : members) {
+            // FIXME turn this into batch operations
+            values.put(Threads.Groups.PEER, member);
+            context.getContentResolver()
+                .insert(Threads.Groups.MEMBERS_CONTENT_URI, values);
+        }
+
+        return threadId;
     }
 
     public void markAsRead() {

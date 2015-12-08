@@ -161,7 +161,13 @@ public final class MyMessages {
         public static final class Groups {
             private Groups() {}
 
+            public static final Uri CONTENT_URI = Uri.parse("content://"
+                + MessagesProvider.AUTHORITY + "/groups");
+            public static final Uri MEMBERS_CONTENT_URI = Uri.parse("content://"
+                + MessagesProvider.AUTHORITY + "/groups/members");
+
             public static final String GROUP_ID = "group_id";
+            public static final String GROUP_OWNER = "group_owner";
             public static final String PEER = "group_" + CommonColumns.PEER;
             public static final String THREAD_ID = Messages.THREAD_ID;
         }

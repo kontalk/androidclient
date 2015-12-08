@@ -125,11 +125,15 @@ public class Authenticator extends AbstractAccountAuthenticator {
         return (acc != null) ? acc.name : null;
     }
 
-    public static boolean isSelfJID(Context ctx, String bareJid) {
+    public static String getSelfJID(Context ctx) {
         String name = getDefaultAccountName(ctx);
-        return name != null &&
-            XMPPUtils.createLocalJID(ctx, MessageUtils.sha1(name))
-                .equalsIgnoreCase(bareJid);
+        return (name != null) ?
+            XMPPUtils.createLocalJID(ctx, MessageUtils.sha1(name)) : null;
+    }
+
+    public static boolean isSelfJID(Context ctx, String bareJid) {
+        String jid = getSelfJID(ctx);
+        return jid != null && jid.equalsIgnoreCase(bareJid);
     }
 
     public static String getDefaultDisplayName(Context context) {

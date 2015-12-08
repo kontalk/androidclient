@@ -832,7 +832,10 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
             case R.id.delete_thread:
                 if (threadId > 0)
                     deleteThread();
+                return true;
 
+            case R.id.invite_group:
+                addUsers();
                 return true;
 
             case R.id.block_user:
@@ -1135,6 +1138,20 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                 });
         builder.setNegativeButton(android.R.string.cancel, null);
         builder.create().show();
+    }
+
+    private void addUsers() {
+        // TODO TEST
+        addUser("admin@beta.kontalk.net");
+    }
+
+    private void addUser(String userId) {
+        // transform the current conversation into a group chat if needed
+        if (!mConversation.isGroupChat()) {
+            Conversation.initGroupChat(getActivity(), threadId, Authenticator.getSelfJID(getActivity()), new String[] { userId });
+        }
+
+        reload();
     }
 
     private void blockUser() {
