@@ -1,118 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Kontalk Android client
+     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
 <io.codetail.widget.RevealFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/container"
+    android:id="@+id/attachment_container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:visibility="visible"
+    android:visibility="invisible"
+    android:descendantFocusability="blocksDescendants"
     android:layout_alignParentTop="true">
 
-    <!-- Put more views here if you want, it's stock frame layout  -->
+    <View android:id="@+id/attachment_overlay"
+        android:background="@color/alpha_black"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
 
-    <android.support.v7.widget.CardView
-        android:id="@+id/circular_card"
-        style="@style/CardView"
+    <FrameLayout android:id="@+id/circular_card"
+        android:background="@android:color/white"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:cardBackgroundColor="#FFFFFF"
-        app:cardElevation="3dp"
-        app:cardPreventCornerOverlap="false"
-        app:cardUseCompatPadding="false">
+        android:layout_height="wrap_content">
 
-        <LinearLayout
+        <android.support.v7.widget.GridLayout
+            android:id="@+id/gridLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:padding="8dp"
+            app:columnCount="4"
+            app:orientation="horizontal"
+            app:rowCount="2">
 
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/last_photo_list"
-                android:layout_width="match_parent"
-                android:layout_height="100dp"
-                android:scrollbars="none"
-                android:visibility="visible" />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1px"
-                android:background="#000000" />
-
-            <android.support.v7.widget.GridLayout
-                android:id="@+id/gridLayout"
-                android:layout_width="match_parent"
+            <TextView android:id="@+id/attach_camera"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:columnCount="4"
-                app:orientation="horizontal"
-                app:rowCount="2"
-                android:padding="8dp">
+                android:drawableTop="@drawable/attach_camera"
+                android:gravity="center"
+                android:text="@string/attachment_camera"
+                app:layout_columnWeight="1" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:drawableTop="@drawable/attach_camera"
-                    android:gravity="center"
-                    android:text="Foto"
-                    app:layout_columnWeight="1" />
+            <TextView android:id="@+id/attach_gallery"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableTop="@drawable/attach_gallery"
+                android:gravity="center"
+                android:text="@string/attachment_picture"
+                app:layout_columnWeight="1" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:drawableTop="@drawable/attach_gallery"
-                    android:gravity="center"
-                    android:text="Galleria"
-                    app:layout_columnWeight="1" />
+            <TextView android:id="@+id/attach_video"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableTop="@drawable/attach_video"
+                android:gravity="center"
+                android:text="@string/attachment_video"
+                app:layout_columnWeight="1" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:drawableTop="@drawable/attach_video"
-                    android:gravity="center"
-                    android:text="Video"
-                    app:layout_columnWeight="1" />
+            <TextView android:id="@+id/attach_audio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableTop="@drawable/attach_audio"
+                android:gravity="center"
+                android:text="@string/attachment_audio"
+                app:layout_columnWeight="1" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:drawableTop="@drawable/attach_audio"
-                    android:gravity="center"
-                    android:text="Audio"
-                    app:layout_columnWeight="1" />
+            <TextView android:id="@+id/attach_file"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableTop="@drawable/attach_file"
+                android:gravity="center"
+                android:text="@string/attachment_file"
+                app:layout_columnWeight="1" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:drawableTop="@drawable/attach_file"
-                    android:gravity="center"
-                    android:text="File"
-                    app:layout_columnWeight="1" />
+            <TextView android:id="@+id/attach_vcard"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableTop="@drawable/attach_contact"
+                android:gravity="center"
+                android:text="@string/attachment_vcard"
+                app:layout_columnWeight="1" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:drawableTop="@drawable/attach_contact"
-                    android:gravity="center"
-                    android:text="Contatto"
-                    app:layout_columnWeight="1" />
+            <TextView android:id="@+id/attach_location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableTop="@drawable/attach_location"
+                android:gravity="center"
+                android:text="@string/attachment_location"
+                app:layout_columnWeight="1" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:drawableTop="@drawable/attach_location"
-                    android:gravity="center"
-                    android:text="Posizione"
-                    app:layout_columnWeight="1" />
+            <TextView android:id="@+id/attach_hide"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableTop="@drawable/attach_hide1"
+                android:gravity="center"
+                app:layout_columnWeight="1" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:drawableTop="@drawable/attach_hide1"
-                    android:gravity="center"
-                    app:layout_columnWeight="1" />
+        </android.support.v7.widget.GridLayout>
 
-            </android.support.v7.widget.GridLayout>
-
-        </LinearLayout>
-
-
-    </android.support.v7.widget.CardView>
+    </FrameLayout>
 
 </io.codetail.widget.RevealFrameLayout>

@@ -29,8 +29,6 @@ import java.util.regex.Pattern;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.afollestad.materialdialogs.simplelist.MaterialSimpleListAdapter;
-import com.afollestad.materialdialogs.simplelist.MaterialSimpleListItem;
 import com.akalipetis.fragment.ActionModeListFragment;
 import com.akalipetis.fragment.MultiChoiceModeListener;
 import com.nispok.snackbar.Snackbar;
@@ -48,7 +46,6 @@ import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.AsyncQueryHandler;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
@@ -90,7 +87,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewStub;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -179,10 +175,9 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     }
 
     /* Attachment chooser stuff. */
-    private static final int ATTACHMENT_ACTION_PICTURE = 0;
-    private static final int ATTACHMENT_ACTION_CONTACT = 1;
-    private static final int ATTACHMENT_ACTION_AUDIO = 2;
-    private Dialog attachmentMenu;
+    private SupportAnimator mAttachAnimator;
+    private View mAttachmentCard;
+    private View mAttachmentContainer;
 
     private ComposerBar mComposer;
 
@@ -290,6 +285,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         }
 
         processArguments(savedInstanceState);
+        initAttachmentView();
     }
 
     @Override
@@ -598,6 +594,79 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
             .show();
     }
 
+    private void initAttachmentView()
+    {
+        View view = getView();
+
+        mAttachmentContainer = view.findViewById(R.id.attachment_container);
+        mAttachmentCard = view.findViewById(R.id.circular_card);
+
+        View.OnClickListener hideAttachmentListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleAttachmentView();
+            }
+        };
+        view.findViewById(R.id.attachment_overlay).setOnClickListener(hideAttachmentListener);
+        view.findViewById(R.id.attach_hide).setOnClickListener(hideAttachmentListener);
+
+        view.findViewById(R.id.attach_camera).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectPhotoAttachment();
+                toggleAttachmentView();
+            }
+        });
+
+        view.findViewById(R.id.attach_gallery).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectGalleryAttachment();
+                toggleAttachmentView();
+            }
+        });
+
+        view.findViewById(R.id.attach_video).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO i18n
+                Toast.makeText(getContext(), "Not implemented yet.", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        view.findViewById(R.id.attach_audio).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectAudioAttachment();
+                toggleAttachmentView();
+            }
+        });
+
+        view.findViewById(R.id.attach_file).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO i18n
+                Toast.makeText(getContext(), "Not implemented yet.", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        view.findViewById(R.id.attach_vcard).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectContactAttachment();
+                toggleAttachmentView();
+            }
+        });
+
+        view.findViewById(R.id.attach_location).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO i18n
+                Toast.makeText(getContext(), "Not implemented yet.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     /** Sends out a binary message. */
     @Override
     public void sendBinaryMessage(Uri uri, String mime, boolean media,
@@ -831,7 +900,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                 return true;
 
             case R.id.menu_attachment:
-                selectAttachment();
+                toggleAttachmentView();
                 return true;
 
             case R.id.delete_thread:
@@ -985,69 +1054,102 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         }
     }
 
-    /** Starts dialog for attachment selection. */
-    public void selectAttachment() {
-        if (attachmentMenu == null) {
-            Context ctx = getActivity();
-            MaterialSimpleListAdapter menu = new MaterialSimpleListAdapter(ctx);
-            menu.add(new MaterialSimpleListItem.Builder(ctx)
-                .content(R.string.attachment_picture)
-                .icon(R.drawable.ic_attach_picture)
-                .build());
-            menu.add(new MaterialSimpleListItem.Builder(ctx)
-                .content(R.string.attachment_contact)
-                .icon(R.drawable.ic_attach_contact)
-                .build());
-            if (AudioDialog.isSupported(ctx)) {
-                menu.add(new MaterialSimpleListItem.Builder(ctx)
-                    .content(R.string.attachment_audio)
-                    .icon(R.drawable.ic_attach_audio)
-                    .build());
-            }
-
-            attachmentMenu = new MaterialDialog.Builder(ctx)
-                .adapter(menu, new MaterialDialog.ListCallback() {
-                    @Override
-                    public void onSelection(MaterialDialog dialog, View view, int id, CharSequence text) {
-                        switch (id) {
-                            case ATTACHMENT_ACTION_PICTURE:
-                                selectImageAttachment();
-                                break;
-                            case ATTACHMENT_ACTION_CONTACT:
-                                selectContactAttachment();
-                                break;
-                            case ATTACHMENT_ACTION_AUDIO:
-                                selectAudioAttachment();
-                                break;
-                        }
-                        dialog.dismiss();
-                    }
-                })
-                .build();
+    boolean tryHideAttachmentView() {
+        if (isAttachmentViewVisible()) {
+            setupAttachmentViewCloseAnimation();
+            startAttachmentViewAnimation();
+            return true;
         }
-        attachmentMenu.show();
-
-        /*View cardView = getView().findViewById(R.id.circular_card);
-        View container = getView().findViewById(R.id.container);
-        container.setVisibility(View.VISIBLE);
-
-        // get the center for the clipping circle
-        int cx = (cardView.getLeft() + cardView.getRight()) / 2;
-        int cy = (cardView.getTop() + cardView.getBottom()) / 2;
-
-        // get the final radius for the clipping circle
-        int finalRadius = Math.max(cardView.getWidth(), cardView.getHeight());
-
-        SupportAnimator animator =
-                ViewAnimationUtils.createCircularReveal(cardView, cx, cy, 0, finalRadius);
-        animator.setInterpolator(new AccelerateDecelerateInterpolator());
-        animator.setDuration(500);
-        animator.start();*/
+        return false;
     }
 
-    /** Starts activity for an image attachment. */
+    private void setupAttachmentViewCloseAnimation() {
+        if (mAttachAnimator != null) {
+            if (mAttachAnimator.isRunning()) {
+                // cancel previous animation first
+                mAttachAnimator.cancel();
+            }
+
+            // reverse the animation
+            mAttachAnimator = mAttachAnimator.reverse();
+            mAttachAnimator.addListener(new SupportAnimator.AnimatorListener() {
+                public void onAnimationCancel() {
+                }
+
+                public void onAnimationEnd() {
+                    mAttachmentContainer.setVisibility(View.INVISIBLE);
+                    mAttachAnimator = null;
+                }
+
+                public void onAnimationRepeat() {
+                }
+
+                public void onAnimationStart() {
+                }
+            });
+        }
+    }
+
+    private boolean isAttachmentViewVisible() {
+        return mAttachmentContainer.getVisibility() != View.INVISIBLE || mAttachAnimator != null;
+    }
+
+    private void startAttachmentViewAnimation() {
+        mAttachAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+        mAttachAnimator.setDuration(250);
+        mAttachAnimator.start();
+    }
+
+    /** Show or hide the attachment selector. */
+    public void toggleAttachmentView() {
+        if (isAttachmentViewVisible()) {
+            setupAttachmentViewCloseAnimation();
+        }
+        else {
+            mComposer.forceHideKeyboard();
+            mAttachmentContainer.setVisibility(View.VISIBLE);
+
+            int right = mAttachmentCard.getRight();
+            int top = mAttachmentCard.getTop();
+            float f = (float) Math.sqrt(Math.pow(mAttachmentCard.getWidth(), 2D) + Math.pow(mAttachmentCard.getHeight(), 2D));
+            mAttachAnimator = ViewAnimationUtils.createCircularReveal(mAttachmentCard, right, top, 0, f);
+        }
+
+        startAttachmentViewAnimation();
+    }
+
+    /** Starts an activity for shooting a picture. */
+    private void selectPhotoAttachment() {
+        try {
+            // check if camera is available
+            final PackageManager packageManager = getActivity().getPackageManager();
+            final Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            List<ResolveInfo> list =
+                packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+            if (list.size() <= 0) throw new UnsupportedOperationException();
+
+            mCurrentPhoto = MediaStorage.getOutgoingImageFile();
+            Intent take = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            take.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mCurrentPhoto));
+
+            startActivityForResult(take, SELECT_ATTACHMENT_OPENABLE);
+        }
+        catch (UnsupportedOperationException ue) {
+            Log.w(TAG, "no camera app or no camera present", ue);
+            // TODO i18n
+            Toast.makeText(getActivity(), "No camera app available.",
+                Toast.LENGTH_LONG).show();
+        }
+        catch (IOException e) {
+            Log.e(TAG, "error creating temp file", e);
+            Toast.makeText(getActivity(), R.string.chooser_error_no_camera,
+                Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /** Starts an activity for picture attachment selection. */
     @TargetApi(Build.VERSION_CODES.KITKAT)
-    private void selectImageAttachment() {
+    private void selectGalleryAttachment() {
         Intent pictureIntent;
 
         if (!MediaStorage.isStorageAccessFrameworkAvailable()) {
@@ -1066,32 +1168,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
             .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
             .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
 
-        Intent chooser = null;
-        try {
-            // check if camera is available
-            final PackageManager packageManager = getActivity().getPackageManager();
-            final Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            List<ResolveInfo> list =
-                    packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
-            if (list.size() <= 0) throw new UnsupportedOperationException();
-
-            mCurrentPhoto = MediaStorage.getOutgoingImageFile();
-            Intent take = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            take.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mCurrentPhoto));
-            chooser = Intent.createChooser(pictureIntent, getString(R.string.chooser_send_picture));
-            chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{take});
-        }
-        catch (UnsupportedOperationException ue) {
-            Log.d(TAG, "no camera app or no camera present", ue);
-        }
-        catch (IOException e) {
-            Log.e(TAG, "error creating temp file", e);
-            Toast.makeText(getActivity(), R.string.chooser_error_no_camera,
-                Toast.LENGTH_LONG).show();
-        }
-
-        if (chooser == null) chooser = pictureIntent;
-        startActivityForResult(chooser, SELECT_ATTACHMENT_OPENABLE);
+        startActivityForResult(pictureIntent, SELECT_ATTACHMENT_OPENABLE);
     }
 
     /** Starts activity for a vCard attachment from a contact. */

@@ -375,6 +375,12 @@ public class ComposerBar extends RelativeLayout implements
         });
     }
 
+    public void forceHideKeyboard() {
+        InputMethodManager imm = (InputMethodManager) mContext
+            .getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(mTextEntry.getApplicationWindowToken(), 0);
+    }
+
     public void onSaveInstanceState(Bundle out) {
         // TODO
     }
