@@ -94,6 +94,9 @@ dependencies {
         exclude group: 'net.sf.kxml'
     }
     compile project(':emojicon:library')
+    compile (project(':CircularReveal:circualreveal')) {
+        transitive = true;
+    }
 
     compile "com.android.support:appcompat-v7:$appcompatVersion"
 
@@ -124,9 +127,6 @@ dependencies {
     compile 'com.nispok:snackbar:2.11.0'
     compile 'de.hdodenhof:circleimageview:2.0.0'
     compile 'com.github.vlivanov:ListViewVariants:f606578467'
-    compile ("com.github.acappelli:CircularReveal:e36ac3faa1") {
-        transitive = true;
-    }
 
     googleplayCompile "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
     googleplayCompile "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"
