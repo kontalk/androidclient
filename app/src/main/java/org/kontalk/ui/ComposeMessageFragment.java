@@ -1061,12 +1061,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     }
 
     private void setupAttachmentViewCloseAnimation() {
-        if (mAttachAnimator != null) {
-            if (mAttachAnimator.isRunning()) {
-                // cancel previous animation first
-                mAttachAnimator.cancel();
-            }
-
+        if (mAttachAnimator != null && !mAttachAnimator.isRunning()) {
             // reverse the animation
             mAttachAnimator = mAttachAnimator.reverse();
             mAttachAnimator.addListener(new SupportAnimator.AnimatorListener() {
