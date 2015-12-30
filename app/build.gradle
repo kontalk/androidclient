@@ -101,8 +101,6 @@ dependencies {
     compile "com.android.support:appcompat-v7:$appcompatVersion"
 
     compile "com.android.support:design:$appcompatVersion"
-    compile "com.android.support:cardview-v7:$appcompatVersion"
-    compile "com.android.support:recyclerview-v7:$appcompatVersion"
     compile "com.android.support:gridlayout-v7:$appcompatVersion"
 
     compile "com.madgag.spongycastle:core:$spongyCastleVersion"
