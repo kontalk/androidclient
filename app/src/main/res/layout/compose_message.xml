@@ -23,57 +23,52 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
 
-    <ImageView
-        android:id="@+id/background"
+    <ImageView android:id="@+id/background"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        tools:ignore="ContentDescription" />
+        tools:ignore="ContentDescription"/>
 
-    <LinearLayout
-        android:id="@+id/container"
+    <LinearLayout android:id="@+id/container"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:orientation="vertical">
 
-        <include
+        <include layout="@layout/invitation_bar"
             android:id="@+id/invitation_bar"
-            layout="@layout/invitation_bar"
-            android:visibility="gone" />
+            android:visibility="gone"/>
 
-        <FrameLayout
-            android:id="@+id/warning_bar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+        <FrameLayout android:id="@+id/warning_bar"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"/>
 
-        <ListView
-            android:id="@android:id/list"
+        <ListView android:id="@android:id/list"
             style="?android:attr/listViewWhiteStyle"
-            android:layout_width="fill_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1.0"
             android:background="@android:color/transparent"
             android:cacheColorHint="@android:color/transparent"
             android:divider="@null"
             android:dividerHeight="0.0sp"
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1.0"
             android:drawSelectorOnTop="false"
-            android:fadingEdgeLength="8dp"
-            android:fastScrollAlwaysVisible="true"
-            android:fastScrollEnabled="true"
-            android:scrollbarAlwaysDrawVerticalTrack="true"
-            android:scrollbarStyle="insideInset"
+            android:transcriptMode="normal"
             android:smoothScrollbar="false"
+            android:scrollbarAlwaysDrawVerticalTrack="true"
+            android:fastScrollEnabled="true"
+            android:fastScrollAlwaysVisible="true"
+            android:scrollbarStyle="insideInset"
             android:stackFromBottom="true"
-            android:transcriptMode="normal">
+            android:fadingEdgeLength="8dp"
+            >
             <!-- Preview: listitem=@layout/message_list_item -->
         </ListView>
 
         <!-- Divider. (Yes, the .9dp is on purpose.) -->
-        <View
+        <View android:background="?attr/dividerHorizontal"
             android:layout_width="match_parent"
-            android:layout_height=".9dp"
-            android:background="?attr/dividerHorizontal" />
+            android:layout_height=".9dp" />
 
-        <include layout="@layout/composer_bar" />
+        <include layout="@layout/composer_bar"/>
 
     </LinearLayout>
 

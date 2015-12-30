@@ -629,8 +629,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         view.findViewById(R.id.attach_video).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO i18n
-                Toast.makeText(getContext(), "Not implemented yet.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), R.string.msg_not_implemented, Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -645,8 +644,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         view.findViewById(R.id.attach_file).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO i18n
-                Toast.makeText(getContext(), "Not implemented yet.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), R.string.msg_not_implemented, Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -661,8 +659,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         view.findViewById(R.id.attach_location).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO i18n
-                Toast.makeText(getContext(), "Not implemented yet.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), R.string.msg_not_implemented, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -1135,9 +1132,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
             startActivityForResult(take, SELECT_ATTACHMENT_OPENABLE);
         }
         catch (UnsupportedOperationException ue) {
-            Log.w(TAG, "no camera app or no camera present", ue);
-            // TODO i18n
-            Toast.makeText(getActivity(), "No camera app available.",
+            Toast.makeText(getActivity(), R.string.chooser_error_no_camera_app,
                 Toast.LENGTH_LONG).show();
         }
         catch (IOException e) {

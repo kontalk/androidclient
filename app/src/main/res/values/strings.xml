@@ -296,8 +296,11 @@
     <string name="attachment_vcard">Contact</string>
     <string name="attachment_location">Location</string>
 
+    <string name="msg_not_implemented">Not implemented yet.</string>
+
     <string name="chooser_send_picture">Send picture</string>
     <string name="chooser_error_no_camera">External storage not available. Taking picture from camera will not be enabled.</string>
+    <string name="chooser_error_no_camera_app">No camera app available.</string>
 
     <string name="chooser_select_link">Choose action</string>
 
