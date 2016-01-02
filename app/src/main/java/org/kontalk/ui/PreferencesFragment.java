@@ -19,6 +19,9 @@
 package org.kontalk.ui;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
@@ -52,9 +55,11 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.crypto.PersonalKey;
+import org.kontalk.crypto.PersonalKeyImporter;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.PushServiceManager;
+import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 
@@ -71,10 +76,18 @@ public final class PreferencesFragment extends RootPreferenceFragment {
 
     private static final int REQUEST_PICK_BACKGROUND = Activity.RESULT_FIRST_USER + 1;
     private static final int REQUEST_PICK_RINGTONE = Activity.RESULT_FIRST_USER + 2;
+    private static final int REQUEST_CREATE_KEYPACK = Activity.RESULT_FIRST_USER + 3;
+
+    // this is used after when exiting to SAF for exporting
+    private String mPassphrase;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (savedInstanceState != null) {
+            mPassphrase = savedInstanceState.getString("passphrase");
+        }
 
         // upgrade from old version: pref_text_enter becomes string
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
@@ -187,23 +200,28 @@ public final class PreferencesFragment extends RootPreferenceFragment {
 
                 final OnPassphraseChangedListener action = new OnPassphraseChangedListener() {
                     public void onPassphraseChanged(String passphrase) {
-                        Context ctx = getActivity();
-                        try {
-                            Kontalk.get(ctx).exportPersonalKey(passphrase);
-
-                            Toast.makeText(ctx,
-                                R.string.msg_keypair_exported,
-                                Toast.LENGTH_LONG).show();
-
+                        if (MediaStorage.isStorageAccessFrameworkAvailable()) {
+                            mPassphrase = passphrase;
+                            MediaStorage.createFile(PreferencesFragment.this,
+                                PersonalKeyImporter.KEYPACK_MIME,
+                                PersonalKeyImporter.KEYPACK_FILENAME,
+                                REQUEST_CREATE_KEYPACK);
                         }
-                        catch (Exception e) {
-
-                            Log.e(TAG, "error exporting keys", e);
-                            Toast.makeText(ctx,
-                                // TODO i18n
-                                "Unable to export personal key.",
-                                Toast.LENGTH_LONG).show();
-
+                        else {
+                            Context ctx = getActivity();
+                            if (ctx != null) {
+                                try {
+                                    exportPersonalKey(ctx,
+                                        new FileOutputStream(PersonalKeyImporter.DEFAULT_KEYPACK),
+                                        passphrase);
+                                }
+                                catch (FileNotFoundException e) {
+                                    Log.e(TAG, "error exporting keys", e);
+                                    Toast.makeText(ctx,
+                                        R.string.err_keypair_export_write,
+                                        Toast.LENGTH_LONG).show();
+                                }
+                            }
                         }
                     }
                 };
@@ -457,6 +475,12 @@ public final class PreferencesFragment extends RootPreferenceFragment {
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("passphrase", mPassphrase);
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_PICK_BACKGROUND) {
             if (resultCode == Activity.RESULT_OK) {
@@ -487,6 +511,22 @@ public final class PreferencesFragment extends RootPreferenceFragment {
                 if (ctx != null) {
                     Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
                     Preferences.setRingtone(ctx, uri != null ? uri.toString() : "");
+                }
+            }
+        }
+        else if (requestCode == REQUEST_CREATE_KEYPACK) {
+            if (resultCode == Activity.RESULT_OK) {
+                Context ctx = getActivity();
+                if (ctx != null && data != null && data.getData() != null) {
+                    try {
+                        OutputStream out = ctx.getContentResolver().openOutputStream(data.getData());
+                        exportPersonalKey(ctx, out, mPassphrase);
+                    }
+                    catch (FileNotFoundException e) {
+                        Log.e(TAG, "error exporting keys", e);
+                        Toast.makeText(ctx, R.string.err_keypair_export_write,
+                            Toast.LENGTH_LONG).show();
+                    }
                 }
             }
         }
@@ -560,6 +600,21 @@ public final class PreferencesFragment extends RootPreferenceFragment {
             })
             .negativeText(android.R.string.cancel)
             .show();
+    }
+
+    private void exportPersonalKey(Context ctx, OutputStream out, String passphrase) {
+        try {
+            Kontalk.get(ctx).exportPersonalKey(out, passphrase);
+
+            Toast.makeText(ctx,
+                R.string.msg_keypair_exported,
+                Toast.LENGTH_LONG).show();
+        }
+        catch (Exception e) {
+            Log.e(TAG, "error exporting keys", e);
+            Toast.makeText(ctx, R.string.err_keypair_export_other,
+                Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
