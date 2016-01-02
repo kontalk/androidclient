@@ -187,7 +187,7 @@ public class KontalkConnection extends XMPPTCPConnection {
     }
 
     @Override
-    protected void processPacket(Stanza packet) {
+    protected void processPacket(Stanza packet) throws InterruptedException {
         if (packet instanceof Message) {
             /*
              * We are receiving a message. Suspend SM ack replies because we
