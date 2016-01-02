@@ -562,7 +562,7 @@ public class Syncer {
 
                     final RawPhoneNumberEntry data = lookupNumbers
                         .get(XmppStringUtils.parseLocalpart(entry.from));
-                    if (data != null) {
+                    if (data != null && data.lookupKey != null) {
                         // add contact
                         addContact(account,
                                 getDisplayName(provider, data.lookupKey, data.number),
@@ -648,8 +648,7 @@ public class Syncer {
                             if (data != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
                                 // add contact
                                 addProfile(account,
-                                    // FIXME shouldn't we be using the profile display name?
-                                    getDisplayName(provider, data.lookupKey, data.number),
+                                    Authenticator.getDefaultDisplayName(mContext),
                                     data.number, data.jid, operations, op++);
                             }
                         }
