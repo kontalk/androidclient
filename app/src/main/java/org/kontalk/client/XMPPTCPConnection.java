@@ -1116,16 +1116,17 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                             if (!smSessionId.equals(resumed.getPrevId())) {
                                 throw new StreamIdDoesNotMatchException(smSessionId, resumed.getPrevId());
                             }
+                            // Mark SM as enabled and resumption as successful.
+                            smResumedSyncPoint.reportSuccess();
+                            smEnabledSyncPoint.reportSuccess();
                             // First, drop the stanzas already handled by the server
                             processHandledCount(resumed.getHandledCount());
                             // Then re-send what is left in the unacknowledged queue
-                            List<Stanza> stanzasToResend = new LinkedList<Stanza>();
-                            stanzasToResend.addAll(unacknowledgedStanzas);
+                            List<Stanza> stanzasToResend = new ArrayList<>(unacknowledgedStanzas.size());
+                            unacknowledgedStanzas.drainTo(stanzasToResend);
                             for (Stanza stanza : stanzasToResend) {
-                                packetWriter.sendStreamElement(stanza);
+                                sendStanzaInternal(stanza);
                             }
-                            smResumedSyncPoint.reportSuccess();
-                            smEnabledSyncPoint.reportSuccess();
                             // If there where stanzas resent, then request a SM ack for them.
                             // Writer's sendStreamElement() won't do it automatically based on
                             // predicates.
@@ -1429,8 +1430,19 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
      * Set if Stream Management resumption should be used by default for new connections.
      * 
      * @param useSmResumptionDefault true to use Stream Management resumption for new connections.
+     * @deprecated use {@link #setUseStreamManagementResumptionDefault(boolean)} instead.
      */
+    @Deprecated
     public static void setUseStreamManagementResumptiodDefault(boolean useSmResumptionDefault) {
+        setUseStreamManagementResumptionDefault(useSmResumptionDefault);
+    }
+
+    /**
+     * Set if Stream Management resumption should be used by default for new connections.
+     *
+     * @param useSmResumptionDefault true to use Stream Management resumption for new connections.
+     */
+    public static void setUseStreamManagementResumptionDefault(boolean useSmResumptionDefault) {
         if (useSmResumptionDefault) {
             // Also enable SM is resumption is enabled
             setUseStreamManagementDefault(useSmResumptionDefault);
@@ -1714,10 +1726,10 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
         return Math.min(clientResumptionTime, serverResumptionTime);
     }
 
-    private void processHandledCount(long handledCount) throws NotConnectedException, StreamManagementCounterError {
+    private void processHandledCount(long handledCount) throws StreamManagementCounterError {
         long ackedStanzasCount = SMUtils.calculateDelta(handledCount, serverHandledStanzasCount);
         final List<Stanza> ackedStanzas = new ArrayList<Stanza>(
-                        handledCount <= Integer.MAX_VALUE ? (int) handledCount
+                        ackedStanzasCount <= Integer.MAX_VALUE ? (int) ackedStanzasCount
                                         : Integer.MAX_VALUE);
         for (long i = 0; i < ackedStanzasCount; i++) {
             Stanza ackedStanza = unacknowledgedStanzas.poll();
