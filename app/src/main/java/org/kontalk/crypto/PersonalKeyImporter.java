@@ -50,6 +50,7 @@ public class PersonalKeyImporter {
     public static final String BRIDGE_CERTPACK_FILENAME = "kontalk-login.p12";
 
     public static final String KEYPACK_FILENAME = "kontalk-keys.zip";
+    public static final String KEYPACK_MIME = "application/zip";
 
     public static final File DEFAULT_KEYPACK = new File(Environment
             .getExternalStorageDirectory(), KEYPACK_FILENAME);
