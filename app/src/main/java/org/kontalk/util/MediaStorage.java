@@ -30,7 +30,6 @@ import java.util.Date;
 import java.util.Locale;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
