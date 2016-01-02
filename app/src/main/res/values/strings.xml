@@ -287,12 +287,20 @@
     <string name="pref_balloons">Chat balloon theme</string>
     <string name="pref_title_balloons">Choose a chat balloon theme</string>
 
-    <string name="attachment_picture">Picture</string>
+    <string name="attachment_camera">Camera</string>
+    <string name="attachment_picture">Gallery</string>
     <string name="attachment_contact">Contact</string>
     <string name="attachment_audio">Audio</string>
+    <string name="attachment_video">Video</string>
+    <string name="attachment_file">File</string>
+    <string name="attachment_vcard">Contact</string>
+    <string name="attachment_location">Location</string>
+
+    <string name="msg_not_implemented">Not implemented yet.</string>
 
     <string name="chooser_send_picture">Send picture</string>
     <string name="chooser_error_no_camera">External storage not available. Taking picture from camera will not be enabled.</string>
+    <string name="chooser_error_no_camera_app">No camera app available.</string>
 
     <string name="chooser_select_link">Choose action</string>
 

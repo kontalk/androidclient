@@ -94,9 +94,15 @@ dependencies {
         exclude group: 'net.sf.kxml'
     }
     compile project(':emojicon:library')
+    compile (project(':CircularReveal:circualreveal')) {
+        transitive = true;
+    }
 
     compile "com.android.support:appcompat-v7:$appcompatVersion"
+
     compile "com.android.support:design:$appcompatVersion"
+    compile "com.android.support:gridlayout-v7:$appcompatVersion"
+
     compile "com.madgag.spongycastle:core:$spongyCastleVersion"
     compile "com.madgag.spongycastle:prov:$spongyCastleVersion"
     compile "com.madgag.spongycastle:pkix:$spongyCastleVersion"
