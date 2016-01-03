@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -453,4 +454,20 @@ public abstract class MediaStorage {
         intent.putExtra(Intent.EXTRA_TITLE, fileName);
         fragment.startActivityForResult(intent, requestCode);
     }
+
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    public static void openFile(Activity activity, String mimeType, String fileName, int requestCode) {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+
+        // Filter to only show results that can be "opened", such as
+        // a file (as opposed to a list of contacts or timezones).
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+        // Create a file with the requested MIME type.
+        intent.setType(mimeType);
+        intent.putExtra(Intent.EXTRA_TITLE, fileName);
+        activity.startActivityForResult(intent, requestCode);
+    }
+
 }
