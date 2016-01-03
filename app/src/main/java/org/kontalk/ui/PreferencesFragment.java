@@ -20,7 +20,6 @@ package org.kontalk.ui;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.OutputStream;
 
 import android.accounts.AccountManagerCallback;
@@ -28,6 +27,7 @@ import android.accounts.AccountManagerFuture;
 import android.app.Activity;
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.afollestad.materialdialogs.folderselector.FolderChooserDialog;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -72,7 +72,7 @@ import static org.kontalk.crypto.PersonalKeyImporter.KEYPACK_FILENAME;
  * @author Andrea Cappelli
  */
 public final class PreferencesFragment extends RootPreferenceFragment {
-    private static final String TAG = Kontalk.TAG;
+    static final String TAG = Kontalk.TAG;
 
     private static final int REQUEST_PICK_BACKGROUND = Activity.RESULT_FIRST_USER + 1;
     private static final int REQUEST_PICK_RINGTONE = Activity.RESULT_FIRST_USER + 2;
@@ -200,27 +200,19 @@ public final class PreferencesFragment extends RootPreferenceFragment {
 
                 final OnPassphraseChangedListener action = new OnPassphraseChangedListener() {
                     public void onPassphraseChanged(String passphrase) {
+                        mPassphrase = passphrase;
                         if (MediaStorage.isStorageAccessFrameworkAvailable()) {
-                            mPassphrase = passphrase;
                             MediaStorage.createFile(PreferencesFragment.this,
                                 PersonalKeyImporter.KEYPACK_MIME,
                                 PersonalKeyImporter.KEYPACK_FILENAME,
                                 REQUEST_CREATE_KEYPACK);
                         }
                         else {
-                            Context ctx = getActivity();
+                            PreferencesActivity ctx = (PreferencesActivity) getActivity();
                             if (ctx != null) {
-                                try {
-                                    exportPersonalKey(ctx,
-                                        new FileOutputStream(PersonalKeyImporter.DEFAULT_KEYPACK),
-                                        passphrase);
-                                }
-                                catch (FileNotFoundException e) {
-                                    Log.e(TAG, "error exporting keys", e);
-                                    Toast.makeText(ctx,
-                                        R.string.err_keypair_export_write,
-                                        Toast.LENGTH_LONG).show();
-                                }
+                                new FolderChooserDialog.Builder(ctx)
+                                    .initialPath(PersonalKeyImporter.DEFAULT_KEYPACK.getParent())
+                                    .show();
                             }
                         }
                     }
@@ -520,7 +512,7 @@ public final class PreferencesFragment extends RootPreferenceFragment {
                 if (ctx != null && data != null && data.getData() != null) {
                     try {
                         OutputStream out = ctx.getContentResolver().openOutputStream(data.getData());
-                        exportPersonalKey(ctx, out, mPassphrase);
+                        exportPersonalKey(ctx, out);
                     }
                     catch (FileNotFoundException e) {
                         Log.e(TAG, "error exporting keys", e);
@@ -602,9 +594,10 @@ public final class PreferencesFragment extends RootPreferenceFragment {
             .show();
     }
 
-    private void exportPersonalKey(Context ctx, OutputStream out, String passphrase) {
+    void exportPersonalKey(Context ctx, OutputStream out) {
         try {
-            Kontalk.get(ctx).exportPersonalKey(out, passphrase);
+            Kontalk.get(ctx).exportPersonalKey(out, mPassphrase);
+            mPassphrase = null;
 
             Toast.makeText(ctx,
                 R.string.msg_keypair_exported,
