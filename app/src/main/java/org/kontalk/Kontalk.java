@@ -19,6 +19,7 @@
 package org.kontalk;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -226,11 +227,11 @@ public class Kontalk extends Application {
         return mDefaultKey;
     }
 
-    public void exportPersonalKey(String exportPassphrase)
+    public void exportPersonalKey(OutputStream out, String exportPassphrase)
             throws CertificateException, PGPException, IOException,
                 NoSuchProviderException, KeyStoreException, NoSuchAlgorithmException {
 
-        Authenticator.exportDefaultPersonalKey(this, getCachedPassphrase(), exportPassphrase, true);
+        Authenticator.exportDefaultPersonalKey(this, out, getCachedPassphrase(), exportPassphrase, true);
     }
 
     /** Invalidates the cached personal key. */

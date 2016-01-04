@@ -154,7 +154,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
 
     @Override
     public void onBackPressed() {
-        if (mFragment == null || !mFragment.tryHideEmojiDrawer())
+        if (mFragment == null || (!mFragment.tryHideAttachmentView() && !mFragment.tryHideEmojiDrawer()))
             super.onBackPressed();
     }
 

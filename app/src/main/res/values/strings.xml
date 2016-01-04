@@ -276,6 +276,7 @@
     <string name="msg_import_keypair_complete">Personal key import completed.</string>
     <string name="err_import_keypair_failed">Personal key import failed.</string>
     <string name="err_import_keypair_uid_mismatch">Imported key doesn\'t match the phone number you entered.</string>
+    <string name="err_import_keypair_read">Unable to read personal key from external storage.</string>
     <string name="title_passphrase">Password</string>
 
     <string name="msg_status_sending">Sending</string>
@@ -288,12 +289,20 @@
     <string name="pref_balloons">Chat balloon theme</string>
     <string name="pref_title_balloons">Choose a chat balloon theme</string>
 
-    <string name="attachment_picture">Picture</string>
+    <string name="attachment_camera">Camera</string>
+    <string name="attachment_picture">Gallery</string>
     <string name="attachment_contact">Contact</string>
     <string name="attachment_audio">Audio</string>
+    <string name="attachment_video">Video</string>
+    <string name="attachment_file">File</string>
+    <string name="attachment_vcard">Contact</string>
+    <string name="attachment_location">Location</string>
+
+    <string name="msg_not_implemented">Not implemented yet.</string>
 
     <string name="chooser_send_picture">Send picture</string>
     <string name="chooser_error_no_camera">External storage not available. Taking picture from camera will not be enabled.</string>
+    <string name="chooser_error_no_camera_app">No camera app available.</string>
 
     <string name="chooser_select_link">Choose action</string>
 
@@ -342,6 +351,8 @@
     <string name="title_no_personal_key">No personal key</string>
     <string name="msg_no_personal_key">A personal key is currently unavailable (probably because you just upgraded). You will not be able to login into the Kontalk network if you don\'t generate a personal key. Please insert your name by closing Kontalk and opening it again.</string>
     <string name="msg_keypair_exported">Personal key and login certificate exported to external storage.</string>
+    <string name="err_keypair_export_write">Unable to write personal key to external storage.</string>
+    <string name="err_keypair_export_other">Unable to export personal key.</string>
 
     <string name="security_status_good">good</string>
     <string name="security_status_bad">bad</string>

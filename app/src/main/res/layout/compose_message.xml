@@ -72,4 +72,6 @@
 
     </LinearLayout>
 
+    <include layout="@layout/circular_attach_view" />
+
 </org.kontalk.ui.view.KeyboardAwareRelativeLayout>

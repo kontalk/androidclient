@@ -260,7 +260,7 @@
   <string name="msg_status_encrypted">Cifrato</string>
   <string name="pref_balloons">Tema messaggi</string>
   <string name="pref_title_balloons">Scegli il tema delle chat</string>
-  <string name="attachment_picture">Immagine</string>
+  <string name="attachment_picture">Galleria</string>
   <string name="attachment_contact">Contatto</string>
   <string name="attachment_audio">Audio</string>
   <string name="chooser_send_picture">Invia immagine</string>
@@ -411,4 +411,17 @@
 <string name="title_confirm_cancel_registration">Annullare la registrazione?</string>
     <string name="confirm_cancel_registration">Se torni indietro ora dovrai ricominciare da capo. Se vuoi cambiare app, usa il tasto home del tuo dispositivo.</string>
     <string name="app_name_offline">Kontalk (offline)</string>
+    <string name="attachment_camera">Fotocamera</string>
+    <string name="attachment_video">Video</string>
+    <string name="attachment_file">File</string>
+    <string name="attachment_vcard">Contatto</string>
+    <string name="attachment_location">Posizione</string>
+
+    <string name="msg_not_implemented">Non implementato.</string>
+
+    <string name="chooser_error_no_camera_app">Nessuna app fotocamera trovata.</string>
+
+    <string name="err_keypair_export_write">Impossibile scrivere la chiave personale nella memoria esterna.</string>
+    <string name="err_keypair_export_other">Errore durante l\'esportazione della chiave personale.</string>
+
     </resources>

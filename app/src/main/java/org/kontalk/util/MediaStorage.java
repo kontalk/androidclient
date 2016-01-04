@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -43,6 +44,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
@@ -437,6 +439,35 @@ public abstract class MediaStorage {
         MediaScannerConnection.scanFile(context.getApplicationContext(),
             new String[] { file.getPath() },
             new String[] { mime }, null);
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    public static void createFile(Fragment fragment, String mimeType, String fileName, int requestCode) {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+
+        // Filter to only show results that can be "opened", such as
+        // a file (as opposed to a list of contacts or timezones).
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+        // Create a file with the requested MIME type.
+        intent.setType(mimeType);
+        intent.putExtra(Intent.EXTRA_TITLE, fileName);
+        fragment.startActivityForResult(intent, requestCode);
+    }
+
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    public static void openFile(Activity activity, String mimeType, String fileName, int requestCode) {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+
+        // Filter to only show results that can be "opened", such as
+        // a file (as opposed to a list of contacts or timezones).
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+        // Create a file with the requested MIME type.
+        intent.setType(mimeType);
+        intent.putExtra(Intent.EXTRA_TITLE, fileName);
+        activity.startActivityForResult(intent, requestCode);
     }
 
 }

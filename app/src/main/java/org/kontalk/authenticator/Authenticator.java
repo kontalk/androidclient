@@ -19,7 +19,6 @@
 package org.kontalk.authenticator;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -69,7 +68,6 @@ import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
-import org.kontalk.crypto.PersonalKeyImporter;
 import org.kontalk.crypto.X509Bridge;
 import org.kontalk.ui.NumberValidation;
 import org.kontalk.util.MessageUtils;
@@ -188,14 +186,14 @@ public class Authenticator extends AbstractAccountAuthenticator {
             return null;
     }
 
-    public static void exportDefaultPersonalKey(Context ctx, String passphrase, String exportPassphrase, boolean bridgeCertificate)
+    public static void exportDefaultPersonalKey(Context ctx, OutputStream dest, String passphrase, String exportPassphrase, boolean bridgeCertificate)
             throws CertificateException, NoSuchProviderException, PGPException,
                 IOException, KeyStoreException, NoSuchAlgorithmException {
 
         // TODO move all this stuff to a PersonalKeyExporter
 
         // put everything in a zip file
-        ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(PersonalKeyImporter.DEFAULT_KEYPACK));
+        ZipOutputStream zip = new ZipOutputStream(dest);
 
         AccountManager m = AccountManager.get(ctx);
         Account acc = getDefaultAccount(m);
