@@ -18,9 +18,14 @@
 
 package org.kontalk.data;
 
+import java.util.Random;
+
 import org.jivesoftware.smack.util.StringUtils;
 
+import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MessagesProvider;
+import org.kontalk.provider.MyMessages;
+import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.ui.MessagingNotification;
 
@@ -29,7 +34,9 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDiskIOException;
 import android.net.Uri;
+import android.util.Log;
 
 
 /**
@@ -244,12 +251,29 @@ public class Conversation {
 
     public boolean isGroupChat() {
         loadGroupPeers(false);
-        return mGroupId != null && mGroupPeers != null && mGroupPeers.length > 1;
+        return mGroupId != null;
+    }
+
+    public void cancelGroupChat() {
+        mGroupId = null;
+        mGroupOwner = null;
+        mGroupPeers = null;
     }
 
     private void loadGroupPeers(boolean force) {
         if (mGroupId != null && (mGroupPeers == null || force)) {
-            // TODO load group peer
+            Cursor c = mContext.getContentResolver()
+                .query(Threads.Groups.MEMBERS_CONTENT_URI,
+                    new String[] { Threads.Groups.PEER },
+                    Threads.Groups.GROUP_ID + "=? AND " + Threads.Groups.GROUP_OWNER + "=?",
+                    new String[] { mGroupId, mGroupOwner }, null);
+
+            mGroupPeers = new String[c.getCount()];
+            int i = 0;
+            while (c.moveToNext()) {
+                mGroupPeers[i++] = c.getString(0);
+            }
+            c.close();
         }
     }
 
@@ -288,12 +312,25 @@ public class Conversation {
         ContentValues values = new ContentValues();
         values.put(Threads.Groups.GROUP_ID, gid);
         values.put(Threads.Groups.GROUP_OWNER, owner);
-        if (threadId > 0)
-            values.put(Threads.Groups.THREAD_ID, threadId);
 
-        Uri threadUri = context.getContentResolver()
-            .insert(Threads.Groups.CONTENT_URI, values);
-        threadId = ContentUris.parseId(threadUri);
+        if (threadId > 0) {
+            // reuse existing conversation
+            ContentValues threadValues = new ContentValues();
+            threadValues.put(Threads.PEER, gid);
+            context.getContentResolver().update(ContentUris
+                .withAppendedId(Threads.CONTENT_URI, threadId), threadValues, null, null);
+
+            values.put(Threads.Groups.THREAD_ID, threadId);
+        }
+        else {
+            // create new conversation first
+            threadId = MessagesProvider.insertEmptyThread(context, gid, "");
+            values.put(Threads.Groups.THREAD_ID, threadId);
+        }
+
+        context.getContentResolver().insert(Threads.Groups.CONTENT_URI, values);
+
+        // remove values not for members table
         values.remove(Threads.Groups.THREAD_ID);
 
         // insert group members
@@ -305,6 +342,10 @@ public class Conversation {
         }
 
         return threadId;
+    }
+
+    public static void addUser() {
+        // TODO
     }
 
     public void markAsRead() {

@@ -824,9 +824,17 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                     }
 
                     // send message!
-                    MessageCenterService.sendTextMessage(getActivity(),
-                        mUserJID, mText, encrypted,
-                        ContentUris.parseId(newMsg), msgId);
+                    if (mConversation.isGroupChat()) {
+                        MessageCenterService.sendGroupTextMessage(getActivity(),
+                            mConversation.getGroupId(), mConversation.getGroupOwner(),
+                            mConversation.getGroupPeers(), mText, encrypted,
+                            ContentUris.parseId(newMsg), msgId);
+                    }
+                    else {
+                        MessageCenterService.sendTextMessage(getActivity(),
+                            mUserJID, mText, encrypted,
+                            ContentUris.parseId(newMsg), msgId);
+                    }
                 }
                 else {
                     throw new SQLiteDiskIOException();
@@ -1216,6 +1224,8 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                     public void onClick(DialogInterface dialog, int which) {
                         mComposer.setText("");
                         try {
+                            // this will void group chat fields
+                            mConversation.cancelGroupChat();
                             MessagesProvider.deleteThread(getActivity(), threadId);
                         }
                         catch (SQLiteDiskIOException e) {
@@ -1231,15 +1241,30 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
     private void addUsers() {
         // TODO TEST
-        addUser("admin@beta.kontalk.net");
+        addUser(mUserJID);
     }
 
     private void addUser(String userId) {
+        long groupThreadId = threadId;
+
         // transform the current conversation into a group chat if needed
         if (!mConversation.isGroupChat()) {
-            Conversation.initGroupChat(getActivity(), threadId, Authenticator.getSelfJID(getActivity()), new String[] { userId });
+            // TODO send create group message
+
+            groupThreadId = Conversation.initGroupChat(getActivity(), threadId,
+                Authenticator.getSelfJID(getActivity()), new String[] { userId });
+        }
+        else {
+            // TODO send add user message
+
+            // TODO Conversation.addUser(...)
         }
 
+        // reload the conversation
+        Bundle args = new Bundle();
+        args.putString("action", ComposeMessage.ACTION_VIEW_CONVERSATION);
+        args.putParcelable("data", ContentUris.withAppendedId(Conversations.CONTENT_URI, groupThreadId));
+        setMyArguments(args);
         reload();
     }
 
@@ -2496,7 +2521,8 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
             // no draft and no messages - delete conversation
             if (len == 0 && mConversation.getMessageCount() == 0 &&
-                    mConversation.getRequestStatus() != Threads.REQUEST_WAITING) {
+                    mConversation.getRequestStatus() != Threads.REQUEST_WAITING &&
+                    !mConversation.isGroupChat()) {
 
                 // FIXME shouldn't be faster to just delete the thread?
                 MessagesProvider.deleteThread(getActivity(), threadId);
@@ -2523,21 +2549,8 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         else {
             if (len > 0) {
                 // save to local storage
-                ContentValues values = new ContentValues();
-                // must supply a message ID...
-                values.put(Messages.MESSAGE_ID,
-                        "draft" + (new Random().nextInt()));
-                values.put(Messages.PEER, mUserJID);
-                values.put(Messages.BODY_CONTENT, new byte[0]);
-                values.put(Messages.BODY_LENGTH, 0);
-                values.put(Messages.BODY_MIME, TextComponent.MIME_TYPE);
-                values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
-                values.put(Messages.TIMESTAMP, System.currentTimeMillis());
-                values.put(Messages.ENCRYPTED, false);
-                values.put(Threads.DRAFT, text.toString());
                 try {
-                    getActivity().getContentResolver().insert(Messages.CONTENT_URI,
-                        values);
+                    MessagesProvider.insertEmptyThread(getActivity(), mUserJID, text.toString());
                 }
                 catch (SQLiteDiskIOException e) {
                     // TODO warn user
@@ -2972,7 +2985,9 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                             // no subscription request
                             parent.mConversation.getRequestStatus() != Threads.REQUEST_WAITING &&
                             // no text in compose entry
-                            parent.mComposer.getText().length() == 0))) {
+                            parent.mComposer.getText().length() == 0 &&
+                            // no group chat
+                            !parent.mConversation.isGroupChat()))) {
 
                         Log.i(TAG, "no data to view - exit");
 

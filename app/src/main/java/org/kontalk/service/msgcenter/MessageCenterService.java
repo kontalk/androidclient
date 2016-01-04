@@ -49,6 +49,7 @@ import org.jivesoftware.smack.roster.RosterLoadedListener;
 import org.jivesoftware.smack.roster.packet.RosterPacket;
 import org.jivesoftware.smack.util.Async;
 import org.jivesoftware.smack.util.StringUtils;
+import org.jivesoftware.smackx.address.packet.MultipleAddresses;
 import org.jivesoftware.smackx.caps.packet.CapsExtension;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
@@ -101,6 +102,7 @@ import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.BlockingCommand;
 import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.EndpointServer;
+import org.kontalk.client.GroupExtension;
 import org.kontalk.client.KontalkConnection;
 import org.kontalk.client.PublicKeyPublish;
 import org.kontalk.client.RosterMatch;
@@ -1806,9 +1808,23 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         boolean retrying = data.getBoolean("org.kontalk.message.retrying");
-        String to = data.getString("org.kontalk.message.to");
 
-        if (!isAuthorized(to)) {
+        String groupId = data.getString("org.kontalk.message.groupId");
+        String groupOwner = data.getString("org.kontalk.message.groupOwner");
+        String to;
+        String[] toGroup;
+
+        boolean isGroupMsg = (groupId != null);
+        if (isGroupMsg) {
+            toGroup = data.getStringArray("org.kontalk.message.to");
+            to = groupId;
+        }
+        else {
+            to = data.getString("org.kontalk.message.to");
+            toGroup = new String[] { to };
+        }
+
+        if (!isGroupMsg && !isAuthorized(to)) {
             Log.i(TAG, "not subscribed to " + to + ", not sending message");
             // warn user: message will not be sent
             if (!retrying && MessagingNotification.isPaused(to)) {
@@ -1929,10 +1945,21 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 m.addExtension(new OutOfBandData(fetchUrl, mime, length, encrypt));
             }
 
+            // add group extension and multiple addresses
+            if (isGroupMsg) {
+                GroupExtension g = new GroupExtension(groupId, groupOwner);
+                m.addExtension(g);
+
+                MultipleAddresses p = new MultipleAddresses();
+                for (String rcpt : toGroup)
+                    p.addAddress(MultipleAddresses.Type.to, rcpt, null, null, false, null);
+                m.addExtension(p);
+            }
+
             if (encrypt) {
                 byte[] toMessage = null;
                 try {
-                    Coder coder = UsersProvider.getEncryptCoder(this, mServer, key, new String[] { to });
+                    Coder coder = UsersProvider.getEncryptCoder(this, mServer, key, toGroup);
                     if (coder != null) {
 
                         // no extensions, create a simple text version to save space
@@ -2256,6 +2283,22 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.packetId", packetId);
         i.putExtra("org.kontalk.message.mime", TextComponent.MIME_TYPE);
+        i.putExtra("org.kontalk.message.to", to);
+        i.putExtra("org.kontalk.message.body", text);
+        i.putExtra("org.kontalk.message.encrypt", encrypt);
+        i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
+        context.startService(i);
+    }
+
+    public static void sendGroupTextMessage(final Context context, String groupId, String groupOwner, String[] to,
+            String text, boolean encrypt, long msgId, String packetId) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_MESSAGE);
+        i.putExtra("org.kontalk.message.msgId", msgId);
+        i.putExtra("org.kontalk.message.packetId", packetId);
+        i.putExtra("org.kontalk.message.mime", TextComponent.MIME_TYPE);
+        i.putExtra("org.kontalk.message.groupId", groupId);
+        i.putExtra("org.kontalk.message.groupOwner", groupOwner);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.body", text);
         i.putExtra("org.kontalk.message.encrypt", encrypt);

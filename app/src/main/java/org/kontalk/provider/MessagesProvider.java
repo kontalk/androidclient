@@ -21,12 +21,14 @@ package org.kontalk.provider;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.crypto.Coder;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
@@ -89,6 +91,7 @@ public class MessagesProvider extends ContentProvider {
     private static HashMap<String, String> messagesProjectionMap;
     private static HashMap<String, String> threadsProjectionMap;
     private static HashMap<String, String> fulltextProjectionMap;
+    private static HashMap<String, String> groupsMembersProjectionMap;
 
     private static class DatabaseHelper extends SQLiteOpenHelper {
         private static final int DATABASE_VERSION = 9;
@@ -453,6 +456,11 @@ public class MessagesProvider extends ContentProvider {
                 selectionArgs = new String[] { uri.getQueryParameter("pattern") };
                 break;
 
+            case GROUPS_MEMBERS:
+                qb.setTables(TABLE_GROUP_MEMBERS);
+                qb.setProjectionMap(groupsMembersProjectionMap);
+                break;
+
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
         }
@@ -486,6 +494,36 @@ public class MessagesProvider extends ContentProvider {
         try {
             beginTransaction(db);
 
+            // configure thread as group
+            if (match == GROUPS) {
+                long threadId = values.getAsLong(Groups.THREAD_ID);
+
+                // notify thread change
+                notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
+                // notify conversation change
+                notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
+
+                // take only the values we need
+                db.insertOrThrow(TABLE_GROUPS, null, values);
+
+                success = setTransactionSuccessful(db);
+                // no uri needed
+                return null;
+            }
+
+            // insert members into group
+            else if (match == GROUPS_MEMBERS) {
+                // TODO shouldn't we notify someone?
+
+                // take only the values we need
+                db.insertOrThrow(TABLE_GROUP_MEMBERS, null, values);
+
+                success = setTransactionSuccessful(db);
+                // no uri needed
+                return null;
+            }
+
+
             // we need to know if there previously was a pending request
             // so we can decide if we have to fire a notification or not
             boolean requestExists = false;
@@ -497,25 +535,7 @@ public class MessagesProvider extends ContentProvider {
             long threadId = updateThreads(db, values, notifications, match == REQUESTS);
             values.put(Messages.THREAD_ID, threadId);
 
-            if (match == GROUPS) {
-                // notify thread change
-                notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
-                // notify conversation change
-                notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
-
-                db.insertOrThrow(TABLE_GROUPS, null, values);
-                success = setTransactionSuccessful(db);
-                return ContentUris.withAppendedId(Threads.CONTENT_URI, threadId);
-            }
-
-            else if (match == GROUPS_MEMBERS) {
-                // TODO shouldn't we notify someone?
-                db.insertOrThrow(TABLE_GROUP_MEMBERS, null, values);
-                success = setTransactionSuccessful(db);
-                return ContentUris.withAppendedId(Threads.CONTENT_URI, threadId);
-            }
-
-            else if (draft != null || match == REQUESTS) {
+            if (draft != null || match == REQUESTS) {
                 // notify thread change
                 notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
                 // notify conversation change
@@ -523,14 +543,9 @@ public class MessagesProvider extends ContentProvider {
 
                 success = setTransactionSuccessful(db);
 
-                // request only - return conversation
-                if (match == REQUESTS && !requestExists)
+                // draft or request - return conversation
+                if (draft != null || (match == REQUESTS && !requestExists))
                     return ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId);
-
-                // draft only - no uri
-                else
-                    return null;
-
             }
 
             // insert the new message now!
@@ -684,8 +699,13 @@ public class MessagesProvider extends ContentProvider {
             if (initialValues.containsKey(Messages.STATUS_CHANGED))
                 values.put(Threads.STATUS_CHANGED, initialValues.getAsInteger(Messages.STATUS_CHANGED));
             // this column is an exception
-            if (initialValues.containsKey(Threads.DRAFT))
-                values.put(Threads.DRAFT, initialValues.getAsString(Threads.DRAFT));
+            if (initialValues.containsKey(Threads.DRAFT)) {
+                String draft = initialValues.getAsString(Threads.DRAFT);
+                if (draft != null && draft.length() == 0)
+                    values.putNull(Threads.DRAFT);
+                else
+                    values.put(Threads.DRAFT, draft);
+            }
 
             // unread column will be calculated by the trigger
 
@@ -706,6 +726,7 @@ public class MessagesProvider extends ContentProvider {
             notifications.add(Threads.getUri(peer));
         }
         catch (SQLException e) {
+            //Log.w(TAG, "error updating thread: " + e.getClass(), e);
             // clear draft if outgoing message
             Integer direction = values.getAsInteger(Threads.DIRECTION);
             if (direction != null && direction == Messages.DIRECTION_OUT)
@@ -737,7 +758,6 @@ public class MessagesProvider extends ContentProvider {
         String table;
         String where;
         String[] args;
-        String messageId = null;
         boolean requestOnly = false;
 
         switch (sUriMatcher.match(uri)) {
@@ -758,8 +778,8 @@ public class MessagesProvider extends ContentProvider {
                 break;
             }
 
-            case MESSAGES_SERVERID:
-                messageId = uri.getPathSegments().get(1);
+            case MESSAGES_SERVERID: {
+                String messageId = uri.getPathSegments().get(1);
                 table = TABLE_MESSAGES;
                 where = Messages.MESSAGE_ID + " = ?";
                 // WARNING selectionArgs is not supported yet
@@ -767,6 +787,7 @@ public class MessagesProvider extends ContentProvider {
                     where += " AND (" + selection + ")";
                 args = new String[] { String.valueOf(messageId) };
                 break;
+            }
 
             case THREADS_ID: {
                 long _id = ContentUris.parseId(uri);
@@ -1078,11 +1099,12 @@ public class MessagesProvider extends ContentProvider {
             SQLiteDatabase db = dbHelper.getWritableDatabase();
             boolean success = false;
             try {
-                int num = 0;
+                int num;
 
                 beginTransaction(db);
                 num = db.delete(TABLE_THREADS, Threads._ID + " = " + threadId, null);
                 num += db.delete(TABLE_MESSAGES, Messages.THREAD_ID + " = " + threadId, null);
+                num += db.delete(TABLE_GROUPS, Groups.THREAD_ID + " = " + threadId, null);
                 // update fulltext
                 db.delete(TABLE_FULLTEXT, Messages.THREAD_ID + " = " + threadId, null);
 
@@ -1115,8 +1137,8 @@ public class MessagesProvider extends ContentProvider {
 
         int rc = -1;
         if (c != null) {
+            ContentValues v = new ContentValues();
             if (c.moveToFirst()) {
-                ContentValues v = new ContentValues();
                 v.put(Threads.MESSAGE_ID, c.getString(0));
                 v.put(Threads.DIRECTION, c.getInt(1));
                 v.put(Threads.STATUS, c.getInt(2));
@@ -1126,12 +1148,19 @@ public class MessagesProvider extends ContentProvider {
                 // use server timestamp if present
                 long ts = c.getLong(7);
                 v.put(Threads.TIMESTAMP, ts > 0 ? ts : c.getLong(6));
-
-                rc = db.update(TABLE_THREADS, v, Threads._ID + " = ?", new String[] { String.valueOf(threadId) });
-                if (rc > 0) {
-                    notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
-                    notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
-                }
+            }
+            else {
+                // empty thread data
+                v.put(Threads.MESSAGE_ID, "draft" + (new Random().nextInt()));
+                v.put(Threads.DIRECTION, Messages.DIRECTION_OUT);
+                v.put(Threads.TIMESTAMP, System.currentTimeMillis());
+                v.putNull(Threads.STATUS);
+                setThreadContent(new byte[0], TextComponent.MIME_TYPE, null, v);
+            }
+            rc = db.update(TABLE_THREADS, v, Threads._ID + "=" + threadId, null);
+            if (rc > 0) {
+                notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
+                notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
             }
             c.close();
         }
@@ -1141,7 +1170,9 @@ public class MessagesProvider extends ContentProvider {
 
     private int deleteEmptyThreads(SQLiteDatabase db) {
         return db.delete(TABLE_THREADS, "\"" + Threads.COUNT + "\"" + " = 0 AND " +
-                Threads.DRAFT + " IS NULL", null);
+                Threads.DRAFT + " IS NULL AND " +
+                "NOT EXISTS (SELECT 1 FROM " + TABLE_GROUPS +
+                    " WHERE "+TABLE_THREADS+"."+Threads._ID+"="+Groups.THREAD_ID+")", null);
     }
 
     @Override
@@ -1249,6 +1280,25 @@ public class MessagesProvider extends ContentProvider {
 
         c.close();
         return count;
+    }
+
+    public static long insertEmptyThread(Context context, String peer, String draft) {
+        ContentValues msgValues = new ContentValues();
+        // must supply a message ID...
+        msgValues.put(Messages.MESSAGE_ID,
+            "draft" + (new Random().nextInt()));
+        // use group id as the peer
+        msgValues.put(Messages.PEER, peer);
+        msgValues.put(Messages.BODY_CONTENT, new byte[0]);
+        msgValues.put(Messages.BODY_LENGTH, 0);
+        msgValues.put(Messages.BODY_MIME, TextComponent.MIME_TYPE);
+        msgValues.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
+        msgValues.put(Messages.TIMESTAMP, System.currentTimeMillis());
+        msgValues.put(Messages.ENCRYPTED, false);
+        if (draft != null)
+            msgValues.put(Threads.DRAFT, draft);
+        Uri newThread = context.getContentResolver().insert(Messages.CONTENT_URI, msgValues);
+        return newThread != null ? ContentUris.parseId(newThread) : 0;
     }
 
     private static ContentValues prepareChangeMessageStatus(
@@ -1402,5 +1452,10 @@ public class MessagesProvider extends ContentProvider {
         fulltextProjectionMap = new HashMap<String, String>();
         fulltextProjectionMap.put(Fulltext.THREAD_ID, Fulltext.THREAD_ID);
         fulltextProjectionMap.put(Fulltext.CONTENT, Fulltext.CONTENT);
+
+        groupsMembersProjectionMap = new HashMap<String, String>();
+        groupsMembersProjectionMap.put(Groups.GROUP_ID, Groups.GROUP_ID);
+        groupsMembersProjectionMap.put(Groups.GROUP_OWNER, Groups.GROUP_OWNER);
+        groupsMembersProjectionMap.put(Groups.PEER, Groups.PEER);
     }
 }
