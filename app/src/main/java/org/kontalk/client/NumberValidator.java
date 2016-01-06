@@ -336,7 +336,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
                 // bridge certificate for connection
                 mBridgeCert = X509Bridge.createCertificate(mKeyRing.publicKey,
-                    mKeyRing.secretKey.getSecretKey(), mPassphrase, null);
+                    mKeyRing.secretKey.getSecretKey(), mPassphrase);
 
                 // connect to server
                 initConnection();
@@ -405,7 +405,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
                 // bridge certificate for connection
                 mBridgeCert = X509Bridge.createCertificate(mKeyRing.publicKey,
-                    mKeyRing.secretKey.getSecretKey(), mPassphrase, null);
+                    mKeyRing.secretKey.getSecretKey(), mPassphrase);
 
                 try {
                     // connect to server

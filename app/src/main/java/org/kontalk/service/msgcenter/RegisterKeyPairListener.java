@@ -204,9 +204,8 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener imple
                         publicKeyData = Base64.decode(publicKey, Base64.DEFAULT);
                         privateKeyData = mKeyRing.secretKey.getEncoded();
 
-                        // TODO subjectAltName?
                         bridgeCertData = X509Bridge.createCertificate(publicKeyData,
-                            mKeyRing.secretKey.getSecretKey(), mPassphrase, null).getEncoded();
+                            mKeyRing.secretKey.getSecretKey(), mPassphrase).getEncoded();
                     }
                     catch (Exception e) {
                         Log.e(MessageCenterService.TAG, "error decoding key data", e);

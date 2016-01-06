@@ -430,7 +430,7 @@ public class PersonalKey implements Parcelable {
 
             // regenerate bridge certificate
             byte[] bridgeCertData = X509Bridge.createCertificate(pubRing,
-                    mPair.authKey.getPrivateKey(), null).getEncoded();
+                    mPair.authKey.getPrivateKey()).getEncoded();
             byte[] publicKeyData = pubRing.getEncoded();
 
             am.setUserData(account, Authenticator.DATA_PUBLICKEY,
