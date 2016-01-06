@@ -36,6 +36,8 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.spongycastle.asn1.misc.MiscObjectIdentifiers;
 import org.spongycastle.asn1.misc.NetscapeCertType;
@@ -98,18 +100,18 @@ public class X509Bridge {
     private X509Bridge() {
     }
 
-    public static X509Certificate createCertificate(byte[] publicKeyData, PGPSecretKey secretKey, String passphrase, String subjectAltName)
+    public static X509Certificate createCertificate(byte[] publicKeyData, PGPSecretKey secretKey, String passphrase)
         throws PGPException, InvalidKeyException, IllegalStateException,
         NoSuchAlgorithmException, SignatureException, CertificateException,
         NoSuchProviderException, IOException, OperatorCreationException {
 
         PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, sFingerprintCalculator);
 
-        return createCertificate(pubRing, secretKey, passphrase, subjectAltName);
+        return createCertificate(pubRing, secretKey, passphrase);
 
     }
 
-    public static X509Certificate createCertificate(PGPPublicKeyRing publicKeyring, PGPSecretKey secretKey, String passphrase, String subjectAltName)
+    public static X509Certificate createCertificate(PGPPublicKeyRing publicKeyring, PGPSecretKey secretKey, String passphrase)
         throws PGPException, InvalidKeyException, IllegalStateException,
         NoSuchAlgorithmException, SignatureException, CertificateException,
         NoSuchProviderException, IOException, OperatorCreationException {
@@ -121,11 +123,11 @@ public class X509Bridge {
             .build(passphrase.toCharArray());
 
         PGPPrivateKey privateKey = secretKey.extractPrivateKey(decryptor);
-        return createCertificate(publicKeyring, privateKey, subjectAltName);
+        return createCertificate(publicKeyring, privateKey);
 
     }
 
-    public static X509Certificate createCertificate(byte[] privateKeyData, byte[] publicKeyData, String passphrase, String subjectAltName)
+    public static X509Certificate createCertificate(byte[] privateKeyData, byte[] publicKeyData, String passphrase)
         throws PGPException, IOException, InvalidKeyException, IllegalStateException,
         NoSuchAlgorithmException, SignatureException, CertificateException, NoSuchProviderException, OperatorCreationException {
 
@@ -140,19 +142,19 @@ public class X509Bridge {
         // secret key
         PGPSecretKey secKey = secRing.getSecretKey();
 
-        return createCertificate(pubRing, secKey.extractPrivateKey(decryptor), subjectAltName);
+        return createCertificate(pubRing, secKey.extractPrivateKey(decryptor));
     }
 
-    public static X509Certificate createCertificate(byte[] publicKeyData, PGPPrivateKey privateKey, String subjectAltName)
+    public static X509Certificate createCertificate(byte[] publicKeyData, PGPPrivateKey privateKey)
         throws InvalidKeyException, IllegalStateException, NoSuchAlgorithmException,
         SignatureException, CertificateException, NoSuchProviderException, PGPException, IOException, OperatorCreationException {
 
         PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, sFingerprintCalculator);
 
-        return createCertificate(pubRing, privateKey, subjectAltName);
+        return createCertificate(pubRing, privateKey);
     }
 
-    public static X509Certificate createCertificate(PGPPublicKeyRing publicKeyRing, PGPPrivateKey privateKey, String subjectAltName)
+    static X509Certificate createCertificate(PGPPublicKeyRing publicKeyRing, PGPPrivateKey privateKey)
         throws InvalidKeyException, IllegalStateException, NoSuchAlgorithmException,
         SignatureException, CertificateException, NoSuchProviderException, PGPException, IOException, OperatorCreationException {
 
@@ -180,9 +182,14 @@ public class X509Bridge {
         if (publicKey == null)
             throw new IllegalArgumentException("no master key found");
 
+        List<String> xmppAddrs = new LinkedList<>();
         for (@SuppressWarnings("unchecked") Iterator<Object> it = publicKey.getUserIDs(); it.hasNext();) {
-            Object attrib = it.next();
-            x500NameBuilder.addRDN(BCStyle.CN, attrib.toString());
+            String attrib = it.next().toString();
+            x500NameBuilder.addRDN(BCStyle.CN, attrib);
+            // extract email for the subjectAltName
+            PGPUserID uid = PGPUserID.parse(attrib);
+            if (uid != null && uid.getEmail() != null)
+                xmppAddrs.add(uid.getEmail());
         }
 
         X500Name x509name = x500NameBuilder.build();
@@ -207,7 +214,7 @@ public class X509Bridge {
                 PGP.convertPrivateKey(privateKey),
                 x509name,
                 creationTime, validTo,
-                subjectAltName,
+                xmppAddrs,
                 publicKeyRing.getEncoded());
     }
 
@@ -231,13 +238,13 @@ public class X509Bridge {
      * @param endDate
      *            date until which the certificate will be valid
      *            (defaults to start date and time if null)
-     * @param subjectAltName
+     * @param subjectAltNames
      *            URI to be placed in subjectAltName
      * @return self-signed certificate
      */
     private static X509Certificate createCertificate(PublicKey pubKey,
             PrivateKey privKey, X500Name subject,
-            Date startDate, Date endDate, String subjectAltName, byte[] publicKeyData)
+            Date startDate, Date endDate, List<String> subjectAltNames, byte[] publicKeyData)
         throws InvalidKeyException, IllegalStateException,
         NoSuchAlgorithmException, SignatureException, CertificateException,
         NoSuchProviderException, IOException, OperatorCreationException {
@@ -341,11 +348,14 @@ public class X509Bridge {
         /*
          * Adds the subject alternative-name extension.
          */
-        if (subjectAltName != null) {
-            GeneralNames subjectAltNames = new GeneralNames(new GeneralName(
-                    GeneralName.otherName, subjectAltName));
+        if (subjectAltNames != null && subjectAltNames.size() > 0) {
+            GeneralName[] names = new GeneralName[subjectAltNames.size()];
+            for (int i = 0; i < names.length; i++)
+                names[i] = new GeneralName(GeneralName.otherName,
+                    new XmppAddrIdentifier(subjectAltNames.get(i)));
+
             certBuilder.addExtension(Extension.subjectAlternativeName,
-                    false, subjectAltNames);
+                    false, new GeneralNames(names));
         }
 
         /*

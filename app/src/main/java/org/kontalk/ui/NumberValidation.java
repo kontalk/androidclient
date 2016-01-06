@@ -989,8 +989,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         // generate the bridge certificate
         byte[] bridgeCertData;
         try {
-            // TODO subjectAltName?
-            bridgeCertData = X509Bridge.createCertificate(privateKeyData, publicKeyData, mPassphrase, null).getEncoded();
+            bridgeCertData = X509Bridge.createCertificate(privateKeyData, publicKeyData, mPassphrase).getEncoded();
         }
         catch (Exception e) {
             // abort
