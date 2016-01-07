@@ -162,30 +162,30 @@
   <string name="msg_invalid_code">Por favor, insira um código válido.</string>
   <string name="title_no_name">O seu nome</string>
   <string name="msg_no_name">Por favor, insira um nome.</string>
-  <string name="menu_refresh">Recarregar</string>
+  <string name="menu_refresh">Atualizar</string>
   <string name="menu_invite">Convidar usuários</string>
   <string name="title_error">Erro</string>
-  <string name="msg_do_refresh">Use o botão actualizar para actualizar a lista de contactos.</string>
-  <string name="msg_sync_progress">Recarregando a lista de contactos…</string>
-  <string name="err_sync_failed">Não foi possível recarregar a lista de contactos. Por favor, tente mais tarde.</string>
-  <string name="err_sync_nonetwork">Rede não disponível. Por favor, tente mais tarde.</string>
-  <string name="text_invite_message">Olá! Dê uma olhada no Kontalk na Google Play Store, um app de mensagens livre! https://play.google.com/store/apps/details?id=org.kontalk</string>
-  <string name="text_contacts_empty">Os novos usuários serão automaticamente acrescentados a esta lista.\n\nUse <b>Menu</b> &gt; <b>Convidar usuários</b> para enviar uma mensagem de convite para alguém.</string>
-  <string name="text_conversations_empty">Para começar a escrever mensagens use o ícone <b>nova mensagem</b> acima.</string>
-  <string name="notify_ticker_external_storage">Armazenamento externo não disponível</string>
-  <string name="notify_text_external_storage">Não foi possível gravar para um armazenamento externo.</string>
+  <string name="msg_do_refresh">Puxe para baixo para atualizar a lista de contatos.</string>
+  <string name="msg_sync_progress">Atualizando a lista de contatos…</string>
+  <string name="err_sync_failed">Não foi possível atualizar a lista de contatos. Por favor, tente novamente mais tarde.</string>
+  <string name="err_sync_nonetwork">Rede não disponível. Por favor, tente novamente mais tarde.</string>
+  <string name="text_invite_message">Olá! Dê uma olhada no Kontalk na Google Play Store, um aplicativo de mensagens livre! https://play.google.com/store/apps/details?id=org.kontalk</string>
+  <string name="text_contacts_empty">Os novos usuários serão automaticamente acrescentados a esta lista.\n\nUse <b>Menu</b> &gt; <b>Convidar usuários</b> para enviar uma mensagem convidando alguém.</string>
+  <string name="text_conversations_empty">Para começar a escrever mensagens use o botão <b>nova mensagem</b> abaixo.</string>
+  <string name="notify_ticker_external_storage">O armazenamento externo não está disponível</string>
+  <string name="notify_text_external_storage">Não foi possível escrever no armazenamento externo.</string>
   <string name="title_user_not_found">Usuário não encontrado</string>
-  <string name="message_user_not_found">O contacto parece não estar registrado no Kontalk. Você pode tentar contactar o/a usuário/a mesmo assim ou enviar a ele/a uma mensagem de convite.</string>
-  <string name="yes_user_not_found">Contactar usuário/a mesmo assim</string>
-  <string name="no_user_not_found">Enviar convite</string>
+  <string name="message_user_not_found">Aparentemente o contato parece não está registrado no Kontalk. Você pode tentar contatá-lo mesmo assim ou enviar um convite.</string>
+  <string name="yes_user_not_found">Contatar o usuário mesmo assim</string>
+  <string name="no_user_not_found">Enviar o convite</string>
   <string name="pref_appearance_settings">Configurações de aparência</string>
   <string name="pref_font_size">Tamanho da letra</string>
   <string name="menu_status">Estado</string>
   <string name="menu_attachment">Anexar</string>
   <string name="menu_smileys">Carinhas</string>
   <string name="vcard_message">Mensagem vCard</string>
-  <string name="open_file">Abrir ficheiro</string>
-  <string name="msg_msgcenter_restarted">Centro de mensagens reiniciado.</string>
+  <string name="open_file">Abrir arquivo</string>
+  <string name="msg_msgcenter_restarted">O centro de mensagens foi reiniciado.</string>
   <string name="downloading_attachment">Baixando o anexo…</string>
   <string name="attachment_download">Baixar anexo</string>
   <string name="attachment_upload">Enviar anexo</string>
@@ -194,7 +194,7 @@
   <string name="seen_typing_label">digitando…</string>
   <string name="pref_custom_background">Fundo personalizado</string>
   <string name="pref_background_uri">Fundo</string>
-  <string name="pref_title_background_uri">Defina uma imagem personalizada às conversações</string>
+  <string name="pref_title_background_uri">Defina uma imagem personalizada para as conversas</string>
   <string name="pref_title_off_custom_background">Usando fundo padrão</string>
   <string name="pref_title_on_custom_background">Escolha um fundo usando a opção abaixo</string>
   <string name="err_attachment_corrupted">Não foi possível transferir o anexo. A mensagem deve estar corrompida.</string>
@@ -283,4 +283,9 @@
     <string name="title_nonetwork">Nenhuma conexão com a Internet</string>
     <string name="title_fallback">Está tendo problemas?</string>
     <string name="msg_fallback">Nós tentaremos outra maneira de verificar o seu número de telefone.</string>
+    <string name="menu_block_user">Bloquear</string>
+    <string name="menu_unblock_user">Desbloquear</string>
+    <string name="open_audio">Reproduzir arquivo de áudio</string>
+    <string name="decrypting_attachment">Descriptografando o anexo…</string>
+    <string name="invitation_sent_label">convite pendente</string>
     </resources>
