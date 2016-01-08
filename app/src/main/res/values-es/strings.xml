@@ -260,7 +260,7 @@
   <string name="msg_status_encrypted">Cifrado</string>
   <string name="pref_balloons">Tema de los globos de texto</string>
   <string name="pref_title_balloons">Escoger un tema de globos de conversación</string>
-  <string name="attachment_picture">Imagen</string>
+  <string name="attachment_picture">Galeria</string>
   <string name="attachment_contact">Contacto</string>
   <string name="attachment_audio">Audio</string>
   <string name="chooser_send_picture">Enviar imagen</string>
@@ -411,4 +411,18 @@
 <string name="title_confirm_cancel_registration">Cancelar el registro?</string>
     <string name="confirm_cancel_registration">Si utiliza el botón de volver atrás tendrá que hacer el registro partiendo de cero. Si necesita alternar con otra aplicación, utilice el botón de Inicio.</string>
     <string name="app_name_offline">Kontalk (desconectado)</string>
+    <string name="err_import_keypair_read">No és possible llegir la clau personal de l\'emmagatzematge extern.</string>
+    <string name="attachment_camera">Càmera fotogràfica</string>
+    <string name="attachment_video">Vídeo</string>
+    <string name="attachment_file">Arxiu</string>
+    <string name="attachment_vcard">Contacte</string>
+    <string name="attachment_location">Ubicació</string>
+
+    <string name="msg_not_implemented">Encara no implementat.</string>
+
+    <string name="chooser_error_no_camera_app">No es disposa d\'aplicació de càmera fotogràfica.</string>
+
+    <string name="err_keypair_export_write">No es pot escriure la clau personal a l\'emmagatzematge extern.</string>
+    <string name="err_keypair_export_other">No es pot exportar la clau personal.</string>
+
     </resources>
