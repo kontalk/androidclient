@@ -260,7 +260,7 @@
   <string name="msg_status_encrypted">Verschlüsselt</string>
   <string name="pref_balloons">Sprechblasendesign</string>
   <string name="pref_title_balloons">Ein Sprechblasendesign auswählen</string>
-  <string name="attachment_picture">Bild</string>
+  <string name="attachment_picture">Galerie</string>
   <string name="attachment_contact">Kontakt</string>
   <string name="attachment_audio">Audio</string>
   <string name="chooser_send_picture">Bild senden</string>
@@ -411,4 +411,18 @@
     <string name="title_confirm_cancel_registration">Registrierung abbrechen?</string>
     <string name="confirm_cancel_registration">Wenn Sie zurück gehen, werden sie die Registrierung von Anfang an beginnen müssen. Wenn Sie zu einer anderen Anwendung wechseln möchten, nutzen Sie einfach die \"Home\"-Taste.</string>
     <string name="app_name_offline">Kontalk (offline)</string>
+    <string name="err_import_keypair_read">Persönlicher Schlüssel konnte nicht vom externen Speicher gelesen werden.</string>
+    <string name="attachment_camera">Kamera</string>
+    <string name="attachment_video">Video</string>
+    <string name="attachment_file">Datei</string>
+    <string name="attachment_vcard">Kontakt</string>
+    <string name="attachment_location">Position</string>
+
+    <string name="msg_not_implemented">Noch nicht implementiert.</string>
+
+    <string name="chooser_error_no_camera_app">Keine Kamera-App verfügbar.</string>
+
+    <string name="err_keypair_export_write">Persönlicher Schlüssel konnte nicht auf den externen Speicher geschrieben werden.</string>
+    <string name="err_keypair_export_other">Persönlicher Schlüssel konnte nicht exportiert werden.</string>
+
     </resources>
