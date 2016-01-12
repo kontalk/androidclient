@@ -195,7 +195,7 @@
     <string name="msg_sync_progress">Refreshing contacts list&#8230;</string>
     <string name="err_sync_failed">Unable to refresh contacts list. Please retry later.</string>
     <string name="err_sync_nonetwork">Network not available. Please retry later.</string>
-    <string name="text_invite_message">Hey! Check out Kontalk on Google Play Store, a free messaging app! https://play.google.com/store/apps/details?id=org.kontalk</string>
+    <string name="text_invite_message">Hey! Check out Kontalk, a free messaging app! http://kontalk.org/</string>
     <string name="text_contacts_empty">New users will be automatically added to this list.\n\nUse <b>Menu</b> > <b>Invite users</b> to send an invitation message to someone.</string>
     <string name="text_conversations_empty">To start writing messages use the <b>new message</b> button below.</string>
     <string name="notify_ticker_external_storage">External storage not available</string>

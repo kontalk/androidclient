@@ -169,7 +169,7 @@
   <string name="msg_sync_progress">Atualizando a lista de contatos…</string>
   <string name="err_sync_failed">Não foi possível atualizar a lista de contatos. Por favor, tente novamente mais tarde.</string>
   <string name="err_sync_nonetwork">Rede não disponível. Por favor, tente novamente mais tarde.</string>
-  <string name="text_invite_message">Olá! Dê uma olhada no Kontalk na Google Play Store, um aplicativo de mensagens livre! https://play.google.com/store/apps/details?id=org.kontalk</string>
+  <string name="text_invite_message">Olá! Dê uma olhada no Kontalk, um aplicativo de mensagens livre! http://kontalk.org/</string>
   <string name="text_contacts_empty">Os novos usuários serão automaticamente acrescentados a esta lista.\n\nUse <b>Menu</b> &gt; <b>Convidar usuários</b> para enviar uma mensagem convidando alguém.</string>
   <string name="text_conversations_empty">Para começar a escrever mensagens use o botão <b>nova mensagem</b> abaixo.</string>
   <string name="notify_ticker_external_storage">O armazenamento externo não está disponível</string>

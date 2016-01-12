@@ -177,7 +177,7 @@
   <string name="err_sync_failed">連絡先リストを更新することができません。後で再度実行してください。</string>
   <string name="err_sync_nonetwork">ネットワークが使用できません。後で再度実行してください。</string>
   <string name="text_invite_message">Google Play ストアで Kontalk をご覧ください。フリーのメッセージングアプリです!
-https://play.google.com/store/apps/details?id=org.kontalk</string>
+http://kontalk.org/</string>
   <string name="text_contacts_empty">新しいユーザーは、自動的にこのリストに追加されます。\n\n誰かに招待メッセージを送信するには、<b>メニュー</b> &gt; <b>ユーザーを招待</b> を使用します。</string>
   <string name="text_conversations_empty">メッセージを書くには、下の <b>新しいメッセージ</b> ボタンを使用します。</string>
   <string name="notify_ticker_external_storage">外部ストレージが使用できません</string>

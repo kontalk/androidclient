@@ -176,7 +176,7 @@
   <string name="msg_sync_progress">Contacten vernieuwen…</string>
   <string name="err_sync_failed">Kan contacten niet vernieuwen. Probeer het later opnieuw.</string>
   <string name="err_sync_nonetwork">Netwerk niet beschikbaar. Probeer het later opnieuw.</string>
-  <string name="text_invite_message">Hoi! Kijk eens naar Kontalk Messenger in de Google Play Store, een app om gratis berichten te sturen! https://play.google.com/store/apps/details?id=org.kontalk</string>
+  <string name="text_invite_message">Hoi! Kijk eens naar Kontalk Messenger, een app om gratis berichten te sturen! http://kontalk.org/</string>
   <string name="text_contacts_empty">Nieuwe gebruikers zullen automatisch toegevoegd worden aan deze lijst.\n\nGebruik <b>Menu</b> &gt; <b>Gebruikers uitnodigen</b> om een SMS met een uitnodiging te sturen.</string>
   <string name="text_conversations_empty">Gebruik de <b>nieuw bericht</b>-knop onder aan het scherm om te beginnen met het schrijven van berichten.</string>
   <string name="notify_ticker_external_storage">Externe opslag niet beschikbaar</string>

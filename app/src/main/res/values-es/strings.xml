@@ -176,7 +176,7 @@
   <string name="msg_sync_progress">Actualizando la lista de contactos…</string>
   <string name="err_sync_failed">No se pudo actualizar la lista de contactos. Por favor, inténtelo de nuevo más tarde.</string>
   <string name="err_sync_nonetwork">Red no disponible. Por favor, inténtelo de nuevo más tarde.</string>
-  <string name="text_invite_message">¡Hola! Eche un vistazo a Kontalk en la Tienda de Google Play, ¡es una aplicación gratuita de mensajería! https://play.google.com/store/apps/details?id=org.kontalk</string>
+  <string name="text_invite_message">¡Hola! Eche un vistazo a Kontalk, ¡es una aplicación gratuita de mensajería! http://kontalk.org/</string>
   <string name="text_contacts_empty">Los usuarios nuevos se agregarán automáticamente a esta lista.\n\nUse <b>Menú</b> &gt; <b>Invitar usuarios</b> para enviar un mensaje de invitación a alguien.</string>
   <string name="text_conversations_empty">Para comenzar a escribir mensajes use el botón <b>nuevo mensaje</b> de abajo.</string>
   <string name="notify_ticker_external_storage">Dispositivo de almacenamiento externo no disponible</string>
