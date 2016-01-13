@@ -339,7 +339,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     private final MessageListAdapter.OnContentChangedListener mContentChangedListener = new MessageListAdapter.OnContentChangedListener() {
         public void onContentChanged(MessageListAdapter adapter) {
             if (isVisible())
-                startQuery(true, false);
+                startQuery(false);
         }
     };
 
@@ -741,7 +741,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                 if (c.moveToFirst()) {
                     threadId = c.getLong(0);
                     mConversation = null;
-                    startQuery(true, false);
+                    startQuery(false);
                 }
                 else {
                     Log.v(TAG, "no data - cannot start query for this composer");
@@ -815,7 +815,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                             threadId = c.getLong(0);
                             mConversation = null;
                             // we can run it here because progress=false
-                            startQuery(true, false);
+                            startQuery(false);
                         }
                         else {
                             Log.v(TAG, "no data - cannot start query for this composer");
@@ -1288,26 +1288,21 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         getActivity().startService(i);
     }
 
-    private void startQuery(boolean reloadConversation, boolean progress) {
-        startQuery(reloadConversation, progress, 0);
+    private void startQuery(boolean progress) {
+        startQuery(progress, 0);
     }
 
-    private void startQuery(boolean reloadConversation, boolean progress, long count) {
-        try {
-            if (progress)
-                getActivity().setProgressBarIndeterminateVisibility(true);
+    private void startQuery(boolean progress, long count) {
+        if (progress)
+            getActivity().setProgressBarIndeterminateVisibility(true);
 
-            CompositeMessage.startQuery(mQueryHandler, MESSAGE_LIST_QUERY_TOKEN,
-                    threadId, count, 0);
+        Conversation.startQuery(mQueryHandler,
+                CONVERSATION_QUERY_TOKEN, threadId);
+        // message list query will be started by query handler
+    }
 
-            if (reloadConversation)
-                Conversation.startQuery(mQueryHandler,
-                        CONVERSATION_QUERY_TOKEN, threadId);
-
-        }
-        catch (SQLiteException e) {
-            Log.e(TAG, "query error", e);
-        }
+    private void startMessagesQuery() {
+        CompositeMessage.startQuery(mQueryHandler, MESSAGE_LIST_QUERY_TOKEN, threadId, 0, 0);
     }
 
     private void stopQuery() {
@@ -1705,7 +1700,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
         if (threadId > 0) {
             // always reload conversation
-            startQuery(true, resuming);
+            startQuery(resuming);
         }
         else {
             // HACK this is for crappy honeycomb :)
@@ -3003,6 +2998,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
                     cursor.close();
 
+                    parent.startMessagesQuery();
                     break;
 
                 default:
