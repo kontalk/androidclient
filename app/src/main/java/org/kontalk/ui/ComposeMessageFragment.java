@@ -1305,6 +1305,9 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     }
 
     private void stopQuery() {
+        if (mListAdapter != null)
+            mListAdapter.changeCursor(null);
+
         if (mQueryHandler != null) {
             // be sure to cancel all queries
             mQueryHandler.abort();
@@ -2560,9 +2563,6 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     public void onStop() {
         super.onStop();
         unregisterPeerObserver();
-        if (mListAdapter != null)
-            mListAdapter.changeCursor(null);
-
         stopQuery();
     }
 
