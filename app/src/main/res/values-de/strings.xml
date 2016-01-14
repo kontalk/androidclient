@@ -91,7 +91,7 @@
   <string name="size_unknown">(unbekannt)</string>
   <string name="title_file_info">Dateiinformationen</string>
   <string name="pref_restart_msgcenter">Nachrichtenzentrale neu starten</string>
-  <string name="pref_title_restart_msgcenter">Antippen wenn die Nachrichtenzentrale nicht korrekt funktioniert</string>
+  <string name="pref_title_restart_msgcenter">Antippen wenn Kontalk nicht richtig arbeitet</string>
   <string name="pref_idle_time">Verbindung trennen wenn ungenutzt</string>
   <string name="pref_title_idle_time">Wartezeit bis die Verbindung unterbrochen werden soll</string>
   <string name="pref_wakeup_time">Serververbindung wiederherstellen</string>
@@ -424,5 +424,12 @@
 
     <string name="err_keypair_export_write">Persönlicher Schlüssel konnte nicht auf den externen Speicher geschrieben werden.</string>
     <string name="err_keypair_export_other">Persönlicher Schlüssel konnte nicht exportiert werden.</string>
+
+    <string name="pref_title_custom_background">Wählen Sie einen Hintergrund mit untenstehender Option</string>
+    <string name="pref_title_sync_sim_contacts">SIM Kontakte mit einbeziehen um nach regististrierten Nutzern zu suchen</string>
+
+    <string name="pref_title_sync_invisible_contacts">Im Adressbuch nicht angezeigte Kontakte einbeziehen. Auswählen wenn DAVDroid verwendet wird,</string>
+
+    <string name="pref_show_blocked_users">Blockierte Nutzer anzeigen</string>
 
     </resources>
