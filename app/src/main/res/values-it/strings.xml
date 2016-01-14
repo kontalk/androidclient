@@ -430,4 +430,6 @@
 
     <string name="pref_title_sync_invisible_contacts">Includi contatti non visualizzati in rubrica. Abilita se usi DAVDroid</string>
 
+    <string name="pref_show_blocked_users">Mostra utenti bloccati</string>
+
     </resources>
