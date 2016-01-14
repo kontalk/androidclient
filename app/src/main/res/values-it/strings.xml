@@ -91,7 +91,7 @@
   <string name="size_unknown">(sconosciuta)</string>
   <string name="title_file_info">Informazioni sul file</string>
   <string name="pref_restart_msgcenter">Riavvia centro messaggi</string>
-  <string name="pref_title_restart_msgcenter">Premilo se il centro messaggi non funziona correttamente</string>
+  <string name="pref_title_restart_msgcenter">Usalo se Kontalk non funziona correttamente</string>
   <string name="pref_idle_time">Disconnetti se inattivo</string>
   <string name="pref_title_idle_time">Quanto tempo aspettare prima di disconnettersi per inattività</string>
   <string name="pref_wakeup_time">Riconnetti al server</string>
@@ -423,5 +423,11 @@
 
     <string name="err_keypair_export_write">Impossibile scrivere la chiave personale nella memoria esterna.</string>
     <string name="err_keypair_export_other">Errore durante l\'esportazione della chiave personale.</string>
+
+    <string name="pref_title_custom_background">Scegli uno sfondo usando l\'opzione di seguito</string>
+    <string name="err_import_keypair_read">Impossibile leggere la chiave personale dalla memoria esterna.</string>
+    <string name="pref_title_sync_sim_contacts">Includi i contatti dalla SIM durante il controllo degli utenti registrati</string>
+
+    <string name="pref_title_sync_invisible_contacts">Includi contatti non visualizzati in rubrica. Abilita se usi DAVDroid</string>
 
     </resources>
