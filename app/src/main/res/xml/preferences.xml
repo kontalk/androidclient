@@ -165,9 +165,6 @@
         <Preference android:key="pref_export_keypair"
             android:title="@string/pref_export_keypair"
             android:layout="@layout/md_preference_custom"/>
-        <Preference android:key="pref_import_keypair"
-            android:title="@string/pref_import_keypair"
-            android:layout="@layout/md_preference_custom"/>
         <CheckBoxPreference android:key="pref_accept_any_certificate"
             android:title="@string/pref_accept_any_certificate"
             android:defaultValue="@bool/pref_default_accept_any_certificate"
