@@ -62,8 +62,6 @@ import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 
-import static org.kontalk.crypto.PersonalKeyImporter.KEYPACK_FILENAME;
-
 
 /**
  * PreferencesFragment.
