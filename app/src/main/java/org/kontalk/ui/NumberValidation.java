@@ -111,7 +111,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     public static final int REQUEST_MANUAL_VALIDATION = 771;
     public static final int REQUEST_VALIDATION_CODE = 772;
-    public static final int REQUEST_OPEN_KEYPACK = 773;
 
     public static final int RESULT_FALLBACK = RESULT_FIRST_USER + 1;
 
@@ -460,19 +459,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 startValidation(data.getBooleanExtra("force", false), true);
             }
         }
-        if (requestCode == REQUEST_OPEN_KEYPACK) {
-            if (resultCode == RESULT_OK && data != null && data.getData() != null) {
-                try {
-                    InputStream in = getContentResolver().openInputStream(data.getData());
-                    startImport(in);
-                }
-                catch (FileNotFoundException e) {
-                    Log.e(TAG, "error importing keys", e);
-                    Toast.makeText(this, R.string.err_import_keypair_read,
-                        Toast.LENGTH_LONG).show();
-                }
-            }
-        }
     }
 
     private void keepScreenOn(boolean active) {
@@ -661,18 +647,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             // do not wait for the generated key
             stopKeyReceiver();
 
-            if (MediaStorage.isStorageAccessFrameworkAvailable()) {
-                MediaStorage.openFile(NumberValidation.this,
-                    PersonalKeyImporter.KEYPACK_MIME,
-                    PersonalKeyImporter.KEYPACK_FILENAME,
-                    REQUEST_OPEN_KEYPACK);
-            }
-            else {
-                new FileChooserDialog.Builder(NumberValidation.this)
-                    .initialPath(PersonalKeyImporter.DEFAULT_KEYPACK.getParent())
-                    .mimeType(PersonalKeyImporter.KEYPACK_MIME)
-                    .show();
-            }
+            new FileChooserDialog.Builder(NumberValidation.this)
+                .initialPath(PersonalKeyImporter.DEFAULT_KEYPACK.getParent())
+                .mimeType(PersonalKeyImporter.KEYPACK_MIME)
+                .show();
         }
     }
 
