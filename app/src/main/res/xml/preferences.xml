@@ -44,6 +44,10 @@
             android:title="@string/pref_privacy_settings"
             android:persistent="false"
             android:layout="@layout/md_preference_custom"/>
+        <CheckBoxPreference android:key="pref_show_blocked_users"
+            android:title="@string/pref_show_blocked_users"
+            android:defaultValue="@bool/pref_default_show_blocked_users"
+            android:layout="@layout/md_preference_custom"/>
         <com.afollestad.materialdialogs.prefs.MaterialEditTextPreference
             android:key="pref_remove_prefix"
             android:dialogTitle="@string/pref_remove_prefix"

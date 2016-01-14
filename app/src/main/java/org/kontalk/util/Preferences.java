@@ -469,6 +469,11 @@ public final class Preferences {
         }
     }
 
+    public static boolean getShowBlockedUsers(Context context) {
+        return getBoolean(context, "pref_show_blocked_users", context
+            .getResources().getBoolean(R.bool.pref_default_show_blocked_users));
+    }
+
     public static String getRosterVersion(Context context) {
         return getString(context, "roster_version", "");
     }

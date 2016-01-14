@@ -448,6 +448,8 @@
     <string name="about_credits_gfx"><b>Graphics/Iconography</b></string>
     <string name="about_credits_translators"><b>Translators</b></string>
 
+    <string name="pref_show_blocked_users">Show blocked users</string>
+
     <plurals name="context_selected">
         <item quantity="one">1 selected</item>
         <item quantity="other">%d selected</item>
