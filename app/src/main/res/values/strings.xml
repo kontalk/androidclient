@@ -264,7 +264,6 @@
     <string name="pref_change_passphrase">Change personal key password</string>
     <string name="pref_title_remove_prefix">Remove some dial prefix in Kontalk to match phone numbers correctly</string>
     <string name="pref_export_keypair">Export personal key</string>
-    <string name="pref_import_keypair">Import personal key</string>
     <string name="msg_import_keypair">Kontalk will import your keys from %s in your external storage. Be sure that the file exists and it\'s a valid exported keys archive.</string>
     <string name="msg_import_keypair_complete">Personal key import completed.</string>
     <string name="err_import_keypair_failed">Personal key import failed.</string>

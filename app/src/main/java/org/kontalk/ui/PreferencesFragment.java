@@ -37,7 +37,6 @@ import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
@@ -240,30 +239,6 @@ public final class PreferencesFragment extends RootPreferenceFragment {
 
                     askCurrentPassphrase(action2);
                 }
-
-                return true;
-            }
-        });
-
-        // import key pair
-        final Preference importKeyPair = findPreference("pref_import_keypair");
-        importKeyPair.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                new AlertDialogWrapper.Builder(getActivity())
-                    .setTitle(R.string.pref_import_keypair)
-                    .setMessage(getString(R.string.msg_import_keypair, KEYPACK_FILENAME))
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            Uri keypack = Uri.fromFile(new File(Environment
-                                .getExternalStorageDirectory(), KEYPACK_FILENAME));
-                            Context ctx = getActivity();
-                            MessageCenterService.importKeyPair(ctx.getApplicationContext(),
-                                keypack, Kontalk.get(ctx).getCachedPassphrase());
-                        }
-                    })
-                    .show();
 
                 return true;
             }
