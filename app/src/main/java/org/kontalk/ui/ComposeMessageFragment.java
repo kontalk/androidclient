@@ -2132,6 +2132,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
                                     if (requestKey) {
                                         // warn user that public key is changed
+                                        // TODO distinguish changed from unknown
                                         showKeyChangedWarning();
                                     }
                                 }

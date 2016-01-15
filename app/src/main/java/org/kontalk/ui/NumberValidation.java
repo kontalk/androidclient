@@ -26,8 +26,10 @@ import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.net.SocketException;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipInputStream;
 
@@ -91,7 +93,9 @@ import org.kontalk.crypto.PGPUidMismatchException;
 import org.kontalk.crypto.PGPUserID;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyImporter;
+import org.kontalk.crypto.PersonalKeyPack;
 import org.kontalk.crypto.X509Bridge;
+import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
 import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
@@ -118,6 +122,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public static final String PARAM_PUBLICKEY = "org.kontalk.publickey";
     public static final String PARAM_PRIVATEKEY = "org.kontalk.privatekey";
     public static final String PARAM_SERVER_URI = "org.kontalk.server";
+    public static final String PARAM_TRUSTED_KEYS = "org.kontalk.trustedkeys";
 
     private AccountManager mAccountManager;
     private EditText mNameText;
@@ -136,6 +141,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private String mPassphrase;
     private byte[] mImportedPublicKey;
     private byte[] mImportedPrivateKey;
+    private Map<String, String> mTrustedKeys;
     private boolean mForce;
 
     private LocalBroadcastManager lbm;
@@ -445,13 +451,15 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_MANUAL_VALIDATION) {
             if (resultCode == RESULT_OK) {
                 finishLogin(data.getStringExtra(PARAM_SERVER_URI),
                     data.getByteArrayExtra(PARAM_PRIVATEKEY),
                     data.getByteArrayExtra(PARAM_PUBLICKEY),
-                    true);
+                    true,
+                    (HashMap) data.getSerializableExtra(PARAM_TRUSTED_KEYS));
             }
             else if (resultCode == RESULT_FALLBACK) {
                 mClearState = true;
@@ -647,8 +655,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             stopKeyReceiver();
 
             new FileChooserDialog.Builder(NumberValidation.this)
-                .initialPath(PersonalKeyImporter.DEFAULT_KEYPACK.getParent())
-                .mimeType(PersonalKeyImporter.KEYPACK_MIME)
+                .initialPath(PersonalKeyPack.DEFAULT_KEYPACK.getParent())
+                .mimeType(PersonalKeyPack.KEYPACK_MIME)
                 .show();
         }
     }
@@ -690,6 +698,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         catch (Exception e) {
             Log.e(TAG, "error importing keys", e);
             mImportedPublicKey = mImportedPrivateKey = null;
+            mTrustedKeys = null;
 
             try {
                 if (zip != null)
@@ -752,6 +761,14 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mName = uid.getName();
             mImportedPublicKey = importer.getPublicKeyData();
             mImportedPrivateKey = importer.getPrivateKeyData();
+
+            try {
+                mTrustedKeys = importer.getTrustedKeys();
+            }
+            catch (Exception e) {
+                // this is not a critical error so we can just ignore it
+                Log.w(TAG, "unable to load trusted keys from key pack", e);
+            }
         }
 
         catch (PGPUidMismatchException e) {
@@ -767,6 +784,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         catch (Exception e) {
             Log.e(TAG, "error importing keys", e);
             mImportedPublicKey = mImportedPrivateKey = null;
+            mTrustedKeys = null;
             mName = null;
 
             Toast.makeText(this,
@@ -917,7 +935,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             @Override
             public void run() {
                 abort(true);
-                finishLogin(v.getServer().toString(), privateKey, publicKey, false);
+                finishLogin(v.getServer().toString(), privateKey, publicKey, false, mTrustedKeys);
             }
         });
     }
@@ -944,7 +962,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         setProgressMessage(getString(R.string.msg_initializing));
     }
 
-    protected void finishLogin(final String serverUri, final byte[] privateKeyData, final byte[] publicKeyData, boolean updateKey) {
+    protected void finishLogin(final String serverUri, final byte[] privateKeyData, final byte[] publicKeyData, boolean updateKey, Map<String, String> trustedKeys) {
         Log.v(TAG, "finishing login");
         statusInitializing();
 
@@ -959,10 +977,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             }
         }
 
-        completeLogin(serverUri, privateKeyData, publicKeyData);
+        completeLogin(serverUri, privateKeyData, publicKeyData, trustedKeys);
     }
 
-    private void completeLogin(String serverUri, byte[] privateKeyData, byte[] publicKeyData) {
+    private void completeLogin(String serverUri, byte[] privateKeyData, byte[] publicKeyData, Map<String, String> trustedKeys) {
         // generate the bridge certificate
         byte[] bridgeCertData;
         try {
@@ -979,7 +997,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         // procedure will continue in removeAccount callback
         mAccountManager.removeAccount(account,
             new AccountRemovalCallback(this, account, mPassphrase,
-                privateKeyData, publicKeyData, bridgeCertData, mName, serverUri),
+                privateKeyData, publicKeyData, bridgeCertData, mName, serverUri, trustedKeys),
             mHandler);
     }
 
@@ -1082,7 +1100,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             Preferences.saveRegistrationProgress(this,
                 mName, mPhoneNumber, mKey, mPassphrase,
                 mImportedPublicKey, mImportedPrivateKey,
-                serverUri, sender, mForce);
+                serverUri, sender, mForce, mTrustedKeys);
         }
 
         Intent i = new Intent(NumberValidation.this, CodeValidation.class);
@@ -1093,6 +1111,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         i.putExtra("passphrase", mPassphrase);
         i.putExtra("importedPublicKey", mImportedPublicKey);
         i.putExtra("importedPrivateKey", mImportedPrivateKey);
+        i.putExtra("trustedKeys", (HashMap) mTrustedKeys);
         i.putExtra("server", serverUri);
         i.putExtra("sender", sender);
         i.putExtra(KeyPairGeneratorService.EXTRA_KEY, mKey);
@@ -1109,10 +1128,11 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         private final byte[] bridgeCertData;
         private final String name;
         private final String serverUri;
+        private final Map<String, String> trustedKeys;
 
         public AccountRemovalCallback(NumberValidation activity, Account account,
                 String passphrase, byte[] privateKeyData, byte[] publicKeyData,
-                byte[] bridgeCertData, String name, String serverUri) {
+                byte[] bridgeCertData, String name, String serverUri, Map<String, String> trustedKeys) {
             this.a = new WeakReference<NumberValidation>(activity);
             this.account = account;
             this.passphrase = passphrase;
@@ -1121,12 +1141,18 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             this.bridgeCertData = bridgeCertData;
             this.name = name;
             this.serverUri = serverUri;
+            this.trustedKeys = trustedKeys;
         }
 
         @Override
         public void run(AccountManagerFuture<Boolean> result) {
             NumberValidation ctx = a.get();
             if (ctx != null) {
+                // store trusted keys
+                if (trustedKeys != null) {
+                    UsersProvider.setTrustedKeys(ctx, trustedKeys);
+                }
+
                 AccountManager am = (AccountManager) ctx
                     .getSystemService(Context.ACCOUNT_SERVICE);
 

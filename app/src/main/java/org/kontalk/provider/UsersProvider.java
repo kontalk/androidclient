@@ -98,6 +98,7 @@ public class UsersProvider extends ContentProvider {
     private DatabaseHelper dbHelper;
     private static final UriMatcher sUriMatcher;
     private static HashMap<String, String> usersProjectionMap;
+    private static HashMap<String, String> keysProjectionMap;
 
     private static class DatabaseHelper extends SQLiteOpenHelper {
         private static final String CREATE_TABLE_USERS = "(" +
@@ -333,16 +334,22 @@ public class UsersProvider extends ContentProvider {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         boolean offline = Boolean.parseBoolean(uri.getQueryParameter(Users.OFFLINE));
 
-        // use the same table name as an alias
-        String table = offline ? (TABLE_USERS_OFFLINE + " " + TABLE_USERS) :
-            TABLE_USERS;
-        qb.setTables(table +
-            " LEFT OUTER JOIN " + TABLE_KEYS + " ON " +
-            TABLE_USERS + "." + Users.JID + "=" +
-            TABLE_KEYS + "." + Keys.JID);
-        qb.setProjectionMap(usersProjectionMap);
-
         int match = sUriMatcher.match(uri);
+        if (match == USERS || match == USERS_JID) {
+            // use the same table name as an alias
+            String table = offline ? (TABLE_USERS_OFFLINE + " " + TABLE_USERS) :
+                TABLE_USERS;
+            qb.setTables(table +
+                " LEFT OUTER JOIN " + TABLE_KEYS + " ON " +
+                TABLE_USERS + "." + Users.JID + "=" +
+                TABLE_KEYS + "." + Keys.JID);
+            qb.setProjectionMap(usersProjectionMap);
+        }
+        else if (match == KEYS) {
+            qb.setTables(TABLE_KEYS);
+            qb.setProjectionMap(keysProjectionMap);
+        }
+
         switch (match) {
             case USERS:
                 // nothing to do
@@ -355,13 +362,17 @@ public class UsersProvider extends ContentProvider {
                 selectionArgs = new String[] { userId };
                 break;
 
+            case KEYS:
+                // nothing to do
+                break;
+
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
         }
 
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor c = qb.query(db, projection, selection, selectionArgs, null, null, sortOrder);
-        if (c.getCount() == 0) {
+        if (c.getCount() == 0 && match != KEYS) {
             // request sync
             SyncAdapter.requestSync(getContext(), false);
         }
@@ -1073,6 +1084,27 @@ public class UsersProvider extends ContentProvider {
         return context.getContentResolver().update(uri, new ContentValues(), null, null);
     }
 
+    /** Returns a JID-fingerprint map of trusted keys. */
+    public static Map<String, String> getTrustedKeys(Context context) {
+        Cursor c = context.getContentResolver().query(Keys.CONTENT_URI, new String[] {
+                Keys.JID,
+                Keys.FINGERPRINT,
+            }, null, null, null);
+
+        Map<String, String> list = new HashMap<>(c.getCount());
+        while (c.moveToNext()) {
+            list.put(c.getString(0), c.getString(1));
+        }
+
+        c.close();
+        return list;
+    }
+
+    /** Sets the trusted keys, deleting all previous entries. */
+    public static void setTrustedKeys(Context context, Map<String, String> trustedKeys) {
+        // TODO
+    }
+
     /* Transactions compatibility layer */
 
     @TargetApi(android.os.Build.VERSION_CODES.HONEYCOMB)
@@ -1136,6 +1168,11 @@ public class UsersProvider extends ContentProvider {
         usersProjectionMap.put(Users.BLOCKED, Users.BLOCKED);
         usersProjectionMap.put(Keys.TRUSTED_PUBLIC_KEY, TABLE_KEYS + "." + Keys.PUBLIC_KEY);
         usersProjectionMap.put(Keys.TRUSTED_FINGERPRINT, TABLE_KEYS + "." + Keys.FINGERPRINT);
+
+        // only for direct access to the keys table (for optimization)
+        keysProjectionMap = new HashMap<String, String>();
+        keysProjectionMap.put(Keys.JID, Keys.JID);
+        keysProjectionMap.put(Keys.FINGERPRINT, Keys.FINGERPRINT);
     }
 
 }
