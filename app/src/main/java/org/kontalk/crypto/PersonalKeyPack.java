@@ -30,6 +30,7 @@ public interface PersonalKeyPack {
     public static final String BRIDGE_CERT_FILENAME = "kontalk-login.crt";
     public static final String BRIDGE_KEY_FILENAME = "kontalk-login.key";
     public static final String BRIDGE_CERTPACK_FILENAME = "kontalk-login.p12";
+    public static final String TRUSTED_KEYS_FILENAME = "trusted.properties";
 
     public static final String KEYPACK_FILENAME = "kontalk-keys.zip";
     public static final String KEYPACK_MIME = "application/zip";

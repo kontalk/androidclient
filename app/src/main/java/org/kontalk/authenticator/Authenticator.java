@@ -24,6 +24,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
+import java.util.Map;
 
 import org.spongycastle.bcpg.HashAlgorithmTags;
 import org.spongycastle.openpgp.PGPEncryptedData;
@@ -59,6 +60,7 @@ import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyExporter;
+import org.kontalk.provider.UsersProvider;
 import org.kontalk.ui.NumberValidation;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.XMPPUtils;
@@ -186,8 +188,11 @@ public class Authenticator extends AbstractAccountAuthenticator {
         String pubKeyData = m.getUserData(acc, DATA_PUBLICKEY);
         byte[] publicKey = Base64.decode(pubKeyData, Base64.DEFAULT);
 
+        // trusted keys
+        Map<String, String> trustedKeys = UsersProvider.getTrustedKeys(ctx);
+
         PersonalKeyExporter exp = new PersonalKeyExporter();
-        exp.save(privateKey, publicKey, dest, passphrase, exportPassphrase, bridgeCert);
+        exp.save(privateKey, publicKey, dest, passphrase, exportPassphrase, bridgeCert, trustedKeys);
     }
 
     public static void setDefaultPersonalKey(Context ctx, byte[] publicKeyData, byte[] privateKeyData,

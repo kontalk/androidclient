@@ -29,6 +29,8 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Map;
+import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -44,7 +46,7 @@ import org.spongycastle.util.io.pem.PemWriter;
  */
 public class PersonalKeyExporter implements PersonalKeyPack {
 
-    public void save(byte[] privateKey, byte[] publicKey, OutputStream dest, String passphrase, String exportPassphrase, byte[] bridgeCert)
+    public void save(byte[] privateKey, byte[] publicKey, OutputStream dest, String passphrase, String exportPassphrase, byte[] bridgeCert, Map<String, String> trustedKeys)
         throws PGPException, IOException, CertificateException, NoSuchProviderException, KeyStoreException, NoSuchAlgorithmException {
 
         // put everything in a zip file
@@ -109,6 +111,15 @@ public class PersonalKeyExporter implements PersonalKeyPack {
         out.close();
         stream.writeTo(zip);
         zip.closeEntry();
+
+        if (trustedKeys != null) {
+            // export trusted keys
+            Properties prop = new Properties();
+            prop.putAll(trustedKeys);
+            zip.putNextEntry(new ZipEntry(TRUSTED_KEYS_FILENAME));
+            prop.store(zip, null);
+            zip.closeEntry();
+        }
 
         // finalize the zip file
         zip.close();
