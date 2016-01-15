@@ -739,7 +739,6 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                         new String[] { Messages.THREAD_ID }, null, null, null);
                 if (c.moveToFirst()) {
                     threadId = c.getLong(0);
-                    mConversation = null;
                     startQuery(false);
                 }
                 else {
@@ -812,7 +811,6 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                                 null);
                         if (c.moveToFirst()) {
                             threadId = c.getLong(0);
-                            mConversation = null;
                             // we can run it here because progress=false
                             startQuery(false);
                         }
@@ -2435,7 +2433,6 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         setActivityStatusUpdating();
 
         // cursor was previously destroyed -- reload everything
-        // mConversation = null;
         processStart(resuming);
         if (mUserJID != null) {
             // set notifications on pause
