@@ -35,7 +35,7 @@ import android.widget.Toast;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.crypto.PersonalKeyImporter;
+import org.kontalk.crypto.PersonalKeyPack;
 
 
 /**
@@ -115,7 +115,7 @@ public final class PreferencesActivity extends ToolbarActivity
                 .findFragmentById(R.id.container);
 
             f.exportPersonalKey(this,
-                new FileOutputStream(new File(folder, PersonalKeyImporter.KEYPACK_FILENAME)));
+                new FileOutputStream(new File(folder, PersonalKeyPack.KEYPACK_FILENAME)));
         }
         catch (FileNotFoundException e) {
             Log.e(PreferencesFragment.TAG, "error exporting keys", e);

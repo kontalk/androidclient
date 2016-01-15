@@ -18,8 +18,6 @@
 
 package org.kontalk.crypto;
 
-import android.os.Environment;
-
 import org.kontalk.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.util.MessageUtils;
 import org.spongycastle.bcpg.ArmoredInputStream;
@@ -27,7 +25,6 @@ import org.spongycastle.openpgp.PGPException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
@@ -42,12 +39,6 @@ import java.util.zip.ZipInputStream;
 public class PersonalKeyImporter implements PersonalKeyPack {
 
     private static final long MAX_KEY_SIZE = 102400; // 100 KB
-
-    public static final String KEYPACK_FILENAME = "kontalk-keys.zip";
-    public static final String KEYPACK_MIME = "application/zip";
-
-    public static final File DEFAULT_KEYPACK = new File(Environment
-            .getExternalStorageDirectory(), KEYPACK_FILENAME);
 
     private ZipInputStream mKeyPack;
     private String mPassphrase;

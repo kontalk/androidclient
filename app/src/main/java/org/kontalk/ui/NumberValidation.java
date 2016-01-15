@@ -91,6 +91,7 @@ import org.kontalk.crypto.PGPUidMismatchException;
 import org.kontalk.crypto.PGPUserID;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyImporter;
+import org.kontalk.crypto.PersonalKeyPack;
 import org.kontalk.crypto.X509Bridge;
 import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
@@ -647,8 +648,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             stopKeyReceiver();
 
             new FileChooserDialog.Builder(NumberValidation.this)
-                .initialPath(PersonalKeyImporter.DEFAULT_KEYPACK.getParent())
-                .mimeType(PersonalKeyImporter.KEYPACK_MIME)
+                .initialPath(PersonalKeyPack.DEFAULT_KEYPACK.getParent())
+                .mimeType(PersonalKeyPack.KEYPACK_MIME)
                 .show();
         }
     }

@@ -54,7 +54,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.crypto.PersonalKey;
-import org.kontalk.crypto.PersonalKeyImporter;
+import org.kontalk.crypto.PersonalKeyPack;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.PushServiceManager;
@@ -200,15 +200,15 @@ public final class PreferencesFragment extends RootPreferenceFragment {
                         mPassphrase = passphrase;
                         if (MediaStorage.isStorageAccessFrameworkAvailable()) {
                             MediaStorage.createFile(PreferencesFragment.this,
-                                PersonalKeyImporter.KEYPACK_MIME,
-                                PersonalKeyImporter.KEYPACK_FILENAME,
+                                PersonalKeyPack.KEYPACK_MIME,
+                                PersonalKeyPack.KEYPACK_FILENAME,
                                 REQUEST_CREATE_KEYPACK);
                         }
                         else {
                             PreferencesActivity ctx = (PreferencesActivity) getActivity();
                             if (ctx != null) {
                                 new FolderChooserDialog.Builder(ctx)
-                                    .initialPath(PersonalKeyImporter.DEFAULT_KEYPACK.getParent())
+                                    .initialPath(PersonalKeyPack.DEFAULT_KEYPACK.getParent())
                                     .show();
                             }
                         }

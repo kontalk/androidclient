@@ -18,6 +18,10 @@
 
 package org.kontalk.crypto;
 
+import java.io.File;
+
+import android.os.Environment;
+
 
 public interface PersonalKeyPack {
 
@@ -26,5 +30,11 @@ public interface PersonalKeyPack {
     public static final String BRIDGE_CERT_FILENAME = "kontalk-login.crt";
     public static final String BRIDGE_KEY_FILENAME = "kontalk-login.key";
     public static final String BRIDGE_CERTPACK_FILENAME = "kontalk-login.p12";
+
+    public static final String KEYPACK_FILENAME = "kontalk-keys.zip";
+    public static final String KEYPACK_MIME = "application/zip";
+
+    public static final File DEFAULT_KEYPACK = new File(Environment
+        .getExternalStorageDirectory(), KEYPACK_FILENAME);
 
 }
