@@ -39,15 +39,9 @@ import java.util.zip.ZipInputStream;
  * Importer for a personal key pack.
  * @author Daniele Ricci
  */
-public class PersonalKeyImporter {
+public class PersonalKeyImporter implements PersonalKeyPack {
 
     private static final long MAX_KEY_SIZE = 102400; // 100 KB
-
-    public static final String PUBLIC_KEY_FILENAME = "kontalk-public.asc";
-    public static final String PRIVATE_KEY_FILENAME = "kontalk-private.asc";
-    public static final String BRIDGE_CERT_FILENAME = "kontalk-login.crt";
-    public static final String BRIDGE_KEY_FILENAME = "kontalk-login.key";
-    public static final String BRIDGE_CERTPACK_FILENAME = "kontalk-login.p12";
 
     public static final String KEYPACK_FILENAME = "kontalk-keys.zip";
     public static final String KEYPACK_MIME = "application/zip";
