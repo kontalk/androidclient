@@ -86,7 +86,7 @@
   <string name="size_unknown">(desconhecido)</string>
   <string name="title_file_info">Informações do arquivo</string>
   <string name="pref_restart_msgcenter">Reiniciar o centro de mensagens</string>
-  <string name="pref_title_restart_msgcenter">Use isto se o centro de mensagens não estiver funcionando corretamente</string>
+  <string name="pref_title_restart_msgcenter">Use isto se o Kontalk não estiver funcionando corretamente</string>
   <string name="pref_idle_time">Desconectar quando ocioso</string>
   <string name="pref_title_idle_time">Quanto tempo esperar antes de desconectar por inatividade</string>
   <string name="pref_wakeup_time">Reconectar ao servidor</string>
@@ -365,4 +365,32 @@
     <string name="msg_iab_thankyou_warning">Alguma coisa deu errado, mas a doação foi enviada. Obrigado!</string>
 
     <string name="iab_error_setup">Ocorreu um erro durante a configuração de cobrança na aplicação (%d)</string>
+    <string name="pref_title_custom_background">Selecione o fundo usando a opção abaixo</string>
+    <string name="iab_error_query">Não foi possível consultar o inventário de cobranças na aplicação (%d)</string>
+
+    <string name="copy_clipboard">Copiar para a área de transferência</string>
+    <string name="bitcoin_clipboard_copied">O endereço do Bitcoin foi copiado para a área de transferência.</string>
+
+    <string name="warn_no_personal_key">Não foi possível carregar a chave pessoal. Desabilite a criptografia nas configurações para enviar a mensagem mesmo assim.</string>
+    <string name="warn_no_public_key">Não foi possível encontrar a chave pública para esse usuário. Tente atualizar sua lista de contatos ou desabilitar a criptografia nas configurações para enviar a mensagem mesmo assim.</string>
+    <string name="warn_encryption_failed">Não foi possível criptografar a mensagem. Desabilite a criptografia nas configurações para enviar a mensagem mesmo assim.</string>
+    <string name="warn_not_subscribed">Não foi possível enviar a mensagem. A pessoa ainda não aceitou o seu convite.</string>
+
+    <string name="pref_sync_sim_contacts">Sincronizar com os contatos no SIM</string>
+    <string name="pref_title_sync_sim_contacts">Inclui os contatos do SIM ao procurar por usuários registrados</string>
+
+    <string name="pref_sync_invisible_contacts">Incluir contatos invisíveis</string>
+    <string name="pref_title_sync_invisible_contacts">Inclui os contatos que não são exibidos no aplicativo Contatos. Habilite no caso de você usar o DAVDroid.</string>
+
+    <string name="pref_accept_any_certificate">Aceitar qualquer certificado SSL</string>
+
+    <string name="pref_delete_account">Excluir sua conta</string>
+    <string name="msg_delete_account">Ao excluir sua conta, você também exclui todas as suas mensagens. Sua conta no servidor será excluída automaticamente após algumas semanas.</string>
+    <string name="msg_delete_account_progress">Excluindo a sua conta…</string>
+
+    <string name="msg_user_blocked">O usuário foi bloqueado.</string>
+    <string name="msg_user_unblocked">O usuário foi desbloqueado.</string>
+    <string name="title_block_user_warning">Deseja realmente bloquear esse usuário?</string>
+    <string name="msg_block_user_warning">Você está prestes a bloquear esta pessoa. Caso faça isso, ela não será capaz de lhe enviar nenhuma mensagem ou mídia (e nem você, para ela), até que você a desbloqueie. Esta pessoa também não será capaz de ver o seu status ou último horário de conexão e você também não será capaz de ver o status dela.</string>
+    <string name="title_unblock_user_warning">Deseja realmente desbloquear essa pessoa?</string>
     </resources>
