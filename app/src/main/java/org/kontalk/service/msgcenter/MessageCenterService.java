@@ -2081,6 +2081,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private void beginKeyPairRegeneration() {
         if (mKeyPairRegenerator == null) {
             try {
+                // lock message center while doing this
+                hold(this);
                 mKeyPairRegenerator = new RegenerateKeyPairListener(this);
                 mKeyPairRegenerator.run();
             }
@@ -2097,6 +2099,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (mKeyPairRegenerator != null) {
             mKeyPairRegenerator.abort();
             mKeyPairRegenerator = null;
+            // release message center
+            release(this);
         }
     }
 
