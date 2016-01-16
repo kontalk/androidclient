@@ -434,8 +434,9 @@
 
     <string name="warning_public_key_changed">Der Schlüssel dieses Nutzers hat sich unerwartet geändert!</string>
     <string name="title_public_key_changed_warning">Persönlicher Schlüssel geändert</string>
-    <string name="msg_public_key_changed_warning">Der persönliche Schlüssel für diesen Nutzer hat sich geändert. Bitte überprüfen Sie mit dem Nutzer ob er/sie Kontalk neu installiert oder den Schlüssel absichtlich neu generiert hat. Anderenfalls könnte es sein dass die Kommunikation kompromittiert wurde!</string>
+    <string name="msg_public_key_changed_warning">Bitte überprüfen Sie mit dem Nutzer ob er/sie Kontalk neu installiert oder den Schlüssel absichtlich neu generiert hat. Anderenfalls könnte es sein dass die Kommunikation kompromittiert wurde!</string>
     <string name="warning_public_key_unknown">Dem persönlichen Schlüssel dieses Nutzers wird nicht vertraut!</string>
     <string name="msg_public_key_unknown_warning">Bitte überprüfen Sie mit dem Nutzer dass sein/ihr Fingerabdruck mit dem übereinstimmt welcher im <b>Identität</b> Dialog angezeigt wird. Anderenfalls könnte die Kommunikation kompromittiert wurde!</string>
 
+    <string name="title_public_key_unknown_warning">Unvertrauter persönlicher Schlüssel</string>
     </resources>
