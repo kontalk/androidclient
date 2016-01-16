@@ -59,7 +59,6 @@ import org.kontalk.message.VCardComponent;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.UsersProvider;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

@@ -20,6 +20,7 @@ package org.kontalk.provider;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -933,6 +934,40 @@ public class UsersProvider extends ContentProvider {
         return null;
     }
 
+    private int insertKeys(ContentValues[] values) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        int rows = 0;
+        SQLiteStatement stm = db.compileStatement("INSERT OR REPLACE INTO " +
+            TABLE_KEYS + " (" + Keys.JID + ", " + Keys.FINGERPRINT + ") VALUES(?, ?)");
+
+        for (ContentValues v : values) {
+            try {
+                stm.bindString(1, v.getAsString(Keys.JID));
+                stm.bindString(2, v.getAsString(Keys.FINGERPRINT));
+                stm.executeInsert();
+                rows++;
+            }
+            catch (SQLException e) {
+                Log.w(SyncAdapter.TAG, "error inserting trusted key [" + v + "]", e);
+            }
+        }
+
+        return rows;
+    }
+
+    @Override
+    public int bulkInsert(Uri uri, ContentValues[] values) {
+        int match = sUriMatcher.match(uri);
+        switch (match) {
+            case KEYS:
+                return insertKeys(values);
+
+            default:
+                throw new IllegalArgumentException("Unknown URI " + uri);
+        }
+    }
+
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         throw new SQLException("manual delete from users table not supported.");
@@ -1101,8 +1136,16 @@ public class UsersProvider extends ContentProvider {
     }
 
     /** Sets the trusted keys, deleting all previous entries. */
-    public static void setTrustedKeys(Context context, Map<String, String> trustedKeys) {
-        // TODO
+    public static int setTrustedKeys(Context context, Map<String, String> trustedKeys) {
+        ContentValues[] values = new ContentValues[trustedKeys.size()];
+        Iterator<Map.Entry<String, String>> entries = trustedKeys.entrySet().iterator();
+        for (int i = 0; i < values.length; i++) {
+            Map.Entry<String, String> e = entries.next();
+            values[i] = new ContentValues(2);
+            values[i].put(Keys.JID, e.getKey());
+            values[i].put(Keys.FINGERPRINT, e.getValue());
+        }
+        return context.getContentResolver().bulkInsert(Keys.CONTENT_URI, values);
     }
 
     /* Transactions compatibility layer */

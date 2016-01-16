@@ -24,8 +24,6 @@ import org.kontalk.util.MessageUtils;
 import org.spongycastle.bcpg.ArmoredInputStream;
 import org.spongycastle.openpgp.PGPException;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
