@@ -92,6 +92,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import io.codetail.animation.SupportAnimator;
+import io.codetail.animation.ViewAnimationUtils;
+
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.Coder;
@@ -127,9 +130,6 @@ import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 import org.kontalk.util.XMPPUtils;
-
-import io.codetail.animation.SupportAnimator;
-import io.codetail.animation.ViewAnimationUtils;
 
 import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
 import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_ACCEPT;
@@ -1765,7 +1765,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                 mInvitationBar.findViewById(R.id.button_identity)
                     .setOnClickListener(new View.OnClickListener() {
                         public void onClick(View v) {
-                            showIdentityDialog(true);
+                            showIdentityDialog(true, R.string.title_invitation);
                         }
                     }
                 );
@@ -1877,7 +1877,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         }
     }
 
-    private void showIdentityDialog(boolean informationOnly) {
+    private void showIdentityDialog(boolean informationOnly, int titleId) {
         String fingerprint;
         String uid;
 
@@ -1922,7 +1922,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
             .setMessage(text);
 
         if (informationOnly) {
-            builder.setTitle(R.string.title_invitation);
+            builder.setTitle(titleId);
         }
         else {
             DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
@@ -1943,7 +1943,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                     }
                 }
             };
-            builder.setTitle(R.string.title_public_key_warning)
+            builder.setTitle(titleId)
                 .setPositiveButton(R.string.button_accept, listener)
                 .setNegativeButton(R.string.button_block, listener);
         }
@@ -1962,10 +1962,10 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         invalidateContact();
     }
 
-    private void showKeyChangedWarning() {
+    private void showKeyWarning(int textId, final int dialogTitleId, final int dialogMessageId) {
         Activity context = getActivity();
         if (context != null) {
-            showWarning(context.getText(R.string.warning_public_key), new View.OnClickListener() {
+            showWarning(context.getText(textId), new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
@@ -1979,7 +1979,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                                     trustKeyChange();
                                     break;
                                 case DialogInterface.BUTTON_NEUTRAL:
-                                    showIdentityDialog(false);
+                                    showIdentityDialog(false, dialogTitleId);
                                     break;
                                 case DialogInterface.BUTTON_NEGATIVE:
                                     // hide warning bar
@@ -1991,8 +1991,8 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                         }
                     };
                     new AlertDialogWrapper.Builder(getActivity())
-                        .setTitle(R.string.title_public_key_warning)
-                        .setMessage(R.string.msg_public_key_warning)
+                        .setTitle(dialogTitleId)
+                        .setMessage(dialogMessageId)
                         .setPositiveButton(R.string.button_accept, listener)
                         .setNeutralButton(R.string.button_identity, listener)
                         .setNegativeButton(R.string.button_block, listener)
@@ -2000,6 +2000,16 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                 }
             }, WarningType.FATAL);
         }
+    }
+
+    private void showKeyUnknownWarning() {
+        showKeyWarning(R.string.warning_public_key_unknown,
+            R.string.title_public_key_unknown_warning, R.string.msg_public_key_unknown_warning);
+    }
+
+    private void showKeyChangedWarning() {
+        showKeyWarning(R.string.warning_public_key_changed,
+            R.string.title_public_key_changed_warning, R.string.msg_public_key_changed_warning);
     }
 
     private void showWarning(CharSequence text, final View.OnClickListener listener, WarningType type) {
@@ -2116,24 +2126,25 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                                     PGPPublicKeyRing trustedPublicKey = contact.getTrustedPublicKeyRing();
 
                                     // request the key if we don't have a trusted one or we are subscribed from the contact
-                                    boolean requestKey = (trustedPublicKey == null || subscribedFrom);
+                                    // and of course if the user has a key
+                                    boolean unknownKey = (trustedPublicKey == null || subscribedFrom) && contact.getFingerprint() != null;
+                                    boolean changedKey = false;
                                     // check if fingerprint changed
-                                    if (trustedPublicKey != null) {
+                                    if (trustedPublicKey != null && newFingerprint != null) {
                                         String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(trustedPublicKey));
-                                        if (newFingerprint == null || newFingerprint.equalsIgnoreCase(oldFingerprint)) {
-                                            // no fingerprint available or fingerprint has not changed since last time
-                                            requestKey = false;
+                                        if (newFingerprint.equalsIgnoreCase(oldFingerprint)) {
+                                            // fingerprint has changed since last time
+                                            changedKey = true;
                                         }
                                     }
-                                    else {
-                                        // request key if we got one in the first place
-                                        requestKey = (contact.getFingerprint() != null);
-                                    }
 
-                                    if (requestKey) {
+                                    if (changedKey) {
                                         // warn user that public key is changed
-                                        // TODO distinguish changed from unknown
                                         showKeyChangedWarning();
+                                    }
+                                    else if (unknownKey) {
+                                        // warn user that public key is unknown
+                                        showKeyUnknownWarning();
                                     }
                                 }
 

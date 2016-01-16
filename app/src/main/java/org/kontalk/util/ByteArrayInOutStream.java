@@ -26,9 +26,7 @@ import java.io.ByteArrayOutputStream;
  * This class extends the ByteArrayOutputStream by 
  * providing a method that returns a new ByteArrayInputStream
  * which uses the internal byte array buffer. This buffer
- * is not copied, so no additional memory is used. After
- * creating the ByteArrayInputStream the instance of the
- * ByteArrayInOutStream can not be used anymore.
+ * is not copied, so no additional memory is used.
  * <p>
  * The ByteArrayInputStream can be retrieved using <code>getInputStream()</code>.
  * @author Nick Russler https://github.com/nickrussler/ByteArrayInOutStream/
@@ -57,19 +55,11 @@ public class ByteArrayInOutStream extends ByteArrayOutputStream {
      * Creates a new ByteArrayInputStream that uses the internal byte array buffer
      * of this ByteArrayInOutStream instance as its buffer array. The initial value
      * of pos is set to zero and the initial value of count is the number of bytes
-     * that can be read from the byte array. The buffer array is not copied. This
-     * instance of ByteArrayInOutStream can not be used anymore after calling this
-     * method.
+     * that can be read from the byte array. The buffer array is not copied.
      * @return the ByteArrayInputStream instance
      */
     public ByteArrayInputStream getInputStream() {
         // create new ByteArrayInputStream that respects the current count
-        ByteArrayInputStream in = new ByteArrayInputStream(this.buf, 0, this.count);
-
-        // set the buffer of the ByteArrayOutputStream
-        // to null so it can't be altered anymore
-        this.buf = null;
-
-        return in;
+        return new ByteArrayInputStream(this.buf, 0, this.count);
     }
 }
