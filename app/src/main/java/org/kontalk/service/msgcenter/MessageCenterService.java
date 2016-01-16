@@ -1300,7 +1300,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         // send presence
-        sendPresence();
+        sendPresence(Presence.Mode.available);
         // discovery
         discovery();
 
@@ -1352,6 +1352,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             cancelIdleAlarm();
             try {
                 ClientStateIndicationManager.active(mConnection);
+                sendPresence(Presence.Mode.available);
                 mInactive = false;
                 // test ping
                 mIdleHandler.test();
@@ -1367,6 +1368,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             Log.d(TAG, "entering inactive state");
             try {
                 ClientStateIndicationManager.inactive(mConnection);
+                sendPresence(Presence.Mode.away);
                 setIdleAlarm();
                 mInactive = true;
             }
@@ -1397,15 +1399,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     /** Sends our initial presence. */
-    private void sendPresence() {
-        sendPacket(createPresence());
+    private void sendPresence(Presence.Mode mode) {
+        sendPacket(createPresence(mode));
     }
 
-    private Presence createPresence() {
+    private Presence createPresence(Presence.Mode mode) {
         String status = Preferences.getStatusMessage(this);
         Presence p = new Presence(Presence.Type.available);
         if (status != null)
             p.setStatus(status);
+        if (mode != null)
+            p.setMode(mode);
 
         // TODO find a place for this
         p.addExtension(new CapsExtension("http://www.kontalk.org/", "none", "sha-1"));
@@ -1664,7 +1668,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     /** A special method to broadcast our own presence. */
     private void broadcastMyPresence(String id) {
-        Presence presence = createPresence();
+        Presence presence = createPresence(null);
         presence.setFrom(mConnection.getUser());
 
         Intent i = PresenceListener.createIntent(this, presence, null);

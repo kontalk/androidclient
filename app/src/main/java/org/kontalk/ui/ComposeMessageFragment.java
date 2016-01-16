@@ -2148,7 +2148,18 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
                                 if (Presence.Type.available.toString().equals(type)) {
                                     mAvailableResources.add(from);
-                                    statusText = context.getString(R.string.seen_online_label);
+
+                                    /*
+                                     * FIXME using mode this way has several flaws.
+                                     * 1. it doesn't take multiple resources into account
+                                     * 2. it doesn't account for away status duration (we don't have this information at all)
+                                     */
+                                    String mode = intent.getStringExtra(MessageCenterService.EXTRA_SHOW);
+                                    if (mode != null && mode.equals(Presence.Mode.away.toString())) {
+                                        statusText = context.getString(R.string.seen_away_label);
+                                    } else {
+                                        statusText = context.getString(R.string.seen_online_label);
+                                    }
 
                                     // request version information
                                     if (contact != null && contact.getVersion() != null) {
