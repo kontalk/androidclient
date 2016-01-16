@@ -439,7 +439,7 @@
     <string name="warning_older_version">Your buddy is using an older version of Kontalk. Some features might not work correctly.</string>
     <string name="warning_public_key_changed">This user\'s personal key changed unexpectedly!</string>
     <string name="title_public_key_changed_warning">Personal key changed</string>
-    <string name="msg_public_key_changed_warning">Personal key for this user has changed. Please verify with the user that he/she reinstalled Kontalk or regenerated his/her key intentionally, otherwise communication could be compromised!</string>
+    <string name="msg_public_key_changed_warning">Please verify with the user that he/she reinstalled Kontalk or regenerated his/her key intentionally, otherwise communication could be compromised!</string>
     <string name="warning_public_key_unknown">This user\'s personal key is untrusted!</string>
     <string name="title_public_key_unknown_warning">Untrusted personal key</string>
     <string name="msg_public_key_unknown_warning">Please verify with the user that his/her fingerprint matches the one displayed in the <b>identity</b> dialog, otherwise communication could be compromised!</string>
