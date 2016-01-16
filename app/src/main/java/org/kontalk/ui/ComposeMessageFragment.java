@@ -2120,19 +2120,17 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                                 // really not much sense in requesting the key for a non-existing contact
                                 Contact contact = getContact();
                                 if (contact != null) {
-                                    boolean subscribedFrom = intent.getBooleanExtra(MessageCenterService.EXTRA_SUBSCRIBED_FROM, false);
                                     String newFingerprint = intent.getStringExtra(MessageCenterService.EXTRA_FINGERPRINT);
                                     // if this is null, we are accepting the key for the first time
                                     PGPPublicKeyRing trustedPublicKey = contact.getTrustedPublicKeyRing();
 
-                                    // request the key if we don't have a trusted one or we are subscribed from the contact
-                                    // and of course if the user has a key
-                                    boolean unknownKey = (trustedPublicKey == null || subscribedFrom) && contact.getFingerprint() != null;
+                                    // request the key if we don't have a trusted one and of course if the user has a key
+                                    boolean unknownKey = (trustedPublicKey == null && contact.getFingerprint() != null);
                                     boolean changedKey = false;
                                     // check if fingerprint changed
                                     if (trustedPublicKey != null && newFingerprint != null) {
                                         String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(trustedPublicKey));
-                                        if (newFingerprint.equalsIgnoreCase(oldFingerprint)) {
+                                        if (!newFingerprint.equalsIgnoreCase(oldFingerprint)) {
                                             // fingerprint has changed since last time
                                             changedKey = true;
                                         }
