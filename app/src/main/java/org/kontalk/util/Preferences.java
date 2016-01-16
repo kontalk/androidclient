@@ -220,6 +220,22 @@ public final class Preferences {
             .getString(R.string.pref_default_ringtone));
     }
 
+    public static boolean getNotificationLED(Context context) {
+        return getBoolean(context, "pref_enable_notification_led",
+            context.getResources().getBoolean(R.bool.pref_default_enable_notification_led));
+    }
+
+    public static int getNotificationLEDColor(Context context) {
+        return getInt(context, "pref_notification_led_color",
+            context.getResources().getInteger(R.integer.pref_default_notification_led_color));
+    }
+
+    public static boolean setNotificationLEDColor(Context context, int color) {
+        return sPreferences.edit()
+            .putInt("pref_notification_led_color", color)
+            .commit();
+    }
+
     public static int getImageCompression(Context context) {
         return Integer.parseInt(getString(context, "pref_image_resize", String
             .valueOf(context.getResources().getInteger(R.integer.pref_default_image_resize))));

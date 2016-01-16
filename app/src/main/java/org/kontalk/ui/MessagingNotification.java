@@ -468,7 +468,12 @@ public class MessagingNotification {
     }
 
     private static void setDefaults(Context context, NotificationCompat.Builder builder) {
-        int defaults = Notification.DEFAULT_LIGHTS;
+        int defaults = 0;
+
+        if (Preferences.getNotificationLED(context)) {
+            int ledColor = Preferences.getNotificationLEDColor(context);
+            builder.setLights(ledColor, 1000, 1000);
+        }
 
         String ringtone = Preferences.getNotificationRingtone(context);
         if (ringtone != null && ringtone.length() > 0)
@@ -479,7 +484,6 @@ public class MessagingNotification {
                 ((AudioManager) context.getSystemService(Context.AUDIO_SERVICE))
                     .getRingerMode() != AudioManager.RINGER_MODE_NORMAL))
             defaults |= Notification.DEFAULT_VIBRATE;
-
 
         builder.setDefaults(defaults);
     }

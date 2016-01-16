@@ -27,6 +27,7 @@ import android.accounts.AccountManagerFuture;
 import android.app.Activity;
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.afollestad.materialdialogs.color.ColorChooserDialog;
 import com.afollestad.materialdialogs.folderselector.FolderChooserDialog;
 
 import android.app.Dialog;
@@ -34,6 +35,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -114,6 +116,29 @@ public final class PreferencesFragment extends RootPreferenceFragment {
                 else
                     MessageCenterService.disablePushNotifications(ctx.getApplicationContext());
 
+                return true;
+            }
+        });
+
+        // notification LED color
+        final Preference notificationLed = findPreference("pref_notification_led_color");
+        notificationLed.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                Resources res = getResources();
+                int[] ledColors = new int[]{
+                    res.getColor(android.R.color.white), res.getColor(R.color.blue_light),
+                    res.getColor(R.color.purple_light), res.getColor(R.color.green_light),
+                    res.getColor(R.color.yellow_light), res.getColor(R.color.red_light),
+                };
+
+                new ColorChooserDialog.Builder((PreferencesActivity) getActivity(),
+                    R.string.pref_notification_led_color)
+                    .customColors(ledColors, null)
+                    .preselect(Preferences.getNotificationLEDColor(getContext()))
+                    .allowUserColorInput(false)
+                    .dynamicButtonColor(false)
+                    .show();
                 return true;
             }
         });

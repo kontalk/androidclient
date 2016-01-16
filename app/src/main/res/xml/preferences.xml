@@ -133,6 +133,16 @@
             android:entries="@array/vibrate_labels"
             android:entryValues="@array/vibrate_values"
             android:defaultValue="@string/pref_default_vibrate"/>
+        <CheckBoxPreference android:key="pref_enable_notification_led"
+            android:title="@string/pref_enable_notification_led"
+            android:dependency="pref_enable_notifications"
+            android:defaultValue="@bool/pref_default_enable_notification_led"
+            android:layout="@layout/md_preference_custom"/>
+        <Preference android:key="pref_notification_led_color"
+            android:dependency="pref_enable_notification_led"
+            android:title="@string/pref_notification_led_color"
+            android:defaultValue="@integer/pref_default_notification_led_color"
+            android:layout="@layout/md_preference_custom"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_maintenance"
