@@ -288,7 +288,7 @@
     <string name="open_audio">Reproduzir arquivo de áudio</string>
     <string name="decrypting_attachment">Descriptografando o anexo…</string>
     <string name="invitation_sent_label">convite pendente</string>
-    <string name="err_custom_background">Ocorreu um erro durante a definição do fundo. Por favor, tente outra imagem.</string>
+    <string name="err_custom_background">Ocorreu um erro na definição do fundo. Por favor, tente outra imagem.</string>
     <string name="serverlist_update_nonetwork">A rede não está disponível. Por favor, tente novamente mais tarde.</string>
     <string name="serverlist_update_offline">O modo desconectado está habilitado.</string>
 
