@@ -267,7 +267,7 @@
     <string name="code_validation_intro_manual">Por favor, digite o código de verificação que você recebeu. Esse código só poderá ser utilizado uma vez.</string>
     <string name="msg_importing_key">Importando a chave pessoal…</string>
     <string name="title_confirm_cancel_registration">Cancelar o registro?</string>
-    <string name="confirm_cancel_registration">Se você voltar, terá que reiniciar o registro a partir do zero. Caso necessite mudar para outra aplicação, NÃO utilize o botão \"voltar\" do seu aparelho.</string>
+    <string name="confirm_cancel_registration">Se você voltar, terá que reiniciar o registro a partir do zero. Caso necessite mudar para outro aplicativo, NÃO utilize o botão \"voltar\" do seu aparelho.</string>
     <string name="resend">Enviar novamente</string>
     <string name="confirm_will_delete_threads">As conversas selecionadas serão apagadas.</string>
     <string name="audio_message">Mensagem de áudio</string>
@@ -339,7 +339,7 @@
 
     <string name="msg_not_implemented">Ainda não implementado.</string>
 
-    <string name="chooser_error_no_camera_app">Nenhum aplicativo de câmera disponível.</string>
+    <string name="chooser_error_no_camera_app">Não existe nenhum aplicativo de câmera disponível.</string>
 
     <string name="chooser_select_link">Selecione a ação</string>
 
@@ -364,15 +364,15 @@
     <string name="msg_iab_thankyou">Obrigado!</string>
     <string name="msg_iab_thankyou_warning">Alguma coisa deu errado, mas a doação foi enviada. Obrigado!</string>
 
-    <string name="iab_error_setup">Ocorreu um erro durante a configuração de cobrança na aplicação (%d)</string>
+    <string name="iab_error_setup">Ocorreu um erro durante a configuração de cobrança no aplicativo (%d)</string>
     <string name="pref_title_custom_background">Selecione o fundo usando a opção abaixo</string>
-    <string name="iab_error_query">Não foi possível consultar o inventário de cobranças na aplicação (%d)</string>
+    <string name="iab_error_query">Não foi possível consultar o inventário de cobranças no aplicativo (%d)</string>
 
     <string name="copy_clipboard">Copiar para a área de transferência</string>
     <string name="bitcoin_clipboard_copied">O endereço do Bitcoin foi copiado para a área de transferência.</string>
 
     <string name="warn_no_personal_key">Não foi possível carregar a chave pessoal. Desabilite a criptografia nas configurações para enviar a mensagem mesmo assim.</string>
-    <string name="warn_no_public_key">Não foi possível encontrar a chave pública para esse usuário. Tente atualizar sua lista de contatos ou desabilitar a criptografia nas configurações para enviar a mensagem mesmo assim.</string>
+    <string name="warn_no_public_key">Não foi possível encontrar a chave pública para essa pessoa. Tente atualizar sua lista de contatos ou desabilitar a criptografia nas configurações para enviar a mensagem mesmo assim.</string>
     <string name="warn_encryption_failed">Não foi possível criptografar a mensagem. Desabilite a criptografia nas configurações para enviar a mensagem mesmo assim.</string>
     <string name="warn_not_subscribed">Não foi possível enviar a mensagem. A pessoa ainda não aceitou o seu convite.</string>
 
@@ -393,4 +393,67 @@
     <string name="title_block_user_warning">Deseja realmente bloquear esse usuário?</string>
     <string name="msg_block_user_warning">Você está prestes a bloquear esta pessoa. Caso faça isso, ela não será capaz de lhe enviar nenhuma mensagem ou mídia (e nem você, para ela), até que você a desbloqueie. Esta pessoa também não será capaz de ver o seu status ou último horário de conexão e você também não será capaz de ver o status dela.</string>
     <string name="title_unblock_user_warning">Deseja realmente desbloquear essa pessoa?</string>
-    </resources>
+    <string name="pref_enable_notification_led">Notificação via LED</string>
+    <string name="pref_notification_led_color">Cor do LED de notificação</string>
+    <string name="seen_away_label">afastado</string>
+    <string name="msg_unblock_user_warning">Você está prestes a desbloquear essa pessoa. Ao fazer isso, você permitirá que ela envie mensagens para você, veja o seu status e último horário de conexão.</string>
+
+    <string name="notification_text_more">Toque aqui para saber mais</string>
+
+    <string name="title_auth_error">Erro de autenticação</string>
+    <string name="msg_auth_error">Não foi possível autenticar no servidor Kontalk. Essa pode ser uma falha temporária no servidor ou, mais provavelmente, o servidor está recusando sua chave pessoal. É recomendável que você exclua sua conta no Kontalk, a partir do Android, e registre-se novamente (nesse caso você perderá todas as suas mensagens).</string>
+
+    <string name="warn_invite_no_app">Não existe nenhum aplicativo para convidar pessoas disponível.</string>
+
+    <string name="pref_text_enter">Botão Enter</string>
+    <string name="pref_title_text_enter">Selecione o comportamento padrão para o botão Enter no teclado</string>
+
+    <string name="title_password1">Senha:</string>
+    <string name="title_password2">Confirme a senha:</string>
+
+    <string name="err_password_too_short">A senha deve ter ao menos %d caracteres.</string>
+    <string name="err_passwords_mismatch">As senhas não coincidem!</string>
+    <string name="err_password_invalid">Senha errada.</string>
+
+    <string name="hint_record">Toque o botão do microfone para começar a gravação.</string>
+    <string name="hint_ptt">Toque e segure o botão do microfone para gravar.</string>
+    <string name="err_change_passphrase">Não foi possível alterar a senha da chave pessoal.</string>
+    <string name="err_file_not_found">Arquivo não encontrado.</string>
+    <string name="err_audio_record">Ocorreu um erro ao iniciar a gravação do áudio.</string>
+    <string name="err_audio_record_writing">Ocorreu um erro durante a gravação no armazenamento externo.</string>
+    <string name="err_audio_record_noaudio">Não foi gravado nenhum áudio.</string>
+    <string name="err_playing_audio">Ocorreu um erro na reprodução do áudio.</string>
+    <string name="err_playing_sdcard">Ocorreu um erro na leitura do armazenamento externo.</string>
+    <string name="slide_to_cancel">DESLIZE PARA CANCELAR</string>
+
+    <string name="pref_media_settings">Configurações de mídia</string>
+    <string name="pref_image_resize">Redimensionar as imagens</string>
+
+    <string name="err_server_invalid_format">O formato do endereço é inválido.</string>
+
+    <string name="err_no_contacts_app">Não foi encontrado nenhum aplicativo de contatos.</string>
+    <string name="err_no_contact">O contato não foi encontrado.</string>
+
+    <string name="warning_button_details">DETALHES</string>
+    <string name="warning_older_version">Esse seu contato está usando uma versão mais antiga do Kontalk. Alguns recursos podem não funcionar corretamente.</string>
+    <string name="warning_public_key_changed">A chave pessoal dessa pessoa mudou inesperadamente!</string>
+    <string name="title_public_key_changed_warning">Chave pessoal alterada</string>
+    <string name="msg_public_key_changed_warning">Por favor, verifique com essa pessoa se ela reinstalou o Kontalk ou regerou a sua chave intencionalmente, caso contrário a comunicação pode ter sido comprometida!</string>
+    <string name="warning_public_key_unknown">A chave pessoal dessa pessoa não é confiável!</string>
+    <string name="title_public_key_unknown_warning">Chave pessoal não confiável</string>
+    <string name="msg_public_key_unknown_warning">Por favor, verifique com essa pessoa se a fingerprint dela corresponde àquela exibida na tela <b>identidade</b>, caso contrário a comunicação pode ter sido comprometida!</string>
+
+    <string name="warning_user_blocked">Essa pessoa foi bloqueada por você.</string>
+
+    <string name="about_credits_devteam"><b>Kontalk foi trazido até você por:</b></string>
+    <string name="about_credits_gfx"><b>Gráficos/Iconografia</b></string>
+    <string name="about_credits_translators"><b>Tradutores</b></string>
+
+    <string name="pref_show_blocked_users">Exibir usuários bloqueados</string>
+
+    <plurals name="context_selected">
+	<item quantity="one">1 selecionado</item>
+	<item quantity="other">%d selecionados</item>
+</plurals>
+
+</resources>
