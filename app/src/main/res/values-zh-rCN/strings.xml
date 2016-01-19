@@ -98,7 +98,7 @@
     <string name="size_unknown">（未知）</string>
     <string name="title_file_info">文件信息</string>
     <string name="pref_restart_msgcenter">重启消息中心</string>
-    <string name="pref_title_restart_msgcenter">如果消息中心不能正常工作请使用它</string>
+    <string name="pref_title_restart_msgcenter">如果Kontalk不能正常工作请使用它</string>
     <string name="pref_idle_time">闲置多久断线</string>
     <string name="pref_title_idle_time">非活动时断线前需要等待的时间</string>
     <string name="pref_wakeup_time">重新连接到服务器</string>
@@ -285,7 +285,7 @@
     <string name="pref_balloons">聊天气泡主题</string>
     <string name="pref_title_balloons">选择聊天气泡主题</string>
 
-    <string name="attachment_picture">图片</string>
+    <string name="attachment_picture">相册</string>
     <string name="attachment_contact">联系人</string>
     <string name="attachment_audio">音频</string>
 
@@ -451,4 +451,12 @@
 </plurals>
 
 <string name="app_name_offline">Kontalk (离线)</string>
+    <string name="seen_away_label">离开</string>
+    <string name="err_import_keypair_read">无法从外置存储器读取密匙</string>
+    <string name="attachment_camera">摄像头</string>
+    <string name="attachment_video">视频</string>
+    <string name="attachment_file">文件</string>
+    <string name="attachment_vcard">联系人</string>
+    <string name="attachment_location">位置</string>
+
     </resources>
