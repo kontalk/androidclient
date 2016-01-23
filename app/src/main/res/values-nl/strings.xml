@@ -91,7 +91,7 @@
   <string name="size_unknown">(onbekend)</string>
   <string name="title_file_info">Bestandsinformatie</string>
   <string name="pref_restart_msgcenter">Berichtencentrum herstarten</string>
-  <string name="pref_title_restart_msgcenter">Gebruik dit als het berichtencentrum niet goed werkt</string>
+  <string name="pref_title_restart_msgcenter">Gebruik dit als Kontalk niet goed werkt</string>
   <string name="pref_idle_time">Verbreek de verbinding wanneer je inactief bent</string>
   <string name="pref_title_idle_time">Hoe lang te wachten met het verbreken van de verbinding bij inactiviteit</string>
   <string name="pref_wakeup_time">Opnieuw met server verbinden</string>
@@ -423,5 +423,24 @@
 
     <string name="err_keypair_export_write">Kon persoonlijke sleutel niet naar externe opslag schrijven.</string>
     <string name="err_keypair_export_other">Kon persoonlijke sleutel niet exporteren.</string>
+
+    <string name="pref_enable_notification_led">Notificatielicht</string>
+    <string name="pref_notification_led_color">Kleur notificatielicht</string>
+    <string name="seen_away_label">afwezig</string>
+    <string name="pref_title_custom_background">Kies een achtergrond met de onderstaande optie</string>
+    <string name="err_import_keypair_read">Kon persoonlijke sleutel niet van externe opslag lezen.</string>
+    <string name="pref_title_sync_sim_contacts">Doorzoek ook SIM contacten bij het zoeken naar geregistreerde gebruikers</string>
+
+    <string name="pref_title_sync_invisible_contacts">Doorzoek ook contacten die niet zichtbaar zijn in de Contacten app. Schakel dit in als je DAVDroid gebruikt</string>
+
+    <string name="warning_public_key_changed">De persoonlijke sleutel van deze gebruiker is onverwacht veranderd!</string>
+    <string name="title_public_key_changed_warning">Persoonlijke sleutel veranderd</string>
+    <string name="msg_public_key_changed_warning">Controleer met deze gebruiker of hij/zij Kontalk opnieuw geïnstalleerd heeft of zijn/haar sleutel expres opnieuw gegenereerd heeft, anders is de communicatie mogelijk niet langer veilig!</string>
+    <string name="warning_public_key_unknown">De persoonlijke sleutel van deze gebruiker is niet vertrouwd!</string>
+    <string name="title_public_key_unknown_warning">Niet vertrouwde persoonlijke sleutel</string>
+    <string name="msg_public_key_unknown_warning">Controleer met deze gebruiker of zijn/haar vingerafdruk overeen komt met de sleutel in het <b>identiteit</b> dialoogverster, anders is de communicatie mogelijk niet veilig!</string>
+
+    <string name="pref_show_blocked_users">Toon geblokkeerde gebruikers</string>
+    <string name="button_load_next_page">Laad meer berichten</string>
 
     </resources>
