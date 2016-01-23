@@ -442,7 +442,7 @@
     <string name="pref_enable_notification_led">Benachrichtigungs LED</string>
     <string name="pref_notification_led_color">Farbe Benachrichtigungs LED</string>
     <string name="seen_away_label">online</string>
-    <string name="mark_read">Lesen</string>
+    <string name="mark_read">Gelesen</string>
     <string name="button_load_next_page">Weitere Nachrichten laden</string>
 
     </resources>
