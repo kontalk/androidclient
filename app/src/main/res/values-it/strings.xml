@@ -201,7 +201,7 @@
   <string name="attachment_download">Scaricamento allegato</string>
   <string name="attachment_upload">Invio allegato</string>
   <string name="seen_moment_ago_label">un momento fa</string>
-  <string name="seen_online_label">online</string>
+  <string name="seen_online_label">attivo</string>
   <string name="seen_typing_label">sta scrivendo…</string>
   <string name="invitation_sent_label">invito in sospeso</string>
   <string name="pref_custom_background">Sfondo personalizzato</string>
@@ -432,4 +432,5 @@
 
     <string name="pref_show_blocked_users">Mostra utenti bloccati</string>
 
+    <string name="mark_read">Letto</string>
     </resources>
