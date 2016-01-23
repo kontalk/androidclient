@@ -133,9 +133,7 @@ public class CompositeMessage {
 
     /** Creates a new composite message. */
     public CompositeMessage(Context context, String id, long timestamp, String sender, boolean encrypted, int securityFlags) {
-        this();
-
-        mContext = context;
+        this(context);
 
         mId = id;
         mSender = sender;
@@ -149,7 +147,8 @@ public class CompositeMessage {
     }
 
     /** Empty constructor for local use. */
-    private CompositeMessage() {
+    private CompositeMessage(Context context) {
+        mContext = context;
         mComponents = new ArrayList<MessageComponent<?>>();
     }
 
@@ -372,7 +371,7 @@ public class CompositeMessage {
 
     /** Builds an instance from a {@link Cursor} row. */
     public static CompositeMessage fromCursor(Context context, Cursor cursor) {
-        CompositeMessage msg = new CompositeMessage();
+        CompositeMessage msg = new CompositeMessage(context);
         msg.populateFromCursor(cursor);
         // TODO
         return msg;
