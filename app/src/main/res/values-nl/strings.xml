@@ -201,7 +201,7 @@
   <string name="attachment_download">Bijlage downloaden</string>
   <string name="attachment_upload">Bijlage uploaden</string>
   <string name="seen_moment_ago_label">een moment geleden</string>
-  <string name="seen_online_label">online</string>
+  <string name="seen_online_label">actief</string>
   <string name="seen_typing_label">aan het typen…</string>
   <string name="invitation_sent_label">lopende uitnodiging</string>
   <string name="pref_custom_background">Aangepaste achtergrond</string>
@@ -426,7 +426,7 @@
 
     <string name="pref_enable_notification_led">Notificatielicht</string>
     <string name="pref_notification_led_color">Kleur notificatielicht</string>
-    <string name="seen_away_label">afwezig</string>
+    <string name="seen_away_label">online</string>
     <string name="pref_title_custom_background">Kies een achtergrond met de onderstaande optie</string>
     <string name="err_import_keypair_read">Kon persoonlijke sleutel niet van externe opslag lezen.</string>
     <string name="pref_title_sync_sim_contacts">Doorzoek ook SIM contacten bij het zoeken naar geregistreerde gebruikers</string>
@@ -443,4 +443,5 @@
     <string name="pref_show_blocked_users">Toon geblokkeerde gebruikers</string>
     <string name="button_load_next_page">Laad meer berichten</string>
 
+    <string name="mark_read">Gelezen</string>
     </resources>
