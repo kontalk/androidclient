@@ -61,6 +61,7 @@ import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
 import android.database.Cursor;
+import android.database.MergeCursor;
 import android.database.sqlite.SQLiteDiskIOException;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
@@ -152,6 +153,10 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
     private static final int MESSAGE_LIST_QUERY_TOKEN = 8720;
     private static final int CONVERSATION_QUERY_TOKEN = 8721;
+    private static final int MESSAGE_PAGE_QUERY_TOKEN = 8723;
+
+    /** How many messages to load per page. */
+    private static final int MESSAGE_PAGE_SIZE = 1000;
 
     private static final int SELECT_ATTACHMENT_OPENABLE = Activity.RESULT_FIRST_USER + 1;
     private static final int SELECT_ATTACHMENT_CONTACT = Activity.RESULT_FIRST_USER + 2;
@@ -182,6 +187,8 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
     private MessageListQueryHandler mQueryHandler;
     private MessageListAdapter mListAdapter;
+    /** Header view for the list view: "previous messages" button. */
+    private View mHeaderView;
     private TextView mStatusText;
     private ViewGroup mInvitationBar;
     private MenuItem mDeleteThreadMenu;
@@ -270,6 +277,17 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         list.setFastScrollEnabled(true);
 
         setMultiChoiceModeListener(this);
+
+        // add header view (this must be done before setting the adapter)
+        mHeaderView = LayoutInflater.from(getActivity())
+            .inflate(R.layout.message_list_header, list, false);
+        mHeaderView.findViewById(R.id.load_next_page).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startMessagesQuery(mQueryHandler.getLastId());
+            }
+        });
+        list.addHeaderView(mHeaderView);
 
         // set custom background (if any)
         ImageView background = (ImageView) getView().findViewById(R.id.background);
@@ -565,7 +583,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         if (mCheckedItemCount != 1)
             throw new IllegalStateException("checked items count must be exactly 1");
 
-        Cursor cursor = (Cursor) mListAdapter.getItem(getCheckedItemPosition());
+        Cursor cursor = (Cursor) getListView().getItemAtPosition(getCheckedItemPosition());
         return CompositeMessage.fromCursor(getActivity(), cursor);
     }
 
@@ -582,9 +600,9 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     Context ctx = getActivity();
-                    for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
+                    for (int i = 0, c = getListView().getCount()+getListView().getHeaderViewsCount(); i < c; ++i) {
                         if (checked.get(i))
-                            CompositeMessage.deleteFromCursor(ctx, (Cursor) mListAdapter.getItem(i));
+                            CompositeMessage.deleteFromCursor(ctx, (Cursor) getListView().getItemAtPosition(i));
                     }
                     mListAdapter.notifyDataSetChanged();
                 }
@@ -1285,11 +1303,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         getActivity().startService(i);
     }
 
-    private void startQuery(boolean progress) {
-        startQuery(progress, 0);
-    }
-
-    private void startQuery(boolean progress, long count) {
+    private synchronized void startQuery(boolean progress) {
         if (progress)
             getActivity().setProgressBarIndeterminateVisibility(true);
 
@@ -1299,7 +1313,13 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     }
 
     private void startMessagesQuery() {
-        CompositeMessage.startQuery(mQueryHandler, MESSAGE_LIST_QUERY_TOKEN, threadId, 0, 0);
+        CompositeMessage.startQuery(mQueryHandler, MESSAGE_LIST_QUERY_TOKEN,
+            threadId, MESSAGE_PAGE_SIZE, 0);
+    }
+
+    private void startMessagesQuery(long lastId) {
+        CompositeMessage.startQuery(mQueryHandler, MESSAGE_PAGE_QUERY_TOKEN,
+            threadId, MESSAGE_PAGE_SIZE, lastId);
     }
 
     private void stopQuery() {
@@ -1726,6 +1746,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
              * still locked, having focus and so on...
              * See issue #28.
              */
+            Log.v(TAG, "marking thread as read");
             mConversation.markAsRead();
         }
         else {
@@ -2418,6 +2439,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
             }
 
             // fire cursor update
+            Log.v(TAG, "peer observer active");
             processStart(false);
         }
 
@@ -2609,6 +2631,14 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     public final boolean isFinishing() {
         Activity activity = getActivity();
         return (activity == null || activity.isFinishing()) || isRemoving();
+    }
+
+    private void showHeaderView() {
+        mHeaderView.setVisibility(View.VISIBLE);
+    }
+
+    private void hideHeaderView() {
+        mHeaderView.setVisibility(View.GONE);
     }
 
     private void updateUI() {
@@ -2928,6 +2958,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     private static final class MessageListQueryHandler extends AsyncQueryHandler {
         private WeakReference<ComposeMessageFragment> mParent;
         private boolean mCancel;
+        private long mLastId;
 
         public MessageListQueryHandler(ComposeMessageFragment parent) {
             super(parent.getActivity().getApplicationContext().getContentResolver());
@@ -2976,6 +3007,10 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
                     }
                     else {
+                        // first query - use last id of this new cursor
+                        cursor.moveToFirst();
+                        mLastId = Conversation.getMessageId(cursor);
+
                         // see if we have to scroll to a specific message
                         int newSelectionPos = -1;
 
@@ -2997,11 +3032,48 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                         }
 
                         parent.mListAdapter.changeCursor(cursor);
-                        if (newSelectionPos > 0)
+                        if (newSelectionPos >= 0)
+                            parent.getListView().setSelection(newSelectionPos);
+
+                        if (cursor.getCount() >= MESSAGE_PAGE_SIZE)
+                            parent.showHeaderView();
+
+                        parent.getActivity().setProgressBarIndeterminateVisibility(false);
+                        parent.updateUI();
+                    }
+
+                    break;
+
+                case MESSAGE_PAGE_QUERY_TOKEN:
+                    if (cursor.getCount() > 0) {
+                        int newSelectionPos = -1;
+
+                        // there is no more data after this page
+                        if (cursor.getCount() < MESSAGE_PAGE_SIZE)
+                            parent.hideHeaderView();
+
+                        // save last id of this new cursor
+                        cursor.moveToFirst();
+                        mLastId = Conversation.getMessageId(cursor);
+
+                        // join with the old cursor (if any)
+                        Cursor oldCursor = parent.mListAdapter.getCursor();
+                        if (oldCursor != null) {
+                            // the new selection will be the next item after this new cursor
+                            newSelectionPos = cursor.getCount();
+                            cursor = new MergeCursor(new Cursor[]{cursor, oldCursor});
+                        }
+
+                        parent.mListAdapter.swapCursor(cursor);
+                        if (newSelectionPos >= 0)
                             parent.getListView().setSelection(newSelectionPos);
 
                         parent.getActivity().setProgressBarIndeterminateVisibility(false);
                         parent.updateUI();
+                    }
+                    else {
+                        // this happens when the first page is exactly PAGE_SIZE big
+                        parent.hideHeaderView();
                     }
 
                     break;
@@ -3026,9 +3098,16 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
         public synchronized void abort() {
             mCancel = true;
+            mLastId = 0;
             cancelOperation(MESSAGE_LIST_QUERY_TOKEN);
             cancelOperation(CONVERSATION_QUERY_TOKEN);
+            cancelOperation(MESSAGE_PAGE_QUERY_TOKEN);
         }
+
+        public long getLastId() {
+            return mLastId;
+        }
+
     }
 
 }
