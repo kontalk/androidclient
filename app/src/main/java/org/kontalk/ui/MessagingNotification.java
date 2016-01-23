@@ -56,6 +56,7 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
+import android.util.Log;
 
 
 /**
@@ -109,15 +110,27 @@ public class MessagingNotification {
     /** Peer of last notified chat invitation. */
     private static volatile String sLastInvitation;
 
-    /** On delete intent stuff. */
+    /** Notification action intents stuff. */
     private static final String ACTION_NOTIFICATION_DELETED = "org.kontalk.ACTION_NOTIFICATION_DELETED";
-    private static final OnDeletedReceiver sNotificationDeletedReceiver = new OnDeletedReceiver();
+    private static final String ACTION_NOTIFICATION_MARK_READ = "org.kontalk.ACTION_NOTIFICATION_MARK_READ";
+    private static final OnActionReceiver sNotificationActionReceiver = new OnActionReceiver();
     private static Intent sNotificationOnDeleteIntent;
+    private static Intent sNotificationOnMarkReadIntent;
 
-    private static class OnDeletedReceiver extends BroadcastReceiver {
+    private static class OnActionReceiver extends BroadcastReceiver {
         public void onReceive(Context context, Intent intent) {
-            // mark all messages as old
-            MessagesProvider.markAllThreadsAsOld(context);
+            String action = intent.getAction();
+            Log.v("Kontalk", "got action " + action);
+
+            if (ACTION_NOTIFICATION_DELETED.equals(action)) {
+                // mark all messages as old
+                MessagesProvider.markAllThreadsAsOld(context);
+            }
+            else if (ACTION_NOTIFICATION_MARK_READ.equals(action)) {
+                // mark all messages as read
+                MessagesProvider.markAllThreadsAsRead(context);
+                delayedUpdateMessagesNotification(context, false);
+            }
         }
     }
 
@@ -125,13 +138,17 @@ public class MessagingNotification {
     private MessagingNotification() {}
 
     public static void init(Context context) {
-        // set up the intent filter for notification deleted action
+        // set up the intent filter for notification actions
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ACTION_NOTIFICATION_DELETED);
-        context.registerReceiver(sNotificationDeletedReceiver, intentFilter);
+        intentFilter.addAction(ACTION_NOTIFICATION_MARK_READ);
+        context.registerReceiver(sNotificationActionReceiver, intentFilter);
 
-        // initialize the notification deleted action
+        // initialize notification actions
         sNotificationOnDeleteIntent = new Intent(ACTION_NOTIFICATION_DELETED);
+        if (supportsBigNotifications()) {
+            sNotificationOnMarkReadIntent = new Intent(ACTION_NOTIFICATION_MARK_READ);
+        }
     }
 
     public static void setPaused(String jid) {
@@ -278,8 +295,6 @@ public class MessagingNotification {
             }
             c.close();
 
-            // TODO we are not ready for this -- builder.addAction(android.R.drawable.ic_menu_revert, "Reply", accumulator.getPendingIntent());
-
             /* -- FIXME FIXME VERY UGLY CODE FIXME FIXME -- */
 
             Style style;
@@ -371,11 +386,32 @@ public class MessagingNotification {
                     context.getString(R.string.unread_messages, unread)
                     : content;
 
-                // avatar
+                PendingIntent callPendingIntent = null;
+
                 if (contact != null) {
+                    // avatar
                     Drawable avatar = contact.getAvatar(context);
                     if (avatar != null)
                         builder.setLargeIcon(MessageUtils.drawableToBitmap(avatar));
+
+                    if (supportsBigNotifications()) {
+                        // phone number for call intent
+                        String phoneNumber = contact.getNumber();
+                        if (phoneNumber != null) {
+                            Intent callIntent = new Intent(Intent.ACTION_CALL,
+                                Uri.parse("tel:" + phoneNumber));
+                            callPendingIntent = PendingIntent.getActivity(context, 0, callIntent, 0);
+                        }
+                    }
+                }
+
+                if (supportsBigNotifications()) {
+                    // mark as read pending intent
+                    PendingIntent readPendingIntent = PendingIntent.getBroadcast(context, 0,
+                        sNotificationOnMarkReadIntent, 0);
+
+                    builder.addAction(R.drawable.ic_menu_check, context.getString(R.string.mark_read), readPendingIntent);
+                    builder.addAction(R.drawable.ic_menu_call, context.getString(R.string.call), callPendingIntent);
                 }
             }
 
