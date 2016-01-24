@@ -201,7 +201,7 @@
   <string name="attachment_download">Anhang herunterladen</string>
   <string name="attachment_upload">Anhang hochladen</string>
   <string name="seen_moment_ago_label">vor Kurzem</string>
-  <string name="seen_online_label">online</string>
+  <string name="seen_online_label">aktiv</string>
   <string name="seen_typing_label">schreibt…</string>
   <string name="invitation_sent_label">Unbestätigte Einladung</string>
   <string name="pref_custom_background">Eigener Hintergrund</string>
@@ -441,5 +441,8 @@
     <string name="title_public_key_unknown_warning">Unvertrauter persönlicher Schlüssel</string>
     <string name="pref_enable_notification_led">Benachrichtigungs LED</string>
     <string name="pref_notification_led_color">Farbe Benachrichtigungs LED</string>
-    <string name="seen_away_label">Abwesend</string>
+    <string name="seen_away_label">online</string>
+    <string name="mark_read">Gelesen</string>
+    <string name="button_load_next_page">Weitere Nachrichten laden</string>
+
     </resources>
