@@ -189,6 +189,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     private MessageListAdapter mListAdapter;
     /** Header view for the list view: "previous messages" button. */
     private View mHeaderView;
+    private View mNextPageButton;
     private TextView mStatusText;
     private ViewGroup mInvitationBar;
     private MenuItem mDeleteThreadMenu;
@@ -281,9 +282,13 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         // add header view (this must be done before setting the adapter)
         mHeaderView = LayoutInflater.from(getActivity())
             .inflate(R.layout.message_list_header, list, false);
-        mHeaderView.findViewById(R.id.load_next_page).setOnClickListener(new View.OnClickListener() {
+        mNextPageButton = mHeaderView.findViewById(R.id.load_next_page);
+        mNextPageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // disable button in the meantime
+                enableHeaderView(false);
+                // start query for the next page
                 startMessagesQuery(mQueryHandler.getLastId());
             }
         });
@@ -2641,6 +2646,10 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         mHeaderView.setVisibility(View.GONE);
     }
 
+    private void enableHeaderView(boolean enabled) {
+        mNextPageButton.setEnabled(enabled);
+    }
+
     private void updateUI() {
         Contact contact = (mConversation != null) ? mConversation
                 .getContact() : null;
@@ -3076,6 +3085,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                         parent.hideHeaderView();
                     }
 
+                    parent.enableHeaderView(true);
                     break;
 
                 case CONVERSATION_QUERY_TOKEN:
