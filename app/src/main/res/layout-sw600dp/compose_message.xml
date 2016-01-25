@@ -24,11 +24,9 @@
     android:layout_height="fill_parent">
 
     <ImageView android:id="@+id/background"
-        android:scaleType="fitXY"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        tools:ignore="ContentDescription"
-        android:src="@drawable/app_background"/>
+        tools:ignore="ContentDescription"/>
 
     <LinearLayout android:id="@+id/container"
         android:layout_width="fill_parent"
@@ -77,5 +75,7 @@
         <include layout="@layout/composer_bar"/>
 
     </LinearLayout>
+
+    <include layout="@layout/circular_attach_view" />
 
 </org.kontalk.ui.view.KeyboardAwareRelativeLayout>
