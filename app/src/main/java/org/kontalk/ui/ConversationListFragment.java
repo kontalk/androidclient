@@ -32,6 +32,7 @@ import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.akalipetis.fragment.ActionModeListFragment;
 import com.akalipetis.fragment.MultiChoiceModeListener;
 
+import android.app.SearchManager;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -42,7 +43,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDiskIOException;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.view.ActionMode;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
@@ -215,7 +218,11 @@ public class ConversationListFragment extends ActionModeListFragment
 
         // search
         mSearchMenu = menu.findItem(R.id.menu_search);
-        //MenuItemCompat.setShowAsAction(mSearchMenu, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(mSearchMenu);
+        SearchManager searchManager = (SearchManager) getContext().getSystemService(Context.SEARCH_SERVICE);
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
+        // LayoutParams.MATCH_PARENT does not work, use a big value instead
+        searchView.setMaxWidth(1000000);
 
         mDeleteAllMenu = menu.findItem(R.id.menu_delete_all);
 
@@ -256,10 +263,6 @@ public class ConversationListFragment extends ActionModeListFragment
                 else {
                     switchOfflineMode();
                 }
-                return true;
-
-            case R.id.menu_search:
-                getActivity().onSearchRequested();
                 return true;
 
             case R.id.menu_delete_all:
@@ -405,11 +408,14 @@ public class ConversationListFragment extends ActionModeListFragment
 
     public void startQuery() {
         Cursor c = null;
-        try {
-            c = Conversation.startQuery(getActivity());
-        }
-        catch (SQLiteException e) {
-            Log.e(TAG, "query error", e);
+        Context ctx = getActivity();
+        if (ctx != null) {
+            try {
+                c = Conversation.startQuery(ctx);
+            }
+            catch (SQLiteException e) {
+                Log.e(TAG, "query error", e);
+            }
         }
         mQueryHandler.onQueryComplete(THREAD_LIST_QUERY_TOKEN, null, c);
     }

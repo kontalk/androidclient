@@ -28,6 +28,7 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 
 import org.jxmpp.util.XmppStringUtils;
+import org.kontalk.util.Preferences;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.content.ContentResolver;
@@ -500,8 +501,15 @@ public class Contact {
     }
 
     public static Cursor queryContacts(Context context) {
-        return context.getContentResolver().query(Users.CONTENT_URI, ALL_CONTACTS_PROJECTION,
-            Users.REGISTERED + " <> 0", null,
+        String selection = Users.REGISTERED + " <> 0";
+        if (!Preferences.getShowBlockedUsers(context)) {
+            selection += " AND " + Users.BLOCKED + " = 0";
+        }
+
+        return context.getContentResolver().query(Users.CONTENT_URI.buildUpon()
+                .appendQueryParameter(Users.EXTRA_INDEX, "true").build(),
+            ALL_CONTACTS_PROJECTION,
+            selection, null,
             Users.DISPLAY_NAME + " COLLATE NOCASE," + Users.NUMBER + " COLLATE NOCASE");
     }
 

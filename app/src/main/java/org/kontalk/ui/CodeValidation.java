@@ -46,6 +46,8 @@ import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.util.Preferences;
 
 import java.net.SocketException;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /** Manual validation code input. */
@@ -68,9 +70,11 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
 
     private byte[] mImportedPrivateKey;
     private byte[] mImportedPublicKey;
+    private Map<String, String> mTrustedKeys;
 
     private static final class RetainData {
         NumberValidator validator;
+        Map<String, String> trustedKeys;
     }
 
     @Override
@@ -94,6 +98,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 startProgress();
                 mValidator.setListener(this);
             }
+            mTrustedKeys = data.trustedKeys;
         }
 
         int requestCode = getIntent().getIntExtra("requestCode", -1);
@@ -136,6 +141,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         mPassphrase = i.getStringExtra("passphrase");
         mImportedPrivateKey = i.getByteArrayExtra("importedPrivateKey");
         mImportedPublicKey = i.getByteArrayExtra("importedPublicKey");
+        mTrustedKeys = (HashMap) i.getSerializableExtra("trustedKeys");
 
         String server = i.getStringExtra("server");
         if (server != null)
@@ -191,6 +197,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     public Object onRetainCustomNonConfigurationInstance() {
         RetainData data = new RetainData();
         data.validator = mValidator;
+        data.trustedKeys = mTrustedKeys;
         return data;
     }
 
@@ -338,6 +345,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 i.putExtra(NumberValidation.PARAM_SERVER_URI, v.getServer().toString());
                 i.putExtra(NumberValidation.PARAM_PUBLICKEY, publicKeyData);
                 i.putExtra(NumberValidation.PARAM_PRIVATEKEY, privateKeyData);
+                i.putExtra(NumberValidation.PARAM_TRUSTED_KEYS, (HashMap) mTrustedKeys);
                 setResult(RESULT_OK, i);
                 finish();
             }

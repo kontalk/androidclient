@@ -18,19 +18,18 @@
 
 package org.kontalk.crypto;
 
-import android.os.Environment;
-
 import org.kontalk.crypto.PGP.PGPKeyPairRing;
+import org.kontalk.util.ByteArrayInOutStream;
 import org.kontalk.util.MessageUtils;
 import org.spongycastle.bcpg.ArmoredInputStream;
 import org.spongycastle.openpgp.PGPException;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -39,26 +38,16 @@ import java.util.zip.ZipInputStream;
  * Importer for a personal key pack.
  * @author Daniele Ricci
  */
-public class PersonalKeyImporter {
+public class PersonalKeyImporter implements PersonalKeyPack {
 
     private static final long MAX_KEY_SIZE = 102400; // 100 KB
-
-    public static final String PUBLIC_KEY_FILENAME = "kontalk-public.asc";
-    public static final String PRIVATE_KEY_FILENAME = "kontalk-private.asc";
-    public static final String BRIDGE_CERT_FILENAME = "kontalk-login.crt";
-    public static final String BRIDGE_KEY_FILENAME = "kontalk-login.key";
-    public static final String BRIDGE_CERTPACK_FILENAME = "kontalk-login.p12";
-
-    public static final String KEYPACK_FILENAME = "kontalk-keys.zip";
-
-    public static final File DEFAULT_KEYPACK = new File(Environment
-            .getExternalStorageDirectory(), KEYPACK_FILENAME);
 
     private ZipInputStream mKeyPack;
     private String mPassphrase;
 
-    private ByteArrayOutputStream mPublicKey;
-    private ByteArrayOutputStream mPrivateKey;
+    private ByteArrayInOutStream mPublicKey;
+    private ByteArrayInOutStream mPrivateKey;
+    private ByteArrayInOutStream mTrustedKeys;
 
     public PersonalKeyImporter(ZipInputStream keypack, String passphrase) {
         mKeyPack = keypack;
@@ -66,7 +55,7 @@ public class PersonalKeyImporter {
     }
 
     public void load() throws IOException {
-        ByteArrayOutputStream publicKey = null, privateKey = null;
+        ByteArrayInOutStream publicKey = null, privateKey = null, trustedKeys = null;
         IOException zipException = null;
 
         ZipEntry entry;
@@ -85,6 +74,12 @@ public class PersonalKeyImporter {
                     privateKey = MessageUtils.readFully(mKeyPack, MAX_KEY_SIZE);
                 }
 
+                // trusted keys
+                else if (TRUSTED_KEYS_FILENAME.equals(entry.getName())) {
+                    // I don't really know if this is good...
+                    trustedKeys = MessageUtils.readFully(mKeyPack, MAX_KEY_SIZE);
+                }
+
             }
         }
         catch (IOException e) {
@@ -101,6 +96,7 @@ public class PersonalKeyImporter {
 
         mPrivateKey = privateKey;
         mPublicKey = publicKey;
+        mTrustedKeys = trustedKeys;
     }
 
     /** Releases all resources of imported data. */
@@ -114,8 +110,8 @@ public class PersonalKeyImporter {
             CertificateException, IOException {
         if (mPrivateKey != null && mPublicKey != null)
             return PersonalKey.load(
-                new ArmoredInputStream(new ByteArrayInputStream(mPrivateKey.toByteArray())),
-                new ArmoredInputStream(new ByteArrayInputStream(mPublicKey.toByteArray())),
+                new ArmoredInputStream(mPrivateKey.getInputStream()),
+                new ArmoredInputStream(mPublicKey.getInputStream()),
                 mPassphrase, null);
         return null;
     }
@@ -124,8 +120,8 @@ public class PersonalKeyImporter {
             CertificateException, IOException {
         if (mPrivateKey != null && mPublicKey != null)
             return PersonalKey.test(
-                new ArmoredInputStream(new ByteArrayInputStream(mPrivateKey.toByteArray())),
-                new ArmoredInputStream(new ByteArrayInputStream(mPublicKey.toByteArray())),
+                new ArmoredInputStream(mPrivateKey.getInputStream()),
+                new ArmoredInputStream(mPublicKey.getInputStream()),
                 mPassphrase, null);
         return null;
     }
@@ -136,6 +132,17 @@ public class PersonalKeyImporter {
 
     public byte[] getPublicKeyData() {
         return mPublicKey != null ? mPublicKey.toByteArray() : null;
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public Map<String, String> getTrustedKeys() throws IOException {
+        if (mTrustedKeys != null) {
+            Properties prop = new Properties();
+            prop.load(mTrustedKeys.getInputStream());
+            return new HashMap<>((Map) prop);
+        }
+
+        return null;
     }
 
 }

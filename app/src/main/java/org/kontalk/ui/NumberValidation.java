@@ -18,12 +18,38 @@
 
 package org.kontalk.ui;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.ref.WeakReference;
+import java.net.SocketException;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.zip.ZipInputStream;
+
+import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.afollestad.materialdialogs.folderselector.FileChooserDialog;
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.NumberParseException.ErrorType;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
+import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
+
+import org.jivesoftware.smack.util.StringUtils;
+import org.jxmpp.util.XmppStringUtils;
+import org.spongycastle.openpgp.PGPException;
+
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
-import com.afollestad.materialdialogs.AlertDialogWrapper;
-
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -34,6 +60,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
+import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
@@ -55,17 +82,6 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import com.afollestad.materialdialogs.MaterialDialog;
-import com.google.i18n.phonenumbers.NumberParseException;
-import com.google.i18n.phonenumbers.NumberParseException.ErrorType;
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
-import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
-
-import org.jivesoftware.smack.util.StringUtils;
-import org.jxmpp.util.XmppStringUtils;
-import org.spongycastle.openpgp.PGPException;
-
 import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.R;
@@ -77,7 +93,9 @@ import org.kontalk.crypto.PGPUidMismatchException;
 import org.kontalk.crypto.PGPUserID;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyImporter;
+import org.kontalk.crypto.PersonalKeyPack;
 import org.kontalk.crypto.X509Bridge;
+import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
 import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
@@ -88,32 +106,23 @@ import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.net.SocketException;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
-import java.util.zip.ZipInputStream;
-
 
 /** Number validation activity. */
 public class NumberValidation extends AccountAuthenticatorActionBarActivity
-        implements NumberValidatorListener {
+        implements NumberValidatorListener, FileChooserDialog.FileCallback {
     static final String TAG = NumberValidation.class.getSimpleName();
 
     public static final int REQUEST_MANUAL_VALIDATION = 771;
     public static final int REQUEST_VALIDATION_CODE = 772;
 
-    public static final int RESULT_FALLBACK = RESULT_FIRST_USER+1;
+    public static final int RESULT_FALLBACK = RESULT_FIRST_USER + 1;
 
     public static final String PARAM_FROM_INTERNAL = "org.kontalk.internal";
 
     public static final String PARAM_PUBLICKEY = "org.kontalk.publickey";
     public static final String PARAM_PRIVATEKEY = "org.kontalk.privatekey";
     public static final String PARAM_SERVER_URI = "org.kontalk.server";
+    public static final String PARAM_TRUSTED_KEYS = "org.kontalk.trustedkeys";
 
     private AccountManager mAccountManager;
     private EditText mNameText;
@@ -132,6 +141,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private String mPassphrase;
     private byte[] mImportedPublicKey;
     private byte[] mImportedPrivateKey;
+    private Map<String, String> mTrustedKeys;
     private boolean mForce;
 
     private LocalBroadcastManager lbm;
@@ -441,13 +451,15 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_MANUAL_VALIDATION) {
             if (resultCode == RESULT_OK) {
                 finishLogin(data.getStringExtra(PARAM_SERVER_URI),
                     data.getByteArrayExtra(PARAM_PRIVATEKEY),
                     data.getByteArrayExtra(PARAM_PUBLICKEY),
-                    true);
+                    true,
+                    (HashMap) data.getSerializableExtra(PARAM_TRUSTED_KEYS));
             }
             else if (resultCode == RESULT_FALLBACK) {
                 mClearState = true;
@@ -638,42 +650,13 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             // import keys -- number verification with server is still needed
             // though because of key rollback protection
             // TODO allow for manual validation too
-            // TODO we should verify the number against the user ID
 
-            new AlertDialogWrapper.Builder(this)
-                .setMessage(getString(R.string.msg_import_keypair, PersonalKeyImporter.KEYPACK_FILENAME))
-                .setNegativeButton(android.R.string.cancel, null)
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // do not wait for the generated key
-                        stopKeyReceiver();
+            // do not wait for the generated key
+            stopKeyReceiver();
 
-                        ZipInputStream zip = null;
-                        try {
-                            zip = new ZipInputStream(new FileInputStream
-                                (PersonalKeyImporter.DEFAULT_KEYPACK));
-
-                            // ask passphrase to user and assign to mPassphrase
-                            importAskPassphrase(zip);
-                        }
-                        catch (Exception e) {
-                            Log.e(TAG, "error importing keys", e);
-                            mImportedPublicKey = mImportedPrivateKey = null;
-
-                            try {
-                                if (zip != null)
-                                    zip.close();
-                            }
-                            catch (IOException ignored) {
-                                // ignored.
-                            }
-
-                            Toast.makeText(NumberValidation.this,
-                                R.string.err_import_keypair_failed,
-                                Toast.LENGTH_LONG).show();
-                        }
-                    }
-                })
+            new FileChooserDialog.Builder(NumberValidation.this)
+                .initialPath(PersonalKeyPack.DEFAULT_KEYPACK.getParent())
+                .mimeType(PersonalKeyPack.KEYPACK_MIME)
                 .show();
         }
     }
@@ -702,6 +685,46 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             .negativeText(android.R.string.cancel)
             .positiveText(android.R.string.ok)
             .show();
+    }
+
+    private void startImport(InputStream in) {
+        ZipInputStream zip = null;
+        try {
+            zip = new ZipInputStream(in);
+
+            // ask passphrase to user and assign to mPassphrase
+            importAskPassphrase(zip);
+        }
+        catch (Exception e) {
+            Log.e(TAG, "error importing keys", e);
+            mImportedPublicKey = mImportedPrivateKey = null;
+            mTrustedKeys = null;
+
+            try {
+                if (zip != null)
+                    zip.close();
+            }
+            catch (IOException ignored) {
+                // ignored.
+            }
+
+            Toast.makeText(NumberValidation.this,
+                R.string.err_import_keypair_failed,
+                Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void onFileSelection(@NonNull File file) {
+        try {
+            startImport(new FileInputStream(file));
+        }
+        catch (FileNotFoundException e) {
+            Log.e(PreferencesFragment.TAG, "error importing keys", e);
+            Toast.makeText(this,
+                R.string.err_import_keypair_read,
+                Toast.LENGTH_LONG).show();
+        }
     }
 
     private void startImport(ZipInputStream zip, String passphrase) {
@@ -738,6 +761,14 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mName = uid.getName();
             mImportedPublicKey = importer.getPublicKeyData();
             mImportedPrivateKey = importer.getPrivateKeyData();
+
+            try {
+                mTrustedKeys = importer.getTrustedKeys();
+            }
+            catch (Exception e) {
+                // this is not a critical error so we can just ignore it
+                Log.w(TAG, "unable to load trusted keys from key pack", e);
+            }
         }
 
         catch (PGPUidMismatchException e) {
@@ -753,6 +784,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         catch (Exception e) {
             Log.e(TAG, "error importing keys", e);
             mImportedPublicKey = mImportedPrivateKey = null;
+            mTrustedKeys = null;
             mName = null;
 
             Toast.makeText(this,
@@ -903,7 +935,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             @Override
             public void run() {
                 abort(true);
-                finishLogin(v.getServer().toString(), privateKey, publicKey, false);
+                finishLogin(v.getServer().toString(), privateKey, publicKey, false, mTrustedKeys);
             }
         });
     }
@@ -930,7 +962,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         setProgressMessage(getString(R.string.msg_initializing));
     }
 
-    protected void finishLogin(final String serverUri, final byte[] privateKeyData, final byte[] publicKeyData, boolean updateKey) {
+    protected void finishLogin(final String serverUri, final byte[] privateKeyData, final byte[] publicKeyData, boolean updateKey, Map<String, String> trustedKeys) {
         Log.v(TAG, "finishing login");
         statusInitializing();
 
@@ -945,15 +977,14 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             }
         }
 
-        completeLogin(serverUri, privateKeyData, publicKeyData);
+        completeLogin(serverUri, privateKeyData, publicKeyData, trustedKeys);
     }
 
-    private void completeLogin(String serverUri, byte[] privateKeyData, byte[] publicKeyData) {
+    private void completeLogin(String serverUri, byte[] privateKeyData, byte[] publicKeyData, Map<String, String> trustedKeys) {
         // generate the bridge certificate
         byte[] bridgeCertData;
         try {
-            // TODO subjectAltName?
-            bridgeCertData = X509Bridge.createCertificate(privateKeyData, publicKeyData, mPassphrase, null).getEncoded();
+            bridgeCertData = X509Bridge.createCertificate(privateKeyData, publicKeyData, mPassphrase).getEncoded();
         }
         catch (Exception e) {
             // abort
@@ -966,7 +997,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         // procedure will continue in removeAccount callback
         mAccountManager.removeAccount(account,
             new AccountRemovalCallback(this, account, mPassphrase,
-                privateKeyData, publicKeyData, bridgeCertData, mName, serverUri),
+                privateKeyData, publicKeyData, bridgeCertData, mName, serverUri, trustedKeys),
             mHandler);
     }
 
@@ -1069,7 +1100,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             Preferences.saveRegistrationProgress(this,
                 mName, mPhoneNumber, mKey, mPassphrase,
                 mImportedPublicKey, mImportedPrivateKey,
-                serverUri, sender, mForce);
+                serverUri, sender, mForce, mTrustedKeys);
         }
 
         Intent i = new Intent(NumberValidation.this, CodeValidation.class);
@@ -1080,6 +1111,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         i.putExtra("passphrase", mPassphrase);
         i.putExtra("importedPublicKey", mImportedPublicKey);
         i.putExtra("importedPrivateKey", mImportedPrivateKey);
+        i.putExtra("trustedKeys", (HashMap) mTrustedKeys);
         i.putExtra("server", serverUri);
         i.putExtra("sender", sender);
         i.putExtra(KeyPairGeneratorService.EXTRA_KEY, mKey);
@@ -1096,10 +1128,11 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         private final byte[] bridgeCertData;
         private final String name;
         private final String serverUri;
+        private final Map<String, String> trustedKeys;
 
         public AccountRemovalCallback(NumberValidation activity, Account account,
                 String passphrase, byte[] privateKeyData, byte[] publicKeyData,
-                byte[] bridgeCertData, String name, String serverUri) {
+                byte[] bridgeCertData, String name, String serverUri, Map<String, String> trustedKeys) {
             this.a = new WeakReference<NumberValidation>(activity);
             this.account = account;
             this.passphrase = passphrase;
@@ -1108,12 +1141,18 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             this.bridgeCertData = bridgeCertData;
             this.name = name;
             this.serverUri = serverUri;
+            this.trustedKeys = trustedKeys;
         }
 
         @Override
         public void run(AccountManagerFuture<Boolean> result) {
             NumberValidation ctx = a.get();
             if (ctx != null) {
+                // store trusted keys
+                if (trustedKeys != null) {
+                    UsersProvider.setTrustedKeys(ctx, trustedKeys);
+                }
+
                 AccountManager am = (AccountManager) ctx
                     .getSystemService(Context.ACCOUNT_SERVICE);
 

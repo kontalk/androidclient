@@ -176,7 +176,7 @@
   <string name="msg_sync_progress">S\'està actualitzant la llista de contactes…</string>
   <string name="err_sync_failed">No ha estat possible actualitzar la llista de contactes. Per favor, torneu a intentar-ho més tard.</string>
   <string name="err_sync_nonetwork">La xarxa no està disponible. Per favor, intenteu-ho més tard.</string>
-  <string name="text_invite_message">Ei! Proveu Kontalk (és a Google Play Store), una aplicació de missatgeria lliure i gratuïta! https://play.google.com/store/apps/details?id=org.kontalk</string>
+  <string name="text_invite_message">Ei! Proveu Kontalk, una aplicació de missatgeria lliure i gratuïta! http://kontalk.org/</string>
   <string name="text_contacts_empty">Els nou usuaris s\'afegiran automàticament a aquesta llista.\n\nUseu <b>Menu</b> &gt; <b>Convida usuaris</b> per a enviar un missatge d\'invitació a algú.</string>
   <string name="text_conversations_empty">Per a començar a escriure missatges useu el botó <b>missatge nou</b> de sota.</string>
   <string name="notify_ticker_external_storage">L\'emmagatzematge extern no està disponible</string>
@@ -260,7 +260,7 @@
   <string name="msg_status_encrypted">Xifrat</string>
   <string name="pref_balloons">Tema dels globus del xat</string>
   <string name="pref_title_balloons">Tria un tema per als globus del xat</string>
-  <string name="attachment_picture">Imatge</string>
+  <string name="attachment_picture">Galeria</string>
   <string name="attachment_contact">Contacte</string>
   <string name="attachment_audio">Àudio</string>
   <string name="chooser_send_picture">Envia imatge</string>
@@ -411,4 +411,18 @@
 <string name="title_confirm_cancel_registration">Voleu cancel·lar el registre?</string>
     <string name="confirm_cancel_registration">Si utilitzeu el botó de tornar enrere haureu de fer el registre partint de zero. Si necessiteu alternar amb una altra aplicació, podeu utilitzar el botó d\'inici.</string>
     <string name="app_name_offline">Kontalk (fora de línia)</string>
+    <string name="err_import_keypair_read">No és possible llegir la clau personal de l\'emmagatzematge extern.</string>
+    <string name="attachment_camera">Càmera fotogràfica</string>
+    <string name="attachment_video">Vídeo</string>
+    <string name="attachment_file">Arxiu</string>
+    <string name="attachment_vcard">Contacte</string>
+    <string name="attachment_location">Ubicació</string>
+
+    <string name="msg_not_implemented">Encara no implementat.</string>
+
+    <string name="chooser_error_no_camera_app">No es disposa d\'aplicació de càmera fotogràfica.</string>
+
+    <string name="err_keypair_export_write">No es pot escriure la clau personal a l\'emmagatzematge extern.</string>
+    <string name="err_keypair_export_other">No es pot exportar la clau personal.</string>
+
     </resources>

@@ -217,7 +217,7 @@ public class XMPPConnectionHelper extends Thread {
 
                     try {
                         X509Certificate bridgeCert = X509Bridge.createCertificate(keyring.publicKey,
-                            keyring.secretKey.getSecretKey(), passphrase, null);
+                            keyring.secretKey.getSecretKey(), passphrase);
 
                         key = PersonalKey.load(keyring.secretKey, keyring.publicKey,
                             passphrase, bridgeCert);

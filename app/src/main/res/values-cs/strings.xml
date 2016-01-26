@@ -176,7 +176,7 @@
   <string name="msg_sync_progress">Aktualizuji seznam kontaktů…</string>
   <string name="err_sync_failed">Nepodařilo se aktualizovat seznam kontaktů. Zkuste to prosím později.</string>
   <string name="err_sync_nonetwork">Síť není dostupná. Zkuste to prosím později.</string>
-  <string name="text_invite_message">Ahoj! Vyzkoušej Kontalk na Google Play, aplikaci pro posílání zpráv zdarma! https://play.google.com/store/apps/details?id=org.kontalk</string>
+  <string name="text_invite_message">Ahoj! Vyzkoušej Kontalk, aplikaci pro posílání zpráv zdarma! http://kontalk.org/</string>
   <string name="text_contacts_empty">Noví uživatelé budou automaticky přidáni do tohoto seznamu.\n\nPoužijte <b>Menu</b> &gt; <b>Pozvat uživatele</b> a pošlete někomu pozvánku.</string>
   <string name="text_conversations_empty">Pokud chcete začít psát zprávu, použijte tlačítko <b>nová zpráva</b> níže.</string>
   <string name="notify_ticker_external_storage">Externí úložiště není dostupné</string>
@@ -411,4 +411,5 @@
 	<item quantity="other">%d označených</item>
 </plurals>
 
-</resources>
+<string name="app_name_offline">Kontalk (offline)</string>
+    </resources>

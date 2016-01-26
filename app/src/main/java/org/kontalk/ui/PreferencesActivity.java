@@ -18,14 +18,27 @@
 
 package org.kontalk.ui;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+
+import com.afollestad.materialdialogs.color.ColorChooserDialog;
+import com.afollestad.materialdialogs.folderselector.FolderChooserDialog;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.ColorInt;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.crypto.PersonalKeyPack;
+import org.kontalk.util.Preferences;
 
 
 /**
@@ -33,7 +46,8 @@ import org.kontalk.authenticator.Authenticator;
  * TODO convert to fragments layout
  * @author Daniele Ricci
  */
-public final class PreferencesActivity extends ToolbarActivity implements PreferencesFragment.Callback {
+public final class PreferencesActivity extends ToolbarActivity
+        implements PreferencesFragment.Callback, FolderChooserDialog.FolderCallback, ColorChooserDialog.ColorCallback {
     private static final String TAG_NESTED = "nested";
 
     @Override
@@ -95,6 +109,29 @@ public final class PreferencesActivity extends ToolbarActivity implements Prefer
         getSupportFragmentManager().beginTransaction()
             .replace(R.id.container, fragment, TAG_NESTED)
             .addToBackStack(TAG_NESTED).commit();
+    }
+
+    @Override
+    public void onFolderSelection(@NonNull File folder) {
+        try {
+            PreferencesFragment f = (PreferencesFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.container);
+
+            f.exportPersonalKey(this,
+                new FileOutputStream(new File(folder, PersonalKeyPack.KEYPACK_FILENAME)));
+        }
+        catch (FileNotFoundException e) {
+            Log.e(PreferencesFragment.TAG, "error exporting keys", e);
+            Toast.makeText(this,
+                R.string.err_keypair_export_write,
+                Toast.LENGTH_LONG).show();
+        }
+    }
+
+    // used only for notification LED color for now
+    @Override
+    public void onColorSelection(@NonNull ColorChooserDialog dialog, @ColorInt int selectedColor) {
+        Preferences.setNotificationLEDColor(this, selectedColor);
     }
 
     public static void start(Activity context) {

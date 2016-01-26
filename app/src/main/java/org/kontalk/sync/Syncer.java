@@ -562,7 +562,7 @@ public class Syncer {
 
                     final RawPhoneNumberEntry data = lookupNumbers
                         .get(XmppStringUtils.parseLocalpart(entry.from));
-                    if (data != null) {
+                    if (data != null && data.lookupKey != null) {
                         // add contact
                         addContact(account,
                                 getDisplayName(provider, data.lookupKey, data.number),
@@ -648,8 +648,7 @@ public class Syncer {
                             if (data != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
                                 // add contact
                                 addProfile(account,
-                                    // FIXME shouldn't we be using the profile display name?
-                                    getDisplayName(provider, data.lookupKey, data.number),
+                                    Authenticator.getDefaultDisplayName(mContext),
                                     data.number, data.jid, operations, op++);
                             }
                         }
@@ -667,10 +666,14 @@ public class Syncer {
                     syncResult.stats.numEntries += op;
                 }
                 catch (Exception e) {
-                    Log.e(TAG, "contact write error", e);
-                    syncResult.stats.numSkippedEntries = op;
-                    syncResult.databaseError = true;
-                    return;
+                    Log.w(TAG, "contact write error", e);
+                    syncResult.stats.numSkippedEntries += op;
+                    /*
+                     * We do not consider system contacts failure a fatal error.
+                     * This is actually a workaround for systems with disabled permissions or
+                     * exotic firmwares. It can also protect against security 3rd party apps or
+                     * non-Android platforms, such as Jolla/Alien Dalvik.
+                     */
                 }
 
                 commit(usersProvider, syncResult);

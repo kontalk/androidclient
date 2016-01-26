@@ -91,7 +91,7 @@
   <string name="size_unknown">(unbekannt)</string>
   <string name="title_file_info">Dateiinformationen</string>
   <string name="pref_restart_msgcenter">Nachrichtenzentrale neu starten</string>
-  <string name="pref_title_restart_msgcenter">Antippen wenn die Nachrichtenzentrale nicht korrekt funktioniert</string>
+  <string name="pref_title_restart_msgcenter">Antippen wenn Kontalk nicht richtig arbeitet</string>
   <string name="pref_idle_time">Verbindung trennen wenn ungenutzt</string>
   <string name="pref_title_idle_time">Wartezeit bis die Verbindung unterbrochen werden soll</string>
   <string name="pref_wakeup_time">Serververbindung wiederherstellen</string>
@@ -176,7 +176,7 @@
   <string name="msg_sync_progress">Aktualisiere Kontaktliste…</string>
   <string name="err_sync_failed">Das Aktualisieren der Kontaktliste ist fehlgeschlagen. Bitte versuchen Sie es später noch einmal.</string>
   <string name="err_sync_nonetwork">Das Netzwerk ist nicht erreichbar. Bitte versuchen Sie es später noch einmal.</string>
-  <string name="text_invite_message">Hey! Schau dir Kontalk im Google Play Store an, eine kostenlose Instant Messenger App! https://play.google.com/store/apps/details?id=org.kontalk</string>
+  <string name="text_invite_message">Hi! Schau dir mal Kontalk, eine freie Instant Messenger App, an! http://kontalk.org/</string>
   <string name="text_contacts_empty">Neue Nutzer werden automatisch zu dieser Liste hinzugefügt.\n\nNutzen Sie <b>Menü</b> &gt; <b>Nutzer einladen</b> um jemandem eine Einladung zu schicken.</string>
   <string name="text_conversations_empty">Um ein Gespräch zu beginnen, unten den <b>Neue Nachricht</b> Button antippen.</string>
   <string name="notify_ticker_external_storage">Externer Speicher nicht verfügbar</string>
@@ -201,7 +201,7 @@
   <string name="attachment_download">Anhang herunterladen</string>
   <string name="attachment_upload">Anhang hochladen</string>
   <string name="seen_moment_ago_label">vor Kurzem</string>
-  <string name="seen_online_label">online</string>
+  <string name="seen_online_label">aktiv</string>
   <string name="seen_typing_label">schreibt…</string>
   <string name="invitation_sent_label">Unbestätigte Einladung</string>
   <string name="pref_custom_background">Eigener Hintergrund</string>
@@ -260,7 +260,7 @@
   <string name="msg_status_encrypted">Verschlüsselt</string>
   <string name="pref_balloons">Sprechblasendesign</string>
   <string name="pref_title_balloons">Ein Sprechblasendesign auswählen</string>
-  <string name="attachment_picture">Bild</string>
+  <string name="attachment_picture">Galerie</string>
   <string name="attachment_contact">Kontakt</string>
   <string name="attachment_audio">Audio</string>
   <string name="chooser_send_picture">Bild senden</string>
@@ -411,4 +411,38 @@
     <string name="title_confirm_cancel_registration">Registrierung abbrechen?</string>
     <string name="confirm_cancel_registration">Wenn Sie zurück gehen, werden sie die Registrierung von Anfang an beginnen müssen. Wenn Sie zu einer anderen Anwendung wechseln möchten, nutzen Sie einfach die \"Home\"-Taste.</string>
     <string name="app_name_offline">Kontalk (offline)</string>
+    <string name="err_import_keypair_read">Persönlicher Schlüssel konnte nicht vom externen Speicher gelesen werden.</string>
+    <string name="attachment_camera">Kamera</string>
+    <string name="attachment_video">Video</string>
+    <string name="attachment_file">Datei</string>
+    <string name="attachment_vcard">Kontakt</string>
+    <string name="attachment_location">Position</string>
+
+    <string name="msg_not_implemented">Noch nicht implementiert.</string>
+
+    <string name="chooser_error_no_camera_app">Keine Kamera-App verfügbar.</string>
+
+    <string name="err_keypair_export_write">Persönlicher Schlüssel konnte nicht auf den externen Speicher geschrieben werden.</string>
+    <string name="err_keypair_export_other">Persönlicher Schlüssel konnte nicht exportiert werden.</string>
+
+    <string name="pref_title_custom_background">Wählen Sie einen Hintergrund mit untenstehender Option</string>
+    <string name="pref_title_sync_sim_contacts">SIM Kontakte mit einbeziehen um nach regististrierten Nutzern zu suchen</string>
+
+    <string name="pref_title_sync_invisible_contacts">Im Adressbuch nicht angezeigte Kontakte einbeziehen. Auswählen wenn DAVDroid verwendet wird,</string>
+
+    <string name="pref_show_blocked_users">Blockierte Nutzer anzeigen</string>
+
+    <string name="warning_public_key_changed">Der Schlüssel dieses Nutzers hat sich unerwartet geändert!</string>
+    <string name="title_public_key_changed_warning">Persönlicher Schlüssel geändert</string>
+    <string name="msg_public_key_changed_warning">Bitte überprüfen Sie mit dem Nutzer ob er/sie Kontalk neu installiert oder den Schlüssel absichtlich neu generiert hat. Anderenfalls könnte es sein dass die Kommunikation kompromittiert wurde!</string>
+    <string name="warning_public_key_unknown">Dem persönlichen Schlüssel dieses Nutzers wird nicht vertraut!</string>
+    <string name="msg_public_key_unknown_warning">Bitte überprüfen Sie mit dem Nutzer dass sein/ihr Fingerabdruck mit dem übereinstimmt welcher im <b>Identität</b> Dialog angezeigt wird. Anderenfalls könnte die Kommunikation kompromittiert wurde!</string>
+
+    <string name="title_public_key_unknown_warning">Unvertrauter persönlicher Schlüssel</string>
+    <string name="pref_enable_notification_led">Benachrichtigungs LED</string>
+    <string name="pref_notification_led_color">Farbe Benachrichtigungs LED</string>
+    <string name="seen_away_label">online</string>
+    <string name="mark_read">Gelesen</string>
+    <string name="button_load_next_page">Weitere Nachrichten laden</string>
+
     </resources>

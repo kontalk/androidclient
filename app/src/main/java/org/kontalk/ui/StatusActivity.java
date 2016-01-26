@@ -19,6 +19,7 @@
 package org.kontalk.ui;
 
 import org.kontalk.R;
+import org.kontalk.service.msgcenter.MessageCenterService;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -44,6 +45,20 @@ public class StatusActivity extends ToolbarActivity {
     public static void start(Activity context) {
         Intent intent = new Intent(context, StatusActivity.class);
         context.startActivityIfNeeded(intent, -1);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // hold message center
+        MessageCenterService.hold(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // release message center
+        MessageCenterService.release(this);
     }
 
     @Override
