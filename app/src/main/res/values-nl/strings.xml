@@ -91,7 +91,7 @@
   <string name="size_unknown">(onbekend)</string>
   <string name="title_file_info">Bestandsinformatie</string>
   <string name="pref_restart_msgcenter">Berichtencentrum herstarten</string>
-  <string name="pref_title_restart_msgcenter">Gebruik dit als het berichtencentrum niet goed werkt</string>
+  <string name="pref_title_restart_msgcenter">Gebruik dit als Kontalk niet goed werkt</string>
   <string name="pref_idle_time">Verbreek de verbinding wanneer je inactief bent</string>
   <string name="pref_title_idle_time">Hoe lang te wachten met het verbreken van de verbinding bij inactiviteit</string>
   <string name="pref_wakeup_time">Opnieuw met server verbinden</string>
@@ -176,7 +176,7 @@
   <string name="msg_sync_progress">Contacten vernieuwen…</string>
   <string name="err_sync_failed">Kan contacten niet vernieuwen. Probeer het later opnieuw.</string>
   <string name="err_sync_nonetwork">Netwerk niet beschikbaar. Probeer het later opnieuw.</string>
-  <string name="text_invite_message">Hoi! Kijk eens naar Kontalk Messenger in de Google Play Store, een app om gratis berichten te sturen! https://play.google.com/store/apps/details?id=org.kontalk</string>
+  <string name="text_invite_message">Hoi! Kijk eens naar Kontalk Messenger, een app om gratis berichten te sturen! http://kontalk.org/</string>
   <string name="text_contacts_empty">Nieuwe gebruikers zullen automatisch toegevoegd worden aan deze lijst.\n\nGebruik <b>Menu</b> &gt; <b>Gebruikers uitnodigen</b> om een SMS met een uitnodiging te sturen.</string>
   <string name="text_conversations_empty">Gebruik de <b>nieuw bericht</b>-knop onder aan het scherm om te beginnen met het schrijven van berichten.</string>
   <string name="notify_ticker_external_storage">Externe opslag niet beschikbaar</string>
@@ -201,7 +201,7 @@
   <string name="attachment_download">Bijlage downloaden</string>
   <string name="attachment_upload">Bijlage uploaden</string>
   <string name="seen_moment_ago_label">een moment geleden</string>
-  <string name="seen_online_label">online</string>
+  <string name="seen_online_label">actief</string>
   <string name="seen_typing_label">aan het typen…</string>
   <string name="invitation_sent_label">lopende uitnodiging</string>
   <string name="pref_custom_background">Aangepaste achtergrond</string>
@@ -260,7 +260,7 @@
   <string name="msg_status_encrypted">Versleuteld</string>
   <string name="pref_balloons">Thema voor tekstballonnen</string>
   <string name="pref_title_balloons">Kies een thema voor de tekstballonnen</string>
-  <string name="attachment_picture">Afbeelding</string>
+  <string name="attachment_picture">Gallerij</string>
   <string name="attachment_contact">Contact</string>
   <string name="attachment_audio">Audio</string>
   <string name="chooser_send_picture">Afbeelding verzenden</string>
@@ -411,4 +411,37 @@
 <string name="title_confirm_cancel_registration">Registratie annuleren?</string>
     <string name="confirm_cancel_registration">Indien je nu terug gaat, wordt de registratie geannuleerd. Indien je naar een andere app over moet schakelen kun je beter de thuisknop gebruiken.</string>
     <string name="app_name_offline">Kontalk (offline)</string>
+    <string name="attachment_camera">Camera</string>
+    <string name="attachment_video">Video</string>
+    <string name="attachment_file">Bestand</string>
+    <string name="attachment_vcard">Contact</string>
+    <string name="attachment_location">Locatie</string>
+
+    <string name="msg_not_implemented">Nog niet geïmplementeerd.</string>
+
+    <string name="chooser_error_no_camera_app">Geen camera app beschikbaar.</string>
+
+    <string name="err_keypair_export_write">Kon persoonlijke sleutel niet naar externe opslag schrijven.</string>
+    <string name="err_keypair_export_other">Kon persoonlijke sleutel niet exporteren.</string>
+
+    <string name="pref_enable_notification_led">Notificatielicht</string>
+    <string name="pref_notification_led_color">Kleur notificatielicht</string>
+    <string name="seen_away_label">online</string>
+    <string name="pref_title_custom_background">Kies een achtergrond met de onderstaande optie</string>
+    <string name="err_import_keypair_read">Kon persoonlijke sleutel niet van externe opslag lezen.</string>
+    <string name="pref_title_sync_sim_contacts">Doorzoek ook SIM contacten bij het zoeken naar geregistreerde gebruikers</string>
+
+    <string name="pref_title_sync_invisible_contacts">Doorzoek ook contacten die niet zichtbaar zijn in de Contacten app. Schakel dit in als je DAVDroid gebruikt</string>
+
+    <string name="warning_public_key_changed">De persoonlijke sleutel van deze gebruiker is onverwacht veranderd!</string>
+    <string name="title_public_key_changed_warning">Persoonlijke sleutel veranderd</string>
+    <string name="msg_public_key_changed_warning">Controleer met deze gebruiker of hij/zij Kontalk opnieuw geïnstalleerd heeft of zijn/haar sleutel expres opnieuw gegenereerd heeft, anders is de communicatie mogelijk niet langer veilig!</string>
+    <string name="warning_public_key_unknown">De persoonlijke sleutel van deze gebruiker is niet vertrouwd!</string>
+    <string name="title_public_key_unknown_warning">Niet vertrouwde persoonlijke sleutel</string>
+    <string name="msg_public_key_unknown_warning">Controleer met deze gebruiker of zijn/haar vingerafdruk overeen komt met de sleutel in het <b>identiteit</b> dialoogverster, anders is de communicatie mogelijk niet veilig!</string>
+
+    <string name="pref_show_blocked_users">Toon geblokkeerde gebruikers</string>
+    <string name="button_load_next_page">Laad meer berichten</string>
+
+    <string name="mark_read">Gelezen</string>
     </resources>

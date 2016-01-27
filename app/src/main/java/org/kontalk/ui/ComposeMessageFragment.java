@@ -61,8 +61,8 @@ import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
 import android.database.Cursor;
+import android.database.MergeCursor;
 import android.database.sqlite.SQLiteDiskIOException;
-import android.database.sqlite.SQLiteException;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -92,6 +92,9 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import io.codetail.animation.SupportAnimator;
+import io.codetail.animation.ViewAnimationUtils;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
@@ -129,9 +132,6 @@ import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 import org.kontalk.util.XMPPUtils;
 
-import io.codetail.animation.SupportAnimator;
-import io.codetail.animation.ViewAnimationUtils;
-
 import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
 import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_ACCEPT;
 import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_BLOCK;
@@ -153,6 +153,10 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
     private static final int MESSAGE_LIST_QUERY_TOKEN = 8720;
     private static final int CONVERSATION_QUERY_TOKEN = 8721;
+    private static final int MESSAGE_PAGE_QUERY_TOKEN = 8723;
+
+    /** How many messages to load per page. */
+    private static final int MESSAGE_PAGE_SIZE = 1000;
 
     private static final int SELECT_ATTACHMENT_OPENABLE = Activity.RESULT_FIRST_USER + 1;
     private static final int SELECT_ATTACHMENT_CONTACT = Activity.RESULT_FIRST_USER + 2;
@@ -183,6 +187,9 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
     private MessageListQueryHandler mQueryHandler;
     private MessageListAdapter mListAdapter;
+    /** Header view for the list view: "previous messages" button. */
+    private View mHeaderView;
+    private View mNextPageButton;
     private TextView mStatusText;
     private ViewGroup mInvitationBar;
     private MenuItem mDeleteThreadMenu;
@@ -272,6 +279,21 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
         setMultiChoiceModeListener(this);
 
+        // add header view (this must be done before setting the adapter)
+        mHeaderView = LayoutInflater.from(getActivity())
+            .inflate(R.layout.message_list_header, list, false);
+        mNextPageButton = mHeaderView.findViewById(R.id.load_next_page);
+        mNextPageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // disable button in the meantime
+                enableHeaderView(false);
+                // start query for the next page
+                startMessagesQuery(mQueryHandler.getLastId());
+            }
+        });
+        list.addHeaderView(mHeaderView);
+
         // set custom background (if any)
         ImageView background = (ImageView) getView().findViewById(R.id.background);
         Drawable bg = Preferences.getConversationBackground(getActivity());
@@ -339,7 +361,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     private final MessageListAdapter.OnContentChangedListener mContentChangedListener = new MessageListAdapter.OnContentChangedListener() {
         public void onContentChanged(MessageListAdapter adapter) {
             if (isVisible())
-                startQuery(true, false);
+                startQuery(false);
         }
     };
 
@@ -566,7 +588,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         if (mCheckedItemCount != 1)
             throw new IllegalStateException("checked items count must be exactly 1");
 
-        Cursor cursor = (Cursor) mListAdapter.getItem(getCheckedItemPosition());
+        Cursor cursor = (Cursor) getListView().getItemAtPosition(getCheckedItemPosition());
         return CompositeMessage.fromCursor(getActivity(), cursor);
     }
 
@@ -583,9 +605,9 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     Context ctx = getActivity();
-                    for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
+                    for (int i = 0, c = getListView().getCount()+getListView().getHeaderViewsCount(); i < c; ++i) {
                         if (checked.get(i))
-                            CompositeMessage.deleteFromCursor(ctx, (Cursor) mListAdapter.getItem(i));
+                            CompositeMessage.deleteFromCursor(ctx, (Cursor) getListView().getItemAtPosition(i));
                     }
                     mListAdapter.notifyDataSetChanged();
                 }
@@ -740,8 +762,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                         new String[] { Messages.THREAD_ID }, null, null, null);
                 if (c.moveToFirst()) {
                     threadId = c.getLong(0);
-                    mConversation = null;
-                    startQuery(true, false);
+                    startQuery(false);
                 }
                 else {
                     Log.v(TAG, "no data - cannot start query for this composer");
@@ -813,9 +834,8 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                                 null);
                         if (c.moveToFirst()) {
                             threadId = c.getLong(0);
-                            mConversation = null;
                             // we can run it here because progress=false
-                            startQuery(true, false);
+                            startQuery(false);
                         }
                         else {
                             Log.v(TAG, "no data - cannot start query for this composer");
@@ -1330,29 +1350,30 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         getActivity().startService(i);
     }
 
-    private void startQuery(boolean reloadConversation, boolean progress) {
-        startQuery(reloadConversation, progress, 0);
+    private synchronized void startQuery(boolean progress) {
+        if (progress)
+            getActivity().setProgressBarIndeterminateVisibility(true);
+
+        Conversation.startQuery(mQueryHandler,
+                CONVERSATION_QUERY_TOKEN, threadId);
+        // message list query will be started by query handler
     }
 
-    private void startQuery(boolean reloadConversation, boolean progress, long count) {
-        try {
-            if (progress)
-                getActivity().setProgressBarIndeterminateVisibility(true);
+    private void startMessagesQuery() {
+        CompositeMessage.startQuery(mQueryHandler, MESSAGE_LIST_QUERY_TOKEN,
+            threadId, MESSAGE_PAGE_SIZE, 0);
+    }
 
-            CompositeMessage.startQuery(mQueryHandler, MESSAGE_LIST_QUERY_TOKEN,
-                    threadId, count, 0);
-
-            if (reloadConversation)
-                Conversation.startQuery(mQueryHandler,
-                        CONVERSATION_QUERY_TOKEN, threadId);
-
-        }
-        catch (SQLiteException e) {
-            Log.e(TAG, "query error", e);
-        }
+    private void startMessagesQuery(long lastId) {
+        CompositeMessage.startQuery(mQueryHandler, MESSAGE_PAGE_QUERY_TOKEN,
+            threadId, MESSAGE_PAGE_SIZE, lastId);
     }
 
     private void stopQuery() {
+        if (mListAdapter != null)
+            mListAdapter.changeCursor(null);
+        hideHeaderView();
+
         if (mQueryHandler != null) {
             // be sure to cancel all queries
             mQueryHandler.abort();
@@ -1747,7 +1768,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
         if (threadId > 0) {
             // always reload conversation
-            startQuery(true, resuming);
+            startQuery(resuming);
         }
         else {
             // HACK this is for crappy honeycomb :)
@@ -1773,6 +1794,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
              * still locked, having focus and so on...
              * See issue #28.
              */
+            Log.v(TAG, "marking thread as read");
             mConversation.markAsRead();
         }
         else {
@@ -1812,7 +1834,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                 mInvitationBar.findViewById(R.id.button_identity)
                     .setOnClickListener(new View.OnClickListener() {
                         public void onClick(View v) {
-                            showIdentityDialog(true);
+                            showIdentityDialog(true, R.string.title_invitation);
                         }
                     }
                 );
@@ -1924,7 +1946,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         }
     }
 
-    private void showIdentityDialog(boolean informationOnly) {
+    private void showIdentityDialog(boolean informationOnly, int titleId) {
         String fingerprint;
         String uid;
 
@@ -1969,7 +1991,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
             .setMessage(text);
 
         if (informationOnly) {
-            builder.setTitle(R.string.title_invitation);
+            builder.setTitle(titleId);
         }
         else {
             DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
@@ -1990,7 +2012,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                     }
                 }
             };
-            builder.setTitle(R.string.title_public_key_warning)
+            builder.setTitle(titleId)
                 .setPositiveButton(R.string.button_accept, listener)
                 .setNegativeButton(R.string.button_block, listener);
         }
@@ -2009,10 +2031,10 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         invalidateContact();
     }
 
-    private void showKeyChangedWarning() {
+    private void showKeyWarning(int textId, final int dialogTitleId, final int dialogMessageId) {
         Activity context = getActivity();
         if (context != null) {
-            showWarning(context.getText(R.string.warning_public_key), new View.OnClickListener() {
+            showWarning(context.getText(textId), new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
@@ -2026,7 +2048,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                                     trustKeyChange();
                                     break;
                                 case DialogInterface.BUTTON_NEUTRAL:
-                                    showIdentityDialog(false);
+                                    showIdentityDialog(false, dialogTitleId);
                                     break;
                                 case DialogInterface.BUTTON_NEGATIVE:
                                     // hide warning bar
@@ -2038,8 +2060,8 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                         }
                     };
                     new AlertDialogWrapper.Builder(getActivity())
-                        .setTitle(R.string.title_public_key_warning)
-                        .setMessage(R.string.msg_public_key_warning)
+                        .setTitle(dialogTitleId)
+                        .setMessage(dialogMessageId)
                         .setPositiveButton(R.string.button_accept, listener)
                         .setNeutralButton(R.string.button_identity, listener)
                         .setNegativeButton(R.string.button_block, listener)
@@ -2047,6 +2069,16 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                 }
             }, WarningType.FATAL);
         }
+    }
+
+    private void showKeyUnknownWarning() {
+        showKeyWarning(R.string.warning_public_key_unknown,
+            R.string.title_public_key_unknown_warning, R.string.msg_public_key_unknown_warning);
+    }
+
+    private void showKeyChangedWarning() {
+        showKeyWarning(R.string.warning_public_key_changed,
+            R.string.title_public_key_changed_warning, R.string.msg_public_key_changed_warning);
     }
 
     private void showWarning(CharSequence text, final View.OnClickListener listener, WarningType type) {
@@ -2157,35 +2189,46 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                                 // really not much sense in requesting the key for a non-existing contact
                                 Contact contact = getContact();
                                 if (contact != null) {
-                                    boolean subscribedFrom = intent.getBooleanExtra(MessageCenterService.EXTRA_SUBSCRIBED_FROM, false);
                                     String newFingerprint = intent.getStringExtra(MessageCenterService.EXTRA_FINGERPRINT);
                                     // if this is null, we are accepting the key for the first time
                                     PGPPublicKeyRing trustedPublicKey = contact.getTrustedPublicKeyRing();
 
-                                    // request the key if we don't have a trusted one or we are subscribed from the contact
-                                    boolean requestKey = (trustedPublicKey == null || subscribedFrom);
+                                    // request the key if we don't have a trusted one and of course if the user has a key
+                                    boolean unknownKey = (trustedPublicKey == null && contact.getFingerprint() != null);
+                                    boolean changedKey = false;
                                     // check if fingerprint changed
-                                    if (trustedPublicKey != null) {
+                                    if (trustedPublicKey != null && newFingerprint != null) {
                                         String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(trustedPublicKey));
-                                        if (newFingerprint == null || newFingerprint.equalsIgnoreCase(oldFingerprint)) {
-                                            // no fingerprint available or fingerprint has not changed since last time
-                                            requestKey = false;
+                                        if (!newFingerprint.equalsIgnoreCase(oldFingerprint)) {
+                                            // fingerprint has changed since last time
+                                            changedKey = true;
                                         }
                                     }
-                                    else {
-                                        // request key if we got one in the first place
-                                        requestKey = (contact.getFingerprint() != null);
-                                    }
 
-                                    if (requestKey) {
+                                    if (changedKey) {
                                         // warn user that public key is changed
                                         showKeyChangedWarning();
+                                    }
+                                    else if (unknownKey) {
+                                        // warn user that public key is unknown
+                                        showKeyUnknownWarning();
                                     }
                                 }
 
                                 if (Presence.Type.available.toString().equals(type)) {
                                     mAvailableResources.add(from);
-                                    statusText = context.getString(R.string.seen_online_label);
+
+                                    /*
+                                     * FIXME using mode this way has several flaws.
+                                     * 1. it doesn't take multiple resources into account
+                                     * 2. it doesn't account for away status duration (we don't have this information at all)
+                                     */
+                                    String mode = intent.getStringExtra(MessageCenterService.EXTRA_SHOW);
+                                    if (mode != null && mode.equals(Presence.Mode.away.toString())) {
+                                        statusText = context.getString(R.string.seen_away_label);
+                                    } else {
+                                        statusText = context.getString(R.string.seen_online_label);
+                                    }
 
                                     // request version information
                                     if (contact != null && contact.getVersion() != null) {
@@ -2444,6 +2487,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
             }
 
             // fire cursor update
+            Log.v(TAG, "peer observer active");
             processStart(false);
         }
 
@@ -2480,7 +2524,6 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         setActivityStatusUpdating();
 
         // cursor was previously destroyed -- reload everything
-        // mConversation = null;
         processStart(resuming);
         if (mUserJID != null) {
             // set notifications on pause
@@ -2596,9 +2639,6 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     public void onStop() {
         super.onStop();
         unregisterPeerObserver();
-        if (mListAdapter != null)
-            mListAdapter.changeCursor(null);
-
         stopQuery();
     }
 
@@ -2627,6 +2667,18 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     public final boolean isFinishing() {
         Activity activity = getActivity();
         return (activity == null || activity.isFinishing()) || isRemoving();
+    }
+
+    private void showHeaderView() {
+        mHeaderView.setVisibility(View.VISIBLE);
+    }
+
+    private void hideHeaderView() {
+        mHeaderView.setVisibility(View.GONE);
+    }
+
+    private void enableHeaderView(boolean enabled) {
+        mNextPageButton.setEnabled(enabled);
     }
 
     private void updateUI() {
@@ -2946,6 +2998,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     private static final class MessageListQueryHandler extends AsyncQueryHandler {
         private WeakReference<ComposeMessageFragment> mParent;
         private boolean mCancel;
+        private long mLastId;
 
         public MessageListQueryHandler(ComposeMessageFragment parent) {
             super(parent.getActivity().getApplicationContext().getContentResolver());
@@ -2996,6 +3049,10 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
                     }
                     else {
+                        // first query - use last id of this new cursor
+                        cursor.moveToFirst();
+                        mLastId = Conversation.getMessageId(cursor);
+
                         // see if we have to scroll to a specific message
                         int newSelectionPos = -1;
 
@@ -3017,13 +3074,51 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                         }
 
                         parent.mListAdapter.changeCursor(cursor);
-                        if (newSelectionPos > 0)
+                        if (newSelectionPos >= 0)
                             parent.getListView().setSelection(newSelectionPos);
+
+                        if (cursor.getCount() >= MESSAGE_PAGE_SIZE)
+                            parent.showHeaderView();
 
                         parent.getActivity().setProgressBarIndeterminateVisibility(false);
                         parent.updateUI();
                     }
 
+                    break;
+
+                case MESSAGE_PAGE_QUERY_TOKEN:
+                    if (cursor.getCount() > 0) {
+                        int newSelectionPos = -1;
+
+                        // there is no more data after this page
+                        if (cursor.getCount() < MESSAGE_PAGE_SIZE)
+                            parent.hideHeaderView();
+
+                        // save last id of this new cursor
+                        cursor.moveToFirst();
+                        mLastId = Conversation.getMessageId(cursor);
+
+                        // join with the old cursor (if any)
+                        Cursor oldCursor = parent.mListAdapter.getCursor();
+                        if (oldCursor != null) {
+                            // the new selection will be the next item after this new cursor
+                            newSelectionPos = cursor.getCount();
+                            cursor = new MergeCursor(new Cursor[]{cursor, oldCursor});
+                        }
+
+                        parent.mListAdapter.swapCursor(cursor);
+                        if (newSelectionPos >= 0)
+                            parent.getListView().setSelection(newSelectionPos);
+
+                        parent.getActivity().setProgressBarIndeterminateVisibility(false);
+                        parent.updateUI();
+                    }
+                    else {
+                        // this happens when the first page is exactly PAGE_SIZE big
+                        parent.hideHeaderView();
+                    }
+
+                    parent.enableHeaderView(true);
                     break;
 
                 case CONVERSATION_QUERY_TOKEN:
@@ -3035,6 +3130,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
                     cursor.close();
 
+                    parent.startMessagesQuery();
                     break;
 
                 default:
@@ -3045,9 +3141,16 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
         public synchronized void abort() {
             mCancel = true;
+            mLastId = 0;
             cancelOperation(MESSAGE_LIST_QUERY_TOKEN);
             cancelOperation(CONVERSATION_QUERY_TOKEN);
+            cancelOperation(MESSAGE_PAGE_QUERY_TOKEN);
         }
+
+        public long getLastId() {
+            return mLastId;
+        }
+
     }
 
 }

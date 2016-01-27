@@ -27,6 +27,7 @@ import android.accounts.AccountManagerFuture;
 import android.app.Activity;
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.afollestad.materialdialogs.color.ColorChooserDialog;
 import com.afollestad.materialdialogs.folderselector.FolderChooserDialog;
 
 import android.app.Dialog;
@@ -34,10 +35,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
@@ -55,15 +56,13 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.crypto.PersonalKey;
-import org.kontalk.crypto.PersonalKeyImporter;
+import org.kontalk.crypto.PersonalKeyPack;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.PushServiceManager;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
-
-import static org.kontalk.crypto.PersonalKeyImporter.KEYPACK_FILENAME;
 
 
 /**
@@ -117,6 +116,29 @@ public final class PreferencesFragment extends RootPreferenceFragment {
                 else
                     MessageCenterService.disablePushNotifications(ctx.getApplicationContext());
 
+                return true;
+            }
+        });
+
+        // notification LED color
+        final Preference notificationLed = findPreference("pref_notification_led_color");
+        notificationLed.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                Resources res = getResources();
+                int[] ledColors = new int[]{
+                    res.getColor(android.R.color.white), res.getColor(R.color.blue_light),
+                    res.getColor(R.color.purple_light), res.getColor(R.color.green_light),
+                    res.getColor(R.color.yellow_light), res.getColor(R.color.red_light),
+                };
+
+                new ColorChooserDialog.Builder((PreferencesActivity) getActivity(),
+                    R.string.pref_notification_led_color)
+                    .customColors(ledColors, null)
+                    .preselect(Preferences.getNotificationLEDColor(getContext()))
+                    .allowUserColorInput(false)
+                    .dynamicButtonColor(false)
+                    .show();
                 return true;
             }
         });
@@ -203,15 +225,15 @@ public final class PreferencesFragment extends RootPreferenceFragment {
                         mPassphrase = passphrase;
                         if (MediaStorage.isStorageAccessFrameworkAvailable()) {
                             MediaStorage.createFile(PreferencesFragment.this,
-                                PersonalKeyImporter.KEYPACK_MIME,
-                                PersonalKeyImporter.KEYPACK_FILENAME,
+                                PersonalKeyPack.KEYPACK_MIME,
+                                PersonalKeyPack.KEYPACK_FILENAME,
                                 REQUEST_CREATE_KEYPACK);
                         }
                         else {
                             PreferencesActivity ctx = (PreferencesActivity) getActivity();
                             if (ctx != null) {
                                 new FolderChooserDialog.Builder(ctx)
-                                    .initialPath(PersonalKeyImporter.DEFAULT_KEYPACK.getParent())
+                                    .initialPath(PersonalKeyPack.DEFAULT_KEYPACK.getParent())
                                     .show();
                             }
                         }
@@ -240,30 +262,6 @@ public final class PreferencesFragment extends RootPreferenceFragment {
 
                     askCurrentPassphrase(action2);
                 }
-
-                return true;
-            }
-        });
-
-        // import key pair
-        final Preference importKeyPair = findPreference("pref_import_keypair");
-        importKeyPair.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                new AlertDialogWrapper.Builder(getActivity())
-                    .setTitle(R.string.pref_import_keypair)
-                    .setMessage(getString(R.string.msg_import_keypair, KEYPACK_FILENAME))
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            Uri keypack = Uri.fromFile(new File(Environment
-                                .getExternalStorageDirectory(), KEYPACK_FILENAME));
-                            Context ctx = getActivity();
-                            MessageCenterService.importKeyPair(ctx.getApplicationContext(),
-                                keypack, Kontalk.get(ctx).getCachedPassphrase());
-                        }
-                    })
-                    .show();
 
                 return true;
             }

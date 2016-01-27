@@ -159,6 +159,10 @@ public class Conversation {
         return cv;
     }
 
+    public static long getMessageId(Cursor cursor) {
+        return cursor.getLong(COLUMN_ID);
+    }
+
     public static void deleteFromCursor(Context context, Cursor cursor) {
         MessagesProvider.deleteThread(context, cursor.getLong(COLUMN_ID));
     }

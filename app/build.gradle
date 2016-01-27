@@ -35,6 +35,7 @@ android {
         versionCode 99
         versionName "3.2-preview"
         targetSdkVersion 22
+        minSdkVersion 9
         resConfigs "en", "de", "fr", "it", "es", "ca", "cs", "el", "fa", "gl", "ja", "nl", "pt", "ru", "sr", "zh-rCN"
         resValue "string", "application_id", applicationId
         resValue "string", "account_type", applicationId + '.account'
@@ -80,10 +81,8 @@ android {
 
     productFlavors {
         basic {
-            minSdkVersion 8
         }
         googleplay {
-            minSdkVersion 9
         }
     }
 

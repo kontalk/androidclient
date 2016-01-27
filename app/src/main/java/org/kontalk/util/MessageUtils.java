@@ -59,7 +59,6 @@ import org.kontalk.message.VCardComponent;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.UsersProvider;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -216,9 +215,9 @@ public final class MessageUtils {
         }
     }
 
-    public static ByteArrayOutputStream readFully(InputStream in, long maxSize) throws IOException {
+    public static ByteArrayInOutStream readFully(InputStream in, long maxSize) throws IOException {
         byte[] buf = new byte[1024];
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ByteArrayInOutStream out = new ByteArrayInOutStream();
         int l;
         while ((l = in.read(buf, 0, 1024)) > 0 && out.size() < maxSize)
             out.write(buf, 0, l);

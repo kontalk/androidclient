@@ -18,11 +18,16 @@
 
 package org.kontalk.util;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
@@ -213,6 +218,22 @@ public final class Preferences {
     public static String getNotificationRingtone(Context context) {
         return getString(context, "pref_ringtone", context
             .getString(R.string.pref_default_ringtone));
+    }
+
+    public static boolean getNotificationLED(Context context) {
+        return getBoolean(context, "pref_enable_notification_led",
+            context.getResources().getBoolean(R.bool.pref_default_enable_notification_led));
+    }
+
+    public static int getNotificationLEDColor(Context context) {
+        return getInt(context, "pref_notification_led_color",
+            context.getResources().getInteger(R.integer.pref_default_notification_led_color));
+    }
+
+    public static boolean setNotificationLEDColor(Context context, int color) {
+        return sPreferences.edit()
+            .putInt("pref_notification_led_color", color)
+            .commit();
     }
 
     public static int getImageCompression(Context context) {
@@ -469,6 +490,11 @@ public final class Preferences {
         }
     }
 
+    public static boolean getShowBlockedUsers(Context context) {
+        return getBoolean(context, "pref_show_blocked_users", context
+            .getResources().getBoolean(R.bool.pref_default_show_blocked_users));
+    }
+
     public static String getRosterVersion(Context context) {
         return getString(context, "roster_version", "");
     }
@@ -514,7 +540,23 @@ public final class Preferences {
     public static boolean saveRegistrationProgress(Context context, String name,
         String phoneNumber, PersonalKey key, String passphrase,
         byte[] importedPublicKey, byte[] importedPrivateKey, String serverUri,
-        String sender, boolean force) {
+        String sender, boolean force, Map<String, String> trustedKeys) {
+
+        ByteArrayOutputStream trustedKeysOut = null;
+        if (trustedKeys != null) {
+            trustedKeysOut = new ByteArrayOutputStream();
+            Properties prop = new Properties();
+            prop.putAll(trustedKeys);
+            try {
+                prop.store(trustedKeysOut, null);
+            }
+            catch (IOException e) {
+                // something went wrong
+                // we can't have IOExceptions from byte buffers anyway
+                trustedKeysOut = null;
+            }
+        }
+
         return sPreferences.edit()
             .putString("registration_name", name)
             .putString("registration_phone", phoneNumber)
@@ -527,9 +569,12 @@ public final class Preferences {
             .putString("registration_server", serverUri)
             .putString("registration_sender", sender)
             .putBoolean("registration_force", force)
+            .putString("registration_trustedkeys", trustedKeysOut != null ?
+                Base64.encodeToString(trustedKeysOut.toByteArray(), Base64.NO_WRAP) : null)
             .commit();
     }
 
+    @SuppressWarnings({"unchecked"})
     public static RegistrationProgress getRegistrationProgress(Context context) {
         String name = getString(context, "registration_name", null);
         if (name != null) {
@@ -551,6 +596,20 @@ public final class Preferences {
             p.sender = getString(context, "registration_sender", null);
             p.force = getBoolean(context, "registration_force", false);
 
+            String trustedKeys = getString(context, "registration_trustedkeys", null);
+            if (trustedKeys != null) {
+                ByteArrayInputStream trustedKeysProp =
+                    new ByteArrayInputStream(Base64.decode(trustedKeys, Base64.NO_WRAP));
+                try {
+                    Properties prop = new Properties();
+                    prop.load(trustedKeysProp);
+                    p.trustedKeys = new HashMap<>((Map) prop);
+                }
+                catch (IOException ignored) {
+                }
+            }
+
+
             return p;
         }
         return null;
@@ -566,6 +625,7 @@ public final class Preferences {
             .remove("registration_passphrase")
             .remove("registration_server")
             .remove("registration_force")
+            .remove("registration_trustedkeys")
             .commit();
     }
 
@@ -579,6 +639,7 @@ public final class Preferences {
         public EndpointServer server;
         public String sender;
         public boolean force;
+        public Map<String, String> trustedKeys;
     }
 
     /** Recent statuses database helper. */

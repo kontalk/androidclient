@@ -1253,6 +1253,22 @@ public class MessagesProvider extends ContentProvider {
     }
 
     /**
+     * Marks all messages as read.
+     * @param context used to request a {@link ContentResolver}
+     * @return the number of rows affected in the messages table
+     */
+    public static int markAllThreadsAsRead(Context context) {
+        ContentResolver c = context.getContentResolver();
+        ContentValues values = new ContentValues(1);
+        values.put(Messages.NEW, Boolean.FALSE);
+        values.put(Messages.UNREAD, Boolean.FALSE);
+        return c.update(Messages.CONTENT_URI, values,
+            Messages.UNREAD + " <> 0 AND " +
+                Messages.DIRECTION + " = " + Messages.DIRECTION_IN,
+            null);
+    }
+
+    /**
      * Marks all messages as old.
      * @param context used to request a {@link ContentResolver}
      * @return the number of rows affected in the messages table

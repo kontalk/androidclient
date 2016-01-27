@@ -22,11 +22,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 
+import com.afollestad.materialdialogs.color.ColorChooserDialog;
 import com.afollestad.materialdialogs.folderselector.FolderChooserDialog;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -35,7 +37,8 @@ import android.widget.Toast;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.crypto.PersonalKeyImporter;
+import org.kontalk.crypto.PersonalKeyPack;
+import org.kontalk.util.Preferences;
 
 
 /**
@@ -44,7 +47,7 @@ import org.kontalk.crypto.PersonalKeyImporter;
  * @author Daniele Ricci
  */
 public final class PreferencesActivity extends ToolbarActivity
-        implements PreferencesFragment.Callback, FolderChooserDialog.FolderCallback {
+        implements PreferencesFragment.Callback, FolderChooserDialog.FolderCallback, ColorChooserDialog.ColorCallback {
     private static final String TAG_NESTED = "nested";
 
     @Override
@@ -115,7 +118,7 @@ public final class PreferencesActivity extends ToolbarActivity
                 .findFragmentById(R.id.container);
 
             f.exportPersonalKey(this,
-                new FileOutputStream(new File(folder, PersonalKeyImporter.KEYPACK_FILENAME)));
+                new FileOutputStream(new File(folder, PersonalKeyPack.KEYPACK_FILENAME)));
         }
         catch (FileNotFoundException e) {
             Log.e(PreferencesFragment.TAG, "error exporting keys", e);
@@ -123,6 +126,12 @@ public final class PreferencesActivity extends ToolbarActivity
                 R.string.err_keypair_export_write,
                 Toast.LENGTH_LONG).show();
         }
+    }
+
+    // used only for notification LED color for now
+    @Override
+    public void onColorSelection(@NonNull ColorChooserDialog dialog, @ColorInt int selectedColor) {
+        Preferences.setNotificationLEDColor(this, selectedColor);
     }
 
     public static void start(Activity context) {

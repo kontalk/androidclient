@@ -65,6 +65,7 @@
     <string name="sending_message">Sending message&#8230;</string>
     <string name="message_text_copied">Message text copied.</string>
     <string name="call">Call</string>
+    <string name="mark_read">Read</string>
     <string name="view_contact">View contact</string>
     <string name="view_conversation">View chat</string>
     <string name="delete_thread">Delete chat</string>
@@ -100,7 +101,7 @@
     <string name="size_unknown">(unknown)</string>
     <string name="title_file_info">File information</string>
     <string name="pref_restart_msgcenter">Restart message center</string>
-    <string name="pref_title_restart_msgcenter">Use this if the message center is not working properly</string>
+    <string name="pref_title_restart_msgcenter">Use this if Kontalk is not working properly</string>
     <string name="pref_idle_time">Disconnect when idle</string>
     <string name="pref_title_idle_time">How long to wait before disconnecting for inactivity</string>
     <string name="pref_wakeup_time">Reconnect to server</string>
@@ -113,13 +114,10 @@
     <string name="pref_messaging_settings">Messaging settings</string>
     <string name="pref_privacy_settings">Privacy settings</string>
     <string name="pref_encrypt">Encrypt messages</string>
-    <string name="pref_title_on_encrypt">All messages will be encrypted from now on</string>
-    <string name="pref_title_off_encrypt">All messages will be sent in cleartext from now on</string>
     <string name="pref_encrypt_userdata">Encrypt personal data</string>
     <string name="pref_title_on_encrypt_userdata">Status message will be visible only to users having your phone number</string>
     <string name="pref_title_off_encrypt_userdata">Status message will be visible to anyone</string>
     <string name="pref_auto_accept_subscriptions">Automatically accept invitations</string>
-    <string name="pref_title_auto_accept_subscriptions">Automatically accept chat invitations by other users</string>
     <string name="pref_send_typing">Send typing notification</string>
     <string name="pref_hide_presence">Hide presence</string>
     <string name="pref_title_on_hide_presence">Users will not see you online</string>
@@ -144,6 +142,8 @@
     <string name="title_search">Search: \"%s\"</string>
     <string name="pref_notification_settings">Notification settings</string>
     <string name="pref_enable_notifications">Notifications</string>
+    <string name="pref_enable_notification_led">Notification LED</string>
+    <string name="pref_notification_led_color">Notification LED color</string>
     <string name="pref_title_enable_notifications">Display message notifications in status bar</string>
     <string name="pref_ringtone">Select ringtone</string>
     <string name="pref_vibrate">Vibrate</string>
@@ -195,7 +195,7 @@
     <string name="msg_sync_progress">Refreshing contacts list&#8230;</string>
     <string name="err_sync_failed">Unable to refresh contacts list. Please retry later.</string>
     <string name="err_sync_nonetwork">Network not available. Please retry later.</string>
-    <string name="text_invite_message">Hey! Check out Kontalk on Google Play Store, a free messaging app! https://play.google.com/store/apps/details?id=org.kontalk</string>
+    <string name="text_invite_message">Hey! Check out Kontalk, a free messaging app! http://kontalk.org/</string>
     <string name="text_contacts_empty">New users will be automatically added to this list.\n\nUse <b>Menu</b> > <b>Invite users</b> to send an invitation message to someone.</string>
     <string name="text_conversations_empty">To start writing messages use the <b>new message</b> button below.</string>
     <string name="notify_ticker_external_storage">External storage not available</string>
@@ -221,14 +221,14 @@
     <string name="attachment_download">Attachment download</string>
     <string name="attachment_upload">Attachment upload</string>
     <string name="seen_moment_ago_label">a moment ago</string>
-    <string name="seen_online_label">online</string>
+    <string name="seen_online_label">active</string>
+    <string name="seen_away_label">online</string>
     <string name="seen_typing_label">typing&#8230;</string>
     <string name="invitation_sent_label">pending invitation</string>
     <string name="pref_custom_background">Custom background</string>
     <string name="pref_background_uri">Background</string>
     <string name="pref_title_background_uri">Set custom conversations background image</string>
-    <string name="pref_title_off_custom_background">Using default background</string>
-    <string name="pref_title_on_custom_background">Pick a background using the option below</string>
+    <string name="pref_title_custom_background">Pick a background using the option below</string>
     <string name="err_custom_background">An error occurred while setting the background. Please try another image.</string>
     <string name="err_attachment_corrupted">Unable to download attachment. Message might be corrupted.</string>
     <string name="serverlist_updating">Updating server list&#8230;</string>
@@ -269,9 +269,6 @@
     <string name="pref_change_passphrase">Change personal key password</string>
     <string name="pref_title_remove_prefix">Remove some dial prefix in Kontalk to match phone numbers correctly</string>
     <string name="pref_export_keypair">Export personal key</string>
-    <string name="pref_title_export_keypair">Export personal key and login certificate to external storage</string>
-    <string name="pref_import_keypair">Import personal key</string>
-    <string name="pref_title_import_keypair">Import personal key and login certificate from external storage</string>
     <string name="msg_import_keypair">Kontalk will import your keys from %s in your external storage. Be sure that the file exists and it\'s a valid exported keys archive.</string>
     <string name="msg_import_keypair_complete">Personal key import completed.</string>
     <string name="err_import_keypair_failed">Personal key import failed.</string>
@@ -287,7 +284,6 @@
     <string name="msg_status_encrypted">Encrypted</string>
 
     <string name="pref_balloons">Chat balloon theme</string>
-    <string name="pref_title_balloons">Choose a chat balloon theme</string>
 
     <string name="attachment_camera">Camera</string>
     <string name="attachment_picture">Gallery</string>
@@ -390,12 +386,10 @@
     <string name="warn_not_subscribed">Unable to send message. User has not accepted your invitation yet.</string>
 
     <string name="pref_sync_sim_contacts">Sync from SIM contacts</string>
-    <string name="pref_title_off_sync_sim_contacts">Do not include SIM contacts when checking for registered users</string>
-    <string name="pref_title_on_sync_sim_contacts">SIM contacts are also included when checking for registered users</string>
+    <string name="pref_title_sync_sim_contacts">Include SIM contacts when checking for registered users</string>
 
     <string name="pref_sync_invisible_contacts">Include invisible contacts</string>
-    <string name="pref_title_off_sync_invisible_contacts">Do not include contacts not displayed in Contacts app. Enable for DAVDroid workaround</string>
-    <string name="pref_title_on_sync_invisible_contacts">Contacts not displayed in Contacts app will be included in Kontalk</string>
+    <string name="pref_title_sync_invisible_contacts">Include contacts not displayed in Contacts app. Enable if you use DAVDroid</string>
 
     <string name="pref_accept_any_certificate">Accept any SSL certificate</string>
 
@@ -440,7 +434,6 @@
 
     <string name="pref_media_settings">Media settings</string>
     <string name="pref_image_resize">Resize images</string>
-    <string name="pref_title_image_resize">Resize images before sending</string>
 
     <string name="err_server_invalid_format">Invalid address format.</string>
 
@@ -449,15 +442,21 @@
 
     <string name="warning_button_details">DETAILS</string>
     <string name="warning_older_version">Your buddy is using an older version of Kontalk. Some features might not work correctly.</string>
-    <string name="warning_public_key">The personal key for this user changed unexpectedly!</string>
-    <string name="title_public_key_warning">Personal key changed</string>
-    <string name="msg_public_key_warning">Personal key for this user has changed. Please verify with the user that he/she reinstalled Kontalk or regenerated his/her key intentionally, otherwise communication could be compromised!</string>
+    <string name="warning_public_key_changed">This user\'s personal key changed unexpectedly!</string>
+    <string name="title_public_key_changed_warning">Personal key changed</string>
+    <string name="msg_public_key_changed_warning">Please verify with the user that he/she reinstalled Kontalk or regenerated his/her key intentionally, otherwise communication could be compromised!</string>
+    <string name="warning_public_key_unknown">This user\'s personal key is untrusted!</string>
+    <string name="title_public_key_unknown_warning">Untrusted personal key</string>
+    <string name="msg_public_key_unknown_warning">Please verify with the user that his/her fingerprint matches the one displayed in the <b>identity</b> dialog, otherwise communication could be compromised!</string>
 
     <string name="warning_user_blocked">User has been blocked by you.</string>
 
     <string name="about_credits_devteam"><b>Kontalk is brought to you by:</b></string>
     <string name="about_credits_gfx"><b>Graphics/Iconography</b></string>
     <string name="about_credits_translators"><b>Translators</b></string>
+
+    <string name="pref_show_blocked_users">Show blocked users</string>
+    <string name="button_load_next_page">Load more messages</string>
 
     <plurals name="context_selected">
         <item quantity="one">1 selected</item>

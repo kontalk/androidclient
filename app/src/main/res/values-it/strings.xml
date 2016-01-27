@@ -91,7 +91,7 @@
   <string name="size_unknown">(sconosciuta)</string>
   <string name="title_file_info">Informazioni sul file</string>
   <string name="pref_restart_msgcenter">Riavvia centro messaggi</string>
-  <string name="pref_title_restart_msgcenter">Premilo se il centro messaggi non funziona correttamente</string>
+  <string name="pref_title_restart_msgcenter">Usalo se Kontalk non funziona correttamente</string>
   <string name="pref_idle_time">Disconnetti se inattivo</string>
   <string name="pref_title_idle_time">Quanto tempo aspettare prima di disconnettersi per inattività</string>
   <string name="pref_wakeup_time">Riconnetti al server</string>
@@ -176,7 +176,7 @@
   <string name="msg_sync_progress">Aggiornamento lista contatti in corso…</string>
   <string name="err_sync_failed">Impossibile aggiornare la lista contatti. Riprova più tardi.</string>
   <string name="err_sync_nonetwork">Rete non disponibile. Riprova più tardi.</string>
-  <string name="text_invite_message">Ciao! Prova il nuovo messenger gratuito Kontalk! Lo trovi su Google Play Store https://play.google.com/store/apps/details?id=org.kontalk</string>
+  <string name="text_invite_message">Ciao! Prova il nuovo messenger gratuito Kontalk! http://kontalk.org/</string>
   <string name="text_contacts_empty">I nuovi utenti saranno automaticamente aggiunti a questa lista.\n\nUsa <b>Menu</b> &gt; <b>Invita utenti</b> per inviare un messaggio di invito a qualcuno.</string>
   <string name="text_conversations_empty">Per iniziare a scrivere messaggi usa il pulsante <b>nuovo messaggio</b> in basso.</string>
   <string name="notify_ticker_external_storage">Memoria esterna non disponibile</string>
@@ -201,7 +201,7 @@
   <string name="attachment_download">Scaricamento allegato</string>
   <string name="attachment_upload">Invio allegato</string>
   <string name="seen_moment_ago_label">un momento fa</string>
-  <string name="seen_online_label">online</string>
+  <string name="seen_online_label">attivo</string>
   <string name="seen_typing_label">sta scrivendo…</string>
   <string name="invitation_sent_label">invito in sospeso</string>
   <string name="pref_custom_background">Sfondo personalizzato</string>
@@ -423,5 +423,26 @@
 
     <string name="err_keypair_export_write">Impossibile scrivere la chiave personale nella memoria esterna.</string>
     <string name="err_keypair_export_other">Errore durante l\'esportazione della chiave personale.</string>
+
+    <string name="pref_title_custom_background">Scegli uno sfondo usando l\'opzione di seguito</string>
+    <string name="err_import_keypair_read">Impossibile leggere la chiave personale dalla memoria esterna.</string>
+    <string name="pref_title_sync_sim_contacts">Includi i contatti dalla SIM durante il controllo degli utenti registrati</string>
+
+    <string name="pref_title_sync_invisible_contacts">Includi contatti non visualizzati in rubrica. Abilita se usi DAVDroid</string>
+
+    <string name="pref_show_blocked_users">Mostra utenti bloccati</string>
+
+    <string name="mark_read">Letto</string>
+    <string name="pref_enable_notification_led">LED notifiche</string>
+    <string name="pref_notification_led_color">Colore LED notifiche</string>
+    <string name="seen_away_label">online</string>
+    <string name="warning_public_key_changed">La chiave personale di questo utente è cambiata!</string>
+    <string name="title_public_key_changed_warning">Chiave personale cambiata</string>
+    <string name="msg_public_key_changed_warning">Verifica che l\'utente abbia reinstallato Kontalk o che abbia rigenerato la sua chiave intenzionalmente, altrimenti la comunicazione potrebbe essere compromessa!</string>
+    <string name="warning_public_key_unknown">Chiave personale sconosciuta!</string>
+    <string name="title_public_key_unknown_warning">Chiave personale sconosciuta</string>
+    <string name="msg_public_key_unknown_warning">Verifica con l\'utente che l\'impronta della sua chiave corrisponda a quella visualizzata nella finestra <b>identità</b>, altrimenti la comunicazione potrebbe essere compromessa!</string>
+
+    <string name="button_load_next_page">Carica altri messaggi</string>
 
     </resources>

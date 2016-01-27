@@ -176,7 +176,7 @@
   <string name="msg_sync_progress">Освежавам списак контаката…</string>
   <string name="err_sync_failed">Не могу да освежим списак контаката. Покушајте касније.</string>
   <string name="err_sync_nonetwork">Мрежа није доступна. Покушајте касније.</string>
-  <string name="text_invite_message">Хеј! Погледај Kontalk на Гугл Плеј радњи, бесплатну и слободну апликацију за дописивање! https://play.google.com/store/apps/details?id=org.kontalk</string>
+  <string name="text_invite_message">Хеј! Погледај Kontalk на Гугл Плеј радњи, бесплатну и слободну апликацију за дописивање! http://kontalk.org/</string>
   <string name="text_contacts_empty">Нови корисници биће аутоматски додати на овај списак.\n\nКористите <b>Мени</b> &gt; <b>Позови кориснике</b> да пошаљете некоме позивницу.</string>
   <string name="text_conversations_empty">Да почнете дописивање користите дугме <b>нова порука</b> испод.</string>
   <string name="notify_ticker_external_storage">Спољашње складиште није доступно</string>

@@ -68,9 +68,8 @@ class PublicKeyListener extends MessageCenterPacketListener {
                     try {
                         PersonalKey key = getApplication().getPersonalKey();
 
-                        // TODO subjectAltName?
                         bridgeCertData = X509Bridge.createCertificate(_publicKey,
-                            key.getAuthKeyPair().getPrivateKey(), null).getEncoded();
+                            key.getAuthKeyPair().getPrivateKey()).getEncoded();
                     }
                     catch (Exception e) {
                         Log.e(MessageCenterService.TAG, "error decoding key data", e);
