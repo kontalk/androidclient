@@ -1,7 +1,24 @@
+/*
+ * Kontalk Android client
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.kontalk.service.msgcenter;
 
 import android.content.Intent;
-import android.text.TextUtils;
 import android.util.Base64;
 
 import org.jivesoftware.smack.filter.StanzaFilter;
@@ -17,6 +34,7 @@ import org.kontalk.client.SmackInitializer;
 import java.util.List;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_UPLOAD_PRIVATEKEY;
+
 
 /**
  * Uploader and response listener for private key transfer.

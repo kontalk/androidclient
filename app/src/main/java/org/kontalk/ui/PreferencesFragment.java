@@ -267,6 +267,18 @@ public final class PreferencesFragment extends RootPreferenceFragment {
             }
         });
 
+        // register device
+        final Preference registerDevice = findPreference("pref_register_device");
+        registerDevice.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                // TODO ask password?
+                MessageCenterService.uploadPrivateKey(getContext(),
+                    Kontalk.get(getContext()).getCachedPassphrase());
+                return true;
+            }
+        });
+
         // delete account
         final Preference deleteAccount = findPreference("pref_delete_account");
         deleteAccount.setOnPreferenceClickListener(new OnPreferenceClickListener() {

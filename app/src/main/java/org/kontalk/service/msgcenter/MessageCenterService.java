@@ -2163,19 +2163,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void beginUploadPrivateKey(String exportPasshrase) {
-
-        String passphrase = Kontalk.get(this).getCachedPassphrase();
-
-        byte[] privateKeyData;
         try {
-            privateKeyData = Authenticator.getPrivateKeyExportData(this, passphrase, exportPasshrase);
-        } catch (PGPException | IOException e) {
-            Log.e(TAG, "unable to load private key data", e);
-            return;
+            String passphrase = Kontalk.get(this).getCachedPassphrase();
+            byte[] privateKeyData = Authenticator.getPrivateKeyExportData(this, passphrase, exportPasshrase);
+            PrivateKeyUploadListener uploadListener = new PrivateKeyUploadListener(this, privateKeyData);
+            uploadListener.uploadAndListen();
         }
-
-        PrivateKeyUploadListener uploadListener = new PrivateKeyUploadListener(this, privateKeyData);
-        uploadListener.uploadAndListen();
+        catch (PGPException | IOException e) {
+            Log.e(TAG, "unable to load private key data", e);
+        }
     }
 
     private boolean canTest() {
