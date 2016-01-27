@@ -91,7 +91,7 @@
   <string name="size_unknown">(inconnu)</string>
   <string name="title_file_info">Information du fichier</string>
   <string name="pref_restart_msgcenter">Redémarrer la messagerie</string>
-  <string name="pref_title_restart_msgcenter">A utiliser si le centre de messagerie ne fonctionnne pas correctement</string>
+  <string name="pref_title_restart_msgcenter">A utiliser si Kontalk ne fonctionne pas correctement</string>
   <string name="pref_idle_time">Déconnecter quand inactif</string>
   <string name="pref_title_idle_time">Combien de temps attendre avant de se déconnecter pour inactivité</string>
   <string name="pref_wakeup_time">Se reconnecter au serveur</string>
@@ -201,7 +201,7 @@
   <string name="attachment_download">Téléchargement de pièce jointe</string>
   <string name="attachment_upload">Téléversement de la pièce jointe</string>
   <string name="seen_moment_ago_label">il y a un instant</string>
-  <string name="seen_online_label">en ligne</string>
+  <string name="seen_online_label">actif</string>
   <string name="seen_typing_label">écrit…</string>
   <string name="invitation_sent_label">invitation en attente</string>
   <string name="pref_custom_background">Fond d\'écran personnalisé</string>
@@ -260,7 +260,7 @@
   <string name="msg_status_encrypted">Chiffré</string>
   <string name="pref_balloons">Thème des conversations</string>
   <string name="pref_title_balloons">Choisissez un thème de ballon de discussion</string>
-  <string name="attachment_picture">Photo</string>
+  <string name="attachment_picture">Galerie</string>
   <string name="attachment_contact">Contact</string>
   <string name="attachment_audio">Audio</string>
   <string name="chooser_send_picture">Envoyer une photo</string>
@@ -325,7 +325,7 @@
   <string name="iab_error_query">N\'a pas pu demander l\'inventaire de la facturation in-app (%d)</string>
   <string name="copy_clipboard">Copier dans le presse-papiers</string>
   <string name="bitcoin_clipboard_copied">Adresse Bitcoin copiée dans le presse-papiers.</string>
-  <string name="warn_no_personal_key">Impossible de chargé la clé personnelle. Désactivez le chiffrement dans le menu Paramètres pour envoyer le message quand même.</string>
+  <string name="warn_no_personal_key">Impossible de charger la clé personnelle. Désactivez le chiffrement dans le menu Paramètres pour envoyer le message quand même.</string>
   <string name="warn_no_public_key">Impossible de trouver une clé publique pour cet utilisateur. Essayez d\'actualiser votre liste de contacts ou de désactiver le chiffrement dans les menu Paramètres pour envoyer le message quand même.</string>
   <string name="warn_encryption_failed">Impossible de chiffrer un message. Désactiver le chiffrement dans le menu Paramètres pour envoyer un message quand même.</string>
   <string name="warn_not_subscribed">Impossible d\'envoyer un message. L\'utilisateur n\'a pas encore accepté votre invitation.</string>
@@ -411,4 +411,37 @@
 </plurals>
 
 <string name="app_name_offline">Kontalk (hors ligne)</string>
+    <string name="mark_read">Lu</string>
+    <string name="pref_enable_notification_led">Voyant de notification</string>
+    <string name="pref_notification_led_color">Couleur du voyant de notification</string>
+    <string name="seen_away_label">en ligne</string>
+    <string name="pref_title_custom_background">Choisir un fond d\'écran en utilisant l\'option ci-dessous</string>
+    <string name="err_import_keypair_read">Impossible de lire la clé personnelle depuis le stockage externe.</string>
+    <string name="attachment_camera">Appareil photo</string>
+    <string name="attachment_video">Vidéo</string>
+    <string name="attachment_file">Fichier</string>
+    <string name="attachment_vcard">Contact</string>
+    <string name="attachment_location">Localisation</string>
+
+    <string name="msg_not_implemented">Pas encore implémenté.</string>
+
+    <string name="chooser_error_no_camera_app">Aucune application d\'appareil photo disponible.</string>
+
+    <string name="err_keypair_export_write">Impossible d\'écrire la clé personnelle dans le stockage externe.</string>
+    <string name="err_keypair_export_other">Impossible d\'exporter la clé personnelle.</string>
+
+    <string name="pref_title_sync_sim_contacts">Inclure les contacts sur la carte SIM lors de la recherche d\'utilisateurs enregistrés</string>
+
+    <string name="pref_title_sync_invisible_contacts">Inclure les contacts non affichés dans l\'application de Carnet d\'Adresse. À activer si vous utilisez DAVDroid</string>
+
+    <string name="warning_public_key_changed">La clé personnelle de cet utilisateur a changé inopinément !</string>
+    <string name="title_public_key_changed_warning">Clé personnelle changée</string>
+    <string name="msg_public_key_changed_warning">Merci de vérifier avec l\'utilisateur qu\'il ou elle a réinstallé Kontalk ou régénéré sa clé intentionnellement, sinon la communication pourrait être compromise !</string>
+    <string name="warning_public_key_unknown">La clé personnelle de cet utilisateur n\'est pas fiable !</string>
+    <string name="title_public_key_unknown_warning">Clé personnelle non fiable</string>
+    <string name="msg_public_key_unknown_warning">Merci de vérifier avec l\'utilisateur que son empreinte correspond à celle affichée dans la boite de dialogue <b>identité</b>, sinon la communication pourrait être compromise !</string>
+
+    <string name="pref_show_blocked_users">Montrer les utilisateurs bloqués</string>
+    <string name="button_load_next_page">Charger plus de messages</string>
+
     </resources>
