@@ -3018,8 +3018,10 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                     }
                     else {
                         // first query - use last id of this new cursor
-                        cursor.moveToFirst();
-                        mLastId = Conversation.getMessageId(cursor);
+                        if (cursor.getCount() > 0) {
+                            cursor.moveToFirst();
+                            mLastId = Conversation.getMessageId(cursor);
+                        }
 
                         // see if we have to scroll to a specific message
                         int newSelectionPos = -1;
