@@ -1308,6 +1308,15 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         getActivity().startService(i);
     }
 
+    private void scrollToPosition(int position) {
+        getListView().setSelection(position);
+    }
+
+    private boolean isSearching() {
+        Bundle args = myArguments();
+        return args != null && args.getLong(ComposeMessage.EXTRA_MESSAGE, -1) >= 0;
+    }
+
     private synchronized void startQuery(boolean progress) {
         if (progress)
             getActivity().setProgressBarIndeterminateVisibility(true);
@@ -1319,12 +1328,12 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
     private void startMessagesQuery() {
         CompositeMessage.startQuery(mQueryHandler, MESSAGE_LIST_QUERY_TOKEN,
-            threadId, MESSAGE_PAGE_SIZE, 0);
+            threadId, isSearching() ? 0 : MESSAGE_PAGE_SIZE, 0);
     }
 
     private void startMessagesQuery(long lastId) {
         CompositeMessage.startQuery(mQueryHandler, MESSAGE_PAGE_QUERY_TOKEN,
-            threadId, MESSAGE_PAGE_SIZE, lastId);
+            threadId, isSearching() ? 0 : MESSAGE_PAGE_SIZE, lastId);
     }
 
     private void stopQuery() {
@@ -2983,7 +2992,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
         @Override
         protected synchronized void onQueryComplete(int token, Object cookie, Cursor cursor) {
-            ComposeMessageFragment parent = mParent.get();
+            final ComposeMessageFragment parent = mParent.get();
             if (parent == null || cursor == null || parent.isFinishing() || mCancel) {
                 // close cursor - if any
                 if (cursor != null)
@@ -3031,7 +3040,6 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                             long msgId = args.getLong(ComposeMessage.EXTRA_MESSAGE,
                                 -1);
                             if (msgId > 0) {
-
                                 cursor.moveToPosition(-1);
                                 while (cursor.moveToNext()) {
                                     long curId = cursor.getLong(CompositeMessage.COLUMN_ID);
@@ -3044,8 +3052,16 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                         }
 
                         parent.mListAdapter.changeCursor(cursor);
-                        if (newSelectionPos >= 0)
-                            parent.getListView().setSelection(newSelectionPos);
+                        if (newSelectionPos >= 0) {
+                            // +1 is for the header view
+                            final int pos = newSelectionPos + 1;
+                            parent.getListView().post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    parent.scrollToPosition(pos);
+                                }
+                            });
+                        }
 
                         if (cursor.getCount() >= MESSAGE_PAGE_SIZE)
                             parent.showHeaderView();
