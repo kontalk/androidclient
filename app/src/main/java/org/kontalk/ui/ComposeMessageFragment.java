@@ -1337,9 +1337,9 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     }
 
     private void stopQuery() {
+        hideHeaderView();
         if (mListAdapter != null)
             mListAdapter.changeCursor(null);
-        hideHeaderView();
 
         if (mQueryHandler != null) {
             // be sure to cancel all queries
