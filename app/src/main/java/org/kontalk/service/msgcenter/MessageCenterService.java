@@ -1821,7 +1821,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         boolean isGroupMsg = (groupId != null);
         if (isGroupMsg) {
             toGroup = data.getStringArray("org.kontalk.message.to");
-            to = groupId;
+            // TODO this should be discovered first
+            to = mConnection.getServiceName();
         }
         else {
             to = data.getString("org.kontalk.message.to");
@@ -1949,15 +1950,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 m.addExtension(new OutOfBandData(fetchUrl, mime, length, encrypt));
             }
 
-            // add group extension and multiple addresses
+            // add group extension
             if (isGroupMsg) {
                 GroupExtension g = new GroupExtension(groupId, groupOwner);
                 m.addExtension(g);
-
-                MultipleAddresses p = new MultipleAddresses();
-                for (String rcpt : toGroup)
-                    p.addAddress(MultipleAddresses.Type.to, rcpt, null, null, false, null);
-                m.addExtension(p);
             }
 
             if (encrypt) {
@@ -2025,6 +2021,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // message server id
             String serverId = data.getString("org.kontalk.message.ack");
             boolean ackRequest = !data.getBoolean("org.kontalk.message.standalone", false);
+
+            // add multiple addresses
+            if (isGroupMsg) {
+                MultipleAddresses p = new MultipleAddresses();
+                for (String rcpt : toGroup)
+                    p.addAddress(MultipleAddresses.Type.to, rcpt, null, null, false, null);
+                m.addExtension(p);
+            }
 
             // received receipt
             if (serverId != null) {
