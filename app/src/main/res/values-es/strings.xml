@@ -399,7 +399,7 @@
     <string name="menu_manual_verification">Ya tiene un código?</string>
     <string name="confirm_will_delete_threads">Se eliminarán los chats seleccionados.</string>
     <string name="confirm_will_delete_messages">Se eliminarán los mensajes seleccionados.</string>
-    <string name="pref_balloon_label_hangout">Quedada</string>
+    <string name="pref_balloon_label_hangout">Hangout</string>
     <string name="title_block_user_warning">Confirma que quiere bloquear a este usuario?</string>
     <string name="title_unblock_user_warning">Confirma que quiere desbloquear a este usuario?</string>
     <string name="warning_button_details">DETALLES</string>
