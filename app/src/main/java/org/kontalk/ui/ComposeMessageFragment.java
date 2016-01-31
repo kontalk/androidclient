@@ -160,6 +160,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
     private static final int SELECT_ATTACHMENT_OPENABLE = Activity.RESULT_FIRST_USER + 1;
     private static final int SELECT_ATTACHMENT_CONTACT = Activity.RESULT_FIRST_USER + 2;
+    private static final int SELECT_ATTACHMENT_PHOTO = Activity.RESULT_FIRST_USER + 3;
 
     private enum WarningType {
         SUCCESS(0),    // not implemented
@@ -1141,10 +1142,15 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
             if (list.size() <= 0) throw new UnsupportedOperationException();
 
             mCurrentPhoto = MediaStorage.getOutgoingImageFile();
+            Uri uri = Uri.fromFile(mCurrentPhoto);
             Intent take = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            take.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mCurrentPhoto));
+            take.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                take.setClipData(ClipData.newUri(getContext().getContentResolver(),
+                    "Picture path", uri));
+            }
 
-            startActivityForResult(take, SELECT_ATTACHMENT_OPENABLE);
+            startActivityForResult(take, SELECT_ATTACHMENT_PHOTO);
         }
         catch (UnsupportedOperationException ue) {
             Toast.makeText(getActivity(), R.string.chooser_error_no_camera_app,
@@ -1408,18 +1414,15 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == SELECT_ATTACHMENT_OPENABLE) {
+        // image from storage/picture from camera
+        // since there are like up to 3 different ways of doing this...
+        if (requestCode == SELECT_ATTACHMENT_OPENABLE || requestCode == SELECT_ATTACHMENT_PHOTO) {
             if (resultCode == Activity.RESULT_OK) {
                 Uri[] uris = null;
                 String[] mimes = null;
 
                 // returning from camera
                 if (data == null) {
-                    /*
-                     * FIXME picture taking should be done differently.
-                     * Use a MediaStore-based uri and use a requestCode just
-                     * for taking pictures.
-                     */
                     if (mCurrentPhoto != null) {
                         Uri uri = Uri.fromFile(mCurrentPhoto);
                         // notify media scanner
@@ -1490,6 +1493,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                 }
             }
         }
+        // contact card (vCard)
         else if (requestCode == SELECT_ATTACHMENT_CONTACT) {
             if (resultCode == Activity.RESULT_OK) {
                 Uri uri = data.getData();
