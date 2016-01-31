@@ -91,7 +91,7 @@
   <string name="size_unknown">(neznámý)</string>
   <string name="title_file_info">Informace o souboru</string>
   <string name="pref_restart_msgcenter">Restartovat centrum zpráv</string>
-  <string name="pref_title_restart_msgcenter">Použijte, pokud centrum zpráv nefunguje správně</string>
+  <string name="pref_title_restart_msgcenter">Použijte, pokud Kontalk nefunguje správně</string>
   <string name="pref_idle_time">Odpojit při nečinnosti</string>
   <string name="pref_title_idle_time">Jak dlouho čekat před odpojením pro nečinnost</string>
   <string name="pref_wakeup_time">Znovu se připojit k serveru</string>
@@ -201,7 +201,7 @@
   <string name="attachment_download">Stáhnout přílohu</string>
   <string name="attachment_upload">Nahrát přílohu</string>
   <string name="seen_moment_ago_label">před chvilkou</string>
-  <string name="seen_online_label">online</string>
+  <string name="seen_online_label">aktivní</string>
   <string name="seen_typing_label">píše…</string>
   <string name="invitation_sent_label">pozvánka odeslána</string>
   <string name="pref_custom_background">Vlastní pozadí</string>
@@ -260,7 +260,7 @@
   <string name="msg_status_encrypted">Zašifrováno</string>
   <string name="pref_balloons">Vzhled konverzační bubliny</string>
   <string name="pref_title_balloons">Vyberte vzhled konverzační bubliny</string>
-  <string name="attachment_picture">Obrázek</string>
+  <string name="attachment_picture">Galerie</string>
   <string name="attachment_contact">Kontakt</string>
   <string name="attachment_audio">Zvuk</string>
   <string name="chooser_send_picture">Odeslat obrázek</string>
@@ -412,4 +412,37 @@
 </plurals>
 
 <string name="app_name_offline">Kontalk (offline)</string>
+    <string name="mark_read">Přečtené</string>
+    <string name="pref_enable_notification_led">Notifikační LED</string>
+    <string name="pref_notification_led_color">Barva notifikační LED</string>
+    <string name="seen_away_label">online</string>
+    <string name="pref_title_custom_background">Vyberte pozadí pomocí volby níže</string>
+    <string name="err_import_keypair_read">Nepodařilo se načíst osobní klíč z externího úložiště.</string>
+    <string name="attachment_camera">Fotoaparát</string>
+    <string name="attachment_video">Video</string>
+    <string name="attachment_file">Soubor</string>
+    <string name="attachment_vcard">Kontakt</string>
+    <string name="attachment_location">Poloha</string>
+
+    <string name="msg_not_implemented">Zatím není implementováno.</string>
+
+    <string name="chooser_error_no_camera_app">Není dostupná žádná aplikace fotoaparátu.</string>
+
+    <string name="err_keypair_export_write">Nepodařilo se zapsat osobní klíč do externího úložiště.</string>
+    <string name="err_keypair_export_other">Nepodařilo se vyexportovat osobní klíč.</string>
+
+    <string name="pref_title_sync_sim_contacts">Zahrnout kontakty na SIM při zjišťování registrovaných uživatelů</string>
+
+    <string name="pref_title_sync_invisible_contacts">Zahrnout kontakty nezobrazené v aplikaci Kontakty. Zapněte, pokud používáte DAVDroid</string>
+
+    <string name="warning_public_key_changed">Osobní klíč tohoto uživatele se neočekávaně změnil!</string>
+    <string name="title_public_key_changed_warning">Osobní klíč byl změněn</string>
+    <string name="msg_public_key_changed_warning">Ověřte prosím s uživatelem, že reinstaloval Kontalk nebo záměrně vygeneroval nový osobní klíč, v opačném případě může být komunikace kompromitována!</string>
+    <string name="warning_public_key_unknown">Osobní klíč tohoto uživatele není důvěryhodný!</string>
+    <string name="title_public_key_unknown_warning">Nedůvěryhodný osobní klíč</string>
+    <string name="msg_public_key_unknown_warning">Ověřte prosím s uživatelem, že jeho/její otisk se shoduje se zobrazeným v <b>identifikačním dialogu</b>, v opačném případě může být komunikace kompromitována!</string>
+
+    <string name="pref_show_blocked_users">Zobrazit blokované uživatele</string>
+    <string name="button_load_next_page">Načíst více zpráv</string>
+
     </resources>

@@ -218,7 +218,7 @@
     <string name="attachment_download">附件下载</string>
     <string name="attachment_upload">附件上传</string>
     <string name="seen_moment_ago_label">刚刚</string>
-    <string name="seen_online_label">在线</string>
+    <string name="seen_online_label">活动</string>
     <string name="seen_typing_label">正在输入……</string>
     <string name="invitation_sent_label">未处理的邀请</string>
     <string name="pref_custom_background">自定义背景</string>
@@ -451,12 +451,37 @@
 </plurals>
 
 <string name="app_name_offline">Kontalk (离线)</string>
-    <string name="seen_away_label">离开</string>
-    <string name="err_import_keypair_read">无法从外置存储器读取密匙</string>
+    <string name="seen_away_label">在线</string>
+    <string name="err_import_keypair_read">无法从外置存储器读取密匙。</string>
     <string name="attachment_camera">摄像头</string>
     <string name="attachment_video">视频</string>
     <string name="attachment_file">文件</string>
     <string name="attachment_vcard">联系人</string>
     <string name="attachment_location">位置</string>
 
+    <string name="pref_enable_notification_led">LED指示灯</string>
+    <string name="pref_notification_led_color">LED指示灯颜色</string>
+    <string name="pref_title_custom_background">使用以下设置挑选背景</string>
+    <string name="msg_not_implemented">未实现的功能。</string>
+
+    <string name="chooser_error_no_camera_app">找不到拍照应用。</string>
+
+    <string name="err_keypair_export_write">无法将个人密匙写入外置存储器。</string>
+    <string name="err_keypair_export_other">无法导出个人密匙。</string>
+
+    <string name="pref_title_sync_sim_contacts">检查已注册用户时包含SIM卡联系人</string>
+
+    <string name="pref_title_sync_invisible_contacts">联系人应用不显示包含的联系人。当你使用DAVDroid时开启</string>
+
+    <string name="warning_public_key_changed">用户的个人密匙意外改变！</string>
+    <string name="title_public_key_changed_warning">个人密匙已改变</string>
+    <string name="msg_public_key_changed_warning">请验证对方是否有意识地重新安装了Kontalk或是修改了密匙，否则会话将会泄密！</string>
+    <string name="warning_public_key_unknown">用户的个人密匙不可信任！</string>
+    <string name="title_public_key_unknown_warning">不可信任的个人密匙</string>
+    <string name="msg_public_key_unknown_warning">请验证对方的指纹是否与显示在<b>身份</b>的对话框匹配，否则会话将会泄密！</string>
+
+    <string name="pref_show_blocked_users">显示被禁的用户</string>
+    <string name="button_load_next_page">载入更多消息</string>
+
+    <string name="mark_read">阅读</string>
     </resources>
