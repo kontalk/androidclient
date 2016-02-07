@@ -27,7 +27,6 @@ import java.util.Map;
 import com.android.providers.contacts.ContactLocaleUtils;
 import com.android.providers.contacts.FastScrollingIndexCache;
 
-import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
@@ -80,7 +79,7 @@ import org.kontalk.util.XMPPUtils;
 public class UsersProvider extends ContentProvider {
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".users";
 
-    private static final int DATABASE_VERSION = 8;
+    private static final int DATABASE_VERSION = 9;
     private static final String DATABASE_NAME = "users.db";
     private static final String TABLE_USERS = "users";
     private static final String TABLE_USERS_OFFLINE = "users_offline";
@@ -104,10 +103,9 @@ public class UsersProvider extends ContentProvider {
     private static class DatabaseHelper extends SQLiteOpenHelper {
         private static final String CREATE_TABLE_USERS = "(" +
             "_id INTEGER PRIMARY KEY," +
-            "hash TEXT NOT NULL UNIQUE," +
+            "jid TEXT NOT NULL UNIQUE," +
             "number TEXT NOT NULL UNIQUE," +
             "display_name TEXT," +
-            "jid TEXT," +
             "lookup_key TEXT," +
             "contact_id INTEGER," +
             "registered INTEGER NOT NULL DEFAULT 0," +
@@ -138,6 +136,19 @@ public class UsersProvider extends ContentProvider {
         private static final String[] SCHEMA_UPGRADE_V7 = {
             SCHEMA_KEYS,
             "INSERT INTO " + TABLE_KEYS + " SELECT jid, public_key, fingerprint FROM " + TABLE_USERS,
+        };
+
+        private static final String[] SCHEMA_UPGRADE_V8 = {
+            // online table
+            "CREATE TABLE users_backup " + CREATE_TABLE_USERS,
+            "INSERT INTO users_backup SELECT _id, jid, number, display_name, lookup_key, contact_id, registered, status, last_seen, public_key, fingerprint, blocked FROM " + TABLE_USERS,
+            "DROP TABLE " + TABLE_USERS,
+            "ALTER TABLE users_backup RENAME TO " + TABLE_USERS,
+            // offline table
+            "CREATE TABLE users_backup " + CREATE_TABLE_USERS,
+            "INSERT INTO users_backup SELECT _id, jid, number, display_name, lookup_key, contact_id, registered, status, last_seen, public_key, fingerprint, blocked FROM " + TABLE_USERS_OFFLINE,
+            "DROP TABLE " + TABLE_USERS_OFFLINE,
+            "ALTER TABLE users_backup RENAME TO " + TABLE_USERS_OFFLINE,
         };
 
         // any upgrade - just replace the table
@@ -176,6 +187,10 @@ public class UsersProvider extends ContentProvider {
                 case 7:
                     // create keys table and trust anyone
                     for (String sql : SCHEMA_UPGRADE_V7)
+                        db.execSQL(sql);
+                    // go on with next version
+                case 8:
+                    for (String sql : SCHEMA_UPGRADE_V8)
                         db.execSQL(sql);
                     break;
                 default:
@@ -498,7 +513,6 @@ public class UsersProvider extends ContentProvider {
         if (rc == 0) {
             ContentValues insertValues = new ContentValues(values);
             // insert new record
-            insertValues.put(Users.HASH, XmppStringUtils.parseLocalpart(selectionArgs[0]));
             insertValues.put(Users.JID, selectionArgs[0]);
             insertValues.put(Users.NUMBER, selectionArgs[0]);
             if (!values.containsKey(Users.DISPLAY_NAME))
@@ -565,16 +579,16 @@ public class UsersProvider extends ContentProvider {
 
         // we are trying to be fast here
         SQLiteStatement stm = db.compileStatement("INSERT INTO " + TABLE_USERS_OFFLINE +
-            " (hash, number, jid, display_name, lookup_key, contact_id, registered, public_key, fingerprint)" +
-            " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            " (number, jid, display_name, lookup_key, contact_id, registered, public_key, fingerprint)" +
+            " VALUES(?, ?, ?, ?, ?, ?, ?, ?)");
 
         // these two statements are used to immediately update data in the online table
         // even if the data is dummy, it will be soon replaced by sync or by manual request
         SQLiteStatement onlineUpd = db.compileStatement("UPDATE " + TABLE_USERS +
-            " SET number = ?, display_name = ?, lookup_key = ?, contact_id = ? WHERE hash = ?");
+            " SET number = ?, display_name = ?, lookup_key = ?, contact_id = ? WHERE jid = ?");
         SQLiteStatement onlineIns = db.compileStatement("INSERT INTO " + TABLE_USERS +
-            " (hash, number, jid, display_name, lookup_key, contact_id, registered, public_key, fingerprint)" +
-            " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            " (number, jid, display_name, lookup_key, contact_id, registered, public_key, fingerprint)" +
+            " VALUES(?, ?, ?, ?, ?, ?, ?, ?)");
 
         Cursor phones = null;
         String dialPrefix = Preferences.getDialPrefix(context);
@@ -631,7 +645,7 @@ public class UsersProvider extends ContentProvider {
                         String jid = XMPPUtils.createLocalJID(getContext(), hash);
 
                         addResyncContact(db, stm, onlineUpd, onlineIns,
-                            hash, number, jid, name,
+                            number, jid, name,
                             lookupKey, contactId, false, null, null);
                         count++;
                     }
@@ -705,7 +719,7 @@ public class UsersProvider extends ContentProvider {
                             long contactId = phones.getLong(phones.getColumnIndex(BaseColumns._ID));
 
                             addResyncContact(db, stm, onlineUpd, onlineIns,
-                                hash, number, jid, name,
+                                number, jid, name,
                                 null, contactId,
                                 false, null, null);
                             count++;
@@ -741,7 +755,7 @@ public class UsersProvider extends ContentProvider {
                     String jid = XMPPUtils.createLocalJID(getContext(), hash);
 
                     addResyncContact(db, stm, onlineUpd, onlineIns,
-                        hash, ownNumber, jid, ownName,
+                        ownNumber, jid, ownName,
                         null, null,
                         true, publicKeyData, fingerprint);
                     count++;
@@ -769,13 +783,12 @@ public class UsersProvider extends ContentProvider {
     }
 
     private void addResyncContact(SQLiteDatabase db, SQLiteStatement stm, SQLiteStatement onlineUpd, SQLiteStatement onlineIns,
-        String hash, String number, String jid, String displayName, String lookupKey,
+        String number, String jid, String displayName, String lookupKey,
         Long contactId, boolean registered, byte[] publicKey, String fingerprint) {
 
         int i = 0;
 
         stm.clearBindings();
-        stm.bindString(++i, hash);
         stm.bindString(++i, number);
         stm.bindString(++i, jid);
         if (displayName != null)
@@ -817,14 +830,13 @@ public class UsersProvider extends ContentProvider {
             onlineUpd.bindLong(++i, contactId);
         else
             onlineUpd.bindNull(++i);
-        onlineUpd.bindString(++i, hash);
+        onlineUpd.bindString(++i, jid);
         int rows = executeUpdateDelete(db, onlineUpd);
 
         // no contact found, insert a new dummy one
         if (rows <= 0) {
             i = 0;
             onlineIns.clearBindings();
-            onlineIns.bindString(++i, hash);
             onlineIns.bindString(++i, number);
             onlineIns.bindString(++i, jid);
             if (displayName != null)
@@ -887,15 +899,15 @@ public class UsersProvider extends ContentProvider {
             id = db.insertOrThrow(table, null, values);
         }
         catch (SQLException e) {
-            String hash = values.getAsString(Users.HASH);
-            if (hash != null) {
+            String jid = values.getAsString(Users.JID);
+            if (jid != null) {
                 // discard display_name if requested
                 if (discardName) {
                     values.remove(Users.DISPLAY_NAME);
                     values.remove(Users.NUMBER);
                 }
 
-                db.update(table, values, Users.HASH + "=?", new String[] { hash });
+                db.update(table, values, Users.JID + "=?", new String[] { jid });
             }
         }
 
@@ -1197,7 +1209,6 @@ public class UsersProvider extends ContentProvider {
 
         usersProjectionMap = new HashMap<String, String>();
         usersProjectionMap.put(Users._ID, Users._ID);
-        usersProjectionMap.put(Users.HASH, Users.HASH);
         usersProjectionMap.put(Users.NUMBER, Users.NUMBER);
         usersProjectionMap.put(Users.DISPLAY_NAME, Users.DISPLAY_NAME);
         usersProjectionMap.put(Users.JID, TABLE_USERS + "." + Users.JID);
