@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.zip.ZipInputStream;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.folderselector.FileChooserDialog;
 import com.google.i18n.phonenumbers.NumberParseException;
@@ -671,9 +672,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                     startImport(zip, dialog.getInputEditText().getText().toString());
                 }
             })
-            .callback(new MaterialDialog.ButtonCallback() {
+            .onNegative(new MaterialDialog.SingleButtonCallback() {
                 @Override
-                public void onNegative(MaterialDialog dialog) {
+                public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
                     try {
                         zip.close();
                     }

@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.akalipetis.fragment.ActionModeListFragment;
 import com.akalipetis.fragment.MultiChoiceModeListener;
@@ -72,6 +73,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.view.ActionMode;
@@ -1259,9 +1261,9 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
             .positiveText(R.string.menu_block_user)
             .positiveColorRes(R.color.button_danger)
             .negativeText(android.R.string.cancel)
-            .callback(new MaterialDialog.ButtonCallback() {
+            .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
-                public void onPositive(MaterialDialog dialog) {
+                public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
                     setPrivacy(PRIVACY_BLOCK);
                 }
             })
@@ -1275,9 +1277,9 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
             .positiveText(R.string.menu_unblock_user)
             .positiveColorRes(R.color.button_danger)
             .negativeText(android.R.string.cancel)
-            .callback(new MaterialDialog.ButtonCallback() {
+            .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
-                public void onPositive(MaterialDialog dialog) {
+                public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
                     setPrivacy(PRIVACY_UNBLOCK);
                 }
             })

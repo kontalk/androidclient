@@ -19,12 +19,14 @@
 package org.kontalk.ui;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -175,9 +177,9 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
             .positiveText(android.R.string.ok)
             .positiveColorRes(R.color.button_danger)
             .negativeText(android.R.string.cancel)
-            .callback(new MaterialDialog.ButtonCallback() {
+            .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
-                public void onPositive(MaterialDialog dialog) {
+                public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
                     // we are going back voluntarily
                     Preferences.clearRegistrationProgress(CodeValidation.this);
                     CodeValidation.super.onBackPressed();
