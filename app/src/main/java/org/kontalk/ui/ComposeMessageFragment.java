@@ -3069,7 +3069,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                             });
                         }
 
-                        if (cursor.getCount() >= MESSAGE_PAGE_SIZE)
+                        if (newSelectionPos < 0 && cursor.getCount() >= MESSAGE_PAGE_SIZE)
                             parent.showHeaderView();
 
                         parent.getActivity().setProgressBarIndeterminateVisibility(false);
