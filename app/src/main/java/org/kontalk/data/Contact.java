@@ -161,8 +161,7 @@ public class Contact {
                         put(userId, c);
 
                         // insert result into users database immediately
-                        ContentValues values = new ContentValues(6);
-                        values.put(Users.HASH, XmppStringUtils.parseLocalpart(userId));
+                        ContentValues values = new ContentValues(5);
                         values.put(Users.NUMBER, numberHint);
                         values.put(Users.DISPLAY_NAME, name);
                         values.put(Users.JID, userId);
