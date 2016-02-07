@@ -73,6 +73,8 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     public static final String EXTRA_MESSAGE = "org.kontalk.conversation.MESSAGE";
     /** Used with VIEW actions, highlight a {@link Pattern} in messages. */
     public static final String EXTRA_HIGHLIGHT = "org.kontalk.conversation.HIGHLIGHT";
+    /** Used internally when reloading: does not trigger scroll-to-match. */
+    static final String EXTRA_RELOADING = "org.kontalk.conversation.RELOADING";
 
     /** The SEND intent. */
     private Intent sendIntent;

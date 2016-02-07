@@ -27,7 +27,6 @@ import java.util.Set;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 
-import org.jxmpp.util.XmppStringUtils;
 import org.kontalk.util.Preferences;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 

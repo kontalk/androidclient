@@ -3038,13 +3038,14 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                             mLastId = Conversation.getMessageId(cursor);
                         }
 
+                        // save reloading status for next time
+                        Bundle args = parent.myArguments();
+
                         // see if we have to scroll to a specific message
                         int newSelectionPos = -1;
 
-                        Bundle args = parent.myArguments();
-                        if (args != null) {
-                            long msgId = args.getLong(ComposeMessage.EXTRA_MESSAGE,
-                                -1);
+                        if (args != null && !args.getBoolean(ComposeMessage.EXTRA_RELOADING)) {
+                            long msgId = args.getLong(ComposeMessage.EXTRA_MESSAGE, -1);
                             if (msgId > 0) {
                                 cursor.moveToPosition(-1);
                                 while (cursor.moveToNext()) {
@@ -3055,6 +3056,8 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                                     }
                                 }
                             }
+
+                            args.putBoolean(ComposeMessage.EXTRA_RELOADING, true);
                         }
 
                         parent.mListAdapter.changeCursor(cursor);
