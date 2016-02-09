@@ -19,6 +19,7 @@
 package org.kontalk.ui;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import android.accounts.Account;
@@ -33,6 +34,7 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.InputType;
@@ -142,9 +144,9 @@ public class ConversationsActivity extends ToolbarActivity
                     proceedXmppUpgrade(name);
                 }
             })
-            .callback(new MaterialDialog.ButtonCallback() {
+            .onNegative(new MaterialDialog.SingleButtonCallback() {
                 @Override
-                public void onNegative(MaterialDialog dialog) {
+                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction dialogAction) {
                     dialog.cancel();
                 }
             })

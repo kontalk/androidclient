@@ -201,7 +201,6 @@ class PresenceListener extends MessageCenterPacketListener {
                 name = from;
 
             // insert public key into the users table
-            values.put(Users.HASH, XmppStringUtils.parseLocalpart(from));
             values.put(Users.JID, from);
             values.put(Users.NUMBER, from);
             if (publicKey != null && fingerprint != null) {

@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.akalipetis.fragment.ActionModeListFragment;
 import com.akalipetis.fragment.MultiChoiceModeListener;
@@ -72,6 +73,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.view.ActionMode;
@@ -160,6 +162,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
     private static final int SELECT_ATTACHMENT_OPENABLE = Activity.RESULT_FIRST_USER + 1;
     private static final int SELECT_ATTACHMENT_CONTACT = Activity.RESULT_FIRST_USER + 2;
+    private static final int SELECT_ATTACHMENT_PHOTO = Activity.RESULT_FIRST_USER + 3;
 
     private enum WarningType {
         SUCCESS(0),    // not implemented
@@ -1152,10 +1155,15 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
             if (list.size() <= 0) throw new UnsupportedOperationException();
 
             mCurrentPhoto = MediaStorage.getOutgoingImageFile();
+            Uri uri = Uri.fromFile(mCurrentPhoto);
             Intent take = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            take.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mCurrentPhoto));
+            take.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                take.setClipData(ClipData.newUri(getContext().getContentResolver(),
+                    "Picture path", uri));
+            }
 
-            startActivityForResult(take, SELECT_ATTACHMENT_OPENABLE);
+            startActivityForResult(take, SELECT_ATTACHMENT_PHOTO);
         }
         catch (UnsupportedOperationException ue) {
             Toast.makeText(getActivity(), R.string.chooser_error_no_camera_app,
@@ -1295,9 +1303,9 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
             .positiveText(R.string.menu_block_user)
             .positiveColorRes(R.color.button_danger)
             .negativeText(android.R.string.cancel)
-            .callback(new MaterialDialog.ButtonCallback() {
+            .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
-                public void onPositive(MaterialDialog dialog) {
+                public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
                     setPrivacy(PRIVACY_BLOCK);
                 }
             })
@@ -1311,9 +1319,9 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
             .positiveText(R.string.menu_unblock_user)
             .positiveColorRes(R.color.button_danger)
             .negativeText(android.R.string.cancel)
-            .callback(new MaterialDialog.ButtonCallback() {
+            .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
-                public void onPositive(MaterialDialog dialog) {
+                public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
                     setPrivacy(PRIVACY_UNBLOCK);
                 }
             })
@@ -1450,18 +1458,15 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == SELECT_ATTACHMENT_OPENABLE) {
+        // image from storage/picture from camera
+        // since there are like up to 3 different ways of doing this...
+        if (requestCode == SELECT_ATTACHMENT_OPENABLE || requestCode == SELECT_ATTACHMENT_PHOTO) {
             if (resultCode == Activity.RESULT_OK) {
                 Uri[] uris = null;
                 String[] mimes = null;
 
                 // returning from camera
                 if (data == null) {
-                    /*
-                     * FIXME picture taking should be done differently.
-                     * Use a MediaStore-based uri and use a requestCode just
-                     * for taking pictures.
-                     */
                     if (mCurrentPhoto != null) {
                         Uri uri = Uri.fromFile(mCurrentPhoto);
                         // notify media scanner
@@ -1532,6 +1537,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                 }
             }
         }
+        // contact card (vCard)
         else if (requestCode == SELECT_ATTACHMENT_CONTACT) {
             if (resultCode == Activity.RESULT_OK) {
                 Uri uri = data.getData();
@@ -3064,13 +3070,14 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                             mLastId = Conversation.getMessageId(cursor);
                         }
 
+                        // save reloading status for next time
+                        Bundle args = parent.myArguments();
+
                         // see if we have to scroll to a specific message
                         int newSelectionPos = -1;
 
-                        Bundle args = parent.myArguments();
-                        if (args != null) {
-                            long msgId = args.getLong(ComposeMessage.EXTRA_MESSAGE,
-                                -1);
+                        if (args != null && !args.getBoolean(ComposeMessage.EXTRA_RELOADING)) {
+                            long msgId = args.getLong(ComposeMessage.EXTRA_MESSAGE, -1);
                             if (msgId > 0) {
                                 cursor.moveToPosition(-1);
                                 while (cursor.moveToNext()) {
@@ -3081,6 +3088,8 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                                     }
                                 }
                             }
+
+                            args.putBoolean(ComposeMessage.EXTRA_RELOADING, true);
                         }
 
                         parent.mListAdapter.changeCursor(cursor);
@@ -3095,7 +3104,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                             });
                         }
 
-                        if (cursor.getCount() >= MESSAGE_PAGE_SIZE)
+                        if (newSelectionPos < 0 && cursor.getCount() >= MESSAGE_PAGE_SIZE)
                             parent.showHeaderView();
 
                         parent.getActivity().setProgressBarIndeterminateVisibility(false);

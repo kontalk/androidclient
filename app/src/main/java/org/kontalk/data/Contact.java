@@ -27,7 +27,6 @@ import java.util.Set;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 
-import org.jxmpp.util.XmppStringUtils;
 import org.kontalk.util.Preferences;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
@@ -161,8 +160,7 @@ public class Contact {
                         put(userId, c);
 
                         // insert result into users database immediately
-                        ContentValues values = new ContentValues(6);
-                        values.put(Users.HASH, XmppStringUtils.parseLocalpart(userId));
+                        ContentValues values = new ContentValues(5);
                         values.put(Users.NUMBER, numberHint);
                         values.put(Users.DISPLAY_NAME, name);
                         values.put(Users.JID, userId);

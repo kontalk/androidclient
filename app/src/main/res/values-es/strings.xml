@@ -91,7 +91,7 @@
   <string name="size_unknown">(desconocido)</string>
   <string name="title_file_info">Información del archivo</string>
   <string name="pref_restart_msgcenter">Reiniciar el centro de mensajería</string>
-  <string name="pref_title_restart_msgcenter">Use esta opción si el centro de mensajería no funciona correctamente</string>
+  <string name="pref_title_restart_msgcenter">Use esta opción si Kontalk no funciona correctamente</string>
   <string name="pref_idle_time">Desconectar estando inactivo</string>
   <string name="pref_title_idle_time">Tiempo de espera antes de desconectar por inactividad</string>
   <string name="pref_wakeup_time">Volver a conectar al servidor</string>
@@ -201,7 +201,7 @@
   <string name="attachment_download">Descargar adjunto</string>
   <string name="attachment_upload">Carga de archivo adjunto</string>
   <string name="seen_moment_ago_label">hace un momento</string>
-  <string name="seen_online_label">conectado</string>
+  <string name="seen_online_label">activo</string>
   <string name="seen_typing_label">escribiendo…</string>
   <string name="invitation_sent_label">invitación pendiente</string>
   <string name="pref_custom_background">Fondo personalizado</string>
@@ -399,7 +399,7 @@
     <string name="menu_manual_verification">Ya tiene un código?</string>
     <string name="confirm_will_delete_threads">Se eliminarán los chats seleccionados.</string>
     <string name="confirm_will_delete_messages">Se eliminarán los mensajes seleccionados.</string>
-    <string name="pref_balloon_label_hangout">Quedada</string>
+    <string name="pref_balloon_label_hangout">Hangout</string>
     <string name="title_block_user_warning">Confirma que quiere bloquear a este usuario?</string>
     <string name="title_unblock_user_warning">Confirma que quiere desbloquear a este usuario?</string>
     <string name="warning_button_details">DETALLES</string>
@@ -424,5 +424,24 @@
 
     <string name="err_keypair_export_write">No se puede escribir la clave personal en el almacenamiento externo.</string>
     <string name="err_keypair_export_other">No se puede exportar la clave personal.</string>
+
+    <string name="pref_enable_notification_led">LED de notificación</string>
+    <string name="pref_notification_led_color">Color del LED de notificación</string>
+    <string name="pref_title_custom_background">Elija un fondo personalizado en la opción bajo esta</string>
+    <string name="pref_title_sync_sim_contacts">Incluir contactos de la tarjeta SIM cuando se busquen usuarios registrados</string>
+
+    <string name="pref_title_sync_invisible_contacts">Incluir contactos no mostrados en la aplicación de Contactos. Activa esto si usas DAVDroid</string>
+
+    <string name="warning_public_key_changed">¡La clave personal de este usuario cambió inesperadamente!</string>
+    <string name="title_public_key_changed_warning">Clave personal modificada</string>
+    <string name="msg_public_key_changed_warning">¡Por favor verifique con el usuario que el/ella reinstaló Kontalk o regeneró intencionalmente su clave personal, de lo contrario la comunicación podría estar comprometida!</string>
+    <string name="mark_read">Leido</string>
+    <string name="warning_public_key_unknown">¡La clave personal de este usuario no es de confianza!</string>
+    <string name="title_public_key_unknown_warning">Clave personal no confiable</string>
+    <string name="pref_show_blocked_users">Mostrar usuarios bloqueados</string>
+    <string name="button_load_next_page">Cargar más mensajes</string>
+
+    <string name="seen_away_label">conectado</string>
+    <string name="msg_public_key_unknown_warning">¡Por favor verifique con el usuario que su huella digital coincide con la mostrada en el diálogo <b>identidad</b>, de lo contrario la comunicación podría estar comprometida!</string>
 
     </resources>
