@@ -190,7 +190,7 @@
   <string name="attachment_download">Baixar anexo</string>
   <string name="attachment_upload">Enviar anexo</string>
   <string name="seen_moment_ago_label">há pouco tempo</string>
-  <string name="seen_online_label">conectado</string>
+  <string name="seen_online_label">ativo</string>
   <string name="seen_typing_label">digitando…</string>
   <string name="pref_custom_background">Fundo personalizado</string>
   <string name="pref_background_uri">Fundo</string>
@@ -395,7 +395,7 @@
     <string name="title_unblock_user_warning">Deseja realmente desbloquear essa pessoa?</string>
     <string name="pref_enable_notification_led">Notificação via LED</string>
     <string name="pref_notification_led_color">Cor do LED de notificação</string>
-    <string name="seen_away_label">afastado</string>
+    <string name="seen_away_label">conectado</string>
     <string name="msg_unblock_user_warning">Você está prestes a desbloquear essa pessoa. Ao fazer isso, você permitirá que ela envie mensagens para você, veja o seu status e último horário de conexão.</string>
 
     <string name="notification_text_more">Toque aqui para saber mais</string>
@@ -456,4 +456,5 @@
 	<item quantity="other">%d selecionados</item>
 </plurals>
 
-</resources>
+<string name="mark_read">Ler</string>
+    </resources>
