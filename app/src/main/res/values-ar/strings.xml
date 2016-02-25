@@ -159,7 +159,7 @@
     <string name="err_validation_nonetwork">ﻵ يوجد أتصال بالأنترنت . يحتاج الكونتلك لشبكة أنترنت للعمل.</string>
     <string name="err_validation_network_error">غير قادر على الأتصال بالمخدم . الرجاء المحاولة ﻻحقا .</string>
     <string name="err_validation_server_not_supported">المخدم الذي تم أختيارة من قبلك ﻻ يدعم التسجيل . الرجاء تحديد مخدم أخر من شاشة الأعدادات.</string>
-    <string name="err_validation_user_exists">&lt;b&gt; الرقم الذي أستخدمتة قد تم أستخدامة سابقا للتسجيل في كونتلك .&lt;b/&gt; أذا قمت بالتسجيل من جهاز أخر ضع في حسبانك أننا سنغلي تسجيل حسابك القديم من كونتلك . يمكنك العودة الى موقعنا لتعرف كيفية نسخ حسابك بين أجهزتك . أختر حسنا للمواصلة في كل الأحوال<b>The number you are using is already registered to Kontalk.</b> If you have registered another device, proceeding in this manner will cut it off from Kontalk. Please refer to our documentation on how to copy your account between devices. Choose OK to continue anyway.</string>
+    <string name="err_validation_user_exists"><b> الرقم الذي أستخدمتة قد تم أستخدامة سابقا للتسجيل في كونتلك . </b> أذا قمت بالتسجيل من جهاز أخر ضع في حسبانك أننا سنغلي تسجيل حسابك القديم من كونتلك . يمكنك العودة الى موقعنا لتعرف كيفية نسخ حسابك بين أجهزتك . أختر حسنا للمواصلة في كل الأحوال.</string>
     <string name="text_encrypted">(مشفر)</string>
     <string name="peer_unknown">(غير معروف)</string>
     <string name="msg_draft_saved">تم حفظ الرسالة كمسودة.</string>
@@ -405,7 +405,7 @@
     <string name="notification_text_more">أضغط هنا لمعرفة المزيد</string>
 
     <string name="title_auth_error">خطأ في التحقق</string>
-    <string name="msg_auth_error">فشل التحقق في أخر مرة تم فيها الأتصال الى مخدم كونتلك . ربما يكون هناك عطل مؤقت في المخدم , أو على الأرجح , المخدم قام برفض مفتاحك الشخصي . نحن ننصح بالغاء حسابك في كونتلك عن طريق حذف البرنامج من أعدادات نظام ألاندرويد و التسجيل مرة أخرى (سيتم فقدان كل رسالئلك السابقة في كونتلك بعد هذا الاجراء )</string>
+    <string name="msg_auth_error">فشل التحقق في أخر مرة تم فيها الأتصال الى مخدم كونتلك . ربما يكون هناك عطل مؤقت في المخدم , أو على الأرجح , المخدم قام برفض مفتاحك الشخصي . نحن ننصح بالغاء حسابك في كونتلك عن طريق حذف البرنامج من أعدادات نظام ألاندرويد و التسجيل مرة أخرى (سيتم فقدان كل رسالئلك السابقة في كونتلك بعد هذا الاجراء ).</string>
 
     <string name="warn_invite_no_app">ﻻ توجد برامج متوفرة لدعوة المستخدمين .</string>
 
