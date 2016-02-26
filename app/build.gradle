@@ -54,6 +54,7 @@ android {
         }
     }
     else if (project.hasProperty('RELEASE_STORE_FILE')) {
+        signingConfigs {
             release {
                 storeFile file(RELEASE_STORE_FILE)
                 storePassword RELEASE_STORE_PASSWORD
@@ -146,6 +147,8 @@ if (System.getenv("TRAVIS")) {
         track = 'alpha'
         jsonFile = rootProject.file('dist/googleplay-developer-key.json')
     }
+
+    play.dependsOn testGoogleplayDebug
 }
 else if (project.hasProperty('GOOGLE_PLAY_DEVELOPER_KEY_FILE')) {
     play {
