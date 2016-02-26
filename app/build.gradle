@@ -154,7 +154,7 @@ if (System.getenv("TRAVIS")) {
     }
 
     task publish(dependsOn: ['publishApkGoogleplayRelease']) {
-        group = 'Kontalk tasks'
+        group = 'Kontalk'
         description = 'Publish to Google Play alpha channel'
     }
     publish.dependsOn 'testGoogleplayReleaseUnitTest'
