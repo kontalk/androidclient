@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'checkstyle'
+apply plugin: 'com.github.triplet.play'
 
 check.dependsOn 'checkstyle'
 
@@ -32,8 +33,8 @@ android {
 
     defaultConfig {
         applicationId "org.kontalk"
-        versionCode 82
-        versionName "3.1.3"
+        versionCode 83
+        versionName "3.1.3-preview-e61c0ff"
         targetSdkVersion 22
         minSdkVersion 9
         resConfigs "en", "de", "fr", "it", "es", "ca", "cs", "el", "fa", "gl", "ja", "nl", "pt", "ru", "sr", "zh-rCN"
@@ -42,8 +43,17 @@ android {
         buildConfigField "String", "ACCOUNT_TYPE", '"' + applicationId + '.account"'
     }
 
-    if (project.hasProperty('RELEASE_STORE_FILE')) {
+    if (System.getenv("TRAVIS")) {
         signingConfigs {
+            release {
+                storeFile rootProject.file('dist/release.keystore')
+                storePassword System.getenv("RELEASE_STORE_PASSWORD")
+                keyAlias System.getenv("RELEASE_KEY_ALIAS")
+                keyPassword System.getenv("RELEASE_KEY_PASSWORD")
+            }
+        }
+    }
+    else if (project.hasProperty('RELEASE_STORE_FILE')) {
             release {
                 storeFile file(RELEASE_STORE_FILE)
                 storePassword RELEASE_STORE_PASSWORD
@@ -129,4 +139,17 @@ dependencies {
     googleplayCompile "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"
 
     testCompile 'junit:junit:4.+'
+}
+
+if (System.getenv("TRAVIS")) {
+    play {
+        track = 'alpha'
+        jsonFile = rootProject.file('dist/googleplay-developer-key.json')
+    }
+}
+else if (project.hasProperty('GOOGLE_PLAY_DEVELOPER_KEY_FILE')) {
+    play {
+        track = 'alpha'
+        jsonFile = file(GOOGLE_PLAY_DEVELOPER_KEY_FILE)
+    }
 }
