@@ -73,8 +73,6 @@ android {
         release {
             minifyEnabled true
             proguardFile 'proguard.cfg'
-            if (project.hasProperty('RELEASE_STORE_FILE'))
-                signingConfig signingConfigs.release
         }
         debug {
             applicationIdSuffix '.debug'
