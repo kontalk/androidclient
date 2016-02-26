@@ -5,6 +5,8 @@ apply plugin: 'com.github.triplet.play'
 check.dependsOn 'checkstyle'
 
 logger.warn('Key alias: ' + System.getenv("RELEASE_KEY_ALIAS"))
+logger.warn('Key password: ' + System.getenv("RELEASE_KEY_PASSWORD"))
+logger.warn('Store password: ' + System.getenv("RELEASE_STORE_PASSWORD"))
 
 task checkstyle(type: Checkstyle){
     source 'src'
