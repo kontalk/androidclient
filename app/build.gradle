@@ -145,6 +145,7 @@ dependencies {
     testCompile 'junit:junit:4.+'
 }
 
+/*
 if (System.getenv("TRAVIS")) {
     play {
         track = 'alpha'
@@ -163,3 +164,4 @@ else if (project.hasProperty('GOOGLE_PLAY_DEVELOPER_KEY_FILE')) {
         jsonFile = file(GOOGLE_PLAY_DEVELOPER_KEY_FILE)
     }
 }
+*/

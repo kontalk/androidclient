@@ -18,4 +18,4 @@ env:
 before_install:
   - openssl aes-256-cbc -K $encrypted_022658120507_key -iv $encrypted_022658120507_iv -in dist/googleplay-developer-key.json.enc -out dist/googleplay-developer-key.json -d
 script:
-  - ./gradlew clean assemble test publish
+  - ./gradlew tasks
