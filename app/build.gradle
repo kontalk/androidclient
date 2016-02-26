@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'checkstyle'
+apply plugin: 'com.github.triplet.play'
 
 check.dependsOn 'checkstyle'
 
@@ -36,14 +37,27 @@ android {
         versionName "3.2-preview"
         targetSdkVersion 22
         minSdkVersion 9
-        resConfigs "en", "de", "fr", "it", "es", "ca", "cs", "el", "fa", "gl", "ja", "nl", "pt", "ru", "sr", "zh-rCN"
+        resConfigs "en", "de", "fr", "it", "es", "ca", "cs", "el", "fa", "gl", "ja", "nl", "pt", "ru", "sr", "zh-rCN", "ar"
         resValue "string", "application_id", applicationId
         resValue "string", "account_type", applicationId + '.account'
         buildConfigField "String", "ACCOUNT_TYPE", '"' + applicationId + '.account"'
     }
 
-    if (project.hasProperty('RELEASE_STORE_FILE')) {
-        signingConfigs {
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+
+    signingConfigs {
+        if (System.getenv("TRAVIS")) {
+            release {
+                storeFile rootProject.file('dist/release.keystore')
+                storePassword System.getenv("RELEASE_STORE_PASSWORD")
+                keyAlias System.getenv("RELEASE_KEY_ALIAS")
+                keyPassword System.getenv("RELEASE_KEY_PASSWORD")
+            }
+        }
+        else if (project.hasProperty('RELEASE_STORE_FILE')) {
             release {
                 storeFile file(RELEASE_STORE_FILE)
                 storePassword RELEASE_STORE_PASSWORD
@@ -57,7 +71,7 @@ android {
         release {
             minifyEnabled true
             proguardFile 'proguard.cfg'
-            if (project.hasProperty('RELEASE_STORE_FILE'))
+            if (project.hasProperty('RELEASE_STORE_FILE') || System.getenv("TRAVIS"))
                 signingConfig signingConfigs.release
         }
         debug {
@@ -129,4 +143,23 @@ dependencies {
     googleplayCompile "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"
 
     testCompile 'junit:junit:4.+'
+}
+
+if (System.getenv("TRAVIS")) {
+    play {
+        track = 'alpha'
+        jsonFile = rootProject.file('dist/googleplay-developer-key.json')
+    }
+
+    task publish(dependsOn: ['publishApkGoogleplayRelease']) {
+        group = 'Kontalk'
+        description = 'Publish to Google Play alpha channel'
+    }
+    publish.dependsOn 'testGoogleplayReleaseUnitTest'
+}
+else if (project.hasProperty('GOOGLE_PLAY_DEVELOPER_KEY_FILE')) {
+    play {
+        track = 'alpha'
+        jsonFile = file(GOOGLE_PLAY_DEVELOPER_KEY_FILE)
+    }
 }

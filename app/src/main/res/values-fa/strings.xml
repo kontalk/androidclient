@@ -93,7 +93,7 @@
     <string name="size_label">"اندازه: "</string>
     <string name="size_unknown">(نامشخص)</string>
     <string name="title_file_info">اطلاعات پرونده</string>
-    <string name="pref_title_restart_msgcenter">از این استفاده کنید اگر مرکز پیام به درستی کار نمی‌کند</string>
+    <string name="pref_title_restart_msgcenter">اگر کنتاک به درستی کار نمی کند از این گزینه استفاده کنید.</string>
     <string name="pref_idle_time">جدا شدن هنگام بی‌کاری</string>
     <string name="pref_title_idle_time">مدت انتظار پیش از جداشدن به دلیل عدم فعالیت</string>
     <string name="pref_wakeup_time">اتصال دوباره به کارساز</string>
@@ -120,4 +120,9 @@
     <string name="pref_title_on_hide_presence">کاربرها شما را برخط نخواهند دید</string>
     <string name="pref_title_off_hide_presence">کاربرها شما را برخط خواهند دید و هم‌چنین زمان آخرین باری که متصل شدید</string>
     <string name="contact_not_registered">به نظر می‌رسد مخاطب در Kontalk ثبت نشده است.</string>
+    <string name="app_name_offline">کنتاک</string>
+    <string name="title_confirm_cancel_registration">عضویت لغو شود؟</string>
+    <string name="confirm_cancel_registration">اگر به مرحله قبل بازگردید می بایست مراحل ثبت نام را از نو شروع کنید.درصورتیکه میخواهید وارد برنامه دیگری شوید فقط از دکمه خانه(Home)‌استفاده کنید.</string>
+    <string name="mark_read">خواندن</string>
+    <string name="confirm_will_delete_threads">گفتگوی انتخاب شده حذف خواهد شد.</string>
     </resources>
