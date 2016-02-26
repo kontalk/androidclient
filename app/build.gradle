@@ -48,8 +48,8 @@ android {
         targetCompatibility JavaVersion.VERSION_1_7
     }
 
-    if (System.getenv("TRAVIS")) {
-        signingConfigs {
+    signingConfigs {
+        if (System.getenv("TRAVIS")) {
             release {
                 storeFile rootProject.file('dist/release.keystore')
                 storePassword System.getenv("RELEASE_STORE_PASSWORD")
@@ -57,9 +57,7 @@ android {
                 keyPassword System.getenv("RELEASE_KEY_PASSWORD")
             }
         }
-    }
-    else if (project.hasProperty('RELEASE_STORE_FILE')) {
-        signingConfigs {
+        else if (project.hasProperty('RELEASE_STORE_FILE')) {
             release {
                 storeFile file(RELEASE_STORE_FILE)
                 storePassword RELEASE_STORE_PASSWORD
