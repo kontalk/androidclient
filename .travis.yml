@@ -10,6 +10,11 @@ android:
     - extra-google-google_play_services
   licences:
     - 'android-sdk-license-.+'
+env:
+  global:
+    - secure: "iSbUjtrH5MJFWmlWbDfA1/HtD6DqPo7QA93okHZewZTkYAm4sBvHHNNUKnBduPmp9fkFwYS+hf3eTeyJ6RFSawRyItAehoLeV+rW/1MgFWicHWGqNb/GL5GBJaNpko8TQ4cCLqdL65dhpn/Dl4pIpEU2l/OYoW4dKGrvvOVdVKo="
+    - secure: "jQSuUZZL7J2SEbKQnOz/5VNVt/MsDK0I8l+Wivt0dCB+nLflE6ktJZjqQ71CpUgqvkQxeTS+xK9XPjckM4GRdMb2SQ0diCEceNhjRqxDAK0t5O9T+3KUmmVPN1sP/pIpPYrot6WiCfAbiB4a3qqLdunxkM7Qs0eW859EQz9K/1w="
+    - secure: "hvBVVpxj6h7uBfLwR1wS2AOWIk7q3sQC3VgRcL0bBpik3lmgNmSGPolJNczGH8Kw0ZCWCCKxdQMBKhh8XHPte0NzSmmaSpWaGZr2fTcEuAFtAI3QrrjbFFGjU/VMLjJ5ftH+1WXiuwOQiYx4zOEHRR2W96GKLTQA73EWJl3kP48="
 before_install:
   - openssl aes-256-cbc -K $encrypted_022658120507_key -iv $encrypted_022658120507_iv -in dist/googleplay-developer-key.json.enc -out dist/googleplay-developer-key.json -d
 script:
