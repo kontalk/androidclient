@@ -117,9 +117,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 MessageCenterService.release(mContext);
                 // release user provider
                 usersProvider.release();
+
+                Preferences.setLastSyncTimestamp(mContext, System.currentTimeMillis());
                 // some stats :)
                 long endTime = SystemClock.elapsedRealtime();
-                Preferences.setLastSyncTimestamp(mContext, endTime);
                 Log.d(TAG, String.format("sync took %.5f seconds",
                     ((float) (endTime - startTime)) / 1000));
             }
