@@ -716,7 +716,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
-    public void onFileSelection(@NonNull File file) {
+    public void onFileSelection(@NonNull FileChooserDialog fileChooserDialog, @NonNull File file) {
         try {
             startImport(new FileInputStream(file));
         }

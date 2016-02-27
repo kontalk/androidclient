@@ -112,7 +112,7 @@ public final class PreferencesActivity extends ToolbarActivity
     }
 
     @Override
-    public void onFolderSelection(@NonNull File folder) {
+    public void onFolderSelection(@NonNull FolderChooserDialog folderChooserDialog, @NonNull File folder) {
         try {
             PreferencesFragment f = (PreferencesFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.container);
