@@ -31,4 +31,7 @@ public interface ComposeMessageParent {
 
     /** Sets the subtitle in an updating status. */
     void setUpdatingSubtitle();
+
+    /** Loads the given conversation, replacing the fragment as needed. */
+    void loadConversation(long threadId);
 }

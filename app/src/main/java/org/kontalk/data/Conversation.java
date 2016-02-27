@@ -18,31 +18,22 @@
 
 package org.kontalk.data;
 
-import java.util.Random;
-
 import org.jivesoftware.smack.util.StringUtils;
-
-import org.kontalk.message.TextComponent;
-import org.kontalk.provider.MessagesProvider;
-import org.kontalk.provider.MyMessages;
-import org.kontalk.provider.MyMessages.Messages;
-import org.kontalk.provider.MyMessages.Threads;
-import org.kontalk.ui.MessagingNotification;
 
 import android.content.AsyncQueryHandler;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDiskIOException;
-import android.net.Uri;
-import android.util.Log;
+
+import org.kontalk.provider.MessagesProvider;
+import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.ui.MessagingNotification;
 
 
 /**
  * A class represeting a conversation thread.
  * @author Daniele Ricci
- * @version 1.0
  */
 public class Conversation {
 
@@ -81,6 +72,7 @@ public class Conversation {
     private long mThreadId;
     private Contact mContact;
 
+    // for group chats it will be the group id or JID
     private String mRecipient;
     private long mDate;
     private int mMessageCount;
@@ -124,7 +116,8 @@ public class Conversation {
             mGroupOwner = c.getString(COLUMN_GROUP_OWNER);
             // group peers are loaded on demand
 
-            loadContact();
+            if (!isGroupChat())
+                loadContact();
         }
     }
 

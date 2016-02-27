@@ -41,6 +41,7 @@ import android.content.Intent;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
@@ -79,7 +80,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     /** The SEND intent. */
     private Intent sendIntent;
 
-    private ComposeMessageFragment mFragment;
+    private AbstractComposeFragment mFragment;
 
     /**
      * True if the window has lost focus the last time
@@ -94,12 +95,10 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
 
         setupActionBar();
 
-        // load the fragment
-        mFragment = (ComposeMessageFragment) getSupportFragmentManager()
-            .findFragmentById(R.id.fragment_compose_message);
-
-        Bundle args = processIntent(savedInstanceState);
-        mFragment.setMyArguments(args);
+        // build chat fragment
+        AbstractComposeFragment f = getComposeFragment(savedInstanceState);
+        // insert it into the activity
+        setComposeFragment(f);
     }
 
     private void setupActionBar() {
@@ -125,6 +124,26 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void setComposeFragment(AbstractComposeFragment f) {
+        if (f != null) {
+            mFragment = f;
+            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.fragment_compose_message, f);
+            ft.setTransition(FragmentTransaction.TRANSIT_NONE);
+            ft.commitAllowingStateLoss();
+        }
+    }
+
+    @Override
+    public void loadConversation(long threadId) {
+        // create bootstrap intent
+        setIntent(ComposeMessage.fromConversation(this, threadId));
+        // build chat fragment
+        AbstractComposeFragment f = getComposeFragment(null);
+        // insert it into the activity
+        setComposeFragment(f);
     }
 
     @Override
@@ -166,8 +185,30 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     }
 
     public void onTitleClick() {
-        if (mFragment != null)
-            mFragment.viewContact();
+        if (mFragment != null && mFragment instanceof ComposeMessageFragment)
+            ((ComposeMessageFragment) mFragment).viewContact();
+    }
+
+    private AbstractComposeFragment getComposeFragment(Bundle savedInstanceState) {
+        Bundle args = processIntent(savedInstanceState);
+        if (args != null) {
+            AbstractComposeFragment f;
+            Uri threadUri = args.getParcelable("data");
+            String action = args.getString("action");
+            if (ACTION_VIEW_CONVERSATION.equals(action)) {
+                long threadId = ContentUris.parseId(threadUri);
+                Conversation conv = Conversation.loadFromId(this, threadId);
+                f = AbstractComposeFragment.fromConversation(this, conv);
+            }
+            else {
+                // anything related to a userId must be a single user chat
+                f = new ComposeMessageFragment();
+                f.setMyArguments(args);
+            }
+            return f;
+        }
+
+        return null;
     }
 
     private Bundle processIntent(Bundle savedInstanceState) {

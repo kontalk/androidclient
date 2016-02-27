@@ -459,7 +459,7 @@ public class ConversationListFragment extends ActionModeListFragment
     }
 
     /** Used only in fragment contexts. */
-    public void endConversation(ComposeMessageFragment composer) {
+    public void endConversation(AbstractComposeFragment composer) {
         getFragmentManager().beginTransaction().remove(composer).commit();
     }
 

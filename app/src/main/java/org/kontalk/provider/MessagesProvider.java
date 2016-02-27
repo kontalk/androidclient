@@ -1317,6 +1317,19 @@ public class MessagesProvider extends ContentProvider {
         return newThread != null ? ContentUris.parseId(newThread) : 0;
     }
 
+    public static boolean isGroupThread(Context context, long id) {
+        boolean group = false;
+        Cursor c = context.getContentResolver().query(
+            ContentUris.withAppendedId(Threads.CONTENT_URI, id),
+            new String[] { Groups.GROUP_ID },
+            null, null, null);
+        if (c.moveToFirst())
+            group = (c.getString(0) != null);
+
+        c.close();
+        return group;
+    }
+
     private static ContentValues prepareChangeMessageStatus(
             int status, long timestamp, long statusChanged) {
         ContentValues values = new ContentValues();

@@ -21,8 +21,7 @@
               android:layout_width="match_parent"
               android:orientation="vertical">
     <include layout="@layout/toolbar_simple"/>
-    <fragment android:name="org.kontalk.ui.ComposeMessageFragment"
-              android:id="@+id/fragment_compose_message"
+    <FrameLayout android:id="@+id/fragment_compose_message"
               android:layout_width="fill_parent"
               android:layout_height="fill_parent"/>
 </LinearLayout>
