@@ -180,6 +180,11 @@ abstract class MessageCenterPacketListener implements StanzaListener {
         return (instance != null) ? instance.mWaitingReceipt : null;
     }
 
+    protected GroupChatProvider getGroupChatProvider() {
+        MessageCenterService instance = mInstance.get();
+        return (instance != null) ? instance.groupChatProvider : null;
+    }
+
     protected Uri incoming(CompositeMessage msg) {
         MessageCenterService instance = mInstance.get();
         if (instance != null)

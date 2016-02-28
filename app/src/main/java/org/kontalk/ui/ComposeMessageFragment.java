@@ -37,7 +37,6 @@ import org.spongycastle.openpgp.PGPPublicKeyRing;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -499,9 +498,15 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
 
     @Override
     protected void addUser(String userId) {
-        long groupThreadId = Conversation.initGroupChat(getActivity(), getThreadId(),
-            Authenticator.getSelfJID(getActivity()), new String[] { userId });
+        String groupId = StringUtils.randomString(20);
+        String groupJid = XmppStringUtils.completeJidFrom(groupId,
+            Authenticator.getSelfJID(getContext()));
 
+        long groupThreadId = Conversation.initGroupChat(getActivity(),
+            getThreadId(), groupJid, new String[] { userId }, mComposer.getText().toString());
+
+        // empty the text entry (draft text will be restored by reload)
+        mComposer.setText("");
         // load the new conversation
         ((ComposeMessageParent) getActivity()).loadConversation(groupThreadId);
     }
@@ -938,9 +943,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         super.onFocus(resuming);
 
         if (mUserJID != null) {
-            // set notifications on pause
-            MessagingNotification.setPaused(mUserJID);
-
             // clear chat invitation (if any)
             // TODO use jid here
             MessagingNotification.clearChatInvitation(getActivity(), mUserJID);

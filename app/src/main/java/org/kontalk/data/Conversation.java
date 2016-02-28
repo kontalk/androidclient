@@ -49,8 +49,7 @@ public class Conversation {
         Threads.ENCRYPTED,
         Threads.DRAFT,
         Threads.REQUEST_STATUS,
-        Threads.Groups.GROUP_ID,
-        Threads.Groups.GROUP_OWNER,
+        Threads.Groups.GROUP_JID,
     };
 
     private static final int COLUMN_ID = 0;
@@ -64,15 +63,14 @@ public class Conversation {
     private static final int COLUMN_ENCRYPTED = 8;
     private static final int COLUMN_DRAFT = 9;
     private static final int COLUMN_REQUEST_STATUS = 10;
-    private static final int COLUMN_GROUP_ID = 11;
-    private static final int COLUMN_GROUP_OWNER = 12;
+    private static final int COLUMN_GROUP_JID = 11;
 
     private final Context mContext;
 
     private long mThreadId;
     private Contact mContact;
 
-    // for group chats it will be the group id or JID
+    // for group chats it will be the group JID
     private String mRecipient;
     private long mDate;
     private int mMessageCount;
@@ -86,8 +84,7 @@ public class Conversation {
     private int mRequestStatus;
 
     // from groups table
-    private String mGroupId;
-    private String mGroupOwner;
+    private String mGroupJid;
     private String[] mGroupPeers;
 
     private Conversation(Context context) {
@@ -112,12 +109,10 @@ public class Conversation {
             mDraft = c.getString(COLUMN_DRAFT);
             mRequestStatus = c.getInt(COLUMN_REQUEST_STATUS);
 
-            mGroupId = c.getString(COLUMN_GROUP_ID);
-            mGroupOwner = c.getString(COLUMN_GROUP_OWNER);
+            mGroupJid = c.getString(COLUMN_GROUP_JID);
             // group peers are loaded on demand
 
-            if (!isGroupChat())
-                loadContact();
+            loadContact();
         }
     }
 
@@ -161,7 +156,10 @@ public class Conversation {
     }
 
     private void loadContact() {
-        mContact = Contact.findByUserId(mContext, mRecipient, mNumberHint);
+        if (isGroupChat())
+            mContact = null;
+        else
+            mContact = Contact.findByUserId(mContext, mRecipient, mNumberHint);
     }
 
     public Contact getContact() {
@@ -234,12 +232,8 @@ public class Conversation {
         mNumberHint = numberHint;
     }
 
-    public String getGroupId() {
-        return mGroupId;
-    }
-
-    public String getGroupOwner() {
-        return mGroupOwner;
+    public String getGroupJid() {
+        return mGroupJid;
     }
 
     public String[] getGroupPeers() {
@@ -248,22 +242,21 @@ public class Conversation {
 
     public boolean isGroupChat() {
         loadGroupPeers(false);
-        return mGroupId != null;
+        return mGroupJid != null;
     }
 
     public void cancelGroupChat() {
-        mGroupId = null;
-        mGroupOwner = null;
+        mGroupJid = null;
         mGroupPeers = null;
     }
 
     private void loadGroupPeers(boolean force) {
-        if (mGroupId != null && (mGroupPeers == null || force)) {
+        if (mGroupJid != null && (mGroupPeers == null || force)) {
             Cursor c = mContext.getContentResolver()
                 .query(Threads.Groups.MEMBERS_CONTENT_URI,
                     new String[] { Threads.Groups.PEER },
-                    Threads.Groups.GROUP_ID + "=? AND " + Threads.Groups.GROUP_OWNER + "=?",
-                    new String[] { mGroupId, mGroupOwner }, null);
+                    Threads.Groups.GROUP_JID + "=?",
+                    new String[] { mGroupJid }, null);
 
             mGroupPeers = new String[c.getCount()];
             int i = 0;
@@ -302,18 +295,16 @@ public class Conversation {
      * Turns a 1-to-1 conversation into a group chat.
      * @return the given thread ID or a newly created thread ID.
      */
-    public static long initGroupChat(Context context, long threadId, String owner, String[] members) {
-        String gid = StringUtils.randomString(20);
-
+    public static long initGroupChat(Context context, long threadId, String groupJid, String[] members, String draft) {
         // insert group
         ContentValues values = new ContentValues();
-        values.put(Threads.Groups.GROUP_ID, gid);
-        values.put(Threads.Groups.GROUP_OWNER, owner);
+        values.put(Threads.Groups.GROUP_JID, groupJid);
 
         if (threadId > 0) {
             // reuse existing conversation
             ContentValues threadValues = new ContentValues();
-            threadValues.put(Threads.PEER, gid);
+            threadValues.put(Threads.PEER, groupJid);
+            threadValues.put(Threads.DRAFT, draft);
             context.getContentResolver().update(ContentUris
                 .withAppendedId(Threads.CONTENT_URI, threadId), threadValues, null, null);
 
@@ -321,7 +312,7 @@ public class Conversation {
         }
         else {
             // create new conversation first
-            threadId = MessagesProvider.insertEmptyThread(context, gid, "");
+            threadId = MessagesProvider.insertEmptyThread(context, groupJid, draft);
             values.put(Threads.Groups.THREAD_ID, threadId);
         }
 

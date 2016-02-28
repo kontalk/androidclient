@@ -48,7 +48,6 @@ public class MessageListAdapter extends CursorAdapter {
     private final Pattern mHighlight;
     private OnContentChangedListener mOnContentChangedListener;
 
-    private Contact mContact;
     private AudioPlayerControl mAudioPlayerControl;
 
     public MessageListAdapter(Context context, Cursor cursor, Pattern highlight, ListView list, AudioPlayerControl audioPlayerControl) {
@@ -75,9 +74,6 @@ public class MessageListAdapter extends CursorAdapter {
 
         MessageListItem headerView = (MessageListItem) view;
         CompositeMessage msg = CompositeMessage.fromCursor(context, cursor);
-        if (msg.getDirection() == Messages.DIRECTION_IN &&
-                (mContact == null || !mContact.getJID().equalsIgnoreCase(msg.getSender())))
-            mContact = Contact.findByUserId(context, msg.getSender());
 
         long previous = -1;
         if (cursor.moveToPrevious()) {
@@ -85,7 +81,7 @@ public class MessageListAdapter extends CursorAdapter {
             cursor.moveToNext();
         }
 
-        headerView.bind(context, msg, mContact, mHighlight, previous, mAudioPlayerControl);
+        headerView.bind(context, msg, mHighlight, previous, mAudioPlayerControl);
     }
 
     @Override

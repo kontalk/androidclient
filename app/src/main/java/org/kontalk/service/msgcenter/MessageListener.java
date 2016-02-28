@@ -198,7 +198,7 @@ class MessageListener extends MessageCenterPacketListener {
 
                     // out of band data
                     ExtensionElement _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
-                    if (_media != null && _media instanceof OutOfBandData) {
+                    if (_media instanceof OutOfBandData) {
                         File previewFile = null;
 
                         OutOfBandData media = (OutOfBandData) _media;
@@ -260,15 +260,18 @@ class MessageListener extends MessageCenterPacketListener {
                             msg.addComponent(attachment);
 
                         // add a dummy body if none was found
-                    /*
-                    if (body == null) {
-                        msg.addComponent(new TextComponent(CompositeMessage
-                            .getSampleTextContent((Class<? extends MessageComponent<?>>)
-                                attachment.getClass(), mime)));
+                        /*
+                        if (body == null) {
+                            msg.addComponent(new TextComponent(CompositeMessage
+                                .getSampleTextContent((Class<? extends MessageComponent<?>>)
+                                    attachment.getClass(), mime)));
+                        }
+                        */
                     }
-                    */
 
-                    }
+                    // group chat
+                    String groupJid = getGroupChatProvider().getGroupJid(m);
+                    msg.setGroupJid(groupJid);
 
                     Uri msgUri = incoming(msg);
 

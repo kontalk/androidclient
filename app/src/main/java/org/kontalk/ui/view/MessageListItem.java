@@ -97,7 +97,7 @@ public class MessageListItem extends RelativeLayout implements Checkable {
     }
 
     public final void bind(Context context, final CompositeMessage msg,
-       final Contact contact, final Pattern highlight, long previous,
+       final Pattern highlight, long previous,
        Object... args) {
 
         mMessage = msg;
@@ -117,19 +117,19 @@ public class MessageListItem extends RelativeLayout implements Checkable {
         mBalloonTheme.setSecurityFlags(mMessage.getSecurityFlags());
 
         if (mMessage.getSender() != null) {
+            Contact contact = Contact.findByUserId(context, msg.getSender(true));
             mBalloonTheme.setIncoming(contact);
 
-            Contact c = Contact.findByUserId(context, msg.getSender(true));
-            if (c != null)
-                mPeer = c.getNumber();
+            if (contact != null)
+                mPeer = contact.getNumber();
             if (mPeer == null)
                 mPeer = msg.getSender(true);
         }
         else {
+            Contact contact = Contact.findByUserId(context, msg.getRecipients().get(0));
             mBalloonTheme.setOutgoing(contact, mMessage.getStatus());
-            Contact c = Contact.findByUserId(context, msg.getRecipients().get(0));
-            if (c != null)
-                mPeer = c.getNumber();
+            if (contact != null)
+                mPeer = contact.getNumber();
             if (mPeer == null)
                 mPeer = msg.getRecipients().get(0);
         }

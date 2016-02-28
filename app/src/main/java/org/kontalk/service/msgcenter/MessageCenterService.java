@@ -371,6 +371,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private RegenerateKeyPairListener mKeyPairRegenerator;
     private ImportKeyPairListener mKeyPairImporter;
 
+    // this will be discovered one day
+    GroupChatProvider groupChatProvider = new KontalkGroupChatProvider();
+
     static final class IdleConnectionHandler extends Handler implements IdleHandler {
         /** Idle signal. */
         private static final int MSG_IDLE = 1;
@@ -1487,6 +1490,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Messages.ATTACHMENT_LENGTH,
                 Messages.ATTACHMENT_COMPRESS,
                 // TODO Messages.ATTACHMENT_SECURITY_FLAGS,
+                Threads.Groups.GROUP_JID,
             },
             filter.toString(), filterArgs,
             Messages._ID);
@@ -1504,6 +1508,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             long attLength = c.getLong(9);
             int compress = c.getInt(10);
             // TODO int attSecurityFlags = c.getInt(11);
+            String groupJid = c.getString(11); // 12
 
             // media message encountered and no upload service available - delay message
             if (attFileUri != null && attFetchUrl == null && getUploadService() == null && !retrying) {
@@ -1518,6 +1523,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             b.putLong("org.kontalk.message.msgId", id);
             b.putString("org.kontalk.message.packetId", msgId);
             b.putString("org.kontalk.message.to", peer);
+            // TODO toGroup should be set too -- b.putString("org.kontalk.message.groupJid", groupJid);
             // TODO shouldn't we pass security flags directly here??
             b.putBoolean("org.kontalk.message.encrypt", securityFlags != Coder.SECURITY_CLEARTEXT);
 
@@ -1813,12 +1819,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         boolean retrying = data.getBoolean("org.kontalk.message.retrying");
 
-        String groupId = data.getString("org.kontalk.message.groupId");
-        String groupOwner = data.getString("org.kontalk.message.groupOwner");
+        String groupJid = data.getString("org.kontalk.message.groupJid");
         String to;
         String[] toGroup;
 
-        boolean isGroupMsg = (groupId != null);
+        boolean isGroupMsg = (groupJid != null);
         if (isGroupMsg) {
             toGroup = data.getStringArray("org.kontalk.message.to");
             // TODO this should be discovered first
@@ -1950,10 +1955,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 m.addExtension(new OutOfBandData(fetchUrl, mime, length, encrypt));
             }
 
-            // add group extension
+            // pre-process message for group delivery
             if (isGroupMsg) {
-                GroupExtension g = new GroupExtension(groupId, groupOwner);
-                m.addExtension(g);
+                groupChatProvider.transform(groupJid, toGroup, m);
             }
 
             if (encrypt) {
@@ -2022,12 +2026,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             String serverId = data.getString("org.kontalk.message.ack");
             boolean ackRequest = !data.getBoolean("org.kontalk.message.standalone", false);
 
-            // add multiple addresses
+            // post-process message for group delivery
             if (isGroupMsg) {
-                MultipleAddresses p = new MultipleAddresses();
-                for (String rcpt : toGroup)
-                    p.addAddress(MultipleAddresses.Type.to, rcpt, null, null, false, null);
-                m.addExtension(p);
+                groupChatProvider.transformEncrypted(groupJid, toGroup, m);
             }
 
             // received receipt
@@ -2068,6 +2069,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         values.put(Messages.NEW, true);
         values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
         values.put(Messages.TIMESTAMP, System.currentTimeMillis());
+        values.put(Threads.Groups.GROUP_JID, msg.getGroupJid());
 
         Uri msgUri = null;
         try {
@@ -2302,15 +2304,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
-    public static void sendGroupTextMessage(final Context context, String groupId, String groupOwner, String[] to,
+    public static void sendGroupTextMessage(final Context context, String groupJid, String[] to,
             String text, boolean encrypt, long msgId, String packetId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.packetId", packetId);
         i.putExtra("org.kontalk.message.mime", TextComponent.MIME_TYPE);
-        i.putExtra("org.kontalk.message.groupId", groupId);
-        i.putExtra("org.kontalk.message.groupOwner", groupOwner);
+        i.putExtra("org.kontalk.message.groupJid", groupJid);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.body", text);
         i.putExtra("org.kontalk.message.encrypt", encrypt);

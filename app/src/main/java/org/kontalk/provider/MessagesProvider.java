@@ -63,6 +63,7 @@ public class MessagesProvider extends ContentProvider {
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".messages";
 
     private static final String TABLE_MESSAGES = "messages";
+    private static final String TABLE_MESSAGES_GROUPS = "messages_groups";
     private static final String TABLE_FULLTEXT = "fulltext";
     private static final String TABLE_THREADS = "threads";
     private static final String TABLE_GROUPS = "groups";
@@ -168,10 +169,8 @@ public class MessagesProvider extends ContentProvider {
             "CREATE TABLE " + TABLE_THREADS + " " + _SCHEMA_THREADS;
 
         private static final String _SCHEMA_GROUPS = "(" +
-            "group_id TEXT NOT NULL, " +
-            "group_owner TEXT NOT NULL, " +
-            "thread_id INTEGER NOT NULL," +
-            "PRIMARY KEY (group_id, group_owner)" +
+            "group_jid TEXT NOT NULL PRIMARY KEY, " +
+            "thread_id INTEGER NOT NULL" +
             ")";
 
         /** This table will contain the groups definitions.*/
@@ -179,15 +178,24 @@ public class MessagesProvider extends ContentProvider {
             "CREATE TABLE " + TABLE_GROUPS + " " + _SCHEMA_GROUPS;
 
         private static final String _SCHEMA_GROUP_MEMBERS = "(" +
-            "group_id TEXT NOT NULL, " +
-            "group_owner TEXT NOT NULL, " +
+            "group_jid TEXT NOT NULL, " +
             "group_peer TEXT NOT NULL, " +
-            "PRIMARY KEY (group_id, group_owner, group_peer)" +
+            "PRIMARY KEY (group_jid, group_peer)" +
             ")";
 
         /** This table will contain the groups participants .*/
         private static final String SCHEMA_GROUPS_MEMBERS =
             "CREATE TABLE " + TABLE_GROUP_MEMBERS + " " + _SCHEMA_GROUP_MEMBERS;
+
+        /** A view to link messages and groups. */
+        private static final String SCHEMA_MESSAGES_GROUPS =
+            "CREATE VIEW " + TABLE_MESSAGES_GROUPS + " AS " +
+            "SELECT " + TABLE_MESSAGES + ".*, " + TABLE_GROUPS + "." + Groups.GROUP_JID +
+            " FROM " + TABLE_MESSAGES + " JOIN " + TABLE_THREADS +
+            " ON " + TABLE_MESSAGES + "." + Messages.THREAD_ID + "=" + TABLE_THREADS + "." + Threads._ID +
+            " LEFT OUTER JOIN " + TABLE_GROUPS + " ON " +
+            TABLE_THREADS + "." + Threads._ID + "=" +
+            TABLE_GROUPS + "." + Groups.THREAD_ID;
 
         /** This table will contain every text message to speed-up full text searches. */
         private static final String SCHEMA_FULLTEXT =
@@ -316,6 +324,7 @@ public class MessagesProvider extends ContentProvider {
         private static final String[] SCHEMA_UPGRADE_V8 = {
             SCHEMA_GROUPS,
             SCHEMA_GROUPS_MEMBERS,
+            SCHEMA_MESSAGES_GROUPS,
         };
 
         private Context mContext;
@@ -331,6 +340,7 @@ public class MessagesProvider extends ContentProvider {
             db.execSQL(SCHEMA_THREADS);
             db.execSQL(SCHEMA_GROUPS);
             db.execSQL(SCHEMA_GROUPS_MEMBERS);
+            db.execSQL(SCHEMA_MESSAGES_GROUPS);
             db.execSQL(SCHEMA_FULLTEXT);
             db.execSQL(SCHEMA_MESSAGES_INDEX);
             db.execSQL(SCHEMA_MESSAGES_TIMESTAMP_IDX);
@@ -389,18 +399,18 @@ public class MessagesProvider extends ContentProvider {
 
         switch (sUriMatcher.match(uri)) {
             case MESSAGES:
-                qb.setTables(TABLE_MESSAGES);
+                qb.setTables(TABLE_MESSAGES_GROUPS);
                 qb.setProjectionMap(messagesProjectionMap);
                 break;
 
             case MESSAGES_ID:
-                qb.setTables(TABLE_MESSAGES);
+                qb.setTables(TABLE_MESSAGES_GROUPS);
                 qb.setProjectionMap(messagesProjectionMap);
                 qb.appendWhere(Messages._ID + "=" + uri.getPathSegments().get(1));
                 break;
 
             case MESSAGES_SERVERID:
-                qb.setTables(TABLE_MESSAGES);
+                qb.setTables(TABLE_MESSAGES_GROUPS);
                 qb.setProjectionMap(messagesProjectionMap);
                 qb.appendWhere(Messages.MESSAGE_ID + "='" + DatabaseUtils.sqlEscapeString(uri.getPathSegments().get(1)) + "'");
                 break;
@@ -444,7 +454,7 @@ public class MessagesProvider extends ContentProvider {
                     qb.setPage(count, Messages._ID, lastId);
                 }
 
-                qb.setTables(TABLE_MESSAGES);
+                qb.setTables(TABLE_MESSAGES_GROUPS);
                 qb.setProjectionMap(messagesProjectionMap);
                 qb.appendWhere(Messages.THREAD_ID + "=" + uri.getPathSegments().get(1));
                 break;
@@ -547,6 +557,9 @@ public class MessagesProvider extends ContentProvider {
                 if (draft != null || (match == REQUESTS && !requestExists))
                     return ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId);
             }
+
+            // remove reserved columns
+            values.remove(Groups.GROUP_JID);
 
             // insert the new message now!
             long rowId = db.insertOrThrow(TABLE_MESSAGES, null, values);
@@ -670,7 +683,10 @@ public class MessagesProvider extends ContentProvider {
      */
     private long updateThreads(SQLiteDatabase db, ContentValues initialValues, List<Uri> notifications, boolean requestOnly) {
         ContentValues values = new ContentValues();
-        String peer = initialValues.getAsString(CommonColumns.PEER);
+        // group JID will be the thread peer in this case
+        String peer = initialValues.getAsString(Groups.GROUP_JID);
+        if (peer == null)
+            peer = initialValues.getAsString(CommonColumns.PEER);
 
         long threadId = -1;
         if (initialValues.containsKey(Messages.THREAD_ID))
@@ -1321,7 +1337,7 @@ public class MessagesProvider extends ContentProvider {
         boolean group = false;
         Cursor c = context.getContentResolver().query(
             ContentUris.withAppendedId(Threads.CONTENT_URI, id),
-            new String[] { Groups.GROUP_ID },
+            new String[] { Groups.GROUP_JID },
             null, null, null);
         if (c.moveToFirst())
             group = (c.getString(0) != null);
@@ -1458,6 +1474,7 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages.ENCRYPTED, Messages.ENCRYPTED);
         messagesProjectionMap.put(Messages.SECURITY_FLAGS, Messages.SECURITY_FLAGS);
         messagesProjectionMap.put(Messages.SERVER_TIMESTAMP, Messages.SERVER_TIMESTAMP);
+        messagesProjectionMap.put(Groups.GROUP_JID, Groups.GROUP_JID);
 
         threadsProjectionMap = new HashMap<String, String>();
         threadsProjectionMap.put(Threads._ID, Threads._ID);
@@ -1475,16 +1492,14 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Threads.ENCRYPTED, Threads.ENCRYPTED);
         threadsProjectionMap.put(Threads.DRAFT, Threads.DRAFT);
         threadsProjectionMap.put(Threads.REQUEST_STATUS, Threads.REQUEST_STATUS);
-        threadsProjectionMap.put(Groups.GROUP_ID, Groups.GROUP_ID);
-        threadsProjectionMap.put(Groups.GROUP_OWNER, Groups.GROUP_OWNER);
+        threadsProjectionMap.put(Groups.GROUP_JID, Groups.GROUP_JID);
 
         fulltextProjectionMap = new HashMap<String, String>();
         fulltextProjectionMap.put(Fulltext.THREAD_ID, Fulltext.THREAD_ID);
         fulltextProjectionMap.put(Fulltext.CONTENT, Fulltext.CONTENT);
 
         groupsMembersProjectionMap = new HashMap<String, String>();
-        groupsMembersProjectionMap.put(Groups.GROUP_ID, Groups.GROUP_ID);
-        groupsMembersProjectionMap.put(Groups.GROUP_OWNER, Groups.GROUP_OWNER);
+        groupsMembersProjectionMap.put(Groups.GROUP_JID, Groups.GROUP_JID);
         groupsMembersProjectionMap.put(Groups.PEER, Groups.PEER);
     }
 }

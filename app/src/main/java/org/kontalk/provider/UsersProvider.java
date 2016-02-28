@@ -388,11 +388,7 @@ public class UsersProvider extends ContentProvider {
 
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor c = qb.query(db, projection, selection, selectionArgs, null, null, sortOrder);
-        if (c.getCount() == 0 && match != KEYS) {
-            // request sync
-            SyncAdapter.requestSync(getContext(), false);
-        }
-        else if (Boolean.parseBoolean(uri.getQueryParameter(Users.EXTRA_INDEX))) {
+        if (Boolean.parseBoolean(uri.getQueryParameter(Users.EXTRA_INDEX))) {
             UsersCursor uc = new UsersCursor(c);
             bundleFastScrollingIndexExtras(uc, uri, db, qb, selection, selectionArgs, sortOrder, null);
             c = uc;

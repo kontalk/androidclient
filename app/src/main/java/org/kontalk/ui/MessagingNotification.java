@@ -232,8 +232,9 @@ public class MessagingNotification {
 
         // is there a peer to not notify for?
         if (sPaused != null) {
-            query += " AND " + CommonColumns.PEER + " <> ?";
-            args = new String[] { sPaused };
+            query += " AND " + CommonColumns.PEER + " <> ? AND " +
+                Threads.Groups.GROUP_JID + " <> ?";
+            args = new String[] { sPaused, sPaused };
         }
 
         Cursor c = res.query(uri, proj, query, args, order);

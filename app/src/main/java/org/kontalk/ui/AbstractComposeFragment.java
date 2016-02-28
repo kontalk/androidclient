@@ -1719,6 +1719,9 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         // resume content watcher
         resumeContentListener();
 
+        // set notifications on pause
+        MessagingNotification.setPaused(getUserId());
+
         // we are updating the status now
         setActivityStatusUpdating();
 

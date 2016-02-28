@@ -33,6 +33,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Parcelable;
 
+import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.util.MediaStorage;
@@ -77,6 +78,7 @@ public class CompositeMessage {
         Messages.ATTACHMENT_LENGTH,
         Messages.ATTACHMENT_ENCRYPTED,
         Messages.ATTACHMENT_SECURITY_FLAGS,
+        MyMessages.Threads.Groups.GROUP_JID,
     };
 
     // these indexes matches MESSAGE_LIST_PROJECTION
@@ -100,6 +102,7 @@ public class CompositeMessage {
     public static final int COLUMN_ATTACHMENT_LENGTH = 17;
     public static final int COLUMN_ATTACHMENT_ENCRYPTED = 18;
     public static final int COLUMN_ATTACHMENT_SECURITY_FLAGS = 19;
+    public static final int COLUMN_GROUP_JID = 20;
 
     public static final String MSG_ID = "org.kontalk.message.id";
     public static final String MSG_SENDER = "org.kontalk.message.sender";
@@ -122,6 +125,7 @@ public class CompositeMessage {
     protected int mStatus;
     protected boolean mEncrypted;
     protected int mSecurityFlags;
+    protected String mGroupJid;
 
     /**
      * Recipients (outgoing) - will contain one element for incoming
@@ -236,6 +240,14 @@ public class CompositeMessage {
         mSecurityFlags = flags;
     }
 
+    public String getGroupJid() {
+        return mGroupJid;
+    }
+
+    public void setGroupJid(String groupJid) {
+        mGroupJid = groupJid;
+    }
+
     public void addComponent(MessageComponent<?> c) {
         mComponents.add(c);
     }
@@ -269,6 +281,7 @@ public class CompositeMessage {
         mEncrypted = (c.getShort(COLUMN_ENCRYPTED) > 0);
         mSecurityFlags = c.getInt(COLUMN_SECURITY);
         mServerTimestamp = c.getLong(COLUMN_SERVER_TIMESTAMP);
+        mGroupJid = c.getString(COLUMN_GROUP_JID);
 
         String peer = c.getString(COLUMN_PEER);
         int direction = c.getInt(COLUMN_DIRECTION);

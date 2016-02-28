@@ -223,6 +223,13 @@
         <className>org.kontalk.client.UploadInfo$Provider</className>
     </iqProvider>
 
+    <!-- Kontalk group extension -->
+    <extensionProvider>
+        <elementName>group</elementName>
+        <namespace>http://kontalk.org/extensions/message#group</namespace>
+        <className>org.kontalk.client.GroupExtension$Provider</className>
+    </extensionProvider>
+
     <!-- RFC 3923: end-to-end encryption -->
     <extensionProvider>
         <elementName>e2e</elementName>
