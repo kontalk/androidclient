@@ -510,7 +510,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         System.arraycopy(members, 0, users, 1, members.length);
 
         long groupThreadId = Conversation.initGroupChat(getActivity(),
-            getThreadId(), groupJid, mConversation.getGroupSubject(), users,
+            groupJid, mConversation.getGroupSubject(), users,
             mComposer.getText().toString());
 
         // empty the text entry (draft text will be restored by reload)

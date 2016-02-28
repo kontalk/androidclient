@@ -295,26 +295,16 @@ public class Conversation {
     }
 
     /**
-     * Turns a 1-to-1 conversation into a group chat.
-     * @return the given thread ID or a newly created thread ID.
+     * Creates a new group chat.
+     * @return a newly created thread ID.
      */
-    public static long initGroupChat(Context context, long threadId, String groupJid, String subject, String[] members, String draft) {
+    public static long initGroupChat(Context context, String groupJid, String subject, String[] members, String draft) {
         // insert group
         ContentValues values = new ContentValues();
         values.put(Threads.Groups.GROUP_JID, groupJid);
 
-        if (threadId > 0) {
-            // reuse existing conversation
-            ContentValues threadValues = new ContentValues();
-            threadValues.put(Threads.PEER, groupJid);
-            threadValues.put(Threads.DRAFT, draft);
-            context.getContentResolver().update(ContentUris
-                .withAppendedId(Threads.CONTENT_URI, threadId), threadValues, null, null);
-        }
-        else {
-            // create new conversation first
-            threadId = MessagesProvider.insertEmptyThread(context, groupJid, draft);
-        }
+        // create new conversation
+        long threadId = MessagesProvider.insertEmptyThread(context, groupJid, draft);
 
         values.put(Threads.Groups.THREAD_ID, threadId);
         values.put(Threads.Groups.SUBJECT, subject);
