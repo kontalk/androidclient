@@ -115,6 +115,7 @@ import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.GroupComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.CommonColumns;
@@ -1492,6 +1493,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Messages.ATTACHMENT_COMPRESS,
                 // TODO Messages.ATTACHMENT_SECURITY_FLAGS,
                 Threads.Groups.GROUP_JID,
+                Threads.Groups.SUBJECT,
+                Threads.Groups.DIRTY,
             },
             filter.toString(), filterArgs,
             Messages._ID);
@@ -1511,6 +1514,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // TODO int attSecurityFlags = c.getInt(11);
 
             String groupJid = c.getString(11); // 12
+            String groupSubject = c.getString(12); // 13
+            boolean groupDirty = (c.getInt(13) != 0); // 14
+
             String[] groupMembers = null;
             if (groupJid != null) {
                 groupMembers = MessagesProvider.getGroupMembers(this, groupJid);
@@ -1531,6 +1537,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             if (groupJid != null) {
                 b.putString("org.kontalk.message.groupJid", groupJid);
+                b.putString("org.kontalk.message.groupSubject", groupSubject);
+                b.putBoolean("org.kontalk.message.groupCreating", groupDirty);
                 b.putStringArray("org.kontalk.message.to", groupMembers);
             }
             else {
@@ -1970,7 +1978,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             // pre-process message for group delivery
             if (isGroupMsg) {
-                groupChatProvider.transform(groupJid, toGroup, m);
+                boolean groupCreating = data.getBoolean("org.kontalk.message.groupCreating");
+                groupChatProvider.transform(groupJid, toGroup, m, groupCreating);
             }
 
             if (encrypt) {
@@ -2082,7 +2091,28 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         values.put(Messages.NEW, true);
         values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
         values.put(Messages.TIMESTAMP, System.currentTimeMillis());
-        values.put(Threads.Groups.GROUP_JID, msg.getGroupJid());
+
+        GroupComponent group = msg.getComponent(GroupComponent.class);
+        if (group != null) {
+            values.put(Threads.Groups.GROUP_JID, group.getContent().getJid());
+
+            String groupSubject = group.getContent().getSubject();
+            if (groupSubject != null)
+                values.put(Threads.Groups.SUBJECT, groupSubject);
+
+            // update group members first
+            String[] members = group.getContent().getMembers();
+            if (members != null) {
+                ContentValues membersValues = new ContentValues();
+                membersValues.put(Threads.Groups.GROUP_JID, group.getContent().getJid());
+                for (String member : members) {
+                    // FIXME turn this into batch operations
+                    membersValues.put(Threads.Groups.PEER, member);
+                    getContentResolver()
+                        .insert(Threads.Groups.MEMBERS_CONTENT_URI, membersValues);
+                }
+            }
+        }
 
         Uri msgUri = null;
         try {
@@ -2317,7 +2347,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
-    public static void sendGroupTextMessage(final Context context, String groupJid, String[] to,
+    public static void sendGroupTextMessage(final Context context, String groupJid,
+            String groupSubject, boolean groupCreating, String[] to,
             String text, boolean encrypt, long msgId, String packetId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
@@ -2325,6 +2356,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.packetId", packetId);
         i.putExtra("org.kontalk.message.mime", TextComponent.MIME_TYPE);
         i.putExtra("org.kontalk.message.groupJid", groupJid);
+        i.putExtra("org.kontalk.message.groupSubject", groupSubject);
+        i.putExtra("org.kontalk.message.groupCreating", groupCreating);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.body", text);
         i.putExtra("org.kontalk.message.encrypt", encrypt);

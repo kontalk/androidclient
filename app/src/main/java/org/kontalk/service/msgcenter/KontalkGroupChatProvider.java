@@ -1,5 +1,7 @@
 package org.kontalk.service.msgcenter;
 
+import java.util.List;
+
 import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Stanza;
@@ -16,10 +18,14 @@ import org.kontalk.client.GroupExtension;
 public class KontalkGroupChatProvider implements GroupChatProvider {
 
     @Override
-    public void transform(String groupJid, String[] to, Stanza message) {
+    public void transform(String groupJid, String[] to, Stanza message, boolean creating) {
         String groupId = XmppStringUtils.parseLocalpart(groupJid);
         String groupOwner = XmppStringUtils.parseDomain(groupJid);
         GroupExtension g = new GroupExtension(groupId, groupOwner);
+        if (creating) {
+            for (String jid : to)
+                g.addMember(jid);
+        }
         message.addExtension(g);
     }
 
@@ -33,10 +39,45 @@ public class KontalkGroupChatProvider implements GroupChatProvider {
 
     @Override
     public String getGroupJid(Stanza message) {
+        GroupExtension group = getGroupExtension(message);
+        return group != null ? group.getJID() : null;
+    }
+
+    @Override
+    public String getGroupSubject(Stanza message, String from) {
+        GroupExtension group = getGroupExtensionIfOwner(message, from);
+        return (group != null) ? group.getSubject() : null;
+    }
+
+    @Override
+    public String[] getGroupMembers(Stanza message, String from) {
+        GroupExtension group = getGroupExtensionIfOwner(message, from);
+        if (group != null) {
+            List<GroupExtension.Member> members = group.getMembers();
+            String[] users = new String[members.size()];
+            for (int i = 0; i < users.length; i++) {
+                users[i] = members.get(i).jid;
+            }
+            return users;
+        }
+        return null;
+    }
+
+    private GroupExtension getGroupExtensionIfOwner(Stanza message, String from) {
+        GroupExtension group = getGroupExtension(message);
+        if (group != null) {
+            if (from == null)
+                from = XmppStringUtils.parseBareJid(message.getFrom());
+            return from.equalsIgnoreCase(group.getOwner()) ? group : null;
+        }
+        return null;
+    }
+
+    private GroupExtension getGroupExtension(Stanza message) {
         if (message instanceof Message) {
             ExtensionElement _group = message.getExtension(GroupExtension.ELEMENT_NAME, GroupExtension.NAMESPACE);
             if (_group instanceof GroupExtension)
-                return ((GroupExtension) _group).getJID();
+                return (GroupExtension) _group;
         }
         return null;
     }

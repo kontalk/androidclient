@@ -33,6 +33,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Parcelable;
 
+import org.kontalk.data.GroupInfo;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
@@ -79,6 +80,7 @@ public class CompositeMessage {
         Messages.ATTACHMENT_ENCRYPTED,
         Messages.ATTACHMENT_SECURITY_FLAGS,
         MyMessages.Threads.Groups.GROUP_JID,
+        MyMessages.Threads.Groups.SUBJECT,
     };
 
     // these indexes matches MESSAGE_LIST_PROJECTION
@@ -103,6 +105,7 @@ public class CompositeMessage {
     public static final int COLUMN_ATTACHMENT_ENCRYPTED = 18;
     public static final int COLUMN_ATTACHMENT_SECURITY_FLAGS = 19;
     public static final int COLUMN_GROUP_JID = 20;
+    public static final int COLUMN_GROUP_SUBJECT = 21;
 
     public static final String MSG_ID = "org.kontalk.message.id";
     public static final String MSG_SENDER = "org.kontalk.message.sender";
@@ -125,7 +128,6 @@ public class CompositeMessage {
     protected int mStatus;
     protected boolean mEncrypted;
     protected int mSecurityFlags;
-    protected String mGroupJid;
 
     /**
      * Recipients (outgoing) - will contain one element for incoming
@@ -240,14 +242,6 @@ public class CompositeMessage {
         mSecurityFlags = flags;
     }
 
-    public String getGroupJid() {
-        return mGroupJid;
-    }
-
-    public void setGroupJid(String groupJid) {
-        mGroupJid = groupJid;
-    }
-
     public void addComponent(MessageComponent<?> c) {
         mComponents.add(c);
     }
@@ -257,10 +251,10 @@ public class CompositeMessage {
     }
 
     /** Returns the first component of the given type. */
-    public MessageComponent<?> getComponent(Class<? extends MessageComponent<?>> type) {
+    public <T extends MessageComponent<?>> T getComponent(Class<T> type) {
         for (MessageComponent<?> cmp : mComponents) {
             if (type.isInstance(cmp))
-                return cmp;
+                return (T) cmp;
         }
 
         return null;
@@ -281,7 +275,6 @@ public class CompositeMessage {
         mEncrypted = (c.getShort(COLUMN_ENCRYPTED) > 0);
         mSecurityFlags = c.getInt(COLUMN_SECURITY);
         mServerTimestamp = c.getLong(COLUMN_SERVER_TIMESTAMP);
-        mGroupJid = c.getString(COLUMN_GROUP_JID);
 
         String peer = c.getString(COLUMN_PEER);
         int direction = c.getInt(COLUMN_DIRECTION);
@@ -362,6 +355,14 @@ public class CompositeMessage {
                     addComponent(att);
                 }
 
+            }
+
+            // group information
+            String groupJid = c.getString(COLUMN_GROUP_JID);
+            if (groupJid != null) {
+                String groupSubject = c.getString(COLUMN_GROUP_SUBJECT);
+                GroupInfo groupInfo = new GroupInfo(groupJid, groupSubject, null);
+                addComponent(new GroupComponent(groupInfo));
             }
 
         }

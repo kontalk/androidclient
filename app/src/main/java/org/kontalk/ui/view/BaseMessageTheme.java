@@ -94,9 +94,10 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
                 .createContent(mInflater, mContent, cmp, databaseId,
                     highlight, args);
 
-            processComponentView(view);
-
-            mContent.addContent(view);
+            if (view != null) {
+                processComponentView(view);
+                mContent.addContent(view);
+            }
         }
     }
 

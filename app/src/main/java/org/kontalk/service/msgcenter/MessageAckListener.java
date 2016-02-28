@@ -29,6 +29,7 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.net.Uri;
 
+import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Messages;
 
 
@@ -81,7 +82,10 @@ class MessageAckListener extends MessageCenterPacketListener {
                 values.put(Messages.STATUS, Messages.STATUS_SENT);
                 values.put(Messages.STATUS_CHANGED, now);
                 values.put(Messages.SERVER_TIMESTAMP, now);
-                cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
+                cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId)
+                        .buildUpon()
+                        .appendQueryParameter(Messages.DIRTY_GROUP, "true")
+                        .build(),
                     values, selectionOutgoing, null);
 
                 // we can now release the message center. Hopefully
@@ -92,7 +96,9 @@ class MessageAckListener extends MessageCenterPacketListener {
                 // the user wasn't expecting ack for this message
                 // so we simply update it using the packet id as key
                 // FIXME this could lead to fake acks because message IDs are client-generated
-                Uri msg = Messages.getUri(id);
+                Uri msg = Messages.getUri(id).buildUpon()
+                    .appendQueryParameter(Messages.DIRTY_GROUP, "true")
+                    .build();
                 ContentValues values = new ContentValues(3);
                 values.put(Messages.STATUS, Messages.STATUS_SENT);
                 values.put(Messages.STATUS_CHANGED, now);

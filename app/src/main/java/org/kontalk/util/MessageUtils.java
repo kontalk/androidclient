@@ -48,9 +48,11 @@ import org.kontalk.client.OutOfBandData;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.DecryptException;
 import org.kontalk.crypto.PersonalKey;
+import org.kontalk.data.GroupInfo;
 import org.kontalk.message.AttachmentComponent;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.GroupComponent;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.message.MessageComponent;
 import org.kontalk.message.RawComponent;
@@ -58,6 +60,8 @@ import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.UsersProvider;
+import org.kontalk.service.msgcenter.GroupChatProvider;
+import org.kontalk.service.msgcenter.KontalkGroupChatProvider;
 
 import java.io.File;
 import java.io.IOException;
@@ -80,6 +84,9 @@ public final class MessageUtils {
     private static final ForegroundColorSpan STYLE_GREEN = new ForegroundColorSpan(Color.rgb(0, 0xAA, 0));
 
     public static final int MILLISECONDS_IN_DAY = 86400000;
+
+    // FIXME hard coded instance
+    private static final GroupChatProvider sGroupChatProvider = new KontalkGroupChatProvider();
 
     private MessageUtils() {}
 
@@ -751,6 +758,16 @@ public final class MessageUtils {
                 }
                 */
 
+            }
+
+            // group chat
+            String groupJid = sGroupChatProvider.getGroupJid(m);
+            if (groupJid != null) {
+                String from = msg.getSender(true);
+                String groupSubject = sGroupChatProvider.getGroupSubject(m, from);
+                String[] groupMembers = sGroupChatProvider.getGroupMembers(m, from);
+                GroupInfo groupInfo = new GroupInfo(groupJid, groupSubject, groupMembers);
+                msg.addComponent(new GroupComponent(groupInfo));
             }
 
         }

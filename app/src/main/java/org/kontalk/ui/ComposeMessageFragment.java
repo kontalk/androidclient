@@ -33,6 +33,7 @@ import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
+import org.spongycastle.util.Arrays;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -497,13 +498,20 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
     }
 
     @Override
-    protected void addUser(String userId) {
+    protected void addUsers(String[] members) {
         String groupId = StringUtils.randomString(20);
         String groupJid = XmppStringUtils.completeJidFrom(groupId,
             Authenticator.getSelfJID(getContext()));
 
+        // add this user and the others requested
+        // duplicates will be ignored by the provider
+        String[] users = new String[members.length + 1];
+        users[0] = getUserId();
+        System.arraycopy(members, 0, users, 1, members.length);
+
         long groupThreadId = Conversation.initGroupChat(getActivity(),
-            getThreadId(), groupJid, new String[] { userId }, mComposer.getText().toString());
+            getThreadId(), groupJid, mConversation.getGroupSubject(), users,
+            mComposer.getText().toString());
 
         // empty the text entry (draft text will be restored by reload)
         mComposer.setText("");

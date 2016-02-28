@@ -47,6 +47,7 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.SQLException;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
@@ -170,7 +171,9 @@ public class MessagesProvider extends ContentProvider {
 
         private static final String _SCHEMA_GROUPS = "(" +
             "group_jid TEXT NOT NULL PRIMARY KEY, " +
-            "thread_id INTEGER NOT NULL" +
+            "thread_id INTEGER NOT NULL," +
+            "subject TEXT," +
+            "dirty INTEGER NOT NULL DEFAULT 0" +
             ")";
 
         /** This table will contain the groups definitions.*/
@@ -190,7 +193,10 @@ public class MessagesProvider extends ContentProvider {
         /** A view to link messages and groups. */
         private static final String SCHEMA_MESSAGES_GROUPS =
             "CREATE VIEW " + TABLE_MESSAGES_GROUPS + " AS " +
-            "SELECT " + TABLE_MESSAGES + ".*, " + TABLE_GROUPS + "." + Groups.GROUP_JID +
+            "SELECT " + TABLE_MESSAGES + ".*," +
+                TABLE_GROUPS + "." + Groups.GROUP_JID + "," +
+                TABLE_GROUPS + "." + Groups.SUBJECT + "," +
+                TABLE_GROUPS + "." + Groups.DIRTY +
             " FROM " + TABLE_MESSAGES + " JOIN " + TABLE_THREADS +
             " ON " + TABLE_MESSAGES + "." + Messages.THREAD_ID + "=" + TABLE_THREADS + "." + Threads._ID +
             " LEFT OUTER JOIN " + TABLE_GROUPS + " ON " +
@@ -541,7 +547,12 @@ public class MessagesProvider extends ContentProvider {
                 // TODO shouldn't we notify someone?
 
                 // take only the values we need
-                db.insertOrThrow(TABLE_GROUP_MEMBERS, null, values);
+                try {
+                    db.insertOrThrow(TABLE_GROUP_MEMBERS, null, values);
+                }
+                catch (SQLiteConstraintException e) {
+                    // just ignore dups - it doesn't really matter
+                }
 
                 success = setTransactionSuccessful(db);
                 // no uri needed
@@ -574,7 +585,7 @@ public class MessagesProvider extends ContentProvider {
             }
 
             // remove reserved columns
-            values.remove(Groups.GROUP_JID);
+                values.remove(Groups.GROUP_JID);
 
             // insert the new message now!
             long rowId = db.insertOrThrow(TABLE_MESSAGES, null, values);
@@ -699,8 +710,11 @@ public class MessagesProvider extends ContentProvider {
     private long updateThreads(SQLiteDatabase db, ContentValues initialValues, List<Uri> notifications, boolean requestOnly) {
         ContentValues values = new ContentValues();
         // group JID will be the thread peer in this case
-        String peer = initialValues.getAsString(Groups.GROUP_JID);
-        if (peer == null)
+        String peer;
+        String groupJid = initialValues.getAsString(Groups.GROUP_JID);
+        if (groupJid != null)
+            peer = groupJid;
+        else
             peer = initialValues.getAsString(CommonColumns.PEER);
 
         long threadId = -1;
@@ -751,6 +765,15 @@ public class MessagesProvider extends ContentProvider {
         // insert new thread
         try {
             threadId = db.insertOrThrow(TABLE_THREADS, null, values);
+
+            // insert group info if needed (message center will request members)
+            if (groupJid != null) {
+                ContentValues groupValues = new ContentValues();
+                groupValues.put(Groups.GROUP_JID, groupJid);
+                groupValues.put(Groups.THREAD_ID, threadId);
+                // TODO group subject
+                db.replace(TABLE_GROUPS, null, groupValues);
+            }
 
             // notify newly created thread by userid
             // this will be used for fixing ticket #18
@@ -881,6 +904,14 @@ public class MessagesProvider extends ContentProvider {
                 notifications.add(uri);
 
                 if (table.equals(TABLE_MESSAGES)) {
+                    // clear dirty group flag if requested
+                    boolean dirtyGroup = Boolean.parseBoolean(uri.getQueryParameter(Messages.DIRTY_GROUP));
+                    if (dirtyGroup) {
+                        // let's make it fast
+                        db.execSQL("UPDATE " + TABLE_GROUPS + " SET " + Groups.DIRTY + "=0 WHERE " + Groups.THREAD_ID + "=" +
+                            "(SELECT " + Messages.THREAD_ID + " FROM " + TABLE_MESSAGES + " WHERE " + where +")", args);
+                    }
+
                     // update fulltext only if content actually changed
                     boolean doUpdateFulltext;
                     String[] projection;
@@ -1506,6 +1537,8 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages.SECURITY_FLAGS, Messages.SECURITY_FLAGS);
         messagesProjectionMap.put(Messages.SERVER_TIMESTAMP, Messages.SERVER_TIMESTAMP);
         messagesProjectionMap.put(Groups.GROUP_JID, Groups.GROUP_JID);
+        messagesProjectionMap.put(Groups.SUBJECT, Groups.SUBJECT);
+        messagesProjectionMap.put(Groups.DIRTY, Groups.DIRTY);
 
         threadsProjectionMap = new HashMap<String, String>();
         threadsProjectionMap.put(Threads._ID, Threads._ID);
@@ -1524,6 +1557,8 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Threads.DRAFT, Threads.DRAFT);
         threadsProjectionMap.put(Threads.REQUEST_STATUS, Threads.REQUEST_STATUS);
         threadsProjectionMap.put(Groups.GROUP_JID, Groups.GROUP_JID);
+        threadsProjectionMap.put(Groups.SUBJECT, Groups.SUBJECT);
+        threadsProjectionMap.put(Groups.DIRTY, Groups.DIRTY);
 
         fulltextProjectionMap = new HashMap<String, String>();
         fulltextProjectionMap.put(Fulltext.THREAD_ID, Fulltext.THREAD_ID);

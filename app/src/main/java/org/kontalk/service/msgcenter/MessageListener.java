@@ -38,8 +38,10 @@ import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.OutOfBandData;
 import org.kontalk.crypto.Coder;
+import org.kontalk.data.GroupInfo;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.GroupComponent;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.message.MessageComponent;
 import org.kontalk.message.RawComponent;
@@ -270,8 +272,14 @@ class MessageListener extends MessageCenterPacketListener {
                     }
 
                     // group chat
-                    String groupJid = getGroupChatProvider().getGroupJid(m);
-                    msg.setGroupJid(groupJid);
+                    GroupChatProvider groupChatProvider = getGroupChatProvider();
+                    String groupJid = groupChatProvider.getGroupJid(m);
+                    if (groupJid != null) {
+                        String groupSubject = groupChatProvider.getGroupSubject(m, null);
+                        String[] groupMembers = groupChatProvider.getGroupMembers(m, null);
+                        GroupInfo groupInfo = new GroupInfo(groupJid, groupSubject, groupMembers);
+                        msg.addComponent(new GroupComponent(groupInfo));
+                    }
 
                     Uri msgUri = incoming(msg);
 

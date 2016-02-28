@@ -114,6 +114,9 @@ public final class MyMessages {
         // not DESC here because the listview is reverse-stacked
         public static final String DEFAULT_SORT_ORDER = _ID;
         public static final String INVERTED_SORT_ORDER = _ID + " DESC";
+
+        // used as query parameters
+        public static final String DIRTY_GROUP = "dirty_group";
     }
 
     /** Threads are just for conversations metadata. */
@@ -169,6 +172,8 @@ public final class MyMessages {
             public static final String GROUP_JID = "group_jid";
             public static final String PEER = "group_" + CommonColumns.PEER;
             public static final String THREAD_ID = Messages.THREAD_ID;
+            public static final String SUBJECT = "subject";
+            public static final String DIRTY = "dirty";
         }
 
         private static final String ITEM_TYPE = BuildConfig.APPLICATION_ID + ".thread";

@@ -134,6 +134,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     private static final int SELECT_ATTACHMENT_OPENABLE = Activity.RESULT_FIRST_USER + 1;
     private static final int SELECT_ATTACHMENT_CONTACT = Activity.RESULT_FIRST_USER + 2;
     private static final int SELECT_ATTACHMENT_PHOTO = Activity.RESULT_FIRST_USER + 3;
+    private static final int REQUEST_INVITE_USERS = Activity.RESULT_FIRST_USER + 4;
 
     protected enum WarningType {
         SUCCESS(0),    // not implemented
@@ -982,6 +983,13 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         }
     }
 
+    private void chooseContact() {
+        // TODO one day it will be like this
+        // Intent i = new Intent(Intent.ACTION_PICK, Users.CONTENT_URI);
+        Intent i = new Intent(getContext(), ContactsListActivity.class);
+        startActivityForResult(i, REQUEST_INVITE_USERS);
+    }
+
     boolean tryHideAttachmentView() {
         if (isAttachmentViewVisible()) {
             setupAttachmentViewCloseAnimation();
@@ -1165,11 +1173,10 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     }
 
     private void addUsers() {
-        // TODO TEST
-        addUser(getUserId());
+        chooseContact();
     }
 
-    protected abstract void addUser(String userId);
+    protected abstract void addUsers(String[] members);
 
     private void decryptMessage(CompositeMessage msg) {
         try {
@@ -1390,6 +1397,16 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                             c.close();
                         }
                     }
+                }
+            }
+        }
+        // invite user
+        else if (requestCode == REQUEST_INVITE_USERS) {
+            if (resultCode == Activity.RESULT_OK) {
+                Uri threadUri = data.getData();
+                if (threadUri != null) {
+                    String userId = threadUri.getLastPathSegment();
+                    addUsers(new String[] { userId });
                 }
             }
         }

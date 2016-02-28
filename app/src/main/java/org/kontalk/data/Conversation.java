@@ -48,6 +48,8 @@ public class Conversation {
         Threads.DRAFT,
         Threads.REQUEST_STATUS,
         Threads.Groups.GROUP_JID,
+        Threads.Groups.SUBJECT,
+        Threads.Groups.DIRTY,
     };
 
     private static final int COLUMN_ID = 0;
@@ -62,6 +64,8 @@ public class Conversation {
     private static final int COLUMN_DRAFT = 9;
     private static final int COLUMN_REQUEST_STATUS = 10;
     private static final int COLUMN_GROUP_JID = 11;
+    private static final int COLUMN_GROUP_SUBJECT = 12;
+    private static final int COLUMN_GROUP_DIRTY = 13;
 
     private final Context mContext;
 
@@ -84,6 +88,8 @@ public class Conversation {
     // from groups table
     private String mGroupJid;
     private String[] mGroupPeers;
+    private String mGroupSubject;
+    private boolean mGroupDirty;
 
     private Conversation(Context context) {
         mContext = context;
@@ -108,6 +114,8 @@ public class Conversation {
             mRequestStatus = c.getInt(COLUMN_REQUEST_STATUS);
 
             mGroupJid = c.getString(COLUMN_GROUP_JID);
+            mGroupSubject = c.getString(COLUMN_GROUP_SUBJECT);
+            mGroupDirty = c.getInt(COLUMN_GROUP_DIRTY) != 0;
             // group peers are loaded on demand
 
             loadContact();
@@ -243,6 +251,14 @@ public class Conversation {
         return mGroupJid != null;
     }
 
+    public String getGroupSubject() {
+        return mGroupSubject;
+    }
+
+    public boolean isGroupDirty() {
+        return mGroupDirty;
+    }
+
     public void cancelGroupChat() {
         mGroupJid = null;
         mGroupPeers = null;
@@ -282,7 +298,7 @@ public class Conversation {
      * Turns a 1-to-1 conversation into a group chat.
      * @return the given thread ID or a newly created thread ID.
      */
-    public static long initGroupChat(Context context, long threadId, String groupJid, String[] members, String draft) {
+    public static long initGroupChat(Context context, long threadId, String groupJid, String subject, String[] members, String draft) {
         // insert group
         ContentValues values = new ContentValues();
         values.put(Threads.Groups.GROUP_JID, groupJid);
@@ -294,19 +310,21 @@ public class Conversation {
             threadValues.put(Threads.DRAFT, draft);
             context.getContentResolver().update(ContentUris
                 .withAppendedId(Threads.CONTENT_URI, threadId), threadValues, null, null);
-
-            values.put(Threads.Groups.THREAD_ID, threadId);
         }
         else {
             // create new conversation first
             threadId = MessagesProvider.insertEmptyThread(context, groupJid, draft);
-            values.put(Threads.Groups.THREAD_ID, threadId);
         }
 
+        values.put(Threads.Groups.THREAD_ID, threadId);
+        values.put(Threads.Groups.SUBJECT, subject);
+        values.put(Threads.Groups.DIRTY, true);
         context.getContentResolver().insert(Threads.Groups.CONTENT_URI, values);
 
         // remove values not for members table
         values.remove(Threads.Groups.THREAD_ID);
+        values.remove(Threads.Groups.SUBJECT);
+        values.remove(Threads.Groups.DIRTY);
 
         // insert group members
         for (String member : members) {
@@ -319,8 +337,15 @@ public class Conversation {
         return threadId;
     }
 
-    public static void addUser() {
-        // TODO
+    public static void addUsers(Context context, String groupJid, String[] members) {
+        ContentValues values = new ContentValues();
+        values.put(Threads.Groups.GROUP_JID, groupJid);
+        for (String member : members) {
+            // FIXME turn this into batch operations
+            values.put(Threads.Groups.PEER, member);
+            context.getContentResolver()
+                .insert(Threads.Groups.MEMBERS_CONTENT_URI, values);
+        }
     }
 
     public void markAsRead() {

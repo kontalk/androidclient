@@ -22,6 +22,7 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import org.kontalk.data.Contact;
+import org.kontalk.data.Conversation;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.service.msgcenter.MessageCenterService;
 
@@ -45,9 +46,9 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     @Override
     protected void sendTextMessageInternal(String text, boolean encrypted, long msgId, String packetId) {
         MessageCenterService.sendGroupTextMessage(getContext(),
-            mConversation.getGroupJid(),
-            mConversation.getGroupPeers(), text, encrypted,
-            msgId, packetId);
+            mConversation.getGroupJid(), mConversation.getGroupSubject(),
+            mConversation.isGroupDirty(), mConversation.getGroupPeers(),
+            text, encrypted, msgId, packetId);
     }
 
     @Override
@@ -57,9 +58,10 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     }
 
     @Override
-    protected void addUser(String userId) {
-        // TODO
-        throw new RuntimeException("Not implemented");
+    protected void addUsers(String[] members) {
+        Conversation.addUsers(getContext(), getUserId(), members);
+        // reload conversation
+        ((ComposeMessageParent) getActivity()).loadConversation(getThreadId());
     }
 
     @Override
