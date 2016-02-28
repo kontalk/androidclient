@@ -274,6 +274,11 @@ public class MessagesProvider extends ContentProvider {
             UPDATE_STATUS_NEW         + ";" +
             "END";
 
+        /** Delete group members linked to thread. */
+        private static final String DELETE_GROUP_MEMBERS = "DELETE FROM " + TABLE_GROUP_MEMBERS + " WHERE " +
+            Groups.GROUP_JID + "=(SELECT " + Groups.GROUP_JID + " FROM " + TABLE_GROUPS + " WHERE " + Groups.THREAD_ID + "=old." + Threads._ID + ")";
+        /** Delete group linked to thread. */
+        private static final String DELETE_GROUP = "DELETE FROM " + TABLE_GROUPS + " WHERE " + Groups.THREAD_ID + "=old." + Threads._ID;
 
         /** This trigger will update the threads table counters on DELETE. */
         private static final String TRIGGER_THREADS_DELETE_COUNT =
@@ -283,6 +288,14 @@ public class MessagesProvider extends ContentProvider {
             UPDATE_UNREAD_COUNT_OLD   + ";" +
             UPDATE_NEW_COUNT_OLD      + ";" +
             // do not call this here -- UPDATE_STATUS_OLD         + ";" +
+            "END";
+
+        /** This trigger will delete the linked groups when a thread is deleted. */
+        private static final String TRIGGER_THREAD_DELETE_GROUPS =
+            "CREATE TRIGGER delete_groups_on_delete AFTER DELETE ON " + TABLE_THREADS +
+            " BEGIN " +
+            DELETE_GROUP_MEMBERS      + ";" +
+            DELETE_GROUP              + ";" +
             "END";
 
         private static final String[] SCHEMA_UPGRADE_V4 = {
@@ -325,6 +338,7 @@ public class MessagesProvider extends ContentProvider {
             SCHEMA_GROUPS,
             SCHEMA_GROUPS_MEMBERS,
             SCHEMA_MESSAGES_GROUPS,
+            TRIGGER_THREAD_DELETE_GROUPS,
         };
 
         private Context mContext;
@@ -347,6 +361,7 @@ public class MessagesProvider extends ContentProvider {
             db.execSQL(TRIGGER_THREADS_INSERT_COUNT);
             db.execSQL(TRIGGER_THREADS_UPDATE_COUNT);
             db.execSQL(TRIGGER_THREADS_DELETE_COUNT);
+            db.execSQL(TRIGGER_THREAD_DELETE_GROUPS);
         }
 
         @Override
