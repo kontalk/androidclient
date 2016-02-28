@@ -18,8 +18,6 @@
 
 package org.kontalk.data;
 
-import org.jivesoftware.smack.util.StringUtils;
-
 import android.content.AsyncQueryHandler;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -252,18 +250,7 @@ public class Conversation {
 
     private void loadGroupPeers(boolean force) {
         if (mGroupJid != null && (mGroupPeers == null || force)) {
-            Cursor c = mContext.getContentResolver()
-                .query(Threads.Groups.MEMBERS_CONTENT_URI,
-                    new String[] { Threads.Groups.PEER },
-                    Threads.Groups.GROUP_JID + "=?",
-                    new String[] { mGroupJid }, null);
-
-            mGroupPeers = new String[c.getCount()];
-            int i = 0;
-            while (c.moveToNext()) {
-                mGroupPeers[i++] = c.getString(0);
-            }
-            c.close();
+            mGroupPeers = MessagesProvider.getGroupMembers(mContext, mGroupJid);
         }
     }
 

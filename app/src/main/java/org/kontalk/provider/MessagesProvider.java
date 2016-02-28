@@ -1346,6 +1346,22 @@ public class MessagesProvider extends ContentProvider {
         return group;
     }
 
+    public static String[] getGroupMembers(Context context, String groupJid) {
+        Cursor c = context.getContentResolver()
+            .query(Threads.Groups.MEMBERS_CONTENT_URI,
+                new String[] { Threads.Groups.PEER },
+                Threads.Groups.GROUP_JID + "=?",
+                new String[] { groupJid }, null);
+
+        String[] members = new String[c.getCount()];
+        int i = 0;
+        while (c.moveToNext()) {
+            members[i++] = c.getString(0);
+        }
+        c.close();
+        return members;
+    }
+
     private static ContentValues prepareChangeMessageStatus(
             int status, long timestamp, long statusChanged) {
         ContentValues values = new ContentValues();

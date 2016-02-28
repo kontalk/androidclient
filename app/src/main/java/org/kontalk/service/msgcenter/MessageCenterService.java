@@ -116,6 +116,7 @@ import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.TextComponent;
+import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
@@ -1508,7 +1509,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             long attLength = c.getLong(9);
             int compress = c.getInt(10);
             // TODO int attSecurityFlags = c.getInt(11);
+
             String groupJid = c.getString(11); // 12
+            String[] groupMembers = null;
+            if (groupJid != null) {
+                groupMembers = MessagesProvider.getGroupMembers(this, groupJid);
+            }
 
             // media message encountered and no upload service available - delay message
             if (attFileUri != null && attFetchUrl == null && getUploadService() == null && !retrying) {
@@ -1522,8 +1528,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             b.putLong("org.kontalk.message.msgId", id);
             b.putString("org.kontalk.message.packetId", msgId);
-            b.putString("org.kontalk.message.to", peer);
-            // TODO toGroup should be set too -- b.putString("org.kontalk.message.groupJid", groupJid);
+
+            if (groupJid != null) {
+                b.putString("org.kontalk.message.groupJid", groupJid);
+                b.putStringArray("org.kontalk.message.to", groupMembers);
+            }
+            else {
+                b.putString("org.kontalk.message.to", peer);
+            }
+
             // TODO shouldn't we pass security flags directly here??
             b.putBoolean("org.kontalk.message.encrypt", securityFlags != Coder.SECURITY_CLEARTEXT);
 
