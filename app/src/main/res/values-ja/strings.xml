@@ -91,7 +91,7 @@
   <string name="size_unknown">(不明)</string>
   <string name="title_file_info">ファイル情報</string>
   <string name="pref_restart_msgcenter">メッセージセンターを再起動</string>
-  <string name="pref_title_restart_msgcenter">メッセージセンターが正常に機能しない場合に使用します</string>
+  <string name="pref_title_restart_msgcenter">Kontalk が正常に動作しない場合に使用します</string>
   <string name="pref_idle_time">アイドル時に切断</string>
   <string name="pref_title_idle_time">非アクティブ時に切断するまで待機する時間</string>
   <string name="pref_wakeup_time">サーバーに再接続</string>
@@ -202,7 +202,7 @@ http://kontalk.org/</string>
   <string name="attachment_download">添付をダウンロード</string>
   <string name="attachment_upload">添付をアップロード</string>
   <string name="seen_moment_ago_label">少し前</string>
-  <string name="seen_online_label">オンライン</string>
+  <string name="seen_online_label">アクティブ</string>
   <string name="seen_typing_label">タイプ中…</string>
   <string name="invitation_sent_label">招待を保留中</string>
   <string name="pref_custom_background">背景をカスタマイズ</string>
@@ -261,7 +261,7 @@ http://kontalk.org/</string>
   <string name="msg_status_encrypted">暗号化しました</string>
   <string name="pref_balloons">チャット吹き出しのテーマ</string>
   <string name="pref_title_balloons">チャット吹き出しのテーマを選択してください</string>
-  <string name="attachment_picture">画像</string>
+  <string name="attachment_picture">ギャラリー</string>
   <string name="attachment_contact">連絡先</string>
   <string name="attachment_audio">音声</string>
   <string name="chooser_send_picture">画像を送信</string>
@@ -411,4 +411,37 @@ http://kontalk.org/</string>
 <string name="title_confirm_cancel_registration">登録をキャンセルしますか?</string>
     <string name="confirm_cancel_registration">戻る場合は、登録を最初から開始する必要があります。別のアプリに切り替える必要がある場合は、デバイスのホームボタンを使用するだけです。</string>
     <string name="app_name_offline">Kontalk (オフライン)</string>
+    <string name="mark_read">既読</string>
+    <string name="pref_enable_notification_led">通知 LED</string>
+    <string name="pref_notification_led_color">通知 LED の色</string>
+    <string name="seen_away_label">オンライン</string>
+    <string name="pref_title_custom_background">次のオプションを使用して背景を選択してください</string>
+    <string name="err_import_keypair_read">外部ストレージから個人鍵を読み込みできません。</string>
+    <string name="attachment_camera">カメラ</string>
+    <string name="attachment_video">ビデオ</string>
+    <string name="attachment_file">ファイル</string>
+    <string name="attachment_vcard">連絡先</string>
+    <string name="attachment_location">場所</string>
+
+    <string name="msg_not_implemented">まだ実装されていません。</string>
+
+    <string name="chooser_error_no_camera_app">カメラアプリが利用できません。</string>
+
+    <string name="err_keypair_export_write">外部ストレージに個人鍵を書き込みできません。</string>
+    <string name="err_keypair_export_other">個人鍵をエクスポートできません。</string>
+
+    <string name="pref_title_sync_sim_contacts">登録済のユーザーを確認するときに SIM の連絡先を含める</string>
+
+    <string name="pref_title_sync_invisible_contacts">連絡先アプリに表示されない連絡先を含めます。DAVDroid を使用する場合に有効にします</string>
+
+    <string name="warning_public_key_changed">このユーザーの個人鍵が予期せず変更されました!</string>
+    <string name="title_public_key_changed_warning">個人鍵が変更されました</string>
+    <string name="msg_public_key_changed_warning">ユーザーに、彼/彼女の Kontalk を再インストールしたり、意図的に鍵を再生成したか、確認してください。そうでなければ通信が損なわれる可能性があります!</string>
+    <string name="warning_public_key_unknown">このユーザーの個人鍵は信頼できません!</string>
+    <string name="title_public_key_unknown_warning">信頼できない個人鍵</string>
+    <string name="msg_public_key_unknown_warning">ユーザーに、彼/彼女のフィンガープリントが <b>識別</b> のダイアログに表示されたものと一致するか確認してください。そうでなければ通信が損なわれる可能性があります!</string>
+
+    <string name="pref_show_blocked_users">ブロックされたユーザーを表示</string>
+    <string name="button_load_next_page">さらにメッセージを読み込む</string>
+
     </resources>
