@@ -54,9 +54,11 @@ public class KontalkGroupChatProvider implements GroupChatProvider {
         GroupExtension group = getGroupExtensionIfOwner(message, from);
         if (group != null) {
             List<GroupExtension.Member> members = group.getMembers();
-            String[] users = new String[members.size()];
-            for (int i = 0; i < users.length; i++) {
-                users[i] = members.get(i).jid;
+            String[] users = new String[members.size()+1];
+            // the owner is also a member
+            users[0] = group.getOwner();
+            for (int i = 1; i < users.length; i++) {
+                users[i] = members.get(i-1).jid;
             }
             return users;
         }

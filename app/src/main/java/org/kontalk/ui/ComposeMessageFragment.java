@@ -513,8 +513,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             groupJid, mConversation.getGroupSubject(), users,
             mComposer.getText().toString());
 
-        // empty the text entry (draft text will be restored by reload)
-        mComposer.setText("");
         // load the new conversation
         ((ComposeMessageParent) getActivity()).loadConversation(groupThreadId);
     }

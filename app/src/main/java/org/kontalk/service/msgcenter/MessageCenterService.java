@@ -2106,6 +2106,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 ContentValues membersValues = new ContentValues();
                 membersValues.put(Threads.Groups.GROUP_JID, group.getContent().getJid());
                 for (String member : members) {
+                    // do not add ourselves
+                    if (Authenticator.isSelfJID(this, member))
+                        continue;
+
                     // FIXME turn this into batch operations
                     membersValues.put(Threads.Groups.PEER, member);
                     getContentResolver()
