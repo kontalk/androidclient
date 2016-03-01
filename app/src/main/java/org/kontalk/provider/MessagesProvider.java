@@ -525,40 +525,20 @@ public class MessagesProvider extends ContentProvider {
         try {
             beginTransaction(db);
 
-            // configure thread as group
-            if (match == GROUPS) {
-                long threadId = values.getAsLong(Groups.THREAD_ID);
-
-                // notify thread change
-                notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
-                // notify conversation change
-                notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
-
-                // take only the values we need
-                db.insertOrThrow(TABLE_GROUPS, null, values);
-
-                success = setTransactionSuccessful(db);
-                // no uri needed
-                return null;
+            switch (match) {
+                case GROUPS:
+                    // configure thread as group
+                    insertGroup(db, values, notifications);
+                    success = setTransactionSuccessful(db);
+                    // no uri needed
+                    return null;
+                case GROUPS_MEMBERS:
+                    // insert members into group
+                    insertGroupMembers(db, values);
+                    success = setTransactionSuccessful(db);
+                    // no uri needed
+                    return null;
             }
-
-            // insert members into group
-            else if (match == GROUPS_MEMBERS) {
-                // TODO shouldn't we notify someone?
-
-                // take only the values we need
-                try {
-                    db.insertOrThrow(TABLE_GROUP_MEMBERS, null, values);
-                }
-                catch (SQLiteConstraintException e) {
-                    // just ignore dups - it doesn't really matter
-                }
-
-                success = setTransactionSuccessful(db);
-                // no uri needed
-                return null;
-            }
-
 
             // we need to know if there previously was a pending request
             // so we can decide if we have to fire a notification or not
@@ -580,12 +560,12 @@ public class MessagesProvider extends ContentProvider {
                 success = setTransactionSuccessful(db);
 
                 // draft or request - return conversation
-                if (draft != null || (match == REQUESTS && !requestExists))
+                if (draft != null || !requestExists)
                     return ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId);
             }
 
             // remove reserved columns
-                values.remove(Groups.GROUP_JID);
+            values.remove(Groups.GROUP_JID);
 
             // insert the new message now!
             long rowId = db.insertOrThrow(TABLE_MESSAGES, null, values);
@@ -630,7 +610,7 @@ public class MessagesProvider extends ContentProvider {
                 // update fulltext table
                 byte[] content = values.getAsByteArray(Messages.BODY_CONTENT);
                 Boolean encrypted = values.getAsBoolean(Messages.ENCRYPTED);
-                if (content != null && content.length > 0 && (encrypted == null || !encrypted.booleanValue())) {
+                if (content != null && content.length > 0 && (encrypted == null || !encrypted)) {
                     updateFulltext(db, rowId, threadId, content);
                 }
 
@@ -653,6 +633,30 @@ public class MessagesProvider extends ContentProvider {
             ContentResolver cr = getContext().getContentResolver();
             for (Uri nuri : notifications)
                 cr.notifyChange(nuri, null);
+        }
+    }
+
+    private void insertGroup(SQLiteDatabase db, ContentValues values, List<Uri> notifications) {
+        if (notifications != null) {
+            long threadId = values.getAsLong(Groups.THREAD_ID);
+            // notify thread change
+            notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
+            // notify conversation change
+            notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
+        }
+
+        db.insertOrThrow(TABLE_GROUPS, null, values);
+    }
+
+    private void insertGroupMembers(SQLiteDatabase db, ContentValues values) {
+        // TODO shouldn't we notify someone?
+
+        // take only the values we need
+        try {
+            db.insertOrThrow(TABLE_GROUP_MEMBERS, null, values);
+        }
+        catch (SQLiteConstraintException e) {
+            // just ignore dups - it doesn't really matter
         }
     }
 
@@ -771,8 +775,8 @@ public class MessagesProvider extends ContentProvider {
                 ContentValues groupValues = new ContentValues();
                 groupValues.put(Groups.GROUP_JID, groupJid);
                 groupValues.put(Groups.THREAD_ID, threadId);
-                // TODO group subject
-                db.replace(TABLE_GROUPS, null, groupValues);
+                groupValues.put(Groups.SUBJECT, initialValues.getAsString(Groups.SUBJECT));
+                insertGroup(db, groupValues, null);
             }
 
             // notify newly created thread by userid

@@ -33,7 +33,6 @@ import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
-import org.spongycastle.util.Arrays;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
