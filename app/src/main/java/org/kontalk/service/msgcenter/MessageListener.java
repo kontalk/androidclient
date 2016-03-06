@@ -18,26 +18,39 @@
 
 package org.kontalk.service.msgcenter;
 
-import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_MESSAGE;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
+import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.packet.ExtensionElement;
+import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 
+import android.content.ContentResolver;
+import android.content.ContentUris;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.util.Log;
+
+import org.kontalk.Kontalk;
 import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.E2EEncryption;
+import org.kontalk.client.EndpointServer;
+import org.kontalk.client.GroupExtension;
+import org.kontalk.client.KontalkGroupManager;
 import org.kontalk.client.OutOfBandData;
 import org.kontalk.crypto.Coder;
+import org.kontalk.crypto.DecryptException;
+import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.GroupInfo;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
@@ -48,16 +61,16 @@ import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
 import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.provider.UsersProvider;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.Preferences;
 import org.kontalk.util.XMPPUtils;
 
-import android.content.ContentResolver;
-import android.content.ContentUris;
-import android.content.ContentValues;
-import android.content.Intent;
-import android.net.Uri;
-import android.util.Log;
+import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_TIMESTAMP;
+import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_MESSAGE;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
 
 
 /**
@@ -73,8 +86,32 @@ class MessageListener extends MessageCenterPacketListener {
         super(instance);
     }
 
+    public void processGroupMessage(KontalkGroupManager.KontalkGroup group, Stanza packet, CompositeMessage msg)
+            throws SmackException.NotConnectedException {
+
+        if (group.checkRequest(packet)) {
+            GroupExtension ext = GroupExtension.from(packet);
+            String groupJid = ext.getJID();
+            String subject = ext.getSubject();
+            String[] members = flattenMembers(ext);
+            GroupInfo groupInfo = new GroupInfo(groupJid, subject, members);
+            msg.addComponent(new GroupComponent(groupInfo));
+        }
+    }
+
+    private String[] flattenMembers(GroupExtension group) {
+        List<GroupExtension.Member> members = group.getMembers();
+        String[] users = new String[members.size()+1];
+        // the owner is also a member
+        users[0] = group.getOwner();
+        for (int i = 1; i < users.length; i++) {
+            users[i] = members.get(i-1).jid;
+        }
+        return users;
+    }
+
     @Override
-    public void processPacket(Stanza packet) {
+    public void processPacket(Stanza packet) throws SmackException.NotConnectedException {
         Map<String, Long> waitingReceipt = getWaitingReceiptList();
 
         org.jivesoftware.smack.packet.Message m = (org.jivesoftware.smack.packet.Message) packet;
@@ -172,8 +209,14 @@ class MessageListener extends MessageCenterPacketListener {
 
                             // decrypt message
                             try {
-                                MessageUtils.decryptMessage(getContext(),
-                                    getServer(), msg, encryptedData);
+                                Message innerStanza = decryptMessage(msg, encryptedData);
+                                if (innerStanza != null) {
+                                    // copy some attributes over
+                                    innerStanza.setTo(m.getTo());
+                                    innerStanza.setFrom(m.getFrom());
+                                    innerStanza.setType(m.getType());
+                                    m = innerStanza;
+                                }
                             }
 
                             catch (Exception exc) {
@@ -195,8 +238,6 @@ class MessageListener extends MessageCenterPacketListener {
                             msg.addComponent(new TextComponent(body));
 
                     }
-
-                    // TODO duplicated code (MessageUtils#decryptMessage)
 
                     // out of band data
                     ExtensionElement _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
@@ -272,13 +313,10 @@ class MessageListener extends MessageCenterPacketListener {
                     }
 
                     // group chat
-                    GroupChatProvider groupChatProvider = getGroupChatProvider();
-                    String groupJid = groupChatProvider.getGroupJid(m);
-                    if (groupJid != null) {
-                        String groupSubject = groupChatProvider.getGroupSubject(m, null);
-                        String[] groupMembers = groupChatProvider.getGroupMembers(m, null);
-                        GroupInfo groupInfo = new GroupInfo(groupJid, groupSubject, groupMembers);
-                        msg.addComponent(new GroupComponent(groupInfo));
+                    KontalkGroupManager.KontalkGroup group = KontalkGroupManager
+                        .getInstanceFor(getConnection()).getGroup(m);
+                    if (group != null) {
+                        processGroupMessage(group, m, msg);
                     }
 
                     Uri msgUri = incoming(msg);
@@ -361,4 +399,133 @@ class MessageListener extends MessageCenterPacketListener {
         }
         sendPacket(ack);
     }
+
+    private Message decryptMessage(CompositeMessage msg, byte[] encryptedData) throws Exception {
+        // message stanza
+        Message m = null;
+
+        try {
+            Context context = getContext();
+            PersonalKey key = Kontalk.get(context).getPersonalKey();
+
+            EndpointServer server = getServer();
+            if (server == null)
+                server = Preferences.getEndpointServer(context);
+
+            Coder coder = UsersProvider.getDecryptCoder(context, server, key, msg.getSender(true));
+
+            // decrypt
+            Coder.DecryptOutput result = coder.decryptText(encryptedData, true);
+
+            String contentText;
+
+            if (XMPPUtils.XML_XMPP_TYPE.equalsIgnoreCase(result.mime)) {
+                m = XMPPUtils.parseMessageStanza(result.cleartext);
+
+                if (result.timestamp != null && !checkDriftedDelay(m, result.timestamp))
+                    result.errors.add(new DecryptException(DECRYPT_EXCEPTION_INVALID_TIMESTAMP,
+                        "Drifted timestamp"));
+
+                contentText = m.getBody();
+            }
+            else {
+                contentText = result.cleartext;
+            }
+
+            // clear componenets (we are adding new ones)
+            msg.clearComponents();
+            // decrypted text
+            if (contentText != null)
+                msg.addComponent(new TextComponent(contentText));
+
+            if (result.errors.size() > 0) {
+
+                int securityFlags = msg.getSecurityFlags();
+
+                for (DecryptException err : result.errors) {
+
+                    int code = err.getCode();
+                    switch (code) {
+
+                        case DecryptException.DECRYPT_EXCEPTION_INTEGRITY_CHECK:
+                            securityFlags |= Coder.SECURITY_ERROR_INTEGRITY_CHECK;
+                            break;
+
+                        case DecryptException.DECRYPT_EXCEPTION_VERIFICATION_FAILED:
+                            securityFlags |= Coder.SECURITY_ERROR_INVALID_SIGNATURE;
+                            break;
+
+                        case DecryptException.DECRYPT_EXCEPTION_INVALID_DATA:
+                            securityFlags |= Coder.SECURITY_ERROR_INVALID_DATA;
+                            break;
+
+                        case DecryptException.DECRYPT_EXCEPTION_INVALID_SENDER:
+                            securityFlags |= Coder.SECURITY_ERROR_INVALID_SENDER;
+                            break;
+
+                        case DecryptException.DECRYPT_EXCEPTION_INVALID_RECIPIENT:
+                            securityFlags |= Coder.SECURITY_ERROR_INVALID_RECIPIENT;
+                            break;
+
+                        case DecryptException.DECRYPT_EXCEPTION_INVALID_TIMESTAMP:
+                            securityFlags |= Coder.SECURITY_ERROR_INVALID_TIMESTAMP;
+                            break;
+
+                    }
+
+                }
+
+                msg.setSecurityFlags(securityFlags);
+            }
+
+            msg.setEncrypted(false);
+
+            return m;
+        }
+        catch (Exception exc) {
+            // pass over the message even if encrypted
+            // UI will warn the user about that and wait
+            // for user decisions
+            int securityFlags = msg.getSecurityFlags();
+
+            if (exc instanceof DecryptException) {
+
+                int code = ((DecryptException) exc).getCode();
+                switch (code) {
+
+                    case DecryptException.DECRYPT_EXCEPTION_DECRYPT_FAILED:
+                    case DecryptException.DECRYPT_EXCEPTION_PRIVATE_KEY_NOT_FOUND:
+                        securityFlags |= Coder.SECURITY_ERROR_DECRYPT_FAILED;
+                        break;
+
+                    case DecryptException.DECRYPT_EXCEPTION_INTEGRITY_CHECK:
+                        securityFlags |= Coder.SECURITY_ERROR_INTEGRITY_CHECK;
+                        break;
+
+                    case DecryptException.DECRYPT_EXCEPTION_INVALID_DATA:
+                        securityFlags |= Coder.SECURITY_ERROR_INVALID_DATA;
+                        break;
+
+                }
+
+                msg.setSecurityFlags(securityFlags);
+            }
+
+            throw exc;
+        }
+    }
+
+    private static boolean checkDriftedDelay(Message m, Date expected) {
+        Date stamp = XMPPUtils.getStanzaDelay(m);
+        if (stamp != null) {
+            long time = stamp.getTime();
+            long now = expected.getTime();
+            long diff = Math.abs(now - time);
+            return (diff < Coder.TIMEDIFF_THRESHOLD);
+        }
+
+        // no timestamp found
+        return true;
+    }
+
 }

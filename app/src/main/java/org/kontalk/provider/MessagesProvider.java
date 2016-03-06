@@ -566,6 +566,7 @@ public class MessagesProvider extends ContentProvider {
 
             // remove reserved columns
             values.remove(Groups.GROUP_JID);
+            values.remove(Groups.SUBJECT);
 
             // insert the new message now!
             long rowId = db.insertOrThrow(TABLE_MESSAGES, null, values);

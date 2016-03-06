@@ -18,12 +18,24 @@
 
 package org.kontalk.util;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Locale;
+import java.util.TimeZone;
+
+import com.afollestad.materialdialogs.AlertDialogWrapper;
+
+import org.jivesoftware.smack.util.StringUtils;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
@@ -34,47 +46,17 @@ import android.text.format.DateUtils;
 import android.text.format.Time;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
-import android.util.Log;
 
-import org.jivesoftware.smack.packet.ExtensionElement;
-import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.util.StringUtils;
-
-import org.kontalk.Kontalk;
 import org.kontalk.R;
-import org.kontalk.client.BitsOfBinary;
-import org.kontalk.client.EndpointServer;
-import org.kontalk.client.OutOfBandData;
 import org.kontalk.crypto.Coder;
-import org.kontalk.crypto.DecryptException;
-import org.kontalk.crypto.PersonalKey;
-import org.kontalk.data.GroupInfo;
 import org.kontalk.message.AttachmentComponent;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
-import org.kontalk.message.GroupComponent;
 import org.kontalk.message.ImageComponent;
-import org.kontalk.message.MessageComponent;
 import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
 import org.kontalk.provider.MyMessages.Messages;
-import org.kontalk.provider.UsersProvider;
-import org.kontalk.service.msgcenter.GroupChatProvider;
-import org.kontalk.service.msgcenter.KontalkGroupChatProvider;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
-
-import com.afollestad.materialdialogs.AlertDialogWrapper;
-
-import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_TIMESTAMP;
 
 
 public final class MessageUtils {
@@ -84,9 +66,6 @@ public final class MessageUtils {
     private static final ForegroundColorSpan STYLE_GREEN = new ForegroundColorSpan(Color.rgb(0, 0xAA, 0));
 
     public static final int MILLISECONDS_IN_DAY = 86400000;
-
-    // FIXME hard coded instance
-    private static final GroupChatProvider sGroupChatProvider = new KontalkGroupChatProvider();
 
     private MessageUtils() {}
 
@@ -554,236 +533,6 @@ public final class MessageUtils {
 
     public static String messageId() {
         return StringUtils.randomString(30);
-    }
-
-    /** Decrypts a message, modifying the object <b>in place</b>. */
-    public static void decryptMessage(Context context, EndpointServer server, CompositeMessage msg) throws Exception {
-        // encrypted messages have a single encrypted raw component
-        RawComponent raw = (RawComponent) msg
-                .getComponent(RawComponent.class);
-
-        if (raw != null)
-            decryptMessage(context, server, msg, raw.getContent());
-    }
-
-    /** Decrypts a message, modifying the object <b>in place</b>. */
-    public static void decryptMessage(Context context, EndpointServer server, CompositeMessage msg, byte[] encryptedData)
-            throws Exception {
-
-        // message stanza
-        Message m = null;
-
-        try {
-            PersonalKey key = Kontalk.get(context).getPersonalKey();
-
-            if (server == null)
-                server = Preferences.getEndpointServer(context);
-
-            Coder coder = UsersProvider.getDecryptCoder(context, server, key, msg.getSender(true));
-
-            // decrypt
-            Coder.DecryptOutput result = coder.decryptText(encryptedData, true);
-
-            String contentText;
-
-            if (XMPPUtils.XML_XMPP_TYPE.equalsIgnoreCase(result.mime)) {
-                m = XMPPUtils.parseMessageStanza(result.cleartext);
-
-                if (result.timestamp != null && !checkDriftedDelay(m, result.timestamp))
-                    result.errors.add(new DecryptException(DECRYPT_EXCEPTION_INVALID_TIMESTAMP,
-                        "Drifted timestamp"));
-
-                contentText = m.getBody();
-            }
-            else {
-                contentText = result.cleartext;
-            }
-
-            // clear componenets (we are adding new ones)
-            msg.clearComponents();
-            // decrypted text
-            if (contentText != null)
-                msg.addComponent(new TextComponent(contentText));
-
-            if (result.errors.size() > 0) {
-
-                int securityFlags = msg.getSecurityFlags();
-
-                for (DecryptException err : result.errors) {
-
-                    int code = err.getCode();
-                    switch (code) {
-
-                        case DecryptException.DECRYPT_EXCEPTION_INTEGRITY_CHECK:
-                            securityFlags |= Coder.SECURITY_ERROR_INTEGRITY_CHECK;
-                            break;
-
-                        case DecryptException.DECRYPT_EXCEPTION_VERIFICATION_FAILED:
-                            securityFlags |= Coder.SECURITY_ERROR_INVALID_SIGNATURE;
-                            break;
-
-                        case DecryptException.DECRYPT_EXCEPTION_INVALID_DATA:
-                            securityFlags |= Coder.SECURITY_ERROR_INVALID_DATA;
-                            break;
-
-                        case DecryptException.DECRYPT_EXCEPTION_INVALID_SENDER:
-                            securityFlags |= Coder.SECURITY_ERROR_INVALID_SENDER;
-                            break;
-
-                        case DecryptException.DECRYPT_EXCEPTION_INVALID_RECIPIENT:
-                            securityFlags |= Coder.SECURITY_ERROR_INVALID_RECIPIENT;
-                            break;
-
-                        case DecryptException.DECRYPT_EXCEPTION_INVALID_TIMESTAMP:
-                            securityFlags |= Coder.SECURITY_ERROR_INVALID_TIMESTAMP;
-                            break;
-
-                    }
-
-                }
-
-                msg.setSecurityFlags(securityFlags);
-            }
-
-            msg.setEncrypted(false);
-
-        }
-        catch (Exception exc) {
-            // pass over the message even if encrypted
-            // UI will warn the user about that and wait
-            // for user decisions
-            int securityFlags = msg.getSecurityFlags();
-
-            if (exc instanceof DecryptException) {
-
-                int code = ((DecryptException) exc).getCode();
-                switch (code) {
-
-                    case DecryptException.DECRYPT_EXCEPTION_DECRYPT_FAILED:
-                    case DecryptException.DECRYPT_EXCEPTION_PRIVATE_KEY_NOT_FOUND:
-                        securityFlags |= Coder.SECURITY_ERROR_DECRYPT_FAILED;
-                        break;
-
-                    case DecryptException.DECRYPT_EXCEPTION_INTEGRITY_CHECK:
-                        securityFlags |= Coder.SECURITY_ERROR_INTEGRITY_CHECK;
-                        break;
-
-                    case DecryptException.DECRYPT_EXCEPTION_INVALID_DATA:
-                        securityFlags |= Coder.SECURITY_ERROR_INVALID_DATA;
-                        break;
-
-                }
-
-                msg.setSecurityFlags(securityFlags);
-            }
-
-            throw exc;
-        }
-
-        // we have a decrypted message stanza, process it
-        if (m != null) {
-
-            // TODO duplicated code (MessageListener#processPacket)
-
-            // out of band data
-            ExtensionElement _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
-            if (_media != null && _media instanceof OutOfBandData) {
-                File previewFile = null;
-
-                OutOfBandData media = (OutOfBandData) _media;
-                String mime = media.getMime();
-                String fetchUrl = media.getUrl();
-                long length = media.getLength();
-                boolean encrypted = media.isEncrypted();
-
-                // bits-of-binary for preview
-                ExtensionElement _preview = m.getExtension(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE);
-                if (_preview != null && _preview instanceof BitsOfBinary) {
-                    BitsOfBinary preview = (BitsOfBinary) _preview;
-                    String previewMime = preview.getType();
-                    if (previewMime == null)
-                        previewMime = MediaStorage.THUMBNAIL_MIME_NETWORK;
-
-                    String filename = null;
-
-                    if (ImageComponent.supportsMimeType(mime)) {
-                        filename = ImageComponent.buildMediaFilename(msg.getId(), previewMime);
-                    }
-
-                    else if (VCardComponent.supportsMimeType(mime)) {
-                        filename = VCardComponent.buildMediaFilename(msg.getId(), previewMime);
-                    }
-
-                    try {
-                        if (filename != null) previewFile =
-                            MediaStorage.writeInternalMedia(context,
-                                filename, preview.getContents());
-                    }
-                    catch (IOException e) {
-                        Log.w(Kontalk.TAG, "error storing thumbnail", e);
-                    }
-                }
-
-                MessageComponent<?> attachment = null;
-
-                if (ImageComponent.supportsMimeType(mime)) {
-                    // cleartext only for now
-                    attachment = new ImageComponent(mime, previewFile, null, fetchUrl, length,
-                        encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-                }
-
-                else if (VCardComponent.supportsMimeType(mime)) {
-                    // cleartext only for now
-                    attachment = new VCardComponent(previewFile, null, fetchUrl, length,
-                        encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-                }
-
-                else if (AudioComponent.supportsMimeType(mime)) {
-                    attachment = new AudioComponent(mime, null, fetchUrl, length,
-                        encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-                }
-
-
-                // TODO other types
-
-                if (attachment != null)
-                    msg.addComponent(attachment);
-
-                // add a dummy body if none was found
-                /*
-                if (body == null) {
-                    msg.addComponent(new TextComponent(CompositeMessage
-                        .getSampleTextContent((Class<? extends MessageComponent<?>>)
-                            attachment.getClass(), mime)));
-                }
-                */
-
-            }
-
-            // group chat
-            String groupJid = sGroupChatProvider.getGroupJid(m);
-            if (groupJid != null) {
-                String from = msg.getSender(true);
-                String groupSubject = sGroupChatProvider.getGroupSubject(m, from);
-                String[] groupMembers = sGroupChatProvider.getGroupMembers(m, from);
-                GroupInfo groupInfo = new GroupInfo(groupJid, groupSubject, groupMembers);
-                msg.addComponent(new GroupComponent(groupInfo));
-            }
-
-        }
-    }
-
-    private static boolean checkDriftedDelay(Message m, Date expected) {
-        Date stamp = XMPPUtils.getStanzaDelay(m);
-        if (stamp != null) {
-            long time = stamp.getTime();
-            long now = expected.getTime();
-            long diff = Math.abs(now - time);
-            return (diff < Coder.TIMEDIFF_THRESHOLD);
-        }
-
-        // no timestamp found
-        return true;
     }
 
     /** Fills in a {@link ContentValues} object from the given message. */

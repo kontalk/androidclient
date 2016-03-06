@@ -372,7 +372,6 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         MenuItem openMenu = menu.findItem(R.id.menu_open);
         MenuItem dlMenu = menu.findItem(R.id.menu_download);
         MenuItem cancelDlMenu = menu.findItem(R.id.menu_cancel_download);
-        MenuItem decryptMenu = menu.findItem(R.id.menu_decrypt);
 
         // initial status
         retryMenu.setVisible(false);
@@ -382,7 +381,6 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         openMenu.setVisible(false);
         dlMenu.setVisible(false);
         cancelDlMenu.setVisible(false);
-        decryptMenu.setVisible(false);
 
         boolean singleItem = (mCheckedItemCount == 1);
         if (singleItem) {
@@ -448,12 +446,6 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
             }
 
-            else {
-
-                decryptMenu.setVisible(true);
-
-            }
-
             detailsMenu.setVisible(true);
         }
         return true;
@@ -498,13 +490,6 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
                 Toast.makeText(getActivity(), R.string.message_text_copied,
                     Toast.LENGTH_SHORT).show();
-                mode.finish();
-                return true;
-            }
-
-            case R.id.menu_decrypt: {
-                CompositeMessage msg = getCheckedItem();
-                decryptMessage(msg);
                 mode.finish();
                 return true;
             }
@@ -1177,28 +1162,6 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     }
 
     protected abstract void addUsers(String[] members);
-
-    private void decryptMessage(CompositeMessage msg) {
-        try {
-            Context ctx = getActivity();
-
-            MessageUtils.decryptMessage(ctx, null, msg);
-
-            // write updated data to the database
-            ContentValues values = new ContentValues();
-            MessageUtils.fillContentValues(values, msg);
-
-            ctx.getContentResolver().update(Messages.getUri(msg.getId()),
-                    values, null, null);
-        }
-        catch (Exception e) {
-            Log.e(TAG, "decryption failed", e);
-
-            // TODO i18n
-            Toast.makeText(getActivity(), "Decryption failed!",
-                    Toast.LENGTH_LONG).show();
-        }
-    }
 
     private void retryMessage(CompositeMessage msg) {
         Intent i = new Intent(getActivity(), MessageCenterService.class);

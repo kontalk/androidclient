@@ -38,8 +38,8 @@ import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.filter.StanzaFilter;
-import org.jivesoftware.smack.filter.StanzaTypeFilter;
 import org.jivesoftware.smack.filter.StanzaIdFilter;
+import org.jivesoftware.smack.filter.StanzaTypeFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Stanza;
@@ -49,7 +49,6 @@ import org.jivesoftware.smack.roster.RosterLoadedListener;
 import org.jivesoftware.smack.roster.packet.RosterPacket;
 import org.jivesoftware.smack.util.Async;
 import org.jivesoftware.smack.util.StringUtils;
-import org.jivesoftware.smackx.address.packet.MultipleAddresses;
 import org.jivesoftware.smackx.caps.packet.CapsExtension;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
@@ -102,12 +101,12 @@ import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.BlockingCommand;
 import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.EndpointServer;
-import org.kontalk.client.GroupExtension;
 import org.kontalk.client.KontalkConnection;
-import org.kontalk.client.PublicKeyPublish;
-import org.kontalk.client.RosterMatch;
+import org.kontalk.client.KontalkGroupManager;
 import org.kontalk.client.OutOfBandData;
+import org.kontalk.client.PublicKeyPublish;
 import org.kontalk.client.PushRegistration;
+import org.kontalk.client.RosterMatch;
 import org.kontalk.client.ServerlistCommand;
 import org.kontalk.client.SmackInitializer;
 import org.kontalk.client.VCard4;
@@ -372,9 +371,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private RegenerateKeyPairListener mKeyPairRegenerator;
     private ImportKeyPairListener mKeyPairImporter;
-
-    // this will be discovered one day
-    GroupChatProvider groupChatProvider = new KontalkGroupChatProvider();
 
     static final class IdleConnectionHandler extends Handler implements IdleHandler {
         /** Idle signal. */
@@ -1977,9 +1973,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             // pre-process message for group delivery
+            KontalkGroupManager.KontalkGroup group = null;
             if (isGroupMsg) {
-                boolean groupCreating = data.getBoolean("org.kontalk.message.groupCreating");
-                groupChatProvider.transform(groupJid, toGroup, m, groupCreating);
+                group = KontalkGroupManager.getInstanceFor(mConnection)
+                    .getGroup(groupJid);
+                if (data.getBoolean("org.kontalk.message.groupCreating")) {
+                    String subject = data.getString("org.kontalk.message.groupSubject");
+                    group.create(subject, toGroup, m);
+                }
+                else {
+                    group.groupInfo(m);
+                }
             }
 
             if (encrypt) {
@@ -2048,9 +2052,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             String serverId = data.getString("org.kontalk.message.ack");
             boolean ackRequest = !data.getBoolean("org.kontalk.message.standalone", false);
 
-            // post-process message for group delivery
+            // post-process for group delivery
             if (isGroupMsg) {
-                groupChatProvider.transformEncrypted(groupJid, toGroup, m);
+                group.addRouteExtension(toGroup, m);
             }
 
             // received receipt
