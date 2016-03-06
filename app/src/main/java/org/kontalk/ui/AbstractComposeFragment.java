@@ -288,20 +288,6 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         mComposer.onKeyboardStateChanged(newConfig.keyboardHidden == KEYBOARDHIDDEN_NO);
     }
 
-    /**
-     * @deprecated Conversation fragments now live indipendently from each other.
-     */
-    @Deprecated
-    public void reload() {
-        // be sure to cancel all queries
-        stopQuery();
-        // hide the warning bar
-        hideWarning();
-        // reload data
-        processArguments(null);
-        onFocus(false);
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {

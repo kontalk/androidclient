@@ -140,6 +140,10 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     public void loadConversation(long threadId) {
         // create bootstrap intent
         setIntent(ComposeMessage.fromConversation(this, threadId));
+        loadConversation();
+    }
+
+    public void loadConversation() {
         // build chat fragment
         AbstractComposeFragment f = getComposeFragment(null);
         // insert it into the activity
@@ -454,11 +458,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     @Override
     protected void onNewIntent(Intent intent) {
         setIntent(intent);
-        Bundle args = processIntent(null);
-        if (args != null) {
-            mFragment.setMyArguments(args);
-            mFragment.reload();
-        }
+        loadConversation();
     }
 
     @Override
