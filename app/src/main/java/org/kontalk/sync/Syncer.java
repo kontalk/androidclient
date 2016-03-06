@@ -637,6 +637,11 @@ public class Syncer {
                         usersProvider.update(Users.CONTENT_URI_OFFLINE, registeredValues,
                             Users.JID + " = ?", new String[] { origJid });
 
+                        if (entry.publicKey != null) {
+                            // maybe trust the key
+                            UsersProvider.maybeTrustUserKey(mContext, entry.from, entry.publicKey);
+                        }
+
                         // clear data
                         registeredValues.remove(Users.DISPLAY_NAME);
 

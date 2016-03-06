@@ -560,7 +560,7 @@ public final class Preferences {
         return sPreferences.edit()
             .putString("registration_name", name)
             .putString("registration_phone", phoneNumber)
-            .putString("registration_key", key.toBase64())
+            .putString("registration_key", key != null ? key.toBase64() : null)
             .putString("registration_importedpublickey", importedPublicKey != null ?
                 Base64.encodeToString(importedPublicKey, Base64.NO_WRAP) : null)
             .putString("registration_importedprivatekey", importedPrivateKey != null ?
@@ -583,7 +583,8 @@ public final class Preferences {
             p.phone = getString(context, "registration_phone", null);
             String serverUri = getString(context, "registration_server", null);
             p.server = serverUri != null ? new EndpointServer(serverUri) : null;
-            p.key = PersonalKey.fromBase64(getString(context, "registration_key", null));
+            String key = getString(context, "registration_key", null);
+            p.key = !TextUtils.isEmpty(key) ? PersonalKey.fromBase64(key) : null;
             p.passphrase = getString(context, "registration_passphrase", null);
 
             String importedPublicKey = getString(context, "registration_importedpublickey", null);
