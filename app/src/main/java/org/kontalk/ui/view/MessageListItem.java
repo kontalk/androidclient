@@ -40,6 +40,7 @@ import android.widget.TextView;
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.GroupComponent;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 
@@ -126,7 +127,9 @@ public class MessageListItem extends RelativeLayout implements Checkable {
                 mPeer = msg.getSender(true);
         }
         else {
-            Contact contact = Contact.findByUserId(context, msg.getRecipients().get(0));
+            Contact contact = null;
+            if (!msg.hasComponent(GroupComponent.class))
+                contact = Contact.findByUserId(context, msg.getRecipients().get(0));
             mBalloonTheme.setOutgoing(contact, mMessage.getStatus());
             if (contact != null)
                 mPeer = contact.getNumber();
