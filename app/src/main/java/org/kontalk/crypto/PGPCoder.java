@@ -147,13 +147,12 @@ public class PGPCoder extends Coder {
             throws PGPException, IOException, SignatureException {
 
         String from = mKey.getUserId(mServer.getNetwork());
-        StringBuilder to = new StringBuilder();
-        for (PGPPublicKeyRing rcpt : mRecipients)
-            to.append(PGP.getUserId(PGP.getMasterKey(rcpt), mServer.getNetwork()))
-                .append("; ");
+        String[] to = new String[mRecipients.length];
+        for (int i = 0; i < to.length; i++)
+            to[i] = PGP.getUserId(PGP.getMasterKey(mRecipients[i]), mServer.getNetwork());
 
         // secure the message against the most basic attacks using Message/CPIM
-        CPIMMessage cpim = new CPIMMessage(from, to.toString(), new Date(), mime, data);
+        CPIMMessage cpim = new CPIMMessage(from, to, new Date(), mime, data);
         byte[] plainText = cpim.toByteArray();
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -387,8 +386,18 @@ public class PGPCoder extends Coder {
                             }
 
                             // check that the recipient matches the full uid of the personal key
+                            boolean foundTo = false;
                             String myUid = mKey.getUserId(mServer.getNetwork());
-                            if (!myUid.equals(msg.getTo())) {
+                            String[] msgTo = msg.getTo();
+                            if (msgTo != null) {
+                                for (String to : msgTo) {
+                                    if (myUid.equals(to)) {
+                                        foundTo = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!foundTo) {
                                 errors.add(new DecryptException(
                                     DECRYPT_EXCEPTION_INVALID_RECIPIENT,
                                     "Destination does not match personal key"));
