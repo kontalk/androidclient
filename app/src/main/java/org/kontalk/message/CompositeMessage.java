@@ -250,6 +250,10 @@ public class CompositeMessage {
         mComponents.clear();
     }
 
+    public <T extends MessageComponent<?>> boolean hasComponent(Class<T> type) {
+        return getComponent(type) != null;
+    }
+
     /** Returns the first component of the given type. */
     public <T extends MessageComponent<?>> T getComponent(Class<T> type) {
         for (MessageComponent<?> cmp : mComponents) {

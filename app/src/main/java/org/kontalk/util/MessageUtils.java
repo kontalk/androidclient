@@ -52,6 +52,7 @@ import org.kontalk.crypto.Coder;
 import org.kontalk.message.AttachmentComponent;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.GroupComponent;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
@@ -301,13 +302,15 @@ public final class MessageUtils {
         details.append(res.getString(resId));
 
         // To/From
-        details.append('\n');
-        if (direction == Messages.DIRECTION_OUT)
-            details.append(res.getString(R.string.to_address_label));
-        else
-            details.append(res.getString(R.string.from_label));
+        if (!msg.hasComponent(GroupComponent.class) || direction == Messages.DIRECTION_IN) {
+            details.append('\n');
+            if (direction == Messages.DIRECTION_OUT)
+                details.append(res.getString(R.string.to_address_label));
+            else
+                details.append(res.getString(R.string.from_label));
 
-        details.append(decodedPeer);
+            details.append(decodedPeer);
+        }
 
         // Encrypted
         int securityFlags = msg.getSecurityFlags();
