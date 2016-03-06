@@ -2144,7 +2144,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }).start();
 
         // fire notification only if message was actually inserted to database
-        if (msgUri != null && !MessagingNotification.isPaused(sender)) {
+        // and the conversation is not open already
+        String paused = (group != null) ? group.getContent().getJid() : sender;
+        if (msgUri != null && !MessagingNotification.isPaused(paused)) {
             // update notifications (delayed)
             MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
         }
