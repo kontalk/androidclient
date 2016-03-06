@@ -26,6 +26,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -37,7 +38,10 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.SearchView;
 import android.text.InputType;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListAdapter;
 import android.widget.Toast;
@@ -76,6 +80,12 @@ public class ConversationsActivity extends ToolbarActivity
 
     private Dialog mUpgradeProgress;
     private BroadcastReceiver mUpgradeReceiver;
+
+    /** Search menu item. */
+    private MenuItem mSearchMenu;
+    private MenuItem mDeleteAllMenu;
+    /** Offline mode menu item. */
+    private MenuItem mOfflineMenu;
 
     private static final int REQUEST_CONTACT_PICKER = 7720;
 
@@ -302,6 +312,8 @@ public class ConversationsActivity extends ToolbarActivity
             // hold message center
             MessageCenterService.hold(this);
         }
+
+        updateOffline();
     }
 
     @Override
@@ -432,14 +444,146 @@ public class ConversationsActivity extends ToolbarActivity
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.conversation_list_menu, menu);
+
+        // compose message
+        /*
+        MenuItem item = menu.findItem(R.id.menu_compose);
+        MenuItemCompat.setShowAsAction(item, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+        */
+
+        // search
+        mSearchMenu = menu.findItem(R.id.menu_search);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(mSearchMenu);
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        // LayoutParams.MATCH_PARENT does not work, use a big value instead
+        searchView.setMaxWidth(1000000);
+
+        mDeleteAllMenu = menu.findItem(R.id.menu_delete_all);
+
+        // offline mode
+        mOfflineMenu = menu.findItem(R.id.menu_offline);
+
+        // trigger manually
+        onDatabaseChanged();
+        updateOffline();
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
+        switch(item.getItemId()) {
             case android.R.id.home:
                 onBackPressed();
                 return true;
+
+            case R.id.menu_status:
+                StatusActivity.start(this);
+                return true;
+
+            case R.id.menu_offline:
+                final Context ctx = this;
+                final boolean currentMode = Preferences.getOfflineMode(ctx);
+                if (!currentMode && !Preferences.getOfflineModeUsed(ctx)) {
+                    // show offline mode warning
+                    new AlertDialogWrapper.Builder(ctx)
+                        .setMessage(R.string.message_offline_mode_warning)
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                Preferences.setOfflineModeUsed(ctx);
+                                switchOfflineMode();
+                            }
+                        })
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .show();
+                }
+                else {
+                    switchOfflineMode();
+                }
+                return true;
+
+            case R.id.menu_delete_all:
+                deleteAll();
+                return true;
+
+            case R.id.menu_mykey:
+                launchMyKey();
+                return true;
+
+            case R.id.menu_donate:
+                launchDonate();
+                return true;
+
+            case R.id.menu_settings: {
+                PreferencesActivity.start(this);
+                return true;
+            }
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /** Updates various UI elements after a database change. */
+    void onDatabaseChanged() {
+        boolean visible = mFragment.hasListItems();
+        if (mSearchMenu != null) {
+            mSearchMenu.setEnabled(visible).setVisible(visible);
+        }
+        // if it's null it hasn't gone through onCreateOptionsMenu() yet
+        if (mSearchMenu != null) {
+            mSearchMenu.setEnabled(visible).setVisible(visible);
+            mDeleteAllMenu.setEnabled(visible).setVisible(visible);
+        }
+    }
+
+    /** Updates offline mode menu. */
+    private void updateOffline() {
+        if (mOfflineMenu != null) {
+            boolean offlineMode = Preferences.getOfflineMode(this);
+            // set menu
+            int icon = (offlineMode) ? R.drawable.ic_menu_start_conversation :
+                android.R.drawable.ic_menu_close_clear_cancel;
+            int title = (offlineMode) ? R.string.menu_online : R.string.menu_offline;
+            mOfflineMenu.setIcon(icon);
+            mOfflineMenu.setTitle(title);
+            // set window title
+            setTitle(offlineMode);
+        }
+    }
+
+    private void switchOfflineMode() {
+        boolean currentMode = Preferences.getOfflineMode(this);
+        Preferences.switchOfflineMode(this);
+        updateOffline();
+        // notify the user about the change
+        int text = (currentMode) ? R.string.going_online : R.string.going_offline;
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
+    }
+
+    private void deleteAll() {
+        AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(this);
+        builder.setMessage(R.string.confirm_will_delete_all);
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                MessagesProvider.deleteDatabase(ConversationsActivity.this);
+                MessagingNotification.updateMessagesNotification(getApplicationContext(), false);
+            }
+        });
+        builder.setNegativeButton(android.R.string.cancel, null);
+        builder.create().show();
+    }
+
+    private void launchDonate() {
+        Intent i = new Intent(this, AboutActivity.class);
+        i.setAction(AboutActivity.ACTION_DONATION);
+        startActivity(i);
+    }
+
+    private void launchMyKey() {
+        Intent i = new Intent(this, MyKeyActivity.class);
+        startActivity(i);
     }
 
 }
