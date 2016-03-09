@@ -1169,6 +1169,17 @@ public class MessagesProvider extends ContentProvider {
             null);
     }
 
+    public static int markThreadAsOld(Context context, long id) {
+        ContentResolver c = context.getContentResolver();
+        ContentValues values = new ContentValues(1);
+        values.put(Messages.NEW, Boolean.FALSE);
+        return c.update(Messages.CONTENT_URI, values,
+            Messages.THREAD_ID + " = ? AND " +
+            Messages.NEW + " <> 0 AND " +
+            Messages.DIRECTION + " = " + Messages.DIRECTION_IN,
+            new String[] { String.valueOf(id) });
+    }
+
     /**
      * Marks all messages as old.
      * @param context used to request a {@link ContentResolver}
