@@ -38,6 +38,7 @@ import android.widget.TextView;
 
 import org.kontalk.Kontalk;
 import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.util.SystemUtils;
@@ -50,6 +51,7 @@ import org.kontalk.util.SystemUtils;
 public class MyKeyActivity extends ToolbarActivity {
     private static final String TAG = Kontalk.TAG;
 
+    private TextView mAccountName;
     private TextView mTextName;
     private TextView mTextFingerprint;
     private ImageView mQRCode;
@@ -61,6 +63,7 @@ public class MyKeyActivity extends ToolbarActivity {
 
         setupToolbar(true);
 
+        mAccountName = (TextView) findViewById(R.id.account);
         mTextName = (TextView) findViewById(R.id.name);
         mTextFingerprint = (TextView) findViewById(R.id.fingerprint);
         mQRCode = (ImageView) findViewById(R.id.qrcode);
@@ -69,6 +72,9 @@ public class MyKeyActivity extends ToolbarActivity {
     @Override
     protected void onStart() {
         super.onStart();
+
+        mAccountName.setText(Authenticator.getDefaultAccountName(this));
+
         // load personal key
         PersonalKey key;
         try {
