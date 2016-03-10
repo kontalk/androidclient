@@ -9,8 +9,10 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="12dp"
         android:layout_marginStart="12dp"
-        android:layout_toLeftOf="@+id/avatar"
-        android:layout_toStartOf="@+id/avatar"
+        android:layout_marginRight="6dp"
+        android:layout_marginEnd="6dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:orientation="vertical"
         android:gravity="end">
 
@@ -56,15 +58,5 @@
         </LinearLayout>
 
     </LinearLayout>
-
-    <org.kontalk.ui.view.CircleContactBadge
-        android:id="@+id/avatar"
-        android:layout_gravity="top"
-        android:layout_height="48dp"
-        android:layout_width="48dp"
-        android:layout_alignTop="@+id/balloon_view"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginTop="4dp"/>
 
 </RelativeLayout>
