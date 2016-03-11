@@ -38,6 +38,7 @@ import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.OutOfBandData;
 import org.kontalk.crypto.Coder;
+import org.kontalk.data.Contact;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.ImageComponent;
@@ -86,6 +87,8 @@ class MessageListener extends MessageCenterPacketListener {
             ChatStateExtension chatstate = null;
             if (_chatstate != null) {
                 chatstate = (ChatStateExtension) _chatstate;
+                Contact.setTyping(from, chatstate.getChatState() == ChatState.composing);
+
                 i.putExtra("org.kontalk.message.chatState", chatstate.getElementName());
             }
 
