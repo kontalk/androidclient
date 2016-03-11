@@ -20,14 +20,15 @@ package org.kontalk.data;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 
-import org.kontalk.util.Preferences;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.content.ContentResolver;
@@ -52,6 +53,7 @@ import org.kontalk.R;
 import org.kontalk.crypto.PGPLazyPublicKeyRingLoader;
 import org.kontalk.provider.MyUsers.Keys;
 import org.kontalk.provider.MyUsers.Users;
+import org.kontalk.util.Preferences;
 
 
 /**
@@ -178,6 +180,39 @@ public class Contact {
 
     private final static ContactCache cache = new ContactCache();
 
+    /** Stores volatile and connection-time information about a contact. */
+    private static final class ContactState {
+        private final String mJID;
+        private boolean mTyping;
+
+        private ContactState(String jid) {
+            mJID = jid;
+        }
+
+        public boolean isTyping() {
+            return mTyping;
+        }
+
+        public void setTyping(boolean typing) {
+            mTyping = typing;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return o == this ||
+                (o instanceof ContactState &&
+                    ((ContactState) o).mJID.equals(mJID));
+        }
+
+        @Override
+        public int hashCode() {
+            return mJID.hashCode();
+        }
+    }
+
+    // keys is the full JID because typing is not a global but a device state
+    private static final Map<String, ContactState> sStates = new HashMap<>();
+
     public static void init(Context context, Handler handler) {
         context.getContentResolver().registerContentObserver(Contacts.CONTENT_URI, false,
             new ContentObserver(handler) {
@@ -187,6 +222,24 @@ public class Contact {
                 }
             }
         );
+    }
+
+    public static void setTyping(String jid, boolean typing) {
+        ContactState state = sStates.get(jid);
+        if (state == null) {
+            state = new ContactState(jid);
+            sStates.put(jid, state);
+        }
+        state.setTyping(typing);
+    }
+
+    public static boolean isTyping(String jid) {
+        ContactState state = sStates.get(jid);
+        return state != null && state.isTyping();
+    }
+
+    public static void clearState(String jid) {
+        sStates.remove(jid);
     }
 
     private Contact(long contactId, String lookupKey, String name, String number, String jid, boolean blocked) {
@@ -344,6 +397,8 @@ public class Contact {
                 c.clear();
             }
         }
+        // invalidate contact state
+        sStates.clear();
     }
 
     public static void registerContactChangeListener(ContactChangeListener l) {
@@ -358,15 +413,6 @@ public class Contact {
         for (ContactChangeListener l : sListeners) {
             l.onContactInvalidated(userId);
         }
-    }
-
-    /** Returns the text to be used in a list view section indexer. */
-    public static String getStringForSection(Cursor cursor) {
-        String name = cursor.getString(COLUMN_DISPLAY_NAME);
-        if (name == null)
-            name = cursor.getString(COLUMN_NUMBER);
-
-        return name.substring(0, 1).toUpperCase();
     }
 
     /** Builds a contact from a UsersProvider cursor. */

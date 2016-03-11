@@ -24,7 +24,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Parcelable;
-import android.util.Log;
 
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.ui.MessagingNotification;
@@ -39,7 +38,6 @@ public class NotificationActionReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-        Log.v("Kontalk", "got action " + action);
 
         if (MessagingNotification.ACTION_NOTIFICATION_DELETED.equals(action)) {
             // mark threads as old
