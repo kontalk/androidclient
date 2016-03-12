@@ -310,7 +310,7 @@ public class ConversationsActivity extends ToolbarActivity
         }
         else {
             // hold message center
-            MessageCenterService.hold(this);
+            MessageCenterService.hold(this, true);
         }
 
         updateOffline();
