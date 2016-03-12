@@ -2486,7 +2486,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         }
 
         // hold message center
-        MessageCenterService.hold(getActivity());
+        MessageCenterService.hold(getActivity(), true);
 
         ComposeMessage activity = getParentActivity();
         if (activity == null || !activity.hasLostFocus() || activity.hasWindowFocus()) {

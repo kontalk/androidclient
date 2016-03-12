@@ -51,7 +51,7 @@ public class StatusActivity extends ToolbarActivity {
     protected void onResume() {
         super.onResume();
         // hold message center
-        MessageCenterService.hold(this);
+        MessageCenterService.hold(this, true);
     }
 
     @Override
