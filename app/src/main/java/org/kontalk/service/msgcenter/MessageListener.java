@@ -346,7 +346,7 @@ class MessageListener extends MessageCenterPacketListener {
 
         if (msgUri != null) {
             // hold on to message center
-            getIdleHandler().hold();
+            getIdleHandler().hold(false);
             // will mark this message as confirmed
             long storageId = ContentUris.parseId(msgUri);
             waitingReceipt.put(ack.getStanzaId(), storageId);
