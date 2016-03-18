@@ -630,10 +630,10 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         File previewFile = null;
         long length = -1;
 
-        boolean encrypted = Preferences.getEncryptionEnabled(getActivity());
+        boolean encrypted = Preferences.getEncryptionEnabled(getContext());
         int compress = 0;
         if (klass == ImageComponent.class) {
-            compress = Preferences.getImageCompression(getActivity());
+            compress = Preferences.getImageCompression(getContext());
         }
 
         try {
@@ -648,11 +648,11 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             if (media && klass == ImageComponent.class) {
                 // FIXME hard-coded to ImageComponent
                 String filename = ImageComponent.buildMediaFilename(msgId, MediaStorage.THUMBNAIL_MIME_NETWORK);
-                previewFile = MediaStorage.cacheThumbnail(getActivity(), uri,
+                previewFile = MediaStorage.cacheThumbnail(getContext(), uri,
                         filename, true);
             }
 
-            length = MediaStorage.getLength(getActivity(), uri);
+            length = MediaStorage.getLength(getContext(), uri);
 
             // save to database
             ContentValues values = new ContentValues();
@@ -681,7 +681,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             values.put(Messages.ATTACHMENT_LENGTH, length);
             values.put(Messages.ATTACHMENT_COMPRESS, compress);
 
-            newMsg = getActivity().getContentResolver().insert(
+            newMsg = getContext().getContentResolver().insert(
                     Messages.CONTENT_URI, values);
         }
         catch (Exception e) {
@@ -692,7 +692,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
             // update thread id from the inserted message
             if (threadId <= 0) {
-                Cursor c = getActivity().getContentResolver().query(newMsg,
+                Cursor c = getContext().getContentResolver().query(newMsg,
                         new String[] { Messages.THREAD_ID }, null, null, null);
                 if (c.moveToFirst()) {
                     threadId = c.getLong(0);

@@ -133,6 +133,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
             ft.replace(R.id.fragment_compose_message, f);
             ft.setTransition(FragmentTransaction.TRANSIT_NONE);
             ft.commitAllowingStateLoss();
+            getSupportFragmentManager().executePendingTransactions();
         }
     }
 
@@ -473,7 +474,8 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     @Override
     protected void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
-        out.putParcelable(Uri.class.getName(), Threads.getUri(mFragment.getUserId()));
+        if (mFragment != null)
+            out.putParcelable(Uri.class.getName(), Threads.getUri(mFragment.getUserId()));
         out.putBoolean("lostFocus", mLostFocus);
     }
 
