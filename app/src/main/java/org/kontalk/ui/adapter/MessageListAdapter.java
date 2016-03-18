@@ -21,9 +21,7 @@ package org.kontalk.ui.adapter;
 import java.util.regex.Pattern;
 
 import org.kontalk.R;
-import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
-import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.ui.view.AudioPlayerControl;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.ui.view.MessageListItem;

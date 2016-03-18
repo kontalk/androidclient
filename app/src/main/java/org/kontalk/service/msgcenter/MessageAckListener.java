@@ -29,7 +29,6 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.net.Uri;
 
-import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Messages;
 
 
