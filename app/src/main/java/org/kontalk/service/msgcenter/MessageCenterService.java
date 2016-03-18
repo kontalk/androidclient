@@ -431,7 +431,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 return true;
             }
 
-            else if (msg.what == MSG_INACTIVE && !service.isInactive()) {
+            else if (msg.what == MSG_INACTIVE) {
                 service.inactive();
                 return true;
             }
@@ -485,12 +485,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             sendMessage(obtainMessage(MSG_IDLE));
         }
 
-        public void hold() {
+        public void hold(boolean activate) {
             mRefCount++;
             if (mRefCount > 0) {
                 MessageCenterService service = s.get();
                 if (service != null && service.isInactive() && service.isConnected()) {
-                    service.active();
+                    service.active(activate);
                 }
             }
             post(new Runnable() {
@@ -548,7 +548,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         public void forceInactive() {
             MessageCenterService service = s.get();
-            if (service != null && !service.isInactive()) {
+            if (service != null) {
                 removeMessages(MSG_INACTIVE);
                 service.inactive();
             }
@@ -560,6 +560,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             if (service != null && service.isConnected()) {
                 sendMessageDelayed(obtainMessage(MSG_INACTIVE), INACTIVE_TIME);
             }
+        }
+
+        public boolean isHeld() {
+            return mRefCount > 0;
         }
 
         public void test() {
@@ -819,7 +823,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             if (ACTION_HOLD.equals(action)) {
                 if (!mFirstStart)
-                    mIdleHandler.hold();
+                    mIdleHandler.hold(intent.getBooleanExtra("org.kontalk.activate", false));
                 doConnect = true;
             }
 
@@ -1303,7 +1307,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         // send presence
-        sendPresence(Presence.Mode.available);
+        sendPresence(mIdleHandler.isHeld() ? Presence.Mode.available : Presence.Mode.away);
         // discovery
         discovery();
 
@@ -1349,35 +1353,47 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         sendPacket(info);
     }
 
-    private void active() {
-        if (mConnection != null && ClientStateIndicationManager.isSupported(mConnection)) {
-            Log.d(TAG, "entering active state");
+    private void active(boolean available) {
+        if (mConnection != null) {
             cancelIdleAlarm();
-            try {
-                ClientStateIndicationManager.active(mConnection);
+
+            if (available) {
+                if (ClientStateIndicationManager.isSupported(mConnection)) {
+                    Log.d(TAG, "entering active state");
+                    try {
+                        ClientStateIndicationManager.active(mConnection);
+                    }
+                    catch (NotConnectedException e) {
+                        return;
+                    }
+                }
+
                 sendPresence(Presence.Mode.available);
                 mInactive = false;
-                // test ping
-                mIdleHandler.test();
             }
-            catch (NotConnectedException e) {
-                // ignored
-            }
+            // test ping
+            mIdleHandler.test();
         }
     }
 
     private void inactive() {
-        if (mConnection != null && ClientStateIndicationManager.isSupported(mConnection)) {
-            Log.d(TAG, "entering inactive state");
-            try {
-                ClientStateIndicationManager.inactive(mConnection);
+        if (mConnection != null) {
+            if (!mInactive) {
+                if (ClientStateIndicationManager.isSupported(mConnection)) {
+                    Log.d(TAG, "entering inactive state");
+                    try {
+                        ClientStateIndicationManager.inactive(mConnection);
+                    }
+                    catch (NotConnectedException e) {
+                        cancelIdleAlarm();
+                        return;
+                    }
+                }
                 sendPresence(Presence.Mode.away);
-                setIdleAlarm();
-                mInactive = true;
             }
-            catch (NotConnectedException e) {
-                cancelIdleAlarm();
-            }
+
+            setIdleAlarm();
+            mInactive = true;
         }
     }
 
@@ -1921,7 +1937,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         else {
             // hold on to message center while we send the message
-            mIdleHandler.hold();
+            mIdleHandler.hold(false);
 
             // message stanza
             org.jivesoftware.smack.packet.Message m = new org.jivesoftware.smack.packet.Message();
@@ -2172,7 +2188,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (mKeyPairRegenerator == null) {
             try {
                 // lock message center while doing this
-                hold(this);
+                hold(this, true);
                 mKeyPairRegenerator = new RegenerateKeyPairListener(this);
                 mKeyPairRegenerator.run();
             }
@@ -2301,13 +2317,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /**
      * Tells the message center we are holding on to it, preventing shutdown for
      * inactivity.
+     * @param activate true to wake up from CSI and send become available.
      */
-    public static void hold(final Context context) {
+    public static void hold(final Context context, boolean activate) {
         // increment the application counter
         ((Kontalk) context.getApplicationContext()).hold();
 
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(ACTION_HOLD);
+        i.putExtra("org.kontalk.activate", activate);
         context.startService(i);
     }
 

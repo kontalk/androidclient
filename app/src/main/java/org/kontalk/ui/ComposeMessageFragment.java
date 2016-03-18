@@ -724,6 +724,10 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
 
                                 if (Presence.Type.available.toString().equals(type)) {
                                     mAvailableResources.add(from);
+                                    mIsTyping = mIsTyping || Contact.isTyping(from);
+                                    if (mIsTyping) {
+                                        setStatusText(context.getString(R.string.seen_typing_label));
+                                    }
 
                                     /*
                                      * FIXME using mode this way has several flaws.
@@ -733,7 +737,8 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                                     String mode = intent.getStringExtra(MessageCenterService.EXTRA_SHOW);
                                     if (mode != null && mode.equals(Presence.Mode.away.toString())) {
                                         statusText = context.getString(R.string.seen_away_label);
-                                    } else {
+                                    }
+                                    else {
                                         statusText = context.getString(R.string.seen_online_label);
                                     }
 

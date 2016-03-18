@@ -76,7 +76,7 @@ public class ContactsListActivity extends ToolbarActivity
         }
 
         // hold message center
-        MessageCenterService.hold(this);
+        MessageCenterService.hold(this, true);
 
         mFragment.startQuery();
     }

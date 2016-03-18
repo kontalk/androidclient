@@ -19,30 +19,20 @@
 package org.kontalk.ui;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.jxmpp.util.XmppStringUtils;
-
-import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
-import org.kontalk.data.Contact;
-import org.kontalk.message.CompositeMessage;
-import org.kontalk.provider.MessagesProvider;
-import org.kontalk.provider.MyMessages.CommonColumns;
-import org.kontalk.provider.MyMessages.Messages;
-import org.kontalk.provider.MyMessages.Threads;
-import org.kontalk.util.MessageUtils;
-import org.kontalk.util.Preferences;
 
 import android.accounts.Account;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
@@ -56,7 +46,17 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
-import android.util.Log;
+
+import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
+import org.kontalk.data.Contact;
+import org.kontalk.message.CompositeMessage;
+import org.kontalk.provider.MyMessages.CommonColumns;
+import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.service.NotificationActionReceiver;
+import org.kontalk.util.MessageUtils;
+import org.kontalk.util.Preferences;
 
 
 /**
@@ -111,44 +111,13 @@ public class MessagingNotification {
     private static volatile String sLastInvitation;
 
     /** Notification action intents stuff. */
-    private static final String ACTION_NOTIFICATION_DELETED = "org.kontalk.ACTION_NOTIFICATION_DELETED";
-    private static final String ACTION_NOTIFICATION_MARK_READ = "org.kontalk.ACTION_NOTIFICATION_MARK_READ";
-    private static final OnActionReceiver sNotificationActionReceiver = new OnActionReceiver();
-    private static Intent sNotificationOnDeleteIntent;
-    private static Intent sNotificationOnMarkReadIntent;
-
-    private static class OnActionReceiver extends BroadcastReceiver {
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            Log.v("Kontalk", "got action " + action);
-
-            if (ACTION_NOTIFICATION_DELETED.equals(action)) {
-                // mark all messages as old
-                MessagesProvider.markAllThreadsAsOld(context);
-            }
-            else if (ACTION_NOTIFICATION_MARK_READ.equals(action)) {
-                // mark all messages as read
-                MessagesProvider.markAllThreadsAsRead(context);
-                delayedUpdateMessagesNotification(context, false);
-            }
-        }
-    }
+    public static final String ACTION_NOTIFICATION_DELETED = "org.kontalk.ACTION_NOTIFICATION_DELETED";
+    public static final String ACTION_NOTIFICATION_MARK_READ = "org.kontalk.ACTION_NOTIFICATION_MARK_READ";
 
     /** This class is not instanciable. */
     private MessagingNotification() {}
 
     public static void init(Context context) {
-        // set up the intent filter for notification actions
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(ACTION_NOTIFICATION_DELETED);
-        intentFilter.addAction(ACTION_NOTIFICATION_MARK_READ);
-        context.registerReceiver(sNotificationActionReceiver, intentFilter);
-
-        // initialize notification actions
-        sNotificationOnDeleteIntent = new Intent(ACTION_NOTIFICATION_DELETED);
-        if (supportsBigNotifications()) {
-            sNotificationOnMarkReadIntent = new Intent(ACTION_NOTIFICATION_MARK_READ);
-        }
     }
 
     public static void setPaused(String jid) {
@@ -254,6 +223,7 @@ public class MessagingNotification {
         }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context.getApplicationContext());
+        Set<Uri> conversationIds = new HashSet<>(unread);
 
         if (supportsBigNotifications()) {
             Map<String, CharSequence[]> convs = new HashMap<String, CharSequence[]>();
@@ -266,6 +236,9 @@ public class MessagingNotification {
                 peer = c.getString(1);
                 byte[] content = c.getBlob(2);
                 String attMime = c.getString(3);
+
+                // store conversation id for intents
+                conversationIds.add(ContentUris.withAppendedId(Threads.CONTENT_URI, id));
 
                 CharSequence[] b = convs.get(peer);
                 if (b == null) {
@@ -408,8 +381,11 @@ public class MessagingNotification {
 
                 if (supportsBigNotifications()) {
                     // mark as read pending intent
+                    Uri threadUri = conversationIds.iterator().next();
+                    Intent markReadIntent = new Intent(ACTION_NOTIFICATION_MARK_READ,
+                        threadUri, context, NotificationActionReceiver.class);
                     PendingIntent readPendingIntent = PendingIntent.getBroadcast(context, 0,
-                        sNotificationOnMarkReadIntent, 0);
+                        markReadIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
                     builder.addAction(R.drawable.ic_menu_check, context.getString(R.string.mark_read), readPendingIntent);
                     builder.addAction(R.drawable.ic_menu_call, context.getString(R.string.call), callPendingIntent);
@@ -423,8 +399,6 @@ public class MessagingNotification {
             builder.setContentTitle(title);
             builder.setContentText(text);
             builder.setStyle(style);
-            builder.setDeleteIntent(PendingIntent.getBroadcast(context, 0,
-                sNotificationOnDeleteIntent, 0));
 
             Intent ni;
             // more than one unread conversation - open ConversationList
@@ -449,6 +423,7 @@ public class MessagingNotification {
             // loop all threads and accumulate them
             MessageAccumulator accumulator = new MessageAccumulator(context);
             while (c.moveToNext()) {
+                long threadId = c.getLong(0);
                 String content = c.getString(3);
                 boolean encrypted = c.getInt(4) != 0;
 
@@ -458,11 +433,12 @@ public class MessagingNotification {
                     content = CompositeMessage.getSampleTextContent(c.getString(2));
 
                 accumulator.accumulate(
-                    c.getLong(0),
+                    threadId,
                     c.getString(1),
                     content,
                     c.getInt(5)
                 );
+                conversationIds.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
             }
             c.close();
 
@@ -478,9 +454,14 @@ public class MessagingNotification {
             builder.setContentTitle(accumulator.getTitle());
             builder.setContentText(accumulator.getText());
             builder.setContentIntent(accumulator.getPendingIntent());
-            builder.setDeleteIntent(PendingIntent.getBroadcast(context, 0,
-                sNotificationOnDeleteIntent, 0));
         }
+
+        // build on delete intent for conversations
+        Intent notificationDeleteIntent = new Intent(context, NotificationActionReceiver.class);
+        notificationDeleteIntent.setAction(ACTION_NOTIFICATION_DELETED);
+        notificationDeleteIntent.putExtra("org.kontalk.datalist", conversationIds.toArray(new Uri[conversationIds.size()]));
+        builder.setDeleteIntent(PendingIntent.getBroadcast(context, 0,
+            notificationDeleteIntent, PendingIntent.FLAG_UPDATE_CURRENT));
 
         if (isNew) {
             setDefaults(context, builder);

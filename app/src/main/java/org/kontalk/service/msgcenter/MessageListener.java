@@ -51,6 +51,7 @@ import org.kontalk.client.OutOfBandData;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.DecryptException;
 import org.kontalk.crypto.PersonalKey;
+import org.kontalk.data.Contact;
 import org.kontalk.data.GroupInfo;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
@@ -125,6 +126,8 @@ class MessageListener extends MessageCenterPacketListener {
             ChatStateExtension chatstate = null;
             if (_chatstate != null) {
                 chatstate = (ChatStateExtension) _chatstate;
+                Contact.setTyping(from, chatstate.getChatState() == ChatState.composing);
+
                 i.putExtra("org.kontalk.message.chatState", chatstate.getElementName());
             }
 
@@ -392,7 +395,7 @@ class MessageListener extends MessageCenterPacketListener {
 
         if (msgUri != null) {
             // hold on to message center
-            getIdleHandler().hold();
+            getIdleHandler().hold(false);
             // will mark this message as confirmed
             long storageId = ContentUris.parseId(msgUri);
             waitingReceipt.put(ack.getStanzaId(), storageId);

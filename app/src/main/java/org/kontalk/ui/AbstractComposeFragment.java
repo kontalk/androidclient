@@ -1673,7 +1673,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         }
 
         // hold message center
-        MessageCenterService.hold(getActivity());
+        MessageCenterService.hold(getActivity(), true);
 
         ComposeMessage activity = getParentActivity();
         if (activity == null || !activity.hasLostFocus() || activity.hasWindowFocus()) {

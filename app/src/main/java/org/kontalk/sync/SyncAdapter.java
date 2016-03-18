@@ -103,7 +103,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
             try {
                 // hold a reference to the message center while syncing
-                MessageCenterService.hold(mContext);
+                MessageCenterService.hold(mContext, true);
                 // start sync
                 mSyncer = new Syncer(mContext);
                 mSyncer.performSync(mContext, account, authority,

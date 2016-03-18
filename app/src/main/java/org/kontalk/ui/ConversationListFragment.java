@@ -18,34 +18,19 @@
 
 package org.kontalk.ui;
 
-import org.kontalk.R;
-import org.kontalk.data.Contact;
-import org.kontalk.data.Conversation;
-import org.kontalk.provider.MessagesProvider;
-import org.kontalk.ui.adapter.ConversationListAdapter;
-import org.kontalk.ui.view.AbsListViewScrollDetector;
-import org.kontalk.ui.view.ConversationListItem;
-import org.kontalk.util.Preferences;
-import org.kontalk.util.SystemUtils;
-
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.akalipetis.fragment.ActionModeListFragment;
 import com.akalipetis.fragment.MultiChoiceModeListener;
 
-import android.app.SearchManager;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
-import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDiskIOException;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.view.ActionMode;
-import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
@@ -59,6 +44,15 @@ import android.view.animation.AnimationUtils;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import org.kontalk.R;
+import org.kontalk.data.Contact;
+import org.kontalk.data.Conversation;
+import org.kontalk.provider.MessagesProvider;
+import org.kontalk.ui.adapter.ConversationListAdapter;
+import org.kontalk.ui.view.AbsListViewScrollDetector;
+import org.kontalk.ui.view.ConversationListItem;
+import org.kontalk.util.SystemUtils;
+
 
 public class ConversationListFragment extends ActionModeListFragment
         implements Contact.ContactChangeListener, MultiChoiceModeListener {
@@ -69,12 +63,6 @@ public class ConversationListFragment extends ActionModeListFragment
     private ThreadListQueryHandler mQueryHandler;
     private ConversationListAdapter mListAdapter;
     private boolean mDualPane;
-
-    /** Search menu item. */
-    private MenuItem mSearchMenu;
-    private MenuItem mDeleteAllMenu;
-    /** Offline mode menu item. */
-    private MenuItem mOfflineMenu;
 
     private View mAction;
     private boolean mActionVisible;
@@ -203,87 +191,11 @@ public class ConversationListFragment extends ActionModeListFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.conversation_list_menu, menu);
-
-        // compose message
-        /*
-        MenuItem item = menu.findItem(R.id.menu_compose);
-        MenuItemCompat.setShowAsAction(item, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
-        */
-
-        // search
-        mSearchMenu = menu.findItem(R.id.menu_search);
-        SearchView searchView = (SearchView) MenuItemCompat.getActionView(mSearchMenu);
-        SearchManager searchManager = (SearchManager) getContext().getSystemService(Context.SEARCH_SERVICE);
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
-        // LayoutParams.MATCH_PARENT does not work, use a big value instead
-        searchView.setMaxWidth(1000000);
-
-        mDeleteAllMenu = menu.findItem(R.id.menu_delete_all);
-
-        // offline mode
-        mOfflineMenu = menu.findItem(R.id.menu_offline);
-
-        // trigger manually
-        onDatabaseChanged();
-        updateOffline();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (isActionModeActive())
-            return true;
-
-        switch(item.getItemId()) {
-            case R.id.menu_status:
-                StatusActivity.start(getActivity());
-                return true;
-
-            case R.id.menu_offline:
-                final Context ctx = getActivity();
-                final boolean currentMode = Preferences.getOfflineMode(ctx);
-                if (!currentMode && !Preferences.getOfflineModeUsed(ctx)) {
-                    // show offline mode warning
-                    new AlertDialogWrapper.Builder(ctx)
-                        .setMessage(R.string.message_offline_mode_warning)
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                Preferences.setOfflineModeUsed(ctx);
-                                switchOfflineMode();
-                            }
-                        })
-                        .setNegativeButton(android.R.string.cancel, null)
-                        .show();
-                }
-                else {
-                    switchOfflineMode();
-                }
-                return true;
-
-            case R.id.menu_delete_all:
-                deleteAll();
-                return true;
-
-            case R.id.menu_mykey:
-                launchMyKey();
-                return true;
-
-            case R.id.menu_donate:
-                launchDonate();
-                return true;
-
-            case R.id.menu_settings: {
-                PreferencesActivity.start(getActivity());
-                return true;
-            }
-        }
-
-        return super.onOptionsItemSelected(item);
+        return isActionModeActive() || super.onOptionsItemSelected(item);
     }
 
     public boolean isActionModeActive() {
@@ -332,17 +244,6 @@ public class ConversationListFragment extends ActionModeListFragment
         return false;
     }
 
-    private void launchDonate() {
-        Intent i = new Intent(getActivity(), AboutActivity.class);
-        i.setAction(AboutActivity.ACTION_DONATION);
-        startActivity(i);
-    }
-
-    private void launchMyKey() {
-        Intent i = new Intent(getActivity(), MyKeyActivity.class);
-        startActivity(i);
-    }
-
     private void deleteSelectedThreads(final SparseBooleanArray checked) {
         new AlertDialogWrapper
             .Builder(getActivity())
@@ -389,19 +290,6 @@ public class ConversationListFragment extends ActionModeListFragment
             parent.showContactPicker();
     }
 
-    private void deleteAll() {
-        AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(getActivity());
-        builder.setMessage(R.string.confirm_will_delete_all);
-        builder.setPositiveButton(android.R.string.ok, new OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                MessagesProvider.deleteDatabase(getActivity());
-                MessagingNotification.updateMessagesNotification(getActivity().getApplicationContext(), false);
-            }
-        });
-        builder.setNegativeButton(android.R.string.cancel, null);
-        builder.create().show();
-    }
-
     public ConversationsActivity getParentActivity() {
         return (ConversationsActivity) getActivity();
     }
@@ -425,14 +313,6 @@ public class ConversationListFragment extends ActionModeListFragment
         super.onStart();
         startQuery();
         Contact.registerContactChangeListener(this);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        // update offline mode
-        updateOffline();
     }
 
     @Override
@@ -469,47 +349,6 @@ public class ConversationListFragment extends ActionModeListFragment
                 isRemoving();
     }
 
-    /* Updates various UI elements after a database change. */
-    private void onDatabaseChanged() {
-        boolean visible = (mListAdapter != null && !mListAdapter.isEmpty());
-        if (mSearchMenu != null) {
-            mSearchMenu.setEnabled(visible).setVisible(visible);
-        }
-        // if it's null it hasn't gone through onCreateOptionsMenu() yet
-        if (mSearchMenu != null) {
-            mSearchMenu.setEnabled(visible).setVisible(visible);
-            mDeleteAllMenu.setEnabled(visible).setVisible(visible);
-        }
-    }
-
-    /** Updates offline mode menu. */
-    private void updateOffline() {
-        ConversationsActivity context = getParentActivity();
-        if (mOfflineMenu != null && context != null) {
-            boolean offlineMode = Preferences.getOfflineMode(context);
-            // set menu
-            int icon = (offlineMode) ? R.drawable.ic_menu_start_conversation :
-                android.R.drawable.ic_menu_close_clear_cancel;
-            int title = (offlineMode) ? R.string.menu_online : R.string.menu_offline;
-            mOfflineMenu.setIcon(icon);
-            mOfflineMenu.setTitle(title);
-            // set window title
-            context.setTitle(offlineMode);
-        }
-    }
-
-    private void switchOfflineMode() {
-        ConversationsActivity ctx = getParentActivity();
-        if (ctx != null) {
-            boolean currentMode = Preferences.getOfflineMode(ctx);
-            Preferences.switchOfflineMode(ctx);
-            updateOffline();
-            // notify the user about the change
-            int text = (currentMode) ? R.string.going_online : R.string.going_offline;
-            Toast.makeText(ctx, text, Toast.LENGTH_SHORT).show();
-        }
-    }
-
     @Override
     public void onContactInvalidated(String userId) {
         mQueryHandler.post(new Runnable() {
@@ -519,6 +358,10 @@ public class ConversationListFragment extends ActionModeListFragment
                 startQuery();
             }
         });
+    }
+
+    public boolean hasListItems() {
+        return mListAdapter != null && !mListAdapter.isEmpty();
     }
 
     /**
@@ -543,7 +386,9 @@ public class ConversationListFragment extends ActionModeListFragment
             switch (token) {
                 case THREAD_LIST_QUERY_TOKEN:
                     mListAdapter.changeCursor(cursor);
-                    onDatabaseChanged();
+                    ConversationsActivity parent = getParentActivity();
+                    if (parent != null)
+                        parent.onDatabaseChanged();
                     break;
 
                 default:

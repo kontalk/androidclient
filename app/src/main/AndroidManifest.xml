@@ -19,6 +19,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="org.kontalk"
       android:installLocation="internalOnly">
+
+    <!-- internal permissions -->
+    <permission android:name="org.kontalk.permission.NOTIFICATION_ACTION" android:protectionLevel="signature" />
+
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
@@ -39,6 +43,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="org.kontalk.permission.NOTIFICATION_ACTION" />
 
     <!-- device features will never be mandatory -->
     <uses-feature android:name="android.hardware.telephony" android:required="false"/>
@@ -95,6 +100,13 @@
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
                 <action android:name="android.net.conn.BACKGROUND_DATA_SETTING_CHANGED"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".service.NotificationActionReceiver"
+            android:permission="org.kontalk.permission.NOTIFICATION_ACTION">
+            <intent-filter>
+                <action android:name="org.kontalk.ACTION_NOTIFICATION_DELETED"/>
+                <action android:name="org.kontalk.ACTION_NOTIFICATION_MARK_READ"/>
             </intent-filter>
         </receiver>
 
