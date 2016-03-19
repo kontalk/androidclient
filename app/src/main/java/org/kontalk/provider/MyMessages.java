@@ -116,7 +116,7 @@ public final class MyMessages {
         public static final String INVERTED_SORT_ORDER = _ID + " DESC";
 
         // used as query parameters
-        public static final String DIRTY_GROUP = "dirty_group";
+        public static final String CLEAR_PENDING = "clear_pending";
     }
 
     /** Threads are just for conversations metadata. */
@@ -161,21 +161,6 @@ public final class MyMessages {
                     + MessagesProvider.AUTHORITY + "/threads/" + Uri.encode(peer));
         }
 
-        public static final class Groups {
-            private Groups() {}
-
-            public static final Uri CONTENT_URI = Uri.parse("content://"
-                + MessagesProvider.AUTHORITY + "/groups");
-            public static final Uri MEMBERS_CONTENT_URI = Uri.parse("content://"
-                + MessagesProvider.AUTHORITY + "/groups/members");
-
-            public static final String GROUP_JID = "group_jid";
-            public static final String PEER = "group_" + CommonColumns.PEER;
-            public static final String THREAD_ID = Messages.THREAD_ID;
-            public static final String SUBJECT = "subject";
-            public static final String DIRTY = "dirty";
-        }
-
         private static final String ITEM_TYPE = BuildConfig.APPLICATION_ID + ".thread";
         public static final String CONTENT_TYPE = "vnd.android.cursor.dir/" + ITEM_TYPE;
         public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/" + ITEM_TYPE;
@@ -188,5 +173,39 @@ public final class MyMessages {
 
         public static final String DEFAULT_SORT_ORDER = "timestamp DESC";
         public static final String INVERTED_SORT_ORDER = "timestamp";
+    }
+
+    public static final class Groups {
+        private Groups() {}
+
+        // flags for groups.pending
+        public static final int GROUP_PENDING_CREATED = 1;
+        public static final int GROUP_PENDING_SUBJECT = 1 << 1;
+        public static final int GROUP_PENDING_DELETED = 1 << 2;
+
+        // flags for group_members.pending
+        public static final int MEMBER_PENDING_ADDED = 1;
+        public static final int MEMBER_PENDING_REMOVED = 1 << 1;
+
+        public static final Uri CONTENT_URI = Uri.parse("content://"
+            + MessagesProvider.AUTHORITY + "/groups");
+        public static final Uri MEMBERS_CONTENT_URI = Uri.parse("content://"
+            + MessagesProvider.AUTHORITY + "/groups/members");
+
+        public static final String GROUP_JID = "group_jid";
+        public static final String PEER = "group_" + CommonColumns.PEER;
+        public static final String THREAD_ID = Messages.THREAD_ID;
+        public static final String SUBJECT = "subject";
+        /**
+         * Status used for members and groups. It's set on request and
+         * cleared back to 0 when the command has been confirmed.
+         * Group status: pending creation, pending deletion, pending subject
+         * change. Cleared when the command is acknowledged by the server.
+         * Group member status: An added user is pending addition until the
+         * add member command is acknowledged by the server. A removed user
+         * is pending removal until the remove member command is
+         * acknowledged by the server.
+         */
+        public static final String PENDING = "pending";
     }
 }

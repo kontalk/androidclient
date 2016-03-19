@@ -51,6 +51,7 @@ import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
@@ -202,7 +203,7 @@ public class MessagingNotification {
         // is there a peer to not notify for?
         if (sPaused != null) {
             query += " AND " + CommonColumns.PEER + " <> ? AND " +
-                Threads.Groups.GROUP_JID + " <> ?";
+                MyMessages.Groups.GROUP_JID + " <> ?";
             args = new String[] { sPaused, sPaused };
         }
 

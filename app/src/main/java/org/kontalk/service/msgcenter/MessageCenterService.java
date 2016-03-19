@@ -47,6 +47,7 @@ import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.roster.RosterEntry;
 import org.jivesoftware.smack.roster.RosterLoadedListener;
 import org.jivesoftware.smack.roster.packet.RosterPacket;
+import org.jivesoftware.smack.sm.StreamManagementException;
 import org.jivesoftware.smack.util.Async;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.caps.packet.CapsExtension;
@@ -118,6 +119,7 @@ import org.kontalk.message.GroupComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.CommonColumns;
+import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Requests;
@@ -1504,9 +1506,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Messages.ATTACHMENT_LENGTH,
                 Messages.ATTACHMENT_COMPRESS,
                 // TODO Messages.ATTACHMENT_SECURITY_FLAGS,
-                Threads.Groups.GROUP_JID,
-                Threads.Groups.SUBJECT,
-                Threads.Groups.DIRTY,
+                Groups.GROUP_JID,
+                Groups.SUBJECT,
+                Groups.PENDING,
             },
             filter.toString(), filterArgs,
             Messages._ID);
@@ -1527,7 +1529,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             String groupJid = c.getString(11); // 12
             String groupSubject = c.getString(12); // 13
-            boolean groupDirty = (c.getInt(13) != 0); // 14
+            int groupPending = c.getInt(13); // 14
 
             String[] groupMembers = null;
             if (groupJid != null) {
@@ -1550,7 +1552,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             if (groupJid != null) {
                 b.putString("org.kontalk.message.groupJid", groupJid);
                 b.putString("org.kontalk.message.groupSubject", groupSubject);
-                b.putBoolean("org.kontalk.message.groupCreating", groupDirty);
+                b.putInt("org.kontalk.message.groupFlags", groupPending);
                 b.putStringArray("org.kontalk.message.to", groupMembers);
             }
             else {
@@ -1993,12 +1995,32 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             if (isGroupMsg) {
                 group = KontalkGroupManager.getInstanceFor(mConnection)
                     .getGroup(groupJid);
-                if (data.getBoolean("org.kontalk.message.groupCreating")) {
+
+                int groupFlags = data.getInt("org.kontalk.message.groupFlags", 0);
+                boolean pendingCreate = (groupFlags & Groups.GROUP_PENDING_CREATED) != 0;
+                boolean pendingSubject = (groupFlags & Groups.GROUP_PENDING_SUBJECT) != 0;
+                boolean pendingDelete = (groupFlags & Groups.GROUP_PENDING_DELETED) != 0;
+                if (pendingDelete) {
+                    group.leave(m);
+                }
+                else if (pendingCreate) {
                     String subject = data.getString("org.kontalk.message.groupSubject");
                     group.create(subject, toGroup, m);
                 }
+                else if (pendingSubject) {
+                    String subject = data.getString("org.kontalk.message.groupSubject");
+                    group.setSubject(subject, m);
+                }
                 else {
                     group.groupInfo(m);
+                }
+
+                try {
+                    // wait for confirmation
+                    mConnection.addStanzaIdAcknowledgedListener(id, new GroupCommandAckListener(this, group));
+                }
+                catch (StreamManagementException.StreamManagementNotEnabledException e) {
+                    Log.e(TAG, "server does not support stream management?!?");
                 }
             }
 
@@ -2114,26 +2136,63 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         GroupComponent group = msg.getComponent(GroupComponent.class);
         if (group != null) {
-            values.put(Threads.Groups.GROUP_JID, group.getContent().getJid());
+            values.put(Groups.GROUP_JID, group.getContent().getJid());
 
             String groupSubject = group.getContent().getSubject();
             if (groupSubject != null)
-                values.put(Threads.Groups.SUBJECT, groupSubject);
+                values.put(Groups.SUBJECT, groupSubject);
 
             // update group members first
             String[] members = group.getContent().getMembers();
             if (members != null) {
                 ContentValues membersValues = new ContentValues();
-                membersValues.put(Threads.Groups.GROUP_JID, group.getContent().getJid());
+                membersValues.put(Groups.GROUP_JID, group.getContent().getJid());
                 for (String member : members) {
                     // do not add ourselves
                     if (Authenticator.isSelfJID(this, member))
                         continue;
 
                     // FIXME turn this into batch operations
-                    membersValues.put(Threads.Groups.PEER, member);
+                    membersValues.put(Groups.PEER, member);
                     getContentResolver()
-                        .insert(Threads.Groups.MEMBERS_CONTENT_URI, membersValues);
+                        .insert(Groups.MEMBERS_CONTENT_URI, membersValues);
+                }
+            }
+
+            // a user is leaving the group
+            String partMember = group.getContent().getPartMember();
+            if (partMember != null) {
+                // remove member from group
+                getContentResolver().delete(Groups.MEMBERS_CONTENT_URI,
+                    Groups.GROUP_JID+"=? AND " + Groups.PEER + "=?",
+                    new String[] { group.getContent().getJid(), partMember });
+            }
+
+            // FIXME same code as above (for getMembers())
+            String[] added = group.getContent().getAddMembers();
+            if (added != null && added.length > 0) {
+                ContentValues membersValues = new ContentValues();
+                membersValues.put(Groups.GROUP_JID, group.getContent().getJid());
+                for (String member : added) {
+                    // do not add ourselves
+                    if (Authenticator.isSelfJID(this, member))
+                        continue;
+
+                    // FIXME turn this into batch operations
+                    membersValues.put(Groups.PEER, member);
+                    getContentResolver()
+                        .insert(Groups.MEMBERS_CONTENT_URI, membersValues);
+                }
+            }
+
+            String[] removed = group.getContent().getRemoveMembers();
+            if (removed != null && removed.length > 0) {
+                for (String user : removed) {
+                    // FIXME turn this into batch operations
+                    // remove member from group
+                    getContentResolver().delete(Groups.MEMBERS_CONTENT_URI,
+                        Groups.GROUP_JID+"=? AND " + Groups.PEER + "=?",
+                        new String[] { group.getContent().getJid(), user });
                 }
             }
         }
@@ -2385,7 +2444,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.mime", TextComponent.MIME_TYPE);
         i.putExtra("org.kontalk.message.groupJid", groupJid);
         i.putExtra("org.kontalk.message.groupSubject", groupSubject);
-        i.putExtra("org.kontalk.message.groupCreating", groupCreating);
+        i.putExtra("org.kontalk.message.groupFlags", groupCreating ? Groups.GROUP_PENDING_CREATED : 0);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.body", text);
         i.putExtra("org.kontalk.message.encrypt", encrypt);

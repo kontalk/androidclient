@@ -25,7 +25,9 @@ import android.content.Context;
 import android.database.Cursor;
 
 import org.kontalk.provider.MessagesProvider;
+import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.ui.MessagingNotification;
 
 
@@ -47,9 +49,9 @@ public class Conversation {
         Threads.ENCRYPTED,
         Threads.DRAFT,
         Threads.REQUEST_STATUS,
-        Threads.Groups.GROUP_JID,
-        Threads.Groups.SUBJECT,
-        Threads.Groups.DIRTY,
+        Groups.GROUP_JID,
+        Groups.SUBJECT,
+        Groups.PENDING,
     };
 
     private static final int COLUMN_ID = 0;
@@ -301,27 +303,27 @@ public class Conversation {
     public static long initGroupChat(Context context, String groupJid, String subject, String[] members, String draft) {
         // insert group
         ContentValues values = new ContentValues();
-        values.put(Threads.Groups.GROUP_JID, groupJid);
+        values.put(Groups.GROUP_JID, groupJid);
 
         // create new conversation
         long threadId = MessagesProvider.insertEmptyThread(context, groupJid, draft);
 
-        values.put(Threads.Groups.THREAD_ID, threadId);
-        values.put(Threads.Groups.SUBJECT, subject);
-        values.put(Threads.Groups.DIRTY, true);
-        context.getContentResolver().insert(Threads.Groups.CONTENT_URI, values);
+        values.put(Groups.THREAD_ID, threadId);
+        values.put(Groups.SUBJECT, subject);
+        values.put(Groups.PENDING, MyMessages.Groups.GROUP_PENDING_CREATED);
+        context.getContentResolver().insert(Groups.CONTENT_URI, values);
 
         // remove values not for members table
-        values.remove(Threads.Groups.THREAD_ID);
-        values.remove(Threads.Groups.SUBJECT);
-        values.remove(Threads.Groups.DIRTY);
+        values.remove(Groups.THREAD_ID);
+        values.remove(Groups.SUBJECT);
+        values.remove(Groups.PENDING);
 
         // insert group members
         for (String member : members) {
             // FIXME turn this into batch operations
-            values.put(Threads.Groups.PEER, member);
+            values.put(Groups.PEER, member);
             context.getContentResolver()
-                .insert(Threads.Groups.MEMBERS_CONTENT_URI, values);
+                .insert(Groups.MEMBERS_CONTENT_URI, values);
         }
 
         return threadId;
@@ -329,12 +331,12 @@ public class Conversation {
 
     public static void addUsers(Context context, String groupJid, String[] members) {
         ContentValues values = new ContentValues();
-        values.put(Threads.Groups.GROUP_JID, groupJid);
+        values.put(Groups.GROUP_JID, groupJid);
         for (String member : members) {
             // FIXME turn this into batch operations
-            values.put(Threads.Groups.PEER, member);
+            values.put(Groups.PEER, member);
             context.getContentResolver()
-                .insert(Threads.Groups.MEMBERS_CONTENT_URI, values);
+                .insert(Groups.MEMBERS_CONTENT_URI, values);
         }
     }
 

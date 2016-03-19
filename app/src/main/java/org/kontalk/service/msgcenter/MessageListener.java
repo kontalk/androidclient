@@ -21,6 +21,7 @@ package org.kontalk.service.msgcenter;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +33,7 @@ import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
+import org.jxmpp.util.XmppStringUtils;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -94,21 +96,37 @@ class MessageListener extends MessageCenterPacketListener {
             GroupExtension ext = GroupExtension.from(packet);
             String groupJid = ext.getJID();
             String subject = ext.getSubject();
-            String[] members = flattenMembers(ext);
-            GroupInfo groupInfo = new GroupInfo(groupJid, subject, members);
+            String[] members = flattenExistingMembers(ext);
+            String[] addMembers = flattenAddMembers(ext);
+            String[] removeMembers = flattenRemoveMembers(ext);
+            String partMember = (ext.getType() == GroupExtension.Type.PART) ?
+                XmppStringUtils.parseBareJid(packet.getFrom()) : null;
+            GroupInfo groupInfo = new GroupInfo(groupJid, subject, members, addMembers, removeMembers, partMember);
             msg.addComponent(new GroupComponent(groupInfo));
         }
     }
 
-    private String[] flattenMembers(GroupExtension group) {
+    private String[] flattenExistingMembers(GroupExtension group) {
+        return flattenOperationMembers(group, GroupExtension.Member.Operation.NONE);
+    }
+
+    private String[] flattenAddMembers(GroupExtension group) {
+        return flattenOperationMembers(group, GroupExtension.Member.Operation.ADD);
+    }
+
+    private String[] flattenRemoveMembers(GroupExtension group) {
+        return flattenOperationMembers(group, GroupExtension.Member.Operation.REMOVE);
+    }
+
+    private String[] flattenOperationMembers(GroupExtension group, GroupExtension.Member.Operation operation) {
         List<GroupExtension.Member> members = group.getMembers();
-        String[] users = new String[members.size()+1];
-        // the owner is also a member
-        users[0] = group.getOwner();
-        for (int i = 1; i < users.length; i++) {
-            users[i] = members.get(i-1).jid;
+        List<String> addMembers = new LinkedList<>();
+        for (int i = 1; i < members.size(); i++) {
+            GroupExtension.Member user = members.get(i);
+            if (user.operation == operation)
+                addMembers.add(members.get(i-1).jid);
         }
-        return users;
+        return addMembers.toArray(new String[addMembers.size()]);
     }
 
     @Override

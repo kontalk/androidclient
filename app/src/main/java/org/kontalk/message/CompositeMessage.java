@@ -79,8 +79,8 @@ public class CompositeMessage {
         Messages.ATTACHMENT_LENGTH,
         Messages.ATTACHMENT_ENCRYPTED,
         Messages.ATTACHMENT_SECURITY_FLAGS,
-        MyMessages.Threads.Groups.GROUP_JID,
-        MyMessages.Threads.Groups.SUBJECT,
+        MyMessages.Groups.GROUP_JID,
+        MyMessages.Groups.SUBJECT,
     };
 
     // these indexes matches MESSAGE_LIST_PROJECTION
@@ -365,7 +365,7 @@ public class CompositeMessage {
             String groupJid = c.getString(COLUMN_GROUP_JID);
             if (groupJid != null) {
                 String groupSubject = c.getString(COLUMN_GROUP_SUBJECT);
-                GroupInfo groupInfo = new GroupInfo(groupJid, groupSubject, null);
+                GroupInfo groupInfo = new GroupInfo(groupJid, groupSubject, null, null, null, null);
                 addComponent(new GroupComponent(groupInfo));
             }
 
