@@ -94,8 +94,8 @@
   <string name="pref_title_restart_msgcenter">Antippen wenn Kontalk nicht richtig arbeitet</string>
   <string name="pref_idle_time">Verbindung trennen wenn ungenutzt</string>
   <string name="pref_title_idle_time">Wartezeit bis die Verbindung unterbrochen werden soll</string>
-  <string name="pref_wakeup_time">Serververbindung wiederherstellen</string>
-  <string name="pref_title_wakeup_time">Wartezeit bis die Serververbindung wieder hergestellt werden soll. Funktioniert nur wenn \"Push\"-Benachrichtigungen nicht verfügbar sind</string>
+  <string name="pref_wakeup_time">Verbindung zum Server wiederherstellen</string>
+  <string name="pref_title_wakeup_time">Wartezeit bis die Verbindung zum Server wieder hergestellt werden soll. Funktioniert nur wenn \"Push\"-Benachrichtigungen nicht verfügbar sind</string>
   <string name="pref_maintenance">Wartung</string>
   <string name="pref_regenerate_keypair">Persönlichen Schlüssel neu erzeugen</string>
   <string name="pref_title_regenerate_keypair">Antippen wenn ihr persönlicher Schlüssel kompromittiert wurde</string>
@@ -110,7 +110,7 @@
   <string name="pref_title_on_encrypt_userdata">Statusnachricht nur Kontakten anzeigen, die meine Tel.Nr. im Adressbuch haben</string>
   <string name="pref_title_off_encrypt_userdata">Statusnachricht ist für jeden sichtbar</string>
   <string name="pref_auto_accept_subscriptions">Einladungen automatisch annehmen</string>
-  <string name="pref_title_auto_accept_subscriptions">Chateinladungen von anderen Nutzern automatisch annehmen</string>
+  <string name="pref_title_auto_accept_subscriptions">Einladungen zum Chat von anderen Nutzern automatisch annehmen</string>
   <string name="pref_send_typing">\"Schreibt...\" -Benachrichtigung senden</string>
   <string name="pref_hide_presence">Anwesenheit verbergen</string>
   <string name="pref_title_on_hide_presence">Sie werden anderen Nutzern als offline angezeigt</string>
@@ -145,7 +145,7 @@
   <string name="msg_validation_canceled">Verifizierung abgebrochen. Möglicherweise bekommen Sie trotzdem eine SMS.</string>
   <string name="err_validation_error">Bei der Verifizierung ist ein Fehler aufgetreten. Bitte versuchen Sie es später noch einmal.</string>
   <string name="err_validation_network_error">Server nicht erreichbar. Bitte versuchen Sie es später noch einmal.</string>
-  <string name="err_validation_server_not_supported">Ausgewählter Server unterstützt keine Registrierung. Bitte in den Einstellungen einen anderen Server auswählen.</string>
+  <string name="err_validation_server_not_supported">Der ausgewählte Server unterstützt keine Registrierung. Bitte wählen Sie in den Einstellungen einen anderen Server aus.</string>
   <string name="text_encrypted">(verschlüsselt)</string>
   <string name="peer_unknown">(unbekannt)</string>
   <string name="msg_draft_saved">Nachricht als Entwurf gespeichert.</string>
@@ -176,7 +176,7 @@
   <string name="msg_sync_progress">Aktualisiere Kontaktliste…</string>
   <string name="err_sync_failed">Das Aktualisieren der Kontaktliste ist fehlgeschlagen. Bitte versuchen Sie es später noch einmal.</string>
   <string name="err_sync_nonetwork">Das Netzwerk ist nicht erreichbar. Bitte versuchen Sie es später noch einmal.</string>
-  <string name="text_invite_message">Hi! Schau dir mal Kontalk, eine freie Instant-Messenger-App, an! http://kontalk.org/</string>
+  <string name="text_invite_message">Hi! Schau dir mal Kontalk, eine freie Instant-Messenger-App, an! https://kontalk.org/</string>
   <string name="text_contacts_empty">Neue Nutzer werden automatisch zu dieser Liste hinzugefügt.\n\nNutzen Sie <b>Menü</b> &gt; <b>Nutzer einladen</b>, um jemandem eine Einladung zu schicken.</string>
   <string name="text_conversations_empty">Um ein Gespräch zu beginnen, unten den <b>Neue Nachricht</b> Button antippen.</string>
   <string name="notify_ticker_external_storage">Externer Speicher nicht verfügbar</string>
