@@ -36,6 +36,7 @@ import org.kontalk.provider.MyMessages.Messages.Fulltext;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.service.ServerListUpdater;
+import org.kontalk.util.SystemUtils;
 
 import android.annotation.TargetApi;
 import android.content.ContentProvider;
@@ -84,9 +85,11 @@ public class MessagesProvider extends ContentProvider {
     private static final int CONVERSATIONS_ID = 7;
     private static final int CONVERSATIONS_ALL_ID = 8;
     private static final int GROUPS = 9;
-    private static final int GROUPS_MEMBERS = 10;
-    private static final int FULLTEXT_ID = 11;
-    private static final int REQUESTS = 12;
+    private static final int GROUPS_ID = 10;
+    private static final int GROUPS_MEMBERS = 11;
+    private static final int GROUPS_MEMBERS_ID = 12;
+    private static final int FULLTEXT_ID = 13;
+    private static final int REQUESTS = 14;
 
     private DatabaseHelper dbHelper;
     private static final UriMatcher sUriMatcher;
@@ -172,8 +175,7 @@ public class MessagesProvider extends ContentProvider {
         private static final String _SCHEMA_GROUPS = "(" +
             "group_jid TEXT NOT NULL PRIMARY KEY, " +
             "thread_id INTEGER NOT NULL," +
-            "subject TEXT," +
-            "pending INTEGER NOT NULL DEFAULT 0" +
+            "subject TEXT" +
             ")";
 
         /** This table will contain the groups definitions.*/
@@ -196,8 +198,7 @@ public class MessagesProvider extends ContentProvider {
             "CREATE VIEW " + TABLE_MESSAGES_GROUPS + " AS " +
             "SELECT " + TABLE_MESSAGES + ".*," +
                 TABLE_GROUPS + "." + MyMessages.Groups.GROUP_JID + "," +
-                TABLE_GROUPS + "." + MyMessages.Groups.SUBJECT + "," +
-                TABLE_GROUPS + "." + MyMessages.Groups.PENDING +
+                TABLE_GROUPS + "." + MyMessages.Groups.SUBJECT +
             " FROM " + TABLE_MESSAGES + " JOIN " + TABLE_THREADS +
             " ON " + TABLE_MESSAGES + "." + Messages.THREAD_ID + "=" + TABLE_THREADS + "." + Threads._ID +
             " LEFT OUTER JOIN " + TABLE_GROUPS + " ON " +
@@ -491,6 +492,15 @@ public class MessagesProvider extends ContentProvider {
             case GROUPS_MEMBERS:
                 qb.setTables(TABLE_GROUP_MEMBERS);
                 qb.setProjectionMap(groupsMembersProjectionMap);
+                qb.appendWhere(Groups.GROUP_JID + "=?");
+                if (selectionArgs != null) {
+                    // conditions appended here will get added before the caller-supplied selection
+                    selectionArgs = SystemUtils.concatenate(new String[] { uri.getPathSegments().get(1) },
+                        selectionArgs);
+                }
+                else {
+                    selectionArgs = new String[] { uri.getPathSegments().get(1) };
+                }
                 break;
 
             default:
@@ -535,7 +545,8 @@ public class MessagesProvider extends ContentProvider {
                     return null;
                 case GROUPS_MEMBERS:
                     // insert members into group
-                    insertGroupMembers(db, values);
+                    String groupJid = uri.getPathSegments().get(1);
+                    insertGroupMembers(db, groupJid, values);
                     success = setTransactionSuccessful(db);
                     // no uri needed
                     return null;
@@ -650,11 +661,11 @@ public class MessagesProvider extends ContentProvider {
         db.insertOrThrow(TABLE_GROUPS, null, values);
     }
 
-    private void insertGroupMembers(SQLiteDatabase db, ContentValues values) {
+    private void insertGroupMembers(SQLiteDatabase db, String groupJid, ContentValues values) {
         // TODO shouldn't we notify someone?
 
-        // take only the values we need
         try {
+            values.put(Groups.GROUP_JID, groupJid);
             db.insertOrThrow(TABLE_GROUP_MEMBERS, null, values);
         }
         catch (SQLiteConstraintException e) {
@@ -813,8 +824,6 @@ public class MessagesProvider extends ContentProvider {
 
     @Override
     public synchronized int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        if (values == null) { throw new IllegalArgumentException("No data"); }
-
         String table;
         String where;
         String[] args;
@@ -870,16 +879,69 @@ public class MessagesProvider extends ContentProvider {
                 break;
             }
 
+            case GROUPS: {
+                table = TABLE_GROUPS;
+                where = selection;
+                args = selectionArgs;
+                break;
+            }
+
+            case GROUPS_ID: {
+                table = TABLE_GROUPS;
+                String groupId = uri.getLastPathSegment();
+                where = Groups.GROUP_JID + " = ?";
+                args = new String[] { groupId };
+                if (selection != null) {
+                    where += " AND (" + selection + ")";
+                    if (selectionArgs != null)
+                        args = SystemUtils.concatenate(args, selectionArgs);
+                }
+                break;
+            }
+
+            case GROUPS_MEMBERS: {
+                String groupId = uri.getPathSegments().get(1);
+                table = TABLE_GROUP_MEMBERS;
+                where = Groups.GROUP_JID + " = ?";
+                args = new String[] { groupId };
+                if (selection != null) {
+                    where += " AND (" + selection + ")";
+                    if (selectionArgs != null)
+                        args = SystemUtils.concatenate(args, selectionArgs);
+                }
+                break;
+            }
+
+            case GROUPS_MEMBERS_ID: {
+                table = TABLE_GROUP_MEMBERS;
+                where = Groups.GROUP_JID + " = ? AND " + Groups.PEER + " = ?";
+                args = new String[] { uri.getPathSegments().get(1), uri.getLastPathSegment() };
+                if (selection != null) {
+                    where += " AND (" + selection + ")";
+                    if (selectionArgs != null)
+                        args = SystemUtils.concatenate(args, selectionArgs);
+                }
+                break;
+            }
+
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
         }
 
-        List<Uri> notifications = new ArrayList<Uri>();
+        List<Uri> notifications = null;
         boolean success = false;
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         try {
             beginTransaction(db);
+
+            // handle clear pending flags
+            String pendingFlags = uri.getQueryParameter(Messages.CLEAR_PENDING);
+            if (pendingFlags != null) {
+                updatePendingFlags(db, Integer.parseInt(pendingFlags), where, args);
+                success = setTransactionSuccessful(db);
+                return 0;
+            }
 
             // retrieve old data for notifying.
             // This was done because of the update call could make the old where
@@ -907,6 +969,7 @@ public class MessagesProvider extends ContentProvider {
                 if (requestOnly)
                     uri = Threads.CONTENT_URI;
 
+                notifications = new ArrayList<Uri>();
                 notifications.add(uri);
 
                 if (table.equals(TABLE_MESSAGES)) {
@@ -972,10 +1035,17 @@ public class MessagesProvider extends ContentProvider {
         }
         finally {
             endTransaction(db, success);
-            ContentResolver cr = getContext().getContentResolver();
-            for (Uri nuri : notifications)
-                cr.notifyChange(nuri, null);
+            if (notifications != null) {
+                ContentResolver cr = getContext().getContentResolver();
+                for (Uri nuri : notifications)
+                    cr.notifyChange(nuri, null);
+            }
         }
+    }
+
+    /** Updates group status pending flags. */
+    private void updatePendingFlags(SQLiteDatabase db, int flags, String where, String[] args) {
+        db.execSQL("UPDATE " + TABLE_GROUP_MEMBERS + " SET pending = pending & ~("+flags+") WHERE " + where, args);
     }
 
     private void updateFulltext(SQLiteDatabase db, long id, long threadId, byte[] content) {
@@ -1403,10 +1473,9 @@ public class MessagesProvider extends ContentProvider {
 
     public static String[] getGroupMembers(Context context, String groupJid) {
         Cursor c = context.getContentResolver()
-            .query(MyMessages.Groups.MEMBERS_CONTENT_URI,
+            .query(MyMessages.Groups.getMembersUri(groupJid),
                 new String[] { MyMessages.Groups.PEER },
-                MyMessages.Groups.GROUP_JID + "=?",
-                new String[] { groupJid }, null);
+                null, null, null);
 
         String[] members = new String[c.getCount()];
         int i = 0;
@@ -1513,7 +1582,9 @@ public class MessagesProvider extends ContentProvider {
         sUriMatcher.addURI(AUTHORITY, "conversations", CONVERSATIONS_ALL_ID);
         sUriMatcher.addURI(AUTHORITY, "conversations/#", CONVERSATIONS_ID);
         sUriMatcher.addURI(AUTHORITY, TABLE_GROUPS, GROUPS);
-        sUriMatcher.addURI(AUTHORITY, TABLE_GROUPS + "/members", GROUPS_MEMBERS);
+        sUriMatcher.addURI(AUTHORITY, TABLE_GROUPS + "/*", GROUPS_ID);
+        sUriMatcher.addURI(AUTHORITY, TABLE_GROUPS + "/*/members", GROUPS_MEMBERS);
+        sUriMatcher.addURI(AUTHORITY, TABLE_GROUPS + "/*/members/*", GROUPS_MEMBERS_ID);
         sUriMatcher.addURI(AUTHORITY, TABLE_FULLTEXT, FULLTEXT_ID);
         sUriMatcher.addURI(AUTHORITY, "requests", REQUESTS);
 
@@ -1547,7 +1618,6 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages.SERVER_TIMESTAMP, Messages.SERVER_TIMESTAMP);
         messagesProjectionMap.put(MyMessages.Groups.GROUP_JID, Groups.GROUP_JID);
         messagesProjectionMap.put(MyMessages.Groups.SUBJECT, Groups.SUBJECT);
-        messagesProjectionMap.put(MyMessages.Groups.PENDING, Groups.PENDING);
 
         threadsProjectionMap = new HashMap<String, String>();
         threadsProjectionMap.put(Threads._ID, Threads._ID);
@@ -1567,7 +1637,6 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Threads.REQUEST_STATUS, Threads.REQUEST_STATUS);
         threadsProjectionMap.put(Groups.GROUP_JID, MyMessages.Groups.GROUP_JID);
         threadsProjectionMap.put(MyMessages.Groups.SUBJECT, Groups.SUBJECT);
-        threadsProjectionMap.put(MyMessages.Groups.PENDING, MyMessages.Groups.PENDING);
 
         fulltextProjectionMap = new HashMap<String, String>();
         fulltextProjectionMap.put(Fulltext.THREAD_ID, Fulltext.THREAD_ID);

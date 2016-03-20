@@ -102,6 +102,7 @@ import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.BlockingCommand;
 import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.EndpointServer;
+import org.kontalk.client.GroupExtension;
 import org.kontalk.client.KontalkConnection;
 import org.kontalk.client.KontalkGroupManager;
 import org.kontalk.client.OutOfBandData;
@@ -305,6 +306,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     // other
     public static final String PUSH_REGISTRATION_ID = "org.kontalk.PUSH_REGISTRATION_ID";
     private static final String DEFAULT_PUSH_PROVIDER = "gcm";
+
+    private static final int GROUP_COMMAND_CREATE = 1;
+    private static final int GROUP_COMMAND_SUBJECT = 2;
+    private static final int GROUP_COMMAND_PART = 3;
 
     /** Minimal wakeup time. */
     public final static int MIN_WAKEUP_TIME = 300000;
@@ -1498,6 +1503,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Messages.MESSAGE_ID,
                 Messages.PEER,
                 Messages.BODY_CONTENT,
+                Messages.BODY_MIME,
                 Messages.SECURITY_FLAGS,
                 Messages.ATTACHMENT_MIME,
                 Messages.ATTACHMENT_LOCAL_URI,
@@ -1508,7 +1514,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 // TODO Messages.ATTACHMENT_SECURITY_FLAGS,
                 Groups.GROUP_JID,
                 Groups.SUBJECT,
-                Groups.PENDING,
             },
             filter.toString(), filterArgs,
             Messages._ID);
@@ -1518,18 +1523,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             String msgId = c.getString(1);
             String peer = c.getString(2);
             byte[] textContent = c.getBlob(3);
-            int securityFlags = c.getInt(4);
-            String attMime = c.getString(5);
-            String attFileUri = c.getString(6);
-            String attFetchUrl = c.getString(7);
-            String attPreviewPath = c.getString(8);
-            long attLength = c.getLong(9);
-            int compress = c.getInt(10);
-            // TODO int attSecurityFlags = c.getInt(11);
+            String bodyMime = c.getString(4);
+            int securityFlags = c.getInt(5);
+            String attMime = c.getString(6);
+            String attFileUri = c.getString(7);
+            String attFetchUrl = c.getString(8);
+            String attPreviewPath = c.getString(9);
+            long attLength = c.getLong(10);
+            int compress = c.getInt(11);
+            // TODO int attSecurityFlags = c.getInt(12);
 
-            String groupJid = c.getString(11); // 12
-            String groupSubject = c.getString(12); // 13
-            int groupPending = c.getInt(13); // 14
+            String groupJid = c.getString(12); // 13
+            String groupSubject = c.getString(13); // 14
 
             String[] groupMembers = null;
             if (groupJid != null) {
@@ -1552,7 +1557,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             if (groupJid != null) {
                 b.putString("org.kontalk.message.groupJid", groupJid);
                 b.putString("org.kontalk.message.groupSubject", groupSubject);
-                b.putInt("org.kontalk.message.groupFlags", groupPending);
                 b.putStringArray("org.kontalk.message.to", groupMembers);
             }
             else {
@@ -1562,8 +1566,23 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // TODO shouldn't we pass security flags directly here??
             b.putBoolean("org.kontalk.message.encrypt", securityFlags != Coder.SECURITY_CLEARTEXT);
 
-            if (textContent != null)
+            if (GroupComponent.MIME_TYPE.equals(bodyMime)) {
+                int cmd = 0;
+                // use database conversion facility
+                String command = c.getString(3);
+                if (command.equals(GroupExtension.Type.CREATE.toString())) {
+                    cmd = GROUP_COMMAND_CREATE;
+                }
+                else if (command.equals(GroupExtension.Type.PART.toString())) {
+                    cmd = GROUP_COMMAND_PART;
+                }
+                // TODO delete
+
+                b.putInt("org.kontalk.message.groupCommand", cmd);
+            }
+            else if (textContent != null) {
                 b.putString("org.kontalk.message.body", new String(textContent));
+            }
 
             // message has already been uploaded - just send media
             if (attFetchUrl != null) {
@@ -1996,28 +2015,29 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 group = KontalkGroupManager.getInstanceFor(mConnection)
                     .getGroup(groupJid);
 
-                int groupFlags = data.getInt("org.kontalk.message.groupFlags", 0);
-                boolean pendingCreate = (groupFlags & Groups.GROUP_PENDING_CREATED) != 0;
-                boolean pendingSubject = (groupFlags & Groups.GROUP_PENDING_SUBJECT) != 0;
-                boolean pendingDelete = (groupFlags & Groups.GROUP_PENDING_DELETED) != 0;
-                if (pendingDelete) {
-                    group.leave(m);
-                }
-                else if (pendingCreate) {
-                    String subject = data.getString("org.kontalk.message.groupSubject");
-                    group.create(subject, toGroup, m);
-                }
-                else if (pendingSubject) {
-                    String subject = data.getString("org.kontalk.message.groupSubject");
-                    group.setSubject(subject, m);
-                }
-                else {
-                    group.groupInfo(m);
+                int groupCommand = data.getInt("org.kontalk.message.groupCommand", 0);
+                switch (groupCommand) {
+                    case GROUP_COMMAND_PART:
+                        group.leave(m);
+                        break;
+                    case GROUP_COMMAND_CREATE: {
+                        String subject = data.getString("org.kontalk.message.groupSubject");
+                        group.create(subject, toGroup, m);
+                        break;
+                    }
+                    case GROUP_COMMAND_SUBJECT: {
+                        String subject = data.getString("org.kontalk.message.groupSubject");
+                        group.setSubject(subject, m);
+                        break;
+                    }
+                    default:
+                        group.groupInfo(m);
                 }
 
                 try {
                     // wait for confirmation
-                    mConnection.addStanzaIdAcknowledgedListener(id, new GroupCommandAckListener(this, group));
+                    mConnection.addStanzaIdAcknowledgedListener(id,
+                        new GroupCommandAckListener(this, group, GroupExtension.from(m)));
                 }
                 catch (StreamManagementException.StreamManagementNotEnabledException e) {
                     Log.e(TAG, "server does not support stream management?!?");
@@ -2146,7 +2166,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             String[] members = group.getContent().getMembers();
             if (members != null) {
                 ContentValues membersValues = new ContentValues();
-                membersValues.put(Groups.GROUP_JID, group.getContent().getJid());
                 for (String member : members) {
                     // do not add ourselves
                     if (Authenticator.isSelfJID(this, member))
@@ -2154,8 +2173,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                     // FIXME turn this into batch operations
                     membersValues.put(Groups.PEER, member);
-                    getContentResolver()
-                        .insert(Groups.MEMBERS_CONTENT_URI, membersValues);
+                    getContentResolver().insert(Groups
+                        .getMembersUri(group.getContent().getJid()), membersValues);
                 }
             }
 
@@ -2172,7 +2191,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             String[] added = group.getContent().getAddMembers();
             if (added != null && added.length > 0) {
                 ContentValues membersValues = new ContentValues();
-                membersValues.put(Groups.GROUP_JID, group.getContent().getJid());
                 for (String member : added) {
                     // do not add ourselves
                     if (Authenticator.isSelfJID(this, member))
@@ -2180,8 +2198,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                     // FIXME turn this into batch operations
                     membersValues.put(Groups.PEER, member);
-                    getContentResolver()
-                        .insert(Groups.MEMBERS_CONTENT_URI, membersValues);
+                    getContentResolver().insert(Groups
+                        .getMembersUri(group.getContent().getJid()), membersValues);
                 }
             }
 
@@ -2435,7 +2453,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static void sendGroupTextMessage(final Context context, String groupJid,
-            String groupSubject, boolean groupCreating, String[] to,
+            String groupSubject, String[] to,
             String text, boolean encrypt, long msgId, String packetId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
@@ -2444,9 +2462,24 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.mime", TextComponent.MIME_TYPE);
         i.putExtra("org.kontalk.message.groupJid", groupJid);
         i.putExtra("org.kontalk.message.groupSubject", groupSubject);
-        i.putExtra("org.kontalk.message.groupFlags", groupCreating ? Groups.GROUP_PENDING_CREATED : 0);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.body", text);
+        i.putExtra("org.kontalk.message.encrypt", encrypt);
+        i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
+        context.startService(i);
+    }
+
+    public static void createGroup(final Context context, String groupJid,
+        String groupSubject, String[] to, boolean encrypt, long msgId, String packetId) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_MESSAGE);
+        i.putExtra("org.kontalk.message.msgId", msgId);
+        i.putExtra("org.kontalk.message.packetId", packetId);
+        i.putExtra("org.kontalk.message.mime", GroupComponent.MIME_TYPE);
+        i.putExtra("org.kontalk.message.groupJid", groupJid);
+        i.putExtra("org.kontalk.message.groupSubject", groupSubject);
+        i.putExtra("org.kontalk.message.groupCommand", GROUP_COMMAND_CREATE);
+        i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
         context.startService(i);

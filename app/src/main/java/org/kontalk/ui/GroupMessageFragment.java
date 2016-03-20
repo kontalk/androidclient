@@ -47,8 +47,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     protected void sendTextMessageInternal(String text, boolean encrypted, long msgId, String packetId) {
         MessageCenterService.sendGroupTextMessage(getContext(),
             mConversation.getGroupJid(), mConversation.getGroupSubject(),
-            mConversation.isGroupDirty(), mConversation.getGroupPeers(),
-            text, encrypted, msgId, packetId);
+            mConversation.getGroupPeers(), text, encrypted, msgId, packetId);
     }
 
     @Override

@@ -51,7 +51,6 @@ public class Conversation {
         Threads.REQUEST_STATUS,
         Groups.GROUP_JID,
         Groups.SUBJECT,
-        Groups.PENDING,
     };
 
     private static final int COLUMN_ID = 0;
@@ -67,7 +66,6 @@ public class Conversation {
     private static final int COLUMN_REQUEST_STATUS = 10;
     private static final int COLUMN_GROUP_JID = 11;
     private static final int COLUMN_GROUP_SUBJECT = 12;
-    private static final int COLUMN_GROUP_DIRTY = 13;
 
     private final Context mContext;
 
@@ -91,7 +89,6 @@ public class Conversation {
     private String mGroupJid;
     private String[] mGroupPeers;
     private String mGroupSubject;
-    private boolean mGroupDirty;
 
     private Conversation(Context context) {
         mContext = context;
@@ -117,7 +114,6 @@ public class Conversation {
 
             mGroupJid = c.getString(COLUMN_GROUP_JID);
             mGroupSubject = c.getString(COLUMN_GROUP_SUBJECT);
-            mGroupDirty = c.getInt(COLUMN_GROUP_DIRTY) != 0;
             // group peers are loaded on demand
 
             loadContact();
@@ -257,10 +253,6 @@ public class Conversation {
         return mGroupSubject;
     }
 
-    public boolean isGroupDirty() {
-        return mGroupDirty;
-    }
-
     public void cancelGroupChat() {
         mGroupJid = null;
         mGroupPeers = null;
@@ -310,20 +302,19 @@ public class Conversation {
 
         values.put(Groups.THREAD_ID, threadId);
         values.put(Groups.SUBJECT, subject);
-        values.put(Groups.PENDING, MyMessages.Groups.GROUP_PENDING_CREATED);
         context.getContentResolver().insert(Groups.CONTENT_URI, values);
 
         // remove values not for members table
+        values.remove(Groups.GROUP_JID);
         values.remove(Groups.THREAD_ID);
         values.remove(Groups.SUBJECT);
-        values.remove(Groups.PENDING);
 
         // insert group members
         for (String member : members) {
             // FIXME turn this into batch operations
             values.put(Groups.PEER, member);
             context.getContentResolver()
-                .insert(Groups.MEMBERS_CONTENT_URI, values);
+                .insert(Groups.getMembersUri(groupJid), values);
         }
 
         return threadId;

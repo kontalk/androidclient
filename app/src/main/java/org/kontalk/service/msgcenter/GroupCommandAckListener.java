@@ -22,7 +22,15 @@ package org.kontalk.service.msgcenter;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.packet.Stanza;
 
+import android.content.ContentUris;
+import android.content.ContentValues;
+import android.net.Uri;
+
+import org.kontalk.client.GroupExtension;
 import org.kontalk.client.KontalkGroupManager;
+import org.kontalk.provider.MyMessages;
+import org.kontalk.provider.MyMessages.Groups;
+import org.kontalk.provider.MyMessages.Messages;
 
 /**
  * Packet listener to handle acks for group command messages.
@@ -31,14 +39,22 @@ import org.kontalk.client.KontalkGroupManager;
 public class GroupCommandAckListener extends MessageCenterPacketListener {
 
     private final KontalkGroupManager.KontalkGroup mGroup;
+    private final GroupExtension mExtension;
 
-    GroupCommandAckListener(MessageCenterService instance, KontalkGroupManager.KontalkGroup group) {
+    GroupCommandAckListener(MessageCenterService instance, KontalkGroupManager.KontalkGroup group, GroupExtension extension) {
         super(instance);
         mGroup = group;
+        mExtension = extension;
     }
 
     @Override
     public void processPacket(Stanza packet) throws SmackException.NotConnectedException {
-        // TODO handle command
+        GroupExtension.Type type = mExtension.getType();
+
+        switch (type) {
+            case SET:
+                // TODO clear pending subject or member add/remove
+                break;
+        }
     }
 }

@@ -107,24 +107,27 @@ class MessageListener extends MessageCenterPacketListener {
     }
 
     private String[] flattenExistingMembers(GroupExtension group) {
-        return flattenOperationMembers(group, GroupExtension.Member.Operation.NONE);
+        return flattenOperationMembers(group, GroupExtension.Member.Operation.NONE, true);
     }
 
     private String[] flattenAddMembers(GroupExtension group) {
-        return flattenOperationMembers(group, GroupExtension.Member.Operation.ADD);
+        return flattenOperationMembers(group, GroupExtension.Member.Operation.ADD, false);
     }
 
     private String[] flattenRemoveMembers(GroupExtension group) {
-        return flattenOperationMembers(group, GroupExtension.Member.Operation.REMOVE);
+        return flattenOperationMembers(group, GroupExtension.Member.Operation.REMOVE, false);
     }
 
-    private String[] flattenOperationMembers(GroupExtension group, GroupExtension.Member.Operation operation) {
+    private String[] flattenOperationMembers(GroupExtension group, GroupExtension.Member.Operation operation, boolean includeOwner) {
         List<GroupExtension.Member> members = group.getMembers();
         List<String> addMembers = new LinkedList<>();
-        for (int i = 1; i < members.size(); i++) {
+        if (includeOwner)
+            addMembers.add(group.getOwner());
+
+        for (int i = 0; i < members.size(); i++) {
             GroupExtension.Member user = members.get(i);
             if (user.operation == operation)
-                addMembers.add(members.get(i-1).jid);
+                addMembers.add(members.get(i).jid);
         }
         return addMembers.toArray(new String[addMembers.size()]);
     }

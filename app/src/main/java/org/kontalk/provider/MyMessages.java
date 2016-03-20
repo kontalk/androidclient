@@ -178,11 +178,6 @@ public final class MyMessages {
     public static final class Groups {
         private Groups() {}
 
-        // flags for groups.pending
-        public static final int GROUP_PENDING_CREATED = 1;
-        public static final int GROUP_PENDING_SUBJECT = 1 << 1;
-        public static final int GROUP_PENDING_DELETED = 1 << 2;
-
         // flags for group_members.pending
         public static final int MEMBER_PENDING_ADDED = 1;
         public static final int MEMBER_PENDING_REMOVED = 1 << 1;
@@ -192,19 +187,26 @@ public final class MyMessages {
         public static final Uri MEMBERS_CONTENT_URI = Uri.parse("content://"
             + MessagesProvider.AUTHORITY + "/groups/members");
 
+        public static Uri getUri(String jid) {
+            return Uri.parse("content://"
+                + MessagesProvider.AUTHORITY + "/groups/" + Uri.encode(jid));
+        }
+
+        public static Uri getMembersUri(String jid) {
+            return Uri.parse("content://"
+                + MessagesProvider.AUTHORITY + "/groups/" + Uri.encode(jid) + "/members");
+        }
+
         public static final String GROUP_JID = "group_jid";
         public static final String PEER = "group_" + CommonColumns.PEER;
         public static final String THREAD_ID = Messages.THREAD_ID;
         public static final String SUBJECT = "subject";
         /**
-         * Status used for members and groups. It's set on request and
-         * cleared back to 0 when the command has been confirmed.
-         * Group status: pending creation, pending deletion, pending subject
-         * change. Cleared when the command is acknowledged by the server.
-         * Group member status: An added user is pending addition until the
-         * add member command is acknowledged by the server. A removed user
-         * is pending removal until the remove member command is
-         * acknowledged by the server.
+         * Status used for members. It's set on request and cleared back to 0
+         * when the command has been confirmed.
+         * An added user is pending addition until the add member command is
+         * acknowledged by the server. A removed user is pending removal until
+         * the remove member command is acknowledged by the server.
          */
         public static final String PENDING = "pending";
     }

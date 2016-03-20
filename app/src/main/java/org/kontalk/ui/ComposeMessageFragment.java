@@ -37,6 +37,7 @@ import org.spongycastle.openpgp.PGPPublicKeyRing;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -58,10 +59,13 @@ import android.widget.Toast;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.client.GroupExtension;
+import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.GroupComponent;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Threads;
@@ -70,6 +74,7 @@ import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.Syncer;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 import org.kontalk.util.XMPPUtils;
 
@@ -496,6 +501,25 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         }
     }
 
+    private Uri storeCreateGroup(long threadId, String groupJid, String msgId, boolean encrypted) {
+        // save to database
+        ContentValues values = new ContentValues();
+        values.put(MyMessages.Messages.THREAD_ID, threadId);
+        values.put(MyMessages.Messages.MESSAGE_ID, msgId);
+        values.put(MyMessages.Messages.PEER, groupJid);
+        values.put(MyMessages.Messages.BODY_MIME, GroupComponent.MIME_TYPE);
+        values.put(MyMessages.Messages.BODY_CONTENT, GroupExtension.Type.CREATE.toString());
+        values.put(MyMessages.Messages.BODY_LENGTH, 0);
+        values.put(MyMessages.Messages.UNREAD, false);
+        values.put(MyMessages.Messages.DIRECTION, MyMessages.Messages.DIRECTION_OUT);
+        values.put(MyMessages.Messages.TIMESTAMP, System.currentTimeMillis());
+        values.put(MyMessages.Messages.STATUS, MyMessages.Messages.STATUS_SENDING);
+        // of course outgoing messages are not encrypted in database
+        values.put(MyMessages.Messages.ENCRYPTED, false);
+        values.put(MyMessages.Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+        return getActivity().getContentResolver().insert(MyMessages.Messages.CONTENT_URI, values);
+    }
+
     @Override
     protected void addUsers(String[] members) {
         String groupId = StringUtils.randomString(20);
@@ -511,6 +535,17 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         long groupThreadId = Conversation.initGroupChat(getActivity(),
             groupJid, mConversation.getGroupSubject(), users,
             mComposer.getText().toString());
+
+        // store create group command to outbox
+        boolean encrypted = Preferences.getEncryptionEnabled(getContext());
+        String msgId = MessageCenterService.messageId();
+        Uri cmdMsg = storeCreateGroup(groupThreadId, groupJid, msgId, encrypted);
+        // TODO check for null
+
+        // send create group command now
+        MessageCenterService.createGroup(getContext(), groupJid,
+            mConversation.getGroupSubject(), users, encrypted,
+            ContentUris.parseId(cmdMsg), msgId);
 
         // load the new conversation
         ((ComposeMessageParent) getActivity()).loadConversation(groupThreadId);
