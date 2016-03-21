@@ -457,4 +457,6 @@
 </plurals>
 
 <string name="mark_read">Ler</string>
+    <string name="button_load_next_page">Carregar mais mensagens</string>
+
     </resources>
