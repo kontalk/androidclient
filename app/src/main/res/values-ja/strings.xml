@@ -28,11 +28,11 @@
   <string name="menu_compose">作成</string>
   <string name="menu_delete_all">チャットを削除</string>
   <string name="menu_search">検索</string>
-  <string name="mykey_activity_title">マイパーソナルキー</string>
+  <string name="mykey_activity_title">マイ秘密鍵</string>
   <string name="menu_settings">設定</string>
   <string name="menu_offline">オフラインにする</string>
   <string name="menu_online">オンラインにする</string>
-  <string name="menu_import_key">キーをインポート</string>
+  <string name="menu_import_key">鍵をインポート</string>
   <string name="pref_network_settings">ネットワーク設定</string>
   <string name="pref_network_uri">マニュアル サーバー アドレス</string>
   <string name="pref_title_network_uri">サーバーリスト自動管理を上書きします</string>
@@ -91,15 +91,15 @@
   <string name="size_unknown">(不明)</string>
   <string name="title_file_info">ファイル情報</string>
   <string name="pref_restart_msgcenter">メッセージセンターを再起動</string>
-  <string name="pref_title_restart_msgcenter">メッセージセンターが正常に機能しない場合に使用します</string>
+  <string name="pref_title_restart_msgcenter">Kontalk が正常に動作しない場合に使用します</string>
   <string name="pref_idle_time">アイドル時に切断</string>
   <string name="pref_title_idle_time">非アクティブ時に切断するまで待機する時間</string>
   <string name="pref_wakeup_time">サーバーに再接続</string>
   <string name="pref_title_wakeup_time">非アクティブの期間後、サーバに再接続する前に待機する時間。プッシュ通知が利用できない場合にのみ機能します</string>
   <string name="pref_maintenance">メンテナンス</string>
-  <string name="pref_regenerate_keypair">パーソナルキーを再生成</string>
-  <string name="pref_title_regenerate_keypair">あなたのパーソナルキーが侵害されている場合に使用します</string>
-  <string name="pref_regenerate_keypair_confirm">新しいキーペアが生成され、あなたのアカウントに割り当てられます。あなたの古いキーは無効になります。</string>
+  <string name="pref_regenerate_keypair">秘密鍵を再生成</string>
+  <string name="pref_title_regenerate_keypair">あなたの秘密鍵が侵害されている場合に使用します</string>
+  <string name="pref_regenerate_keypair_confirm">新しい鍵ペアが生成され、あなたのアカウントに割り当てられます。古い鍵は無効になります。</string>
   <string name="contacts_list_title">連絡先を選択</string>
   <string name="pref_messaging_settings">メッセージング設定</string>
   <string name="pref_privacy_settings">プライバシー設定</string>
@@ -202,7 +202,7 @@ http://kontalk.org/</string>
   <string name="attachment_download">添付をダウンロード</string>
   <string name="attachment_upload">添付をアップロード</string>
   <string name="seen_moment_ago_label">少し前</string>
-  <string name="seen_online_label">オンライン</string>
+  <string name="seen_online_label">アクティブ</string>
   <string name="seen_typing_label">タイプ中…</string>
   <string name="invitation_sent_label">招待を保留中</string>
   <string name="pref_custom_background">背景をカスタマイズ</string>
@@ -243,15 +243,15 @@ http://kontalk.org/</string>
   <string name="pref_wakeup_time_label_1h">1 時間</string>
   <string name="pref_wakeup_time_label_3h">3 時間</string>
   <string name="pref_remove_prefix">ダイヤル プレフィックス</string>
-  <string name="pref_change_passphrase">パーソナルキーのパスワードを変更</string>
+  <string name="pref_change_passphrase">秘密鍵のパスワードを変更</string>
   <string name="pref_title_remove_prefix">電話番号を正しく一致させるために、Kontalk 中のいくつかのダイヤル プレフィックスを削除してください</string>
-  <string name="pref_export_keypair">パーソナルキーをエクスポート</string>
+  <string name="pref_export_keypair">秘密鍵をエクスポート</string>
   <string name="pref_title_export_keypair">パーソナルキーとログイン証明書を、外部ストレージにエクスポート</string>
   <string name="pref_import_keypair">パーソナルキーをインポート</string>
   <string name="pref_title_import_keypair">パーソナルキーとログイン証明書を、外部ストレージからインポート</string>
-  <string name="msg_import_keypair">Kontalk は、外部ストレージの %s からキーをインポートします。ファイルが存在すること、それが有効なエクスポートされたキーのアーカイブであることを確認してください。</string>
-  <string name="msg_import_keypair_complete">パーソナルキーのインポートが完了しました。</string>
-  <string name="err_import_keypair_failed">パーソナルキーのインポートに失敗しました。</string>
+  <string name="msg_import_keypair">Kontalk は、外部ストレージの %s から鍵をインポートします。ファイルが存在すること、それが有効なエクスポートされた鍵のアーカイブであることを確認してください。</string>
+  <string name="msg_import_keypair_complete">秘密鍵のインポートが完了しました。</string>
+  <string name="err_import_keypair_failed">秘密鍵のインポートに失敗しました。</string>
   <string name="title_passphrase">パスワード</string>
   <string name="msg_status_sending">送信中</string>
   <string name="msg_status_sent">送信しました</string>
@@ -261,7 +261,7 @@ http://kontalk.org/</string>
   <string name="msg_status_encrypted">暗号化しました</string>
   <string name="pref_balloons">チャット吹き出しのテーマ</string>
   <string name="pref_title_balloons">チャット吹き出しのテーマを選択してください</string>
-  <string name="attachment_picture">画像</string>
+  <string name="attachment_picture">ギャラリー</string>
   <string name="attachment_contact">連絡先</string>
   <string name="attachment_audio">音声</string>
   <string name="chooser_send_picture">画像を送信</string>
@@ -293,15 +293,15 @@ http://kontalk.org/</string>
   <string name="donate_paypal">PayPal</string>
   <string name="donate_bitcoin">Bitcoin</string>
   <string name="donate_flattr">Flattr</string>
-  <string name="msg_generating_keypair">バックグラウンドでパーソナルキーを生成中。</string>
-  <string name="msg_gen_keypair_complete">パーソナルキーの再生成が完了しました。</string>
-  <string name="notify_gen_keypair_ticker">パーソナルキーの生成中…</string>
-  <string name="notify_gen_keypair_title">パーソナルキーの生成中</string>
+  <string name="msg_generating_keypair">バックグラウンドで秘密鍵を生成中。</string>
+  <string name="msg_gen_keypair_complete">秘密鍵の再生成が完了しました。</string>
+  <string name="notify_gen_keypair_ticker">秘密鍵の生成中…</string>
+  <string name="notify_gen_keypair_title">秘密鍵の生成中</string>
   <string name="notify_gen_keypair_text">正常に動作を続けることができます。</string>
   <string name="msg_xmpp_upgrading">アップグレード中…</string>
-  <string name="title_no_personal_key">パーソナルキーがありません</string>
-  <string name="msg_no_personal_key">(アップグレードしたせいか) 現在パーソナルキーが使用できません。パーソナルキーを生成しない場合、Kontalk ネットワークにログインできません。 Kontalk を閉じて、再度開き、名前を入力してください。</string>
-  <string name="msg_keypair_exported">パーソナルキーとログイン証明書を、外部ストレージにエクスポートしました。</string>
+  <string name="title_no_personal_key">秘密鍵がありません</string>
+  <string name="msg_no_personal_key">(アップグレードしたせいか) 現在秘密鍵が使用できません。秘密鍵を生成しないと、Kontalk ネットワークにログインできません。 Kontalk を閉じて、再度開き、名前を入力してください。</string>
+  <string name="msg_keypair_exported">秘密鍵とログイン証明書を、外部ストレージにエクスポートしました。</string>
   <string name="security_status_good">グッド</string>
   <string name="security_status_bad">バッド</string>
   <string name="security_error_invalid_signature">\u0020(無効な署名)</string>
@@ -326,7 +326,7 @@ http://kontalk.org/</string>
   <string name="iab_error_query">アプリ内課金インベントリーの問合せに失敗しました (%d)</string>
   <string name="copy_clipboard">クリップボードにコピー</string>
   <string name="bitcoin_clipboard_copied">Bitcoin のアドレスをクリップボードにコピーしました。</string>
-  <string name="warn_no_personal_key">パーソナルキーをロードできません。とにかくメッセージを送信するためは、設定から暗号化を無効にしてください。</string>
+  <string name="warn_no_personal_key">秘密鍵を読み込みできません。とにかくメッセージを送信するためは、設定から暗号化を無効にしてください。</string>
   <string name="warn_no_public_key">このユーザーの公開鍵が見つかりません。とにかくメッセージを送信するためには、連絡先リストを更新するか、設定から暗号化を無効にしてみてください。</string>
   <string name="warn_encryption_failed">メッセージを暗号化できません。とにかくメッセージを送信するためには、設定から暗号化を無効にしてください。</string>
   <string name="warn_not_subscribed">メッセージを送信できません。ユーザーがまだ招待を承認していません。</string>
@@ -346,7 +346,7 @@ http://kontalk.org/</string>
   <string name="msg_unblock_user_warning">このユーザーのブロックを解除しようとしています。ブロック解除すると、彼/彼女があなたにメッセージを送信したり、あなたのステータスや最後の既知の存在を参照することができるようになります。</string>
   <string name="notification_text_more">さらに詳細はここをタップ</string>
   <string name="title_auth_error">認証エラー</string>
-  <string name="msg_auth_error">前回接続しようとした時に、Kontalk サーバーへの認証が失敗しました。一時的なサーバーの障害か、サーバーがあなたのパーソナルキーを拒否している可能性があります。Android のシステム設定からあなたの Kontalk アカウントを削除して、再度登録することをお勧めします (すべての Kontalk メッセージを失うことになります)。</string>
+  <string name="msg_auth_error">前回接続しようとした時に、Kontalk サーバーへの認証が失敗しました。一時的なサーバーの障害か、サーバーがあなたの秘密鍵を拒否している可能性があります。Android のシステム設定からあなたの Kontalk アカウントを削除して、再度登録することをお勧めします (すべての Kontalk メッセージを失うことになります)。</string>
   <string name="warn_invite_no_app">ユーザーを招待するために利用可能なアプリケーションはありません。</string>
   <string name="pref_text_enter">Enter ボタン</string>
   <string name="pref_title_text_enter">キーボードの Enter ボタンの動作を選択してください</string>
@@ -356,7 +356,7 @@ http://kontalk.org/</string>
   <string name="err_passwords_mismatch">パスワードが一致しません!</string>
   <string name="err_password_invalid">パスワードが間違っています。</string>
   <string name="hint_record">マイクをタップすると録音を開始します。</string>
-  <string name="err_change_passphrase">パーソナルキーのパスワードを変更できません。</string>
+  <string name="err_change_passphrase">秘密鍵のパスワードを変更できません。</string>
   <string name="err_file_not_found">ファイルが見つかりません。</string>
   <string name="err_audio_record">音声の録音開始時にエラー。</string>
   <string name="err_audio_record_writing">外部ストレージに書き込み中にエラー。</string>
@@ -387,11 +387,11 @@ http://kontalk.org/</string>
     <string name="error_delete_message">メッセージを削除できません。</string>
     <string name="err_validation_nonetwork">インターネット接続が利用できません。Kontalk の動作には有効なインターネット接続が必要です。</string>
     <string name="title_nonetwork">インターネット接続がありません</string>
-    <string name="err_import_keypair_uid_mismatch">インポートしたキーが入力された電話番号と一致しません。</string>
+    <string name="err_import_keypair_uid_mismatch">インポートした鍵が入力された電話番号と一致しません。</string>
     <string name="err_audio_record_noaudio">録音された音声はありません。</string>
     <string name="err_custom_background">背景の設定中にエラーが発生しました。別の画像を試してください。</string>
     <string name="hint_ptt">押し続けると録音します。</string>
-    <string name="msg_importing_key">パーソナルキーのインポート中…</string>
+    <string name="msg_importing_key">秘密鍵のインポート中…</string>
     <string name="menu_manual_verification">すでにコードがありますか?</string>
     <string name="code_validation_intro_missed_call">一度この番号で不在着信を受ける必要があります。 <b>この着信には応答しないでください。</b></string>
     <string name="code_validation_intro2_missed_call">着信される番号の最後の %d 桁を入力してください。</string>
@@ -411,4 +411,37 @@ http://kontalk.org/</string>
 <string name="title_confirm_cancel_registration">登録をキャンセルしますか?</string>
     <string name="confirm_cancel_registration">戻る場合は、登録を最初から開始する必要があります。別のアプリに切り替える必要がある場合は、デバイスのホームボタンを使用するだけです。</string>
     <string name="app_name_offline">Kontalk (オフライン)</string>
+    <string name="mark_read">既読</string>
+    <string name="pref_enable_notification_led">通知 LED</string>
+    <string name="pref_notification_led_color">通知 LED の色</string>
+    <string name="seen_away_label">オンライン</string>
+    <string name="pref_title_custom_background">次のオプションを使用して背景を選択してください</string>
+    <string name="err_import_keypair_read">外部ストレージから秘密鍵を読み込みできません。</string>
+    <string name="attachment_camera">カメラ</string>
+    <string name="attachment_video">ビデオ</string>
+    <string name="attachment_file">ファイル</string>
+    <string name="attachment_vcard">連絡先</string>
+    <string name="attachment_location">場所</string>
+
+    <string name="msg_not_implemented">まだ実装されていません。</string>
+
+    <string name="chooser_error_no_camera_app">カメラアプリが利用できません。</string>
+
+    <string name="err_keypair_export_write">外部ストレージに秘密鍵を書き込みできません。</string>
+    <string name="err_keypair_export_other">秘密鍵をエクスポートできません。</string>
+
+    <string name="pref_title_sync_sim_contacts">登録済のユーザーを確認するときに SIM の連絡先を含める</string>
+
+    <string name="pref_title_sync_invisible_contacts">連絡先アプリに表示されない連絡先を含めます。DAVDroid を使用する場合に有効にします</string>
+
+    <string name="warning_public_key_changed">このユーザーの秘密鍵が予期せず変更されました!</string>
+    <string name="title_public_key_changed_warning">秘密鍵が変更されました</string>
+    <string name="msg_public_key_changed_warning">ユーザーに、彼/彼女の Kontalk を再インストールしたり、意図的に鍵を再生成したか、確認してください。そうでなければ通信が侵害される可能性があります!</string>
+    <string name="warning_public_key_unknown">このユーザーの秘密鍵は信頼できません!</string>
+    <string name="title_public_key_unknown_warning">信頼できない秘密鍵</string>
+    <string name="msg_public_key_unknown_warning">ユーザーに、彼/彼女のフィンガープリントが <b>識別</b> のダイアログに表示されたものと一致するか確認してください。そうでなければ通信が侵害される可能性があります!</string>
+
+    <string name="pref_show_blocked_users">ブロックされたユーザーを表示</string>
+    <string name="button_load_next_page">さらにメッセージを読み込む</string>
+
     </resources>
