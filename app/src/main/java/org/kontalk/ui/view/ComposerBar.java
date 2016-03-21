@@ -32,6 +32,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.graphics.Rect;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
@@ -396,6 +397,11 @@ public class ComposerBar extends RelativeLayout implements
         mTextEntry.setFocusableInTouchMode(true);
         if (mTextEntryFocus)
             mTextEntry.requestFocus();
+    }
+
+    @Override
+    public boolean requestFocus(int direction, Rect previouslyFocusedRect) {
+        return mTextEntry.requestFocus(direction, previouslyFocusedRect);
     }
 
     private void animateRecordFrame() {

@@ -361,6 +361,12 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         return view;
     }
 
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mComposer.requestFocus();
+    }
+
     private final MessageListAdapter.OnContentChangedListener mContentChangedListener = new MessageListAdapter.OnContentChangedListener() {
         public void onContentChanged(MessageListAdapter adapter) {
             if (isVisible())
