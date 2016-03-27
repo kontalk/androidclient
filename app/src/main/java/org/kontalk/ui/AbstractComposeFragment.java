@@ -1128,9 +1128,9 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                     public void onClick(DialogInterface dialog, int which) {
                         mComposer.setText("");
                         try {
+                            mConversation.delete();
                             // this will void group chat fields
                             mConversation.cancelGroupChat();
-                            MessagesProvider.deleteThread(getActivity(), threadId);
                         }
                         catch (SQLiteDiskIOException e) {
                             Log.w(TAG, "error deleting thread");
@@ -1727,8 +1727,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                     mConversation.getRequestStatus() != Threads.REQUEST_WAITING &&
                     !mConversation.isGroupChat()) {
 
-                // FIXME shouldn't be faster to just delete the thread?
-                MessagesProvider.deleteThread(getActivity(), threadId);
+                mConversation.delete();
             }
 
             // update draft

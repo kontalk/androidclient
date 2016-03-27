@@ -1251,6 +1251,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 resendPendingMessages(false, false);
                 // resend failed and pending received receipts
                 resendPendingReceipts();
+                // resend pending group commands
+                resendPendingGroupCommands();
                 // roster has been loaded
                 broadcast(ACTION_ROSTER_LOADED);
             }
@@ -1635,6 +1637,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         c.close();
+    }
+
+    /**
+     * Queries for pending group commands and send them through.
+     */
+    void resendPendingGroupCommands() {
+        // TODO
     }
 
     private void sendPendingSubscriptionReplies() {
@@ -2479,6 +2488,20 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.groupJid", groupJid);
         i.putExtra("org.kontalk.message.groupSubject", groupSubject);
         i.putExtra("org.kontalk.message.groupCommand", GROUP_COMMAND_CREATE);
+        i.putExtra("org.kontalk.message.to", to);
+        i.putExtra("org.kontalk.message.encrypt", encrypt);
+        i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
+        context.startService(i);
+    }
+
+    public static void leaveGroup(final Context context, String groupJid,
+        String[] to, boolean encrypt) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_MESSAGE);
+        i.putExtra("org.kontalk.message.packetId", messageId());
+        i.putExtra("org.kontalk.message.mime", GroupComponent.MIME_TYPE);
+        i.putExtra("org.kontalk.message.groupJid", groupJid);
+        i.putExtra("org.kontalk.message.groupCommand", GROUP_COMMAND_PART);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra("org.kontalk.message.chatState", ChatState.active.name());

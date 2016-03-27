@@ -117,6 +117,7 @@ public final class MyMessages {
 
         // used as query parameters
         public static final String CLEAR_PENDING = "clear_pending";
+        public static final String KEEP_GROUP = "keep_group";
     }
 
     /** Threads are just for conversations metadata. */

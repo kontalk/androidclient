@@ -27,7 +27,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDiskIOException;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.support.v7.view.ActionMode;
@@ -42,12 +41,10 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
-import org.kontalk.provider.MessagesProvider;
 import org.kontalk.ui.adapter.ConversationListAdapter;
 import org.kontalk.ui.view.AbsListViewScrollDetector;
 import org.kontalk.ui.view.ConversationListItem;
@@ -261,27 +258,6 @@ public class ConversationListFragment extends ActionModeListFragment
             })
             .setNegativeButton(android.R.string.cancel, null)
             .show();
-    }
-
-    private void deleteThread(final long threadId) {
-        AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(getActivity());
-        builder.setMessage(R.string.confirm_will_delete_thread);
-        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                try {
-                    MessagesProvider.deleteThread(getActivity(), threadId);
-                    MessagingNotification.updateMessagesNotification(getActivity().getApplicationContext(), false);
-                }
-                catch (SQLiteDiskIOException e) {
-                    Log.w(TAG, "error deleting thread");
-                    Toast.makeText(getActivity(), R.string.error_delete_thread,
-                        Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-        builder.setNegativeButton(android.R.string.cancel, null);
-        builder.create().show();
     }
 
     public void chooseContact() {

@@ -284,9 +284,7 @@ public class MessagesProvider extends ContentProvider {
 
         /** Delete group members linked to thread. */
         private static final String DELETE_GROUP_MEMBERS = "DELETE FROM " + TABLE_GROUP_MEMBERS + " WHERE " +
-            Groups.GROUP_JID + "=(SELECT " + Groups.GROUP_JID + " FROM " + TABLE_GROUPS + " WHERE " + MyMessages.Groups.THREAD_ID + "=old." + Threads._ID + ")";
-        /** Delete group linked to thread. */
-        private static final String DELETE_GROUP = "DELETE FROM " + TABLE_GROUPS + " WHERE " + MyMessages.Groups.THREAD_ID + "=old." + Threads._ID;
+            Groups.GROUP_JID + "=old." + Groups.GROUP_JID;
 
         /** This trigger will update the threads table counters on DELETE. */
         private static final String TRIGGER_THREADS_DELETE_COUNT =
@@ -298,12 +296,11 @@ public class MessagesProvider extends ContentProvider {
             // do not call this here -- UPDATE_STATUS_OLD         + ";" +
             "END";
 
-        /** This trigger will delete the linked groups when a thread is deleted. */
-        private static final String TRIGGER_THREAD_DELETE_GROUPS =
-            "CREATE TRIGGER delete_groups_on_delete AFTER DELETE ON " + TABLE_THREADS +
+        /** This trigger will delete group members when a group is deleted. */
+        private static final String TRIGGER_GROUPS_DELETE_MEMBERS =
+            "CREATE TRIGGER delete_groups_on_delete AFTER DELETE ON " + TABLE_GROUPS +
             " BEGIN " +
             DELETE_GROUP_MEMBERS      + ";" +
-            DELETE_GROUP              + ";" +
             "END";
 
         private static final String[] SCHEMA_UPGRADE_V4 = {
@@ -346,7 +343,7 @@ public class MessagesProvider extends ContentProvider {
             SCHEMA_GROUPS,
             SCHEMA_GROUPS_MEMBERS,
             SCHEMA_MESSAGES_GROUPS,
-            TRIGGER_THREAD_DELETE_GROUPS,
+            TRIGGER_GROUPS_DELETE_MEMBERS,
         };
 
         private Context mContext;
@@ -369,7 +366,7 @@ public class MessagesProvider extends ContentProvider {
             db.execSQL(TRIGGER_THREADS_INSERT_COUNT);
             db.execSQL(TRIGGER_THREADS_UPDATE_COUNT);
             db.execSQL(TRIGGER_THREADS_DELETE_COUNT);
-            db.execSQL(TRIGGER_THREAD_DELETE_GROUPS);
+            db.execSQL(TRIGGER_GROUPS_DELETE_MEMBERS);
         }
 
         @Override
@@ -1106,9 +1103,16 @@ public class MessagesProvider extends ContentProvider {
                 args = new String[] { uri.getLastPathSegment() };
                 break;
 
+            case GROUPS_ID:
+                table = TABLE_GROUPS;
+                where = Groups.GROUP_JID + "=?";
+                args = new String[] { uri.getLastPathSegment() };
+                break;
+
             // special case: conversations
             case CONVERSATIONS_ID: {
-                int rows = deleteConversation(uri);
+                boolean keepGroup = Boolean.parseBoolean(uri.getQueryParameter(Messages.KEEP_GROUP));
+                int rows = deleteConversation(uri, keepGroup);
                 if (rows > 0) {
                     ContentResolver cr = getContext().getContentResolver();
                     // first of all, notify conversation
@@ -1122,6 +1126,7 @@ public class MessagesProvider extends ContentProvider {
             }
 
             // special case: delete all content
+            // FIXME group tables are not touched by this!!
             case CONVERSATIONS_ALL_ID: {
                 SQLiteDatabase db = dbHelper.getWritableDatabase();
 
@@ -1223,7 +1228,7 @@ public class MessagesProvider extends ContentProvider {
         return rows;
     }
 
-    private int deleteConversation(Uri uri) {
+    private int deleteConversation(Uri uri, boolean keepGroup) {
         long threadId = ContentUris.parseId(uri);
         if (threadId > 0) {
             SQLiteDatabase db = dbHelper.getWritableDatabase();
@@ -1234,7 +1239,8 @@ public class MessagesProvider extends ContentProvider {
                 beginTransaction(db);
                 num = db.delete(TABLE_THREADS, Threads._ID + " = " + threadId, null);
                 num += db.delete(TABLE_MESSAGES, Messages.THREAD_ID + " = " + threadId, null);
-                num += db.delete(TABLE_GROUPS, MyMessages.Groups.THREAD_ID + " = " + threadId, null);
+                if (!keepGroup)
+                    num += db.delete(TABLE_GROUPS, MyMessages.Groups.THREAD_ID + " = " + threadId, null);
                 // update fulltext
                 db.delete(TABLE_FULLTEXT, Messages.THREAD_ID + " = " + threadId, null);
 
@@ -1359,9 +1365,11 @@ public class MessagesProvider extends ContentProvider {
         }
     }
 
-    public static boolean deleteThread(Context ctx, long id) {
+    public static boolean deleteThread(Context ctx, long id, boolean keepGroup) {
         ContentResolver c = ctx.getContentResolver();
-        return (c.delete(ContentUris.withAppendedId(Conversations.CONTENT_URI, id), null, null) > 0);
+        return (c.delete(ContentUris.withAppendedId(Conversations.CONTENT_URI, id)
+            .buildUpon().appendQueryParameter(Messages.KEEP_GROUP, String.valueOf(keepGroup))
+            .build(), null, null) > 0);
     }
 
     /**
@@ -1636,7 +1644,7 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Threads.DRAFT, Threads.DRAFT);
         threadsProjectionMap.put(Threads.REQUEST_STATUS, Threads.REQUEST_STATUS);
         threadsProjectionMap.put(Groups.GROUP_JID, MyMessages.Groups.GROUP_JID);
-        threadsProjectionMap.put(MyMessages.Groups.SUBJECT, Groups.SUBJECT);
+        threadsProjectionMap.put(Groups.SUBJECT, Groups.SUBJECT);
 
         fulltextProjectionMap = new HashMap<String, String>();
         fulltextProjectionMap.put(Fulltext.THREAD_ID, Fulltext.THREAD_ID);

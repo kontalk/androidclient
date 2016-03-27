@@ -25,10 +25,11 @@ import android.content.Context;
 import android.database.Cursor;
 
 import org.kontalk.provider.MessagesProvider;
-import org.kontalk.provider.MyMessages;
-import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Groups;
+import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.MessagingNotification;
+import org.kontalk.util.Preferences;
 
 
 /**
@@ -156,7 +157,11 @@ public class Conversation {
     }
 
     public static void deleteFromCursor(Context context, Cursor cursor) {
-        MessagesProvider.deleteThread(context, cursor.getLong(COLUMN_ID));
+        String groupJid = cursor.getString(COLUMN_GROUP_JID);
+        String[] groupPeers = null;
+        if (groupJid != null)
+            groupPeers = loadGroupPeersInternal(context, groupJid);
+        deleteInternal(context, cursor.getLong(COLUMN_ID), groupJid, groupPeers);
     }
 
     private void loadContact() {
@@ -258,10 +263,28 @@ public class Conversation {
         mGroupPeers = null;
     }
 
+    public void delete() {
+        loadGroupPeers(false);
+        deleteInternal(mContext, mThreadId, mGroupJid, mGroupPeers);
+    }
+
+    private static void deleteInternal(Context context, long threadId, String groupJid, String[] groupPeers) {
+        boolean groupChat = groupJid != null;
+        MessagesProvider.deleteThread(context, threadId, groupChat);
+        if (groupChat) {
+            boolean encrypted = Preferences.getEncryptionEnabled(context);
+            MessageCenterService.leaveGroup(context, groupJid, groupPeers, encrypted);
+        }
+    }
+
     private void loadGroupPeers(boolean force) {
         if (mGroupJid != null && (mGroupPeers == null || force)) {
-            mGroupPeers = MessagesProvider.getGroupMembers(mContext, mGroupJid);
+            mGroupPeers = loadGroupPeersInternal(mContext, mGroupJid);
         }
+    }
+
+    private static String[] loadGroupPeersInternal(Context context, String groupJid) {
+        return MessagesProvider.getGroupMembers(context, groupJid);
     }
 
     public static void startQuery(AsyncQueryHandler handler, int token) {

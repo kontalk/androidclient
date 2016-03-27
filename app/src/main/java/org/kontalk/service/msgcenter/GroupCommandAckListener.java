@@ -18,19 +18,13 @@
 
 package org.kontalk.service.msgcenter;
 
-
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.packet.Stanza;
 
-import android.content.ContentUris;
-import android.content.ContentValues;
-import android.net.Uri;
-
 import org.kontalk.client.GroupExtension;
 import org.kontalk.client.KontalkGroupManager;
-import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Groups;
-import org.kontalk.provider.MyMessages.Messages;
+
 
 /**
  * Packet listener to handle acks for group command messages.
@@ -54,6 +48,11 @@ public class GroupCommandAckListener extends MessageCenterPacketListener {
         switch (type) {
             case SET:
                 // TODO clear pending subject or member add/remove
+                break;
+            case PART:
+                // delete group (members will cascade)
+                getContext().getContentResolver()
+                    .delete(Groups.getUri(mGroup.getJID()), null, null);
                 break;
         }
     }
