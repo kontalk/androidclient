@@ -26,18 +26,10 @@ package org.kontalk.data;
 public class GroupInfo {
     private final String mJid;
     private final String mSubject;
-    private final String[] mMembers;
-    private final String[] mAddMembers;
-    private final String[] mRemoveMembers;
-    private final String mPartMember;
 
-    public GroupInfo(String jid, String subject, String[] members, String[] addMembers, String[] removeMembers, String partMember) {
+    public GroupInfo(String jid, String subject) {
         mJid = jid;
         mSubject = subject;
-        mMembers = members;
-        mAddMembers = addMembers;
-        mRemoveMembers = removeMembers;
-        mPartMember = partMember;
     }
 
     public String getJid() {
@@ -46,22 +38,6 @@ public class GroupInfo {
 
     public String getSubject() {
         return mSubject;
-    }
-
-    public String[] getMembers() {
-        return mMembers;
-    }
-
-    public String[] getAddMembers() {
-        return mAddMembers;
-    }
-
-    public String[] getRemoveMembers() {
-        return mRemoveMembers;
-    }
-
-    public String getPartMember() {
-        return mPartMember;
     }
 
 }

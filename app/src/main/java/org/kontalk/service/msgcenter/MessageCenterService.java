@@ -116,7 +116,7 @@ import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
-import org.kontalk.message.GroupComponent;
+import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.CommonColumns;
@@ -1568,7 +1568,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // TODO shouldn't we pass security flags directly here??
             b.putBoolean("org.kontalk.message.encrypt", securityFlags != Coder.SECURITY_CLEARTEXT);
 
-            if (GroupComponent.MIME_TYPE.equals(bodyMime)) {
+            if (GroupCommandComponent.MIME_TYPE.equals(bodyMime)) {
                 int cmd = 0;
                 // use database conversion facility
                 String command = c.getString(3);
@@ -2163,31 +2163,33 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
         values.put(Messages.TIMESTAMP, System.currentTimeMillis());
 
-        GroupComponent group = msg.getComponent(GroupComponent.class);
+        GroupCommandComponent group = msg.getComponent(GroupCommandComponent.class);
         if (group != null) {
-            values.put(Groups.GROUP_JID, group.getContent().getJid());
+            values.put(Groups.GROUP_JID, group.getContent().getJID());
 
             String groupSubject = group.getContent().getSubject();
             if (groupSubject != null)
                 values.put(Groups.SUBJECT, groupSubject);
 
             // update group members first
-            String[] members = group.getContent().getMembers();
+            List<GroupExtension.Member> members = group.getContent().getMembers();
             if (members != null) {
                 ContentValues membersValues = new ContentValues();
-                for (String member : members) {
-                    // do not add ourselves
-                    if (Authenticator.isSelfJID(this, member))
+                for (GroupExtension.Member member : members) {
+                    // consider only normal members
+                    if (member.operation != GroupExtension.Member.Operation.NONE ||
+                            // do not add ourselves
+                            Authenticator.isSelfJID(this, member.jid))
                         continue;
 
                     // FIXME turn this into batch operations
-                    membersValues.put(Groups.PEER, member);
+                    membersValues.put(Groups.PEER, member.jid);
                     getContentResolver().insert(Groups
-                        .getMembersUri(group.getContent().getJid()), membersValues);
+                        .getMembersUri(group.getContent().getJID()), membersValues);
                 }
             }
 
-            // a user is leaving the group
+            /* a user is leaving the group
             String partMember = group.getContent().getPartMember();
             if (partMember != null) {
                 // remove member from group
@@ -2195,8 +2197,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     Groups.GROUP_JID+"=? AND " + Groups.PEER + "=?",
                     new String[] { group.getContent().getJid(), partMember });
             }
+            */
 
-            // FIXME same code as above (for getMembers())
+            /* FIXME same code as above (for getMembers())
             String[] added = group.getContent().getAddMembers();
             if (added != null && added.length > 0) {
                 ContentValues membersValues = new ContentValues();
@@ -2222,6 +2225,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         new String[] { group.getContent().getJid(), user });
                 }
             }
+            */
         }
 
         Uri msgUri = null;
@@ -2247,7 +2251,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // fire notification only if message was actually inserted to database
         // and the conversation is not open already
-        String paused = (group != null) ? group.getContent().getJid() : sender;
+        String paused = (group != null) ? group.getContent().getJID() : sender;
         if (msgUri != null && !MessagingNotification.isPaused(paused)) {
             // update notifications (delayed)
             MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
@@ -2484,7 +2488,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.packetId", packetId);
-        i.putExtra("org.kontalk.message.mime", GroupComponent.MIME_TYPE);
+        i.putExtra("org.kontalk.message.mime", GroupCommandComponent.MIME_TYPE);
         i.putExtra("org.kontalk.message.groupJid", groupJid);
         i.putExtra("org.kontalk.message.groupSubject", groupSubject);
         i.putExtra("org.kontalk.message.groupCommand", GROUP_COMMAND_CREATE);
@@ -2499,7 +2503,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.packetId", messageId());
-        i.putExtra("org.kontalk.message.mime", GroupComponent.MIME_TYPE);
+        i.putExtra("org.kontalk.message.mime", GroupCommandComponent.MIME_TYPE);
         i.putExtra("org.kontalk.message.groupJid", groupJid);
         i.putExtra("org.kontalk.message.groupCommand", GROUP_COMMAND_PART);
         i.putExtra("org.kontalk.message.to", to);

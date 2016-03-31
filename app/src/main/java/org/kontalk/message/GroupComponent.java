@@ -27,8 +27,6 @@ import org.kontalk.data.GroupInfo;
  */
 public class GroupComponent extends MessageComponent<GroupInfo> {
 
-    public static final String MIME_TYPE = "application/x-kontalk-group";
-
     public GroupComponent(GroupInfo content) {
         super(content, 0, false, 0);
     }

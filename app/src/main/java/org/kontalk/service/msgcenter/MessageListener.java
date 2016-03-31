@@ -33,7 +33,6 @@ import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
-import org.jxmpp.util.XmppStringUtils;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -96,13 +95,11 @@ class MessageListener extends MessageCenterPacketListener {
             GroupExtension ext = GroupExtension.from(packet);
             String groupJid = ext.getJID();
             String subject = ext.getSubject();
-            String[] members = flattenExistingMembers(ext);
-            String[] addMembers = flattenAddMembers(ext);
-            String[] removeMembers = flattenRemoveMembers(ext);
-            String partMember = (ext.getType() == GroupExtension.Type.PART) ?
-                XmppStringUtils.parseBareJid(packet.getFrom()) : null;
-            GroupInfo groupInfo = new GroupInfo(groupJid, subject, members, addMembers, removeMembers, partMember);
-            msg.addComponent(new GroupComponent(groupInfo));
+            if (ext.getType() == null || ext.getType() == GroupExtension.Type.NONE) {
+                GroupInfo groupInfo = new GroupInfo(groupJid, subject);
+                msg.addComponent(new GroupComponent(groupInfo));
+            }
+            // TODO non-null type (add GroupCommandComponent
         }
     }
 

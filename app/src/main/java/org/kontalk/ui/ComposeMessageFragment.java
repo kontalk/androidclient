@@ -65,7 +65,7 @@ import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.CompositeMessage;
-import org.kontalk.message.GroupComponent;
+import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Threads;
@@ -507,7 +507,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         values.put(MyMessages.Messages.THREAD_ID, threadId);
         values.put(MyMessages.Messages.MESSAGE_ID, msgId);
         values.put(MyMessages.Messages.PEER, groupJid);
-        values.put(MyMessages.Messages.BODY_MIME, GroupComponent.MIME_TYPE);
+        values.put(MyMessages.Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
         values.put(MyMessages.Messages.BODY_CONTENT, GroupExtension.Type.CREATE.toString());
         values.put(MyMessages.Messages.BODY_LENGTH, 0);
         values.put(MyMessages.Messages.UNREAD, false);
