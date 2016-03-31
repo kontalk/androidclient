@@ -388,12 +388,13 @@ public abstract class MediaStorage {
             return null;
         }
 
-        Bitmap scaledBitmap;
+        Bitmap scaledBitmap = null;
         try {
             scaledBitmap = Bitmap.createScaledBitmap(bitmap, w, h, true);
         }
         finally {
-            bitmap.recycle();
+            if (scaledBitmap != bitmap)
+                bitmap.recycle();
         }
 
         // check for rotation data
@@ -417,6 +418,8 @@ public abstract class MediaStorage {
             catch (Exception e) {
                 // ignored
             }
+
+            scaledBitmap.recycle();
         }
     }
 
