@@ -33,7 +33,7 @@ android {
 
     defaultConfig {
         applicationId "org.kontalk"
-        versionCode 97
+        versionCode 98
         versionName "3.1.4-preview"
         targetSdkVersion 22
         minSdkVersion 9
