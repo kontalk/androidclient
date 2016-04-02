@@ -514,17 +514,8 @@ public class Contact {
     private static byte[] loadAvatarData(Context context, Uri contactUri) {
         byte[] data = null;
 
-        Uri uri;
-        try {
-            long cid = ContentUris.parseId(contactUri);
-            uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, cid);
-        }
-        catch (Exception e) {
-            uri = contactUri;
-        }
-
         InputStream avatarDataStream = Contacts.openContactPhotoInputStream(
-                    context.getContentResolver(), uri);
+                    context.getContentResolver(), contactUri);
         if (avatarDataStream != null) {
             try {
                     data = new byte[avatarDataStream.available()];
