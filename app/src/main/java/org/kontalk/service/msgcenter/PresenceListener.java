@@ -133,7 +133,7 @@ class PresenceListener extends MessageCenterPacketListener {
             }
             */
 
-            else {
+            else if (p.getType() == Presence.Type.available || p.getType() == Presence.Type.unavailable) {
                 if (p.getType() == Presence.Type.unavailable) {
                     Contact.clearState(p.getFrom());
                 }
