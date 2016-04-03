@@ -295,6 +295,12 @@ public class CompositeMessage {
             String mime = c.getString(COLUMN_BODY_MIME);
 
             if (body != null) {
+                // remove trailing zero
+                if (body.length > 0 && body[body.length - 1] == '\0') {
+                    byte[] nulBody = new byte[body.length - 1];
+                    System.arraycopy(body, 0, nulBody, 0, nulBody.length);
+                    body = nulBody;
+                }
 
                 // text data
                 if (TextComponent.supportsMimeType(mime)) {
