@@ -18,8 +18,10 @@
 
 package org.kontalk.util;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -66,7 +68,7 @@ public final class SystemUtils {
         if (m.find() && m.groupCount() > 0) {
             try {
                 int versionCode = Integer.parseInt(m.group(1));
-                int currentVersion = getVersionCode(context);
+                int currentVersion = getVersionCode();
                 return versionCode < currentVersion;
             }
             catch (Exception ignored) {
@@ -78,7 +80,7 @@ public final class SystemUtils {
         return true;
     }
 
-    public static int getVersionCode(Context context) {
+    public static int getVersionCode() {
         return BuildConfig.VERSION_CODE;
     }
 
@@ -278,6 +280,27 @@ public final class SystemUtils {
         }
 
         return clone;
+    }
+
+    /** Instead of importing the whole commons-io :) */
+    public static long copy(final InputStream input, final OutputStream output) throws IOException {
+        byte[] buffer = new byte[4096];
+        long count = 0;
+        int n;
+        while (-1 != (n = input.read(buffer))) {
+            output.write(buffer, 0, n);
+            count += n;
+        }
+        return count;
+    }
+
+    /** Closes the given stream, ignoring any errors. */
+    public static void closeStream(Closeable stream) {
+        try {
+            stream.close();
+        }
+        catch (Exception ignored) {
+        }
     }
 
 }

@@ -19,10 +19,10 @@
 package org.kontalk.util;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URLConnection;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -38,6 +38,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
@@ -81,7 +82,6 @@ public abstract class MediaStorage {
     public static final int THUMBNAIL_MIME_COMPRESSION = 60;
 
     public static final String COMPRESS_MIME = "image/jpeg";
-    private static final String COMPRESS_FILENAME_FORMAT = "compress_%d.jpg";
     private static final int COMPRESSION_QUALITY = 85;
 
     public static boolean isExternalStorageAvailable() {
@@ -162,28 +162,76 @@ public abstract class MediaStorage {
         thumbnail.recycle();
     }
 
+    /**
+     * Tries various methods for obtaining the rotation of the image.
+     * @return a matrix to rotate the image (if any)
+     */
+    private static Matrix getRotation(Context context, Uri media) throws IOException {
+        // method 1: query the media storage
+        Cursor cursor = context.getContentResolver().query(media,
+            new String[] { MediaStore.Images.ImageColumns.ORIENTATION }, null, null, null);
+
+        if (cursor != null) {
+            cursor.moveToFirst();
+            int orientation = cursor.getInt(0);
+            cursor.close();
+
+            if (orientation != 0) {
+                Matrix m = new Matrix();
+                m.postRotate(orientation);
+
+                return m;
+            }
+        }
+
+        // method 2: write media contents to a temporary file and run ExifInterface
+        InputStream in = context.getContentResolver().openInputStream(media);
+        OutputStream out = null;
+        File tmp = null;
+        try {
+            tmp = File.createTempFile("rotation", null, context.getCacheDir());
+            out = new FileOutputStream(tmp);
+
+            SystemUtils.copy(in, out);
+            // flush the file
+            out.close();
+
+            ExifInterface exif = new ExifInterface(tmp.toString());
+            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 1);
+            Matrix matrix = new Matrix();
+            switch (orientation) {
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    matrix.postRotate(90);
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    matrix.postRotate(180);
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    matrix.postRotate(270);
+                    break;
+                default:
+                    return null;
+            }
+
+            return matrix;
+        }
+        finally {
+            tmp.delete();
+            SystemUtils.closeStream(in);
+            SystemUtils.closeStream(out);
+        }
+    }
+
     public static Bitmap bitmapOrientation(Context context, Uri media, Bitmap bitmap) {
         // check if we have to (and can) rotate the thumbnail
         try {
-            Cursor cursor = context.getContentResolver().query(media,
-                new String[] { MediaStore.Images.ImageColumns.ORIENTATION }, null, null, null);
-
-            if (cursor != null) {
-                cursor.moveToFirst();
-                int orientation = cursor.getInt(0);
-                cursor.close();
-
-                if (orientation != 0) {
-                    Matrix m = new Matrix();
-                    m.postRotate(orientation);
-
-                    Bitmap rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
-                    // createBitmap might return the input bitmap which we don't want to recycle
-                    if (rotated != bitmap)
-                        bitmap.recycle();
-                    bitmap = rotated;
-
-                }
+            Matrix m = getRotation(context, media);
+            if (m != null) {
+                Bitmap rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
+                // createBitmap might return the input bitmap which we don't want to recycle
+                if (rotated != bitmap)
+                    bitmap.recycle();
+                bitmap = rotated;
             }
         }
         catch (Exception e) {
@@ -230,15 +278,28 @@ public abstract class MediaStorage {
         }
     }
 
-    /** Creates a temporary JPEG file. */
-    public static File getOutgoingImageFile() throws IOException {
-        return getOutgoingImageFile(new Date());
+    /** Creates a temporary JPEG file for a photo (DCIM). */
+    public static File getOutgoingPhotoFile() throws IOException {
+        return getOutgoingPhotoFile(new Date());
     }
 
-    private static File getOutgoingImageFile(Date date) throws IOException {
-        createMedia(DCIM_ROOT);
+    private static File getOutgoingPhotoFile(Date date) throws IOException {
+        return createImageFile(DCIM_ROOT, date);
+    }
+
+    /** Creates a temporary JPEG file for a picture (Pictures). */
+    public static File getOutgoingPictureFile() throws IOException {
+        return getOutgoingPictureFile(new Date());
+    }
+
+    private static File getOutgoingPictureFile(Date date) throws IOException {
+        return createImageFile(PICTURES_ROOT, date);
+    }
+
+    private static File createImageFile(File path, Date date) throws IOException {
+        createMedia(path);
         String timeStamp = sDateFormat.format(date);
-        File f = new File(DCIM_ROOT, "IMG_" + timeStamp + ".jpg");
+        File f = new File(path, "IMG_" + timeStamp + ".jpg");
         f.createNewFile();
         return f;
     }
@@ -310,13 +371,12 @@ public abstract class MediaStorage {
         return mime;
     }
 
-    public static File resizeImage(Context context, Uri uri, long msgId, int maxSize)
-        throws FileNotFoundException {
-        return resizeImage(context, uri, msgId, maxSize, maxSize, COMPRESSION_QUALITY);
+    public static File resizeImage(Context context, Uri uri, int maxSize) throws IOException {
+        return resizeImage(context, uri, maxSize, maxSize, COMPRESSION_QUALITY);
     }
 
-    public static File resizeImage(Context context, Uri uri, long msgId, int maxWidth, int maxHeight, int quality)
-        throws FileNotFoundException {
+    public static File resizeImage(Context context, Uri uri, int maxWidth, int maxHeight, int quality)
+        throws IOException {
 
         final int MAX_IMAGE_SIZE = 1200000; // 1.2MP
 
@@ -400,8 +460,7 @@ public abstract class MediaStorage {
         // check for rotation data
         scaledBitmap = bitmapOrientation(context, uri, scaledBitmap);
 
-        String filename = String.format(COMPRESS_FILENAME_FORMAT, msgId);
-        final File compressedFile = new File(context.getCacheDir(), filename);
+        final File compressedFile = getOutgoingPictureFile();
 
         FileOutputStream stream = null;
 

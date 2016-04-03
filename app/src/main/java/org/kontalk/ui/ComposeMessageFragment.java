@@ -727,7 +727,12 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                         filename, true);
             }
 
-            length = MediaStorage.getLength(getActivity(), uri);
+            if (compress > 0) {
+                File compressed = MediaStorage.resizeImage(getContext(), uri, compress);
+                length = compressed.length();
+                // use the compressed image from now on
+                uri = Uri.fromFile(compressed);
+            }
 
             // save to database
             ContentValues values = new ContentValues();
@@ -1149,7 +1154,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                 packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
             if (list.size() <= 0) throw new UnsupportedOperationException();
 
-            mCurrentPhoto = MediaStorage.getOutgoingImageFile();
+            mCurrentPhoto = MediaStorage.getOutgoingPhotoFile();
             Uri uri = Uri.fromFile(mCurrentPhoto);
             Intent take = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             take.putExtra(MediaStore.EXTRA_OUTPUT, uri);
