@@ -68,7 +68,7 @@ public final class SystemUtils {
         if (m.find() && m.groupCount() > 0) {
             try {
                 int versionCode = Integer.parseInt(m.group(1));
-                int currentVersion = getVersionCode(context);
+                int currentVersion = getVersionCode();
                 return versionCode < currentVersion;
             }
             catch (Exception ignored) {
@@ -80,7 +80,7 @@ public final class SystemUtils {
         return true;
     }
 
-    public static int getVersionCode(Context context) {
+    public static int getVersionCode() {
         return BuildConfig.VERSION_CODE;
     }
 

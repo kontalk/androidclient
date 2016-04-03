@@ -206,7 +206,7 @@ public class GcmPushService implements IPushService {
         // since the existing regID is not guaranteed to work with the new
         // app version.
         int registeredVersion = prefs.getInt(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
-        int currentVersion = SystemUtils.getVersionCode(mContext);
+        int currentVersion = SystemUtils.getVersionCode();
         if (registeredVersion != currentVersion) {
             Log.i(TAG, "App version changed.");
             return "";
@@ -268,7 +268,7 @@ public class GcmPushService implements IPushService {
 
     private void storeRegistrationId(String regId) {
         final SharedPreferences prefs = getGCMPreferences(mContext);
-        int appVersion = SystemUtils.getVersionCode(mContext);
+        int appVersion = SystemUtils.getVersionCode();
         prefs.edit()
             .putString(PROPERTY_REG_ID, regId)
             .putInt(PROPERTY_APP_VERSION, appVersion)
