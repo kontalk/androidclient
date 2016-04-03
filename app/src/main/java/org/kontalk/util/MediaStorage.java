@@ -486,6 +486,22 @@ public abstract class MediaStorage {
         }
     }
 
+    public static File copyOutgoingMedia(Context context, Uri media) throws IOException {
+        final File outFile = getOutgoingPictureFile();
+        InputStream in = context.getContentResolver().openInputStream(media);
+        OutputStream out = null;
+        try {
+            out = new FileOutputStream(outFile);
+            SystemUtils.copy(in, out);
+            return outFile;
+        }
+        finally {
+            SystemUtils.closeStream(in);
+            SystemUtils.closeStream(out);
+        }
+
+    }
+
     /**
      * Returns true if the running platform is using SAF, therefore we'll need
      * to persist permissions when asking for media files.

@@ -733,6 +733,11 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                 // use the compressed image from now on
                 uri = Uri.fromFile(compressed);
             }
+            else {
+                File copy = MediaStorage.copyOutgoingMedia(getContext(), uri);
+                length = copy.length();
+                uri = Uri.fromFile(copy);
+            }
 
             // save to database
             ContentValues values = new ContentValues();
