@@ -1886,7 +1886,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 i.putExtra(UploadService.EXTRA_MIME, mime);
                 i.putExtra(UploadService.EXTRA_ENCRYPT, encrypt);
                 i.putExtra(UploadService.EXTRA_PREVIEW_PATH, previewPath);
-                i.putExtra(UploadService.EXTRA_COMPRESS, compress);
                 i.putExtra(UploadService.EXTRA_USER, to);
                 startService(i);
             }

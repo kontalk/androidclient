@@ -81,8 +81,6 @@ public class UploadService extends IntentService implements ProgressListener {
     public static final String EXTRA_PREVIEW_PATH = "org.kontalk.upload.PREVIEW_PATH";
     /** Encryption flag. */
     public static final String EXTRA_ENCRYPT = "org.kontalk.upload.ENCRYPT";
-    /** Compression ratio. */
-    public static final String EXTRA_COMPRESS = "org.kontalk.upload.COMPRESS";
     // Intent data is the local file Uri
 
     private ProgressNotificationBuilder mNotificationBuilder;
@@ -97,7 +95,6 @@ public class UploadService extends IntentService implements ProgressListener {
     private long mMessageId;
     private UploadConnection mConn;
     private boolean mCanceled;
-    private File mCompressed;
 
     public UploadService() {
         super(UploadService.class.getSimpleName());
@@ -150,8 +147,6 @@ public class UploadService extends IntentService implements ProgressListener {
         String previewPath = intent.getStringExtra(EXTRA_PREVIEW_PATH);
         // encryption flag
         boolean encrypt = intent.getBooleanExtra(EXTRA_ENCRYPT, false);
-        // compress ratio
-        int compress = intent.getIntExtra(EXTRA_COMPRESS, 0);
 
         // check if upload has already been queued
         if (queue.get(filename) != null) return;
@@ -165,25 +160,6 @@ public class UploadService extends IntentService implements ProgressListener {
             startForeground(0);
 
             mCanceled = false;
-
-            // compress data if needed
-            if (compress > 0) {
-                if (mime.startsWith("image/")) {
-                    try {
-                        mCompressed = MediaStorage
-                            .resizeImage(this, file, databaseId, compress);
-                        mTotalBytes = length = mCompressed.length();
-                        // update mime and file with the new compressed image
-                        file = Uri.fromFile(mCompressed);
-                        mime = MediaStorage.COMPRESS_MIME;
-                    }
-                    catch (Exception e) {
-                        Log.w(TAG, "error compressing image", e);
-                        // what to do now? Should we warn the user or just go on?
-                        // or maybe just a Toast notification?
-                    }
-                }
-            }
 
             if (mConn == null) {
                 PersonalKey key = ((Kontalk) getApplication()).getPersonalKey();
@@ -215,14 +191,6 @@ public class UploadService extends IntentService implements ProgressListener {
         finally {
             queue.remove(filename);
             mMessageId = 0;
-            try {
-                // delete compressed file (if any)
-                mCompressed.delete();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-            mCompressed = null;
         }
     }
 
