@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URLConnection;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -37,6 +38,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
@@ -160,28 +162,76 @@ public abstract class MediaStorage {
         thumbnail.recycle();
     }
 
+    /**
+     * Tries various methods for obtaining the rotation of the image.
+     * @return a matrix to rotate the image (if any)
+     */
+    private static Matrix getRotation(Context context, Uri media) throws IOException {
+        // method 1: query the media storage
+        Cursor cursor = context.getContentResolver().query(media,
+            new String[] { MediaStore.Images.ImageColumns.ORIENTATION }, null, null, null);
+
+        if (cursor != null) {
+            cursor.moveToFirst();
+            int orientation = cursor.getInt(0);
+            cursor.close();
+
+            if (orientation != 0) {
+                Matrix m = new Matrix();
+                m.postRotate(orientation);
+
+                return m;
+            }
+        }
+
+        // method 2: write media contents to a temporary file and run ExifInterface
+        InputStream in = context.getContentResolver().openInputStream(media);
+        OutputStream out = null;
+        File tmp = null;
+        try {
+            tmp = File.createTempFile("rotation", null, context.getCacheDir());
+            out = new FileOutputStream(tmp);
+
+            SystemUtils.copy(in, out);
+            // flush the file
+            out.close();
+
+            ExifInterface exif = new ExifInterface(tmp.toString());
+            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 1);
+            Matrix matrix = new Matrix();
+            switch (orientation) {
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    matrix.postRotate(90);
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    matrix.postRotate(180);
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    matrix.postRotate(270);
+                    break;
+                default:
+                    return null;
+            }
+
+            return matrix;
+        }
+        finally {
+            tmp.delete();
+            SystemUtils.closeStream(in);
+            SystemUtils.closeStream(out);
+        }
+    }
+
     public static Bitmap bitmapOrientation(Context context, Uri media, Bitmap bitmap) {
         // check if we have to (and can) rotate the thumbnail
         try {
-            Cursor cursor = context.getContentResolver().query(media,
-                new String[] { MediaStore.Images.ImageColumns.ORIENTATION }, null, null, null);
-
-            if (cursor != null) {
-                cursor.moveToFirst();
-                int orientation = cursor.getInt(0);
-                cursor.close();
-
-                if (orientation != 0) {
-                    Matrix m = new Matrix();
-                    m.postRotate(orientation);
-
-                    Bitmap rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
-                    // createBitmap might return the input bitmap which we don't want to recycle
-                    if (rotated != bitmap)
-                        bitmap.recycle();
-                    bitmap = rotated;
-
-                }
+            Matrix m = getRotation(context, media);
+            if (m != null) {
+                Bitmap rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
+                // createBitmap might return the input bitmap which we don't want to recycle
+                if (rotated != bitmap)
+                    bitmap.recycle();
+                bitmap = rotated;
             }
         }
         catch (Exception e) {

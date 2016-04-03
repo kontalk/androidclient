@@ -18,8 +18,10 @@
 
 package org.kontalk.util;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -278,6 +280,27 @@ public final class SystemUtils {
         }
 
         return clone;
+    }
+
+    /** Instead of importing the whole commons-io :) */
+    public static long copy(final InputStream input, final OutputStream output) throws IOException {
+        byte[] buffer = new byte[4096];
+        long count = 0;
+        int n;
+        while (-1 != (n = input.read(buffer))) {
+            output.write(buffer, 0, n);
+            count += n;
+        }
+        return count;
+    }
+
+    /** Closes the given stream, ignoring any errors. */
+    public static void closeStream(Closeable stream) {
+        try {
+            stream.close();
+        }
+        catch (Exception ignored) {
+        }
     }
 
 }
