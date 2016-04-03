@@ -1030,7 +1030,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
             if (list.size() <= 0) throw new UnsupportedOperationException();
 
-            mCurrentPhoto = MediaStorage.getOutgoingImageFile();
+            mCurrentPhoto = MediaStorage.getOutgoingPhotoFile();
             Uri uri = Uri.fromFile(mCurrentPhoto);
             Intent take = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             take.putExtra(MediaStore.EXTRA_OUTPUT, uri);
