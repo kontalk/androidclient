@@ -68,6 +68,9 @@ public abstract class MediaStorage {
     private static final File PICTURES_ROOT = new File(Environment
         .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
         "Kontalk");
+    private static final File PICTURES_SENT_ROOT = new File(new File(Environment
+        .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+        "Kontalk"), "Sent");
     private static final File AUDIO_ROOT = new File(Environment
         .getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
         "Kontalk");
@@ -293,7 +296,8 @@ public abstract class MediaStorage {
     }
 
     private static File getOutgoingPictureFile(Date date) throws IOException {
-        return createImageFile(PICTURES_ROOT, date);
+        createNoMedia(PICTURES_SENT_ROOT);
+        return createImageFile(PICTURES_SENT_ROOT, date);
     }
 
     private static File createImageFile(File path, Date date) throws IOException {
@@ -480,6 +484,22 @@ public abstract class MediaStorage {
 
             scaledBitmap.recycle();
         }
+    }
+
+    public static File copyOutgoingMedia(Context context, Uri media) throws IOException {
+        final File outFile = getOutgoingPictureFile();
+        InputStream in = context.getContentResolver().openInputStream(media);
+        OutputStream out = null;
+        try {
+            out = new FileOutputStream(outFile);
+            SystemUtils.copy(in, out);
+            return outFile;
+        }
+        finally {
+            SystemUtils.closeStream(in);
+            SystemUtils.closeStream(out);
+        }
+
     }
 
     /**
