@@ -93,7 +93,7 @@
     <string name="size_label">"اندازه: "</string>
     <string name="size_unknown">(نامشخص)</string>
     <string name="title_file_info">اطلاعات پرونده</string>
-    <string name="pref_title_restart_msgcenter">اگر کنتاک به درستی کار نمی کند از این گزینه استفاده کنید.</string>
+    <string name="pref_title_restart_msgcenter">اگر کنتاک به درستی کار نمی کند از این گزینه استفاده کنید</string>
     <string name="pref_idle_time">جدا شدن هنگام بی‌کاری</string>
     <string name="pref_title_idle_time">مدت انتظار پیش از جداشدن به دلیل عدم فعالیت</string>
     <string name="pref_wakeup_time">اتصال دوباره به کارساز</string>
@@ -102,7 +102,7 @@
     <string name="pref_regenerate_keypair">بازسازی کلید شخصی</string>
     <string name="menu_manual_verification">پیش از این یک کد داشته‌اید؟</string>
     <string name="pref_restart_msgcenter">باز‌آغازی مرکز پیام</string>
-    <string name="pref_title_regenerate_keypair">در صورتی که کلید شخصی‌تان به خطر افتاده است از این استفاده کنید.</string>
+    <string name="pref_title_regenerate_keypair">در صورتی که کلید شخصی‌تان به خطر افتاده است از این استفاده کنید</string>
     <string name="pref_regenerate_keypair_confirm">جفت‌کلیدی تازه تولید خواهد شد و به حساب‌تان اختصاص داده خواهد شد.</string>
     <string name="contacts_list_title">مخاطبی را برگزینید</string>
     <string name="pref_messaging_settings">تنظیمات پیام‌رسانی</string>
