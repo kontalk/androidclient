@@ -7,8 +7,8 @@
 
 ### Fixed
 - Fix outgoing images that could not be opened in gallery (#539)
-- Fix table issue with text entry (#583)
-- Fix availablea/away state (#637)
+- Fix tablet issue with text entry (#583)
+- Fix available/away state (#637)
 - Fix scroll-to-result when reloading in a search (#641)
 - Fix possible crash during registration (#643)
 - Fix presence handling (#644)
