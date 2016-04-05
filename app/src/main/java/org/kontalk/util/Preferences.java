@@ -241,6 +241,16 @@ public final class Preferences {
             .valueOf(context.getResources().getInteger(R.integer.pref_default_image_resize))));
     }
 
+    /** Returns true if, as per settings, we can autodownload a file of the given size. */
+    public static boolean canAutodownloadMedia(Context context, long size) {
+        int threshold = Integer.parseInt(getString(context, "pref_media_autodownload_threshold", String
+            .valueOf(context.getResources().getInteger(R.integer.pref_default_media_autodownload_threshold))));
+        String autodownload = getString(context, "pref_media_autodownload",
+            context.getResources().getString(R.string.pref_default_media_autodownload));
+        return (size / 1024) < threshold || "always".equals(autodownload) ||
+            ("wifi".equals(autodownload) && SystemUtils.isOnWifi(context));
+    }
+
     public static boolean setLastCountryCode(Context context, int countryCode) {
         return sPreferences.edit()
             .putInt("pref_countrycode", countryCode)

@@ -1024,14 +1024,11 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                 .getComponent(AttachmentComponent.class);
 
         if (attachment != null && attachment.getFetchUrl() != null) {
-            Intent i = new Intent(getActivity(), DownloadService.class);
-            i.setAction(DownloadService.ACTION_DOWNLOAD_URL);
-            i.putExtra(CompositeMessage.MSG_ID, msg.getDatabaseId());
-            i.putExtra(CompositeMessage.MSG_SENDER, msg.getSender());
-            i.putExtra(CompositeMessage.MSG_TIMESTAMP, msg.getTimestamp());
-            i.putExtra(CompositeMessage.MSG_ENCRYPTED, attachment.getSecurityFlags() != Coder.SECURITY_CLEARTEXT);
-            i.setData(Uri.parse(attachment.getFetchUrl()));
-            getActivity().startService(i);
+            DownloadService.start(getContext(), msg.getDatabaseId(),
+                msg.getSender(),
+                msg.getTimestamp(),
+                attachment.getSecurityFlags() != Coder.SECURITY_CLEARTEXT,
+                attachment.getFetchUrl());
         }
         else {
             // corrupted message :(
