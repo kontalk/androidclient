@@ -26,10 +26,12 @@ package org.kontalk.data;
 public class GroupInfo {
     private final String mJid;
     private final String mSubject;
+    private final String mType;
 
-    public GroupInfo(String jid, String subject) {
+    public GroupInfo(String jid, String subject, String type) {
         mJid = jid;
         mSubject = subject;
+        mType = type;
     }
 
     public String getJid() {
@@ -40,4 +42,7 @@ public class GroupInfo {
         return mSubject;
     }
 
+    public String getType() {
+        return mType;
+    }
 }

@@ -36,7 +36,7 @@ import android.os.Parcelable;
 import org.kontalk.client.GroupExtension;
 import org.kontalk.data.GroupInfo;
 import org.kontalk.provider.MessagesProvider;
-import org.kontalk.provider.MyMessages;
+import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.util.MediaStorage;
@@ -81,8 +81,9 @@ public class CompositeMessage {
         Messages.ATTACHMENT_LENGTH,
         Messages.ATTACHMENT_ENCRYPTED,
         Messages.ATTACHMENT_SECURITY_FLAGS,
-        MyMessages.Groups.GROUP_JID,
-        MyMessages.Groups.SUBJECT,
+        Groups.GROUP_JID,
+        Groups.SUBJECT,
+        Groups.GROUP_TYPE,
     };
 
     // these indexes matches MESSAGE_LIST_PROJECTION
@@ -108,6 +109,7 @@ public class CompositeMessage {
     public static final int COLUMN_ATTACHMENT_SECURITY_FLAGS = 19;
     public static final int COLUMN_GROUP_JID = 20;
     public static final int COLUMN_GROUP_SUBJECT = 21;
+    public static final int COLUMN_GROUP_TYPE = 22;
 
     public static final String MSG_ID = "org.kontalk.message.id";
     public static final String MSG_SENDER = "org.kontalk.message.sender";
@@ -307,6 +309,7 @@ public class CompositeMessage {
             String mime = c.getString(COLUMN_BODY_MIME);
             String groupJid = c.getString(COLUMN_GROUP_JID);
             String groupSubject = c.getString(COLUMN_GROUP_SUBJECT);
+            String groupType = c.getString(COLUMN_GROUP_TYPE);
 
             if (body != null) {
                 // remove trailing zero
@@ -328,14 +331,13 @@ public class CompositeMessage {
                     String groupOwner = XmppStringUtils.parseDomain(groupJid);
                     GroupExtension ext = null;
 
-                    GroupExtension.Type command = GroupExtension.Type
-                        .fromString(new String(body));
-                    if (command == GroupExtension.Type.CREATE) {
+                    String groupCommand = new String(body);
+                    if (GroupCommandComponent.COMMAND_CREATE.equals(groupCommand)) {
                         String[] members = MessagesProvider.getGroupMembers(mContext, groupJid);
-                        ext = new GroupExtension(groupId, groupOwner, command,
+                        ext = new GroupExtension(groupId, groupOwner, GroupExtension.Type.CREATE,
                             groupSubject, GroupCommandComponent.membersFromJIDs(members));
                     }
-                    else if (command == GroupExtension.Type.PART) {
+                    else if (GroupCommandComponent.COMMAND_PART.equals(groupCommand)) {
                         ext = new GroupExtension(groupId, groupOwner, GroupExtension.Type.PART);
                     }
                     // TODO
@@ -395,7 +397,7 @@ public class CompositeMessage {
 
             // group information
             if (groupJid != null) {
-                GroupInfo groupInfo = new GroupInfo(groupJid, groupSubject);
+                GroupInfo groupInfo = new GroupInfo(groupJid, groupSubject, groupType);
                 addComponent(new GroupComponent(groupInfo));
             }
 

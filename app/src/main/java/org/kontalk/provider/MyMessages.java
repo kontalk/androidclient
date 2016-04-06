@@ -201,6 +201,7 @@ public final class MyMessages {
         public static final String GROUP_JID = "group_jid";
         public static final String PEER = "group_" + CommonColumns.PEER;
         public static final String THREAD_ID = Messages.THREAD_ID;
+        public static final String GROUP_TYPE = "group_type";
         public static final String SUBJECT = "subject";
         /**
          * Status used for members. It's set on request and cleared back to 0

@@ -24,6 +24,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 
+import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Threads;
@@ -52,6 +53,7 @@ public class Conversation {
         Threads.REQUEST_STATUS,
         Groups.GROUP_JID,
         Groups.SUBJECT,
+        Groups.GROUP_TYPE,
     };
 
     private static final int COLUMN_ID = 0;
@@ -67,6 +69,7 @@ public class Conversation {
     private static final int COLUMN_REQUEST_STATUS = 10;
     private static final int COLUMN_GROUP_JID = 11;
     private static final int COLUMN_GROUP_SUBJECT = 12;
+    private static final int COLUMN_GROUP_TYPE = 13;
 
     private final Context mContext;
 
@@ -90,6 +93,7 @@ public class Conversation {
     private String mGroupJid;
     private String[] mGroupPeers;
     private String mGroupSubject;
+    private String mGroupType;
 
     private Conversation(Context context) {
         mContext = context;
@@ -115,6 +119,7 @@ public class Conversation {
 
             mGroupJid = c.getString(COLUMN_GROUP_JID);
             mGroupSubject = c.getString(COLUMN_GROUP_SUBJECT);
+            mGroupType = c.getString(COLUMN_GROUP_TYPE);
             // group peers are loaded on demand
 
             loadContact();
@@ -325,12 +330,14 @@ public class Conversation {
 
         values.put(Groups.THREAD_ID, threadId);
         values.put(Groups.SUBJECT, subject);
+        values.put(Groups.GROUP_TYPE, GroupCommandComponent.GROUP_TYPE);
         context.getContentResolver().insert(Groups.CONTENT_URI, values);
 
         // remove values not for members table
         values.remove(Groups.GROUP_JID);
         values.remove(Groups.THREAD_ID);
         values.remove(Groups.SUBJECT);
+        values.remove(Groups.GROUP_TYPE);
 
         // insert group members
         for (String member : members) {

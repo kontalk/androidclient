@@ -23,6 +23,7 @@ import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.util.MessageUtils;
@@ -138,7 +139,13 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
             String source = (draft != null) ? draft : conv.getSubject();
 
             if (source != null) {
-                text = source;
+                if (GroupCommandComponent.supportsMimeType(conv.getMime())) {
+                    // TODO italic
+                    text = GroupCommandComponent.getTextContent(getContext(), conv.getSubject());
+                }
+                else {
+                    text = source;
+                }
             }
 
             else if (conv.isEncrypted()) {

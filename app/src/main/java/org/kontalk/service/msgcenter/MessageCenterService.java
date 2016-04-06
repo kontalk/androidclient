@@ -1577,10 +1577,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 int cmd = 0;
                 // use database conversion facility
                 String command = c.getString(3);
-                if (command.equals(GroupExtension.Type.CREATE.toString())) {
+                if (command.equals(GroupCommandComponent.COMMAND_CREATE)) {
                     cmd = GROUP_COMMAND_CREATE;
                 }
-                else if (command.equals(GroupExtension.Type.PART.toString())) {
+                else if (command.equals(GroupCommandComponent.COMMAND_PART)) {
                     cmd = GROUP_COMMAND_PART;
                 }
                 // TODO delete

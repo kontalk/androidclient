@@ -87,6 +87,7 @@ import org.kontalk.data.Conversation;
 import org.kontalk.message.AttachmentComponent;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.message.MessageComponent;
 import org.kontalk.message.TextComponent;
@@ -351,6 +352,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     @Override
     public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+        MenuItem deleteMenu = menu.findItem(R.id.menu_delete);
         MenuItem retryMenu = menu.findItem(R.id.menu_retry);
         MenuItem shareMenu = menu.findItem(R.id.menu_share);
         MenuItem copyTextMenu = menu.findItem(R.id.menu_copy_text);
@@ -360,6 +362,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         MenuItem cancelDlMenu = menu.findItem(R.id.menu_cancel_download);
 
         // initial status
+        deleteMenu.setVisible(true);
         retryMenu.setVisible(false);
         shareMenu.setVisible(false);
         copyTextMenu.setVisible(false);
@@ -371,6 +374,11 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         boolean singleItem = (mCheckedItemCount == 1);
         if (singleItem) {
             CompositeMessage msg = getCheckedItem();
+
+            // group command can't be deleted
+            if (msg.hasComponent(GroupCommandComponent.class)) {
+                deleteMenu.setVisible(false);
+            }
 
             // message waiting for user review or not delivered
             if (msg.getStatus() == Messages.STATUS_PENDING || msg.getStatus() == Messages.STATUS_NOTDELIVERED) {
@@ -540,8 +548,12 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 public void onClick(DialogInterface dialog, int which) {
                     Context ctx = getActivity();
                     for (int i = 0, c = getListView().getCount()+getListView().getHeaderViewsCount(); i < c; ++i) {
-                        if (checked.get(i))
-                            CompositeMessage.deleteFromCursor(ctx, (Cursor) getListView().getItemAtPosition(i));
+                        if (checked.get(i)) {
+                            Cursor cursor = (Cursor) getListView().getItemAtPosition(i);
+                            // skip group command messages
+                            if (!GroupCommandComponent.isCursor(cursor))
+                                CompositeMessage.deleteFromCursor(ctx, cursor);
+                        }
                     }
                     mListAdapter.notifyDataSetChanged();
                 }

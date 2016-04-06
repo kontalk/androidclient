@@ -59,7 +59,6 @@ import android.widget.Toast;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.GroupExtension;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
@@ -508,7 +507,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         values.put(MyMessages.Messages.MESSAGE_ID, msgId);
         values.put(MyMessages.Messages.PEER, groupJid);
         values.put(MyMessages.Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
-        values.put(MyMessages.Messages.BODY_CONTENT, GroupExtension.Type.CREATE.toString());
+        values.put(MyMessages.Messages.BODY_CONTENT, GroupCommandComponent.COMMAND_CREATE.getBytes());
         values.put(MyMessages.Messages.BODY_LENGTH, 0);
         values.put(MyMessages.Messages.UNREAD, false);
         values.put(MyMessages.Messages.DIRECTION, MyMessages.Messages.DIRECTION_OUT);

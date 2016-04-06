@@ -56,6 +56,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.data.GroupInfo;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.GroupComponent;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.message.MessageComponent;
@@ -96,7 +97,7 @@ class MessageListener extends MessageCenterPacketListener {
             String groupJid = ext.getJID();
             String subject = ext.getSubject();
             if (ext.getType() == null || ext.getType() == GroupExtension.Type.NONE) {
-                GroupInfo groupInfo = new GroupInfo(groupJid, subject);
+                GroupInfo groupInfo = new GroupInfo(groupJid, subject, GroupCommandComponent.GROUP_TYPE);
                 msg.addComponent(new GroupComponent(groupInfo));
             }
             // TODO non-null type (add GroupCommandComponent
