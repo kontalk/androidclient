@@ -1,5 +1,23 @@
 # Change Log
 
+## [3.1.4] - 2016-04-04
+### Changed
+- Sent images are now saved into Pictures/Kontalk/Sent (#539)
+- Make personal key information copyable (#651)
+
+### Fixed
+- Fix outgoing images that could not be opened in gallery (#539)
+- Fix tablet issue with text entry (#583)
+- Fix available/away state (#637)
+- Fix scroll-to-result when reloading in a search (#641)
+- Fix possible crash during registration (#643)
+- Fix presence handling (#644)
+- Mark as read only notified conversation (#648)
+- Correctly detect image rotation (#649)
+- Fix truncated text in RTL languages (#653)
+- Fix notification action not working (#660)
+- Fix contact picture in Android 6 (#664)
+
 ## [3.1.3] - 2016-01-31
 ### Changed
 - Search bar with new material search widget (#596)

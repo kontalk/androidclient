@@ -345,7 +345,7 @@
   <string name="msg_unblock_user_warning">Sie haben vor, diesen Nutzer freizugeben. Das bedeutet, er/sie kann Ihnen Nachrichten senden und Ihren Status bzw. letzte bekannte Anwesenheit sehen.</string>
   <string name="notification_text_more">Antippen um mehr zu erfahren</string>
   <string name="title_auth_error">Verifizierungsfehler</string>
-  <string name="msg_auth_error">Das letzte Mal, als versucht wurde, einen Kontalk-Server zu kontaktieren, ist die Authentifizierung fehlgeschlagen. Es könnte ein vorübergehender Serverfehler sein. Am wahrscheinlichsten ist es aber, dass Ihr persönlicher Schlüssel abgelehnt wurde. Wir empfehlen, Ihren Kontalk-Account in den Android-System-Einstellungen zu löschen und sich neu im System zu registrieren. (Dabei gehen leider Ihre gesamten Kontalk-Nachrichten verloren.)</string>
+  <string name="msg_auth_error">Das letzte Mal, als versucht wurde, einen Kontalk-Server zu kontaktieren, ist die Authentifizierung fehlgeschlagen. Es könnte ein vorübergehender Serverfehler sein. Am wahrscheinlichsten ist es aber, dass Ihr persönlicher Schlüssel abgelehnt wurde. Wir empfehlen, Ihren Kontalk-Account in den Android-System-Einstellungen zu löschen und sich neu im System zu registrieren (Dabei gehen leider Ihre gesamten Kontalk-Nachrichten verloren).</string>
   <string name="warn_invite_no_app">Keine App verfügbar um Nutzer einzuladen.</string>
   <string name="pref_text_enter">Entertaste</string>
   <string name="pref_title_text_enter">Wählen Sie die Funktion der Entertaste</string>

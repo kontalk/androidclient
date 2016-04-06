@@ -111,6 +111,23 @@
             android:entries="@array/image_resize_labels"
             android:entryValues="@array/image_resize_values"
             android:defaultValue="@integer/pref_default_image_resize"/>
+        <com.afollestad.materialdialogs.prefs.MaterialListPreference
+            android:key="pref_media_autodownload"
+            android:title="@string/pref_media_autodownload"
+            android:summary="%s"
+            android:entries="@array/media_autodownload_labels"
+            android:entryValues="@array/media_autodownload_values"
+            android:defaultValue="@string/pref_default_media_autodownload"/>
+        <com.afollestad.materialdialogs.prefs.MaterialEditTextPreference
+            android:key="pref_media_autodownload_threshold"
+            android:dialogTitle="@string/pref_media_autodownload_threshold"
+            android:positiveButtonText="@android:string/ok"
+            android:negativeButtonText="@android:string/cancel"
+            android:title="@string/pref_media_autodownload_threshold"
+            android:summary="@string/pref_title_media_autodownload_threshold"
+            android:dialogMessage="@string/pref_msg_media_autodownload_threshold"
+            android:singleLine="true" android:inputType="number"
+            android:defaultValue="@integer/pref_default_media_autodownload_threshold"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_notification_settings"

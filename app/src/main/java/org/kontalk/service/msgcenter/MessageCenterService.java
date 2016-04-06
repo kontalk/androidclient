@@ -115,9 +115,13 @@ import org.kontalk.client.VCard4;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
+import org.kontalk.message.AttachmentComponent;
+import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.ImageComponent;
 import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.TextComponent;
+import org.kontalk.message.VCardComponent;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Groups;
@@ -125,6 +129,7 @@ import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Requests;
 import org.kontalk.provider.UsersProvider;
+import org.kontalk.service.DownloadService;
 import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.UploadService;
 import org.kontalk.service.XMPPConnectionHelper;
@@ -2254,6 +2259,28 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (msgUri != null && !MessagingNotification.isPaused(paused)) {
             // update notifications (delayed)
             MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
+        }
+
+        // check if we need to autodownload
+        @SuppressWarnings("unchecked")
+        Class<AttachmentComponent>[] tryComponents = new Class[] {
+            ImageComponent.class,
+            VCardComponent.class,
+            AudioComponent.class,
+        };
+
+        for (Class<AttachmentComponent> klass : tryComponents) {
+            AttachmentComponent att = (AttachmentComponent) msg.getComponent(klass);
+            if (att != null && att.getFetchUrl() != null &&
+                    Preferences.canAutodownloadMedia(this, att.getLength())) {
+                long databaseId = ContentUris.parseId(msgUri);
+                DownloadService.start(this, databaseId, sender, msg.getTimestamp(),
+                    att.getSecurityFlags() != Coder.SECURITY_CLEARTEXT,
+                    att.getFetchUrl(), false);
+
+                // only one attachment is supported
+                break;
+            }
         }
 
         return msgUri;

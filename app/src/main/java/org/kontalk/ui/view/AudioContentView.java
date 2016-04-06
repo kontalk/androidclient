@@ -86,6 +86,10 @@ public class AudioContentView extends RelativeLayout
         mSeekBar = (SeekBar) findViewById(R.id.balloon_audio_seekbar);
         mDownloadButton = (ImageView) findViewById(R.id.balloon_audio_download);
         mTime = (TextView) findViewById(R.id.balloon_audio_time);
+
+        if (isInEditMode()) {
+            mDownloadButton.setVisibility(GONE);
+        }
     }
 
     @Override

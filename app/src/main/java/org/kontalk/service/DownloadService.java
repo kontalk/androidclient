@@ -87,6 +87,8 @@ public class DownloadService extends IntentService implements DownloadListener {
     public static final String ACTION_DOWNLOAD_URL = "org.kontalk.action.DOWNLOAD_URL";
     public static final String ACTION_DOWNLOAD_ABORT = "org.kontalk.action.DOWNLOAD_ABORT";
 
+    private static final String EXTRA_NOTIFY = "org.kontalk.download.notify";
+
     private ProgressNotificationBuilder mNotificationBuilder;
     private NotificationManager mNotificationManager;
 
@@ -99,6 +101,7 @@ public class DownloadService extends IntentService implements DownloadListener {
     private long mMessageId;
     private String mPeer;
     private boolean mEncrypted;
+    private boolean mNotify;
 
     private ClientHTTPConnection mDownloadClient;
     private boolean mCanceled;
@@ -143,6 +146,8 @@ public class DownloadService extends IntentService implements DownloadListener {
         // notify user about download immediately
         startForeground(0);
         mCanceled = false;
+
+        mNotify = args.getBoolean(EXTRA_NOTIFY, true);
 
         if (mDownloadClient == null) {
             PersonalKey key;
@@ -333,7 +338,7 @@ public class DownloadService extends IntentService implements DownloadListener {
         stopForeground();
 
         // notify only if conversation is not open
-        if (!MessagingNotification.isPaused(mPeer)) {
+        if (!MessagingNotification.isPaused(mPeer) && mNotify) {
 
             // detect mime type if not available
             if (mime == null)
@@ -405,4 +410,21 @@ public class DownloadService extends IntentService implements DownloadListener {
     public static boolean isQueued(String url) {
         return sQueue.containsKey(url);
     }
+
+    public static void start(Context context, long databaseId, String sender, long timestamp, boolean encrypted, String url) {
+        start(context, databaseId, sender, timestamp, encrypted, url, true);
+    }
+
+    public static void start(Context context, long databaseId, String sender, long timestamp, boolean encrypted, String url, boolean notify) {
+        Intent i = new Intent(context, DownloadService.class);
+        i.setAction(DownloadService.ACTION_DOWNLOAD_URL);
+        i.putExtra(CompositeMessage.MSG_ID, databaseId);
+        i.putExtra(CompositeMessage.MSG_SENDER, sender);
+        i.putExtra(CompositeMessage.MSG_TIMESTAMP, timestamp);
+        i.putExtra(CompositeMessage.MSG_ENCRYPTED, encrypted);
+        i.putExtra(EXTRA_NOTIFY, notify);
+        i.setData(Uri.parse(url));
+        context.startService(i);
+    }
+
 }

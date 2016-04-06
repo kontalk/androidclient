@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2016 Kontalk Devteam <devteam@kontalk.org>
 
@@ -15,7 +15,6 @@
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
-
 <resources>
   <string name="app_name">Kontalk</string>
   <string name="app_description">Κοινότητα με γνώμονα την άμεση δικτύου μηνυμάτων</string>
@@ -296,7 +295,7 @@
   <string name="msg_generating_keypair">Δημιουργία προσωπικού κλειδιού στο παρασκήνιο.</string>
   <string name="msg_gen_keypair_complete">Η αναδημιουργια του προσωπικου κλειδιου ολοκληρωθηκε.</string>
   <string name="notify_gen_keypair_ticker">Δημιουργία προσωπικού κλειδιού…</string>
-  <string name="notify_gen_keypair_title">Δημιουργία προσωπικού κλειδιού…</string>
+  <string name="notify_gen_keypair_title">Δημιουργία προσωπικού κλειδιού</string>
   <string name="notify_gen_keypair_text">Μπορείτε να λειτουργήσετε κανονικά.</string>
   <string name="msg_xmpp_upgrading">Αναβάθμιση…</string>
   <string name="title_no_personal_key">Κανένα προσωπικό κλειδί</string>

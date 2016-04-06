@@ -40,6 +40,8 @@
 
     <!-- media settings defaults -->
     <integer name="pref_default_image_resize">1024</integer>
+    <string name="pref_default_media_autodownload">wifi</string>
+    <integer name="pref_default_media_autodownload_threshold">100</integer>
 
     <!-- notification settings defaults -->
     <bool name="pref_default_enable_notifications">true</bool>

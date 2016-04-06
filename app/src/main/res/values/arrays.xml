@@ -82,6 +82,18 @@
         <item>@string/pref_image_resize_label_large</item>
     </string-array>
 
+    <string-array name="media_autodownload_values" translate="false">
+        <item>never</item>
+        <item>wifi</item>
+        <item>always</item>
+    </string-array>
+
+    <string-array name="media_autodownload_labels">
+        <item>@string/pref_media_autodownload_label_never</item>
+        <item>@string/pref_media_autodownload_label_wifi</item>
+        <item>@string/pref_media_autodownload_label_always</item>
+    </string-array>
+
     <string-array name="idle_time_values" translate="false">
         <item>0</item>
         <item>300000</item>

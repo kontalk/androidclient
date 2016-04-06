@@ -21,7 +21,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:id="@+id/balloon_audio_player"
-        android:layout_marginTop="12dp"
         android:focusable="false"
         android:background="@drawable/play_balloon"
         android:layout_alignParentLeft="true" />
@@ -30,10 +29,9 @@
         android:id="@+id/balloon_audio_seekbar"
         android:layout_width="@dimen/message_audio_width"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="9dp"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="8dp"
         android:focusable="false"
-        android:layout_toRightOf="@+id/balloon_audio_player" />
+        android:layout_toRightOf="@+id/balloon_audio_player"/>
 
     <TextView
         android:id="@+id/balloon_audio_time"

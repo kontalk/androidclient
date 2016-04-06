@@ -434,6 +434,14 @@
 
     <string name="pref_media_settings">Media settings</string>
     <string name="pref_image_resize">Resize images</string>
+    <string name="pref_media_autodownload_threshold">Automatic download threshold</string>
+    <string name="pref_title_media_autodownload_threshold">Files smaller than this size will always be downloaded automatically</string>
+    <string name="pref_msg_media_autodownload_threshold">Enter a value in KB. Set to 0 to never download automatically.</string>
+
+    <string name="pref_media_autodownload">Download automatically</string>
+    <string name="pref_media_autodownload_label_never">Never</string>
+    <string name="pref_media_autodownload_label_wifi">Only on Wi-Fi</string>
+    <string name="pref_media_autodownload_label_always">Always</string>
 
     <string name="err_server_invalid_format">Invalid address format.</string>
 
