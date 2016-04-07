@@ -445,4 +445,13 @@
     <string name="pref_show_blocked_users">Zobrazit blokované uživatele</string>
     <string name="button_load_next_page">Načíst více zpráv</string>
 
+    <string name="pref_media_autodownload_threshold">Práh pro automatické stažení</string>
+    <string name="pref_title_media_autodownload_threshold">Soubory menší než tato velikost budou staženy automaticky</string>
+    <string name="pref_msg_media_autodownload_threshold">Zadejte velikost v kB. Nastavte 0, pokud se nemá nikdy stahovat automaticky.</string>
+
+    <string name="pref_media_autodownload">Stahovat automaticky</string>
+    <string name="pref_media_autodownload_label_never">Nikdy</string>
+    <string name="pref_media_autodownload_label_wifi">Pouze na Wi-Fi</string>
+    <string name="pref_media_autodownload_label_always">Vždy</string>
+
     </resources>

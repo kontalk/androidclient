@@ -445,4 +445,13 @@
 
     <string name="button_load_next_page">Carica altri messaggi</string>
 
+    <string name="pref_media_autodownload_threshold">Soglia download automatico</string>
+    <string name="pref_title_media_autodownload_threshold">File più piccoli di questa dimensione saranno sempre scaricati automaticamente</string>
+    <string name="pref_msg_media_autodownload_threshold">Inserisci un valore in KB. Imposta a 0 per non scaricare mai automaticamente.</string>
+
+    <string name="pref_media_autodownload">Scarica automaticamente</string>
+    <string name="pref_media_autodownload_label_never">Mai</string>
+    <string name="pref_media_autodownload_label_wifi">Solo in Wi-Fi</string>
+    <string name="pref_media_autodownload_label_always">Sempre</string>
+
     </resources>

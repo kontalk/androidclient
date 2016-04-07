@@ -445,4 +445,13 @@
     <string name="mark_read">Gelesen</string>
     <string name="button_load_next_page">Weitere Nachrichten laden</string>
 
+    <string name="pref_media_autodownload_threshold">Schwellenwert für automatischen Download</string>
+    <string name="pref_title_media_autodownload_threshold">Dateien die kleiner als der festgelegte Wert sind werden immer automatisch heruntergeladen</string>
+    <string name="pref_msg_media_autodownload_threshold">Legen Sie einen Wert in KB fest. Auf 0 (Null) setzen um nichts automatisch herunterzuladen.</string>
+
+    <string name="pref_media_autodownload">Automatischer Download</string>
+    <string name="pref_media_autodownload_label_never">Niemals</string>
+    <string name="pref_media_autodownload_label_wifi">Nur im WLAN</string>
+    <string name="pref_media_autodownload_label_always">Immer</string>
+
     </resources>
