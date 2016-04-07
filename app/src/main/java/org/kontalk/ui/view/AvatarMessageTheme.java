@@ -21,6 +21,7 @@ package org.kontalk.ui.view;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
 import android.view.View;
 import android.view.ViewStub;
 import android.widget.LinearLayout;
@@ -34,7 +35,7 @@ import org.kontalk.util.SystemUtils;
  * Avatar-based message balloon theme.
  * @author Daniele Ricci
  */
-public class AvatarMessageTheme extends BaseMessageTheme {
+public class AvatarMessageTheme extends BaseMessageTheme implements Contact.ContactCallback {
 
     private static Drawable sDefaultContactImage;
 
@@ -43,6 +44,8 @@ public class AvatarMessageTheme extends BaseMessageTheme {
     private LinearLayout mBalloonView;
 
     private CircleContactBadge mAvatar;
+
+    private Handler mHandler;
 
     public AvatarMessageTheme(int layoutId, int drawableId) {
         super(layoutId);
@@ -56,6 +59,8 @@ public class AvatarMessageTheme extends BaseMessageTheme {
         mBalloonView = (LinearLayout) view.findViewById(R.id.balloon_view);
 
         mAvatar = (CircleContactBadge) view.findViewById(R.id.avatar);
+
+        mHandler = new Handler();
 
         if (sDefaultContactImage == null) {
             sDefaultContactImage = mContext.getResources()
@@ -88,9 +93,17 @@ public class AvatarMessageTheme extends BaseMessageTheme {
         setView();
 
         if (mAvatar != null) {
-            mAvatar.assignContactUri(contact != null ? contact.getUri() : null);
-            mAvatar.setImageDrawable(contact != null ?
-                contact.getAvatar(mContext) : sDefaultContactImage);
+            mAvatar.setImageDrawable(sDefaultContactImage);
+            if (contact != null) {
+                // we mark this with the contact's hash code for the async avatar
+                mAvatar.setTag(contact.hashCode());
+                mAvatar.assignContactUri(contact.getUri());
+                contact.getAvatarAsync(mContext, this);
+            }
+            else {
+                mAvatar.setTag(null);
+                mAvatar.assignContactUri(null);
+            }
         }
 
         super.setIncoming(contact);
@@ -115,6 +128,37 @@ public class AvatarMessageTheme extends BaseMessageTheme {
         }
 
         super.setOutgoing(contact, status);
+    }
+
+    @Override
+    public void avatarLoaded(final Contact contact, final Drawable avatar) {
+        if (avatar != null) {
+            if (mHandler.getLooper().getThread() != Thread.currentThread()) {
+                mHandler.post(new Runnable() {
+                    public void run() {
+                        updateAvatar(contact, avatar);
+                    }
+                });
+            }
+            else {
+                updateAvatar(contact, avatar);
+            }
+        }
+    }
+
+    private void updateAvatar(Contact contact, Drawable avatar) {
+        try {
+            // be sure the contact is still the same
+            // this is an insane workaround against race conditions
+            Integer contactTag = (Integer) mAvatar.getTag();
+            if (contactTag != null && contactTag.intValue() == contact.hashCode())
+                mAvatar.setImageDrawable(avatar);
+        }
+        catch (Exception e) {
+            // we are deliberately ignoring any exception here
+            // because an error here could happen only if something
+            // weird is happening, e.g. user leaving the activity
+        }
     }
 
 }
