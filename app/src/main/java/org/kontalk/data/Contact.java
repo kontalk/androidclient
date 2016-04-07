@@ -514,12 +514,30 @@ public class Contact {
     private static byte[] loadAvatarData(Context context, Uri contactUri) {
         byte[] data = null;
 
-        InputStream avatarDataStream = Contacts.openContactPhotoInputStream(
-                    context.getContentResolver(), contactUri);
+        InputStream avatarDataStream;
+        try {
+            avatarDataStream = Contacts.openContactPhotoInputStream(
+                context.getContentResolver(), contactUri);
+        }
+        catch (IllegalArgumentException e) {
+            // fallback to old behaviour
+            try {
+                long cid = ContentUris.parseId(contactUri);
+                Uri uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, cid);
+                avatarDataStream = Contacts.openContactPhotoInputStream(
+                    context.getContentResolver(), uri);
+            }
+            catch (Exception ignored) {
+                // no way of getting avatar, sorry
+                return null;
+            }
+
+        }
+
         if (avatarDataStream != null) {
             try {
-                    data = new byte[avatarDataStream.available()];
-                    avatarDataStream.read(data, 0, data.length);
+                data = new byte[avatarDataStream.available()];
+                avatarDataStream.read(data, 0, data.length);
             }
             catch (IOException e) {
                 Log.e(TAG, "cannot retrieve contact avatar", e);
