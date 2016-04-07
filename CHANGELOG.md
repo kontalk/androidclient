@@ -1,5 +1,15 @@
 # Change Log
 
+## [3.1.5] - 2016-04-07
+### Changed
+- Automatic media download (#34)
+- Increase play audio button in messages (#669)
+
+### Fixed
+- Fix message width issue in RTL languages (#653)
+- Fix contact picture causing crash in older Android versions (#671)
+- Fix blocking contact picture retrieval (#673)
+
 ## [3.1.4] - 2016-04-04
 ### Changed
 - Sent images are now saved into Pictures/Kontalk/Sent (#539)
