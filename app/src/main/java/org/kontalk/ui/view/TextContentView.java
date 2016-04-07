@@ -93,6 +93,7 @@ public class TextContentView extends EmojiconTextView
      * Hack for fixing extra space took by the TextView.
      * I still have to understand why this works and plain getHeight() doesn't.
      * http://stackoverflow.com/questions/7439748/why-is-wrap-content-in-multiple-line-textview-filling-parent
+     * https://github.com/qklabs/qksms/blob/master/QKSMS/src/main/java/com/moez/QKSMS/ui/view/QKTextView.java
      */
 
     void enableMeasureHack(boolean enabled) {
@@ -104,12 +105,21 @@ public class TextContentView extends EmojiconTextView
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         if (mMeasureHack) {
-            Layout layout = getLayout();
-            if (layout != null) {
-                int width = (int) Math.ceil(getMaxLineWidth(layout))
-                    + getCompoundPaddingLeft() + getCompoundPaddingRight();
-                int height = getMeasuredHeight();
-                setMeasuredDimension(width, height);
+            int specModeW = MeasureSpec.getMode(widthMeasureSpec);
+            if (specModeW != MeasureSpec.EXACTLY) {
+                Layout layout = getLayout();
+                int linesCount = layout.getLineCount();
+                if (linesCount > 1) {
+                    float textRealMaxWidth = 0;
+                    for (int n = 0; n < linesCount; ++n) {
+                        textRealMaxWidth = Math.max(textRealMaxWidth, layout.getLineWidth(n));
+                    }
+                    int w = Math.round(textRealMaxWidth);
+                    if (w < getMeasuredWidth()) {
+                        super.onMeasure(MeasureSpec.makeMeasureSpec(w, MeasureSpec.AT_MOST),
+                            heightMeasureSpec);
+                    }
+                }
             }
         }
     }
