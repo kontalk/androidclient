@@ -33,8 +33,8 @@ android {
 
     defaultConfig {
         applicationId "org.kontalk"
-        versionCode 102
-        versionName "3.1.5"
+        versionCode 103
+        versionName "3.1.6-preview"
         targetSdkVersion 22
         minSdkVersion 9
         resConfigs "en", "de", "fr", "it", "es", "ca", "cs", "el", "fa", "gl", "ja", "nl", "pt", "ru", "sr", "zh-rCN", "ar"
@@ -125,7 +125,6 @@ dependencies {
     compile "com.madgag.spongycastle:prov:$spongyCastleVersion"
     compile "com.madgag.spongycastle:pkix:$spongyCastleVersion"
     compile "com.madgag.spongycastle:pg:$spongyCastleVersion"
-    compile 'info.guardianproject.netcipher:netcipher:1.2'
     compile 'com.googlecode.libphonenumber:libphonenumber:7.2.8'
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'com.google.zxing:core:3.2.1'

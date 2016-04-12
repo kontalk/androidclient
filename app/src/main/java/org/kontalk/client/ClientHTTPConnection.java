@@ -50,8 +50,6 @@ import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import android.content.Context;
 import android.util.Log;
 
-import info.guardianproject.netcipher.NetCipher;
-
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.service.DownloadListener;
 import org.kontalk.util.InternalTrustStore;
@@ -97,7 +95,7 @@ public class ClientHTTPConnection {
      * @return the request object
      */
     private HttpsURLConnection prepareURLDownload(String url, boolean acceptAnyCertificate) throws IOException {
-        HttpsURLConnection conn = NetCipher.getHttpsURLConnection(new URL(url));
+        HttpsURLConnection conn = (HttpsURLConnection) new URL(url).openConnection();
         try {
             setupClient(conn, acceptAnyCertificate);
         }

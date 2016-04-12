@@ -44,8 +44,6 @@ import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import android.content.Context;
 import android.net.Uri;
 
-import info.guardianproject.netcipher.NetCipher;
-
 import org.kontalk.Kontalk;
 import org.kontalk.client.ClientHTTPConnection;
 import org.kontalk.client.EndpointServer;
@@ -213,7 +211,7 @@ public class KontalkBoxUploadConnection implements UploadConnection {
             throws IOException {
 
         // create uri
-        HttpsURLConnection conn = NetCipher.getHttpsURLConnection(new URL(mBaseUrl));
+        HttpsURLConnection conn = (HttpsURLConnection) new URL(mBaseUrl).openConnection();
         try {
             setupClient(conn, mime, encrypted, acceptAnyCertificate);
         }
