@@ -519,7 +519,7 @@ public class Contact {
             avatarDataStream = Contacts.openContactPhotoInputStream(
                 context.getContentResolver(), contactUri);
         }
-        catch (IllegalArgumentException e) {
+        catch (Exception e) {
             // fallback to old behaviour
             try {
                 long cid = ContentUris.parseId(contactUri);
