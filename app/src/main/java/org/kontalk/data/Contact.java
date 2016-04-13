@@ -111,8 +111,6 @@ public class Contact {
 
     /** Timestamp the user was last seen. Not coming from the database. */
     private long mLastSeen;
-    /** Version information. Not coming from the database. */
-    private String mVersion;
 
     public interface ContactCallback {
         public void avatarLoaded(Contact contact, Drawable avatar);
@@ -184,6 +182,8 @@ public class Contact {
     private static final class ContactState {
         private final String mJID;
         private boolean mTyping;
+        /** Version information. Not coming from the database. */
+        private String mVersion;
 
         private ContactState(String jid) {
             mJID = jid;
@@ -195,6 +195,14 @@ public class Contact {
 
         public void setTyping(boolean typing) {
             mTyping = typing;
+        }
+
+        public String getVersion() {
+            return mVersion;
+        }
+
+        public void setVersion(String version) {
+            mVersion = version;
         }
 
         @Override
@@ -224,18 +232,31 @@ public class Contact {
         );
     }
 
-    public static void setTyping(String jid, boolean typing) {
+    private static ContactState getContactState(String jid) {
         ContactState state = sStates.get(jid);
         if (state == null) {
             state = new ContactState(jid);
             sStates.put(jid, state);
         }
-        state.setTyping(typing);
+        return state;
+    }
+
+    public static void setTyping(String jid, boolean typing) {
+        getContactState(jid).setTyping(typing);
     }
 
     public static boolean isTyping(String jid) {
         ContactState state = sStates.get(jid);
         return state != null && state.isTyping();
+    }
+
+    public static void setVersion(String jid, String version) {
+        getContactState(jid).setVersion(version);
+    }
+
+    public static String getVersion(String jid) {
+        ContactState state = sStates.get(jid);
+        return state != null ? state.getVersion() : null;
     }
 
     public static void clearState(String jid) {
@@ -316,14 +337,6 @@ public class Contact {
         mLastSeen = lastSeen;
     }
 
-    public String getVersion() {
-        return mVersion;
-    }
-
-    public void setVersion(String version) {
-        mVersion = version;
-    }
-
     private static Drawable generateRandomAvatar(Context context, Contact contact) {
         return TextDrawable.builder()
             .beginConfig()
@@ -377,7 +390,6 @@ public class Contact {
 
     private void clear() {
         mLastSeen = 0;
-        mVersion = null;
     }
 
     public static void invalidate(String userId) {
