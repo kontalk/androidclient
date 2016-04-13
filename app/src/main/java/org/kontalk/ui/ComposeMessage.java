@@ -395,8 +395,8 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
 
         else {
             // FIXME this will not allow text file attachments
-            if (TextComponent.supportsMimeType(mime)) {
-                CharSequence text = sendIntent.getCharSequenceExtra(Intent.EXTRA_TEXT);
+            CharSequence text = sendIntent.getCharSequenceExtra(Intent.EXTRA_TEXT);
+            if (text != null || TextComponent.supportsMimeType(mime)) {
                 mFragment.setTextEntry(text);
             }
 
