@@ -53,7 +53,7 @@
     <string name="msg_authenticated">در شبکه ثبت‌نام شد!</string>
     <string name="share">اشتراک‌گذاری</string>
     <string name="resend">فرستادن دوباره</string>
-    <string name="copy_message_text">رونوشت متن پیام</string>
+    <string name="copy_message_text">رونوشت متن</string>
     <string name="delete_message">حذف پیام</string>
     <string name="confirm_delete_all">حذف همه‌ی گپ‌ها</string>
     <string name="confirm_will_delete_all">همه‌ی گپ‌ها حذف خواهند شد.</string>
@@ -125,4 +125,5 @@
     <string name="confirm_cancel_registration">اگر به مرحله قبل بازگردید می بایست مراحل ثبت نام را از نو شروع کنید.درصورتیکه میخواهید وارد برنامه دیگری شوید فقط از دکمه خانه(Home)‌استفاده کنید.</string>
     <string name="mark_read">خواندن</string>
     <string name="confirm_will_delete_threads">گفتگوی انتخاب شده حذف خواهد شد.</string>
+    <string name="error_delete_message">ناتوان در حذف پیام</string>
     </resources>
