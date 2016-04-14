@@ -459,4 +459,13 @@
 <string name="mark_read">Ler</string>
     <string name="button_load_next_page">Carregar mais mensagens</string>
 
+    <string name="pref_media_autodownload_threshold">Limite do download automático</string>
+    <string name="pref_title_media_autodownload_threshold">Arquivos com tamanho menor que esse serão baixados automaticamente</string>
+    <string name="pref_msg_media_autodownload_threshold">Digite um valor em kb. Defina como 0 para nunca efetuar o download automático.</string>
+
+    <string name="pref_media_autodownload">Baixar automaticamente</string>
+    <string name="pref_media_autodownload_label_never">Nunca</string>
+    <string name="pref_media_autodownload_label_wifi">Apenas com Wi-Fi</string>
+    <string name="pref_media_autodownload_label_always">Sempre</string>
+
     </resources>
