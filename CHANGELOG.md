@@ -1,5 +1,12 @@
 # Change Log
 
+## [3.1.6] - 2016-04-14
+### Fixed
+- Fix connection error (#676)
+- Fix media upload/download (#677)
+- Fix personal key export (#678)
+- Fix crash on opening (#680)
+
 ## [3.1.5] - 2016-04-07
 ### Changed
 - Automatic media download (#34)
