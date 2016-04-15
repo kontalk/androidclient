@@ -1136,7 +1136,7 @@ public class UsersProvider extends ContentProvider {
         Cursor c = context.getContentResolver().query(Keys.CONTENT_URI, new String[] {
                 Keys.JID,
                 Keys.FINGERPRINT,
-            }, null, null, null);
+            }, Keys.FINGERPRINT + " IS NOT NULL", null, null);
 
         Map<String, String> list = new HashMap<>(c.getCount());
         while (c.moveToNext()) {

@@ -769,18 +769,17 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                                      * 2. it doesn't account for away status duration (we don't have this information at all)
                                      */
                                     String mode = intent.getStringExtra(MessageCenterService.EXTRA_SHOW);
-                                    if (mode != null && mode.equals(Presence.Mode.away.toString())) {
+                                    boolean isAway = mode != null && mode.equals(Presence.Mode.away.toString());
+                                    if (isAway) {
                                         statusText = context.getString(R.string.seen_away_label);
                                     }
                                     else {
                                         statusText = context.getString(R.string.seen_online_label);
                                     }
 
-                                    // request version information
-                                    if (contact != null && contact.getVersion() != null) {
-                                        setVersionInfo(context, contact.getVersion());
-                                    }
-                                    else if (mVersionRequestId == null) {
+                                    String version = Contact.getVersion(from);
+                                    // do not request version info if already requested before
+                                    if (!isAway && version == null && mVersionRequestId == null) {
                                         requestVersion(from);
                                     }
                                 }
@@ -848,10 +847,9 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                             if (name != null && name.equalsIgnoreCase(context.getString(R.string.app_name))) {
                                 String version = intent.getStringExtra(MessageCenterService.EXTRA_VERSION_NUMBER);
                                 if (version != null) {
-                                    Contact contact = getContact();
-                                    if (contact != null)
-                                        // cache the version
-                                        contact.setVersion(version);
+                                    // cache the version
+                                    String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                                    Contact.setVersion(from, version);
                                     setVersionInfo(context, version);
                                 }
                             }

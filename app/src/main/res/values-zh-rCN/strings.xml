@@ -484,4 +484,13 @@
     <string name="button_load_next_page">载入更多消息</string>
 
     <string name="mark_read">阅读</string>
+    <string name="pref_media_autodownload_threshold">自动下载的极限值</string>
+    <string name="pref_title_media_autodownload_threshold">低于该大小的文件总是自动下载</string>
+    <string name="pref_msg_media_autodownload_threshold">输入一个以KB为单位的数值。设置成0，则永不自动下载。</string>
+
+    <string name="pref_media_autodownload">自动下载</string>
+    <string name="pref_media_autodownload_label_never">从不</string>
+    <string name="pref_media_autodownload_label_wifi">仅在Wi-Fi</string>
+    <string name="pref_media_autodownload_label_always">总是</string>
+
     </resources>

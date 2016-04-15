@@ -444,4 +444,13 @@
     <string name="button_load_next_page">Laad meer berichten</string>
 
     <string name="mark_read">Gelezen</string>
+    <string name="pref_media_autodownload_threshold">Limiet automatisch downloaden</string>
+    <string name="pref_title_media_autodownload_threshold">Bestanden kleiner dan deze grootte zullen altijd automatisch gedownload worden</string>
+    <string name="pref_msg_media_autodownload_threshold">Geef een waarde in KB op. Zet op 0 om nooit automatisch te downloaden.</string>
+
+    <string name="pref_media_autodownload">Automatisch downloaden</string>
+    <string name="pref_media_autodownload_label_never">Nooit</string>
+    <string name="pref_media_autodownload_label_wifi">Alleen op Wi-Fi</string>
+    <string name="pref_media_autodownload_label_always">Altijd</string>
+
     </resources>
