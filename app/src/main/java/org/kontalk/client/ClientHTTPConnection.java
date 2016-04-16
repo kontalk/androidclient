@@ -51,6 +51,7 @@ import android.content.Context;
 import android.util.Log;
 
 import info.guardianproject.netcipher.NetCipher;
+import info.guardianproject.netcipher.client.TlsOnlySocketFactory;
 
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.service.DownloadListener;
@@ -138,14 +139,17 @@ public class ClientHTTPConnection {
                 NoSuchProviderException {
 
         // in-memory keystore
-        KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-        keystore.load(null, null);
-        keystore.setKeyEntry("private", privateKey, null, new Certificate[] { certificate });
+        KeyManager[] km = null;
+        if (privateKey != null && certificate != null) {
+            KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+            keystore.load(null, null);
+            keystore.setKeyEntry("private", privateKey, null, new Certificate[]{certificate});
 
-        // key managers
-        KeyManagerFactory kmFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        kmFactory.init(keystore, null);
-        KeyManager[] km = kmFactory.getKeyManagers();
+            // key managers
+            KeyManagerFactory kmFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            kmFactory.init(keystore, null);
+            km = kmFactory.getKeyManagers();
+        }
 
         // trust managers
         TrustManager[] tm;
@@ -182,9 +186,9 @@ public class ClientHTTPConnection {
             tm = tmFactory.getTrustManagers();
         }
 
-        SSLContext ctx = SSLContext.getInstance("TLS");
+        SSLContext ctx = SSLContext.getInstance("TLSv1");
         ctx.init(km, tm, null);
-        return ctx.getSocketFactory();
+        return new TlsOnlySocketFactory(ctx.getSocketFactory(), true);
     }
 
     /**
