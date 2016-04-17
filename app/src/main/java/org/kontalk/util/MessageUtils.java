@@ -19,8 +19,10 @@
 package org.kontalk.util;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
@@ -29,6 +31,7 @@ import java.util.TimeZone;
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 
 import org.jivesoftware.smack.util.StringUtils;
+import org.spongycastle.openpgp.PGPException;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -47,8 +50,11 @@ import android.text.format.Time;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 
+import org.kontalk.Kontalk;
 import org.kontalk.R;
+import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.Coder;
+import org.kontalk.crypto.PersonalKey;
 import org.kontalk.message.AttachmentComponent;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
@@ -58,6 +64,7 @@ import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
 import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.provider.UsersProvider;
 
 
 public final class MessageUtils {
@@ -536,6 +543,20 @@ public final class MessageUtils {
 
     public static String messageId() {
         return StringUtils.randomString(30);
+    }
+
+    public static File encryptFile(Context context, InputStream in, String user)
+            throws GeneralSecurityException, IOException, PGPException {
+        PersonalKey key = Kontalk.get(context).getPersonalKey();
+        EndpointServer server = Preferences.getEndpointServer(context);
+        Coder coder = UsersProvider.getEncryptCoder(context, server, key, new String[] { user });
+        // create a temporary file to store encrypted data
+        File temp = File.createTempFile("media", null, context.getCacheDir());
+        FileOutputStream out = new FileOutputStream(temp);
+        coder.encryptFile(in, out);
+        // close encrypted file
+        out.close();
+        return temp;
     }
 
     /** Fills in a {@link ContentValues} object from the given message. */

@@ -50,6 +50,8 @@ import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import android.content.Context;
 import android.util.Log;
 
+import info.guardianproject.netcipher.client.TlsOnlySocketFactory;
+
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.service.DownloadListener;
 import org.kontalk.util.InternalTrustStore;
@@ -77,6 +79,10 @@ public class ClientHTTPConnection {
     private HttpsURLConnection currentRequest;
     private final static int CONNECT_TIMEOUT = 15000;
     private final static int READ_TIMEOUT = 40000;
+
+    public ClientHTTPConnection(Context context) {
+        this(context, null, null);
+    }
 
     public ClientHTTPConnection(Context context, PrivateKey privateKey, X509Certificate bridgeCert) {
         mContext = context;
@@ -118,7 +124,7 @@ public class ClientHTTPConnection {
             IOException {
 
         // bug caused by Lighttpd
-        conn.setRequestProperty("Expect", "100-continue");
+        //conn.setRequestProperty("Expect", "100-continue");
         conn.setConnectTimeout(CONNECT_TIMEOUT);
         conn.setReadTimeout(READ_TIMEOUT);
         conn.setDoInput(true);
@@ -136,14 +142,17 @@ public class ClientHTTPConnection {
                 NoSuchProviderException {
 
         // in-memory keystore
-        KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-        keystore.load(null, null);
-        keystore.setKeyEntry("private", privateKey, null, new Certificate[] { certificate });
+        KeyManager[] km = null;
+        if (privateKey != null && certificate != null) {
+            KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+            keystore.load(null, null);
+            keystore.setKeyEntry("private", privateKey, null, new Certificate[]{certificate});
 
-        // key managers
-        KeyManagerFactory kmFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        kmFactory.init(keystore, null);
-        KeyManager[] km = kmFactory.getKeyManagers();
+            // key managers
+            KeyManagerFactory kmFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            kmFactory.init(keystore, null);
+            km = kmFactory.getKeyManagers();
+        }
 
         // trust managers
         TrustManager[] tm;
@@ -180,9 +189,9 @@ public class ClientHTTPConnection {
             tm = tmFactory.getTrustManagers();
         }
 
-        SSLContext ctx = SSLContext.getInstance("TLS");
+        SSLContext ctx = SSLContext.getInstance("TLSv1");
         ctx.init(km, tm, null);
-        return ctx.getSocketFactory();
+        return new TlsOnlySocketFactory(ctx.getSocketFactory(), true);
     }
 
     /**

@@ -30,14 +30,12 @@ import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.kontalk.Kontalk;
 import org.kontalk.R;
-import org.kontalk.crypto.PersonalKey;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.ConversationsActivity;
 import org.kontalk.ui.ProgressNotificationBuilder;
-import org.kontalk.upload.KontalkBoxUploadConnection;
+import org.kontalk.upload.HTPPFileUploadConnection;
 import org.kontalk.upload.UploadConnection;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.StepTimer;
@@ -73,6 +71,8 @@ public class UploadService extends IntentService implements ProgressListener {
     public static final String EXTRA_MESSAGE_ID = "org.kontalk.upload.MESSAGE_ID";
     /** URL to post to. Use with ACTION_UPLOAD. */
     public static final String EXTRA_POST_URL = "org.kontalk.upload.POST_URL";
+    /** URL to fetch from. Use with ACTION_UPLOAD. */
+    public static final String EXTRA_GET_URL = "org.kontalk.upload.GET_URL";
     /** User to send to. */
     public static final String EXTRA_USER = "org.kontalk.upload.USER";
     /** Media MIME type. */
@@ -81,6 +81,8 @@ public class UploadService extends IntentService implements ProgressListener {
     public static final String EXTRA_PREVIEW_PATH = "org.kontalk.upload.PREVIEW_PATH";
     /** Encryption flag. */
     public static final String EXTRA_ENCRYPT = "org.kontalk.upload.ENCRYPT";
+    /** Delete local file after sending attempt. */
+    public static final String EXTRA_DELETE_ORIGINAL = "org.kontalk.upload.DELETE_ORIGINAL";
     // Intent data is the local file Uri
 
     private ProgressNotificationBuilder mNotificationBuilder;
@@ -139,6 +141,8 @@ public class UploadService extends IntentService implements ProgressListener {
         String msgId = intent.getStringExtra(EXTRA_MESSAGE_ID);
         // url to post to
         String url = intent.getStringExtra(EXTRA_POST_URL);
+        // url to fetch from (will be requested to the connection if null)
+        String fetchUrl = intent.getStringExtra(EXTRA_GET_URL);
         // user to send message to
         String to = intent.getStringExtra(EXTRA_USER);
         // media mime type
@@ -147,6 +151,8 @@ public class UploadService extends IntentService implements ProgressListener {
         String previewPath = intent.getStringExtra(EXTRA_PREVIEW_PATH);
         // encryption flag
         boolean encrypt = intent.getBooleanExtra(EXTRA_ENCRYPT, false);
+        // delete original
+        boolean deleteOriginal = intent.getBooleanExtra(EXTRA_DELETE_ORIGINAL, false);
 
         // check if upload has already been queued
         if (queue.get(filename) != null) return;
@@ -162,17 +168,17 @@ public class UploadService extends IntentService implements ProgressListener {
             mCanceled = false;
 
             if (mConn == null) {
-                PersonalKey key = ((Kontalk) getApplication()).getPersonalKey();
                 // TODO used class here should be decided by the caller
-                mConn = new KontalkBoxUploadConnection(this, url,
-                    key.getBridgePrivateKey(), key.getBridgeCertificate());
+                mConn = new HTPPFileUploadConnection(this, url);
             }
 
             mMessageId = databaseId;
             queue.put(filename, mMessageId);
 
             // upload content
-            String mediaUrl = mConn.upload(file, mime, encrypt, to, this);
+            String mediaUrl = mConn.upload(file, length, mime, encrypt, to, this);
+            if (mediaUrl == null)
+                mediaUrl = fetchUrl;
             Log.d(TAG, "uploaded with media URL: " + mediaUrl);
 
             // update message fetch_url
@@ -189,6 +195,10 @@ public class UploadService extends IntentService implements ProgressListener {
             error(url, null, e);
         }
         finally {
+            // only file uri are supported for delete
+            if (deleteOriginal && "file".equals(file.getScheme()))
+                new File(file.getPath()).delete();
+
             queue.remove(filename);
             mMessageId = 0;
         }
@@ -253,16 +263,26 @@ public class UploadService extends IntentService implements ProgressListener {
     }
 
     private void errorNotification(String ticker, String text) {
+        errorNotification(this, mNotificationManager, ticker, text);
+    }
+
+    public static void errorNotification(Context context, String ticker, String text) {
+        errorNotification(context,
+            ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)),
+            ticker, text);
+    }
+
+    private static void errorNotification(Context context, NotificationManager nm, String ticker, String text) {
         // create intent for upload error notification
-        Intent i = new Intent(this, ConversationsActivity.class);
+        Intent i = new Intent(context, ConversationsActivity.class);
         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
-                NOTIFICATION_ID_UPLOAD_ERROR, i, 0);
+        PendingIntent pi = PendingIntent.getActivity(context.getApplicationContext(),
+            NOTIFICATION_ID_UPLOAD_ERROR, i, 0);
 
         // create notification
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext())
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context.getApplicationContext())
             .setSmallIcon(R.drawable.ic_stat_notify)
-            .setContentTitle(getString(R.string.notify_title_upload_error))
+            .setContentTitle(context.getString(R.string.notify_title_upload_error))
             .setContentText(text)
             .setTicker(ticker)
             .setContentIntent(pi)
@@ -272,7 +292,8 @@ public class UploadService extends IntentService implements ProgressListener {
 
 
         // notify!!
-        mNotificationManager.notify(NOTIFICATION_ID_UPLOAD_ERROR, builder.build());
+        ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE))
+            .notify(NOTIFICATION_ID_UPLOAD_ERROR, builder.build());
     }
 
     @Override

@@ -26,13 +26,17 @@ import org.jivesoftware.smack.filter.StanzaIdFilter;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.disco.packet.DiscoverItems;
+
+import android.util.Log;
+
 import org.kontalk.client.EndpointServer;
+import org.kontalk.client.HTTPFileUpload;
 import org.kontalk.client.PushRegistration;
-import org.kontalk.client.UploadExtension;
+import org.kontalk.upload.HTTPFileUploadService;
 
 
 /**
- * Packet listener for service discovery.
+ * Packet listener for service discovery (info).
  * @author Daniele Ricci
  */
 class DiscoverInfoListener extends MessageCenterPacketListener {
@@ -78,17 +82,11 @@ class DiscoverInfoListener extends MessageCenterPacketListener {
              * Actually, delay any message from being requeued if at least
              * 1 media message is present; do the discovery first.
              */
-            else if (UploadExtension.NAMESPACE.equals(feat.getVar())) {
-                // media upload is available on this server
-                // request items to check what services are available
-                DiscoverItems items = new DiscoverItems();
-                items.setNode(UploadExtension.NAMESPACE);
-                items.setTo(server.getNetwork());
-
-                StanzaFilter filter = new StanzaIdFilter(items.getStanzaId());
-                conn.addAsyncStanzaListener(new UploadDiscoverItemsListener(getInstance()), filter);
-
-                sendPacket(items);
+            else if (HTTPFileUpload.NAMESPACE.equals(feat.getVar())) {
+                Log.d(MessageCenterService.TAG, "got upload service: " + packet.getFrom());
+                addUploadService(new HTTPFileUploadService(conn, packet.getFrom()), 0);
+                // resend pending messages
+                resendPendingMessages(true, false);
             }
         }
     }

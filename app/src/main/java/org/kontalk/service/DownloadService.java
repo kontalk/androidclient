@@ -29,7 +29,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.PrivateKey;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -150,20 +149,7 @@ public class DownloadService extends IntentService implements DownloadListener {
         mNotify = args.getBoolean(EXTRA_NOTIFY, true);
 
         if (mDownloadClient == null) {
-            PersonalKey key;
-            PrivateKey privateKey;
-            try {
-                key = ((Kontalk) getApplication()).getPersonalKey();
-                privateKey = key.getBridgePrivateKey();
-            }
-            catch (Exception e) {
-                // TODO i18n :)
-                errorNotification("ERROR", "NAUGHTY BOY/GIRL!");
-                return;
-            }
-
-            mDownloadClient = new ClientHTTPConnection(this,
-                privateKey, key.getBridgeCertificate());
+            mDownloadClient = new ClientHTTPConnection(this);
         }
 
         try {
