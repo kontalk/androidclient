@@ -39,6 +39,7 @@ import android.util.Log;
 import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
+import org.spongycastle.openpgp.PGPException;
 
 import org.kontalk.Kontalk;
 import org.kontalk.R;
@@ -60,8 +61,10 @@ import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.UsersProvider;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
@@ -549,6 +552,20 @@ public final class MessageUtils {
         return StringUtils.randomString(30);
     }
 
+    public static File encryptFile(Context context, InputStream in, String user)
+            throws GeneralSecurityException, IOException, PGPException {
+        PersonalKey key = Kontalk.get(context).getPersonalKey();
+        EndpointServer server = Preferences.getEndpointServer(context);
+        Coder coder = UsersProvider.getEncryptCoder(context, server, key, new String[] { user });
+        // create a temporary file to store encrypted data
+        File temp = File.createTempFile("media", null, context.getCacheDir());
+        FileOutputStream out = new FileOutputStream(temp);
+        coder.encryptFile(in, out);
+        // close encrypted file
+        out.close();
+        return temp;
+    }
+
     /** Decrypts a message, modifying the object <b>in place</b>. */
     public static void decryptMessage(Context context, EndpointServer server, CompositeMessage msg) throws Exception {
         // encrypted messages have a single encrypted raw component
@@ -720,18 +737,21 @@ public final class MessageUtils {
                 MessageComponent<?> attachment = null;
 
                 if (ImageComponent.supportsMimeType(mime)) {
+                    msg.clearComponents();
                     // cleartext only for now
                     attachment = new ImageComponent(mime, previewFile, null, fetchUrl, length,
                         encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
                 }
 
                 else if (VCardComponent.supportsMimeType(mime)) {
+                    msg.clearComponents();
                     // cleartext only for now
                     attachment = new VCardComponent(previewFile, null, fetchUrl, length,
                         encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
                 }
 
                 else if (AudioComponent.supportsMimeType(mime)) {
+                    msg.clearComponents();
                     attachment = new AudioComponent(mime, null, fetchUrl, length,
                         encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
                 }

@@ -21,52 +21,39 @@ package org.kontalk.service.msgcenter;
 import java.util.List;
 
 import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.filter.StanzaFilter;
 import org.jivesoftware.smack.filter.StanzaIdFilter;
-import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.disco.packet.DiscoverItems;
-import org.jxmpp.util.XmppStringUtils;
-
-import org.kontalk.client.EndpointServer;
-import org.kontalk.client.UploadInfo;
 
 
 /**
- * Packet listener for requesting upload services information.
+ * Packet listener for service discovery (items).
  * @author Daniele Ricci
  */
-class UploadDiscoverItemsListener extends MessageCenterPacketListener {
+class DiscoverItemsListener extends MessageCenterPacketListener {
 
-    public UploadDiscoverItemsListener(MessageCenterService instance) {
+    public DiscoverItemsListener(MessageCenterService instance) {
         super(instance);
     }
 
     @Override
     public void processPacket(Stanza packet) {
         XMPPConnection conn = getConnection();
-        EndpointServer server = getServer();
 
         // we don't need this listener anymore
         conn.removeAsyncStanzaListener(this);
 
-        initUploadServices();
-
-        // store available services
         DiscoverItems query = (DiscoverItems) packet;
         List<DiscoverItems.Item> items = query.getItems();
         for (DiscoverItems.Item item : items) {
-            String jid = item.getEntityID();
-            if (jid != null && server.getNetwork().equals(XmppStringUtils.parseDomain(jid))) {
-                setUploadService(item.getNode(), null);
+            DiscoverInfo info = new DiscoverInfo();
+            info.setTo(item.getEntityID());
 
-                // request upload url
-                UploadInfo iq = new UploadInfo(item.getNode());
-                iq.setType(IQ.Type.get);
-                iq.setTo("upload@" + server.getNetwork());
-
-                conn.addAsyncStanzaListener(new UploadInfoListener(getInstance()), new StanzaIdFilter(iq.getStanzaId()));
-                sendPacket(iq);
-            }
+            StanzaFilter filter = new StanzaIdFilter(info.getStanzaId());
+            conn.addAsyncStanzaListener(new DiscoverInfoListener(getInstance()), filter);
+            sendPacket(info);
         }
     }
 }

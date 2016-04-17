@@ -18,36 +18,19 @@
 
 package org.kontalk.service.msgcenter;
 
-import org.jivesoftware.smack.packet.Stanza;
-
-import org.kontalk.client.UploadInfo;
-
-import android.util.Log;
-
 
 /**
- * Packet listener for upload info responses.
+ * Upload service interface.
  * @author Daniele Ricci
  */
-class UploadInfoListener extends MessageCenterPacketListener {
+public interface IUploadService {
 
-    public UploadInfoListener(MessageCenterService instance) {
-        super(instance);
+    boolean requiresCertificate();
+
+    void getPostUrl(String filename, long size, String mime, UrlCallback callback);
+
+    interface UrlCallback {
+        void callback(String putUrl, String getUrl);
     }
 
-    @Override
-    public void processPacket(Stanza packet) {
-        // we don't need this listener anymore
-        getConnection().removeAsyncStanzaListener(this);
-
-        UploadInfo info = (UploadInfo) packet;
-        String node = info.getNode();
-        setUploadService(node, info.getUri());
-        Log.v(MessageCenterService.TAG, "upload info received, node = " +
-            node + ", uri = " + info.getUri());
-
-        // resend pending messages
-        resendPendingMessages(true, false);
-    }
 }
-

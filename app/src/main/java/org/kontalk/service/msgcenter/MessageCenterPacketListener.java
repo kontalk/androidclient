@@ -19,7 +19,6 @@
 package org.kontalk.service.msgcenter;
 
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.jivesoftware.smack.SmackException;
@@ -27,17 +26,17 @@ import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.roster.RosterEntry;
 
-import org.kontalk.Kontalk;
-import org.kontalk.client.EndpointServer;
-import org.kontalk.client.KontalkConnection;
-import org.kontalk.message.CompositeMessage;
-import org.kontalk.service.msgcenter.MessageCenterService.IdleConnectionHandler;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
+
+import org.kontalk.Kontalk;
+import org.kontalk.client.EndpointServer;
+import org.kontalk.client.KontalkConnection;
+import org.kontalk.message.CompositeMessage;
+import org.kontalk.service.msgcenter.MessageCenterService.IdleConnectionHandler;
 
 
 /**
@@ -120,20 +119,16 @@ abstract class MessageCenterPacketListener implements StanzaListener {
             instance.sendPacket(packet, bumpIdle);
     }
 
-    protected void initUploadServices() {
-        MessageCenterService instance = mInstance.get();
-        if (instance != null) {
-            if (instance.mUploadServices == null)
-                instance.mUploadServices = new HashMap<String, String>();
-            else
-                instance.mUploadServices.clear();
-        }
-    }
-
-    protected void setUploadService(String name, String url) {
+    protected void addUploadService(IUploadService service) {
         MessageCenterService instance = mInstance.get();
         if (instance != null)
-            instance.mUploadServices.put(name, url);
+            instance.addUploadService(service);
+    }
+
+    protected void addUploadService(IUploadService service, int priority) {
+        MessageCenterService instance = mInstance.get();
+        if (instance != null)
+            instance.addUploadService(service, priority);
     }
 
     protected void resendPendingMessages(boolean retrying, boolean forcePending) {

@@ -458,6 +458,27 @@ public class CompositeMessage {
         return null;
     }
 
+    /**
+     * Returns a correct file name for the given MIME.
+     * @param mime MIME type of the incoming attachment
+     * @param timestamp timestamp of the message
+     */
+    public static String getFilename(String mime, Date timestamp) {
+        Class<AttachmentComponent> klass = getSupportingComponent(mime);
+        if (klass != null) {
+            if (klass.isAssignableFrom(ImageComponent.class)) {
+                String ext = ImageComponent.getFileExtension(mime);
+                return MediaStorage.getOutgoingPictureFilename(timestamp, ext);
+            }
+            else if (klass.isAssignableFrom(AudioComponent.class)) {
+                String ext = AudioComponent.getFileExtension(mime);
+                return MediaStorage.getOutgoingAudioFilename(timestamp, ext);
+            }
+        }
+
+        return null;
+    }
+
     /** Still unused.
     public static void startQuery(AsyncQueryHandler handler, int token, String peer) {
         // cancel previous operations

@@ -241,18 +241,21 @@ class MessageListener extends MessageCenterPacketListener {
                         MessageComponent<?> attachment = null;
 
                         if (ImageComponent.supportsMimeType(mime)) {
+                            msg.clearComponents();
                             // cleartext only for now
                             attachment = new ImageComponent(mime, previewFile, null, fetchUrl, length,
                                 encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
                         }
 
                         else if (VCardComponent.supportsMimeType(mime)) {
+                            msg.clearComponents();
                             // cleartext only for now
                             attachment = new VCardComponent(previewFile, null, fetchUrl, length,
                                 encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
                         }
 
                         else if (AudioComponent.supportsMimeType(mime)) {
+                            msg.clearComponents();
                             attachment = new AudioComponent(mime, null, fetchUrl, length,
                                 encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
                         }

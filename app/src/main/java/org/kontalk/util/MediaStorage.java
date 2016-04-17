@@ -267,17 +267,77 @@ public abstract class MediaStorage {
 
     public static long getLength(Context context, Uri media) throws IOException {
         AssetFileDescriptor stat = null;
+        long length = 0;
         try {
             stat = context.getContentResolver().openAssetFileDescriptor(media, "r");
-            return stat.getLength();
+            if (stat != null)
+                length = stat.getLength();
         }
         finally {
             try {
-                stat.close();
+                if (stat != null)
+                    stat.close();
             }
-            catch (Exception e) {
+            catch (IOException e) {
                 // ignored
             }
+        }
+
+        if (length == 0) {
+            // try to count bytes by reading it
+            InputStream in = null;
+            try {
+                in = context.getContentResolver().openInputStream(media);
+                CountingInputStream counter = new CountingInputStream(in);
+                counter.consume();
+                length = counter.getByteCount();
+            }
+            finally {
+                try {
+                    if (in != null)
+                        in.close();
+                }
+                catch (IOException e) {
+                    // ignored
+                }
+            }
+        }
+
+        return length;
+    }
+
+    private static final class CountingInputStream extends InputStream {
+        private final InputStream mInputStream;
+        private long mBytes;
+
+        public CountingInputStream(InputStream in) {
+            mInputStream = in;
+        }
+
+        @Override
+        public int available() throws IOException {
+            return mInputStream.available();
+        }
+
+        @Override
+        public void close() throws IOException {
+            mInputStream.close();
+        }
+
+        @Override
+        public int read() throws IOException {
+            int data = mInputStream.read();
+            if (data >= 0)
+                mBytes++;
+            return data;
+        }
+
+        public long getByteCount() {
+            return mBytes;
+        }
+
+        public void consume() throws IOException {
+            while (read() >= 0);
         }
     }
 
@@ -308,6 +368,11 @@ public abstract class MediaStorage {
         return f;
     }
 
+    public static String getOutgoingPictureFilename(Date date, String extension) {
+        String timeStamp = sDateFormat.format(date);
+        return "IMG_" + timeStamp + "." + extension;
+    }
+
     /** Creates a file object for an incoming image file. */
     public static File getIncomingImageFile(Date date, String extension) {
         createMedia(PICTURES_ROOT);
@@ -326,6 +391,11 @@ public abstract class MediaStorage {
         File f = new File(AUDIO_ROOT, "record_" + timeStamp + ".3gp");
         f.createNewFile();
         return f;
+    }
+
+    public static String getOutgoingAudioFilename(Date date, String extension) {
+        String timeStamp = sDateFormat.format(date);
+        return "audio_" + timeStamp + "." + extension;
     }
 
     /** Creates a file object for an incoming audio file. */

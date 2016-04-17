@@ -223,6 +223,13 @@
         <className>org.kontalk.client.UploadInfo$Provider</className>
     </iqProvider>
 
+    <!-- XEP-0363: HTTP File Upload -->
+    <iqProvider>
+        <elementName>slot</elementName>
+        <namespace>urn:xmpp:http:upload</namespace>
+        <className>org.kontalk.client.HTTPFileUpload$Slot$Provider</className>
+    </iqProvider>
+
     <!-- RFC 3923: end-to-end encryption -->
     <extensionProvider>
         <elementName>e2e</elementName>

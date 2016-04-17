@@ -50,7 +50,6 @@ import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import android.content.Context;
 import android.util.Log;
 
-import info.guardianproject.netcipher.NetCipher;
 import info.guardianproject.netcipher.client.TlsOnlySocketFactory;
 
 import org.kontalk.message.CompositeMessage;
@@ -81,6 +80,10 @@ public class ClientHTTPConnection {
     private final static int CONNECT_TIMEOUT = 15000;
     private final static int READ_TIMEOUT = 40000;
 
+    public ClientHTTPConnection(Context context) {
+        this(context, null, null);
+    }
+
     public ClientHTTPConnection(Context context, PrivateKey privateKey, X509Certificate bridgeCert) {
         mContext = context;
         mPrivateKey = privateKey;
@@ -98,7 +101,7 @@ public class ClientHTTPConnection {
      * @return the request object
      */
     private HttpsURLConnection prepareURLDownload(String url, boolean acceptAnyCertificate) throws IOException {
-        HttpsURLConnection conn = NetCipher.getHttpsURLConnection(new URL(url));
+        HttpsURLConnection conn = (HttpsURLConnection) new URL(url).openConnection();
         try {
             setupClient(conn, acceptAnyCertificate);
         }
@@ -121,7 +124,7 @@ public class ClientHTTPConnection {
             IOException {
 
         // bug caused by Lighttpd
-        conn.setRequestProperty("Expect", "100-continue");
+        //conn.setRequestProperty("Expect", "100-continue");
         conn.setConnectTimeout(CONNECT_TIMEOUT);
         conn.setReadTimeout(READ_TIMEOUT);
         conn.setDoInput(true);

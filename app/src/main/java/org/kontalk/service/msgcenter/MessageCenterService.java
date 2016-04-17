@@ -20,13 +20,15 @@ package org.kontalk.service.msgcenter;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.zip.ZipInputStream;
@@ -38,8 +40,8 @@ import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.filter.StanzaFilter;
-import org.jivesoftware.smack.filter.StanzaTypeFilter;
 import org.jivesoftware.smack.filter.StanzaIdFilter;
+import org.jivesoftware.smack.filter.StanzaTypeFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Stanza;
@@ -54,6 +56,7 @@ import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.csi.ClientStateIndicationManager;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
+import org.jivesoftware.smackx.disco.packet.DiscoverItems;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
 import org.jivesoftware.smackx.iqversion.VersionManager;
 import org.jivesoftware.smackx.iqversion.packet.Version;
@@ -102,10 +105,10 @@ import org.kontalk.client.BlockingCommand;
 import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
-import org.kontalk.client.PublicKeyPublish;
-import org.kontalk.client.RosterMatch;
 import org.kontalk.client.OutOfBandData;
+import org.kontalk.client.PublicKeyPublish;
 import org.kontalk.client.PushRegistration;
+import org.kontalk.client.RosterMatch;
 import org.kontalk.client.ServerlistCommand;
 import org.kontalk.client.SmackInitializer;
 import org.kontalk.client.VCard4;
@@ -347,7 +350,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     String mMyUsername;
 
     /** Supported upload services. */
-    Map<String, String> mUploadServices;
+    List<IUploadService> mUploadServices;
 
     /** Roster store. */
     private SQLiteRosterStore mRosterStore;
@@ -1310,6 +1313,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // send presence
         sendPresence(mIdleHandler.isHeld() ? Presence.Mode.available : Presence.Mode.away);
+        // clear upload service
+        if (mUploadServices != null)
+            mUploadServices.clear();
         // discovery
         discovery();
 
@@ -1347,12 +1353,19 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     /** Discovers info and items. */
     private void discovery() {
+        StanzaFilter filter;
+
         DiscoverInfo info = new DiscoverInfo();
         info.setTo(mServer.getNetwork());
-
-        StanzaFilter filter = new StanzaIdFilter(info.getStanzaId());
+        filter = new StanzaIdFilter(info.getStanzaId());
         mConnection.addAsyncStanzaListener(new DiscoverInfoListener(this), filter);
         sendPacket(info);
+
+        DiscoverItems items = new DiscoverItems();
+        items.setTo(mServer.getNetwork());
+        filter = new StanzaIdFilter(items.getStanzaId());
+        mConnection.addAsyncStanzaListener(new DiscoverItemsListener(this), filter);
+        sendPacket(items);
     }
 
     private void active(boolean available) {
@@ -1831,7 +1844,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         boolean retrying = data.getBoolean("org.kontalk.message.retrying");
-        String to = data.getString("org.kontalk.message.to");
+        final String to = data.getString("org.kontalk.message.to");
 
         if (!isAuthorized(to)) {
             Log.i(TAG, "not subscribed to " + to + ", not sending message");
@@ -1858,41 +1871,76 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         // check if message is already pending
-        long msgId = data.getLong("org.kontalk.message.msgId");
+        final long msgId = data.getLong("org.kontalk.message.msgId");
         if (mWaitingReceipt.containsValue(msgId)) {
             Log.v(TAG, "message already queued and waiting - dropping");
             return;
         }
 
-        String id = data.getString("org.kontalk.message.packetId");
+        final String id = data.getString("org.kontalk.message.packetId");
 
-        boolean encrypt = data.getBoolean("org.kontalk.message.encrypt");
-        String mime = data.getString("org.kontalk.message.mime");
+        final boolean encrypt = data.getBoolean("org.kontalk.message.encrypt");
+        final String mime = data.getString("org.kontalk.message.mime");
         String _mediaUri = data.getString("org.kontalk.message.media.uri");
         if (_mediaUri != null) {
             // take the first available upload service :)
-            String postUrl = getUploadService();
-            if (postUrl != null) {
+            IUploadService uploadService = getUploadService();
+            if (uploadService != null) {
+                Uri preMediaUri = Uri.parse(_mediaUri);
+                final String previewPath = data.getString("org.kontalk.message.preview.path");
+                long fileLength;
+
+                try {
+                    // encrypt the file if necessary
+                    if (encrypt) {
+                        InputStream in = getContentResolver().openInputStream(preMediaUri);
+                        File encrypted = MessageUtils.encryptFile(this, in, to);
+                        fileLength = encrypted.length();
+                        preMediaUri = Uri.fromFile(encrypted);
+                    }
+                    else {
+                        fileLength = MediaStorage.getLength(this, preMediaUri);
+                    }
+                }
+                catch (Exception e) {
+                    Log.w(TAG, "error preprocessing media: " + preMediaUri, e);
+                    // simulate upload error
+                    UploadService.errorNotification(this,
+                        getString(R.string.notify_ticker_upload_error),
+                        getString(R.string.notify_text_upload_error));
+                    return;
+                }
+
+                final Uri mediaUri = preMediaUri;
+
+                // build a filename
+                String filename = CompositeMessage.getFilename(mime, new Date());
+                if (filename == null)
+                    filename = MediaStorage.UNKNOWN_FILENAME;
+
                 // media message - start upload service
-                Uri mediaUri = Uri.parse(_mediaUri);
+                uploadService.getPostUrl(filename, fileLength, mime, new IUploadService.UrlCallback() {
+                    @Override
+                    public void callback(String putUrl, String getUrl) {
+                        // start upload intent service
+                        Intent i = new Intent(MessageCenterService.this, UploadService.class);
+                        i.setData(mediaUri);
+                        i.setAction(UploadService.ACTION_UPLOAD);
+                        i.putExtra(UploadService.EXTRA_POST_URL, putUrl);
+                        i.putExtra(UploadService.EXTRA_GET_URL, getUrl);
+                        i.putExtra(UploadService.EXTRA_DATABASE_ID, msgId);
+                        i.putExtra(UploadService.EXTRA_MESSAGE_ID, id);
+                        i.putExtra(UploadService.EXTRA_MIME, mime);
+                        // this will be used only for out of band data
+                        i.putExtra(UploadService.EXTRA_ENCRYPT, true);
+                        i.putExtra(UploadService.EXTRA_PREVIEW_PATH, previewPath);
+                        // delete original (actually it's the encrypted temp file) if we already encrypted it
+                        i.putExtra(UploadService.EXTRA_DELETE_ORIGINAL, encrypt);
+                        i.putExtra(UploadService.EXTRA_USER, to);
+                        startService(i);
+                    }
+                });
 
-                // preview file path (if any)
-                String previewPath = data.getString("org.kontalk.message.preview.path");
-                // compress ratio (if any)
-                int compress = data.getInt("org.kontalk.message.compress");
-
-                // start upload intent service
-                Intent i = new Intent(this, UploadService.class);
-                i.setData(mediaUri);
-                i.setAction(UploadService.ACTION_UPLOAD);
-                i.putExtra(UploadService.EXTRA_POST_URL, postUrl);
-                i.putExtra(UploadService.EXTRA_DATABASE_ID, msgId);
-                i.putExtra(UploadService.EXTRA_MESSAGE_ID, id);
-                i.putExtra(UploadService.EXTRA_MIME, mime);
-                i.putExtra(UploadService.EXTRA_ENCRYPT, encrypt);
-                i.putExtra(UploadService.EXTRA_PREVIEW_PATH, previewPath);
-                i.putExtra(UploadService.EXTRA_USER, to);
-                startService(i);
             }
             else {
                 // TODO warn user about this problem
@@ -2110,18 +2158,25 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return msgUri;
     }
 
-    /** Returns the first available upload service post URL. */
-    private String getUploadService() {
-        if (mUploadServices != null && mUploadServices.size() > 0) {
-            Set<String> keys = mUploadServices.keySet();
-            for (String key : keys) {
-                String url = mUploadServices.get(key);
-                if (url != null)
-                    return url;
-            }
-        }
+    private void ensureUploadServices() {
+        if (mUploadServices == null)
+            mUploadServices = new ArrayList<>(2);
+    }
 
-        return null;
+    void addUploadService(IUploadService service) {
+        ensureUploadServices();
+        mUploadServices.add(service);
+    }
+
+    void addUploadService(IUploadService service, int priority) {
+        ensureUploadServices();
+        mUploadServices.add(priority, service);
+    }
+
+    /** Returns the first available upload service post URL. */
+    private IUploadService getUploadService() {
+        return (mUploadServices != null && mUploadServices.size() > 0) ?
+            mUploadServices.get(0) : null;
     }
 
     private void beginKeyPairRegeneration() {
@@ -2348,6 +2403,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.preview.uri", localUri.toString());
         i.putExtra("org.kontalk.message.length", length);
         i.putExtra("org.kontalk.message.preview.path", previewPath);
+        i.putExtra("org.kontalk.message.body", fetchUrl);
         i.putExtra("org.kontalk.message.fetch.url", fetchUrl);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
