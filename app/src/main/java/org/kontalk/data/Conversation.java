@@ -251,6 +251,11 @@ public class Conversation {
     }
 
     public String[] getGroupPeers() {
+        return getGroupPeers(false);
+    }
+
+    public String[] getGroupPeers(boolean force) {
+        loadGroupPeers(force);
         return mGroupPeers;
     }
 
@@ -357,7 +362,7 @@ public class Conversation {
             // FIXME turn this into batch operations
             values.put(Groups.PEER, member);
             context.getContentResolver()
-                .insert(Groups.MEMBERS_CONTENT_URI, values);
+                .insert(Groups.getMembersUri(groupJid), values);
         }
     }
 

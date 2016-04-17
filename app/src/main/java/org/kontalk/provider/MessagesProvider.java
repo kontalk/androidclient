@@ -783,7 +783,7 @@ public class MessagesProvider extends ContentProvider {
         try {
             threadId = db.insertOrThrow(TABLE_THREADS, null, values);
 
-            // insert group info if needed (message center will request members)
+            // insert group info if needed
             if (groupJid != null) {
                 ContentValues groupValues = new ContentValues();
                 groupValues.put(Groups.GROUP_JID, groupJid);
@@ -1111,6 +1111,22 @@ public class MessagesProvider extends ContentProvider {
                 table = TABLE_GROUPS;
                 where = Groups.GROUP_JID + "=?";
                 args = new String[] { uri.getLastPathSegment() };
+                if (selection != null) {
+                    where += " AND (" + selection + ")";
+                    if (selectionArgs != null)
+                        args = SystemUtils.concatenate(args, selectionArgs);
+                }
+                break;
+
+            case GROUPS_MEMBERS_ID:
+                table = TABLE_GROUP_MEMBERS;
+                where = Groups.GROUP_JID + " = ? AND " + Groups.PEER + " = ?";
+                args = new String[] { uri.getPathSegments().get(1), uri.getLastPathSegment() };
+                if (selection != null) {
+                    where += " AND (" + selection + ")";
+                    if (selectionArgs != null)
+                        args = SystemUtils.concatenate(args, selectionArgs);
+                }
                 break;
 
             // special case: conversations

@@ -58,6 +58,7 @@ import org.kontalk.crypto.PersonalKey;
 import org.kontalk.message.AttachmentComponent;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.GroupComponent;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.message.RawComponent;
@@ -568,7 +569,7 @@ public final class MessageUtils {
         // message still encrypted - use whole body of raw component
         if (msg.isEncrypted()) {
 
-            RawComponent raw = (RawComponent) msg.getComponent(RawComponent.class);
+            RawComponent raw = msg.getComponent(RawComponent.class);
             // if raw it's null it's a bug
             content = raw.getContent();
             mime = null;
@@ -577,16 +578,21 @@ public final class MessageUtils {
         }
 
         else {
+            GroupCommandComponent group = msg.getComponent(GroupCommandComponent.class);
+            if (group != null) {
+                content = group.getTextContent().getBytes();
+                mime = GroupCommandComponent.MIME_TYPE;
+            }
+            else {
+                TextComponent txt = msg.getComponent(TextComponent.class);
 
-            TextComponent txt = (TextComponent) msg.getComponent(TextComponent.class);
-
-            if (txt != null) {
-                content = txt.getContent().getBytes();
-                mime = TextComponent.MIME_TYPE;
+                if (txt != null) {
+                    content = txt.getContent().getBytes();
+                    mime = TextComponent.MIME_TYPE;
+                }
             }
 
             checkAttachment = true;
-
         }
 
         // selective components detection
@@ -652,6 +658,19 @@ public final class MessageUtils {
         drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         drawable.draw(canvas);
         return bitmap;
+    }
+
+    public static String toString(byte[] text) {
+        return new String(trimNul(text));
+    }
+
+    public static byte[] trimNul(byte[] text) {
+        if (text.length > 0 && text[text.length - 1] == '\0') {
+            byte[] nulBody = new byte[text.length - 1];
+            System.arraycopy(text, 0, nulBody, 0, nulBody.length);
+            text = nulBody;
+        }
+        return text;
     }
 
 }

@@ -44,6 +44,7 @@ import org.kontalk.service.msgcenter.MessageCenterService.IdleConnectionHandler;
  * @author Daniele Ricci
  */
 abstract class MessageCenterPacketListener implements StanzaListener {
+    protected static final String TAG = MessageCenterService.TAG;
 
     private WeakReference<MessageCenterService> mInstance;
 

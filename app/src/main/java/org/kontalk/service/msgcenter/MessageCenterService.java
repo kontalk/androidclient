@@ -121,8 +121,9 @@ import org.kontalk.data.Contact;
 import org.kontalk.message.AttachmentComponent;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
-import org.kontalk.message.ImageComponent;
 import org.kontalk.message.GroupCommandComponent;
+import org.kontalk.message.GroupComponent;
+import org.kontalk.message.ImageComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
 import org.kontalk.provider.MessagesProvider;
@@ -318,6 +319,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private static final int GROUP_COMMAND_CREATE = 1;
     private static final int GROUP_COMMAND_SUBJECT = 2;
     private static final int GROUP_COMMAND_PART = 3;
+    private static final int GROUP_COMMAND_MEMBERS = 4;
 
     /** Minimal wakeup time. */
     public final static int MIN_WAKEUP_TIME = 300000;
@@ -1575,8 +1577,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             b.putString("org.kontalk.message.packetId", msgId);
 
             if (groupJid != null) {
-                b.putString("org.kontalk.message.groupJid", groupJid);
-                b.putString("org.kontalk.message.groupSubject", groupSubject);
+                b.putString("org.kontalk.message.group.jid", groupJid);
+                b.putString("org.kontalk.message.group.subject", groupSubject);
+                // will be replaced by the group command (if any)
                 b.putStringArray("org.kontalk.message.to", groupMembers);
             }
             else {
@@ -1590,18 +1593,28 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 int cmd = 0;
                 // use database conversion facility
                 String command = c.getString(3);
-                if (command.equals(GroupCommandComponent.COMMAND_CREATE)) {
+
+                String[] createMembers;
+                String[] addMembers;
+                String[] removeMembers = null;
+                if ((createMembers = GroupCommandComponent.getCreateCommandMembers(command)) != null) {
                     cmd = GROUP_COMMAND_CREATE;
+                    b.putStringArray("org.kontalk.message.to", createMembers);
                 }
                 else if (command.equals(GroupCommandComponent.COMMAND_PART)) {
                     cmd = GROUP_COMMAND_PART;
                 }
-                // TODO delete
+                else if ((addMembers = GroupCommandComponent.getAddCommandMembers(command)) != null ||
+                        (removeMembers = GroupCommandComponent.getRemoveCommandMembers(command)) != null) {
+                    cmd = GROUP_COMMAND_MEMBERS;
+                    b.putStringArray("org.kontalk.message.group.add", addMembers);
+                    b.putStringArray("org.kontalk.message.group.remove", removeMembers);
+                }
 
-                b.putInt("org.kontalk.message.groupCommand", cmd);
+                b.putInt("org.kontalk.message.group.command", cmd);
             }
             else if (textContent != null) {
-                b.putString("org.kontalk.message.body", new String(textContent));
+                b.putString("org.kontalk.message.body", MessageUtils.toString(textContent));
             }
 
             // message has already been uploaded - just send media
@@ -1900,7 +1913,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         boolean retrying = data.getBoolean("org.kontalk.message.retrying");
 
-        String groupJid = data.getString("org.kontalk.message.groupJid");
+        String groupJid = data.getString("org.kontalk.message.group.jid");
         String to;
         String[] toGroup;
 
@@ -2077,19 +2090,26 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 group = KontalkGroupManager.getInstanceFor(mConnection)
                     .getGroup(groupJid);
 
-                int groupCommand = data.getInt("org.kontalk.message.groupCommand", 0);
+                int groupCommand = data.getInt("org.kontalk.message.group.command", 0);
                 switch (groupCommand) {
                     case GROUP_COMMAND_PART:
                         group.leave(m);
                         break;
                     case GROUP_COMMAND_CREATE: {
-                        String subject = data.getString("org.kontalk.message.groupSubject");
+                        String subject = data.getString("org.kontalk.message.group.subject");
                         group.create(subject, toGroup, m);
                         break;
                     }
                     case GROUP_COMMAND_SUBJECT: {
-                        String subject = data.getString("org.kontalk.message.groupSubject");
+                        String subject = data.getString("org.kontalk.message.group.subject");
                         group.setSubject(subject, m);
+                        break;
+                    }
+                    case GROUP_COMMAND_MEMBERS: {
+                        String subject = data.getString("org.kontalk.message.group.subject");
+                        String[] added = data.getStringArray("org.kontalk.message.group.add");
+                        String[] removed = data.getStringArray("org.kontalk.message.group.remove");
+                        group.addRemoveMembers(subject, toGroup, added, removed, m);
                         break;
                     }
                     default:
@@ -2216,69 +2236,66 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
         values.put(Messages.TIMESTAMP, System.currentTimeMillis());
 
-        GroupCommandComponent group = msg.getComponent(GroupCommandComponent.class);
-        if (group != null) {
-            values.put(Groups.GROUP_JID, group.getContent().getJID());
+        GroupComponent groupInfo = msg.getComponent(GroupComponent.class);
+        if (groupInfo != null) {
+            values.put(Groups.GROUP_JID, groupInfo.getContent().getJid());
+            values.put(Groups.GROUP_TYPE, GroupCommandComponent.GROUP_TYPE);
 
-            String groupSubject = group.getContent().getSubject();
+            String groupSubject = groupInfo.getContent().getSubject();
             if (groupSubject != null)
                 values.put(Groups.SUBJECT, groupSubject);
+        }
+
+        GroupCommandComponent group = msg.getComponent(GroupCommandComponent.class);
+        if (group != null) {
+            // the following operations will work because we are operating with
+            // groups and group_members table (that is, no foreign keys)
 
             // update group members first
-            List<GroupExtension.Member> members = group.getContent().getMembers();
-            if (members != null) {
-                ContentValues membersValues = new ContentValues();
-                for (GroupExtension.Member member : members) {
-                    // consider only normal members
-                    if (member.operation != GroupExtension.Member.Operation.NONE ||
-                            // do not add ourselves
-                            Authenticator.isSelfJID(this, member.jid))
-                        continue;
+            ContentValues membersValues = new ContentValues();
+            String[] members = group.getExistingMembers();
+            for (String member : members) {
+                // do not add ourselves
+                if (Authenticator.isSelfJID(this, member))
+                    continue;
 
-                    // FIXME turn this into batch operations
-                    membersValues.put(Groups.PEER, member.jid);
-                    getContentResolver().insert(Groups
-                        .getMembersUri(group.getContent().getJID()), membersValues);
-                }
+                // add member to group
+                membersValues.put(Groups.PEER, member);
+                getContentResolver().insert(Groups
+                    .getMembersUri(group.getContent().getJID()), membersValues);
             }
 
-            /* a user is leaving the group
-            String partMember = group.getContent().getPartMember();
-            if (partMember != null) {
-                // remove member from group
-                getContentResolver().delete(Groups.MEMBERS_CONTENT_URI,
-                    Groups.GROUP_JID+"=? AND " + Groups.PEER + "=?",
-                    new String[] { group.getContent().getJid(), partMember });
-            }
-            */
-
-            /* FIXME same code as above (for getMembers())
-            String[] added = group.getContent().getAddMembers();
-            if (added != null && added.length > 0) {
-                ContentValues membersValues = new ContentValues();
+            // add/remove users
+            if (group.isAddOrRemoveCommand()) {
+                String[] added = group.getAddedMembers();
                 for (String member : added) {
                     // do not add ourselves
                     if (Authenticator.isSelfJID(this, member))
                         continue;
 
-                    // FIXME turn this into batch operations
+                    // add member to group
                     membersValues.put(Groups.PEER, member);
                     getContentResolver().insert(Groups
-                        .getMembersUri(group.getContent().getJid()), membersValues);
+                        .getMembersUri(group.getContent().getJID()), membersValues);
+                }
+
+                String[] removed = group.getRemovedMembers();
+                for (String member : removed) {
+                    // remove member from group
+                    getContentResolver().delete(Groups.getMembersUri(group.getContent().getJID())
+                            .buildUpon().appendEncodedPath(member).build(),
+                        null, null);
                 }
             }
 
-            String[] removed = group.getContent().getRemoveMembers();
-            if (removed != null && removed.length > 0) {
-                for (String user : removed) {
-                    // FIXME turn this into batch operations
-                    // remove member from group
-                    getContentResolver().delete(Groups.MEMBERS_CONTENT_URI,
-                        Groups.GROUP_JID+"=? AND " + Groups.PEER + "=?",
-                        new String[] { group.getContent().getJid(), user });
-                }
+            // a user is leaving the group
+            if (group.isPartCommand()) {
+                String partMember = group.getFrom();
+                // remove member from group
+                getContentResolver().delete(Groups.getMembersUri(group.getContent().getJID())
+                        .buildUpon().appendEncodedPath(partMember).build(),
+                    null, null);
             }
-            */
         }
 
         Uri msgUri = null;
@@ -2319,7 +2336,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         };
 
         for (Class<AttachmentComponent> klass : tryComponents) {
-            AttachmentComponent att = (AttachmentComponent) msg.getComponent(klass);
+            AttachmentComponent att = msg.getComponent(klass);
             if (att != null && att.getFetchUrl() != null &&
                     Preferences.canAutodownloadMedia(this, att.getLength())) {
                 long databaseId = ContentUris.parseId(msgUri);
@@ -2555,8 +2572,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.packetId", packetId);
         i.putExtra("org.kontalk.message.mime", TextComponent.MIME_TYPE);
-        i.putExtra("org.kontalk.message.groupJid", groupJid);
-        i.putExtra("org.kontalk.message.groupSubject", groupSubject);
+        i.putExtra("org.kontalk.message.group.jid", groupJid);
+        i.putExtra("org.kontalk.message.group.subject", groupSubject);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.body", text);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
@@ -2571,9 +2588,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.packetId", packetId);
         i.putExtra("org.kontalk.message.mime", GroupCommandComponent.MIME_TYPE);
-        i.putExtra("org.kontalk.message.groupJid", groupJid);
-        i.putExtra("org.kontalk.message.groupSubject", groupSubject);
-        i.putExtra("org.kontalk.message.groupCommand", GROUP_COMMAND_CREATE);
+        i.putExtra("org.kontalk.message.group.jid", groupJid);
+        i.putExtra("org.kontalk.message.group.subject", groupSubject);
+        i.putExtra("org.kontalk.message.group.command", GROUP_COMMAND_CREATE);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
@@ -2586,8 +2603,25 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.packetId", messageId());
         i.putExtra("org.kontalk.message.mime", GroupCommandComponent.MIME_TYPE);
-        i.putExtra("org.kontalk.message.groupJid", groupJid);
-        i.putExtra("org.kontalk.message.groupCommand", GROUP_COMMAND_PART);
+        i.putExtra("org.kontalk.message.group.jid", groupJid);
+        i.putExtra("org.kontalk.message.group.command", GROUP_COMMAND_PART);
+        i.putExtra("org.kontalk.message.to", to);
+        i.putExtra("org.kontalk.message.encrypt", encrypt);
+        i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
+        context.startService(i);
+    }
+
+    public static void addGroupMembers(final Context context, String groupJid,
+        String groupSubject, String[] to, String[] members, boolean encrypt, long msgId, String packetId) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_MESSAGE);
+        i.putExtra("org.kontalk.message.msgId", msgId);
+        i.putExtra("org.kontalk.message.packetId", packetId);
+        i.putExtra("org.kontalk.message.mime", GroupCommandComponent.MIME_TYPE);
+        i.putExtra("org.kontalk.message.group.jid", groupJid);
+        i.putExtra("org.kontalk.message.group.subject", groupSubject);
+        i.putExtra("org.kontalk.message.group.command", GROUP_COMMAND_MEMBERS);
+        i.putExtra("org.kontalk.message.group.add", members);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra("org.kontalk.message.chatState", ChatState.active.name());

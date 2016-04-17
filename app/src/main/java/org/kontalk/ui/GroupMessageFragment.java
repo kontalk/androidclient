@@ -18,13 +18,25 @@
 
 package org.kontalk.ui;
 
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
+import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
+import org.kontalk.client.KontalkGroupManager;
+import org.kontalk.crypto.Coder;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.GroupCommandComponent;
+import org.kontalk.provider.MyMessages;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.util.Preferences;
 
 
 /**
@@ -35,6 +47,8 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
     /** The virtual or real group JID. */
     private String mGroupJID;
+
+    private MenuItem mInviteGroupMenu;
 
     @Override
     protected void sendBinaryMessageInternal(String mime, Uri localUri, long length,
@@ -57,10 +71,62 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     }
 
     @Override
+    protected void updateUI() {
+        super.updateUI();
+        if (mInviteGroupMenu != null) {
+            String myUser = Authenticator.getSelfJID(getContext());
+            boolean visible = KontalkGroupManager.KontalkGroup
+                .checkOwnership(mConversation.getGroupJid(), myUser);
+            mInviteGroupMenu.setVisible(visible);
+            mInviteGroupMenu.setEnabled(visible);
+        }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        mInviteGroupMenu = menu.findItem(R.id.invite_group);
+        updateUI();
+    }
+
+    @Override
     protected void addUsers(String[] members) {
+        // add members to database
         Conversation.addUsers(getContext(), getUserId(), members);
+
+        // store add group member command to outbox
+        boolean encrypted = Preferences.getEncryptionEnabled(getContext());
+        String msgId = MessageCenterService.messageId();
+        Uri cmdMsg = storeAddGroupMember(getThreadId(), getUserId(), members, msgId, encrypted);
+        // TODO check for null
+
+        // send add group member command now
+        String[] currentMembers = mConversation.getGroupPeers(true);
+        MessageCenterService.addGroupMembers(getContext(), getUserId(),
+            mConversation.getGroupSubject(), currentMembers, members, encrypted,
+            ContentUris.parseId(cmdMsg), msgId);
+
         // reload conversation
         ((ComposeMessageParent) getActivity()).loadConversation(getThreadId());
+    }
+
+    private Uri storeAddGroupMember(long threadId, String groupJid, String[] members, String msgId, boolean encrypted) {
+        // save to database
+        ContentValues values = new ContentValues();
+        values.put(MyMessages.Messages.THREAD_ID, threadId);
+        values.put(MyMessages.Messages.MESSAGE_ID, msgId);
+        values.put(MyMessages.Messages.PEER, groupJid);
+        values.put(MyMessages.Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
+        values.put(MyMessages.Messages.BODY_CONTENT, GroupCommandComponent.getAddMembersBodyContent(members));
+        values.put(MyMessages.Messages.BODY_LENGTH, 0);
+        values.put(MyMessages.Messages.UNREAD, false);
+        values.put(MyMessages.Messages.DIRECTION, MyMessages.Messages.DIRECTION_OUT);
+        values.put(MyMessages.Messages.TIMESTAMP, System.currentTimeMillis());
+        values.put(MyMessages.Messages.STATUS, MyMessages.Messages.STATUS_SENDING);
+        // of course outgoing messages are not encrypted in database
+        values.put(MyMessages.Messages.ENCRYPTED, false);
+        values.put(MyMessages.Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+        return getActivity().getContentResolver().insert(MyMessages.Messages.CONTENT_URI, values);
     }
 
     @Override

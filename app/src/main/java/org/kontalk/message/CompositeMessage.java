@@ -33,13 +33,14 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Parcelable;
 
+import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.GroupExtension;
 import org.kontalk.data.GroupInfo;
-import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.util.MediaStorage;
+import org.kontalk.util.MessageUtils;
 
 
 /**
@@ -313,15 +314,11 @@ public class CompositeMessage {
 
             if (body != null) {
                 // remove trailing zero
-                if (body.length > 0 && body[body.length - 1] == '\0') {
-                    byte[] nulBody = new byte[body.length - 1];
-                    System.arraycopy(body, 0, nulBody, 0, nulBody.length);
-                    body = nulBody;
-                }
+                String bodyText = MessageUtils.toString(body);
 
                 // text data
                 if (TextComponent.supportsMimeType(mime)) {
-                    TextComponent txt = new TextComponent(new String(body));
+                    TextComponent txt = new TextComponent(bodyText);
                     addComponent(txt);
                 }
 
@@ -331,19 +328,19 @@ public class CompositeMessage {
                     String groupOwner = XmppStringUtils.parseDomain(groupJid);
                     GroupExtension ext = null;
 
-                    String groupCommand = new String(body);
-                    if (GroupCommandComponent.COMMAND_CREATE.equals(groupCommand)) {
-                        String[] members = MessagesProvider.getGroupMembers(mContext, groupJid);
+                    String[] createMembers;
+                    if ((createMembers = GroupCommandComponent.getCreateCommandMembers(bodyText)) != null) {
                         ext = new GroupExtension(groupId, groupOwner, GroupExtension.Type.CREATE,
-                            groupSubject, GroupCommandComponent.membersFromJIDs(members));
+                            groupSubject, GroupCommandComponent.membersFromJIDs(createMembers));
                     }
-                    else if (GroupCommandComponent.COMMAND_PART.equals(groupCommand)) {
+                    else if (GroupCommandComponent.COMMAND_PART.equals(bodyText)) {
                         ext = new GroupExtension(groupId, groupOwner, GroupExtension.Type.PART);
                     }
-                    // TODO
+                    // TODO add/remove members
 
                     if (ext != null)
-                        addComponent(new GroupCommandComponent(ext, peer));
+                        addComponent(new GroupCommandComponent(ext, peer,
+                            Authenticator.getSelfJID(mContext)));
                 }
 
                 // unknown data

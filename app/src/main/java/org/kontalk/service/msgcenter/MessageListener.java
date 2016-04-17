@@ -21,8 +21,6 @@ package org.kontalk.service.msgcenter;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import org.jivesoftware.smack.SmackException;
@@ -33,6 +31,7 @@ import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
+import org.jxmpp.util.XmppStringUtils;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -43,6 +42,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import org.kontalk.Kontalk;
+import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.EndpointServer;
@@ -89,45 +89,32 @@ class MessageListener extends MessageCenterPacketListener {
         super(instance);
     }
 
-    public void processGroupMessage(KontalkGroupManager.KontalkGroup group, Stanza packet, CompositeMessage msg)
+    public boolean processGroupMessage(KontalkGroupManager.KontalkGroup group, Stanza packet, CompositeMessage msg)
             throws SmackException.NotConnectedException {
 
         if (group.checkRequest(packet)) {
             GroupExtension ext = GroupExtension.from(packet);
             String groupJid = ext.getJID();
             String subject = ext.getSubject();
-            if (ext.getType() == null || ext.getType() == GroupExtension.Type.NONE) {
-                GroupInfo groupInfo = new GroupInfo(groupJid, subject, GroupCommandComponent.GROUP_TYPE);
-                msg.addComponent(new GroupComponent(groupInfo));
+
+            // group information
+            GroupInfo groupInfo = new GroupInfo(groupJid, subject, GroupCommandComponent.GROUP_TYPE);
+            msg.addComponent(new GroupComponent(groupInfo));
+
+            if (ext.getType() == GroupExtension.Type.CREATE ||
+                    ext.getType() == GroupExtension.Type.PART ||
+                    ext.getType() == GroupExtension.Type.SET) {
+                GroupCommandComponent groupCmd = new GroupCommandComponent(ext,
+                    XmppStringUtils.parseBareJid(packet.getFrom()),
+                    Authenticator.getSelfJID(getContext()));
+                msg.addComponent(groupCmd);
             }
-            // TODO non-null type (add GroupCommandComponent
+
+            return true;
         }
-    }
 
-    private String[] flattenExistingMembers(GroupExtension group) {
-        return flattenOperationMembers(group, GroupExtension.Member.Operation.NONE, true);
-    }
-
-    private String[] flattenAddMembers(GroupExtension group) {
-        return flattenOperationMembers(group, GroupExtension.Member.Operation.ADD, false);
-    }
-
-    private String[] flattenRemoveMembers(GroupExtension group) {
-        return flattenOperationMembers(group, GroupExtension.Member.Operation.REMOVE, false);
-    }
-
-    private String[] flattenOperationMembers(GroupExtension group, GroupExtension.Member.Operation operation, boolean includeOwner) {
-        List<GroupExtension.Member> members = group.getMembers();
-        List<String> addMembers = new LinkedList<>();
-        if (includeOwner)
-            addMembers.add(group.getOwner());
-
-        for (int i = 0; i < members.size(); i++) {
-            GroupExtension.Member user = members.get(i);
-            if (user.operation == operation)
-                addMembers.add(members.get(i).jid);
-        }
-        return addMembers.toArray(new String[addMembers.size()]);
+        // invalid or unauthorized request
+        return false;
     }
 
     @Override
@@ -340,8 +327,10 @@ class MessageListener extends MessageCenterPacketListener {
                     // group chat
                     KontalkGroupManager.KontalkGroup group = KontalkGroupManager
                         .getInstanceFor(getConnection()).getGroup(m);
-                    if (group != null) {
-                        processGroupMessage(group, m, msg);
+                    if (group != null && !processGroupMessage(group, m, msg)) {
+                        // invalid group command
+                        Log.w(TAG, "invalid or unauthorized group command");
+                        return;
                     }
 
                     Uri msgUri = incoming(msg);

@@ -500,14 +500,14 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         }
     }
 
-    private Uri storeCreateGroup(long threadId, String groupJid, String msgId, boolean encrypted) {
+    private Uri storeCreateGroup(long threadId, String groupJid, String[] members, String msgId, boolean encrypted) {
         // save to database
         ContentValues values = new ContentValues();
         values.put(MyMessages.Messages.THREAD_ID, threadId);
         values.put(MyMessages.Messages.MESSAGE_ID, msgId);
         values.put(MyMessages.Messages.PEER, groupJid);
         values.put(MyMessages.Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
-        values.put(MyMessages.Messages.BODY_CONTENT, GroupCommandComponent.COMMAND_CREATE.getBytes());
+        values.put(MyMessages.Messages.BODY_CONTENT, GroupCommandComponent.getCreateBodyContent(members));
         values.put(MyMessages.Messages.BODY_LENGTH, 0);
         values.put(MyMessages.Messages.UNREAD, false);
         values.put(MyMessages.Messages.DIRECTION, MyMessages.Messages.DIRECTION_OUT);
@@ -538,7 +538,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         // store create group command to outbox
         boolean encrypted = Preferences.getEncryptionEnabled(getContext());
         String msgId = MessageCenterService.messageId();
-        Uri cmdMsg = storeCreateGroup(groupThreadId, groupJid, msgId, encrypted);
+        Uri cmdMsg = storeCreateGroup(groupThreadId, groupJid, users, msgId, encrypted);
         // TODO check for null
 
         // send create group command now

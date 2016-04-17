@@ -30,12 +30,11 @@ import org.kontalk.R;
 import org.kontalk.client.GroupExtension;
 import org.kontalk.data.Contact;
 import org.kontalk.message.GroupCommandComponent;
-import org.kontalk.message.GroupComponent;
 import org.kontalk.util.Preferences;
 
 
 /**
- * Message component for {@link GroupComponent}.
+ * Message component for {@link GroupCommandComponent}.
  * @author Daniele Ricci
  */
 public class GroupContentView extends TextView
@@ -97,7 +96,7 @@ public class GroupContentView extends TextView
             // TODO i18n
             Contact c = Contact.findByUserId(getContext(), component.getFrom());
             if (c != null)
-                text.append(c);
+                text.append(c.getName());
             else
                 text.append(getResources().getString(R.string.peer_unknown));
 
