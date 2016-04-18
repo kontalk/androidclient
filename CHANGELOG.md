@@ -1,5 +1,13 @@
 # Change Log
 
+## [3.1.7] - 2016-04-18
+### Changed
+- Update to latest emojis
+- New file upload method
+
+### Fixed
+- Fix crash after donating through Google Play (#687)
+
 ## [3.1.6] - 2016-04-14
 ### Fixed
 - Fix connection error (#676)
