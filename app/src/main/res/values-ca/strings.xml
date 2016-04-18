@@ -91,7 +91,7 @@
   <string name="size_unknown">(desconegut)</string>
   <string name="title_file_info">Informació del fitxer</string>
   <string name="pref_restart_msgcenter">Reinicia el centre de missatges</string>
-  <string name="pref_title_restart_msgcenter">Useu aquesta opció si el centre de missatges no funciona bé</string>
+  <string name="pref_title_restart_msgcenter">Useu aquesta opció si Kontalk no funciona bé</string>
   <string name="pref_idle_time">Desconnecta si no hi ha activitat</string>
   <string name="pref_title_idle_time">Temps d\'espera abans de desconnectar per inactivitat</string>
   <string name="pref_wakeup_time">Torna a connectar amb el servidor</string>
@@ -424,5 +424,33 @@
 
     <string name="err_keypair_export_write">No es pot escriure la clau personal a l\'emmagatzematge extern.</string>
     <string name="err_keypair_export_other">No es pot exportar la clau personal.</string>
+
+    <string name="mark_read">Llegit</string>
+    <string name="pref_enable_notification_led">Notificació LED</string>
+    <string name="pref_notification_led_color">Color de la notificació LED</string>
+    <string name="seen_away_label">en línia</string>
+    <string name="pref_title_custom_background">Esculli un fons amb l\'opció de sota</string>
+    <string name="pref_title_sync_sim_contacts">Incloure els contactes SIM a la comprovació d\'usuaris registrats</string>
+
+    <string name="pref_title_sync_invisible_contacts">Incloure els contactes que no apareixen a l\'aplicació Contactes. Habilitar si utilitza DAVDroid</string>
+
+    <string name="pref_media_autodownload_threshold">Llindar de descàrrega automàtica</string>
+    <string name="pref_title_media_autodownload_threshold">Els arxius més petits que aquesta mida sempre es descarreguen automàticament</string>
+    <string name="pref_msg_media_autodownload_threshold">Introduïu un valor en KB. S\'estableix en 0 per no descarregar automàticament.</string>
+
+    <string name="pref_media_autodownload">Descarregar automàticament</string>
+    <string name="pref_media_autodownload_label_never">Mai</string>
+    <string name="pref_media_autodownload_label_wifi">Només en Wifi</string>
+    <string name="pref_media_autodownload_label_always">Sempre</string>
+
+    <string name="warning_public_key_changed">La clau personal d\'aquest usuari ha canviat de forma inesperada!</string>
+    <string name="title_public_key_changed_warning">La clau personal va canviar</string>
+    <string name="msg_public_key_changed_warning">Si us plau, comproveu amb l\'usuari que el/la ha reinstal·lat kontalk o ha regenerat el seu/la seva clau intencionadament, en cas contrari la comunicació podria veure compromesa!</string>
+    <string name="warning_public_key_unknown">La clau personal d\'aquest usuari és de confiança!</string>
+    <string name="title_public_key_unknown_warning">La clau personal no és de confiança</string>
+    <string name="msg_public_key_unknown_warning">"Si us plau, comproveu amb l\'usuari que el seu / la seva empremta digital coincideix amb el que apareix a la   "<b> 1identitat</b> 2 de diàleg, en cas contrari la comunicació podria veure compromesa!</string>
+
+    <string name="pref_show_blocked_users">Mostra els usuaris bloquejats</string>
+    <string name="button_load_next_page">Carregar més missatges</string>
 
     </resources>
