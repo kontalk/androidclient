@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2016 Kontalk Devteam <devteam@kontalk.org>
 
@@ -15,7 +15,6 @@
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
-
 <resources>
   <string name="app_name">Kontalk</string>
   <string name="app_description">Rede de mensaxería instantanea dirixida pola comunidade</string>
@@ -36,7 +35,7 @@
   <string name="pref_network_uri">Enderezo de servidor manual</string>
   <string name="pref_title_network_uri">Iso vai sobrescribir a xestión automática da lista de servidores</string>
   <string name="number_validation_intro1">Por favor, escribe o teu nome, selecciona o código do teu país e introduce o teu número de teléfono móbil. Un SMS cun código de verificación será enviado. O teu número de teléfono será usado unha vez e despois descartado.</string>
-  <string name="number_validation_intro2">Se non podes recibir SMS neste dispositivo, insire outro número de teu e usa o código de verificación que recibirás por SMS.</string>
+  <string name="number_validation_intro2">Se non podes recibir SMS neste dispositivo, insire outro número teu, e usa o código de verificación que recibirás por SMS.</string>
   <string name="hint_validation_name">O teu nome</string>
   <string name="hint_validation_number">O teu número</string>
   <string name="hint_validation_code">Código de verificación</string>
@@ -110,7 +109,7 @@
   <string name="pref_title_on_hide_presence">Os usuarios/as non verán se estás conectado</string>
   <string name="pref_title_off_hide_presence">Os usuarios/as verán se estás conectado e cando foi a túa última conexión</string>
   <string name="contact_not_registered">O contacto parece non estar rexistrado no Kontalk.</string>
-  <string name="error_store_outbox">Non foi posible almacenar a mensaxe na caixa de saída.</string>
+  <string name="error_store_outbox">Non foi posible almacenar a mensaxe na caixa de saída. ¿Pode ser que a memoria esté chea?</string>
   <string name="decrypt_message">Descifrar mensaxe</string>
   <string name="download_file">Descargar o ficheiro</string>
   <string name="download_again">Descargar novamente</string>
@@ -170,7 +169,7 @@
   <string name="err_sync_failed">Non foi posible recargar a lista de contactos. Por favor, téntao máis tarde.</string>
   <string name="err_sync_nonetwork">Rede non dispoñible. Por favor, téntao máis tarde.</string>
   <string name="text_invite_message">Ola! Bótalle unha olhada ao Kontalk, unha app de mensaxería libre! http://kontalk.org/</string>
-  <string name="text_contacts_empty">Os novos usuarios serán engadidos automaticamente nesta lista.\n\nUsa <b>Menu</b> > <b>Convidar usuarios</b> para enviar unha mensaxe de convite para alguén.</string>
+  <string name="text_contacts_empty">Os novos usuarios serán engadidos automaticamente nesta lista.\n\nUsa <b>Menu</b> &gt; <b>Convidar usuarios</b> para enviar unha mensaxe de convite para alguén.</string>
   <string name="text_conversations_empty">Para comezar a escribir mensaxes usa a icona <b>nova mensaxe</b> de arriba.</string>
   <string name="notify_ticker_external_storage">Almacenamento externo non dispoñible</string>
   <string name="notify_text_external_storage">Non foi posible escribir no almacenamento externo.</string>
@@ -213,7 +212,7 @@
   <string name="msg_status_encrypted">Cifrado</string>
   <string name="pref_balloons">Tema dos globos das conversas</string>
   <string name="pref_title_balloons">Escolle un tema para os globos das conversas</string>
-  <string name="attachment_picture">Imaxe</string>
+  <string name="attachment_picture">Galería</string>
   <string name="attachment_contact">Contacto</string>
   <string name="chooser_send_picture">Enviar imaxe</string>
   <string name="chooser_error_no_camera">Almacenamento externo non dispoñible. A captura da cámara non estará habilidada.</string>
@@ -268,4 +267,127 @@
   <string name="iab_error_query">Non foi posible consultar o inventario de facturación \"in-app\" (%d)</string>
   <string name="copy_clipboard">Copiar ao portapapeis</string>
   <string name="bitcoin_clipboard_copied">Enderezo de Bitcoin copiado ao portapapeis.</string>
-</resources>
+<string name="app_name_offline">Kontalk (Fora de linea))</string>
+    <string name="mykey_activity_title">A miña clave persoal</string>
+    <string name="menu_import_key">Importa a clave</string>
+    <string name="menu_manual_verification">Xa ten un código?</string>
+    <string name="code_validation_intro">Vostede debe recibir unha SMS ou unha chamada en breves momentos dende o número:</string>
+    <string name="code_validation_intro2">Por favor inserir o código recibido ou escoite abaixo.</string>
+    <string name="code_validation_intro_missed_call">Ou debe recibir unha chamada perdida dende número brevemente. &lt;B&gt; 1 por favor non respondea a chamada &lt;/ b&gt; 2.<b>PLEASE DO NOT ANSWER THE CALL.</b></string>
+    <string name="code_validation_intro2_missed_call">Introduza os últimos %d díxitos do número que lle chamará.</string>
+    <string name="code_validation_intro_manual">Por favor, introduce o código de verificación que recibiu. Teña en conta que un código de verificación só pode ser usado unha vez.</string>
+    <string name="msg_importing_key">Importando a clave persoal…</string>
+    <string name="title_confirm_cancel_registration">¿Quere cancelar a subcripción?</string>
+    <string name="confirm_cancel_registration">Se volve, terá que comezar o rexistro a partir de cero. Se precisa cambiar a outra aplicación, só ten que usar o botón do dispositivo de casa.</string>
+    <string name="mark_read">Lido</string>
+    <string name="confirm_will_delete_threads">As conversas seleccionadas serán eliminadas.</string>
+    <string name="audio_message">Mensaxe de audio</string>
+    <string name="pref_regenerate_keypair_confirm">Un novo par de claves será xerado e asignado á súa conta. A súa clave antiga será inválidada.</string>
+    <string name="error_delete_thread">Non se pode borrar o fío.</string>
+    <string name="error_delete_message">Non se puido borrar a mensaxe.</string>
+    <string name="pref_title_disabled_push_notifications">As notificacións \"empuxón\" non estás soportadas no seu dispositivo.</string>
+    <string name="pref_enable_notification_led">Notificación LED</string>
+    <string name="pref_notification_led_color">Cor da notificación LED</string>
+    <string name="confirm_will_delete_messages">As mensaxes seleccionadas serán borradas.</string>
+    <string name="title_user_exists">O usuario existe</string>
+    <string name="err_validation_nonetwork">A conexión a Internet non está dispoñible. Kontalk require dunha conexión de Internet activa para funcionar.</string>
+    <string name="err_validation_user_exists"><b> 1 O número que está a usar xa está rexistrado en Kontalk .</b>" 2  Se quere rexistrar outro dispositivo, procedendo deste xeito pode producir erros no Kontalk. Consulte a nosa documentación sobre como copiar a sua conta entre os dispositivos. Seleccione Aceptar para continuar de todos os xeitos."</string>
+    <string name="button_validation_fallback">¿Non está a recibir unha chamada?</string>
+    <string name="title_nonetwork">Non hai conexión a internet</string>
+    <string name="title_fallback">¿Está a ter problemas?</string>
+    <string name="msg_fallback">Intentaremos outra forma de comprobar o seu número de teléfono.</string>
+    <string name="menu_block_user">Bloquear</string>
+    <string name="menu_unblock_user">Desbloquear</string>
+    <string name="open_audio">Reproduce o archivo de audio</string>
+    <string name="decrypting_attachment">Descifrando o adxunto …</string>
+    <string name="seen_away_label">En línea</string>
+    <string name="invitation_sent_label">Pendente de invitación</string>
+    <string name="pref_title_custom_background">Escolla un fondo pra usar como opción abaixo</string>
+    <string name="err_custom_background">Produciuse un erro ao configurar o fondo. Ténteo con outra imaxe.</string>
+    <string name="serverlist_update_nonetwork">A rede non está dispoñible. Por favor, ténteo de novo máis tarde.</string>
+    <string name="serverlist_update_offline">O modo sen conexión está activado.</string>
+
+    <string name="pref_vibrate_label_always">Sempre</string>
+    <string name="pref_vibrate_label_silent">Só cando esté en silencio</string>
+    <string name="pref_vibrate_label_never">Nunca</string>
+    <string name="pref_fontsize_label_small">Pequeno</string>
+    <string name="pref_fontsize_label_medium">Mediano</string>
+    <string name="pref_fontsize_label_large">Grande</string>
+    <string name="pref_balloon_label_hangout">Pasa-lo tempo</string>
+    <string name="pref_balloon_label_classic">Clásico</string>
+    <string name="pref_balloon_label_classic_old">Clásico (vello)</string>
+    <string name="pref_balloon_label_iphone">iPhone</string>
+    <string name="pref_text_enter_label_default">Por defecto</string>
+    <string name="pref_text_enter_label_newline">Introducir</string>
+    <string name="pref_text_enter_label_newline_send">Enviar</string>
+    <string name="pref_image_resize_label_original">Orixinal</string>
+    <string name="pref_image_resize_label_small">Pequeno (0.3MP)</string>
+    <string name="pref_image_resize_label_medium">Mediano (0.5MP)</string>
+    <string name="pref_image_resize_label_large">Grande (0.8MP)</string>
+    <string name="pref_idle_time_label_never">Nunca</string>
+    <string name="pref_idle_time_label_5m">5 minutos</string>
+    <string name="pref_idle_time_label_15m">15 minutos</string>
+    <string name="pref_idle_time_label_30m">30 minutos</string>
+    <string name="pref_idle_time_label_1h">1 hora</string>
+    <string name="pref_wakeup_time_label_5m">5 minutos</string>
+    <string name="pref_wakeup_time_label_15m">15 minutos</string>
+    <string name="pref_wakeup_time_label_30m">30 minutos</string>
+    <string name="pref_wakeup_time_label_1h">1 hora</string>
+    <string name="pref_wakeup_time_label_3h">3 horas</string>
+
+    <string name="pref_change_passphrase">Cambiar a persoal clave de contrasinal</string>
+    <string name="msg_import_keypair">Kontalk importará as súas claves de % s na súa memoria externa. Asegúrese de que o ficheiro existe e que é un ficheiro válido de claves exportadas.</string>
+    <string name="msg_import_keypair_complete">Rematou a importación da súa clave persoal.</string>
+    <string name="err_import_keypair_failed">Rematou a importación da súa clave persoal.</string>
+    <string name="err_import_keypair_uid_mismatch">A clave importada non coincide co número de teléfono que inseriu.</string>
+    <string name="err_import_keypair_read">Imposible ler a clave persoal no almacenamento externo.</string>
+    <string name="title_passphrase">Contrasinal</string>
+
+    <string name="attachment_camera">Cámara</string>
+    <string name="attachment_audio">Audio</string>
+    <string name="attachment_video">Vídeo</string>
+    <string name="attachment_file">Arquivo</string>
+    <string name="attachment_vcard">Contacto</string>
+    <string name="attachment_location">Localización</string>
+
+    <string name="msg_not_implemented">Non implementado.</string>
+
+    <string name="chooser_error_no_camera_app">Non hai aplicación da cámara dispoñible.</string>
+
+    <string name="chooser_select_link">Escoller acción</string>
+
+    <string name="pref_help">Axuda</string>
+    <string name="text_bitcoin_dialog">Dirección bitcoin:\n%s</string>
+    <string name="donate_paypal">PayPal</string>
+    <string name="msg_xmpp_upgrading">Actualizando …</string>
+    <string name="err_keypair_export_write">Non é posíbel gardar clave persoal no almacenamento externo.</string>
+    <string name="err_keypair_export_other">Non se pode exportar a clave persoal.</string>
+
+    <string name="invite_notification">está sendo invitado na conversa</string>
+    <string name="text_invitation1">Solicitado por:</string>
+    <string name="text_invitation2">Pegada dixital:</string>
+    <string name="button_identity">Identidade</string>
+
+    <string name="msg_iab_thankyou_warning">Algo saiu mal, pero a doazón pasou. Grazas!</string>
+
+    <string name="warn_no_personal_key">Non foi posíbel cargar a clave persoal. Desactive a cifraxe da configuración para enviar mensaxes de calquera maneira.</string>
+    <string name="warn_no_public_key">Incapaz de atopar unha clave pública para este usuario. Tente actualizar a súa lista de contactos ou desactive o cifrado na configuración para enviar mensaxes de calquera forma ..</string>
+    <string name="warn_encryption_failed">Non se pode cifrar as mensaxes. Desactive a cifraxe na configuración para enviar mensaxes de calquera maneira.</string>
+    <string name="warn_not_subscribed">Non se puido enviar a mensaxe. O usuario non aceptou o seu convite aínda ..</string>
+
+    <string name="pref_sync_sim_contacts">Sincronización de contactos da SIM</string>
+    <string name="pref_title_sync_sim_contacts">Incluir os contactos da SIM, cando se verifiquen usuarios rexistrados</string>
+
+    <string name="pref_sync_invisible_contacts">Incluír contactos invisibles</string>
+    <string name="pref_title_sync_invisible_contacts">Incluír contactos que non aparecen na aplicación Contactos. Activar a utilización de DAVDroid</string>
+
+    <string name="pref_accept_any_certificate">Aceptar calquera certificado SSL</string>
+
+    <string name="pref_delete_account">Borrar a súa conta</string>
+    <string name="msg_delete_account">Exclue do borrado da conta todas as súas mensaxes. A súa conta no servidor serán eliminada automaticamente despois de algunhas semanas.</string>
+    <string name="msg_delete_account_progress">Eliminando a súa conta…</string>
+
+    <string name="msg_user_blocked">O usuario foi bloqueado.</string>
+    <string name="msg_user_unblocked">O usuario foi desbloqueado.</string>
+    <string name="title_block_user_warning">Realmente queres bloquear a este usuario?</string>
+    </resources>
