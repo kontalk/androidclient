@@ -77,8 +77,8 @@
 
 	    <ImageView
 	        android:id="@+id/error"
-	        android:layout_width="20dip"
-	        android:layout_height="fill_parent"
+	        android:layout_width="@dimen/msg_status_size"
+	        android:layout_height="@dimen/msg_status_size"
 	        android:visibility="gone" />
 
 	    <TextView
