@@ -390,4 +390,75 @@
     <string name="msg_user_blocked">O usuario foi bloqueado.</string>
     <string name="msg_user_unblocked">O usuario foi desbloqueado.</string>
     <string name="title_block_user_warning">Realmente queres bloquear a este usuario?</string>
-    </resources>
+    <string name="msg_block_user_warning">Está a piques de bloquear este usuario. Se fai iso, este usuario non poderá enviar-lle calquera mensaxe ou material ata que o/a desbloquee. Este usuario tampouco poderá ver o seu estado ou durar presenza coñecida e tampouco será capaz de ver a súa/seu estado. Como efecto colateral, non lle podrá enviar unha mensaxe ou material ainda que el/ela queira.</string>
+    <string name="title_unblock_user_warning">Realmente quere desbloquear este usuario?</string>
+    <string name="msg_unblock_user_warning">Está a piques de desbloquear este usuario. O desbloqueo permitirá que el/ela poda enviar-lle mensaxes e ver o seu estado e última presenza coñecida.</string>
+
+    <string name="notification_text_more">Preme aquí para saber máis</string>
+
+    <string name="title_auth_error">Error de autentificación</string>
+    <string name="msg_auth_error">A autenticación para un servidor Kontalk fallou a última vez que intentou chamar. Podería ser un fallo temporal do servidor, ou, máis probablemente, o servidor está rexeitando a súa chave persoal. Recomendamos eliminar a súa conta de Kontalk na configuración do sistema Android e rexistrarse de novo (vai perder todas as súas mensaxes do Kontalk).</string>
+
+    <string name="warn_invite_no_app">Ningunha aplicación está dispoñible para invitar ós usuarios.</string>
+
+    <string name="pref_text_enter">Botón Intro</string>
+    <string name="pref_title_text_enter">Escolla un comportamento na tecla intro no teclado</string>
+
+    <string name="title_password1">Contrasinal:</string>
+    <string name="title_password2">Confirmar contrasinal:</string>
+
+    <string name="err_password_too_short">O contrasinal debe ter polo menos % d caracteres.</string>
+    <string name="err_passwords_mismatch">¡Os contrasinais non coinciden!</string>
+    <string name="err_password_invalid">Contrasinal incorrecto.</string>
+
+    <string name="hint_record">Preme no micrófono para comezar a gravar.</string>
+    <string name="hint_ptt">Toque e manteña o micrófono para gravar.</string>
+    <string name="err_change_passphrase">Non se pode cambiar o contrasinal da clave persoal.</string>
+    <string name="err_file_not_found">O arquivo non existe.</string>
+    <string name="err_audio_record">Erro ao iniciar a gravación de audio.</string>
+    <string name="err_audio_record_writing">Erro ao gardar no almacenamento externo.</string>
+    <string name="err_audio_record_noaudio">Non se gravou ningún audio.</string>
+    <string name="err_playing_audio">Erro na reprodución do son.</string>
+    <string name="err_playing_sdcard">Erro ao ler no almacenamento externo.</string>
+    <string name="slide_to_cancel">DESLICE PARA CANCELAR</string>
+
+    <string name="pref_media_settings">Opcións de comunicación</string>
+    <string name="pref_image_resize">Redimensionar imaxes</string>
+    <string name="pref_media_autodownload_threshold">Límite de descarga automática</string>
+    <string name="pref_title_media_autodownload_threshold">Os arquivos máis pequenos de ese tamaño, vanse descargar sempre automaticamente</string>
+    <string name="pref_msg_media_autodownload_threshold">Insira un valor en KB. Poña 0 para que nunca baixen automaticamente.</string>
+
+    <string name="pref_media_autodownload">Descargar automaticamente</string>
+    <string name="pref_media_autodownload_label_never">Nunca</string>
+    <string name="pref_media_autodownload_label_wifi">Só con Wi-Fi</string>
+    <string name="pref_media_autodownload_label_always">Sempre</string>
+
+    <string name="err_server_invalid_format">Formato de enderezo inválido.</string>
+
+    <string name="err_no_contacts_app">Non se atopou ningunha aplicación de contactos.</string>
+    <string name="err_no_contact">Contacto non atopado.</string>
+
+    <string name="warning_button_details">DETALLES</string>
+    <string name="warning_older_version">O seu amigo está a usar unha versión antiga do Kontalk. Algúns recursos poden non funcionar correctamente.</string>
+    <string name="warning_public_key_changed">A clave persoal do usuario cambiou de forma inesperada!</string>
+    <string name="title_public_key_changed_warning">A clave persoal cambiou</string>
+    <string name="msg_public_key_changed_warning">Por favor, asegúrese que o usuario reinstalarle Kontalk ou rexenere a súa clave intencionadamente, se non, a comunicación pode ser comprometida!</string>
+    <string name="warning_public_key_unknown">A clave persoal do usuario é fiable!</string>
+    <string name="title_public_key_unknown_warning">Clave persoal non fiable</string>
+    <string name="msg_public_key_unknown_warning">"Por favor, asegúrese de que a pegada do usuario  corresponde ao exhibido no "<b>1identidade</b>2 diálogo, se non, a comunicación pode ser comprometida!</string>
+
+    <string name="warning_user_blocked">O usuario bloqueoute.</string>
+
+    <string name="about_credits_devteam"><b> 1Foches invitado a Kontalk por:</b> 2</string>
+    <string name="about_credits_gfx"><b> 1Gráficos/Iconografia</b> 2</string>
+    <string name="about_credits_translators"><b> 1Traductores</b> 2</string>
+
+    <string name="pref_show_blocked_users">Amosar os usuarios bloqueados</string>
+    <string name="button_load_next_page">Cargar máis mensaxes</string>
+
+    <plurals name="context_selected">
+	<item quantity="one">1 seleccionado</item>
+	<item quantity="other">%d seleccionado</item>
+</plurals>
+
+</resources>
