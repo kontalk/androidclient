@@ -97,6 +97,7 @@ import org.kontalk.crypto.PersonalKeyImporter;
 import org.kontalk.crypto.PersonalKeyPack;
 import org.kontalk.crypto.X509Bridge;
 import org.kontalk.provider.UsersProvider;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
 import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
@@ -698,6 +699,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         }
         catch (Exception e) {
             Log.e(TAG, "error importing keys", e);
+            ReportingManager.logException(e);
             mImportedPublicKey = mImportedPrivateKey = null;
             mTrustedKeys = null;
 
@@ -769,6 +771,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             catch (Exception e) {
                 // this is not a critical error so we can just ignore it
                 Log.w(TAG, "unable to load trusted keys from key pack", e);
+                ReportingManager.logException(e);
             }
         }
 
@@ -784,6 +787,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
         catch (Exception e) {
             Log.e(TAG, "error importing keys", e);
+            ReportingManager.logException(e);
             mImportedPublicKey = mImportedPrivateKey = null;
             mTrustedKeys = null;
             mName = null;

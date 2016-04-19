@@ -45,6 +45,7 @@ import org.kontalk.crypto.PRNGFixes;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MessagesProvider;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.NetworkStateReceiver;
 import org.kontalk.service.ServerListUpdater;
@@ -104,6 +105,8 @@ public class Kontalk extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        // register reporting manager
+        ReportingManager.register(this);
 
         // register security provider
         PGP.registerProvider();

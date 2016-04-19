@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'checkstyle'
 apply plugin: 'com.github.triplet.play'
+apply plugin: 'io.fabric'
 
 check.dependsOn 'checkstyle'
 
@@ -146,6 +147,9 @@ dependencies {
 
     googleplayCompile "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
     googleplayCompile "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"
+    googleplayCompile('com.crashlytics.sdk.android:crashlytics:2.5.5@aar') {
+        transitive = true;
+    }
 
     testCompile 'junit:junit:4.+'
 }

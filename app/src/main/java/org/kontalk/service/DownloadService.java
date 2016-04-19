@@ -58,6 +58,7 @@ import org.kontalk.crypto.PersonalKey;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.UsersProvider;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.ConversationsActivity;
 import org.kontalk.ui.MessagingNotification;
@@ -356,9 +357,11 @@ public class DownloadService extends IntentService implements DownloadListener {
     public void error(String url, File destination, Throwable exc) {
         Log.e(TAG, "download error", exc);
         stopForeground();
-        if (!mCanceled)
+        if (!mCanceled) {
+            ReportingManager.logException(exc);
             errorNotification(getString(R.string.notify_ticker_download_error),
                 getString(R.string.notify_text_download_error));
+        }
     }
 
     private void errorNotification(String ticker, String text) {
