@@ -28,6 +28,7 @@ import android.support.v4.view.ViewPager;
 import android.view.MenuItem;
 
 import org.kontalk.R;
+import org.kontalk.billing.BillingServiceManager;
 import org.kontalk.billing.IBillingService;
 
 
@@ -50,8 +51,6 @@ public class AboutActivity extends ToolbarActivity {
 
     private static final int NUM_ITEMS = 3;
 
-    private AboutPagerAdapter mAdapter;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,10 +58,10 @@ public class AboutActivity extends ToolbarActivity {
 
         setupToolbar(true);
 
-        mAdapter = new AboutPagerAdapter(getSupportFragmentManager());
+        AboutPagerAdapter adapter = new AboutPagerAdapter(getSupportFragmentManager());
 
         ViewPager pager = (ViewPager) findViewById(R.id.pager);
-        pager.setAdapter(mAdapter);
+        pager.setAdapter(adapter);
 
         TabLayout tabs = (TabLayout) findViewById(R.id.sliding_tabs);
         tabs.setupWithViewPager(pager);
@@ -94,18 +93,12 @@ public class AboutActivity extends ToolbarActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        DonationFragment fragment = mAdapter.getDonationFragment();
-        IBillingService service = fragment.getBillingService();
-
+        IBillingService service = BillingServiceManager.getInstance(this);
         if (service == null || !service.handleActivityResult(requestCode, resultCode, data))
             super.onActivityResult(requestCode, resultCode, data);
     }
 
     private class AboutPagerAdapter extends FragmentPagerAdapter {
-
-        // this is for IabHelper
-        private DonationFragment mDonationFragment;
-
         public AboutPagerAdapter(FragmentManager fm) {
             super(fm);
         }
@@ -122,8 +115,7 @@ public class AboutActivity extends ToolbarActivity {
                     return new AboutFragment();
 
                 case ABOUT_DONATION:
-                    mDonationFragment = new DonationFragment();
-                    return mDonationFragment;
+                    return new DonationFragment();
 
                 case ABOUT_CREDITS:
                     return new CreditsFragment();
@@ -148,10 +140,6 @@ public class AboutActivity extends ToolbarActivity {
 
             // shouldn't happen, but just in case
             return super.getPageTitle(position);
-        }
-
-        public DonationFragment getDonationFragment() {
-            return mDonationFragment;
         }
 
     }

@@ -58,6 +58,7 @@ import android.util.Log;
 import org.kontalk.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.X509Bridge;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.XMPPConnectionHelper;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.service.msgcenter.PGPKeyPairRingProvider;
@@ -427,6 +428,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
             }
         }
         catch (Throwable e) {
+            ReportingManager.logException(e);
             if (mListener != null)
                 mListener.onError(this, e);
 

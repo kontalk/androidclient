@@ -32,6 +32,7 @@ import java.util.Map;
 
 import org.kontalk.R;
 import org.kontalk.provider.MessagesProvider;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.ConversationsActivity;
 import org.kontalk.ui.ProgressNotificationBuilder;
@@ -257,9 +258,11 @@ public class UploadService extends IntentService implements ProgressListener {
     public void error(String url, File destination, Throwable exc) {
         Log.e(TAG, "upload error", exc);
         stopForeground();
-        if (!mCanceled)
+        if (!mCanceled) {
+            ReportingManager.logException(exc);
             errorNotification(getString(R.string.notify_ticker_upload_error),
                 getString(R.string.notify_text_upload_error));
+        }
     }
 
     private void errorNotification(String ticker, String text) {
