@@ -28,7 +28,7 @@
     <ImageButton
         android:id="@+id/emoji_button"
         style="?android:attr/borderlessButtonStyle"
-        android:src="@drawable/ic_emoji_dark"
+        android:src="@drawable/ic_emoji"
         android:adjustViewBounds="false"
         android:drawablePadding="0dip"
         android:layout_width="48dp"
@@ -107,7 +107,7 @@
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:id="@+id/rec_image"
-                android:src="@drawable/bar_rec"
+                android:src="@drawable/ic_rec"
                 android:layout_gravity="center_vertical"
                 android:layout_marginTop="1dp"/>
 
