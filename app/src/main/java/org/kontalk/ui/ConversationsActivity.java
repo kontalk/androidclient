@@ -543,6 +543,8 @@ public class ConversationsActivity extends ToolbarActivity
         if (mOfflineMenu != null) {
             boolean offlineMode = Preferences.getOfflineMode(this);
             // set menu
+            int icon = (offlineMode) ? R.drawable.ic_menu_online :
+                R.drawable.ic_menu_offline;
             int title = (offlineMode) ? R.string.menu_online : R.string.menu_offline;
             mOfflineMenu.setTitle(title);
             // set window title
