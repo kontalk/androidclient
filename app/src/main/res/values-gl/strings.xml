@@ -273,7 +273,7 @@
     <string name="menu_manual_verification">Xa ten un código?</string>
     <string name="code_validation_intro">Vostede debe recibir unha SMS ou unha chamada en breves momentos dende o número:</string>
     <string name="code_validation_intro2">Por favor inserir o código recibido ou escoite abaixo.</string>
-    <string name="code_validation_intro_missed_call">Ou debe recibir unha chamada perdida dende número brevemente. &lt;B&gt; 1 por favor non respondea a chamada &lt;/ b&gt; 2.<b>PLEASE DO NOT ANSWER THE CALL.</b></string>
+    <string name="code_validation_intro_missed_call">Ou debe recibir unha chamada perdida dende número brevemente. <b>Por favor non respondea a chamada.</b></string>
     <string name="code_validation_intro2_missed_call">Introduza os últimos %d díxitos do número que lle chamará.</string>
     <string name="code_validation_intro_manual">Por favor, introduce o código de verificación que recibiu. Teña en conta que un código de verificación só pode ser usado unha vez.</string>
     <string name="msg_importing_key">Importando a clave persoal…</string>
@@ -285,7 +285,7 @@
     <string name="pref_regenerate_keypair_confirm">Un novo par de claves será xerado e asignado á súa conta. A súa clave antiga será inválidada.</string>
     <string name="error_delete_thread">Non se pode borrar o fío.</string>
     <string name="error_delete_message">Non se puido borrar a mensaxe.</string>
-    <string name="pref_title_disabled_push_notifications">As notificacións \"empuxón\" non estás soportadas no seu dispositivo.</string>
+    <string name="pref_title_disabled_push_notifications">As notificacións \"empuxón\" non estás soportadas no seu dispositivo</string>
     <string name="pref_enable_notification_led">Notificación LED</string>
     <string name="pref_notification_led_color">Cor da notificación LED</string>
     <string name="confirm_will_delete_messages">As mensaxes seleccionadas serán borradas.</string>
