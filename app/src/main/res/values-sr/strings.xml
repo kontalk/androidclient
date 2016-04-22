@@ -453,4 +453,5 @@
 
     <string name="warning_public_key_unknown">Лични кључ овог корисника је непоуздан!</string>
     <string name="title_public_key_unknown_warning">Непоуздан лични кључ</string>
+    <string name="text_search_results_empty">Нема порука.</string>
     </resources>
