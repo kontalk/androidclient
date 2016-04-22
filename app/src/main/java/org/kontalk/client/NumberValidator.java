@@ -446,7 +446,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 mInternalHandler.post(new Runnable() {
                     public void run() {
                         try {
-                            mConnector.getConnection().disconnect();
+                            mConnector.shutdown();
                             mServiceHandler.quit();
                             // null everything
                             mServiceHandler = null;
