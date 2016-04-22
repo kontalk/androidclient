@@ -256,7 +256,7 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
     /**
      * This listeners are invoked for every stanza that got acknowledged.
      * <p>
-     * We use a {@link ConcurrentLinkedQueue} here in order to allow the listeners to remove
+     * We use a {@link ConccurrentLinkedQueue} here in order to allow the listeners to remove
      * themselves after they have been invoked.
      * </p>
      */
@@ -399,8 +399,6 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
             LOGGER.fine("Stream resumption failed, continuing with normal stream establishment process");
         }
 
-        bindResourceAndEstablishSession(resource);
-
         List<Stanza> previouslyUnackedStanzas = new LinkedList<Stanza>();
         if (unacknowledgedStanzas != null) {
             // There was a previous connection with SM enabled but that was either not resumable or
@@ -413,6 +411,12 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
             // after the 'enable' stream element has been sent.
             dropSmState();
         }
+
+        // Now bind the resource. It is important to do this *after* we dropped an eventually
+        // existing Stream Management state. As otherwise <bind/> and <session/> may end up in
+        // unacknowledgedStanzas and become duplicated on reconnect. See SMACK-706.
+        bindResourceAndEstablishSession(resource);
+
         if (isSmAvailable() && useSm) {
             // Remove what is maybe left from previously stream managed sessions
             serverHandledStanzasCount = 0;
@@ -747,11 +751,15 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
         // Secure the plain connection
         socket = context.getSocketFactory().createSocket(plain,
                 host, plain.getPort(), true);
-        // Initialize the reader and writer with the new secured version
-        initReaderAndWriter();
 
         final SSLSocket sslSocket = (SSLSocket) socket;
+        // Immediately set the enabled SSL protocols and ciphers. See SMACK-712 why this is
+        // important (at least on certain platforms) and it seems to be a good idea anyways to
+        // prevent an accidental implicit handshake.
         TLSUtils.setEnabledProtocolsAndCiphers(sslSocket, config.getEnabledSSLProtocols(), config.getEnabledSSLCiphers());
+
+        // Initialize the reader and writer with the new secured version
+        initReaderAndWriter();
 
         // Proceed to do the handshake
         sslSocket.startHandshake();
