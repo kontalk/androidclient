@@ -443,14 +443,17 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         Log.w(TAG, "shutting down");
         try {
             if (mThread != null) {
-                mInternalHandler.post(new Runnable() {
+                // save and null everything
+                final HandlerThread serviceHandler = mServiceHandler;
+                final Handler internalHandler = mInternalHandler;
+                mServiceHandler = null;
+                mInternalHandler = null;
+
+                internalHandler.post(new Runnable() {
                     public void run() {
                         try {
+                            serviceHandler.quit();
                             mConnector.shutdown();
-                            mServiceHandler.quit();
-                            // null everything
-                            mServiceHandler = null;
-                            mInternalHandler = null;
                         }
                         catch (Exception e) {
                             // ignored
@@ -458,7 +461,6 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                     }
                 });
                 mThread.interrupt();
-                mThread.join();
                 mThread = null;
             }
 
