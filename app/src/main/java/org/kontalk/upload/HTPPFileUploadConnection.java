@@ -52,8 +52,11 @@ public class HTPPFileUploadConnection implements UploadConnection {
 
     private HttpsURLConnection currentRequest;
 
-    private final static int CONNECT_TIMEOUT = 15000;
-    private final static int READ_TIMEOUT = 40000;
+    /** @deprecated Test for slow connections. */
+    @Deprecated
+    private final static int TEST_FACTOR = 4;
+    private final static int CONNECT_TIMEOUT = 15000 * TEST_FACTOR;
+    private final static int READ_TIMEOUT = 40000 * TEST_FACTOR;
 
     public HTPPFileUploadConnection(Context context, String url) {
         mContext = context;
