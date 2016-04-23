@@ -30,11 +30,11 @@ task checkstyle(type: Checkstyle){
 
 android {
     compileSdkVersion 23
-    buildToolsVersion '23.0.2'
+    buildToolsVersion '23.0.3'
 
     defaultConfig {
         applicationId "org.kontalk"
-        versionCode 111
+        versionCode 112
         versionName "3.1.8-preview"
         targetSdkVersion 22
         minSdkVersion 9
