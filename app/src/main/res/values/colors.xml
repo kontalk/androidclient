@@ -22,14 +22,6 @@
     <color name="app_primary_dark">#1976D2</color>
     <color name="app_accent">#03A9F4</color>
 
-    <!-- Widget background -->
-    <drawable name="light_blue_background">#ffecfbff</drawable>
-
-	<drawable name="fill_incoming_background">#ffdb8e41</drawable>
-	<drawable name="border_incoming_background">#ffcb7a28</drawable>
-	<drawable name="fill_outgoing_background">#ff3d80dc</drawable>
-	<drawable name="border_outgoing_background">#ff1859bb</drawable>
-
     <!-- text color -->
     <color name="text_color_draft">#ffff0000</color>
 
@@ -41,8 +33,6 @@
     <!-- grayed out text -->
     <color name="grayed_out">#ff999999</color>
 
-    <color name="conversation_active_background">#ff229DC9</color>
-    
     <!-- audio progress bar color -->
     <color name="audio_pbar_record">#ffdd1812</color>
     <color name="audio_pbar_play">#ff00acec</color>
