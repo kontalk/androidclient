@@ -454,4 +454,5 @@
     <string name="pref_media_autodownload_label_wifi">Nur im WLAN</string>
     <string name="pref_media_autodownload_label_always">Immer</string>
 
+    <string name="text_search_results_empty">Keine Nachrichten gefunden.</string>
     </resources>

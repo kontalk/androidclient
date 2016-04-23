@@ -1,5 +1,13 @@
 # Change Log
 
+## [3.1.8] - 2016-04-23
+### Changed
+- Show message when search returns an empty result set (#647)
+- New material icons (#689)
+
+### Fixed
+- Prevent app hanging during registration (#690)
+
 ## [3.1.7] - 2016-04-18
 ### Changed
 - Update to latest emojis

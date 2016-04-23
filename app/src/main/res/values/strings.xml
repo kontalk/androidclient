@@ -140,6 +140,7 @@
     <string name="hint_search_full">Search messages</string>
     <string name="hint_search_quickbox">Text in your messages</string>
     <string name="title_search">Search: \"%s\"</string>
+    <string name="text_search_results_empty">No messages found.</string>
     <string name="pref_notification_settings">Notification settings</string>
     <string name="pref_enable_notifications">Notifications</string>
     <string name="pref_enable_notification_led">Notification LED</string>

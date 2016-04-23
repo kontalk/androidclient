@@ -454,4 +454,5 @@
     <string name="pref_media_autodownload_label_wifi">Solo in Wi-Fi</string>
     <string name="pref_media_autodownload_label_always">Sempre</string>
 
+    <string name="text_search_results_empty">Nessun messaggio trovato.</string>
     </resources>

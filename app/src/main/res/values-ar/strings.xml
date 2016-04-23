@@ -461,4 +461,5 @@
 	<item quantity="other">أختيار خيار واحد</item>
 </plurals>
 
-</resources>
+<string name="text_search_results_empty">لم يتم العثور على اية رسائل</string>
+    </resources>

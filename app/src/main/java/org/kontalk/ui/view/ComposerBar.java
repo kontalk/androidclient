@@ -709,7 +709,7 @@ public class ComposerBar extends RelativeLayout implements
             // TODO mEmojiButton.setImageResource(R.drawable.ic_msg_panel_hide);
         }
 
-        mEmojiButton.setImageResource(R.drawable.ic_keyboard_dark);
+        mEmojiButton.setImageResource(R.drawable.ic_keyboard);
     }
 
     private void hideEmojiDrawer() {
@@ -729,7 +729,7 @@ public class ComposerBar extends RelativeLayout implements
             wm.removeViewImmediate(mEmojiView);
         }
 
-        mEmojiButton.setImageResource(R.drawable.ic_emoji_dark);
+        mEmojiButton.setImageResource(R.drawable.ic_emoji);
         mRootView.setPadding(0, 0, 0, 0);
         mEmojiVisible = false;
     }

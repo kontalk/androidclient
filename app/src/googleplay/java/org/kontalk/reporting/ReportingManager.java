@@ -24,6 +24,8 @@ import android.content.Context;
 
 import io.fabric.sdk.android.Fabric;
 
+import org.kontalk.BuildConfig;
+
 
 /**
  * Reporting manager for Crashlytics.
@@ -35,11 +37,13 @@ public class ReportingManager {
     }
 
     public static void register(Context context) {
-        Fabric.with(context, new Crashlytics());
+        if (!BuildConfig.DEBUG)
+            Fabric.with(context, new Crashlytics());
     }
 
     public static void logException(Throwable exception) {
-        Crashlytics.logException(exception);
+        if (!BuildConfig.DEBUG)
+            Crashlytics.logException(exception);
     }
 
 }

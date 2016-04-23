@@ -201,7 +201,7 @@
   <string name="attachment_download">Descàrrega del fitxer adjunt</string>
   <string name="attachment_upload">Càrrega del fitxer adjunt</string>
   <string name="seen_moment_ago_label">fa una estona</string>
-  <string name="seen_online_label">està en línia</string>
+  <string name="seen_online_label">actiu</string>
   <string name="seen_typing_label">està escrivint…</string>
   <string name="invitation_sent_label">invitació pendent</string>
   <string name="pref_custom_background">Fons personalitzat</string>
