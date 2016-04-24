@@ -280,7 +280,7 @@ public class Conversation {
 
     private static void deleteInternal(Context context, long threadId, String groupJid, String[] groupPeers) {
         // it makes sense to leave a group if we have someone to tell about it
-        boolean groupChat = groupJid != null && groupPeers.length > 1;
+        boolean groupChat = groupJid != null && groupPeers.length > 0;
         MessagesProvider.deleteThread(context, threadId, groupChat);
         if (groupChat) {
             boolean encrypted = Preferences.getEncryptionEnabled(context);
