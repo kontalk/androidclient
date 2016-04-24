@@ -112,15 +112,12 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
     private boolean mIsTyping;
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-
-        // TODO inflater.inflate(R.menu.compose_message_menu, menu);
+    protected void onInflateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.compose_message_menu, menu);
         mViewContactMenu = menu.findItem(R.id.view_contact);
         mCallMenu = menu.findItem(R.id.call_contact);
         mBlockMenu = menu.findItem(R.id.block_user);
         mUnblockMenu = menu.findItem(R.id.unblock_user);
-        updateUI();
     }
 
     @Override
@@ -151,7 +148,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                 return true;
         }
 
-        return super.onOptionsItemSelected(item);
+        return false;
     }
 
     public void viewContact() {

@@ -328,6 +328,7 @@ public class CompositeMessage {
                     String groupOwner = XmppStringUtils.parseDomain(groupJid);
                     GroupExtension ext = null;
 
+                    String subject;
                     String[] createMembers;
                     if ((createMembers = GroupCommandComponent.getCreateCommandMembers(bodyText)) != null) {
                         ext = new GroupExtension(groupId, groupOwner, GroupExtension.Type.CREATE,
@@ -335,6 +336,9 @@ public class CompositeMessage {
                     }
                     else if (GroupCommandComponent.COMMAND_PART.equals(bodyText)) {
                         ext = new GroupExtension(groupId, groupOwner, GroupExtension.Type.PART);
+                    }
+                    else if ((subject = GroupCommandComponent.getSubjectCommand(bodyText)) != null) {
+                        ext = new GroupExtension(groupId, groupOwner, GroupExtension.Type.SET, subject);
                     }
                     // TODO add/remove members
 

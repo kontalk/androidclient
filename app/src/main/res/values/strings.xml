@@ -211,6 +211,8 @@
     <string name="menu_attachment">Attach</string>
     <string name="menu_smileys">Smileys</string>
     <string name="menu_invite_group">Invite users</string>
+    <string name="menu_set_group_subject">Set group title</string>
+    <string name="menu_leave_group">Leave group</string>
     <string name="menu_block_user">Block</string>
     <string name="menu_unblock_user">Unblock</string>
     <string name="vcard_message">vCard message</string>

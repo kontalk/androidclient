@@ -44,7 +44,8 @@ public class GroupCommandComponent extends MessageComponent<GroupExtension> {
     public static final String COMMAND_CREATE = "create";
     // leave group
     public static final String COMMAND_PART = "part";
-    // TODO set subject
+    // set subject
+    public static final String COMMAND_SUBJECT = "subject";
 
     private final String mFrom;
     private final String mOwnJid;
@@ -72,6 +73,11 @@ public class GroupCommandComponent extends MessageComponent<GroupExtension> {
     }
 
     public boolean isAddOrRemoveCommand() {
+        return mContent.getType() == GroupExtension.Type.SET &&
+            mContent.getMembers().size() > 0;
+    }
+
+    public boolean isSetSubjectCommand() {
         return mContent.getType() == GroupExtension.Type.SET;
     }
 
@@ -122,16 +128,23 @@ public class GroupCommandComponent extends MessageComponent<GroupExtension> {
             return getAddMembersBodyContent(getAddedMembers()) +
                 getRemoveMembersBodyContent(getRemovedMembers());
         }
+        else if (isSetSubjectCommand()) {
+            return getSetSubjectCommandBodyContent(mContent.getSubject());
+        }
 
         // TODO
         throw new UnsupportedOperationException("Unsupported group command");
     }
 
     public static String getCreateBodyContent(String[] members) {
-        StringBuilder out = new StringBuilder("create:");
+        StringBuilder out = new StringBuilder(COMMAND_CREATE).append(":");
         for (String m : members)
             out.append(m).append(";");
         return out.toString();
+    }
+
+    public static String getSetSubjectCommandBodyContent(String subject) {
+        return COMMAND_SUBJECT + ":" + subject;
     }
 
     public static String getAddMembersBodyContent(String[] members) {
@@ -181,20 +194,29 @@ public class GroupCommandComponent extends MessageComponent<GroupExtension> {
         return getPrefixCommandMembers(body, "remove:");
     }
 
-    /**
-     * @deprecated This should be discouraged. Copy the body content from the command message instead.
-     */
-    @Deprecated
+    public static String getSubjectCommand(String body) {
+        String prefix = GroupCommandComponent.COMMAND_SUBJECT + ":";
+        if (body.startsWith(prefix)) {
+            return body.substring(prefix.length());
+        }
+        return null;
+    }
+
     public static String getTextContent(Context context, String bodyContent) {
-        if (COMMAND_CREATE.equals(bodyContent)) {
+        if (bodyContent.startsWith(COMMAND_CREATE)) {
             // TODO i18n
             return "Group created";
         }
-        else if (COMMAND_PART.equals(bodyContent)) {
+        else if (bodyContent.startsWith(COMMAND_PART)) {
             // TODO i18n
-            return "A user left the group";
+            return "Someone left the group";
+        }
+        else if (bodyContent.startsWith(COMMAND_SUBJECT)) {
+            // TODO i18n
+            return "Set group title";
         }
 
+        // FIXME this shouldn't be needed
         return "(Unknown group command)";
     }
 

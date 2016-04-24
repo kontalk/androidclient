@@ -33,6 +33,7 @@ import android.graphics.Typeface;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
+import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
@@ -93,22 +94,33 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
 
         String recipient = null;
 
-        Contact contact = mConversation.getContact();
+        if (mConversation.isGroupChat()) {
+            recipient = mConversation.getGroupSubject();
+            if (TextUtils.isEmpty(recipient))
+                // TODO i18n
+                recipient = "Untitled group";
 
-        if (contact != null) {
-            recipient = contact.getName();
+            loadAvatar(null);
+        }
+        else {
+            Contact contact = mConversation.getContact();
+
+            if (contact != null) {
+                recipient = contact.getName();
+            }
+
+            if (recipient == null) {
+                if (BuildConfig.DEBUG) {
+                    recipient = conv.getRecipient();
+                }
+                else {
+                    recipient = context.getString(R.string.peer_unknown);
+                }
+            }
+
+            loadAvatar(contact);
         }
 
-        if (recipient == null) {
-            if (BuildConfig.DEBUG) {
-                recipient = conv.getRecipient();
-            }
-            else {
-                recipient = context.getString(R.string.peer_unknown);
-            }
-        }
-
-        loadAvatar(contact);
 
         SpannableStringBuilder from = new SpannableStringBuilder(recipient);
         if (conv.getUnreadCount() > 0)

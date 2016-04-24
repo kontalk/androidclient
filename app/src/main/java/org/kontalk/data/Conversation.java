@@ -279,7 +279,8 @@ public class Conversation {
     }
 
     private static void deleteInternal(Context context, long threadId, String groupJid, String[] groupPeers) {
-        boolean groupChat = groupJid != null;
+        // it makes sense to leave a group if we have someone to tell about it
+        boolean groupChat = groupJid != null && groupPeers.length > 1;
         MessagesProvider.deleteThread(context, threadId, groupChat);
         if (groupChat) {
             boolean encrypted = Preferences.getEncryptionEnabled(context);
@@ -364,6 +365,17 @@ public class Conversation {
             context.getContentResolver()
                 .insert(Groups.getMembersUri(groupJid), values);
         }
+    }
+
+    public static void setGroupSubject(Context context, String groupJid, String subject) {
+        ContentValues values = new ContentValues();
+        if (subject != null)
+            values.put(Groups.SUBJECT, subject);
+        else
+            values.putNull(Groups.SUBJECT);
+
+        context.getContentResolver().update(Groups.getUri(groupJid),
+            values, null, null);
     }
 
     public void markAsRead() {

@@ -18,10 +18,15 @@
 
 package org.kontalk.ui;
 
+import com.afollestad.materialdialogs.MaterialDialog;
+
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -83,10 +88,23 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
+    protected void onInflateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.group_message_menu, menu);
         mInviteGroupMenu = menu.findItem(R.id.invite_group);
-        updateUI();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (super.onOptionsItemSelected(item))
+            return true;
+
+        switch (item.getItemId()) {
+            case R.id.group_subject:
+                changeGroupSubject();
+                return true;
+        }
+
+        return false;
     }
 
     @Override
@@ -97,7 +115,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         // store add group member command to outbox
         boolean encrypted = Preferences.getEncryptionEnabled(getContext());
         String msgId = MessageCenterService.messageId();
-        Uri cmdMsg = storeAddGroupMember(getThreadId(), getUserId(), members, msgId, encrypted);
+        Uri cmdMsg = storeAddGroupMember(members, msgId, encrypted);
         // TODO check for null
 
         // send add group member command now
@@ -110,12 +128,64 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         ((ComposeMessageParent) getActivity()).loadConversation(getThreadId());
     }
 
-    private Uri storeAddGroupMember(long threadId, String groupJid, String[] members, String msgId, boolean encrypted) {
-        // save to database
+    private void changeGroupSubject() {
+        new MaterialDialog.Builder(getContext())
+            // TODO i18n
+            .title("Group title")
+            .positiveText(android.R.string.ok)
+            .negativeText(android.R.string.cancel)
+            .input(null, mConversation.getGroupSubject(), true, new MaterialDialog.InputCallback() {
+                @Override
+                public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+                    setGroupSubject(!TextUtils.isEmpty(input) ? input.toString() : null);
+                }
+            })
+            .show();
+    }
+
+    private void setGroupSubject(String subject) {
+        // set group subject in database
+        Conversation.setGroupSubject(getContext(), getUserId(), subject);
+
+        // store set group subject command to outbox
+        boolean encrypted = Preferences.getEncryptionEnabled(getContext());
+        String msgId = MessageCenterService.messageId();
+        Uri cmdMsg = storeSetGroupSubject(subject, msgId, encrypted);
+        // TODO check for null
+
+        // send set group subject command now
+        String[] currentMembers = mConversation.getGroupPeers(true);
+        MessageCenterService.setGroupSubject(getContext(), getUserId(),
+            subject, currentMembers, encrypted,
+            ContentUris.parseId(cmdMsg), msgId);
+
+        // reload conversation
+        ((ComposeMessageParent) getActivity()).loadConversation(getThreadId());
+    }
+
+    private Uri storeSetGroupSubject(String subject, String msgId, boolean encrypted) {
         ContentValues values = new ContentValues();
-        values.put(MyMessages.Messages.THREAD_ID, threadId);
+        values.put(MyMessages.Messages.THREAD_ID, getThreadId());
         values.put(MyMessages.Messages.MESSAGE_ID, msgId);
-        values.put(MyMessages.Messages.PEER, groupJid);
+        values.put(MyMessages.Messages.PEER, getUserId());
+        values.put(MyMessages.Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
+        values.put(MyMessages.Messages.BODY_CONTENT, GroupCommandComponent.getSetSubjectCommandBodyContent(subject));
+        values.put(MyMessages.Messages.BODY_LENGTH, 0);
+        values.put(MyMessages.Messages.UNREAD, false);
+        values.put(MyMessages.Messages.DIRECTION, MyMessages.Messages.DIRECTION_OUT);
+        values.put(MyMessages.Messages.TIMESTAMP, System.currentTimeMillis());
+        values.put(MyMessages.Messages.STATUS, MyMessages.Messages.STATUS_SENDING);
+        // of course outgoing messages are not encrypted in database
+        values.put(MyMessages.Messages.ENCRYPTED, false);
+        values.put(MyMessages.Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+        return getActivity().getContentResolver().insert(MyMessages.Messages.CONTENT_URI, values);
+    }
+
+    private Uri storeAddGroupMember(String[] members, String msgId, boolean encrypted) {
+        ContentValues values = new ContentValues();
+        values.put(MyMessages.Messages.THREAD_ID, getThreadId());
+        values.put(MyMessages.Messages.MESSAGE_ID, msgId);
+        values.put(MyMessages.Messages.PEER, getUserId());
         values.put(MyMessages.Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
         values.put(MyMessages.Messages.BODY_CONTENT, GroupCommandComponent.getAddMembersBodyContent(members));
         values.put(MyMessages.Messages.BODY_LENGTH, 0);
@@ -166,6 +236,22 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     @Override
     protected void onArgumentsProcessed() {
         // nothing
+    }
+
+    @Override
+    protected void onConversationCreated() {
+        super.onConversationCreated();
+        // set group title
+        String subject = mConversation.getGroupSubject();
+        if (TextUtils.isEmpty(subject))
+            // TODO i18n
+            subject = "Untitled group";
+
+        // +1 because we are not included in the members list
+        // TODO i18n
+        String status = String.format("%d people", mConversation.getGroupPeers().length + 1);
+
+        setActivityTitle(subject, status);
     }
 
     @Override

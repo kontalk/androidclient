@@ -832,10 +832,13 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     public abstract boolean sendInactive();
 
+    protected abstract void onInflateOptionsMenu(Menu menu, MenuInflater inflater);
+
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.compose_message_menu, menu);
+        onInflateOptionsMenu(menu, inflater);
         mDeleteThreadMenu = menu.findItem(R.id.delete_thread);
+        updateUI();
     }
 
     @Override

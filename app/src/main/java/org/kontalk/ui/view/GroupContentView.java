@@ -103,8 +103,14 @@ public class GroupContentView extends TextView
             text.append(" has left the group.");
         }
 
-        // TODO add member(s)
-        // TODO remove member(s)
+        else if (ext.getType() == GroupExtension.Type.SET) {
+            // TODO add member(s)
+            // TODO remove member(s)
+
+            String subject = ext.getSubject();
+            // TODO i18n
+            text.append("Group title set to: ").append(subject);
+        }
 
         setText(text);
     }
