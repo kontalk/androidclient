@@ -54,6 +54,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     private String mGroupJID;
 
     private MenuItem mInviteGroupMenu;
+    private MenuItem mSetGroupSubjectMenu;
 
     @Override
     protected void sendBinaryMessageInternal(String mime, Uri localUri, long length,
@@ -84,6 +85,8 @@ public class GroupMessageFragment extends AbstractComposeFragment {
                 .checkOwnership(mConversation.getGroupJid(), myUser);
             mInviteGroupMenu.setVisible(visible);
             mInviteGroupMenu.setEnabled(visible);
+            mSetGroupSubjectMenu.setVisible(visible);
+            mSetGroupSubjectMenu.setEnabled(visible);
         }
     }
 
@@ -91,6 +94,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     protected void onInflateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.group_message_menu, menu);
         mInviteGroupMenu = menu.findItem(R.id.invite_group);
+        mSetGroupSubjectMenu = menu.findItem(R.id.group_subject);
     }
 
     @Override
