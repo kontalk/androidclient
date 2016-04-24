@@ -39,13 +39,13 @@
         android:contentDescription="@string/menu_smileys" />
 
     <com.rockerhieu.emojicon.EmojiconEditText
-        android:textColor="@android:color/black"
         android:id="@+id/text_editor"
         android:layout_width="0dip"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_gravity="bottom"
         android:autoText="true"
+        android:textColor="?android:textColorPrimary"
         android:textSize="16sp"
         android:layout_toRightOf="@id/emoji_button"
         android:layout_toLeftOf="@id/send_button"
@@ -86,7 +86,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#999999"
+                android:textColor="?android:textColorSecondary"
                 android:textSize="12dp"
                 android:layout_marginLeft="6dp"
                 android:text="@string/slide_to_cancel"
@@ -115,7 +115,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/recording_time"
-                android:textColor="#4d4c4b"
+                android:textColor="?android:textColorPrimary"
                 android:textSize="16dp"
                 android:layout_gravity="center_vertical"
                 android:layout_marginLeft="6dp"/>
