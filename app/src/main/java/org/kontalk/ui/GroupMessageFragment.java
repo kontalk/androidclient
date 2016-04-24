@@ -20,9 +20,6 @@ package org.kontalk.ui;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 
-import android.content.ContentUris;
-import android.content.ContentValues;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -34,14 +31,9 @@ import android.view.MenuItem;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.KontalkGroupManager;
-import org.kontalk.crypto.Coder;
 import org.kontalk.data.Contact;
-import org.kontalk.data.Conversation;
 import org.kontalk.message.CompositeMessage;
-import org.kontalk.message.GroupCommandComponent;
-import org.kontalk.provider.MyMessages;
 import org.kontalk.service.msgcenter.MessageCenterService;
-import org.kontalk.util.Preferences;
 
 
 /**
@@ -113,29 +105,14 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
     @Override
     protected void addUsers(String[] members) {
-        // add members to database
-        Conversation.addUsers(getContext(), getUserId(), members);
-
-        // store add group member command to outbox
-        boolean encrypted = Preferences.getEncryptionEnabled(getContext());
-        String msgId = MessageCenterService.messageId();
-        Uri cmdMsg = storeAddGroupMember(members, msgId, encrypted);
-        // TODO check for null
-
-        // send add group member command now
-        String[] currentMembers = mConversation.getGroupPeers(true);
-        MessageCenterService.addGroupMembers(getContext(), getUserId(),
-            mConversation.getGroupSubject(), currentMembers, members, encrypted,
-            ContentUris.parseId(cmdMsg), msgId);
-
+        mConversation.addUsers(members);
         // reload conversation
         ((ComposeMessageParent) getActivity()).loadConversation(getThreadId());
     }
 
     private void changeGroupSubject() {
         new MaterialDialog.Builder(getContext())
-            // TODO i18n
-            .title("Group title")
+            .title(R.string.title_group_subject)
             .positiveText(android.R.string.ok)
             .negativeText(android.R.string.cancel)
             .input(null, mConversation.getGroupSubject(), true, new MaterialDialog.InputCallback() {
@@ -148,59 +125,9 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     }
 
     private void setGroupSubject(String subject) {
-        // set group subject in database
-        Conversation.setGroupSubject(getContext(), getUserId(), subject);
-
-        // store set group subject command to outbox
-        boolean encrypted = Preferences.getEncryptionEnabled(getContext());
-        String msgId = MessageCenterService.messageId();
-        Uri cmdMsg = storeSetGroupSubject(subject, msgId, encrypted);
-        // TODO check for null
-
-        // send set group subject command now
-        String[] currentMembers = mConversation.getGroupPeers(true);
-        MessageCenterService.setGroupSubject(getContext(), getUserId(),
-            subject, currentMembers, encrypted,
-            ContentUris.parseId(cmdMsg), msgId);
-
+        mConversation.setGroupSubject(subject);
         // reload conversation
         ((ComposeMessageParent) getActivity()).loadConversation(getThreadId());
-    }
-
-    private Uri storeSetGroupSubject(String subject, String msgId, boolean encrypted) {
-        ContentValues values = new ContentValues();
-        values.put(MyMessages.Messages.THREAD_ID, getThreadId());
-        values.put(MyMessages.Messages.MESSAGE_ID, msgId);
-        values.put(MyMessages.Messages.PEER, getUserId());
-        values.put(MyMessages.Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
-        values.put(MyMessages.Messages.BODY_CONTENT, GroupCommandComponent.getSetSubjectCommandBodyContent(subject));
-        values.put(MyMessages.Messages.BODY_LENGTH, 0);
-        values.put(MyMessages.Messages.UNREAD, false);
-        values.put(MyMessages.Messages.DIRECTION, MyMessages.Messages.DIRECTION_OUT);
-        values.put(MyMessages.Messages.TIMESTAMP, System.currentTimeMillis());
-        values.put(MyMessages.Messages.STATUS, MyMessages.Messages.STATUS_SENDING);
-        // of course outgoing messages are not encrypted in database
-        values.put(MyMessages.Messages.ENCRYPTED, false);
-        values.put(MyMessages.Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-        return getActivity().getContentResolver().insert(MyMessages.Messages.CONTENT_URI, values);
-    }
-
-    private Uri storeAddGroupMember(String[] members, String msgId, boolean encrypted) {
-        ContentValues values = new ContentValues();
-        values.put(MyMessages.Messages.THREAD_ID, getThreadId());
-        values.put(MyMessages.Messages.MESSAGE_ID, msgId);
-        values.put(MyMessages.Messages.PEER, getUserId());
-        values.put(MyMessages.Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
-        values.put(MyMessages.Messages.BODY_CONTENT, GroupCommandComponent.getAddMembersBodyContent(members));
-        values.put(MyMessages.Messages.BODY_LENGTH, 0);
-        values.put(MyMessages.Messages.UNREAD, false);
-        values.put(MyMessages.Messages.DIRECTION, MyMessages.Messages.DIRECTION_OUT);
-        values.put(MyMessages.Messages.TIMESTAMP, System.currentTimeMillis());
-        values.put(MyMessages.Messages.STATUS, MyMessages.Messages.STATUS_SENDING);
-        // of course outgoing messages are not encrypted in database
-        values.put(MyMessages.Messages.ENCRYPTED, false);
-        values.put(MyMessages.Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-        return getActivity().getContentResolver().insert(MyMessages.Messages.CONTENT_URI, values);
     }
 
     @Override

@@ -469,6 +469,8 @@
     <string name="pref_show_blocked_users">Show blocked users</string>
     <string name="button_load_next_page">Load more messages</string>
 
+    <string name="title_group_subject">Group title</string>
+
     <plurals name="context_selected">
         <item quantity="one">1 selected</item>
         <item quantity="other">%d selected</item>

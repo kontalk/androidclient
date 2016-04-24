@@ -19,6 +19,7 @@
 package org.kontalk.provider;
 
 
+import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
@@ -78,6 +79,10 @@ public final class MyMessages {
                     + MessagesProvider.AUTHORITY + "/messages/" + Uri.encode(msgId));
         }
 
+        public static Uri getUri(long databaseId) {
+            return ContentUris.withAppendedId(CONTENT_URI, databaseId);
+        }
+
         public static final class Fulltext implements BaseColumns {
             private Fulltext() {}
 
@@ -118,6 +123,9 @@ public final class MyMessages {
         // used as query parameters
         public static final String CLEAR_PENDING = "clear_pending";
         public static final String KEEP_GROUP = "keep_group";
+
+        // special thread_id value for not creating a new thread
+        public static final long NO_THREAD = -1;
     }
 
     /** Threads are just for conversations metadata. */

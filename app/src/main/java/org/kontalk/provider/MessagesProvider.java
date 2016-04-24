@@ -488,6 +488,20 @@ public class MessagesProvider extends ContentProvider {
                 selectionArgs = new String[] { uri.getQueryParameter("pattern") };
                 break;
 
+            case GROUPS_ID:
+                qb.setTables(TABLE_GROUPS);
+                qb.setProjectionMap(groupsMembersProjectionMap);
+                qb.appendWhere(Groups.GROUP_JID + "=?");
+                if (selectionArgs != null) {
+                    // conditions appended here will get added before the caller-supplied selection
+                    selectionArgs = SystemUtils.concatenate(new String[] { uri.getLastPathSegment() },
+                        selectionArgs);
+                }
+                else {
+                    selectionArgs = new String[] { uri.getLastPathSegment() };
+                }
+                break;
+
             case GROUPS_MEMBERS:
                 qb.setTables(TABLE_GROUP_MEMBERS);
                 qb.setProjectionMap(groupsMembersProjectionMap);
@@ -562,7 +576,7 @@ public class MessagesProvider extends ContentProvider {
             long threadId = updateThreads(db, values, notifications, match == REQUESTS);
             values.put(Messages.THREAD_ID, threadId);
 
-            if (draft != null || match == REQUESTS) {
+            if (threadId != Messages.NO_THREAD && (draft != null || match == REQUESTS)) {
                 // notify thread change
                 notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
                 // notify conversation change
@@ -620,20 +634,24 @@ public class MessagesProvider extends ContentProvider {
             */
 
             if (rowId > 0) {
-                // update fulltext table
-                byte[] content = values.getAsByteArray(Messages.BODY_CONTENT);
-                Boolean encrypted = values.getAsBoolean(Messages.ENCRYPTED);
-                if (content != null && content.length > 0 && (encrypted == null || !encrypted)) {
-                    updateFulltext(db, rowId, threadId, content);
+                if (threadId != Messages.NO_THREAD) {
+                    // update fulltext table
+                    byte[] content = values.getAsByteArray(Messages.BODY_CONTENT);
+                    Boolean encrypted = values.getAsBoolean(Messages.ENCRYPTED);
+                    if (content != null && content.length > 0 && (encrypted == null || !encrypted)) {
+                        updateFulltext(db, rowId, threadId, content);
+                    }
                 }
 
                 Uri msgUri = ContentUris.withAppendedId(uri, rowId);
                 notifications.add(msgUri);
 
-                // notify thread change
-                notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
-                // notify conversation change
-                notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
+                if (threadId != Messages.NO_THREAD) {
+                    // notify thread change
+                    notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
+                    // notify conversation change
+                    notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
+                }
 
                 success = setTransactionSuccessful(db);
                 return msgUri;
@@ -725,6 +743,13 @@ public class MessagesProvider extends ContentProvider {
      * @return the thread id
      */
     private long updateThreads(SQLiteDatabase db, ContentValues initialValues, List<Uri> notifications, boolean requestOnly) {
+        long threadId = -1;
+        if (initialValues.containsKey(Messages.THREAD_ID)) {
+            threadId = initialValues.getAsLong(Messages.THREAD_ID);
+            if (threadId == Messages.NO_THREAD)
+                return Messages.NO_THREAD;
+        }
+
         ContentValues values = new ContentValues();
         // group JID will be the thread peer in this case
         String peer;
@@ -733,10 +758,6 @@ public class MessagesProvider extends ContentProvider {
             peer = groupJid;
         else
             peer = initialValues.getAsString(CommonColumns.PEER);
-
-        long threadId = -1;
-        if (initialValues.containsKey(Messages.THREAD_ID))
-            threadId = initialValues.getAsLong(Messages.THREAD_ID);
 
         values.put(Threads.PEER, peer);
         values.put(Threads.TIMESTAMP, initialValues.getAsLong(Messages.TIMESTAMP));
@@ -1497,6 +1518,15 @@ public class MessagesProvider extends ContentProvider {
 
         c.close();
         return group;
+    }
+
+    public static boolean isGroupExisting(Context context, String groupJid) {
+        Cursor c = context.getContentResolver().query(
+            Groups.getUri(groupJid),
+            new String[] { Groups.GROUP_JID }, null, null, null);
+        boolean exist = c.moveToFirst();
+        c.close();
+        return exist;
     }
 
     public static String[] getGroupMembers(Context context, String groupJid) {

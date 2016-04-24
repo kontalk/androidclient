@@ -21,6 +21,8 @@ package org.kontalk.service.msgcenter;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.packet.Stanza;
 
+import android.net.Uri;
+
 import org.kontalk.client.GroupExtension;
 import org.kontalk.client.KontalkGroupManager;
 import org.kontalk.provider.MyMessages.Groups;
@@ -34,11 +36,17 @@ public class GroupCommandAckListener extends MessageCenterPacketListener {
 
     private final KontalkGroupManager.KontalkGroup mGroup;
     private final GroupExtension mExtension;
+    private final Uri mCommandMessage;
 
-    GroupCommandAckListener(MessageCenterService instance, KontalkGroupManager.KontalkGroup group, GroupExtension extension) {
+    /**
+     * Builds a new group command ack listener.
+     * @param commandMessage if not null, this Uri will be deleted after successful confirmation
+     */
+    GroupCommandAckListener(MessageCenterService instance, KontalkGroupManager.KontalkGroup group, GroupExtension extension, Uri commandMessage) {
         super(instance);
         mGroup = group;
         mExtension = extension;
+        mCommandMessage = commandMessage;
     }
 
     @Override
@@ -53,6 +61,10 @@ public class GroupCommandAckListener extends MessageCenterPacketListener {
                 // delete group (members will cascade)
                 getContext().getContentResolver()
                     .delete(Groups.getUri(mGroup.getJID()), null, null);
+                if (mCommandMessage != null) {
+                    getContext().getContentResolver()
+                        .delete(mCommandMessage, null, null);
+                }
                 break;
         }
     }

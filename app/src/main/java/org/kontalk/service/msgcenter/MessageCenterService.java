@@ -2122,9 +2122,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
 
                 try {
+                    // delete the command afterwards (only for part commands)
+                    Uri msgUri = (msgId > 0 && groupCommand == GROUP_COMMAND_PART) ?
+                        Messages.getUri(msgId) : null;
                     // wait for confirmation
                     mConnection.addStanzaIdAcknowledgedListener(id,
-                        new GroupCommandAckListener(this, group, GroupExtension.from(m)));
+                        new GroupCommandAckListener(this, group, GroupExtension.from(m), msgUri));
                 }
                 catch (StreamManagementException.StreamManagementNotEnabledException e) {
                     Log.e(TAG, "server does not support stream management?!?");
@@ -2611,10 +2614,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static void leaveGroup(final Context context, String groupJid,
-        String[] to, boolean encrypt) {
+        String[] to, boolean encrypt, long msgId, String packetId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
-        i.putExtra("org.kontalk.message.packetId", messageId());
+        i.putExtra("org.kontalk.message.msgId", msgId);
+        i.putExtra("org.kontalk.message.packetId", packetId);
         i.putExtra("org.kontalk.message.mime", GroupCommandComponent.MIME_TYPE);
         i.putExtra("org.kontalk.message.group.jid", groupJid);
         i.putExtra("org.kontalk.message.group.command", GROUP_COMMAND_PART);

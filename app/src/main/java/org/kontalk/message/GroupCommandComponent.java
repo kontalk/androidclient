@@ -147,6 +147,10 @@ public class GroupCommandComponent extends MessageComponent<GroupExtension> {
         return COMMAND_SUBJECT + ":" + subject;
     }
 
+    public static String getLeaveCommandBodyContent() {
+        return COMMAND_PART;
+    }
+
     public static String getAddMembersBodyContent(String[] members) {
         StringBuilder out = new StringBuilder();
         for (String m : members)

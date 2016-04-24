@@ -63,6 +63,7 @@ import org.kontalk.message.MessageComponent;
 import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
+import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.util.MediaStorage;
@@ -92,7 +93,7 @@ class MessageListener extends MessageCenterPacketListener {
     public boolean processGroupMessage(KontalkGroupManager.KontalkGroup group, Stanza packet, CompositeMessage msg)
             throws SmackException.NotConnectedException {
 
-        if (group.checkRequest(packet)) {
+        if (group.checkRequest(packet) && canHandleGroupCommand(packet)) {
             GroupExtension ext = GroupExtension.from(packet);
             String groupJid = ext.getJID();
             String subject = ext.getSubject();
@@ -115,6 +116,15 @@ class MessageListener extends MessageCenterPacketListener {
 
         // invalid or unauthorized request
         return false;
+    }
+
+    /** Returns true if we can handle this group command (e.g. if we have it in our database). */
+    private boolean canHandleGroupCommand(Stanza packet) {
+        GroupExtension ext = GroupExtension.from(packet);
+        // creation command
+        return ext.getType() == GroupExtension.Type.CREATE ||
+            // all other commands require the group to be present in our database
+            MessagesProvider.isGroupExisting(getContext(), ext.getJID());
     }
 
     @Override
