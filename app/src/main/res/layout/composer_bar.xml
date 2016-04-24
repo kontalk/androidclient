@@ -87,7 +87,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="?android:textColorSecondary"
-                android:textSize="12dp"
+                android:textSize="12sp"
                 android:layout_marginLeft="6dp"
                 android:text="@string/slide_to_cancel"
                 android:id="@+id/slide_to_cancel"
@@ -116,7 +116,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/recording_time"
                 android:textColor="?android:textColorPrimary"
-                android:textSize="16dp"
+                android:textSize="16sp"
                 android:layout_gravity="center_vertical"
                 android:layout_marginLeft="6dp"/>
 
