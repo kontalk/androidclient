@@ -133,17 +133,16 @@ public class CountryCodesAdapter extends BaseAdapter {
 
     @Override
     public View getDropDownView(int position, View convertView, ViewGroup parent) {
-        DropDownViewHolder holder;
+        CheckedTextView textView;
         View view;
         if (convertView == null) {
             view = mInflater.inflate(mDropdownViewId, parent, false);
-            holder = new DropDownViewHolder();
-            holder.description = (CheckedTextView) view.findViewById(android.R.id.text1);
-            view.setTag(holder);
+            textView = (CheckedTextView) view.findViewById(android.R.id.text1);
+            view.setTag(textView);
         }
         else {
             view = convertView;
-            holder = (DropDownViewHolder) view.getTag();
+            textView = (CheckedTextView) view.getTag();
         }
 
         CountryCode e = mData.get(position);
@@ -154,25 +153,24 @@ public class CountryCodesAdapter extends BaseAdapter {
             .append(e.countryCode)
             .append(')');
 
-        holder.description.setText(text);
-        holder.description.setChecked((mSelected == position));
+        textView.setText(text);
+        textView.setChecked((mSelected == position));
 
         return view;
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder holder;
+        TextView textView;
         View view;
         if (convertView == null) {
             view = mInflater.inflate(mViewId, parent, false);
-            holder = new ViewHolder();
-            holder.description = (TextView) view.findViewById(android.R.id.text1);
-            view.setTag(holder);
+            textView = (TextView) view.findViewById(android.R.id.text1);
+            view.setTag(textView);
         }
         else {
             view = convertView;
-            holder = (ViewHolder) view.getTag();
+            textView = (TextView) view.getTag();
         }
 
         CountryCode e = mData.get(position);
@@ -184,16 +182,8 @@ public class CountryCodesAdapter extends BaseAdapter {
             .append(e.regionName)
             .append(')');
 
-        holder.description.setText(text);
+        textView.setText(text);
 
         return view;
-    }
-
-    private final static class ViewHolder {
-        TextView description;
-    }
-
-    private final static class DropDownViewHolder {
-        CheckedTextView description;
     }
 }
