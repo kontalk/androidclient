@@ -324,4 +324,56 @@
     <string name="social_facebook">فیس‌بوک</string>
     <string name="social_identica">آیدنتیکا</string>
 
+    <string name="err_validation_nonetwork">هیچچ اتّصال اینترنتی‌ای موجود نیست. کانتام برای کار کردن به یک اتّصال فعّال اینترنتی نیاز دارد.</string>
+    <string name="err_validation_network_error">ناتوان در اتّصال به کارساز. لطفاً بعداً دوباره تلاش کنید.</string>
+    <string name="err_validation_server_not_supported">کارساز گزیده از ثبت‌نام پشتیبانی نمی‌کند. لطفاً کارساز دیگری را در صفحهٔ تنظمیات پیکربندی کنید.</string>
+    <string name="err_validation_user_exists"><b>شماره‌ای که دارید استفاده می‌کنید از پیش در کانتاک ثبت شده است.</b> اگر افزارهٔ دیگری را ثبت کردید، ادامهٔ این کار، آ را ار کانتاک قطع خواهد کرد. لطفاً به مستندات ما دربارهٔ چگونه رونوشت کردن حساب بین افزاره‌ها مراجعه کنید. برای ادامه در هر صورت، قبول را انتخاب کنید.</string>
+    <string name="message_user_not_found">به نظر مي‌رسد مخاطب در کانتاک ثبت‌نام نکرده است. در هر صورت می‌توانید تلاش کنید با او تماس گرفته و برایش یک پیام دعوت بفرستید.</string>
+    <string name="message_offline_mode_warning">کانتاک در حالت برون‌خط نخواهد توانست تا هنگام بازگشت به حالت برخط به کارساز وصل شود. در این حالت نخواهید توانست پیامی فرستاده یا دریافت کنید و کاربران شما را به صورت برون‌خط خواهند دید.</string>
+
+    <string name="donate_text">کانتاک برای ادامهٔ اجرا ب پول نیاز دارد. لطفاً پرداخت اعانه را در نظر داشته باشید، هر چه‌قدر هم که کم باشد.</string>
+    <string name="title_bitcoin_dialog">بیت‌کوین</string>
+    <string name="text_bitcoin_dialog">نشانی بیت‌کوین:\n%s</string>
+    <string name="donate_wallet">گوگل‌پلی</string>
+    <string name="donate_paypal">پی‌پل</string>
+    <string name="donate_bitcoin">بیت‌کوین</string>
+    <string name="donate_flattr">فلتر</string>
+
+    <string name="msg_generating_keypair">در حال ایجاد کلید شخصی در پس‌زمینه.</string>
+    <string name="msg_gen_keypair_complete">تولید کلید شخضی کامل شد.</string>
+    <string name="notify_gen_keypair_ticker">در حال تولید کلید شخصی…</string>
+    <string name="notify_gen_keypair_title">در حال تولید کلید شخصی</string>
+    <string name="notify_gen_keypair_text">می‌توانید به کار عادی ادامه دهید.</string>
+
+    <string name="msg_xmpp_upgrading">در حال ارتقا…</string>
+    <string name="title_no_personal_key">هیچ کلید شخصی‌ای نیست</string>
+    <string name="msg_no_personal_key">در حال حاضر کلید شخصی موجود نیست (شاید چون به‌تازگی ارتقا داده‌اید). اگر یک کلید شخصی تولید نکنید، قادر به ورود به شبکهٔ کانتاک نیستید. لطفاً با بستن و گشودن دوبارهٔ کانتاک، نامتان را وارد کنید.</string>
+    <string name="msg_keypair_exported">کلید شخصی و گواهی‌نامهٔ ورود در ذخیره‌ساز خارحی برون‌ریزی شدند.</string>
+    <string name="err_keypair_export_write">ناتوان در نوشتن کلید شخصی در ذخیره‌ساز خارجی.</string>
+    <string name="err_keypair_export_other">ناتوان در برون‌ریزی کلید شخصی.</string>
+
+    <string name="security_status_good">خوب</string>
+    <string name="security_status_bad">بد</string>
+
+    <string name="security_error_invalid_signature">" (امضای نامعتبر)"</string>
+    <string name="security_error_invalid_sender">" (فرستندهٔ نامعتبر)"</string>
+    <string name="security_error_invalid_recipient">" (گیرندهٔ نامعتبر)"</string>
+    <string name="security_error_invalid_timestamp">" (زمان نامعتبر)"</string>
+    <string name="security_error_invalid_data">" (دادهٔ نامعتبر)"</string>
+    <string name="security_error_decrypt_failed">" (رمزگشایی شکست خورد)"</string>
+    <string name="security_error_integrity_check">" (بررسی یکپارچگی)"</string>
+    <string name="security_error_public_key_unavail">" (کلید عمومی ناموجود)"</string>
+
+    <string name="invite_notification">شما را به گپ دعوت می‌کند</string>
+    <string name="title_invitation">دعوت به گپ</string>
+    <string name="text_invitation1">درخواست شده توسّط:</string>
+    <string name="text_invitation2">اثر انگشت:</string>
+    <string name="button_accept">قبول</string>
+    <string name="button_block">مسدود</string>
+    <string name="button_identity">شناسه</string>
+
+    <string name="msg_connecting_iab">اتّصال به گوگل پلی…</string>
+    <string name="msg_iab_thankyou">ممنون!</string>
+    <string name="msg_iab_thankyou_warning">چیزی اشتباه شد، ولی اعانه پرداخت شد. ممنون!</string>
+
     </resources>
