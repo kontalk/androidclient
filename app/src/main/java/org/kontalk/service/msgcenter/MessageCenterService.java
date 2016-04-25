@@ -1558,6 +1558,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             String groupJid = c.getString(12); // 13
             String groupSubject = c.getString(13); // 14
 
+            // orphan group command waiting to be sent
+            if (groupJid == null && GroupCommandComponent.supportsMimeType(bodyMime)) {
+                groupJid = peer;
+            }
+
             String[] groupMembers = null;
             if (groupJid != null) {
                 groupMembers = MessagesProvider.getGroupMembers(this, groupJid);

@@ -201,7 +201,7 @@ public class MessagesProvider extends ContentProvider {
                 TABLE_GROUPS + "." + Groups.GROUP_JID + "," +
                 TABLE_GROUPS + "." + Groups.SUBJECT + "," +
                 TABLE_GROUPS + "." + Groups.GROUP_TYPE +
-            " FROM " + TABLE_MESSAGES + " JOIN " + TABLE_THREADS +
+            " FROM " + TABLE_MESSAGES + " LEFT JOIN " + TABLE_THREADS +
             " ON " + TABLE_MESSAGES + "." + Messages.THREAD_ID + "=" + TABLE_THREADS + "." + Threads._ID +
             " LEFT OUTER JOIN " + TABLE_GROUPS + " ON " +
             TABLE_THREADS + "." + Threads._ID + "=" +
