@@ -19,7 +19,7 @@
   <string name="app_name">کانتاک</string>
 <string name="app_description">شبکهٔ پیام‌رسانی آنی جامعه‌محور</string>
     <string name="service_name">مرکز پیام</string>
-    <string name="sync_service_name">هم‌گام سازی مخاطبان</string>
+    <string name="sync_service_name">هم‌گام‌سازی مخاطبان</string>
     <string name="yes">بله</string>
     <string name="no">نه</string>
     <string name="send">فرستادن</string>
@@ -31,7 +31,7 @@
     <string name="menu_compose">ایجاد</string>
     <string name="menu_settings">تنظیمات</string>
     <string name="menu_offline">برون‌خط شدن</string>
-    <string name="menu_online">برخط شدن</string>
+    <string name="menu_online">برخط شو</string>
     <string name="menu_import_key">درون‌ریزی کلید</string>
     <string name="pref_network_settings">تنظیمات شبکه</string>
     <string name="pref_network_uri">نشانی کارساز دستی</string>
@@ -40,7 +40,7 @@
     <string name="number_validation_intro2">اگر نمی‌توانید روی این افزاره تماس یا پیامک دریافت کنید، شمارهٔ تلفنی که دارید را وارد کنید: آن شماره را به این افزاره پیوند خواهیم داد.</string>
     <string name="code_validation_intro">باید به‌زودی پیامک یا تماسی از این شماره دریافت کنید:</string>
     <string name="code_validation_intro2">لطفاً کدی را که دریافت کرده یا می‌شنوید، وارد کنید.</string>
-    <string name="code_validation_intro_missed_call">باید به‌زودی تماسی از دست رفته از این شماره دریافت کنید. <b>لطفاً به تماس پاسخ ندهید.</b></string>
+    <string name="code_validation_intro_missed_call">به زودی باید یک تماس از دست رفته از این شماره دریافت کنید. <b>لطفاً به تماس پاسخ ندهید.</b></string>
     <string name="code_validation_intro2_missed_call">لطفاً آخرین %Id رقم شماره‌ای که با شما تماس خواهد گرفت را وارد کنید.</string>
     <string name="code_validation_intro_manual">لطفاً کد تأییدی که دریافت کردید را وارد کنید. لطفاً توجه داشته باشید که یک کد تأیید تنها یک‌بار می‌تواند استفاده شود.</string>
     <string name="hint_validation_name">نام شما</string>
@@ -93,7 +93,7 @@
     <string name="size_label">"اندازه: "</string>
     <string name="size_unknown">(نامشخص)</string>
     <string name="title_file_info">اطلاعات پرونده</string>
-    <string name="pref_title_restart_msgcenter">اگر کانتاک به درستی کار نمی کند از این گزینه استفاده کنید</string>
+    <string name="pref_title_restart_msgcenter">اگر کانتاک به درستی کار نمی‌کند از این گزینه استفاده کنید</string>
     <string name="pref_idle_time">قطع اتّصال هنگام بی‌کاری</string>
     <string name="pref_title_idle_time">مدت انتظار پیش از جداشدن به دلیل عدم فعالیت</string>
     <string name="pref_wakeup_time">اتصال دوباره به کارساز</string>
@@ -126,7 +126,7 @@
     <string name="mark_read">خواندن</string>
     <string name="confirm_will_delete_threads">گفت‌وگوی گزیده حذف خواهد شد.</string>
     <string name="error_delete_message">ناتوان در حذف پیام.</string>
-    <string name="error_store_outbox">نمی‌توان پیام را در صندوق خروجی ذخیره کرد. شاید خافظه پر است؟</string>
+    <string name="error_store_outbox">نمی‌توان پیام را در صندوق خروجی ذخیره کرد. شاید حافظه پر است؟</string>
     <string name="error_delete_thread">ناتوان در حذف رشته.</string>
     <string name="decrypt_message">رمزگشایی پیام</string>
     <string name="download_file">بارگیری پرونده</string>
@@ -150,12 +150,12 @@
     <string name="pref_title_enable_notifications">نمایش آگاهی‌های پیام در نوار وضعیت</string>
     <string name="pref_ringtone">گزینش صدای زنگ</string>
     <string name="pref_vibrate">لرزش</string>
-    <string name="pref_title_vibrate">افزودن لرزش هنگام آگاهی رسانی</string>
+    <string name="pref_title_vibrate">افزودن لرزش هنگام آگاهی‌رسانی</string>
     <string name="confirm_delete_message">حذف پیام</string>
     <string name="confirm_will_delete_message">این پیام حذف خواهد شد.</string>
     <string name="confirm_will_delete_messages">پیام گزیده شده حذف خواهد شد.</string>
     <string name="title_user_exists">کاربر وجود دارد</string>
-    <string name="err_authentication_failed">کد احراز حویت رد شد. تأیید اعتبار شکست خورد.</string>
+    <string name="err_authentication_failed">کد احراز هویت رد شد. تأیید اعتبار شکست خورد.</string>
     <string name="err_validation_failed">احراز هویت شماره تلفن رد شد.</string>
     <string name="err_validation_retry_later">تلاش‌های خیلی زیاد. لطفاً چند دقیقه صبر کرده و دوباره تلاش کنید.</string>
     <string name="msg_validation_canceled">احراز هویت لغو شد. به هر حال ممکن است پیامکی دریافت کنید.</string>
@@ -192,7 +192,7 @@
     <string name="title_error">خطا</string>
     <string name="msg_do_refresh">برای به‌روز رسانی فهرست مخاطبان، به پایین بکشید.</string>
     <string name="msg_sync_progress">در حال تازه‌سازی فهرست مخاطبان…</string>
-    <string name="err_sync_failed">نمي‌توان فهرست مخاطبان را تازه‌سازی کرد. لطفاً بعداً دوباره تلاش کنید.</string>
+    <string name="err_sync_failed">نمی‌توان فهرست مخاطبان را تازه‌سازی کرد. لطفاً بعداً دوباره تلاش کنید.</string>
     <string name="err_sync_nonetwork">شبکه موجود نیست. لطفاً بعداً دوباره تلاش کنید.</string>
     <string name="text_invite_message">سلام. کانتاک رو ببین. یه برنامهٔ پیام‌رسانی آزاد! http://kontalk.org/</string>
     <string name="text_contacts_empty">کاربران جدید به صورت خودکار به این فهرست افزوده خواهند شد.\n\nبرای ارسال دعوت‌نامه‌ای به کسی، از <b>فهرست</b>&lt;<b>دعوت کاربران</b> استفاده کنید.</string>
@@ -212,7 +212,7 @@
     <string name="vcard_message">پیام کارت ویزیت</string>
     <string name="open_file">گشودن پرونده</string>
     <string name="open_audio">پخش پروندهٔ صوتی</string>
-    <string name="msg_msgcenter_restarted">مرکز پیام شورع دوباره شد.</string>
+    <string name="msg_msgcenter_restarted">مرکز پیام شروع دوباره شد.</string>
     <string name="downloading_attachment">در حال بارگیری پیوست…</string>
     <string name="decrypting_attachment">در حال رمزگشایی پیوست…</string>
     <string name="attachment_download">بارگیری پیوست</string>
@@ -227,7 +227,7 @@
     <string name="pref_title_background_uri">تنظیم تصویر پس‌زمینهٔ گفت‌وگوهای سفارشی</string>
     <string name="pref_title_custom_background">با استفاده از انتخاب زیر، پس‌زمینه‌ای برگزینید</string>
     <string name="err_custom_background">هنگام تنظیم پس‌زمینه خطایی رخ داد. لطفاً تصویر دیگری را بیازمایید.</string>
-    <string name="err_attachment_corrupted">ناتوان در بارگیری پیوست.ممکن است پیام خراب شده باشد.</string>
+    <string name="err_attachment_corrupted">ناتوان در بارگیری پیوست. ممکن است پیام خراب شده باشد.</string>
     <string name="serverlist_updating">در حال به‌روز رسانی فهرست کارساز…</string>
     <string name="serverlist_update_error">ناتوان در بارگیری فهرست کارساز. لطفاً بعداً دوباره تلاش کنید.</string>
     <string name="serverlist_update_nodata">هیچ فهرست کارساز موجودی پیدا نشد.</string>
@@ -238,7 +238,7 @@
     <string name="pref_vibrate_label_silent">فقط هنگام سکوت</string>
     <string name="pref_vibrate_label_never">هرگز</string>
     <string name="pref_fontsize_label_small">کوچک</string>
-    <string name="pref_fontsize_label_medium">متوّسط</string>
+    <string name="pref_fontsize_label_medium">متوسّط</string>
     <string name="pref_fontsize_label_large">بزرگ</string>
     <string name="pref_balloon_label_hangout">هنگ‌اوت</string>
     <string name="pref_balloon_label_classic">کلاسیک</string>
@@ -269,7 +269,7 @@
     <string name="msg_import_keypair">کانتاک کلیدهایتان را از %s در ذخیره‌ساز خارجی درون‌ریز می‌کند. مطمئن باشید که پرونده موجود بوده و یک بایگانی کلیدهای برون‌ریزی شدهٔ معتبر است.</string>
     <string name="msg_import_keypair_complete">درون‌ریزی کلید شخصی کامل شد.</string>
     <string name="err_import_keypair_failed">درون‌ریزی کلید شخصی شکست خورد.</string>
-    <string name="err_import_keypair_uid_mismatch">کلید درون ریزی شده با شماره تلفنی که وارد کردید تطابق ندارد.</string>
+    <string name="err_import_keypair_uid_mismatch">کلید درون‌ریزی شده با شماره تلفنی که وارد کردید تطابق ندارد.</string>
     <string name="err_import_keypair_read">ناتوان در خواندن کلید شخصی از ذخیره‌ساز خارجی.</string>
     <string name="title_passphrase">گذرواژه</string>
 
@@ -304,7 +304,7 @@
     <string name="header_recent_status">پیام‌های وضعیت اخیراً استفاده شده</string>
 
     <string name="title_offline_mode_warning">حالت برون‌خط</string>
-    <string name="warning_offline_mode">حالت برون‌خط فعّال است. پیام‌ها هگام برخط شدن فرستاده خواهند شد.</string>
+    <string name="warning_offline_mode">حالت برون‌خط فعّال است. پیام‌ها هنگام برخط شدن فرستاده خواهند شد.</string>
     <string name="going_offline">در حال برون‌خط شدن.</string>
     <string name="going_online">در حال برخط شدن.</string>
 
@@ -324,14 +324,14 @@
     <string name="social_facebook">فیس‌بوک</string>
     <string name="social_identica">آیدنتیکا</string>
 
-    <string name="err_validation_nonetwork">هیچچ اتّصال اینترنتی‌ای موجود نیست. کانتام برای کار کردن به یک اتّصال فعّال اینترنتی نیاز دارد.</string>
+    <string name="err_validation_nonetwork">هیچ اتّصال اینترنتی‌ای موجود نیست. کانتاک برای کار کردن به یک اتّصال فعّال اینترنتی نیاز دارد.</string>
     <string name="err_validation_network_error">ناتوان در اتّصال به کارساز. لطفاً بعداً دوباره تلاش کنید.</string>
-    <string name="err_validation_server_not_supported">کارساز گزیده از ثبت‌نام پشتیبانی نمی‌کند. لطفاً کارساز دیگری را در صفحهٔ تنظمیات پیکربندی کنید.</string>
-    <string name="err_validation_user_exists"><b>شماره‌ای که دارید استفاده می‌کنید از پیش در کانتاک ثبت شده است.</b> اگر افزارهٔ دیگری را ثبت کردید، ادامهٔ این کار، آ را ار کانتاک قطع خواهد کرد. لطفاً به مستندات ما دربارهٔ چگونه رونوشت کردن حساب بین افزاره‌ها مراجعه کنید. برای ادامه در هر صورت، قبول را انتخاب کنید.</string>
-    <string name="message_user_not_found">به نظر مي‌رسد مخاطب در کانتاک ثبت‌نام نکرده است. در هر صورت می‌توانید تلاش کنید با او تماس گرفته و برایش یک پیام دعوت بفرستید.</string>
+    <string name="err_validation_server_not_supported">کارساز گزیده از ثبت‌نام پشتیبانی نمی‌کند. لطفاً کارساز دیگری را در صفحهٔ تنظیمات پیکربندی کنید.</string>
+    <string name="err_validation_user_exists"><b>شماره‌ای که دارید استفاده می‌کنید از پیش در کانتاک ثبت شده است.</b> اگر افزارهٔ دیگری را ثبت کردید، ادامهٔ این کار، آن را از کانتاک قطع خواهد کرد. لطفاً به مستندات ما دربارهٔ چگونه رونوشت کردن حساب بین افزاره‌ها مراجعه کنید. برای ادامه در هر صورت، قبول را انتخاب کنید.</string>
+    <string name="message_user_not_found">به نظر می‌رسد مخاطب در کانتاک ثبت‌نام نکرده است. در هر صورت می‌توانید تلاش کنید با او تماس گرفته و برایش یک پیام دعوت بفرستید.</string>
     <string name="message_offline_mode_warning">کانتاک در حالت برون‌خط نخواهد توانست تا هنگام بازگشت به حالت برخط به کارساز وصل شود. در این حالت نخواهید توانست پیامی فرستاده یا دریافت کنید و کاربران شما را به صورت برون‌خط خواهند دید.</string>
 
-    <string name="donate_text">کانتاک برای ادامهٔ اجرا ب پول نیاز دارد. لطفاً پرداخت اعانه را در نظر داشته باشید، هر چه‌قدر هم که کم باشد.</string>
+    <string name="donate_text">کانتاک برای ادامهٔ اجرا به پول نیاز دارد. لطفاً پرداخت اعانه را در نظر داشته باشید، هر چه‌قدر هم که کم باشد.</string>
     <string name="title_bitcoin_dialog">بیت‌کوین</string>
     <string name="text_bitcoin_dialog">نشانی بیت‌کوین:\n%s</string>
     <string name="donate_wallet">گوگل‌پلی</string>
@@ -340,7 +340,7 @@
     <string name="donate_flattr">فلتر</string>
 
     <string name="msg_generating_keypair">در حال ایجاد کلید شخصی در پس‌زمینه.</string>
-    <string name="msg_gen_keypair_complete">تولید کلید شخضی کامل شد.</string>
+    <string name="msg_gen_keypair_complete">تولید کلید شخصی کامل شد.</string>
     <string name="notify_gen_keypair_ticker">در حال تولید کلید شخصی…</string>
     <string name="notify_gen_keypair_title">در حال تولید کلید شخصی</string>
     <string name="notify_gen_keypair_text">می‌توانید به کار عادی ادامه دهید.</string>
@@ -348,7 +348,7 @@
     <string name="msg_xmpp_upgrading">در حال ارتقا…</string>
     <string name="title_no_personal_key">هیچ کلید شخصی‌ای نیست</string>
     <string name="msg_no_personal_key">در حال حاضر کلید شخصی موجود نیست (شاید چون به‌تازگی ارتقا داده‌اید). اگر یک کلید شخصی تولید نکنید، قادر به ورود به شبکهٔ کانتاک نیستید. لطفاً با بستن و گشودن دوبارهٔ کانتاک، نامتان را وارد کنید.</string>
-    <string name="msg_keypair_exported">کلید شخصی و گواهی‌نامهٔ ورود در ذخیره‌ساز خارحی برون‌ریزی شدند.</string>
+    <string name="msg_keypair_exported">کلید شخصی و گواهی‌نامهٔ ورود در ذخیره‌ساز خارجی برون‌ریزی شدند.</string>
     <string name="err_keypair_export_write">ناتوان در نوشتن کلید شخصی در ذخیره‌ساز خارجی.</string>
     <string name="err_keypair_export_other">ناتوان در برون‌ریزی کلید شخصی.</string>
 
