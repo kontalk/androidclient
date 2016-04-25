@@ -18,6 +18,7 @@
 
 package org.kontalk.ui;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -108,20 +109,24 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
     @Override
     protected void addUsers(String[] members) {
+        Set<String> existingMembers = new HashSet<>();
+        Collections.addAll(existingMembers, mConversation.getGroupPeers());
+
         // ensure no duplicates
         String selfJid = Authenticator.getSelfJID(getContext());
         Set<String> usersList = new HashSet<>();
-        usersList.add(getUserId());
         for (String member : members) {
-            // exclude ourselves
-            if (!member.equalsIgnoreCase(selfJid))
+            // exclude ourselves and do not add if already an existing member
+            if (!member.equalsIgnoreCase(selfJid) && !existingMembers.contains(member))
                 usersList.add(member);
         }
 
-        String[] users = usersList.toArray(new String[usersList.size()]);
-        mConversation.addUsers(users);
-        // reload conversation
-        ((ComposeMessageParent) getActivity()).loadConversation(getThreadId());
+        if (usersList.size() > 0) {
+            String[] users = usersList.toArray(new String[usersList.size()]);
+            mConversation.addUsers(users);
+            // reload conversation
+            ((ComposeMessageParent) getActivity()).loadConversation(getThreadId());
+        }
     }
 
     private void changeGroupSubject() {

@@ -2243,9 +2243,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         MessageUtils.fillContentValues(values, msg);
 
+        GroupCommandComponent group = msg.getComponent(GroupCommandComponent.class);
+        boolean isGroupCommand = group != null;
+
         values.put(Messages.STATUS, Messages.STATUS_INCOMING);
-        values.put(Messages.UNREAD, true);
-        values.put(Messages.NEW, true);
+        // group commands don't get notifications
+        values.put(Messages.UNREAD, !isGroupCommand);
+        values.put(Messages.NEW, !isGroupCommand);
         values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
         values.put(Messages.TIMESTAMP, System.currentTimeMillis());
 
@@ -2259,7 +2263,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 values.put(Groups.SUBJECT, groupSubject);
         }
 
-        GroupCommandComponent group = msg.getComponent(GroupCommandComponent.class);
         if (group != null) {
             // the following operations will work because we are operating with
             // groups and group_members table (that is, no foreign keys)
@@ -2327,23 +2330,25 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // duplicated message, skip it
         }
 
-        // mark sender as registered in the users database
-        final Context context = getApplicationContext();
-        new Thread(new Runnable() {
-            public void run() {
-                try {
-                    UsersProvider.markRegistered(context, sender);
+        if (groupInfo == null) {
+            // mark sender as registered in the users database
+            final Context context = getApplicationContext();
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        UsersProvider.markRegistered(context, sender);
+                    }
+                    catch (SQLiteConstraintException e) {
+                        // this might happen during an online/offline switch
+                    }
                 }
-                catch (SQLiteConstraintException e) {
-                    // this might happen during an online/offline switch
-                }
-            }
-        }).start();
+            }).start();
+        }
 
         // fire notification only if message was actually inserted to database
         // and the conversation is not open already
-        String paused = (group != null) ? group.getContent().getJID() : sender;
-        if (msgUri != null && !MessagingNotification.isPaused(paused)) {
+        String paused = groupInfo != null ? groupInfo.getContent().getJid() : sender;
+        if (!isGroupCommand && msgUri != null && !MessagingNotification.isPaused(paused)) {
             // update notifications (delayed)
             MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
         }

@@ -44,6 +44,7 @@ import android.support.v4.app.NotificationCompat.InboxStyle;
 import android.support.v4.app.NotificationCompat.Style;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 
@@ -51,13 +52,15 @@ import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
-import org.kontalk.provider.MyMessages;
+import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.provider.MyMessages.CommonColumns;
+import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.NotificationActionReceiver;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.SystemUtils;
 
 
 /**
@@ -86,6 +89,8 @@ public class MessagingNotification {
         Messages.BODY_CONTENT,
         Messages.ATTACHMENT_MIME,
         CommonColumns.ENCRYPTED,
+        Groups.GROUP_JID,
+        Groups.SUBJECT,
     };
 
     private static final String[] THREADS_UNREAD_PROJECTION =
@@ -96,6 +101,8 @@ public class MessagingNotification {
         Threads.CONTENT,
         CommonColumns.ENCRYPTED,
         CommonColumns.UNREAD,
+        Groups.GROUP_JID,
+        Groups.SUBJECT,
     };
 
     private static final String MESSAGES_UNREAD_SELECTION =
@@ -203,10 +210,11 @@ public class MessagingNotification {
         // is there a peer to not notify for?
         if (sPaused != null) {
             query += " AND " + CommonColumns.PEER + " <> ? AND " +
-                MyMessages.Groups.GROUP_JID + " <> ?";
+                Groups.GROUP_JID + " <> ?";
             args = new String[] { sPaused, sPaused };
         }
 
+        // TODO we need the group subject to correctly notify group messages (e.g. alice @ team: hey buddy!)
         Cursor c = res.query(uri, proj, query, args, order);
 
         // this shouldn't happen, but who knows...
@@ -227,7 +235,7 @@ public class MessagingNotification {
         Set<Uri> conversationIds = new HashSet<>(unread);
 
         if (supportsBigNotifications()) {
-            Map<String, CharSequence[]> convs = new HashMap<String, CharSequence[]>();
+            Map<String, NotificationConversation> convs = new HashMap<>();
 
             String peer = null;
             long id = 0;
@@ -237,19 +245,19 @@ public class MessagingNotification {
                 peer = c.getString(1);
                 byte[] content = c.getBlob(2);
                 String attMime = c.getString(3);
+                String groupJid = c.getString(5);
+                String groupSubject = c.getString(6);
 
                 // store conversation id for intents
                 conversationIds.add(ContentUris.withAppendedId(Threads.CONTENT_URI, id));
 
-                CharSequence[] b = convs.get(peer);
+                NotificationConversation b = convs.get(peer);
                 if (b == null) {
-                    b = new CharSequence[2];
-                    b[0] = new StringBuilder();
-                    b[1] = null;
+                    b = new NotificationConversation(new StringBuilder(), null, groupJid, groupSubject);
                     convs.put(peer, b);
                 }
                 else {
-                    ((StringBuilder) b[0]).append('\n');
+                    ((StringBuilder) b.allContent).append('\n');
                 }
 
                 String textContent;
@@ -265,8 +273,8 @@ public class MessagingNotification {
                     textContent = content != null ? new String(content) : "";
                 }
 
-                ((StringBuilder) b[0]).append(textContent);
-                b[1] = textContent;
+                ((StringBuilder) b.allContent).append(textContent);
+                b.lastContent = textContent;
             }
             c.close();
 
@@ -289,11 +297,18 @@ public class MessagingNotification {
                 StringBuilder btext = new StringBuilder();
                 int count = 0;
                 for (String user : convs.keySet()) {
+                    NotificationConversation conv = convs.get(user);
                     count++;
 
                     Contact contact = Contact.findByUserId(context, user);
                     String name = (contact != null) ? contact.getName() :
                         context.getString(R.string.peer_unknown);
+
+                    if (conv.groupJid != null) {
+                        // TODO i18n
+                        name += " @ " + (TextUtils.isEmpty(conv.groupSubject) ?
+                            "Untitled group" : conv.groupSubject);
+                    }
 
                     if (contact != null) {
                         if (btext.length() > 0)
@@ -309,7 +324,7 @@ public class MessagingNotification {
                                 .getColor(R.color.notification_name_color)),
                             0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                         // take just the last message
-                        buf.append(convs.get(user)[1]);
+                        buf.append(conv.lastContent);
 
                         ((InboxStyle) style).addLine(buf);
                     }
@@ -332,8 +347,9 @@ public class MessagingNotification {
             }
             // one conversation, use BigTextStyle
             else {
-                String content = convs.get(peer)[0].toString();
-                CharSequence last = convs.get(peer)[1];
+                NotificationConversation conv = convs.get(peer);
+                String content = conv.allContent.toString();
+                CharSequence last = conv.lastContent;
 
                 // big text content
                 style = new BigTextStyle();
@@ -344,7 +360,12 @@ public class MessagingNotification {
                 Contact contact = Contact.findByUserId(context, peer);
                 String name = (contact != null) ? contact.getName() :
                     context.getString(R.string.peer_unknown);
-                    // debug mode -- conversation.peer;
+
+                if (conv.groupJid != null) {
+                    // TODO i18n
+                    name += " @ " + (TextUtils.isEmpty(conv.groupSubject) ?
+                        "Untitled group" : conv.groupSubject);
+                }
 
                 SpannableStringBuilder buf = new SpannableStringBuilder();
                 buf.append(name).append(':').append(' ');
@@ -402,14 +423,14 @@ public class MessagingNotification {
             builder.setStyle(style);
 
             Intent ni;
-            // more than one unread conversation - open ConversationList
+            // more than one unread conversation - open conversations list
             if (convs.size() > 1) {
                 ni = new Intent(context, ConversationsActivity.class);
                 ni.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_SINGLE_TOP
                     | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             }
-            // one unread conversation - open ComposeMessage on that peer
+            // one unread conversation - open compose message on that thread
             else {
                 ni = ComposeMessage.fromConversation(context, id);
             }
@@ -420,6 +441,7 @@ public class MessagingNotification {
         }
 
         else {
+            // TODO support for group messages
 
             // loop all threads and accumulate them
             MessageAccumulator accumulator = new MessageAccumulator(context);
@@ -511,6 +533,21 @@ public class MessagingNotification {
         builder.setPriority(NotificationCompat.PRIORITY_HIGH);
         builder.setCategory(NotificationCompat.CATEGORY_MESSAGE);
         builder.setColor(context.getResources().getColor(R.color.app_accent));
+    }
+
+    private static final class NotificationConversation {
+        private final CharSequence allContent;
+        private final String groupJid;
+        private final String groupSubject;
+
+        private CharSequence lastContent;
+
+        public NotificationConversation(CharSequence allContent, CharSequence lastContent, String groupJid, String groupSubject) {
+            this.allContent = allContent;
+            this.lastContent = lastContent;
+            this.groupJid = groupJid;
+            this.groupSubject = groupSubject;
+        }
     }
 
     /** Triggers a notification for a chat invitation. */
