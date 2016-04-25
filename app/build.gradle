@@ -35,7 +35,7 @@ android {
     defaultConfig {
         applicationId "org.kontalk"
         versionCode 199
-        versionName "3.2-preview"
+        versionName "4.0-preview"
         targetSdkVersion 22
         minSdkVersion 9
         resConfigs "en", "de", "fr", "it", "es", "ca", "cs", "el", "fa", "gl", "ja", "nl", "pt", "ru", "sr", "zh-rCN", "ar"
