@@ -391,7 +391,7 @@ public class CountryCodesAdapter extends BaseAdapter {
         DropDownViewHolder holder;
         View view;
         if (convertView == null) {
-            view = mInflater.inflate(mDropdownViewId, null, false);
+            view = mInflater.inflate(mDropdownViewId, parent, false);
             holder = new DropDownViewHolder();
             holder.icon = (ImageView) view.findViewById(android.R.id.icon);
             holder.description = (CheckedTextView) view.findViewById(android.R.id.text1);
@@ -427,7 +427,7 @@ public class CountryCodesAdapter extends BaseAdapter {
         ViewHolder holder;
         View view;
         if (convertView == null) {
-            view = mInflater.inflate(mViewId, null, false);
+            view = mInflater.inflate(mViewId, parent, false);
             holder = new ViewHolder();
             holder.icon = (ImageView) view.findViewById(android.R.id.icon);
             holder.description = (TextView) view.findViewById(android.R.id.text1);
