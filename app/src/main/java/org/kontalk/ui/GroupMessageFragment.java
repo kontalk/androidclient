@@ -18,6 +18,9 @@
 
 package org.kontalk.ui;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import android.net.Uri;
@@ -105,7 +108,18 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
     @Override
     protected void addUsers(String[] members) {
-        mConversation.addUsers(members);
+        // ensure no duplicates
+        String selfJid = Authenticator.getSelfJID(getContext());
+        Set<String> usersList = new HashSet<>();
+        usersList.add(getUserId());
+        for (String member : members) {
+            // exclude ourselves
+            if (!member.equalsIgnoreCase(selfJid))
+                usersList.add(member);
+        }
+
+        String[] users = usersList.toArray(new String[usersList.size()]);
+        mConversation.addUsers(users);
         // reload conversation
         ((ComposeMessageParent) getActivity()).loadConversation(getThreadId());
     }

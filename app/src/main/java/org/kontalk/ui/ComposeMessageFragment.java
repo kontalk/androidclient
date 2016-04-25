@@ -518,16 +518,22 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
 
     @Override
     protected void addUsers(String[] members) {
+        String selfJid = Authenticator.getSelfJID(getContext());
         String groupId = StringUtils.randomString(20);
-        String groupJid = XmppStringUtils.completeJidFrom(groupId,
-            Authenticator.getSelfJID(getContext()));
+        String groupJid = XmppStringUtils.completeJidFrom(groupId, selfJid);
 
-        // add this user and the others requested
-        // duplicates will be ignored by the provider
-        String[] users = new String[members.length + 1];
-        users[0] = getUserId();
-        System.arraycopy(members, 0, users, 1, members.length);
+        // ensure no duplicates
+        Set<String> usersList = new HashSet<>();
+        String userId = getUserId();
+        if (!userId.equalsIgnoreCase(selfJid))
+            usersList.add(userId);
+        for (String member : members) {
+            // exclude ourselves
+            if (!member.equalsIgnoreCase(selfJid))
+                usersList.add(member);
+        }
 
+        String[] users = usersList.toArray(new String[usersList.size()]);
         long groupThreadId = Conversation.initGroupChat(getActivity(),
             groupJid, mConversation.getGroupSubject(), users,
             mComposer.getText().toString());
