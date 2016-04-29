@@ -38,7 +38,6 @@
     <color name="audio_pbar_play">#ff00acec</color>
 
     <color name="date_stamp_background">@color/app_accent</color>
-    <color name="date_stamp_text">#dddddd</color>
 
     <color name="warning_bar_background_fatal">#f44336</color>
     <color name="warning_bar_text_fatal">@android:color/white</color>
