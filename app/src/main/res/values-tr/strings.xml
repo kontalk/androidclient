@@ -102,4 +102,13 @@
     <string name="pref_idle_time">Meşgul olduğunda bağlantıyı kes</string>
     <string name="pref_title_idle_time">Etkinlik olmadığında bağlantıyı kesmek için ne kadar bekleneceği</string>
     <string name="pref_wakeup_time">Sunucuya yeniden bağlan</string>
+    <string name="button_load_next_page">Daha fazla mesaj yükle</string>
+
+    <string name="about_credits_translators"><b>Çevirmenler</b></string>
+
+    <string name="pref_show_blocked_users">Engellenmiş kullanıcıları göster</string>
+    <string name="warning_public_key_unknown">Bu kullanıcının kişisel anahtarı güvenilmez!</string>
+    <string name="title_public_key_unknown_warning">Güvenilmez kişisel anahtar</string>
+    <string name="warning_user_blocked">Kullanıcı sizin tarafınızdan engellendi.</string>
+
     </resources>
