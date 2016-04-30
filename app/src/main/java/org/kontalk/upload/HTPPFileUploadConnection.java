@@ -62,8 +62,11 @@ public class HTPPFileUploadConnection implements UploadConnection {
 
     @Override
     public void abort() {
-        if (currentRequest != null)
+        try {
             currentRequest.disconnect();
+        }
+        catch (Exception ignored) {
+        }
     }
 
     @Override

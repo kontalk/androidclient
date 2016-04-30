@@ -91,8 +91,11 @@ public class ClientHTTPConnection {
     }
 
     public void abort() {
-        if (currentRequest != null)
+        try {
             currentRequest.disconnect();
+        }
+        catch (Exception ignored) {
+        }
     }
 
     /**
