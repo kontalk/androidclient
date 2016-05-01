@@ -26,7 +26,7 @@
   <string name="no">Όχι</string>
   <string name="send">Αποστολή</string>
   <string name="menu_compose">Νέο μήνυμα</string>
-  <string name="menu_delete_all">διαγραφή</string>
+  <string name="menu_delete_all">Διαγραφή συζητήσεων</string>
   <string name="menu_search">αναζήτηση</string>
   <string name="mykey_activity_title">Το προσωπικό μου κλειδί</string>
   <string name="menu_settings">ρυθμίσεις</string>
@@ -36,8 +36,8 @@
   <string name="pref_network_settings">Ρυθμίσεις Δικτύου</string>
   <string name="pref_network_uri">Καταχώρηση διεύθυνσης εξυπηρετητή</string>
   <string name="pref_title_network_uri">Παράκαμψη αυτόματης διαχείρισης server list</string>
-  <string name="number_validation_intro1">Παρακαλούμε εισάγετε το όνομά σας, επιλέξτε τον κωδικό της χώρας σας και εισάγετε τον αριθμό του κινητού σας τηλεφώνου. Ένα SMS με έναν κωδικό επαλήθευσης θα σταλεί σε σας. Ο αριθμός τηλεφώνου σας θα πρέπει να χρησιμοποιηθεί μία φορά και στη συνέχεια απορρίπτεται.</string>
-  <string name="number_validation_intro2">Αν δεν μπορείτε να λάβετε SMS σε αυτή τη συσκευή, εισαγάγετε έναν αριθμό τηλεφώνου που διαθέτετε και εισάγετε τον κωδικό επαλήθευσης που θα λάβετε μέσω SMS.</string>
+  <string name="number_validation_intro1">Παρακαλούμε εισάγετε το όνομά σας, επιλέξτε τον κωδικό της χώρας σας και εισάγετε τον αριθμό του κινητού σας τηλεφώνου. Θα σας δωθούν περισσότερες πληροφορίες στην επόμενη οθόνη.</string>
+  <string name="number_validation_intro2">Αν δεν μπορείτε να λάβετε κλήσεις ή SMS σε αυτή τη συσκευή, εισαγάγετε έναν αριθμό τηλεφώνου που διαθέτετε: θα τον συνδέσουμε με αυτή τη συσκευή.</string>
   <string name="code_validation_intro">Θα λάβετε ένα SMS ή μια κλήση από τον αριθμό αυτό σύντομα:</string>
   <string name="code_validation_intro2">Παρακαλούμε εισάγετε τον κωδικό που θα λάβετε ή θα ακούσετε παρακάτω.</string>
   <string name="code_validation_intro_manual">Παρακαλούμε εισάγετε τον κωδικό επαλήθευσης που λάβατε. Παρακαλείστε να σημειώσετε ότι ένας κωδικός επαλήθευσης μπορεί να χρησιμοποιηθεί μόνο μία φορά.</string>
@@ -45,14 +45,14 @@
   <string name="hint_validation_number">Ο αριθμός σας</string>
   <string name="hint_validation_code">Κωδικός επαλήθευσης</string>
   <string name="warn_invalid_number">παρακαλώ εισάγετε ένα έγκυρο αριθμό τηλεφώνου.</string>
-  <string name="msg_validating_phone">Ζητώντας τον κωδικό επαλήθευσης μεσω SMS…</string>
-  <string name="msg_initializing"/>
+  <string name="msg_validating_phone">Ζητώντας εγγραφή…</string>
+  <string name="msg_initializing">Εγγραφή στο δίκτυο Kontalk…</string>
   <string name="msg_authenticated">Συνδεθήκατε στο δίκτυο!</string>
   <string name="share">Κοινοποίηση</string>
   <string name="resend">Αποστολη ξανα</string>
-  <string name="copy_message_text">Αντιγραφή μηνύματος</string>
+  <string name="copy_message_text">Αντιγραφή κειμένου</string>
   <string name="delete_message">Διαγραφή μηνύματος</string>
-  <string name="confirm_delete_all">Διαγραφή όλων των συζητήσεων </string>
+  <string name="confirm_delete_all">Διαγραφή όλων των συζητήσεων</string>
   <string name="confirm_will_delete_all">Όλες οι συζητήσεις θα διαγραφούν.</string>
   <string name="sending_message">Αποστολή μηνύματος…</string>
   <string name="message_text_copied">Το μήνυμα αντεγράφει.</string>
@@ -70,7 +70,7 @@
   <string name="hint_open_kbd_to_compose">Άνοιξε το πληκτρολόγιο για να γράψεις</string>
   <string name="view_image">Προβολή Εικόνας</string>
   <string name="title_message_options">Επιλογές μηνύματος</string>
-  <string name="menu_message_details">Λεπτομέριες μηνύματος</string>
+  <string name="menu_message_details">Λεπτομέρειες</string>
   <string name="title_message_details">Λεπτομέρειες μηνύματος </string>
   <string name="message_type_label">Γράψε:\u0020</string>
   <string name="text_message">Μήνυμα κειμένου</string>
@@ -91,7 +91,7 @@
   <string name="size_unknown">(άγνωστο)</string>
   <string name="title_file_info">Πληροφορίες αρχείου</string>
   <string name="pref_restart_msgcenter">Επανεκκίνηση κέντρου μηνυμάτων</string>
-  <string name="pref_title_restart_msgcenter">Χρησιμοποιείστε αν το κέντρο μηνυμάτων δεν λειτουργεί σωστά </string>
+  <string name="pref_title_restart_msgcenter">Χρησιμοποιείστε αυτή την επιλογή αν η Kontalk δε δουλεύει σωστά</string>
   <string name="pref_idle_time">Αποσύνδεση σε κατάσταση αδράνειας</string>
   <string name="pref_title_idle_time">Πόσο χρόνο υπομονης πριν από την αποσύνδεση λόγω αδράνειας</string>
   <string name="pref_wakeup_time">Επανασύνδεση με το διακομιστή</string>
@@ -116,7 +116,7 @@
   <string name="pref_title_on_hide_presence">Οι άλλοι χρήστες δεν θα σας βλέπουν συνδεδεμένους</string>
   <string name="pref_title_off_hide_presence">Οι άλλοι χρήστες θα σας βλέπουν συνδεδεμένο ή θα βλέπουν την τελευταία φορά που είσασταν συνδεμεμένος</string>
   <string name="contact_not_registered">Η επαφή φαίνεται να μην είναι εγγεγραμμένη στο Kontalk.</string>
-  <string name="error_store_outbox">Δεν ήταν δυνατό να αποθηκευτεί το μήνυμα στα εξερχόμενα.</string>
+  <string name="error_store_outbox">Δεν ήταν δυνατό να αποθηκευτεί το μήνυμα στα εξερχόμενα. Μήπως η μνήμη της συσκευής σας είναι πλήρης;</string>
   <string name="decrypt_message">Αποκρυπτογράφηση μηνύματος</string>
   <string name="download_file">Αποθήκευση αρχείου</string>
   <string name="download_again">Αποθήκευση ξανά</string>
@@ -150,7 +150,7 @@
   <string name="peer_unknown">(άγνωστο)</string>
   <string name="msg_draft_saved">Το μήνυμα αποθηκεύτηκε ως πρόχειρο.</string>
   <string name="send_mime_not_supported">Ο τύπος αρχείου δεν υποστηρίζεται.</string>
-  <string name="button_validate">Αίτημα κωδικου επαλήθευσης </string>
+  <string name="button_validate">Εγγραφή</string>
   <string name="button_validation_register">Επαλήθευση</string>
   <string name="notify_ticker_download_completed">Η λήψη ολοκληρώθηκε</string>
   <string name="notify_title_download_completed">Η λήψη ολοκληρώθηκε</string>
@@ -172,13 +172,13 @@
   <string name="menu_refresh">Ανανέωση</string>
   <string name="menu_invite">Πρόσκληση χρηστών</string>
   <string name="title_error">Σφάλμα</string>
-  <string name="msg_do_refresh">Χρησιμοποιήστε το κουμπί Ανανέωση για να ενημερώσετε την λίστα επαφών.</string>
+  <string name="msg_do_refresh">Τραβήξτε κάτω για να ενημερώσετε την λίστα επαφών.</string>
   <string name="msg_sync_progress">Ανανέωση λίστας επαφών…</string>
   <string name="err_sync_failed">Δεν είναι δυνατή η ανανέωση λίστας επαφών. Παρακαλούμε δοκιμάστε ξανά αργότερα.</string>
   <string name="err_sync_nonetwork">Το δίκτυο δεν είναι διαθέσιμο. Παρακαλούμε δοκιμάστε ξανά αργότερα.</string>
   <string name="text_invite_message">Γεια σας! Ελέγξτε το Kontalk, μια δωρεάν εφαρμογή ανταλλαγής μηνυμάτων! http://kontalk.org/</string>
   <string name="text_contacts_empty">Οι νέοι χρήστες θα προστεθούν αυτόματα σε αυτή τη λίστα\n\nΧρήση <b>Μενού</b> &gt; <b>Προσκαλέστε τους χρήστες</b> για να στείλετε ένα μήνυμα πρόσκλησης σε κάποιον.</string>
-  <string name="text_conversations_empty">Για να αρχίσετε να γράφετε τα μηνύματα χρησιμοποιήσετε το <b>Νέο μήνυμα</b> icon παραπάνω.</string>
+  <string name="text_conversations_empty">Για να αρχίσετε να γράφετε τα μηνύματα χρησιμοποιήσετε το κουμπί <b>Νέο μήνυμα</b> παρακάτω.</string>
   <string name="notify_ticker_external_storage">Το εξωτερικό μέσο αποθήκευσης δεν είναι διαθέσιμο</string>
   <string name="notify_text_external_storage">Δεν είναι δυνατή η εγγραφή σε εξωτερικό μέσο αποθήκευσης.</string>
   <string name="title_user_not_found">Ο χρήστης δεν βρέθηκε</string>
@@ -201,7 +201,7 @@
   <string name="attachment_download">Λήψη συνημμένου </string>
   <string name="attachment_upload">Μεταφόρτωση συνημμένου </string>
   <string name="seen_moment_ago_label">πριν από ένα λεπτό</string>
-  <string name="seen_online_label">Σύνδεση</string>
+  <string name="seen_online_label">ενεργό</string>
   <string name="seen_typing_label">πληκτρολόγηση…</string>
   <string name="invitation_sent_label">Πρόσκληση που εκκρεμεί</string>
   <string name="pref_custom_background">Προσαρμοσμένος φόντος</string>
@@ -250,7 +250,7 @@
   <string name="pref_title_import_keypair">Εισαγωγή προσωπικού κλειδιού και σύνδεσης πιστοποιητικου από εξωτερικό μέσο αποθήκευσης</string>
   <string name="msg_import_keypair">Το Kontalk θα εισάγει τα κλειδιά από το %s στο εξωτερικό μέσο αποθήκευσης σας. Να είστε βέβαιος ότι το αρχείο υπάρχει και είναι ένα έγκυρο αρχείο εξάγωγης κλειδιών.</string>
   <string name="msg_import_keypair_complete">Η εισαγωγη του προσωπικου κλειδιου ολοκληρωθηκε.</string>
-  <string name="err_import_keypair_failed">Η εισαγωγη του προσωπικου κλειδιου απετυχε.</string>
+  <string name="err_import_keypair_failed">Η εισαγωγή του προσωπικού κλειδιού απέτυχε.</string>
   <string name="title_passphrase">Κωδικός</string>
   <string name="msg_status_sending">Αποστολή</string>
   <string name="msg_status_sent">Στάλθηκε</string>
@@ -260,7 +260,7 @@
   <string name="msg_status_encrypted">Κρυπτογραφημένο</string>
   <string name="pref_balloons">Μπαλόνι θέματος συνομιλίας </string>
   <string name="pref_title_balloons">Επιλέξτε ενα μπαλόνι θέματος συνομιλίας </string>
-  <string name="attachment_picture">Εικόνα</string>
+  <string name="attachment_picture">Γκαλερί</string>
   <string name="attachment_contact">Επαφή</string>
   <string name="attachment_audio">Ήχος</string>
   <string name="chooser_send_picture">Αποστολή εικόνας</string>
@@ -368,4 +368,91 @@
   <string name="warning_public_key">ΠΡΟΣΟΧΗ! Το προσωπικό κλειδί για αυτόν τον χρήστη άλλαξε ξαφνικά! Κάντε κλικ εδώ για λεπτομέρειες.</string>
   <string name="title_public_key_warning">Το προσωπικο κλειδί άλλαξε</string>
   <string name="msg_public_key_warning">Το προσωπικο κλειδί αυτου του χρήστη έχει αλλάξει. Παρακαλουμε ελέγξτε οτι ο χρήστης εκανε επανεγκατάσταση του Kontalk ή αναδημιουργησε το κλειδί του σκόπιμα, διαφορετικά η επικοινωνία θα μπορούσε να τεθεί σε κίνδυνο!</string>
+<string name="msg_importing_key">Εισαγωγή προσωπικού κλειδιού.…</string>
+    <string name="title_confirm_cancel_registration">Ακύρωση εγγραφής;</string>
+    <string name="confirm_cancel_registration">Αν πάτε πίσω θα πρέπει να ξεκινήσετε την εγγραφή από την αρχή. Αν πρέπει να μεταφερθείτε σε άλλη εφαρμογή, απλά χρησιμοποιείστε το κουμπί home της συσκευής σας.</string>
+    <string name="confirm_will_delete_threads">Οι επιλεγμένες συζητήσεις θα διαγραφούν.</string>
+    <string name="app_name_offline">Kontalk (εκτός σύνδεσης)</string>
+    <string name="menu_manual_verification">Έχετε ήδη ένα κωδικό;</string>
+    <string name="code_validation_intro_missed_call">Σύντομα θα λάβετε μια αναπάντητη κλήση από αυτό τον αριθμό. <b>ΠΑΡΑΚΑΛΩ ΜΗΝ ΑΠΑΝΤΗΣΕΤΕ ΣΤΗΝ ΚΛΗΣΗ.</b></string>
+    <string name="code_validation_intro2_missed_call">Παρακαλούμε εισάγετε τα τελευταία %d νούμερα του αριθμού που θα σας καλέσει.</string>
+    <string name="mark_read">Ανάγνωση</string>
+    <string name="error_delete_thread">Η διαγραφή της συζήτησης δεν ήταν δυνατή.</string>
+    <string name="error_delete_message">Η διαγραφή του μηνύματος δεν ήταν δυνατή.</string>
+    <string name="text_search_results_empty">Δε βρέθηκαν μηνύματα.</string>
+    <string name="pref_enable_notification_led">Λαμπτήρας ειδοποίησης LED</string>
+    <string name="pref_notification_led_color">Χρώμα λαμπτήρα ειδοποίησης LED</string>
+    <string name="confirm_will_delete_messages">Τα επιλεγμένα μηνύματα θα διαγραφούν.</string>
+    <string name="title_user_exists">Ο χρήστης υπάρχει</string>
+    <string name="err_validation_nonetwork">Δεν υπάρχει διαθέσιμη σύνδεση στο διαδίκτυο. Η Kontalk χρειάζεται μια ενεργή σύνδεση στο διαδίκτυο για να λειτουργήσει.</string>
+    <string name="err_validation_user_exists"><b>Ο αριθμός που χρησιμοποιείτε είναι ήδη εγγεγραμμένος στην Kontalk.</b> Αν έχετε εγγράψει μια άλλη συσκευή, το να συνεχίσετε με αυτόν τον τρόπο θα την αποκόψει από την Kontalk. Παρακαλούμε ανατρέξτε στην τεκμηρίωσή μας για το πως να αντιγράψετε το λογαριασμό σας μεταξύ συσκευών. Επιλέξτε ΟΚ για να συνεχίσετε ούτως ή αλλιώς.</string>
+    <string name="button_validation_fallback">Δε λάβατε κλήση;</string>
+    <string name="title_nonetwork">Καμία σύνδεση στο διαδίκτυο</string>
+    <string name="title_fallback">Αντιμετωπίζετε προβλήματα;</string>
+    <string name="msg_fallback">Θα δοκιμάσουμε μια άλλη μέθοδο για να επιβεβαιώσουμε τον τηλεφωνικό σας αριθμό.</string>
+    <string name="seen_away_label">συνδεδεμένο</string>
+    <string name="pref_title_custom_background">Διαλέφτε ένα φόντο χρησιμοποιώντας την παρακάτω επιλογή</string>
+    <string name="err_custom_background">Παρουσιάστηκε σφάλμα κατά τη ρύθμιση του φόντου. Παρακαλώ επιλέξτε μια άλλη εικόνα.</string>
+    <string name="pref_balloon_label_hangout">Hangout</string>
+    <string name="err_import_keypair_uid_mismatch">To εισαγμένο κλειδί δεν ταιριάζει με τον αριθμό τηλεφώνου που έχετε εισάγει.</string>
+    <string name="err_import_keypair_read">Δεν ήταν δυνατή η ανάγνωση του προσωπικού κλειδιού από το εξωτερικό μέσο αποθήκευσης.</string>
+    <string name="attachment_camera">Φωτογραφική</string>
+    <string name="attachment_video">Βίντεο</string>
+    <string name="attachment_file">Αρχείο</string>
+    <string name="attachment_vcard">Επαφή</string>
+    <string name="attachment_location">Τοποθεσία</string>
+
+    <string name="msg_not_implemented">Δεν έχει εφαρμοστεί ακόμη.</string>
+
+    <string name="chooser_error_no_camera_app">Δεν υπάρχει διαθέσιμη εφαρμογή φωτογραφικής.</string>
+
+    <string name="pref_help">Βοήθεια</string>
+    <string name="err_keypair_export_write">Δεν ήταν δυνατή η εγγραφή του προσωπικού κλειδιού στο εξωτερικό μέσο αποθήκευσης.</string>
+    <string name="err_keypair_export_other">Δεν ήταν δυνατή η εξαγωγή του προσωπικού κλειδιού.</string>
+
+    <string name="pref_title_sync_sim_contacts">Συμπερίληψη των επαφών κάρτας SIM όταν γίνεται έλεγχος για εγγεγραμμένους χρήστες</string>
+
+    <string name="pref_title_sync_invisible_contacts">Συμπερίληψη επαφών που δεν εμφανίζονται στην εφαρμογή Επαφές. Ενεργοποιήστε το αν χρησιμοποιείτε την DAVDroid</string>
+
+    <string name="title_block_user_warning">Σίγουρα να φραγεί αυτός ο χρήστης;</string>
+    <string name="title_unblock_user_warning">Σίγουρα να καταργηθεί ο αποκλεισμός αυτού του χρήστη;</string>
+    <string name="hint_record">Πατήστε το μικρόφωνο για να αρχίσει η ηχογράφηση.</string>
+    <string name="hint_ptt">Πατήστε και κρατήστε το μικρόφωνο για να ηχογραφήσετε.</string>
+    <string name="err_audio_record_noaudio">Δεν ηχογραφήθηκε κανένας ήχος.</string>
+    <string name="slide_to_cancel">ΣΥΡΕΤΕ ΓΙΑ ΝΑ ΑΚΥΡΩΣΕΤΕ</string>
+
+    <string name="pref_media_autodownload_threshold">Όριο αυτόματης λήψης</string>
+    <string name="pref_title_media_autodownload_threshold">Θα γίνεται πάντα αυτόματη λήψη των αρχείων που είναι μικρότερα από αυτό το μέγεθος</string>
+    <string name="pref_msg_media_autodownload_threshold">Εισάγετε μια αξία σε KB. Ρυθμίστε το στο 0 για να μην γίνεται ποτέ αυτόματη λήψη.</string>
+
+    <string name="pref_media_autodownload">Αυτόματη λήψη</string>
+    <string name="pref_media_autodownload_label_never">Ποτέ</string>
+    <string name="pref_media_autodownload_label_wifi">Μόνο σε Wi-Fi</string>
+    <string name="pref_media_autodownload_label_always">Πάντα</string>
+
+    <string name="err_no_contact">Δε βρέθηκε η επαφή.</string>
+
+    <string name="warning_button_details">ΛΕΠΤΟΜΕΡΕΙΕΣ</string>
+    <string name="warning_older_version">Η επαφή σας χρησιμοποιεί μια πιο παλιά έκδοση της Kontalk. Ορισμένες δυνατότητες ενδέχεται να μη λειτουργούν σωστά.</string>
+    <string name="warning_public_key_changed">Το προσωπικό κλειδί αυτού του χρήστη άλλαξε αναπάντεχα!</string>
+    <string name="title_public_key_changed_warning">Το προσωπικό κλειδί άλλαξε</string>
+    <string name="msg_public_key_changed_warning">Παρακαλούμε επιβεβαιώστε με το χρήστη ότι έχει επανεγκαταστήσει την Kontalk ή έχει ηθελημένα επαναδημιουργήσει το κλειδί του/της, αλλιώς η επικοινωνίας σας μπορεί να έχει παραβιαστεί!</string>
+    <string name="warning_public_key_unknown">Το προσωπικό κλειδί αυτού του χρήστη δεν είναι αξιόπιστο!</string>
+    <string name="title_public_key_unknown_warning">Αναξιόπιστο προσωπικό κλειδί</string>
+    <string name="msg_public_key_unknown_warning">Παρακαλούμε επιβεβαίωστε με το χρήστη ότι το αποτύπωμα τους ταιριάζει με αυτό που εμφανίζεται στο παράθυρο διαλόγου <b>ταυτότητα</b>, διαφορετικά η επικοινωνία σας μπορεί να έχει παραβιαστεί!</string>
+
+    <string name="warning_user_blocked">Ο χρήστης έχει φραγεί από εσάς.</string>
+
+    <string name="about_credits_devteam"><b>Η Kontalk σας παρέχεται από:</b></string>
+    <string name="about_credits_gfx"><b>Γραφικά/Εικονογραφία</b></string>
+    <string name="about_credits_translators"><b>Μεταφραστές</b></string>
+
+    <string name="pref_show_blocked_users">Εμφάνιση φραγμένων χρηστών</string>
+    <string name="button_load_next_page">Φόρτωση περισσότερων μηνυμάτων</string>
+
+    <plurals name="context_selected">
+	<item quantity="one">Επιλέχθηκε 1</item>
+	<item quantity="other">Επιλέχθηκαν %d</item>
+</plurals>
+
 </resources>
