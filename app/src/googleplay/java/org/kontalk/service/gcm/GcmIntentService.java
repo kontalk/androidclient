@@ -80,7 +80,7 @@ public class GcmIntentService extends IntentService {
             // in your BroadcastReceiver.
             String messageType = gcm.getMessageType(intent);
 
-            if (!extras.isEmpty()) {  // has effect of unparcelling Bundle
+            if (extras != null && !extras.isEmpty()) {  // has effect of unparcelling Bundle
 
                 if (GoogleCloudMessaging.
                         MESSAGE_TYPE_MESSAGE.equals(messageType)) {
