@@ -42,7 +42,9 @@ android {
         resValue "string", "application_id", applicationId
         resValue "string", "account_type", applicationId + '.account'
         buildConfigField "String", "ACCOUNT_TYPE", '"' + applicationId + '.account"'
-        generatedDensities = []
+        vectorDrawables {
+            generatedDensities = []
+        }
     }
 
     compileOptions {
