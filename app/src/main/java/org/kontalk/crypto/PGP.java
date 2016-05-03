@@ -130,6 +130,8 @@ public class PGP {
     public static void registerProvider() {
         // register spongy castle provider
         Security.insertProviderAt(new BouncyCastleProvider(), 1);
+        // apply RNG fixes
+        PRNGFixes.apply();
     }
 
     /** Creates an ECDSA/ECDH key pair. */
