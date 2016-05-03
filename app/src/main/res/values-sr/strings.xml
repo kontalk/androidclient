@@ -454,4 +454,9 @@
     <string name="warning_public_key_unknown">Лични кључ овог корисника је непоуздан!</string>
     <string name="title_public_key_unknown_warning">Непоуздан лични кључ</string>
     <string name="text_search_results_empty">Нема порука.</string>
+    <string name="chooser_error_no_gallery_app">Нема апликације за галерију.</string>
+
+    <string name="msg_public_key_changed_warning">Уверите се да је корисник реинсталирао Контак или је регенерисао кључ намерно, у супротном комуникација је можда компромитована!</string>
+    <string name="msg_public_key_unknown_warning">Уверите се да корисников отисак одговара оном приказаном у дијалогу <b>идентитета</b>, у супротном комуникација је можда компромитована!</string>
+
     </resources>
