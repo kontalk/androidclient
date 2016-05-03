@@ -34,7 +34,7 @@ android {
 
     defaultConfig {
         applicationId "org.kontalk"
-        versionCode 115
+        versionCode 116
         versionName "3.1.9-preview"
         targetSdkVersion 22
         minSdkVersion 9
@@ -42,9 +42,7 @@ android {
         resValue "string", "application_id", applicationId
         resValue "string", "account_type", applicationId + '.account'
         buildConfigField "String", "ACCOUNT_TYPE", '"' + applicationId + '.account"'
-        vectorDrawables {
-            generatedDensities = []
-        }
+        generatedDensities = []
     }
 
     compileOptions {
