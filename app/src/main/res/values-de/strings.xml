@@ -455,6 +455,6 @@
     <string name="pref_media_autodownload_label_always">Immer</string>
 
     <string name="text_search_results_empty">Keine Nachrichten gefunden.</string>
-    <string name="chooser_error_no_gallery_app">Keine Galerie App verfügbar.</string>
+    <string name="chooser_error_no_gallery_app">Keine Galerie-App verfügbar.</string>
 
     </resources>
