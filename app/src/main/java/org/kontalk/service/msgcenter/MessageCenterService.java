@@ -1198,8 +1198,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     @Override
     public void connectionClosedOnError(Exception error) {
         Log.w(TAG, "connection closed with error", error);
-        quit(true);
-        createConnection();
+        restart(this);
     }
 
     @Override
