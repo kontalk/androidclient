@@ -22,14 +22,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
 
-import android.accounts.AccountManagerCallback;
-import android.accounts.AccountManagerFuture;
-import android.app.Activity;
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.color.ColorChooserDialog;
 import com.afollestad.materialdialogs.folderselector.FolderChooserDialog;
 
+import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -39,11 +39,15 @@ import android.content.res.Resources;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
@@ -80,6 +84,9 @@ public final class PreferencesFragment extends RootPreferenceFragment {
     // this is used after when exiting to SAF for exporting
     private String mPassphrase;
 
+    private ServerListUpdater mServerlistUpdater;
+    private Handler mHandler;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,6 +94,8 @@ public final class PreferencesFragment extends RootPreferenceFragment {
         if (savedInstanceState != null) {
             mPassphrase = savedInstanceState.getString("passphrase");
         }
+
+        mHandler = new Handler();
 
         // upgrade from old version: pref_text_enter becomes string
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
@@ -376,60 +385,52 @@ public final class PreferencesFragment extends RootPreferenceFragment {
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 Context ctx = getActivity();
-                final ServerListUpdater updater = new ServerListUpdater(ctx);
+                mServerlistUpdater = new ServerListUpdater(ctx);
 
-                final MaterialDialog diag = new MaterialDialog.Builder(ctx)
-                    .cancelable(true)
-                    .content(R.string.serverlist_updating)
-                    .progress(true, 0)
-                    .cancelListener(new DialogInterface.OnCancelListener() {
-                        @Override
-                        public void onCancel(DialogInterface dialog) {
-                            updater.cancel();
-                        }
-                    })
-                    .build();
+                final DialogHelperFragment diag = DialogHelperFragment
+                    .newInstance(DialogHelperFragment.DIALOG_SERVERLIST_UPDATER);
 
-                updater.setListener(new ServerListUpdater.UpdaterListener() {
+                mServerlistUpdater.setListener(new ServerListUpdater.UpdaterListener() {
                     @Override
                     public void error(Throwable e) {
-                        diag.cancel();
                         message(R.string.serverlist_update_error);
+                        diag.dismiss();
                     }
 
                     @Override
                     public void networkNotAvailable() {
-                        diag.cancel();
                         message(R.string.serverlist_update_nonetwork);
+                        diag.dismiss();
                     }
 
                     @Override
                     public void offlineModeEnabled() {
-                        diag.cancel();
                         message(R.string.serverlist_update_offline);
+                        diag.dismiss();
                     }
 
                     @Override
                     public void noData() {
-                        diag.cancel();
                         message(R.string.serverlist_update_nodata);
+                        diag.dismiss();
                     }
 
                     @Override
                     public void updated(final ServerList list) {
-                        diag.dismiss();
-                        getActivity().runOnUiThread(new Runnable() {
+                        final Context appCtx = diag.getContext().getApplicationContext();
+                        diag.getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 Preferences.updateServerListLastUpdate(updateServerList, list);
                                 // restart message center
-                                MessageCenterService.restart(getActivity().getApplicationContext());
+                                MessageCenterService.restart(appCtx);
                             }
                         });
+                        diag.dismiss();
                     }
 
                     private void message(final int textId) {
-                        getActivity().runOnUiThread(new Runnable() {
+                        diag.getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 Toast.makeText(getActivity(), textId,
@@ -439,8 +440,8 @@ public final class PreferencesFragment extends RootPreferenceFragment {
                     }
                 });
 
-                diag.show();
-                updater.start();
+                diag.show(getFragmentManager(), DialogHelperFragment.class.getSimpleName());
+                mServerlistUpdater.start();
                 return true;
             }
         });
@@ -608,6 +609,13 @@ public final class PreferencesFragment extends RootPreferenceFragment {
         }
     }
 
+    private void cancelServerlistUpdater() {
+        if (mServerlistUpdater != null) {
+            mServerlistUpdater.cancel();
+            mServerlistUpdater = null;
+        }
+    }
+
     @Override
     protected void setupPreferences() {
         super.setupPreferences();
@@ -636,6 +644,59 @@ public final class PreferencesFragment extends RootPreferenceFragment {
             }
         });
 
+    }
+
+    public static final class DialogHelperFragment extends DialogFragment {
+        public static final int DIALOG_SERVERLIST_UPDATER = 1;
+
+        public static DialogHelperFragment newInstance(int dialogId) {
+            DialogHelperFragment f = new DialogHelperFragment();
+            Bundle args = new Bundle();
+            args.putInt("id", dialogId);
+            f.setArguments(args);
+            return f;
+        }
+
+        public DialogHelperFragment() {
+        }
+
+        @Override
+        public void onCreate(@Nullable Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setRetainInstance(true);
+        }
+
+        @Override
+        public void onDestroyView() {
+            if (getDialog() != null && getRetainInstance())
+                getDialog().setOnDismissListener(null);
+            super.onDestroyView();
+        }
+
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            Bundle args = getArguments();
+            int id = args.getInt("id");
+
+            switch (id) {
+                case DIALOG_SERVERLIST_UPDATER:
+                    return new MaterialDialog.Builder(getContext())
+                        .cancelable(true)
+                        .content(R.string.serverlist_updating)
+                        .progress(true, 0)
+                        .cancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialog) {
+                                ((PreferencesFragment) getTargetFragment())
+                                    .cancelServerlistUpdater();
+                            }
+                        })
+                        .build();
+            }
+
+            return super.onCreateDialog(savedInstanceState);
+        }
     }
 
 }
