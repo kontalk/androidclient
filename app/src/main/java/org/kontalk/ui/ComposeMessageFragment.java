@@ -47,6 +47,7 @@ import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.AsyncQueryHandler;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
@@ -1199,7 +1200,13 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
             .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
             .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
 
-        startActivityForResult(pictureIntent, SELECT_ATTACHMENT_OPENABLE);
+        try {
+            startActivityForResult(pictureIntent, SELECT_ATTACHMENT_OPENABLE);
+        }
+        catch (ActivityNotFoundException e) {
+            Toast.makeText(getActivity(), R.string.chooser_error_no_gallery_app,
+                Toast.LENGTH_LONG).show();
+        }
     }
 
     /** Starts activity for a vCard attachment from a contact. */
