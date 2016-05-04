@@ -453,4 +453,7 @@
     <string name="pref_media_autodownload_label_wifi">Solamente con Wi-Fi</string>
     <string name="pref_media_autodownload_label_always">Siempre</string>
 
+    <string name="text_search_results_empty">Ningún mensaje encontrado.</string>
+    <string name="chooser_error_no_gallery_app">No hay aplicaciones de galería disponibles.</string>
+
     </resources>
