@@ -459,7 +459,7 @@
     <string name="learn_more">Meer info</string>
 
     <string name="title_huawei_protected_apps">Huawei Beschermde Apps</string>
-    <string name="msg_huawei_protected_apps">%s moet in Beschermde Apps geactiveerd zijn voor correcte werking.%n</string>
+    <string name="msg_huawei_protected_apps">Kontalk moet in Beschermde Apps geactiveerd zijn voor correcte werking.\n</string>
     <string name="btn_huawei_protected_apps">Beschermde Apps</string>
     <string name="check_do_not_show_again">Niet opnieuw tonen</string>
 
