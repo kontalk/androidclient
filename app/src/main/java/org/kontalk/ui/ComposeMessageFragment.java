@@ -1248,8 +1248,8 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
     private AudioFragment findAudioFragment() {
         FragmentManager fm = getFragmentManager();
-        return (AudioFragment) fm
-            .findFragmentByTag("audio");
+        return fm != null ? (AudioFragment) fm
+            .findFragmentByTag("audio") : null;
     }
 
     private void deleteThread() {
