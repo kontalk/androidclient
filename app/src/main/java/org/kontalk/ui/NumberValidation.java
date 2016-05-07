@@ -1065,15 +1065,25 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     private void userExistsWarning() {
-        new AlertDialogWrapper.Builder(this)
-            .setMessage(R.string.err_validation_user_exists)
-            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+        new MaterialDialog.Builder(this)
+            .content(R.string.err_validation_user_exists)
+            .positiveText(android.R.string.ok)
+            .negativeText(android.R.string.cancel)
+            .neutralText(R.string.learn_more)
+            .onAny(new MaterialDialog.SingleButtonCallback() {
                 @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    startValidation(true, false);
+                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                    switch (which) {
+                        case POSITIVE:
+                            startValidation(true, false);
+                            break;
+                        case NEUTRAL:
+                            SystemUtils.openURL(NumberValidation.this,
+                                getString(R.string.help_import_key));
+                            break;
+                    }
                 }
             })
-            .setNegativeButton(android.R.string.cancel, null)
             .show();
     }
 
