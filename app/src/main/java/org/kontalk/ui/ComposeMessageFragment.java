@@ -1488,6 +1488,9 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
                 for (int i = 0 ; uris != null && i < uris.length; i++) {
                     Uri uri = uris[i];
+                    if (uri == null)
+                        continue;
+
                     String mime = (mimes != null && mimes.length >= uris.length) ?
                         mimes[i] : null;
 
