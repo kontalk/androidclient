@@ -1575,6 +1575,10 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                 mCurrentPhoto = new File(currentPhoto);
             }
 
+            // audio playing
+            setAudioStatus(savedInstanceState.getInt("mediaPlayerStatus", AudioContentView.STATUS_IDLE));
+
+            // audio dialog stuff
             mAudioDialog = AudioDialog.onRestoreInstanceState(getActivity(),
                 savedInstanceState, getAudioFragment(), this);
             if (mAudioDialog != null) {
