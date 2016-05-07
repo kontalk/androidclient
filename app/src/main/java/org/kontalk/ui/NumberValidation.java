@@ -45,6 +45,7 @@ import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 import org.jivesoftware.smack.util.StringUtils;
 import org.jxmpp.util.XmppStringUtils;
+import org.kontalk.ui.prefs.PreferencesActivity;
 import org.spongycastle.openpgp.PGPException;
 
 import android.accounts.Account;
@@ -723,7 +724,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             startImport(new FileInputStream(file));
         }
         catch (FileNotFoundException e) {
-            Log.e(PreferencesFragment.TAG, "error importing keys", e);
+            Log.e(TAG, "error importing keys", e);
             Toast.makeText(this,
                 R.string.err_import_keypair_read,
                 Toast.LENGTH_LONG).show();

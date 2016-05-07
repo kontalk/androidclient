@@ -16,36 +16,44 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui;
+package org.kontalk.ui.prefs;
 
 import android.os.Bundle;
-import android.view.MenuItem;
+import android.preference.Preference;
 
 import org.kontalk.R;
 
-
 /**
- * Preference activity for some bootstrap preferences.
- * @author Daniele Ricci
- * @version 1.0
+ * Messaging settings fragment.
  */
-public class BootstrapPreferences extends RootPreferenceFragment {
+public class MessagingFragment extends RootPreferenceFragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.bootstrap_preferences);
+
+        // Load the preferences from an XML resource
+        addPreferencesFromResource(R.xml.preferences_messaging);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                getActivity().finish();
+    protected void setupPreferences() {
+        // privacy section
+        final Preference privacy = findPreference("pref_privacy_settings");
+        privacy.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                invokeCallback(R.xml.privacy_preferences);
                 return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+            }
+        });
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        ((PreferencesActivity) getActivity()).getSupportActionBar()
+                .setTitle(R.string.pref_messaging_settings);
+    }
 }
