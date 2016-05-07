@@ -31,4 +31,5 @@
     <string name="paypal_url" translatable="false">https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=VU57LMG64GATN</string>
     <string name="devteam" translatable="false">Kontalk devteam</string>
     <string name="help_url" translatable="false">https://github.com/kontalk/androidclient/wiki</string>
+    <string name="help_import_key" translatable="false">https://github.com/kontalk/androidclient/wiki/Export-personal-key-to-another-device</string>
 </resources>
