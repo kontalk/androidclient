@@ -109,8 +109,8 @@ public class Kontalk extends Application {
         ReportingManager.register(this);
 
         // register security provider
-        PGP.registerProvider();
         SecureConnectionManager.init(this);
+        PGP.registerProvider();
 
         // init preferences
         Preferences.init(this);
