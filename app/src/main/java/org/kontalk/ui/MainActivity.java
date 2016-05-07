@@ -88,7 +88,7 @@ public abstract class MainActivity extends ToolbarActivity {
                 new AlertDialogWrapper.Builder(this)
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .setTitle(R.string.title_huawei_protected_apps)
-                    .setMessage(getString(R.string.msg_huawei_protected_apps, getString(R.string.app_name)))
+                    .setMessage(R.string.msg_huawei_protected_apps)
                     .setView(dontShowAgain)
                     .setPositiveButton(R.string.btn_huawei_protected_apps, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
