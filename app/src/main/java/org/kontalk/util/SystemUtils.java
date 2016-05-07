@@ -22,6 +22,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,6 +32,8 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -308,5 +312,33 @@ public final class SystemUtils {
         context.startActivity(new Intent(Intent.ACTION_VIEW,
             Uri.parse(url)));
     }
+
+    public static boolean isCallable(Context context, Intent intent) {
+        List<ResolveInfo> list = context.getPackageManager().queryIntentActivities(intent,
+            PackageManager.MATCH_DEFAULT_ONLY);
+        return list.size() > 0;
+    }
+
+    public static String getUserSerial(Context context) {
+        //noinspection ResourceType
+        Object userManager = context.getSystemService("user");
+        if (null == userManager) return "";
+
+        try {
+            Method myUserHandleMethod = android.os.Process.class.getMethod("myUserHandle", (Class<?>[]) null);
+            Object myUserHandle = myUserHandleMethod.invoke(android.os.Process.class, (Object[]) null);
+            Method getSerialNumberForUser = userManager.getClass().getMethod("getSerialNumberForUser", myUserHandle.getClass());
+            Long userSerial = (Long) getSerialNumberForUser.invoke(userManager, myUserHandle);
+            if (userSerial != null) {
+                return String.valueOf(userSerial);
+            } else {
+                return "";
+            }
+        }
+        catch (Exception ignored) {
+        }
+        return "";
+    }
+
 
 }

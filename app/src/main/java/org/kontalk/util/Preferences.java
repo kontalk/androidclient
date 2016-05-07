@@ -515,6 +515,16 @@ public final class Preferences {
             .commit();
     }
 
+    public static boolean isSkipHuaweiProtectedApps(Context context) {
+        return getBoolean(context, "huawei_skip_protected_apps", false);
+    }
+
+    public static boolean setSkipHuaweiProtectedApps(boolean value) {
+        return sPreferences.edit()
+            .putBoolean("huawei_skip_protected_apps", value)
+            .commit();
+    }
+
     public static long getPingAlarmInterval(Context context, long defaultValue) {
         String networkType = SystemUtils.getCurrentNetworkName(context);
         return (networkType != null) ?
