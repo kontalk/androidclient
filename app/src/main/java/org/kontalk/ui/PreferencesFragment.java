@@ -61,6 +61,7 @@ import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyPack;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.PushServiceManager;
@@ -389,54 +390,80 @@ public final class PreferencesFragment extends RootPreferenceFragment {
 
                 final DialogHelperFragment diag = DialogHelperFragment
                     .newInstance(DialogHelperFragment.DIALOG_SERVERLIST_UPDATER);
+                final Context appCtx = getContext().getApplicationContext();
 
                 mServerlistUpdater.setListener(new ServerListUpdater.UpdaterListener() {
                     @Override
-                    public void error(Throwable e) {
-                        message(R.string.serverlist_update_error);
-                        diag.dismiss();
+                    public void error(Throwable t) {
+                        try {
+                            ReportingManager.logException(t);
+                            message(R.string.serverlist_update_error);
+                            diag.dismiss();
+                        }
+                        catch (Exception e) {
+                            // did our best
+                        }
                     }
 
                     @Override
                     public void networkNotAvailable() {
-                        message(R.string.serverlist_update_nonetwork);
-                        diag.dismiss();
+                        try {
+                            message(R.string.serverlist_update_nonetwork);
+                            diag.dismiss();
+                        }
+                        catch (Exception e) {
+                            // did our best
+                        }
                     }
 
                     @Override
                     public void offlineModeEnabled() {
-                        message(R.string.serverlist_update_offline);
-                        diag.dismiss();
+                        try {
+                            message(R.string.serverlist_update_offline);
+                            diag.dismiss();
+                        }
+                        catch (Exception e) {
+                            // did our best
+                        }
                     }
 
                     @Override
                     public void noData() {
-                        message(R.string.serverlist_update_nodata);
-                        diag.dismiss();
-                    }
+                        try {
+                            message(R.string.serverlist_update_nodata);
+                            diag.dismiss();
+                        }
+                        catch (Exception e) {
+                            // did our best
+                        }
+                }
 
                     @Override
                     public void updated(final ServerList list) {
-                        final Context appCtx = diag.getContext().getApplicationContext();
-                        diag.getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Preferences.updateServerListLastUpdate(updateServerList, list);
-                                // restart message center
-                                MessageCenterService.restart(appCtx);
-                            }
-                        });
-                        diag.dismiss();
+                        Preferences.updateServerListLastUpdate(updateServerList, list);
+                        // restart message center
+                        MessageCenterService.restart(appCtx);
+                        try {
+                            diag.dismiss();
+                        }
+                        catch (Exception e) {
+                            // did our best
+                        }
                     }
 
                     private void message(final int textId) {
-                        diag.getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(getActivity(), textId,
-                                    Toast.LENGTH_LONG).show();
-                            }
-                        });
+                        try {
+                            diag.getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getActivity(), textId,
+                                        Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }
+                        catch (Exception e) {
+                            // did our best
+                        }
                     }
                 });
 
