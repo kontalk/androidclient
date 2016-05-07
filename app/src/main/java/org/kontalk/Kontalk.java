@@ -109,8 +109,14 @@ public class Kontalk extends Application {
         ReportingManager.register(this);
 
         // register security provider
-        PGP.registerProvider();
         SecureConnectionManager.init(this);
+        try {
+            PGP.registerProvider();
+        }
+        catch (PGP.PRNGFixException e) {
+            ReportingManager.logException(e);
+            Log.w(TAG, "Unable to install PRNG fix - ignoring", e);
+        }
 
         // init preferences
         Preferences.init(this);

@@ -1488,6 +1488,9 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
                 for (int i = 0 ; uris != null && i < uris.length; i++) {
                     Uri uri = uris[i];
+                    if (uri == null)
+                        continue;
+
                     String mime = (mimes != null && mimes.length >= uris.length) ?
                         mimes[i] : null;
 
@@ -1572,6 +1575,10 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                 mCurrentPhoto = new File(currentPhoto);
             }
 
+            // audio playing
+            setAudioStatus(savedInstanceState.getInt("mediaPlayerStatus", AudioContentView.STATUS_IDLE));
+
+            // audio dialog stuff
             mAudioDialog = AudioDialog.onRestoreInstanceState(getActivity(),
                 savedInstanceState, getAudioFragment(), this);
             if (mAudioDialog != null) {
