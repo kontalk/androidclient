@@ -469,6 +469,11 @@
 
     <string name="learn_more">Learn more</string>
 
+    <string name="title_huawei_protected_apps">Huawei Protected Apps</string>
+    <string name="msg_huawei_protected_apps">%s requires to be enabled in Protected Apps to function properly.%n</string>
+    <string name="btn_huawei_protected_apps">Protected Apps</string>
+    <string name="check_do_not_show_again">Do not show again</string>
+
     <plurals name="context_selected">
         <item quantity="one">1 selected</item>
         <item quantity="other">%d selected</item>
