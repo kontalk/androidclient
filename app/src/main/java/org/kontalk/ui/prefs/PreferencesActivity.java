@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui;
+package org.kontalk.ui.prefs;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -38,12 +38,7 @@ import android.widget.Toast;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PersonalKeyPack;
-import org.kontalk.ui.prefs.AppearanceFragment;
-import org.kontalk.ui.prefs.MaintenanceFragment;
-import org.kontalk.ui.prefs.MediaFragment;
-import org.kontalk.ui.prefs.MessagingFragment;
-import org.kontalk.ui.prefs.NetworkFragment;
-import org.kontalk.ui.prefs.NotificationFragment;
+import org.kontalk.ui.ToolbarActivity;
 import org.kontalk.util.Preferences;
 
 

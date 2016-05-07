@@ -43,8 +43,6 @@ import org.kontalk.crypto.PersonalKeyPack;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.LockedDialog;
 import org.kontalk.ui.PasswordInputDialog;
-import org.kontalk.ui.PreferencesActivity;
-import org.kontalk.ui.RootPreferenceFragment;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 

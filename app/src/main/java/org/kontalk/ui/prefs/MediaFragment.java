@@ -21,8 +21,6 @@ package org.kontalk.ui.prefs;
 import android.os.Bundle;
 
 import org.kontalk.R;
-import org.kontalk.ui.PreferencesActivity;
-import org.kontalk.ui.RootPreferenceFragment;
 
 /**
  * Messaging settings fragment.

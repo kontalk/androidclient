@@ -33,8 +33,6 @@ import android.text.TextUtils;
 import com.afollestad.materialdialogs.color.ColorChooserDialog;
 
 import org.kontalk.R;
-import org.kontalk.ui.PreferencesActivity;
-import org.kontalk.ui.RootPreferenceFragment;
 import org.kontalk.util.Preferences;
 
 /**

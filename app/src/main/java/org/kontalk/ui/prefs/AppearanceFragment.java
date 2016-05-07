@@ -29,8 +29,6 @@ import android.preference.PreferenceManager;
 import android.widget.Toast;
 
 import org.kontalk.R;
-import org.kontalk.ui.PreferencesActivity;
-import org.kontalk.ui.RootPreferenceFragment;
 import org.kontalk.util.Preferences;
 
 import java.io.File;

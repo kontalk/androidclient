@@ -40,8 +40,6 @@ import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.PushServiceManager;
-import org.kontalk.ui.PreferencesActivity;
-import org.kontalk.ui.RootPreferenceFragment;
 import org.kontalk.util.Preferences;
 
 /**

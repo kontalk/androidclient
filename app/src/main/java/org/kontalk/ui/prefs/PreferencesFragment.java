@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui;
+package org.kontalk.ui.prefs;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -28,6 +28,7 @@ import android.view.MenuItem;
 
 import org.kontalk.Kontalk;
 import org.kontalk.R;
+import org.kontalk.ui.ConversationsActivity;
 
 
 /**

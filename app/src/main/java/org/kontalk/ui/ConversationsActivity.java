@@ -57,6 +57,7 @@ import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.sync.Syncer;
+import org.kontalk.ui.prefs.PreferencesActivity;
 import org.kontalk.ui.view.ContactPickerListener;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;

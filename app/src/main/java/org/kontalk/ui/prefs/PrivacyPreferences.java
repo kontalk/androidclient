@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui;
+package org.kontalk.ui.prefs;
 
 import com.github.machinarius.preferencefragment.PreferenceFragment;
 
