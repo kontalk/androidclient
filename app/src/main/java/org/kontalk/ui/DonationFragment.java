@@ -32,6 +32,7 @@ import org.kontalk.billing.OnBillingSetupFinishedListener;
 import org.kontalk.billing.OnConsumeFinishedListener;
 import org.kontalk.billing.OnPurchaseFinishedListener;
 import org.kontalk.billing.QueryInventoryFinishedListener;
+import org.kontalk.util.SystemUtils;
 
 import android.app.Activity;
 import com.afollestad.materialdialogs.AlertDialogWrapper;
@@ -149,7 +150,7 @@ public class DonationFragment extends Fragment implements OnClickListener {
     }
 
     private void donateFlattr() {
-        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.flattr_url))));
+        SystemUtils.openURL(getContext(), getString(R.string.flattr_url));
     }
 
     private void donateBitcoin() {
@@ -182,7 +183,7 @@ public class DonationFragment extends Fragment implements OnClickListener {
 
     private void donatePaypal() {
         // just start Paypal donate button URL
-        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.paypal_url))));
+        SystemUtils.openURL(getContext(),getString(R.string.paypal_url));
     }
 
     private void setupGoogle(final Dialog progress) {

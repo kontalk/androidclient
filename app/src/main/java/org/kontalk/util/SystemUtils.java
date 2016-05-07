@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.database.Cursor;
@@ -301,6 +302,11 @@ public final class SystemUtils {
         }
         catch (Exception ignored) {
         }
+    }
+
+    public static void openURL(Context context, String url) {
+        context.startActivity(new Intent(Intent.ACTION_VIEW,
+            Uri.parse(url)));
     }
 
 }
