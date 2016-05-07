@@ -20,7 +20,6 @@
 
   <!-- default theme selector -->
   <style name="Theme.Light" parent="Base.Theme.Light">
-    <item name="actionModeBackground">@drawable/cab_background_top_holo_dark</item>
   </style>
 
   <!-- base theme selector -->
