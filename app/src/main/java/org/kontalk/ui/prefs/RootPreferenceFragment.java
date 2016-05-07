@@ -16,15 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui;
+package org.kontalk.ui.prefs;
 
 import com.github.machinarius.preferencefragment.PreferenceFragment;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.preference.Preference;
+import android.view.MenuItem;
 
 import org.kontalk.R;
+import org.kontalk.ui.ConversationsActivity;
 
 
 /**
@@ -58,22 +61,23 @@ public class RootPreferenceFragment extends PreferenceFragment {
         mCallback = null;
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                getActivity().onBackPressed();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
     void invokeCallback(int key) {
         if (mCallback != null)
             mCallback.onNestedPreferenceSelected(key);
     }
 
-    protected void setupPreferences() {
-        // privacy section
-        final Preference privacy = findPreference("pref_privacy_settings");
-        privacy.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                invokeCallback(R.xml.privacy_preferences);
-                return true;
-            }
-        });
-    }
+    protected void setupPreferences() {}
 
     public interface Callback {
         public void onNestedPreferenceSelected(int key);

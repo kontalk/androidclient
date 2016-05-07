@@ -16,37 +16,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui;
-
-import com.github.machinarius.preferencefragment.PreferenceFragment;
+package org.kontalk.ui.prefs;
 
 import android.os.Bundle;
-import android.view.MenuItem;
 
 import org.kontalk.R;
 
-
 /**
- * Preference fragment for privacy preferences.
- * @author Daniele Ricci
+ * Messaging settings fragment.
  */
-public class PrivacyPreferences extends PreferenceFragment {
+public class MediaFragment extends RootPreferenceFragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.privacy_preferences);
+
+        // Load the preferences from an XML resource
+        addPreferencesFromResource(R.xml.preferences_media);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                getActivity().onBackPressed();
-                return true;
-        }
+    public void onResume() {
+        super.onResume();
 
-        return super.onOptionsItemSelected(item);
+        ((PreferencesActivity) getActivity()).getSupportActionBar()
+                .setTitle(R.string.pref_media_settings);
     }
 
 }
