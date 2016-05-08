@@ -19,44 +19,32 @@
 package org.kontalk.ui;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.SearchManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
-import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListAdapter;
 import android.widget.Toast;
 
-import org.kontalk.BuildConfig;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.authenticator.LegacyAuthentication;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.msgcenter.MessageCenterService;
-import org.kontalk.sync.SyncAdapter;
 import org.kontalk.sync.Syncer;
+import org.kontalk.ui.prefs.PreferencesActivity;
 import org.kontalk.ui.view.ContactPickerListener;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
@@ -72,14 +60,11 @@ import org.kontalk.util.XMPPUtils;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class ConversationsActivity extends ToolbarActivity
+public class ConversationsActivity extends MainActivity
         implements ContactPickerListener, ComposeMessageParent {
     public static final String TAG = ConversationsActivity.class.getSimpleName();
 
     private ConversationListFragment mFragment;
-
-    private Dialog mUpgradeProgress;
-    private BroadcastReceiver mUpgradeReceiver;
 
     /** Search menu item. */
     private MenuItem mSearchMenu;
@@ -88,10 +73,6 @@ public class ConversationsActivity extends ToolbarActivity
     private MenuItem mOfflineMenu;
 
     private static final int REQUEST_CONTACT_PICKER = 7720;
-
-    private static final int DIALOG_AUTH_ERROR_WARNING = 1;
-
-    private static final String ACTION_AUTH_ERROR_WARNING = "org.kontalk.AUTH_ERROR_WARN";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -104,105 +85,8 @@ public class ConversationsActivity extends ToolbarActivity
         mFragment = (ConversationListFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_conversation_list);
 
-        if (!xmppUpgrade())
+        if (!afterOnCreate())
             handleIntent(getIntent());
-    }
-
-    /** Big upgrade: asymmetric key encryption (for XMPP). */
-    private boolean xmppUpgrade() {
-        AccountManager am = (AccountManager) getSystemService(Context.ACCOUNT_SERVICE);
-        Account account = Authenticator.getDefaultAccount(am);
-        if (account != null) {
-            if (!Authenticator.hasPersonalKey(am, account)) {
-                // first of all, disable offline mode
-                Preferences.setOfflineMode(this, false);
-
-                String name = Authenticator.getDefaultDisplayName(this);
-                if (name == null || name.length() == 0) {
-                    // ask for user name
-                    askForPersonalName();
-                }
-                else {
-                    // proceed to upgrade immediately
-                    proceedXmppUpgrade(name);
-                }
-
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private void askForPersonalName() {
-        new MaterialDialog.Builder(this)
-            .content(R.string.msg_no_name)
-            .positiveText(android.R.string.ok)
-            .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PERSON_NAME)
-            .input(R.string.hint_validation_name, 0, false, new MaterialDialog.InputCallback() {
-                @Override
-                public void onInput(MaterialDialog dialog, CharSequence input) {
-                    // no key pair found, generate a new one
-                    if (BuildConfig.DEBUG) {
-                        Toast.makeText(ConversationsActivity.this,
-                            R.string.msg_generating_keypair, Toast.LENGTH_LONG).show();
-                    }
-
-                    String name = input.toString();
-
-                    // upgrade account
-                    proceedXmppUpgrade(name);
-                }
-            })
-            .onNegative(new MaterialDialog.SingleButtonCallback() {
-                @Override
-                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction dialogAction) {
-                    dialog.cancel();
-                }
-            })
-            .negativeText(android.R.string.cancel)
-            .cancelListener(new DialogInterface.OnCancelListener() {
-                public void onCancel(DialogInterface dialog) {
-                    new AlertDialogWrapper.Builder(ConversationsActivity.this)
-                        .setTitle(R.string.title_no_personal_key)
-                        .setMessage(R.string.msg_no_personal_key)
-                        .setPositiveButton(android.R.string.ok, null)
-                        .show();
-                }
-            })
-            .show();
-    }
-
-    private void proceedXmppUpgrade(String name) {
-        // start progress dialog
-        mUpgradeProgress = new LockedDialog.Builder(this)
-            .progress(true, 0)
-            .content(R.string.msg_xmpp_upgrading)
-            .show();
-
-        // setup operation completed received
-        mUpgradeReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                LocalBroadcastManager lbm = LocalBroadcastManager
-                    .getInstance(getApplicationContext());
-                lbm.unregisterReceiver(mUpgradeReceiver);
-                mUpgradeReceiver = null;
-
-                // force contact list update
-                SyncAdapter.requestSync(ConversationsActivity.this, true);
-
-                if (mUpgradeProgress != null) {
-                    mUpgradeProgress.dismiss();
-                    mUpgradeProgress = null;
-                }
-            }
-        };
-        IntentFilter filter = new IntentFilter(MessageCenterService.ACTION_REGENERATE_KEYPAIR);
-        LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(this);
-        lbm.registerReceiver(mUpgradeReceiver, filter);
-
-        LegacyAuthentication.doUpgrade(getApplicationContext(), name);
     }
 
     /** Called when a new intent is sent to the activity (if already started). */
@@ -214,53 +98,33 @@ public class ConversationsActivity extends ToolbarActivity
         fragment.startQuery();
     }
 
-    @Override
-    protected Dialog onCreateDialog(int id, Bundle args) {
-        if (id == DIALOG_AUTH_ERROR_WARNING) {
-
-            return new AlertDialogWrapper.Builder(this)
-                .setTitle(R.string.title_auth_error)
-                .setMessage(R.string.msg_auth_error)
-                .setPositiveButton(android.R.string.ok, null)
-                .create();
-
-        }
-
-        return super.onCreateDialog(id, args);
-    }
-
     private void handleIntent(Intent intent) {
         if (intent != null) {
             String action = intent.getAction();
 
-            if (ACTION_AUTH_ERROR_WARNING.equals(action)) {
-                showDialog(DIALOG_AUTH_ERROR_WARNING);
-            }
-
             // this is for intents coming from the world, forwarded by ComposeMessage
-            else {
-                boolean actionView = Intent.ACTION_VIEW.equals(action);
-                if (actionView || ComposeMessage.ACTION_VIEW_USERID.equals(action)) {
-                    Uri uri = null;
+            boolean actionView = Intent.ACTION_VIEW.equals(action);
+            if (actionView || ComposeMessage.ACTION_VIEW_USERID.equals(action)) {
+                Uri uri = null;
 
-                    if (actionView) {
-                        Cursor c = getContentResolver().query(intent.getData(),
-                            new String[]{Syncer.DATA_COLUMN_PHONE},
-                            null, null, null);
-                        if (c.moveToFirst()) {
-                            String phone = c.getString(0);
-                            String userJID = XMPPUtils.createLocalJID(this,
-                                MessageUtils.sha1(phone));
-                            uri = Threads.getUri(userJID);
-                        }
-                        c.close();
-                    } else {
-                        uri = intent.getData();
+                if (actionView) {
+                    Cursor c = getContentResolver().query(intent.getData(),
+                        new String[]{Syncer.DATA_COLUMN_PHONE},
+                        null, null, null);
+                    if (c.moveToFirst()) {
+                        String phone = c.getString(0);
+                        String userJID = XMPPUtils.createLocalJID(this,
+                            MessageUtils.sha1(phone));
+                        uri = Threads.getUri(userJID);
                     }
-
-                    if (uri != null)
-                        openConversation(uri);
+                    c.close();
                 }
+                else {
+                    uri = intent.getData();
+                }
+
+                if (uri != null)
+                    openConversation(uri);
             }
         }
     }
@@ -442,12 +306,6 @@ public class ConversationsActivity extends ToolbarActivity
         }
     }
 
-    public static Intent authenticationErrorWarning(Context context) {
-        Intent i = new Intent(context.getApplicationContext(), ConversationsActivity.class);
-        i.setAction(ACTION_AUTH_ERROR_WARNING);
-        return i;
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.conversation_list_menu, menu);
@@ -551,6 +409,7 @@ public class ConversationsActivity extends ToolbarActivity
             int icon = (offlineMode) ? R.drawable.ic_menu_online :
                 R.drawable.ic_menu_offline;
             int title = (offlineMode) ? R.string.menu_online : R.string.menu_offline;
+            mOfflineMenu.setIcon(icon);
             mOfflineMenu.setTitle(title);
             // set window title
             setTitle(offlineMode);

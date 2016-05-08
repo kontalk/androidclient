@@ -453,4 +453,7 @@
     <string name="pref_show_blocked_users">Mostra els usuaris bloquejats</string>
     <string name="button_load_next_page">Carregar més missatges</string>
 
+    <string name="text_search_results_empty">No s\'han trobat missatges.</string>
+    <string name="chooser_error_no_gallery_app">No hi ha aplicacions de galeria disponibles.</string>
+
     </resources>

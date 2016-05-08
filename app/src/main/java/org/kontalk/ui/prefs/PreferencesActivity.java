@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui;
+package org.kontalk.ui.prefs;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -38,6 +38,7 @@ import android.widget.Toast;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PersonalKeyPack;
+import org.kontalk.ui.ToolbarActivity;
 import org.kontalk.util.Preferences;
 
 
@@ -47,7 +48,7 @@ import org.kontalk.util.Preferences;
  * @author Daniele Ricci
  */
 public final class PreferencesActivity extends ToolbarActivity
-        implements PreferencesFragment.Callback, FolderChooserDialog.FolderCallback, ColorChooserDialog.ColorCallback {
+        implements RootPreferenceFragment.Callback, FolderChooserDialog.FolderCallback, ColorChooserDialog.ColorCallback {
     private static final String TAG_NESTED = "nested";
 
     @Override
@@ -99,8 +100,26 @@ public final class PreferencesActivity extends ToolbarActivity
     public void onNestedPreferenceSelected(int key) {
         Fragment fragment;
         switch (key) {
+            case R.xml.preferences_network:
+                fragment = new NetworkFragment();
+                break;
+            case R.xml.preferences_messaging:
+                fragment = new MessagingFragment();
+                break;
             case R.xml.privacy_preferences:
                 fragment = new PrivacyPreferences();
+                break;
+            case R.xml.preferences_appearance:
+                fragment = new AppearanceFragment();
+                break;
+            case R.xml.preferences_media:
+                fragment = new MediaFragment();
+                break;
+            case R.xml.preferences_notification:
+                fragment = new NotificationFragment();
+                break;
+            case R.xml.preferences_maintenance:
+                fragment = new MaintenanceFragment();
                 break;
             default:
                 throw new IllegalArgumentException("unknown preference screen: " + key);
@@ -114,8 +133,8 @@ public final class PreferencesActivity extends ToolbarActivity
     @Override
     public void onFolderSelection(@NonNull FolderChooserDialog folderChooserDialog, @NonNull File folder) {
         try {
-            PreferencesFragment f = (PreferencesFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.container);
+            MaintenanceFragment f = (MaintenanceFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.container);
 
             f.exportPersonalKey(this,
                 new FileOutputStream(new File(folder, PersonalKeyPack.KEYPACK_FILENAME)));

@@ -16,23 +16,12 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<resources>
+<preference-headers xmlns:android="http://schemas.android.com/apk/res/android">
+    <header
+        android:fragment="org.kontalk.ui.prefs.NetworkFragment"
+        android:title="@string/pref_network_settings"/>
+    <header
+        android:fragment="org.kontalk.ui.prefs.MessagingFragment"
+        android:title="@string/pref_messaging_settings"/>
 
-  <!-- default theme selector -->
-  <style name="Theme.Light" parent="Base.Theme.Light">
-  </style>
-
-  <!-- base theme selector -->
-  <style name="Base.Theme.Light" parent="Theme.AppCompat.Light.NoActionBar">
-    <item name="colorPrimary">@color/app_primary</item>
-    <item name="colorPrimaryDark">@color/app_primary_dark</item>
-    <!-- not working pre-Lollipop
-    <item name="android:textColorPrimary">#212121</item>
-    <item name="android:textColorSecondary">#727272</item>
-     -->
-    <item name="colorAccent">@color/app_accent</item>
-
-    <item name="windowActionModeOverlay">true</item>
-  </style>
-
-</resources>
+</preference-headers>

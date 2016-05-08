@@ -34,6 +34,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.SystemClock;
 
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
@@ -139,7 +140,19 @@ public class AndroidAdaptiveServerPingManager extends AbstractAdaptiveServerPing
 
     private synchronized void disable() {
         if (mPendingIntent != null) {
-            mContext.unregisterReceiver(mReceiver);
+            try {
+                mContext.unregisterReceiver(mReceiver);
+            }
+            catch (IllegalArgumentException e) {
+                // for some strange reason, this can happen once in a while.
+                // I can't see how it's possible given the protection of
+                // mPendingIntent != null and the synchronized clause.
+                // Could it be Android unregistering on its own?
+                // Whatever, report the exception as non-fatal
+                ReportingManager.logException(e);
+                LOGGER.log(Level.WARNING, "Unable to unregister broadcast receiver", e);
+            }
+            ensureAlarmManager(mContext);
             sAlarmManager.cancel(mPendingIntent);
             mPendingIntent = null;
         }
@@ -151,7 +164,7 @@ public class AndroidAdaptiveServerPingManager extends AbstractAdaptiveServerPing
     }
 
     @Override
-    protected void setupPing(long intervalMillis) {
+    protected synchronized void setupPing(long intervalMillis) {
         if (mPendingIntent != null) {
             sAlarmManager.cancel(mPendingIntent);
             mInterval = intervalMillis;

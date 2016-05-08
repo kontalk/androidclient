@@ -34,6 +34,7 @@ import com.nispok.snackbar.listeners.ActionClickListener;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.AsyncQueryHandler;
 import android.content.ClipData;
 import android.content.ContentUris;
@@ -1084,7 +1085,13 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
             .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
 
-        startActivityForResult(pictureIntent, SELECT_ATTACHMENT_OPENABLE);
+        try {
+            startActivityForResult(pictureIntent, SELECT_ATTACHMENT_OPENABLE);
+        }
+        catch (ActivityNotFoundException e) {
+            Toast.makeText(getActivity(), R.string.chooser_error_no_gallery_app,
+                Toast.LENGTH_LONG).show();
+        }
     }
 
     /** Starts activity for a vCard attachment from a contact. */
@@ -1126,8 +1133,8 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     private AudioFragment findAudioFragment() {
         FragmentManager fm = getFragmentManager();
-        return (AudioFragment) fm
-            .findFragmentByTag("audio");
+        return fm != null ? (AudioFragment) fm
+            .findFragmentByTag("audio") : null;
     }
 
     private void deleteThread() {
@@ -1311,6 +1318,9 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
                 for (int i = 0 ; uris != null && i < uris.length; i++) {
                     Uri uri = uris[i];
+                    if (uri == null)
+                        continue;
+
                     String mime = (mimes != null && mimes.length >= uris.length) ?
                         mimes[i] : null;
 
@@ -1409,6 +1419,10 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 mCurrentPhoto = new File(currentPhoto);
             }
 
+            // audio playing
+            setAudioStatus(savedInstanceState.getInt("mediaPlayerStatus", AudioContentView.STATUS_IDLE));
+
+            // audio dialog stuff
             mAudioDialog = AudioDialog.onRestoreInstanceState(getActivity(),
                 savedInstanceState, getAudioFragment(), this);
             if (mAudioDialog != null) {

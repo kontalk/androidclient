@@ -1210,8 +1210,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     @Override
     public void connectionClosedOnError(Exception error) {
         Log.w(TAG, "connection closed with error", error);
-        quit(true);
-        createConnection();
+        restart(this);
     }
 
     @Override
@@ -1382,15 +1381,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         sendPacket(items);
     }
 
-    private void active(boolean available) {
-        if (mConnection != null) {
+    private synchronized void active(boolean available) {
+        final XMPPConnection connection = mConnection;
+        if (connection != null) {
             cancelIdleAlarm();
 
             if (available) {
-                if (ClientStateIndicationManager.isSupported(mConnection)) {
+                if (ClientStateIndicationManager.isSupported(connection)) {
                     Log.d(TAG, "entering active state");
                     try {
-                        ClientStateIndicationManager.active(mConnection);
+                        ClientStateIndicationManager.active(connection);
                     }
                     catch (NotConnectedException e) {
                         return;
@@ -1405,13 +1405,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
-    private void inactive() {
-        if (mConnection != null) {
+    private synchronized void inactive() {
+        final XMPPConnection connection = mConnection;
+        if (connection != null) {
             if (!mInactive) {
-                if (ClientStateIndicationManager.isSupported(mConnection)) {
+                if (ClientStateIndicationManager.isSupported(connection)) {
                     Log.d(TAG, "entering inactive state");
                     try {
-                        ClientStateIndicationManager.inactive(mConnection);
+                        ClientStateIndicationManager.inactive(connection);
                     }
                     catch (NotConnectedException e) {
                         cancelIdleAlarm();

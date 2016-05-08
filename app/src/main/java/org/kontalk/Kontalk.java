@@ -41,7 +41,6 @@ import android.util.Log;
 
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGP;
-import org.kontalk.crypto.PRNGFixes;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MessagesProvider;
@@ -54,6 +53,7 @@ import org.kontalk.service.UploadService;
 import org.kontalk.service.msgcenter.IPushService;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.PushServiceManager;
+import org.kontalk.service.msgcenter.SecureConnectionManager;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.ui.MessagingNotification;
@@ -109,10 +109,14 @@ public class Kontalk extends Application {
         ReportingManager.register(this);
 
         // register security provider
-        PGP.registerProvider();
-
-        // apply RNG fixes
-        PRNGFixes.apply();
+        SecureConnectionManager.init(this);
+        try {
+            PGP.registerProvider();
+        }
+        catch (PGP.PRNGFixException e) {
+            ReportingManager.logException(e);
+            Log.w(TAG, "Unable to install PRNG fix - ignoring", e);
+        }
 
         // init preferences
         Preferences.init(this);
