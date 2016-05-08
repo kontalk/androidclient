@@ -459,4 +459,9 @@
 
     <string name="learn_more">Nähere Infos</string>
 
+    <string name="title_huawei_protected_apps">Huawei Geschützte Apps</string>
+    <string name="btn_huawei_protected_apps">Geschützte Apps</string>
+    <string name="check_do_not_show_again">Nicht noch einmal anzeigen</string>
+
+    <string name="msg_huawei_protected_apps">Kontalk muss in Geschützte Apps freigegeben werden, um richtig zu funktionieren.</string>
     </resources>
