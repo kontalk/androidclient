@@ -76,26 +76,24 @@ public abstract class MainActivity extends ToolbarActivity {
             Intent intent = new Intent();
             intent.setClassName("com.huawei.systemmanager", "com.huawei.systemmanager.optimize.process.ProtectActivity");
             if (SystemUtils.isCallable(this, intent)) {
-                final AppCompatCheckBox dontShowAgain = new AppCompatCheckBox(this);
-                dontShowAgain.setText(R.string.check_do_not_show_again);
-                dontShowAgain.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        Preferences.setSkipHuaweiProtectedApps(isChecked);
-                    }
-                });
-
-                new AlertDialogWrapper.Builder(this)
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .setTitle(R.string.title_huawei_protected_apps)
-                    .setMessage(R.string.msg_huawei_protected_apps)
-                    .setView(dontShowAgain)
-                    .setPositiveButton(R.string.btn_huawei_protected_apps, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
+                new CheckboxAlertDialog.Builder(this)
+                    .checkboxText(R.string.check_do_not_show_again)
+                    .onCheckboxChanged(new CompoundButton.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                            Preferences.setSkipHuaweiProtectedApps(isChecked);
+                        }
+                    })
+                    .title(R.string.title_huawei_protected_apps)
+                    .content(R.string.msg_huawei_protected_apps)
+                    .positiveText(R.string.btn_huawei_protected_apps)
+                    .negativeText(android.R.string.cancel)
+                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                             startHuaweiProtectedApps();
                         }
                     })
-                    .setNegativeButton(android.R.string.cancel, null)
                     .show();
 
                 return true;
