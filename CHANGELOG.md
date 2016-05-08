@@ -1,5 +1,18 @@
 # Change Log
 
+## [3.1.9] - 2016-05-08
+### Changed
+- Date stamp style improvements (#702)
+- Composer bar style improvements (#713)
+- Split preference sections into fragments (#719)
+
+### Fixed
+- Fight Huawei protected apps feature (#670)
+- Fix several race conditions (#693, #694, #695, #698, #704, #708)
+- Fix SSL/crypto issues (#685, #700, #706, #716)
+- Fix non-latin locale SSL issue (#710)
+- Fix several other crashes (#709, #711, #714, #715)
+
 ## [3.1.8] - 2016-04-23
 ### Changed
 - Show message when search returns an empty result set (#647)
