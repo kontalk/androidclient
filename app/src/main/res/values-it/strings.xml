@@ -455,4 +455,13 @@
     <string name="pref_media_autodownload_label_always">Sempre</string>
 
     <string name="text_search_results_empty">Nessun messaggio trovato.</string>
+    <string name="chooser_error_no_gallery_app">Nessuna applicazione galleria di foto trovata.</string>
+
+    <string name="learn_more">Informazioni</string>
+
+    <string name="title_huawei_protected_apps">Huawei App Protette</string>
+    <string name="msg_huawei_protected_apps">Kontalk richiede di essere abilitata come app protetta per funzionare.\n</string>
+    <string name="btn_huawei_protected_apps">App protette</string>
+    <string name="check_do_not_show_again">Non mostrare più</string>
+
     </resources>
