@@ -24,7 +24,6 @@ import java.util.Set;
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.nispok.snackbar.SnackbarManager;
 
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
@@ -101,15 +100,14 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
     private String mUserJID;
     private String mUserPhone;
 
-    /** Available resources. */
-    private Set<String> mAvailableResources = new HashSet<>();
     private String mLastActivityRequestId;
     private String mVersionRequestId;
 
-    private BroadcastReceiver mPresenceReceiver;
     private BroadcastReceiver mPrivacyListener;
 
     private boolean mIsTyping;
+
+    private BroadcastReceiver mBroadcastReceiver;
 
     @Override
     protected void onInflateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -347,13 +345,225 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         return false;
     }
 
+    @Override
+    protected boolean isUserId(String jid) {
+        return XMPPUtils.equalsBareJID(jid, mUserJID);
+    }
+
+    @Override
+    protected void onConnected() {
+        // reset any pending request
+        mLastActivityRequestId = null;
+        mVersionRequestId = null;
+    }
+
+    @Override
+    protected void onRosterLoaded() {
+        // probe presence
+        requestPresence();
+    }
+
+    @Override
+    protected void onStartTyping(String jid) {
+        mIsTyping = true;
+        setStatusText(getString(R.string.seen_typing_label));
+    }
+
+    @Override
+    protected void onStopTyping(String jid) {
+        mIsTyping = false;
+        setStatusText(mCurrentStatus != null ? mCurrentStatus : "");
+    }
+
+    @Override
+    protected void onPresence(String jid, Presence.Type type, boolean removed, Presence.Mode mode, String fingerprint) {
+        final Context context = getContext();
+
+        if (type == null) {
+            // no roster entry found, request subscription
+
+            // pre-approve our presence if we don't have contact's key
+            Intent i = new Intent(context, MessageCenterService.class);
+            i.setAction(MessageCenterService.ACTION_PRESENCE);
+            i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
+            i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribed.name());
+            context.startService(i);
+
+            // request subscription
+            i = new Intent(context, MessageCenterService.class);
+            i.setAction(MessageCenterService.ACTION_PRESENCE);
+            i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
+            i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribe.name());
+            context.startService(i);
+
+            setStatusText(context.getString(R.string.invitation_sent_label));
+        }
+
+        // (un)available presence
+        else if (type == Presence.Type.available || type == Presence.Type.unavailable) {
+
+            CharSequence statusText = null;
+
+            // really not much sense in requesting the key for a non-existing contact
+            Contact contact = getContact();
+            if (contact != null) {
+                // if this is null, we are accepting the key for the first time
+                PGPPublicKeyRing trustedPublicKey = contact.getTrustedPublicKeyRing();
+
+                // request the key if we don't have a trusted one and of course if the user has a key
+                boolean unknownKey = (trustedPublicKey == null && contact.getFingerprint() != null);
+                boolean changedKey = false;
+                // check if fingerprint changed
+                if (trustedPublicKey != null && fingerprint != null) {
+                    String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(trustedPublicKey));
+                    if (!fingerprint.equalsIgnoreCase(oldFingerprint)) {
+                        // fingerprint has changed since last time
+                        changedKey = true;
+                    }
+                }
+
+                if (changedKey) {
+                    // warn user that public key is changed
+                    showKeyChangedWarning();
+                }
+                else if (unknownKey) {
+                    // warn user that public key is unknown
+                    showKeyUnknownWarning();
+                }
+            }
+
+            if (type == Presence.Type.available) {
+                mIsTyping = mIsTyping || Contact.isTyping(jid);
+                if (mIsTyping) {
+                    setStatusText(context.getString(R.string.seen_typing_label));
+                }
+
+                /*
+                 * FIXME using mode this way has several flaws.
+                 * 1. it doesn't take multiple resources into account
+                 * 2. it doesn't account for away status duration (we don't have this information at all)
+                 */
+                boolean isAway = (mode == Presence.Mode.away);
+                if (isAway) {
+                    statusText = context.getString(R.string.seen_away_label);
+                }
+                else {
+                    statusText = context.getString(R.string.seen_online_label);
+                }
+
+                String version = Contact.getVersion(jid);
+                // do not request version info if already requested before
+                if (!isAway && version == null && mVersionRequestId == null) {
+                    requestVersion(jid);
+                }
+            }
+            else if (type == Presence.Type.unavailable) {
+                /*
+                 * All available resources have gone. Mark
+                 * the user as offline immediately and use the
+                 * timestamp provided with the stanza (if any).
+                 */
+                if (mAvailableResources.size() == 0) {
+                    // an offline user can't be typing
+                    mIsTyping = false;
+
+                    if (removed) {
+                        // resource was removed now, mark as just offline
+                        statusText = context.getText(R.string.seen_moment_ago_label);
+                    }
+                    else {
+                        // resource is offline, request last activity
+                        if (contact != null && contact.getLastSeen() > 0) {
+                            setLastSeenTimestamp(context, contact.getLastSeen());
+                        }
+                        else if (mLastActivityRequestId == null) {
+                            mLastActivityRequestId = StringUtils.randomString(6);
+                            MessageCenterService.requestLastActivity(context,
+                                XmppStringUtils.parseBareJid(jid), mLastActivityRequestId);
+                        }
+                    }
+                }
+            }
+
+            if (statusText != null) {
+                setCurrentStatusText(statusText);
+            }
+        }
+
+        // subscription accepted, probe presence
+        else if (type == Presence.Type.subscribed) {
+            requestPresence();
+        }
+    }
+
+    /** Sends a subscription request for the current peer. */
+    private void requestPresence() {
+        Context context = getActivity();
+        if (context != null) {
+            // all of this shall be done only if there isn't a request from the other contact
+            if (mConversation.getRequestStatus() != Threads.REQUEST_WAITING) {
+                // request last presence
+                Intent i = new Intent(context, MessageCenterService.class);
+                i.setAction(MessageCenterService.ACTION_PRESENCE);
+                i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
+                i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.probe.name());
+                context.startService(i);
+            }
+        }
+    }
+
     /** Called when the {@link Conversation} object has been created. */
     @Override
     protected void onConversationCreated() {
-        // subscribe to presence notifications
-        subscribePresence();
-
         super.onConversationCreated();
+
+        // setup broadcast receiver
+        if (mBroadcastReceiver == null) {
+            mBroadcastReceiver = new BroadcastReceiver() {
+                public void onReceive(Context context, Intent intent) {
+                    String action = intent.getAction();
+
+                    if (MessageCenterService.ACTION_LAST_ACTIVITY.equals(action)) {
+                        String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
+                        if (id != null && id.equals(mLastActivityRequestId)) {
+                            mLastActivityRequestId = null;
+                            // ignore last activity if we had an available presence in the meantime
+                            if (mAvailableResources.size() == 0) {
+                                String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
+                                if (type == null || !type.equalsIgnoreCase(IQ.Type.error.toString())) {
+                                    long seconds = intent.getLongExtra(MessageCenterService.EXTRA_SECONDS, -1);
+                                    setLastSeenSeconds(context, seconds);
+                                }
+                            }
+                        }
+                    }
+
+                    else if (MessageCenterService.ACTION_VERSION.equals(action)) {
+                        // compare version and show warning if needed
+                        String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
+                        if (id != null && id.equals(mVersionRequestId)) {
+                            mVersionRequestId = null;
+                            String name = intent.getStringExtra(MessageCenterService.EXTRA_VERSION_NAME);
+                            if (name != null && name.equalsIgnoreCase(context.getString(R.string.app_name))) {
+                                String version = intent.getStringExtra(MessageCenterService.EXTRA_VERSION_NUMBER);
+                                if (version != null) {
+                                    // cache the version
+                                    String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                                    Contact.setVersion(from, version);
+                                    setVersionInfo(context, version);
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            // listen for for some stuff we need
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
+            filter.addAction(MessageCenterService.ACTION_MESSAGE);
+            mLocalBroadcastManager.registerReceiver(mBroadcastReceiver, filter);
+        }
 
         // setup invitation bar
         boolean visible = (mConversation.getRequestStatus() == Threads.REQUEST_WAITING);
@@ -461,7 +671,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                                 // hide any block warning
                                 // a new warning will be issued for the key if needed
                                 hideWarning();
-                                presenceSubscribe();
+                                requestPresence();
                             }
                             else {
                                 Toast.makeText(getActivity(),
@@ -627,10 +837,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         builder.show();
     }
 
-    private void hideWarning() {
-        SnackbarManager.dismiss();
-    }
-
     private void trustKeyChange() {
         // mark current key as trusted
         UsersProvider.trustUserKey(getActivity(), mUserJID);
@@ -688,232 +894,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             R.string.title_public_key_changed_warning, R.string.msg_public_key_changed_warning);
     }
 
-    private void subscribePresence() {
-        // TODO this needs serious refactoring
-        if (mPresenceReceiver == null) {
-            mPresenceReceiver = new BroadcastReceiver() {
-                public void onReceive(Context context, Intent intent) {
-                    String action = intent.getAction();
-
-                    if (MessageCenterService.ACTION_PRESENCE.equals(action)) {
-                        String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                        String bareFrom = from != null ? XmppStringUtils.parseBareJid(from) : null;
-
-                        // we are receiving a presence from our peer
-                        if (from != null && bareFrom.equalsIgnoreCase(mUserJID)) {
-
-                            // we handle only (un)available presence stanzas
-                            String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
-
-                            if (type == null) {
-                                // no roster entry found, request subscription
-
-                                // pre-approve our presence if we don't have contact's key
-                                Intent i = new Intent(context, MessageCenterService.class);
-                                i.setAction(MessageCenterService.ACTION_PRESENCE);
-                                i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
-                                i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribed.name());
-                                context.startService(i);
-
-                                // request subscription
-                                i = new Intent(context, MessageCenterService.class);
-                                i.setAction(MessageCenterService.ACTION_PRESENCE);
-                                i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
-                                i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribe.name());
-                                context.startService(i);
-
-                                setStatusText(context.getString(R.string.invitation_sent_label));
-                            }
-
-                            // (un)available presence
-                            else if (Presence.Type.available.name().equals(type) || Presence.Type.unavailable.name().equals(type)) {
-
-                                CharSequence statusText = null;
-
-                                // really not much sense in requesting the key for a non-existing contact
-                                Contact contact = getContact();
-                                if (contact != null) {
-                                    String newFingerprint = intent.getStringExtra(MessageCenterService.EXTRA_FINGERPRINT);
-                                    // if this is null, we are accepting the key for the first time
-                                    PGPPublicKeyRing trustedPublicKey = contact.getTrustedPublicKeyRing();
-
-                                    // request the key if we don't have a trusted one and of course if the user has a key
-                                    boolean unknownKey = (trustedPublicKey == null && contact.getFingerprint() != null);
-                                    boolean changedKey = false;
-                                    // check if fingerprint changed
-                                    if (trustedPublicKey != null && newFingerprint != null) {
-                                        String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(trustedPublicKey));
-                                        if (!newFingerprint.equalsIgnoreCase(oldFingerprint)) {
-                                            // fingerprint has changed since last time
-                                            changedKey = true;
-                                        }
-                                    }
-
-                                    if (changedKey) {
-                                        // warn user that public key is changed
-                                        showKeyChangedWarning();
-                                    }
-                                    else if (unknownKey) {
-                                        // warn user that public key is unknown
-                                        showKeyUnknownWarning();
-                                    }
-                                }
-
-                                if (Presence.Type.available.toString().equals(type)) {
-                                    mAvailableResources.add(from);
-                                    mIsTyping = mIsTyping || Contact.isTyping(from);
-                                    if (mIsTyping) {
-                                        setStatusText(context.getString(R.string.seen_typing_label));
-                                    }
-
-                                    /*
-                                     * FIXME using mode this way has several flaws.
-                                     * 1. it doesn't take multiple resources into account
-                                     * 2. it doesn't account for away status duration (we don't have this information at all)
-                                     */
-                                    String mode = intent.getStringExtra(MessageCenterService.EXTRA_SHOW);
-                                    boolean isAway = mode != null && mode.equals(Presence.Mode.away.toString());
-                                    if (isAway) {
-                                        statusText = context.getString(R.string.seen_away_label);
-                                    }
-                                    else {
-                                        statusText = context.getString(R.string.seen_online_label);
-                                    }
-
-                                    String version = Contact.getVersion(from);
-                                    // do not request version info if already requested before
-                                    if (!isAway && version == null && mVersionRequestId == null) {
-                                        requestVersion(from);
-                                    }
-                                }
-                                else if (Presence.Type.unavailable.toString().equals(type)) {
-                                    boolean removed = mAvailableResources.remove(from);
-                                    /*
-                                     * All available resources have gone. Mark
-                                     * the user as offline immediately and use the
-                                     * timestamp provided with the stanza (if any).
-                                     */
-                                    if (mAvailableResources.size() == 0) {
-                                        // an offline user can't be typing
-                                        mIsTyping = false;
-
-                                        if (removed) {
-                                            // resource was removed now, mark as just offline
-                                            statusText = context.getText(R.string.seen_moment_ago_label);
-                                        }
-                                        else {
-                                            // resource is offline, request last activity
-                                            if (contact != null && contact.getLastSeen() > 0) {
-                                                setLastSeenTimestamp(context, contact.getLastSeen());
-                                            }
-                                            else if (mLastActivityRequestId == null) {
-                                                mLastActivityRequestId = StringUtils.randomString(6);
-                                                MessageCenterService.requestLastActivity(context, bareFrom, mLastActivityRequestId);
-                                            }
-                                        }
-                                    }
-                                }
-
-                                if (statusText != null) {
-                                    setCurrentStatusText(statusText);
-                                }
-                            }
-
-                            // subscription accepted, probe presence
-                            else if (Presence.Type.subscribed.name().equals(type)) {
-                                presenceSubscribe();
-                            }
-                        }
-                    }
-
-                    else if (MessageCenterService.ACTION_LAST_ACTIVITY.equals(action)) {
-                        String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                        if (id != null && id.equals(mLastActivityRequestId)) {
-                            mLastActivityRequestId = null;
-                            // ignore last activity if we had an available presence in the meantime
-                            if (mAvailableResources.size() == 0) {
-                                String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
-                                if (type == null || !type.equalsIgnoreCase(IQ.Type.error.toString())) {
-                                    long seconds = intent.getLongExtra(MessageCenterService.EXTRA_SECONDS, -1);
-                                    setLastSeenSeconds(context, seconds);
-                                }
-                            }
-                        }
-                    }
-
-                    else if (MessageCenterService.ACTION_VERSION.equals(action)) {
-                        // compare version and show warning if needed
-                        String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                        if (id != null && id.equals(mVersionRequestId)) {
-                            mVersionRequestId = null;
-                            String name = intent.getStringExtra(MessageCenterService.EXTRA_VERSION_NAME);
-                            if (name != null && name.equalsIgnoreCase(context.getString(R.string.app_name))) {
-                                String version = intent.getStringExtra(MessageCenterService.EXTRA_VERSION_NUMBER);
-                                if (version != null) {
-                                    // cache the version
-                                    String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                                    Contact.setVersion(from, version);
-                                    setVersionInfo(context, version);
-                                }
-                            }
-                        }
-                    }
-
-                    else if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
-                        // reset compose sent flag
-                        mComposer.resetCompose();
-                        // reset available resources list
-                        mAvailableResources.clear();
-                        // reset any pending request
-                        mLastActivityRequestId = null;
-                        mVersionRequestId = null;
-                    }
-
-                    else if (MessageCenterService.ACTION_ROSTER_LOADED.equals(action)) {
-                        // probe presence
-                        presenceSubscribe();
-                    }
-
-                    else if (MessageCenterService.ACTION_MESSAGE.equals(action)) {
-                        String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                        String chatState = intent.getStringExtra("org.kontalk.message.chatState");
-
-                        // we are receiving a composing notification from our peer
-                        if (from != null && XMPPUtils.equalsBareJID(from, mUserJID)) {
-                            if (chatState != null && ChatState.composing.toString().equals(chatState)) {
-                                mIsTyping = true;
-                                setStatusText(context.getString(R.string.seen_typing_label));
-                            }
-                            else {
-                                mIsTyping = false;
-                                setStatusText(mCurrentStatus != null ? mCurrentStatus : "");
-                            }
-                        }
-                    }
-
-                }
-            };
-
-            // listen for user presence, connection and incoming messages
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(MessageCenterService.ACTION_PRESENCE);
-            filter.addAction(MessageCenterService.ACTION_CONNECTED);
-            filter.addAction(MessageCenterService.ACTION_ROSTER_LOADED);
-            filter.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
-            filter.addAction(MessageCenterService.ACTION_MESSAGE);
-            filter.addAction(MessageCenterService.ACTION_VERSION);
-
-            mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
-
-            // request connection and roster load status
-            Context ctx = getActivity();
-            if (ctx != null) {
-                MessageCenterService.requestConnectionStatus(ctx);
-                MessageCenterService.requestRosterStatus(ctx);
-            }
-        }
-    }
-
     private void setVersionInfo(Context context, String version) {
         if (SystemUtils.isOlderVersion(context, version)) {
             showWarning(context.getText(R.string.warning_older_version), null, WarningType.WARNING);
@@ -961,29 +941,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         }
     }
 
-    /** Sends a subscription request for the current peer. */
-    private void presenceSubscribe() {
-        Context context = getActivity();
-        if (context != null) {
-            // all of this shall be done only if there isn't a request from the other contact
-            if (mConversation.getRequestStatus() != Threads.REQUEST_WAITING) {
-                // request last presence
-                Intent i = new Intent(context, MessageCenterService.class);
-                i.setAction(MessageCenterService.ACTION_PRESENCE);
-                i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
-                i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.probe.name());
-                context.startService(i);
-            }
-        }
-    }
-
-    private void unsubcribePresence() {
-        if (mPresenceReceiver != null) {
-            mLocalBroadcastManager.unregisterReceiver(mPresenceReceiver);
-            mPresenceReceiver = null;
-        }
-    }
-
     public void onFocus(boolean resuming) {
         super.onFocus(resuming);
 
@@ -992,14 +949,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             // TODO use jid here
             MessagingNotification.clearChatInvitation(getActivity(), mUserJID);
         }
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-
-        // unsubcribe presence notifications
-        unsubcribePresence();
     }
 
     protected void updateUI() {

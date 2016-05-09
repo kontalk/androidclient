@@ -24,6 +24,8 @@ import java.util.Set;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 
+import org.jivesoftware.smack.packet.Presence;
+
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -38,6 +40,7 @@ import org.kontalk.client.KontalkGroupManager;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.util.XMPPUtils;
 
 
 /**
@@ -54,9 +57,11 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
     @Override
     protected void sendBinaryMessageInternal(String mime, Uri localUri, long length,
-        String previewPath, boolean encrypt, int compress, long msgId, String packetId) {
-        // TODO
-        throw new RuntimeException("Not implemented");
+            String previewPath, boolean encrypt, int compress, long msgId, String packetId) {
+        MessageCenterService.sendGroupBinaryMessage(getContext(),
+            mConversation.getGroupJid(), mConversation.getGroupPeers(),
+            mime, localUri, length, previewPath, encrypt, compress,
+            msgId, packetId);
     }
 
     @Override
@@ -202,6 +207,43 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         String status = String.format("%d people", mConversation.getGroupPeers().length + 1);
 
         setActivityTitle(subject, status);
+    }
+
+    @Override
+    protected void onPresence(String jid, Presence.Type type, boolean removed, Presence.Mode mode, String fingerprint) {
+        // TODO
+    }
+
+    @Override
+    protected void onConnected() {
+        // TODO
+    }
+
+    @Override
+    protected void onRosterLoaded() {
+        // TODO
+    }
+
+    @Override
+    protected void onStartTyping(String jid) {
+        // TODO
+    }
+
+    @Override
+    protected void onStopTyping(String jid) {
+        // TODO
+    }
+
+    @Override
+    protected boolean isUserId(String jid) {
+        if (mConversation != null) {
+            String[] users = mConversation.getGroupPeers();
+            for (String user : users) {
+                if (XMPPUtils.equalsBareJID(jid, user))
+                    return true;
+            }
+        }
+        return false;
     }
 
     @Override

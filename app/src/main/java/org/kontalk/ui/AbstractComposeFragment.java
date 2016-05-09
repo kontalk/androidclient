@@ -21,7 +21,9 @@ package org.kontalk.ui;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
@@ -32,16 +34,22 @@ import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.enums.SnackbarType;
 import com.nispok.snackbar.listeners.ActionClickListener;
 
+import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smackx.chatstates.ChatState;
+import org.jxmpp.util.XmppStringUtils;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.AsyncQueryHandler;
+import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
@@ -176,6 +184,9 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     private Bundle mArguments;
     protected String mUserName;
 
+    /** Available resources. */
+    protected Set<String> mAvailableResources = new HashSet<>();
+
     /** Media player stuff. */
     private int mMediaPlayerStatus = AudioContentView.STATUS_IDLE;
     private Handler mHandler;
@@ -189,6 +200,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     private File mCurrentPhoto;
 
     protected LocalBroadcastManager mLocalBroadcastManager;
+    private BroadcastReceiver mPresenceReceiver;
 
     private boolean mOfflineModeWarned;
     protected CharSequence mCurrentStatus;
@@ -665,7 +677,17 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                         filename, true);
             }
 
-            length = MediaStorage.getLength(getContext(), uri);
+            if (compress > 0) {
+                File compressed = MediaStorage.resizeImage(getContext(), uri, compress);
+                length = compressed.length();
+                // use the compressed image from now on
+                uri = Uri.fromFile(compressed);
+            }
+            else {
+                File copy = MediaStorage.copyOutgoingMedia(getContext(), uri);
+                length = copy.length();
+                uri = Uri.fromFile(copy);
+            }
 
             // save to database
             ContentValues values = new ContentValues();
@@ -831,6 +853,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         }
     }
 
+    /** Sends an inactive chat state message. */
     public abstract boolean sendInactive();
 
     protected abstract void onInflateOptionsMenu(Menu menu, MenuInflater inflater);
@@ -1559,10 +1582,117 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             registerPeerObserver();
         }
 
+        // subscribe to presence notifications
+        subscribePresence();
+
         updateUI();
     }
 
-    private void hideWarning() {
+    protected abstract void onPresence(String jid, Presence.Type type,
+        boolean removed, Presence.Mode mode, String fingerprint);
+
+    protected abstract void onConnected();
+    protected abstract void onRosterLoaded();
+
+    protected abstract void onStartTyping(String jid);
+    protected abstract void onStopTyping(String jid);
+
+    protected abstract boolean isUserId(String jid);
+
+    private void subscribePresence() {
+        // TODO this needs serious refactoring
+        if (mPresenceReceiver == null) {
+            mPresenceReceiver = new BroadcastReceiver() {
+                public void onReceive(Context context, Intent intent) {
+                    String action = intent.getAction();
+
+                    if (MessageCenterService.ACTION_PRESENCE.equals(action)) {
+                        String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                        String bareFrom = from != null ? XmppStringUtils.parseBareJid(from) : null;
+
+                        // we are receiving a presence from our peer
+                        if (from != null && isUserId(bareFrom)) {
+
+                            // we handle only (un)available presence stanzas
+                            String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
+                            Presence.Type presenceType = (type != null) ? Presence.Type.fromString(type) : null;
+
+                            String mode = intent.getStringExtra(MessageCenterService.EXTRA_SHOW);
+                            Presence.Mode presenceMode = (mode != null) ? Presence.Mode.fromString(mode) : null;
+
+                            String fingerprint = intent.getStringExtra(MessageCenterService.EXTRA_FINGERPRINT);
+
+                            boolean removed = false;
+                            if (presenceType == Presence.Type.available) {
+                                mAvailableResources.add(from);
+                            }
+                            else if (presenceType == Presence.Type.unavailable) {
+                                removed = mAvailableResources.remove(from);
+                            }
+
+                            onPresence(from, presenceType, removed, presenceMode, fingerprint);
+                        }
+                    }
+
+                    else if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
+                        // reset compose sent flag
+                        mComposer.resetCompose();
+                        // reset available resources list
+                        mAvailableResources.clear();
+
+                        onConnected();
+                    }
+
+                    else if (MessageCenterService.ACTION_ROSTER_LOADED.equals(action)) {
+                        onRosterLoaded();
+                    }
+
+                    else if (MessageCenterService.ACTION_MESSAGE.equals(action)) {
+                        String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                        String chatState = intent.getStringExtra("org.kontalk.message.chatState");
+
+                        // we are receiving a composing notification from our peer
+                        if (from != null && isUserId(from)) {
+                            if (chatState != null && ChatState.composing.toString().equals(chatState)) {
+                                onStartTyping(from);
+                            }
+                            else {
+                                onStopTyping(from);
+                            }
+                        }
+                    }
+
+                }
+            };
+
+            // listen for user presence, connection and incoming messages
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(MessageCenterService.ACTION_PRESENCE);
+            filter.addAction(MessageCenterService.ACTION_CONNECTED);
+            filter.addAction(MessageCenterService.ACTION_ROSTER_LOADED);
+            filter.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
+            filter.addAction(MessageCenterService.ACTION_MESSAGE);
+            filter.addAction(MessageCenterService.ACTION_VERSION);
+
+            mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
+
+            // request connection and roster load status
+            Context ctx = getActivity();
+            if (ctx != null) {
+                MessageCenterService.requestConnectionStatus(ctx);
+                MessageCenterService.requestRosterStatus(ctx);
+            }
+        }
+    }
+
+    private void unsubscribePresence() {
+        if (mPresenceReceiver != null) {
+            mLocalBroadcastManager.unregisterReceiver(mPresenceReceiver);
+            mPresenceReceiver = null;
+        }
+    }
+
+    protected void hideWarning() {
         SnackbarManager.dismiss();
     }
 
@@ -1723,6 +1853,9 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     @Override
     public void onPause() {
         super.onPause();
+
+        // unsubcribe presence notifications
+        unsubscribePresence();
 
         // notify composer bar
         mComposer.onPause();

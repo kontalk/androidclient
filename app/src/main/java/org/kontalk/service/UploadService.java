@@ -186,6 +186,7 @@ public class UploadService extends IntentService implements ProgressListener {
             MessagesProvider.uploaded(this, databaseId, mediaUrl);
 
             // send message with fetch url to server
+            // TODO group version
             MessageCenterService.sendUploadedMedia(this, to, mime, file, length,
                 previewPath, mediaUrl, encrypt, databaseId, msgId);
 
