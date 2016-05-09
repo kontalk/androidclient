@@ -1,5 +1,9 @@
 # Change Log
 
+## [3.1.9.1] - 2016-05-08
+### Fixed
+- Fix Huawei Protected Apps dialog (#720)
+
 ## [3.1.9] - 2016-05-08
 ### Changed
 - Date stamp style improvements (#702)
