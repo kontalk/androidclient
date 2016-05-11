@@ -456,4 +456,11 @@
     <string name="text_search_results_empty">No se han encontrado mensajes.</string>
     <string name="chooser_error_no_gallery_app">No hay aplicaciones de galería disponibles.</string>
 
+    <string name="learn_more">Aprender más</string>
+
+    <string name="title_huawei_protected_apps">Aplicaciones de Huawei protegidas</string>
+    <string name="msg_huawei_protected_apps">Kontalk necesita tener habilitadas las aplicaciones protegidas para funcionar correctamente</string>
+    <string name="btn_huawei_protected_apps">Aplicaciones protegidas</string>
+    <string name="check_do_not_show_again">No mostrar de nuevo</string>
+
     </resources>
