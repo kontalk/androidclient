@@ -93,7 +93,7 @@
   <string name="pref_restart_msgcenter">Nachrichtenzentrale neu starten</string>
   <string name="pref_title_restart_msgcenter">Antippen wenn Kontalk nicht richtig arbeitet</string>
   <string name="pref_idle_time">Verbindung trennen wenn ungenutzt</string>
-  <string name="pref_title_idle_time">Wartezeit bis die Verbindung unterbrochen werden soll</string>
+  <string name="pref_title_idle_time">Wartezeit bis Verbindungsabbruch bei Inaktivität</string>
   <string name="pref_wakeup_time">Verbindung zum Server wiederherstellen</string>
   <string name="pref_title_wakeup_time">Wartezeit bis die Verbindung zum Server wieder hergestellt werden soll. Funktioniert nur wenn \"Push\"-Benachrichtigungen nicht verfügbar sind</string>
   <string name="pref_maintenance">Wartung</string>
@@ -463,5 +463,5 @@
     <string name="btn_huawei_protected_apps">Geschützte Apps</string>
     <string name="check_do_not_show_again">Nicht noch einmal anzeigen</string>
 
-    <string name="msg_huawei_protected_apps">Kontalk muss in Geschützte Apps freigegeben werden, um richtig zu funktionieren.</string>
+    <string name="msg_huawei_protected_apps">Kontalk muss in den Systemeinstellungen unter Geschützte Apps markiert werden, um richtig zu funktionieren.</string>
     </resources>
