@@ -41,7 +41,7 @@
     <string name="code_validation_intro">باید به‌زودی پیامک یا تماسی از این شماره دریافت کنید:</string>
     <string name="code_validation_intro2">لطفاً کدی را که دریافت کرده یا می‌شنوید، وارد کنید.</string>
     <string name="code_validation_intro_missed_call">به زودی باید یک تماس از دست رفته از این شماره دریافت کنید. <b>لطفاً به تماس پاسخ ندهید.</b></string>
-    <string name="code_validation_intro2_missed_call">لطفاً آخرین %Id رقم شماره‌ای که با شما تماس خواهد گرفت را وارد کنید.</string>
+    <string name="code_validation_intro2_missed_call">لطفاً آخرین %d رقم شماره‌ای که با شما تماس خواهد گرفت را وارد کنید.</string>
     <string name="code_validation_intro_manual">لطفاً کد تأییدی که دریافت کردید را وارد کنید. لطفاً توجه داشته باشید که یک کد تأیید تنها یک‌بار می‌تواند استفاده شود.</string>
     <string name="hint_validation_name">نام شما</string>
     <string name="hint_validation_number">شمارهٔ شما</string>
