@@ -20,21 +20,20 @@ package org.kontalk.ui.prefs;
 
 import com.github.machinarius.preferencefragment.PreferenceFragment;
 
-import android.app.Activity;
-import android.content.Intent;
+import android.content.Context;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.view.MenuItem;
 
 import org.kontalk.R;
-import org.kontalk.ui.ConversationsActivity;
+import org.kontalk.util.SystemUtils;
 
 
 /**
  * Base class for root preference fragments.
  * @author Daniele Ricci
  */
-public class RootPreferenceFragment extends PreferenceFragment {
+public abstract class RootPreferenceFragment extends PreferenceFragment {
 
     private Callback mCallback;
 
@@ -45,10 +44,10 @@ public class RootPreferenceFragment extends PreferenceFragment {
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        if (activity instanceof Callback) {
-            mCallback = (Callback) activity;
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof Callback) {
+            mCallback = (Callback) context;
         }
         else {
             throw new IllegalStateException("Owner must implement Callback interface");
@@ -77,10 +76,24 @@ public class RootPreferenceFragment extends PreferenceFragment {
             mCallback.onNestedPreferenceSelected(key);
     }
 
-    protected void setupPreferences() {}
+    protected void setupPreferences() {
+    }
+
+    // FIXME this is used only for root preference fragments
+    protected void setupInternalPreferences() {
+        final Preference help = findPreference("pref_help");
+        help.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                SystemUtils.openURL(getContext(), getString(R.string.help_url));
+                return true;
+            }
+        });
+
+    }
 
     public interface Callback {
-        public void onNestedPreferenceSelected(int key);
+        void onNestedPreferenceSelected(int key);
     }
 
 }
