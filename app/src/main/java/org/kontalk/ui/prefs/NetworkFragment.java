@@ -18,20 +18,19 @@
 
 package org.kontalk.ui.prefs;
 
+import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.MaterialDialog;
+
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.widget.Toast;
-
-import com.afollestad.materialdialogs.AlertDialogWrapper;
-import com.afollestad.materialdialogs.MaterialDialog;
 
 import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
@@ -48,7 +47,6 @@ import org.kontalk.util.Preferences;
 public class NetworkFragment extends RootPreferenceFragment {
 
     private ServerListUpdater mServerlistUpdater;
-    private Handler mHandler;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -56,8 +54,6 @@ public class NetworkFragment extends RootPreferenceFragment {
 
         // Load the preferences from an XML resource
         addPreferencesFromResource(R.xml.preferences_network);
-
-        mHandler = new Handler();
 
         // push notifications checkbox
         final Preference pushNotifications = findPreference("pref_push_notifications");
@@ -77,6 +73,21 @@ public class NetworkFragment extends RootPreferenceFragment {
 
         // manual server address is handled in Application context
         // we just handle validation here
+        final Preference manualServer = findPreference("pref_network_uri");
+        manualServer.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                String value = newValue.toString().trim();
+                if (value.length() > 0 && !EndpointServer.validate(value)) {
+                    new AlertDialogWrapper.Builder(getActivity())
+                        .setTitle(R.string.pref_network_uri)
+                        .setMessage(R.string.err_server_invalid_format)
+                        .setPositiveButton(android.R.string.ok, null)
+                        .show();
+                    return false;
+                }
+                return true;
+            }
+        });
 
         // server list last update timestamp
         final Preference updateServerList = findPreference("pref_update_server_list");
@@ -194,22 +205,6 @@ public class NetworkFragment extends RootPreferenceFragment {
             push.setChecked(false);
             push.setSummary(R.string.pref_title_disabled_push_notifications);
         }
-
-        final Preference manualServer = findPreference("pref_network_uri");
-        manualServer.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                String value = newValue.toString().trim();
-                if (value.length() > 0 && !EndpointServer.validate(value)) {
-                    new AlertDialogWrapper.Builder(getActivity())
-                            .setTitle(R.string.pref_network_uri)
-                            .setMessage(R.string.err_server_invalid_format)
-                            .setPositiveButton(android.R.string.ok, null)
-                            .show();
-                    return false;
-                }
-                return true;
-            }
-        });
     }
 
     private void cancelServerlistUpdater() {
