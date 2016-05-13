@@ -35,6 +35,7 @@ public class BootstrapPreferences extends RootPreferenceFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.bootstrap_preferences);
+        setupInternalPreferences();
     }
 
     @Override

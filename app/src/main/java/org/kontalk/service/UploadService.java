@@ -168,10 +168,8 @@ public class UploadService extends IntentService implements ProgressListener {
 
             mCanceled = false;
 
-            if (mConn == null) {
-                // TODO used class here should be decided by the caller
-                mConn = new HTPPFileUploadConnection(this, url);
-            }
+            // TODO used class here should be decided by the caller
+            mConn = new HTPPFileUploadConnection(this, url);
 
             mMessageId = databaseId;
             queue.put(filename, mMessageId);

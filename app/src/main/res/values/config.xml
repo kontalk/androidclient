@@ -47,7 +47,7 @@
     <bool name="pref_default_enable_notifications">true</bool>
     <string name="pref_default_ringtone">content://settings/system/notification_sound</string>
     <string name="pref_default_vibrate">always</string>
-    <bool name="pref_default_enable_notification_led">false</bool>
+    <bool name="pref_default_enable_notification_led">true</bool>
     <integer name="pref_default_notification_led_color">-48060</integer>
 
     <!-- maintenance settings defaults -->
