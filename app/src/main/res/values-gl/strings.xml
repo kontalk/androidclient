@@ -447,7 +447,7 @@
     <string name="title_public_key_unknown_warning">Clave persoal non fiable</string>
     <string name="msg_public_key_unknown_warning">"Por favor, asegúrese de que a pegada do usuario  corresponde ao exhibido no "<b>1identidade</b>2 diálogo, se non, a comunicación pode ser comprometida!</string>
 
-    <string name="warning_user_blocked">O usuario bloqueoute.</string>
+    <string name="warning_user_blocked">Vostede bloqueou a este usuario.</string>
 
     <string name="about_credits_devteam"><b> 1Foches invitado a Kontalk por:</b> 2</string>
     <string name="about_credits_gfx"><b> 1Gráficos/Iconografia</b> 2</string>
