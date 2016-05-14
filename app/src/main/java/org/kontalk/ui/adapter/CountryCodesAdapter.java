@@ -49,8 +49,10 @@ public class CountryCodesAdapter extends BaseAdapter {
     private static final SparseIntArray sFlags = new SparseIntArray(233);
 
     static {
+        sFlags.put(0x4143 /* AC */, R.drawable.flag_ac);
         sFlags.put(0x4146 /* AF */, R.drawable.flag_af);
         sFlags.put(0x414c /* AL */, R.drawable.flag_al);
+        sFlags.put(0x4151 /* AQ */, R.drawable.flag_aq);
         sFlags.put(0x445a /* DZ */, R.drawable.flag_dz);
         sFlags.put(0x4144 /* AD */, R.drawable.flag_ad);
         sFlags.put(0x414f /* AO */, R.drawable.flag_ao);
@@ -68,6 +70,7 @@ public class CountryCodesAdapter extends BaseAdapter {
         sFlags.put(0x4244 /* BD */, R.drawable.flag_bd);
         sFlags.put(0x4242 /* BB */, R.drawable.flag_bb);
         sFlags.put(0x4245 /* BE */, R.drawable.flag_be);
+        sFlags.put(0x424c /* BL */, R.drawable.flag_bl);
         sFlags.put(0x425a /* BZ */, R.drawable.flag_bz);
         sFlags.put(0x424a /* BJ */, R.drawable.flag_bj);
         sFlags.put(0x424d /* BM */, R.drawable.flag_bm);
@@ -112,6 +115,7 @@ public class CountryCodesAdapter extends BaseAdapter {
         sFlags.put(0x5048 /* PH */, R.drawable.flag_ph);
         sFlags.put(0x4649 /* FI */, R.drawable.flag_fi);
         sFlags.put(0x4652 /* FR */, R.drawable.flag_fr);
+        sFlags.put(0x4658 /* FX */, R.drawable.flag_fx);
         sFlags.put(0x4741 /* GA */, R.drawable.flag_ga);
         sFlags.put(0x474d /* GM */, R.drawable.flag_gm);
         sFlags.put(0x4745 /* GE */, R.drawable.flag_ge);
@@ -124,6 +128,7 @@ public class CountryCodesAdapter extends BaseAdapter {
         sFlags.put(0x4a4f /* JO */, R.drawable.flag_jo);
         sFlags.put(0x4752 /* GR */, R.drawable.flag_gr);
         sFlags.put(0x4744 /* GD */, R.drawable.flag_gd);
+        sFlags.put(0x4747 /* GG */, R.drawable.flag_gg);
         sFlags.put(0x474c /* GL */, R.drawable.flag_gl);
         sFlags.put(0x4750 /* GP */, R.drawable.flag_gp);
         sFlags.put(0x4755 /* GU */, R.drawable.flag_gu);
@@ -136,6 +141,7 @@ public class CountryCodesAdapter extends BaseAdapter {
         sFlags.put(0x4854 /* HT */, R.drawable.flag_ht);
         sFlags.put(0x484e /* HN */, R.drawable.flag_hn);
         sFlags.put(0x484b /* HK */, R.drawable.flag_hk);
+        sFlags.put(0x494d /* IM */, R.drawable.flag_im);
         sFlags.put(0x494e /* IN */, R.drawable.flag_in);
         sFlags.put(0x4944 /* ID */, R.drawable.flag_id);
         sFlags.put(0x4952 /* IR */, R.drawable.flag_ir);
@@ -158,6 +164,7 @@ public class CountryCodesAdapter extends BaseAdapter {
         sFlags.put(0x5649 /* VI */, R.drawable.flag_vi);
         sFlags.put(0x494c /* IL */, R.drawable.flag_il);
         sFlags.put(0x4954 /* IT */, R.drawable.flag_it);
+        sFlags.put(0x4a45 /* JE */, R.drawable.flag_je);
         sFlags.put(0x4b5a /* KZ */, R.drawable.flag_kz);
         sFlags.put(0x4b45 /* KE */, R.drawable.flag_ke);
         sFlags.put(0x4b47 /* KG */, R.drawable.flag_kg);
@@ -174,6 +181,7 @@ public class CountryCodesAdapter extends BaseAdapter {
         sFlags.put(0x4c55 /* LU */, R.drawable.flag_lu);
         sFlags.put(0x4d4f /* MO */, R.drawable.flag_mo);
         sFlags.put(0x4d4b /* MK */, R.drawable.flag_mk);
+        sFlags.put(0x4d46 /* MF */, R.drawable.flag_mf);
         sFlags.put(0x4d47 /* MG */, R.drawable.flag_mg);
         sFlags.put(0x4d57 /* MW */, R.drawable.flag_mw);
         sFlags.put(0x4d59 /* MY */, R.drawable.flag_my);
@@ -279,7 +287,9 @@ public class CountryCodesAdapter extends BaseAdapter {
         sFlags.put(0x5645 /* VE */, R.drawable.flag_ve);
         sFlags.put(0x564e /* VN */, R.drawable.flag_vn);
         sFlags.put(0x5746 /* WF */, R.drawable.flag_wf);
+        sFlags.put(0x584b /* XK */, R.drawable.flag_xk);
         sFlags.put(0x5945 /* YE */, R.drawable.flag_ye);
+        sFlags.put(0x5955 /* YU */, R.drawable.flag_yu);
         sFlags.put(0x5a4d /* ZM */, R.drawable.flag_zm);
         sFlags.put(0x5a57 /* ZW */, R.drawable.flag_zw);
     }

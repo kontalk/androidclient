@@ -34,24 +34,20 @@ android {
 
     defaultConfig {
         applicationId "org.kontalk"
-        versionCode 122
-        versionName "3.1.9.1"
+        versionCode 123
+        versionName "3.1.10-preview"
         targetSdkVersion 22
         minSdkVersion 9
         resConfigs "en", "de", "fr", "it", "es", "ca", "cs", "el", "fa", "gl", "ja", "nl", "pt", "ru", "sr", "zh-rCN", "ar"
         resValue "string", "application_id", applicationId
         resValue "string", "account_type", applicationId + '.account'
         buildConfigField "String", "ACCOUNT_TYPE", '"' + applicationId + '.account"'
-        generatedDensities = []
+        vectorDrawables.useSupportLibrary = true
     }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
         targetCompatibility JavaVersion.VERSION_1_7
-    }
-
-    aaptOptions {
-        additionalParameters "--no-version-vectors"
     }
 
     signingConfigs {
