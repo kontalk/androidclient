@@ -466,4 +466,5 @@
     <string name="btn_huawei_protected_apps">Заштићене апликације</string>
     <string name="check_do_not_show_again">Не приказуј поново</string>
 
+    <string name="chooser_error_no_browser">Нема прегледача за отварање везе.</string>
     </resources>

@@ -93,7 +93,7 @@
   <string name="pref_restart_msgcenter">Nachrichtenzentrale neu starten</string>
   <string name="pref_title_restart_msgcenter">Antippen wenn Kontalk nicht richtig arbeitet</string>
   <string name="pref_idle_time">Verbindung trennen wenn ungenutzt</string>
-  <string name="pref_title_idle_time">Wartezeit bis die Verbindung unterbrochen werden soll</string>
+  <string name="pref_title_idle_time">Wartezeit bis Verbindungsabbruch bei Inaktivität</string>
   <string name="pref_wakeup_time">Verbindung zum Server wiederherstellen</string>
   <string name="pref_title_wakeup_time">Wartezeit bis die Verbindung zum Server wieder hergestellt werden soll. Funktioniert nur wenn \"Push\"-Benachrichtigungen nicht verfügbar sind</string>
   <string name="pref_maintenance">Wartung</string>
@@ -375,7 +375,7 @@
     <string name="about_credits_translators"><b>Übersetzer</b></string>
 
 <string name="about_credits_devteam"><b>Kontalk wird entwickelt von:</b></string>
-    <string name="warning_user_blocked">Nutzer wurde durch Sie blockiert.</string>
+    <string name="warning_user_blocked">Sie blockieren diesen Nutzer.</string>
 
     <string name="about_credits_gfx"><b>Grafiken/Icons</b></string>
     <string name="err_no_contact">Kontakt nicht gefunden.</string>
@@ -428,7 +428,7 @@
     <string name="pref_title_custom_background">Wählen Sie einen Hintergrund mit untenstehender Option</string>
     <string name="pref_title_sync_sim_contacts">SIM Kontakte mit einbeziehen um nach regististrierten Nutzern zu suchen</string>
 
-    <string name="pref_title_sync_invisible_contacts">Im Adressbuch nicht angezeigte Kontakte einbeziehen. Auswählen wenn DAVDroid verwendet wird,</string>
+    <string name="pref_title_sync_invisible_contacts">Im Adressbuch ausgeblendete Kontakte einbeziehen. Auswählen wenn DAVDroid verwendet wird,</string>
 
     <string name="pref_show_blocked_users">Blockierte Nutzer anzeigen</string>
 
@@ -463,5 +463,6 @@
     <string name="btn_huawei_protected_apps">Geschützte Apps</string>
     <string name="check_do_not_show_again">Nicht noch einmal anzeigen</string>
 
-    <string name="msg_huawei_protected_apps">Kontalk muss in Geschützte Apps freigegeben werden, um richtig zu funktionieren.</string>
+    <string name="msg_huawei_protected_apps">Kontalk muss in den Systemeinstellungen unter Geschützte Apps markiert werden, um richtig zu funktionieren.</string>
+    <string name="chooser_error_no_browser">Kein Browser verfügbar um den Link zu öffnen.</string>
     </resources>
