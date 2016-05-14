@@ -1,5 +1,16 @@
 # Change Log
 
+## [3.1.10] - 2016-05-14
+### Changed
+- Update country flags (#731)
+
+### Fixed
+- Disable notification LED when requested (#722)
+- Fix multiple photo upload (#727)
+- Fix registration error in Persian locale (#728)
+- Check for installed browser (#733)
+- Fix crash sending photo from camera (#734)
+
 ## [3.1.9.1] - 2016-05-08
 ### Fixed
 - Fix Huawei Protected Apps dialog (#720)
