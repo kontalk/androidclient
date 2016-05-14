@@ -19,6 +19,7 @@
 package org.kontalk.ui.prefs;
 
 import android.os.Bundle;
+import android.preference.Preference;
 import android.view.MenuItem;
 
 import org.kontalk.R;
@@ -35,7 +36,6 @@ public class BootstrapPreferences extends RootPreferenceFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.bootstrap_preferences);
-        setupInternalPreferences();
     }
 
     @Override
@@ -49,4 +49,16 @@ public class BootstrapPreferences extends RootPreferenceFragment {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void setupPreferences() {
+        // privacy section
+        final Preference privacy = findPreference("pref_privacy_settings");
+        privacy.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                invokeCallback(R.xml.privacy_preferences);
+                return true;
+            }
+        });
+    }
 }

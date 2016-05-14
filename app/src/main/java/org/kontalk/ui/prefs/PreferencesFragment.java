@@ -58,7 +58,6 @@ public final class PreferencesFragment extends RootPreferenceFragment {
         }
 
         addPreferencesFromResource(R.xml.preferences);
-        setupInternalPreferences();
     }
 
     @Override

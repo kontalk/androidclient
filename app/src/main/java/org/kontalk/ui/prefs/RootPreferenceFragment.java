@@ -22,11 +22,7 @@ import com.github.machinarius.preferencefragment.PreferenceFragment;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.preference.Preference;
 import android.view.MenuItem;
-
-import org.kontalk.R;
-import org.kontalk.util.SystemUtils;
 
 
 /**
@@ -77,19 +73,6 @@ public abstract class RootPreferenceFragment extends PreferenceFragment {
     }
 
     protected void setupPreferences() {
-    }
-
-    // FIXME this is used only for root preference fragments
-    protected void setupInternalPreferences() {
-        final Preference help = findPreference("pref_help");
-        help.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                SystemUtils.openURL(getContext(), getString(R.string.help_url));
-                return true;
-            }
-        });
-
     }
 
     public interface Callback {

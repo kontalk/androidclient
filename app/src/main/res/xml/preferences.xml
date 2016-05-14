@@ -50,7 +50,7 @@
 
     <PreferenceCategory android:key="pref_other"
         android:title="@string/pref_other">
-        <Preference android:key="pref_help"
+        <org.kontalk.ui.prefs.HelpPreference android:key="pref_help"
             android:title="@string/pref_help"
             android:layout="@layout/md_preference_custom"/>
         <Preference android:key="pref_donate"
