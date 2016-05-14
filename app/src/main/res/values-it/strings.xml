@@ -464,4 +464,5 @@
     <string name="btn_huawei_protected_apps">App protette</string>
     <string name="check_do_not_show_again">Non mostrare più</string>
 
+    <string name="chooser_error_no_browser">Nessun browser trovato per aprire il link.</string>
     </resources>
