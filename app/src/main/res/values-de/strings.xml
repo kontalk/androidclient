@@ -375,7 +375,7 @@
     <string name="about_credits_translators"><b>Übersetzer</b></string>
 
 <string name="about_credits_devteam"><b>Kontalk wird entwickelt von:</b></string>
-    <string name="warning_user_blocked">Nutzer wurde durch Sie blockiert.</string>
+    <string name="warning_user_blocked">Sie blockieren diesen Nutzer.</string>
 
     <string name="about_credits_gfx"><b>Grafiken/Icons</b></string>
     <string name="err_no_contact">Kontakt nicht gefunden.</string>
