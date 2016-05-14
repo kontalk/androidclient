@@ -18,47 +18,51 @@
 
 package org.kontalk.ui.prefs;
 
-import android.os.Bundle;
+import android.annotation.TargetApi;
+import android.content.Context;
+import android.os.Build;
 import android.preference.Preference;
-import android.view.MenuItem;
+import android.util.AttributeSet;
 
 import org.kontalk.R;
+import org.kontalk.util.SystemUtils;
 
 
 /**
- * Preference activity for some bootstrap preferences.
+ * Preference for the help link.
  * @author Daniele Ricci
- * @version 1.0
  */
-public class BootstrapPreferences extends RootPreferenceFragment {
+public class HelpPreference extends Preference {
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.bootstrap_preferences);
+    public HelpPreference(Context context) {
+        super(context);
+        init();
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                getActivity().finish();
-                return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+    public HelpPreference(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        init();
     }
 
-    @Override
-    protected void setupPreferences() {
-        // privacy section
-        final Preference privacy = findPreference("pref_privacy_settings");
-        privacy.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+    public HelpPreference(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        init();
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public HelpPreference(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
+        init();
+    }
+
+    private void init() {
+        setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                invokeCallback(R.xml.privacy_preferences);
+                SystemUtils.openURL(getContext(), getContext().getString(R.string.help_url));
                 return true;
             }
         });
     }
+
 }
