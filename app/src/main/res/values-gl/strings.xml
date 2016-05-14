@@ -34,7 +34,7 @@
   <string name="pref_network_settings">Configuración de rede</string>
   <string name="pref_network_uri">Enderezo de servidor manual</string>
   <string name="pref_title_network_uri">Iso vai sobrescribir a xestión automática da lista de servidores</string>
-  <string name="number_validation_intro1">Por favor, escribe o teu nome, selecciona o código do teu país e introduce o teu número de teléfono móbil. Un SMS cun código de verificación será enviado. O teu número de teléfono será usado unha vez e despois descartado.</string>
+  <string name="number_validation_intro1">Introduza o seu nome, seleccione o código do país e introducir o seu número de móbil. Serán proporcionadas máis instrucións na pantalla seguinte.</string>
   <string name="number_validation_intro2">Se non podes recibir SMS neste dispositivo, insire outro número teu, e usa o código de verificación que recibirás por SMS.</string>
   <string name="hint_validation_name">O teu nome</string>
   <string name="hint_validation_number">O teu número</string>
@@ -471,4 +471,5 @@
     <string name="btn_huawei_protected_apps">Aplicacións protexidas</string>
     <string name="check_do_not_show_again">Non mostrar de novo</string>
 
+    <string name="chooser_error_no_browser">Non hai ningún navegador disponible para abrir a ligazón.</string>
     </resources>

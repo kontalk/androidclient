@@ -30,13 +30,13 @@
         android:scaleType="center"
         android:src="@drawable/flag_it"/>
 
-	<CheckedTextView
-	    android:id="@android:id/text1"
+    <CheckedTextView android:id="@android:id/text1"
         style="?android:attr/spinnerItemStyle"
-	    android:layout_width="0dip"
-	    android:layout_height="match_parent"
-	    android:ellipsize="marquee"
-	    android:singleLine="true"
-	    android:layout_weight="6" />
+        android:layout_width="0dip"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:layout_weight="6"/>
 
 </LinearLayout>

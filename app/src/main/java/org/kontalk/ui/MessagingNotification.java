@@ -515,6 +515,10 @@ public class MessagingNotification {
             int ledColor = Preferences.getNotificationLEDColor(context);
             builder.setLights(ledColor, 1000, 1000);
         }
+        else {
+            // this will disable the LED completely
+            builder.setLights(0, 0, 0);
+        }
 
         String ringtone = Preferences.getNotificationRingtone(context);
         if (ringtone != null && ringtone.length() > 0)

@@ -29,6 +29,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -49,6 +50,7 @@ import android.util.SparseBooleanArray;
 import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.R;
@@ -333,8 +335,14 @@ public final class SystemUtils {
     }
 
     public static void openURL(Context context, String url) {
-        context.startActivity(new Intent(Intent.ACTION_VIEW,
-            Uri.parse(url)));
+        try {
+            context.startActivity(new Intent(Intent.ACTION_VIEW,
+                Uri.parse(url)));
+        }
+        catch (ActivityNotFoundException e) {
+            Toast.makeText(context, R.string.chooser_error_no_browser,
+                Toast.LENGTH_LONG).show();
+        }
     }
 
     public static boolean isCallable(Context context, Intent intent) {

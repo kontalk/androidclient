@@ -1330,7 +1330,8 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                     }
 
                     // SAF available, request persistable permissions
-                    if (MediaStorage.isStorageAccessFrameworkAvailable()) {
+                    if (MediaStorage.isStorageAccessFrameworkAvailable() &&
+                            requestCode == SELECT_ATTACHMENT_OPENABLE) {
                         for (Uri uri : uris) {
                             if (uri != null && !"file".equals(uri.getScheme())) {
                                 MediaStorage.requestPersistablePermissions(getActivity(), uri);
