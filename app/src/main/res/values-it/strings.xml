@@ -465,4 +465,23 @@
     <string name="check_do_not_show_again">Non mostrare più</string>
 
     <string name="chooser_error_no_browser">Nessun browser trovato per aprire il link.</string>
-    </resources>
+    <string name="menu_invite_group">Invita utenti</string>
+    <string name="menu_set_group_subject">Imposta titolo gruppo</string>
+    <string name="menu_leave_group">Abbandona gruppo</string>
+    <string name="group_untitled">Gruppo senza titolo</string>
+    <string name="title_group_subject">Titolo del gruppo</string>
+    <string name="group_command_create">Gruppo creato:</string>
+    <string name="group_command_user_parted">%s ha abbandonato il gruppo.</string>
+    <string name="group_command_subject">Titolo gruppo cambiato: %s</string>
+
+    <string name="group_command_text_create">Gruppo creato</string>
+    <string name="group_command_text_subject">Titolo gruppo cambiato</string>
+    <string name="group_command_text_part">Qualcuno ha abbandonato il gruppo</string>
+
+    <plurals name="group_people">
+	<item quantity="one">1 persona</item>
+	<item quantity="other">%d persone</item>
+</plurals>
+
+
+</resources>
