@@ -465,7 +465,7 @@
     <string name="check_do_not_show_again">Non mostrare più</string>
 
     <string name="chooser_error_no_browser">Nessun browser trovato per aprire il link.</string>
-    <string name="menu_invite_group">Invita utenti</string>
+    <string name="menu_invite_group">Aggiungi utenti</string>
     <string name="menu_set_group_subject">Imposta titolo gruppo</string>
     <string name="menu_leave_group">Abbandona gruppo</string>
     <string name="group_untitled">Gruppo senza titolo</string>
