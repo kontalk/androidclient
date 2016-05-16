@@ -465,4 +465,22 @@
 
     <string name="chooser_error_no_browser">No hay ningún navegador disponible para abrir el enlace.</string>
     <string name="menu_invite_group">Invitar a usuarios</string>
-    </resources>
+    <string name="menu_set_group_subject">Introducir el nombre del grupo</string>
+    <string name="menu_leave_group">Salir del grupo</string>
+    <string name="group_untitled">Grupo sin nombre</string>
+    <string name="title_group_subject">Nombre del grupo</string>
+    <string name="group_command_create">Grupo creado:</string>
+    <string name="group_command_user_parted">%s dejó el grupo.</string>
+    <string name="group_command_subject">Nombre del grupo puesto por: %s</string>
+
+    <string name="group_command_text_create">Grupo creado</string>
+    <string name="group_command_text_subject">El nombre del grupo cambió</string>
+    <string name="group_command_text_part">Alguien dejó el grupo</string>
+
+    <plurals name="group_people">
+	<item quantity="one">1 persona</item>
+	<item quantity="other">%d personas</item>
+</plurals>
+
+
+</resources>
