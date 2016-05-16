@@ -23,6 +23,7 @@ import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.util.MessageUtils;
@@ -32,6 +33,7 @@ import android.graphics.Typeface;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
+import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
@@ -43,6 +45,7 @@ import android.widget.TextView;
 public class ConversationListItem extends AvatarListItem implements Checkable {
 
     private static final StyleSpan STYLE_BOLD = new StyleSpan(Typeface.BOLD);
+    private static final StyleSpan STYLE_ITALIC = new StyleSpan(Typeface.ITALIC);
 
     private Conversation mConversation;
     private TextView mSubjectView;
@@ -92,22 +95,32 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
 
         String recipient = null;
 
-        Contact contact = mConversation.getContact();
+        if (mConversation.isGroupChat()) {
+            recipient = mConversation.getGroupSubject();
+            if (TextUtils.isEmpty(recipient))
+                recipient = context.getString(R.string.group_untitled);
 
-        if (contact != null) {
-            recipient = contact.getName();
+            loadAvatar(null);
+        }
+        else {
+            Contact contact = mConversation.getContact();
+
+            if (contact != null) {
+                recipient = contact.getName();
+            }
+
+            if (recipient == null) {
+                if (BuildConfig.DEBUG) {
+                    recipient = conv.getRecipient();
+                }
+                else {
+                    recipient = context.getString(R.string.peer_unknown);
+                }
+            }
+
+            loadAvatar(contact);
         }
 
-        if (recipient == null) {
-            if (BuildConfig.DEBUG) {
-                recipient = conv.getRecipient();
-            }
-            else {
-                recipient = context.getString(R.string.peer_unknown);
-            }
-        }
-
-        loadAvatar(contact);
 
         SpannableStringBuilder from = new SpannableStringBuilder(recipient);
         if (conv.getUnreadCount() > 0)
@@ -138,7 +151,13 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
             String source = (draft != null) ? draft : conv.getSubject();
 
             if (source != null) {
-                text = source;
+                if (GroupCommandComponent.supportsMimeType(conv.getMime())) {
+                    text = GroupCommandComponent.getTextContent(getContext(), conv.getSubject());
+                    ((Spannable) text).setSpan(STYLE_ITALIC, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                }
+                else {
+                    text = source;
+                }
             }
 
             else if (conv.isEncrypted()) {

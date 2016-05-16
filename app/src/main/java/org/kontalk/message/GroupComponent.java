@@ -16,22 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui;
+package org.kontalk.message;
+
+import org.kontalk.data.GroupInfo;
 
 
 /**
- * Interface implemented by activities that can be parent of
- * {@link ComposeMessageFragment}.
+ * Virtual component for group information. Not rendered in the UI.
  * @author Daniele Ricci
  */
-public interface ComposeMessageParent {
+public class GroupComponent extends MessageComponent<GroupInfo> {
 
-    /** Sets title and subtitle. Pass null to any of them to skip. */
-    void setTitle(CharSequence title, CharSequence subtitle);
+    public GroupComponent(GroupInfo content) {
+        super(content, 0, false, 0);
+    }
 
-    /** Sets the subtitle in an updating status. */
-    void setUpdatingSubtitle();
-
-    /** Loads the given conversation, replacing the fragment as needed. */
-    void loadConversation(long threadId);
 }

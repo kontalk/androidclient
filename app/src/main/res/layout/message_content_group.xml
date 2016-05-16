@@ -16,12 +16,8 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_height="match_parent"
-              android:layout_width="match_parent"
-              android:orientation="vertical">
-    <include layout="@layout/toolbar_simple"/>
-    <FrameLayout android:id="@+id/fragment_compose_message"
-              android:layout_width="fill_parent"
-              android:layout_height="fill_parent"/>
-</LinearLayout>
+<org.kontalk.ui.view.GroupContentView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:maxWidth="@dimen/message_text_width"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"/>

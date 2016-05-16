@@ -54,4 +54,16 @@
         <item name="android:textSize">20sp</item>
     </style>
 
+    <style name="TextAppearance.CommandMessage.Small" parent="android:TextAppearance.Small">
+        <item name="android:textStyle">italic</item>
+    </style>
+
+    <style name="TextAppearance.CommandMessage" parent="android:TextAppearance">
+        <item name="android:textStyle">italic</item>
+    </style>
+
+    <style name="TextAppearance.CommandMessage.Large" parent="android:TextAppearance.Large">
+        <item name="android:textStyle">italic</item>
+    </style>
+
 </resources>

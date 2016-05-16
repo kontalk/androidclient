@@ -18,20 +18,27 @@
 
 package org.kontalk.data;
 
-import org.kontalk.provider.MessagesProvider;
-import org.kontalk.provider.MyMessages.Threads;
-import org.kontalk.ui.MessagingNotification;
-
 import android.content.AsyncQueryHandler;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
+
+import org.kontalk.crypto.Coder;
+import org.kontalk.message.GroupCommandComponent;
+import org.kontalk.provider.MessagesProvider;
+import org.kontalk.provider.MyMessages;
+import org.kontalk.provider.MyMessages.Groups;
+import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.ui.MessagingNotification;
+import org.kontalk.util.Preferences;
 
 
 /**
  * A class represeting a conversation thread.
  * @author Daniele Ricci
- * @version 1.0
  */
 public class Conversation {
 
@@ -47,6 +54,9 @@ public class Conversation {
         Threads.ENCRYPTED,
         Threads.DRAFT,
         Threads.REQUEST_STATUS,
+        Groups.GROUP_JID,
+        Groups.SUBJECT,
+        Groups.GROUP_TYPE,
     };
 
     private static final int COLUMN_ID = 0;
@@ -60,12 +70,16 @@ public class Conversation {
     private static final int COLUMN_ENCRYPTED = 8;
     private static final int COLUMN_DRAFT = 9;
     private static final int COLUMN_REQUEST_STATUS = 10;
+    private static final int COLUMN_GROUP_JID = 11;
+    private static final int COLUMN_GROUP_SUBJECT = 12;
+    private static final int COLUMN_GROUP_TYPE = 13;
 
     private final Context mContext;
 
     private long mThreadId;
     private Contact mContact;
 
+    // for group chats it will be the group JID
     private String mRecipient;
     private long mDate;
     private int mMessageCount;
@@ -77,6 +91,12 @@ public class Conversation {
     private String mNumberHint;
     private boolean mEncrypted;
     private int mRequestStatus;
+
+    // from groups table
+    private String mGroupJid;
+    private String[] mGroupPeers;
+    private String mGroupSubject;
+    private String mGroupType;
 
     private Conversation(Context context) {
         mContext = context;
@@ -99,6 +119,11 @@ public class Conversation {
             mEncrypted = c.getInt(COLUMN_ENCRYPTED) != 0;
             mDraft = c.getString(COLUMN_DRAFT);
             mRequestStatus = c.getInt(COLUMN_REQUEST_STATUS);
+
+            mGroupJid = c.getString(COLUMN_GROUP_JID);
+            mGroupSubject = c.getString(COLUMN_GROUP_SUBJECT);
+            mGroupType = c.getString(COLUMN_GROUP_TYPE);
+            // group peers are loaded on demand
 
             loadContact();
         }
@@ -140,11 +165,18 @@ public class Conversation {
     }
 
     public static void deleteFromCursor(Context context, Cursor cursor) {
-        MessagesProvider.deleteThread(context, cursor.getLong(COLUMN_ID));
+        String groupJid = cursor.getString(COLUMN_GROUP_JID);
+        String[] groupPeers = null;
+        if (groupJid != null)
+            groupPeers = loadGroupPeersInternal(context, groupJid);
+        deleteInternal(context, cursor.getLong(COLUMN_ID), groupJid, groupPeers);
     }
 
     private void loadContact() {
-        mContact = Contact.findByUserId(mContext, mRecipient, mNumberHint);
+        if (isGroupChat())
+            mContact = null;
+        else
+            mContact = Contact.findByUserId(mContext, mRecipient, mNumberHint);
     }
 
     public Contact getContact() {
@@ -155,8 +187,8 @@ public class Conversation {
         return mDate;
     }
 
-    public void setDate(long mDate) {
-        this.mDate = mDate;
+    public void setDate(long date) {
+        this.mDate = date;
     }
 
     public String getMime() {
@@ -167,16 +199,12 @@ public class Conversation {
         return mSubject;
     }
 
-    public void setSubject(String mSubject) {
-        this.mSubject = mSubject;
-    }
-
     public String getRecipient() {
         return mRecipient;
     }
 
-    public void setRecipient(String mRecipient) {
-        this.mRecipient = mRecipient;
+    public void setRecipient(String recipient) {
+        mRecipient = recipient;
         // reload contact
         loadContact();
     }
@@ -221,6 +249,64 @@ public class Conversation {
         mNumberHint = numberHint;
     }
 
+    public String getGroupJid() {
+        return mGroupJid;
+    }
+
+    public String[] getGroupPeers() {
+        return getGroupPeers(false);
+    }
+
+    public String[] getGroupPeers(boolean force) {
+        loadGroupPeers(force);
+        return mGroupPeers;
+    }
+
+    public boolean isGroupChat() {
+        loadGroupPeers(false);
+        return mGroupJid != null;
+    }
+
+    public String getGroupSubject() {
+        return mGroupSubject;
+    }
+
+    public void cancelGroupChat() {
+        mGroupJid = null;
+        mGroupPeers = null;
+    }
+
+    public void delete() {
+        loadGroupPeers(false);
+        deleteInternal(mContext, mThreadId, mGroupJid, mGroupPeers);
+    }
+
+    private static void deleteInternal(Context context, long threadId, String groupJid, String[] groupPeers) {
+        boolean groupChat = groupJid != null && groupPeers.length > 0;
+        MessagesProvider.deleteThread(context, threadId, groupChat);
+        // it makes sense to leave a group if we have someone to tell about it
+        if (groupChat) {
+            boolean encrypted = Preferences.getEncryptionEnabled(context);
+
+            String msgId = MessageCenterService.messageId();
+            Uri cmdMsg = storeLeaveGroup(context, groupJid, msgId, encrypted);
+            // TODO check for null
+
+            MessageCenterService.leaveGroup(context, groupJid, groupPeers, encrypted,
+                ContentUris.parseId(cmdMsg), msgId);
+        }
+    }
+
+    private void loadGroupPeers(boolean force) {
+        if (mGroupJid != null && (mGroupPeers == null || force)) {
+            mGroupPeers = loadGroupPeersInternal(mContext, mGroupJid);
+        }
+    }
+
+    private static String[] loadGroupPeersInternal(Context context, String groupJid) {
+        return MessagesProvider.getGroupMembers(context, groupJid);
+    }
+
     public static void startQuery(AsyncQueryHandler handler, int token) {
         // cancel previous operations
         handler.cancelOperation(token);
@@ -232,7 +318,7 @@ public class Conversation {
         // cancel previous operations
         handler.cancelOperation(token);
         handler.startQuery(token, null, Threads.CONTENT_URI,
-                ALL_THREADS_PROJECTION, Threads._ID + " = " + threadId, null, Threads.DEFAULT_SORT_ORDER);
+                ALL_THREADS_PROJECTION, Threads._ID + " = " + threadId, null, null);
     }
 
     public static Cursor startQuery(Context context) {
@@ -242,7 +328,147 @@ public class Conversation {
 
     public static Cursor startQuery(Context context, long threadId) {
         return context.getContentResolver().query(Threads.CONTENT_URI,
-                ALL_THREADS_PROJECTION, Threads._ID + " = " + threadId, null, Threads.DEFAULT_SORT_ORDER);
+                ALL_THREADS_PROJECTION, Threads._ID + " = " + threadId, null, null);
+    }
+
+    /**
+     * Creates a new group chat.
+     * @return a newly created thread ID.
+     */
+    public static long initGroupChat(Context context, String groupJid, String subject, String[] members, String draft) {
+        // insert group
+        ContentValues values = new ContentValues();
+        values.put(Groups.GROUP_JID, groupJid);
+
+        // create new conversation
+        long threadId = MessagesProvider.insertEmptyThread(context, groupJid, draft);
+
+        values.put(Groups.THREAD_ID, threadId);
+        values.put(Groups.SUBJECT, subject);
+        values.put(Groups.GROUP_TYPE, GroupCommandComponent.GROUP_TYPE);
+        context.getContentResolver().insert(Groups.CONTENT_URI, values);
+
+        // remove values not for members table
+        values.remove(Groups.GROUP_JID);
+        values.remove(Groups.THREAD_ID);
+        values.remove(Groups.SUBJECT);
+        values.remove(Groups.GROUP_TYPE);
+
+        // insert group members
+        for (String member : members) {
+            // FIXME turn this into batch operations
+            values.put(Groups.PEER, member);
+            context.getContentResolver()
+                .insert(Groups.getMembersUri(groupJid), values);
+        }
+
+        return threadId;
+    }
+
+    public void addUsers(String[] members) {
+        if (!isGroupChat())
+            throw new UnsupportedOperationException("Not a group chat conversation");
+
+        ContentValues values = new ContentValues();
+        values.put(Groups.GROUP_JID, mGroupJid);
+        for (String member : members) {
+            // FIXME turn this into batch operations
+            values.put(Groups.PEER, member);
+            mContext.getContentResolver()
+                .insert(Groups.getMembersUri(mGroupJid), values);
+        }
+
+        // store add group member command to outbox
+        boolean encrypted = Preferences.getEncryptionEnabled(mContext);
+        String msgId = MessageCenterService.messageId();
+        Uri cmdMsg = storeAddGroupMember(members, msgId, encrypted);
+        // TODO check for null
+
+        // send add group member command now
+        String[] currentMembers = getGroupPeers(true);
+        MessageCenterService.addGroupMembers(mContext, mGroupJid,
+            mGroupSubject, currentMembers, members, encrypted,
+            ContentUris.parseId(cmdMsg), msgId);
+    }
+
+    private Uri storeAddGroupMember(String[] members, String msgId, boolean encrypted) {
+        ContentValues values = new ContentValues();
+        values.put(MyMessages.Messages.THREAD_ID, getThreadId());
+        values.put(MyMessages.Messages.MESSAGE_ID, msgId);
+        values.put(MyMessages.Messages.PEER, mGroupJid);
+        values.put(MyMessages.Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
+        values.put(MyMessages.Messages.BODY_CONTENT, GroupCommandComponent.getAddMembersBodyContent(members));
+        values.put(MyMessages.Messages.BODY_LENGTH, 0);
+        values.put(MyMessages.Messages.UNREAD, false);
+        values.put(MyMessages.Messages.DIRECTION, MyMessages.Messages.DIRECTION_OUT);
+        values.put(MyMessages.Messages.TIMESTAMP, System.currentTimeMillis());
+        values.put(MyMessages.Messages.STATUS, MyMessages.Messages.STATUS_SENDING);
+        // of course outgoing messages are not encrypted in database
+        values.put(MyMessages.Messages.ENCRYPTED, false);
+        values.put(MyMessages.Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+        return mContext.getContentResolver().insert(MyMessages.Messages.CONTENT_URI, values);
+    }
+
+    public void setGroupSubject(String subject) {
+        if (!isGroupChat())
+            throw new UnsupportedOperationException("Not a group chat conversation");
+
+        ContentValues values = new ContentValues();
+        if (subject != null)
+            values.put(Groups.SUBJECT, subject);
+        else
+            values.putNull(Groups.SUBJECT);
+
+        mContext.getContentResolver().update(Groups.getUri(mGroupJid),
+            values, null, null);
+
+        // store set group subject command to outbox
+        boolean encrypted = Preferences.getEncryptionEnabled(mContext);
+        String msgId = MessageCenterService.messageId();
+        Uri cmdMsg = storeSetGroupSubject(subject, msgId, encrypted);
+        // TODO check for null
+
+        // send set group subject command now
+        String[] currentMembers = getGroupPeers(false);
+        MessageCenterService.setGroupSubject(mContext, mGroupJid,
+            subject, currentMembers, encrypted,
+            ContentUris.parseId(cmdMsg), msgId);
+    }
+
+    private Uri storeSetGroupSubject(String subject, String msgId, boolean encrypted) {
+        ContentValues values = new ContentValues();
+        values.put(MyMessages.Messages.THREAD_ID, getThreadId());
+        values.put(MyMessages.Messages.MESSAGE_ID, msgId);
+        values.put(MyMessages.Messages.PEER, mGroupJid);
+        values.put(MyMessages.Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
+        values.put(MyMessages.Messages.BODY_CONTENT, GroupCommandComponent.getSetSubjectCommandBodyContent(subject));
+        values.put(MyMessages.Messages.BODY_LENGTH, 0);
+        values.put(MyMessages.Messages.UNREAD, false);
+        values.put(MyMessages.Messages.DIRECTION, MyMessages.Messages.DIRECTION_OUT);
+        values.put(MyMessages.Messages.TIMESTAMP, System.currentTimeMillis());
+        values.put(MyMessages.Messages.STATUS, MyMessages.Messages.STATUS_SENDING);
+        // of course outgoing messages are not encrypted in database
+        values.put(MyMessages.Messages.ENCRYPTED, false);
+        values.put(MyMessages.Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+        return mContext.getContentResolver().insert(MyMessages.Messages.CONTENT_URI, values);
+    }
+
+    private static Uri storeLeaveGroup(Context context, String groupJid, String msgId, boolean encrypted) {
+        ContentValues values = new ContentValues();
+        values.put(MyMessages.Messages.THREAD_ID, MyMessages.Messages.NO_THREAD);
+        values.put(MyMessages.Messages.MESSAGE_ID, msgId);
+        values.put(MyMessages.Messages.PEER, groupJid);
+        values.put(MyMessages.Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
+        values.put(MyMessages.Messages.BODY_CONTENT, GroupCommandComponent.getLeaveCommandBodyContent());
+        values.put(MyMessages.Messages.BODY_LENGTH, 0);
+        values.put(MyMessages.Messages.UNREAD, false);
+        values.put(MyMessages.Messages.DIRECTION, MyMessages.Messages.DIRECTION_OUT);
+        values.put(MyMessages.Messages.TIMESTAMP, System.currentTimeMillis());
+        values.put(MyMessages.Messages.STATUS, MyMessages.Messages.STATUS_SENDING);
+        // of course outgoing messages are not encrypted in database
+        values.put(MyMessages.Messages.ENCRYPTED, false);
+        values.put(MyMessages.Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+        return context.getContentResolver().insert(MyMessages.Messages.CONTENT_URI, values);
     }
 
     public void markAsRead() {

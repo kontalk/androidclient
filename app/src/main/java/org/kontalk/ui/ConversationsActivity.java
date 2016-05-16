@@ -239,12 +239,17 @@ public class ConversationsActivity extends MainActivity
         // nothing
     }
 
+    @Override
+    public void loadConversation(long threadId) {
+        // TODO for tablets!
+    }
+
     public void openConversation(Conversation conv, int position) {
         if (isDualPane()) {
             mFragment.getListView().setItemChecked(position, true);
 
             // get the old fragment
-            ComposeMessageFragment f = (ComposeMessageFragment) getSupportFragmentManager()
+            AbstractComposeFragment f = (AbstractComposeFragment) getSupportFragmentManager()
                     .findFragmentById(R.id.fragment_compose_message);
 
             // check if we are replacing the same fragment
@@ -273,15 +278,15 @@ public class ConversationsActivity extends MainActivity
             Conversation conv = Conversation.loadFromUserId(this, userId);
 
             // get the old fragment
-            ComposeMessageFragment f = (ComposeMessageFragment) getSupportFragmentManager()
+            AbstractComposeFragment f = (AbstractComposeFragment) getSupportFragmentManager()
                     .findFragmentById(R.id.fragment_compose_message);
 
             // check if we are replacing the same fragment
             if (f == null || conv == null || !f.getConversation().getRecipient().equals(conv.getRecipient())) {
                 if (conv == null)
-                    f = ComposeMessageFragment.fromUserId(this, userId);
+                    f = AbstractComposeFragment.fromUserId(this, userId);
                 else
-                    f = ComposeMessageFragment.fromConversation(this, conv);
+                    f = AbstractComposeFragment.fromConversation(this, conv);
 
                 // Execute a transaction, replacing any existing fragment
                 // with this one inside the frame.
