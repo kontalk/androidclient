@@ -36,7 +36,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.widget.AppCompatCheckBox;
 import android.text.InputType;
 import android.widget.CompoundButton;
 import android.widget.Toast;

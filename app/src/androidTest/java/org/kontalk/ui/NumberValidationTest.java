@@ -24,7 +24,6 @@ import android.test.ActivityInstrumentationTestCase2;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
 
 
 public class NumberValidationTest extends ActivityInstrumentationTestCase2<NumberValidation> {

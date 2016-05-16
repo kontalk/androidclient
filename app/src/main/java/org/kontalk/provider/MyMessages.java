@@ -19,6 +19,7 @@
 package org.kontalk.provider;
 
 
+import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
@@ -78,7 +79,13 @@ public final class MyMessages {
                     + MessagesProvider.AUTHORITY + "/messages/" + Uri.encode(msgId));
         }
 
+        public static Uri getUri(long databaseId) {
+            return ContentUris.withAppendedId(CONTENT_URI, databaseId);
+        }
+
         public static final class Fulltext implements BaseColumns {
+            private Fulltext() {}
+
             public static final Uri CONTENT_URI = Uri.parse("content://"
                     + MessagesProvider.AUTHORITY + "/fulltext");
 
@@ -112,6 +119,13 @@ public final class MyMessages {
         // not DESC here because the listview is reverse-stacked
         public static final String DEFAULT_SORT_ORDER = _ID;
         public static final String INVERTED_SORT_ORDER = _ID + " DESC";
+
+        // used as query parameters
+        public static final String CLEAR_PENDING = "clear_pending";
+        public static final String KEEP_GROUP = "keep_group";
+
+        // special thread_id value for not creating a new thread
+        public static final long NO_THREAD = -1;
     }
 
     /** Threads are just for conversations metadata. */
@@ -140,6 +154,8 @@ public final class MyMessages {
 
         /** Request represents a presence subscription request. */
         public static final class Requests implements BaseColumns {
+            private Requests() {}
+
             public static final Uri CONTENT_URI = Uri
                 .parse("content://" + MessagesProvider.AUTHORITY + "/requests");
         }
@@ -166,5 +182,42 @@ public final class MyMessages {
 
         public static final String DEFAULT_SORT_ORDER = "timestamp DESC";
         public static final String INVERTED_SORT_ORDER = "timestamp";
+    }
+
+    public static final class Groups {
+        private Groups() {}
+
+        // flags for group_members.pending
+        public static final int MEMBER_PENDING_ADDED = 1;
+        public static final int MEMBER_PENDING_REMOVED = 1 << 1;
+
+        public static final Uri CONTENT_URI = Uri.parse("content://"
+            + MessagesProvider.AUTHORITY + "/groups");
+        public static final Uri MEMBERS_CONTENT_URI = Uri.parse("content://"
+            + MessagesProvider.AUTHORITY + "/groups/members");
+
+        public static Uri getUri(String jid) {
+            return Uri.parse("content://"
+                + MessagesProvider.AUTHORITY + "/groups/" + Uri.encode(jid));
+        }
+
+        public static Uri getMembersUri(String jid) {
+            return Uri.parse("content://"
+                + MessagesProvider.AUTHORITY + "/groups/" + Uri.encode(jid) + "/members");
+        }
+
+        public static final String GROUP_JID = "group_jid";
+        public static final String PEER = "group_" + CommonColumns.PEER;
+        public static final String THREAD_ID = Messages.THREAD_ID;
+        public static final String GROUP_TYPE = "group_type";
+        public static final String SUBJECT = "subject";
+        /**
+         * Status used for members. It's set on request and cleared back to 0
+         * when the command has been confirmed.
+         * An added user is pending addition until the add member command is
+         * acknowledged by the server. A removed user is pending removal until
+         * the remove member command is acknowledged by the server.
+         */
+        public static final String PENDING = "pending";
     }
 }
