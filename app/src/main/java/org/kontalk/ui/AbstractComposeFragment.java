@@ -1593,9 +1593,11 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         boolean removed, Presence.Mode mode, String fingerprint);
 
     protected abstract void onConnected();
+
     protected abstract void onRosterLoaded();
 
     protected abstract void onStartTyping(String jid);
+
     protected abstract void onStopTyping(String jid);
 
     protected abstract boolean isUserId(String jid);

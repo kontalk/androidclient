@@ -26,6 +26,7 @@ import java.util.Set;
 import android.content.Context;
 import android.database.Cursor;
 
+import org.kontalk.R;
 import org.kontalk.client.GroupExtension;
 
 
@@ -208,16 +209,13 @@ public class GroupCommandComponent extends MessageComponent<GroupExtension> {
 
     public static String getTextContent(Context context, String bodyContent) {
         if (bodyContent.startsWith(COMMAND_CREATE)) {
-            // TODO i18n
-            return "Group created";
+            return context.getString(R.string.group_command_text_create);
         }
         else if (bodyContent.startsWith(COMMAND_PART)) {
-            // TODO i18n
-            return "Someone left the group";
+            return context.getString(R.string.group_command_text_part);
         }
         else if (bodyContent.startsWith(COMMAND_SUBJECT)) {
-            // TODO i18n
-            return "Set group title";
+            return context.getString(R.string.group_command_text_subject);
         }
 
         // FIXME this shouldn't be needed

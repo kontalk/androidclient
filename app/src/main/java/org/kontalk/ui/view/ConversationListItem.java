@@ -45,6 +45,7 @@ import android.widget.TextView;
 public class ConversationListItem extends AvatarListItem implements Checkable {
 
     private static final StyleSpan STYLE_BOLD = new StyleSpan(Typeface.BOLD);
+    private static final StyleSpan STYLE_ITALIC = new StyleSpan(Typeface.ITALIC);
 
     private Conversation mConversation;
     private TextView mSubjectView;
@@ -97,8 +98,7 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
         if (mConversation.isGroupChat()) {
             recipient = mConversation.getGroupSubject();
             if (TextUtils.isEmpty(recipient))
-                // TODO i18n
-                recipient = "Untitled group";
+                recipient = context.getString(R.string.group_untitled);
 
             loadAvatar(null);
         }
@@ -152,8 +152,8 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
 
             if (source != null) {
                 if (GroupCommandComponent.supportsMimeType(conv.getMime())) {
-                    // TODO italic
                     text = GroupCommandComponent.getTextContent(getContext(), conv.getSubject());
+                    ((Spannable) text).setSpan(STYLE_ITALIC, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
                 }
                 else {
                     text = source;

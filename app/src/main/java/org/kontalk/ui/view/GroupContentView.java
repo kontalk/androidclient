@@ -75,13 +75,13 @@ public class GroupContentView extends TextView
 
         // create group
         if (ext.getType() == GroupExtension.Type.CREATE) {
-            // TODO i18n
-            text.append("Group has been created.");
+            text.append(getResources().getString(R.string.group_command_create));
             for (GroupExtension.Member member : ext.getMembers()) {
                 if (member.operation != GroupExtension.Member.Operation.NONE)
                     continue;
 
-                text.append("\n-");
+                // TODO use something more "colorful"
+                text.append("\n");
 
                 Contact c = Contact.findByUserId(getContext(), member.jid);
                 if (c != null)
@@ -93,14 +93,9 @@ public class GroupContentView extends TextView
 
         // member left group
         else if (ext.getType() == GroupExtension.Type.PART) {
-            // TODO i18n
             Contact c = Contact.findByUserId(getContext(), component.getFrom());
-            if (c != null)
-                text.append(c.getName());
-            else
-                text.append(getResources().getString(R.string.peer_unknown));
-
-            text.append(" has left the group.");
+            text.append(getResources().getString(R.string.group_command_user_parted,
+                (c != null) ? c.getName() : getResources().getString(R.string.peer_unknown)));
         }
 
         else if (ext.getType() == GroupExtension.Type.SET) {
@@ -108,8 +103,9 @@ public class GroupContentView extends TextView
             // TODO remove member(s)
 
             String subject = ext.getSubject();
-            // TODO i18n
-            text.append("Group title set to: ").append(subject);
+            if (subject != null) {
+                text.append(getResources().getString(R.string.group_command_subject, subject));
+            }
         }
 
         setText(text);

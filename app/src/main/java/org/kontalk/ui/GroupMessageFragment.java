@@ -199,12 +199,12 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         // set group title
         String subject = mConversation.getGroupSubject();
         if (TextUtils.isEmpty(subject))
-            // TODO i18n
-            subject = "Untitled group";
+            subject = getString(R.string.group_untitled);
 
         // +1 because we are not included in the members list
-        // TODO i18n
-        String status = String.format("%d people", mConversation.getGroupPeers().length + 1);
+        int count = mConversation.getGroupPeers().length + 1;
+        String status = getResources()
+            .getQuantityString(R.plurals.group_people, count, count);
 
         setActivityTitle(subject, status);
     }

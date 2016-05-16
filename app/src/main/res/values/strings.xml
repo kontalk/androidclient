@@ -471,7 +471,15 @@
     <string name="pref_show_blocked_users">Show blocked users</string>
     <string name="button_load_next_page">Load more messages</string>
 
+    <string name="group_untitled">Untitled group</string>
     <string name="title_group_subject">Group title</string>
+    <string name="group_command_create">Group created:</string>
+    <string name="group_command_user_parted">%s left the group.</string>
+    <string name="group_command_subject">Group title set to: %s</string>
+
+    <string name="group_command_text_create">Group created</string>
+    <string name="group_command_text_subject">Group title changed</string>
+    <string name="group_command_text_part">Someone left the group</string>
 
     <string name="learn_more">Learn more</string>
 
@@ -484,5 +492,11 @@
         <item quantity="one">1 selected</item>
         <item quantity="other">%d selected</item>
     </plurals>
+
+    <plurals name="group_people">
+        <item quantity="one">1 person</item>
+        <item quantity="other">%d people</item>
+    </plurals>
+
 
 </resources>
