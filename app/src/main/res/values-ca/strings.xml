@@ -464,4 +464,23 @@
     <string name="check_do_not_show_again">No mostrar de nou</string>
 
     <string name="chooser_error_no_browser">No hi ha cap navegador disponible per obrir l\'enllaç.</string>
-    </resources>
+    <string name="menu_invite_group">Convidar als usuaris</string>
+    <string name="menu_set_group_subject">Posar el nom del grup</string>
+    <string name="menu_leave_group">Deixar el grup</string>
+    <string name="group_untitled">Grup sense nom</string>
+    <string name="title_group_subject">Nom del grup</string>
+    <string name="group_command_create">El grup el va crear:</string>
+    <string name="group_command_user_parted">%s va deixar el grup.</string>
+    <string name="group_command_subject">El nom del grup ho ha posat: %s</string>
+
+    <string name="group_command_text_create">Grup creat</string>
+    <string name="group_command_text_subject">El nom del grup va canviar</string>
+    <string name="group_command_text_part">Algú va deixar el grup</string>
+
+    <plurals name="group_people">
+	<item quantity="one">1 persona</item>
+	<item quantity="other">%d persones</item>
+</plurals>
+
+
+</resources>
