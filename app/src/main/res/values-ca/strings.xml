@@ -438,7 +438,7 @@
     <string name="pref_title_media_autodownload_threshold">Els arxius més petits que aquesta mida sempre es descarreguen automàticament</string>
     <string name="pref_msg_media_autodownload_threshold">Introduïu un valor en KB. S\'estableix en 0 per no descarregar automàticament.</string>
 
-    <string name="pref_media_autodownload">Descarregar automàticament</string>
+    <string name="pref_media_autodownload">Descarrega automàticament</string>
     <string name="pref_media_autodownload_label_never">Mai</string>
     <string name="pref_media_autodownload_label_wifi">Només en Wifi</string>
     <string name="pref_media_autodownload_label_always">Sempre</string>
@@ -451,7 +451,7 @@
     <string name="msg_public_key_unknown_warning">"Si us plau, comproveu amb l\'usuari que el seu / la seva empremta digital coincideix amb el que apareix a la   "<b> 1identitat</b> 2 de diàleg, en cas contrari la comunicació podria veure compromesa!</string>
 
     <string name="pref_show_blocked_users">Mostra els usuaris bloquejats</string>
-    <string name="button_load_next_page">Carregar més missatges</string>
+    <string name="button_load_next_page">Carrega més missatges</string>
 
     <string name="text_search_results_empty">No s\'han trobat missatges.</string>
     <string name="chooser_error_no_gallery_app">No hi ha aplicacions de galeria disponibles.</string>
@@ -464,14 +464,14 @@
     <string name="check_do_not_show_again">No mostrar de nou</string>
 
     <string name="chooser_error_no_browser">No hi ha cap navegador disponible per obrir l\'enllaç.</string>
-    <string name="menu_invite_group">Convidar als usuaris</string>
-    <string name="menu_set_group_subject">Posar el nom del grup</string>
-    <string name="menu_leave_group">Deixar el grup</string>
+    <string name="menu_invite_group">Convida als usuaris</string>
+    <string name="menu_set_group_subject">Posa el nom del grup</string>
+    <string name="menu_leave_group">Deixa el grup</string>
     <string name="group_untitled">Grup sense nom</string>
     <string name="title_group_subject">Nom del grup</string>
     <string name="group_command_create">El grup el va crear:</string>
     <string name="group_command_user_parted">%s va deixar el grup.</string>
-    <string name="group_command_subject">El nom del grup ho ha posat: %s</string>
+    <string name="group_command_subject">El nom del grup l\'ha posat: %s</string>
 
     <string name="group_command_text_create">Grup creat</string>
     <string name="group_command_text_subject">El nom del grup va canviar</string>
