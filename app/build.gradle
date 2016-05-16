@@ -130,8 +130,12 @@ dependencies {
     compile "org.igniterealtime.smack:smack-experimental:$smackVersion"
     compile "org.igniterealtime.smack:smack-android-extensions:$smackVersion"
     compile 'com.github.machinarius:preferencefragment:0.1.1'
-    compile 'com.afollestad.material-dialogs:core:0.8.5.9'
-    compile 'com.afollestad.material-dialogs:commons:0.8.5.9'
+    compile('com.github.afollestad.material-dialogs:core:0.8.5.8@aar') {
+        transitive = true
+    }
+    compile('com.github.afollestad.material-dialogs:commons:0.8.5.8@aar') {
+        transitive = true
+    }
     compile 'com.github.castorflex.smoothprogressbar:library:1.1.0'
     compile 'com.nispok:snackbar:2.11.0'
     compile 'de.hdodenhof:circleimageview:2.0.0'
