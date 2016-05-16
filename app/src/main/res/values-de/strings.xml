@@ -465,4 +465,21 @@
 
     <string name="msg_huawei_protected_apps">Kontalk muss in den Systemeinstellungen unter Geschützte Apps markiert werden, um richtig zu funktionieren.</string>
     <string name="chooser_error_no_browser">Kein Browser verfügbar um den Link zu öffnen.</string>
-    </resources>
+    <string name="menu_invite_group">Nutzer einladen</string>
+    <string name="menu_set_group_subject">Gruppenname festlegen</string>
+    <string name="menu_leave_group">Gruppe verlassen</string>
+    <string name="group_untitled">Unbenannte Gruppe</string>
+    <string name="title_group_subject">Gruppenname</string>
+    <string name="group_command_create">Gruppe erstellt:</string>
+    <string name="group_command_user_parted">%s verliessen die Gruppe.</string>
+    <string name="group_command_text_create">Gruppe erstellt</string>
+    <string name="group_command_text_subject">Gruppenname geändert</string>
+    <string name="group_command_text_part">Jemand verließ die Gruppe</string>
+
+    <plurals name="group_people">
+	<item quantity="one">1 Person</item>
+	<item quantity="other">%d Personen</item>
+</plurals>
+
+
+</resources>
