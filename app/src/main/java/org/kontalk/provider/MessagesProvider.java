@@ -21,18 +21,22 @@ package org.kontalk.provider;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.crypto.Coder;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Messages.Fulltext;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
+import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.service.ServerListUpdater;
+import org.kontalk.util.SystemUtils;
 
 import android.annotation.TargetApi;
 import android.content.ContentProvider;
@@ -44,6 +48,7 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.SQLException;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
@@ -60,8 +65,16 @@ public class MessagesProvider extends ContentProvider {
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".messages";
 
     private static final String TABLE_MESSAGES = "messages";
+    private static final String TABLE_MESSAGES_GROUPS = "messages_groups";
     private static final String TABLE_FULLTEXT = "fulltext";
     private static final String TABLE_THREADS = "threads";
+    private static final String TABLE_GROUPS = "groups";
+    private static final String TABLE_GROUP_MEMBERS = "group_members";
+
+    private static final String TABLE_THREADS_GROUPS = TABLE_THREADS +
+        " LEFT OUTER JOIN " + TABLE_GROUPS + " ON " +
+        TABLE_THREADS + "." + Threads._ID + "=" +
+        TABLE_GROUPS + "." + Groups.THREAD_ID;
 
     private static final int THREADS = 1;
     private static final int THREADS_ID = 2;
@@ -71,17 +84,22 @@ public class MessagesProvider extends ContentProvider {
     private static final int MESSAGES_SERVERID = 6;
     private static final int CONVERSATIONS_ID = 7;
     private static final int CONVERSATIONS_ALL_ID = 8;
-    private static final int FULLTEXT_ID = 9;
-    private static final int REQUESTS = 10;
+    private static final int GROUPS = 9;
+    private static final int GROUPS_ID = 10;
+    private static final int GROUPS_MEMBERS = 11;
+    private static final int GROUPS_MEMBERS_ID = 12;
+    private static final int FULLTEXT_ID = 13;
+    private static final int REQUESTS = 14;
 
     private DatabaseHelper dbHelper;
     private static final UriMatcher sUriMatcher;
     private static HashMap<String, String> messagesProjectionMap;
     private static HashMap<String, String> threadsProjectionMap;
     private static HashMap<String, String> fulltextProjectionMap;
+    private static HashMap<String, String> groupsMembersProjectionMap;
 
     private static class DatabaseHelper extends SQLiteOpenHelper {
-        private static final int DATABASE_VERSION = 8;
+        private static final int DATABASE_VERSION = 9;
         private static final String DATABASE_NAME = "messages.db";
 
         private static final String _SCHEMA_MESSAGES = "(" +
@@ -153,6 +171,41 @@ public class MessagesProvider extends ContentProvider {
         /** This table will contain the latest message from each conversation. */
         private static final String SCHEMA_THREADS =
             "CREATE TABLE " + TABLE_THREADS + " " + _SCHEMA_THREADS;
+
+        private static final String _SCHEMA_GROUPS = "(" +
+            "group_jid TEXT NOT NULL PRIMARY KEY, " +
+            "thread_id INTEGER NOT NULL," +
+            "group_type TEXT NOT NULL," +
+            "subject TEXT" +
+            ")";
+
+        /** This table will contain the groups definitions.*/
+        private static final String SCHEMA_GROUPS =
+            "CREATE TABLE " + TABLE_GROUPS + " " + _SCHEMA_GROUPS;
+
+        private static final String _SCHEMA_GROUP_MEMBERS = "(" +
+            "group_jid TEXT NOT NULL, " +
+            "group_peer TEXT NOT NULL, " +
+            "pending INTEGER NOT NULL DEFAULT 0," +
+            "PRIMARY KEY (group_jid, group_peer)" +
+            ")";
+
+        /** This table will contain the groups participants .*/
+        private static final String SCHEMA_GROUPS_MEMBERS =
+            "CREATE TABLE " + TABLE_GROUP_MEMBERS + " " + _SCHEMA_GROUP_MEMBERS;
+
+        /** A view to link messages and groups. */
+        private static final String SCHEMA_MESSAGES_GROUPS =
+            "CREATE VIEW " + TABLE_MESSAGES_GROUPS + " AS " +
+            "SELECT " + TABLE_MESSAGES + ".*," +
+                TABLE_GROUPS + "." + Groups.GROUP_JID + "," +
+                TABLE_GROUPS + "." + Groups.SUBJECT + "," +
+                TABLE_GROUPS + "." + Groups.GROUP_TYPE +
+            " FROM " + TABLE_MESSAGES + " LEFT JOIN " + TABLE_THREADS +
+            " ON " + TABLE_MESSAGES + "." + Messages.THREAD_ID + "=" + TABLE_THREADS + "." + Threads._ID +
+            " LEFT OUTER JOIN " + TABLE_GROUPS + " ON " +
+            TABLE_THREADS + "." + Threads._ID + "=" +
+            TABLE_GROUPS + "." + Groups.THREAD_ID;
 
         /** This table will contain every text message to speed-up full text searches. */
         private static final String SCHEMA_FULLTEXT =
@@ -231,6 +284,9 @@ public class MessagesProvider extends ContentProvider {
             UPDATE_STATUS_NEW         + ";" +
             "END";
 
+        /** Delete group members linked to thread. */
+        private static final String DELETE_GROUP_MEMBERS = "DELETE FROM " + TABLE_GROUP_MEMBERS + " WHERE " +
+            Groups.GROUP_JID + "=old." + Groups.GROUP_JID;
 
         /** This trigger will update the threads table counters on DELETE. */
         private static final String TRIGGER_THREADS_DELETE_COUNT =
@@ -240,6 +296,13 @@ public class MessagesProvider extends ContentProvider {
             UPDATE_UNREAD_COUNT_OLD   + ";" +
             UPDATE_NEW_COUNT_OLD      + ";" +
             // do not call this here -- UPDATE_STATUS_OLD         + ";" +
+            "END";
+
+        /** This trigger will delete group members when a group is deleted. */
+        private static final String TRIGGER_GROUPS_DELETE_MEMBERS =
+            "CREATE TRIGGER delete_groups_on_delete AFTER DELETE ON " + TABLE_GROUPS +
+            " BEGIN " +
+            DELETE_GROUP_MEMBERS      + ";" +
             "END";
 
         private static final String[] SCHEMA_UPGRADE_V4 = {
@@ -278,6 +341,13 @@ public class MessagesProvider extends ContentProvider {
             TRIGGER_THREADS_DELETE_COUNT
         };
 
+        private static final String[] SCHEMA_UPGRADE_V8 = {
+            SCHEMA_GROUPS,
+            SCHEMA_GROUPS_MEMBERS,
+            SCHEMA_MESSAGES_GROUPS,
+            TRIGGER_GROUPS_DELETE_MEMBERS,
+        };
+
         private Context mContext;
 
         protected DatabaseHelper(Context context) {
@@ -289,12 +359,16 @@ public class MessagesProvider extends ContentProvider {
         public void onCreate(SQLiteDatabase db) {
             db.execSQL(SCHEMA_MESSAGES);
             db.execSQL(SCHEMA_THREADS);
+            db.execSQL(SCHEMA_GROUPS);
+            db.execSQL(SCHEMA_GROUPS_MEMBERS);
+            db.execSQL(SCHEMA_MESSAGES_GROUPS);
             db.execSQL(SCHEMA_FULLTEXT);
             db.execSQL(SCHEMA_MESSAGES_INDEX);
             db.execSQL(SCHEMA_MESSAGES_TIMESTAMP_IDX);
             db.execSQL(TRIGGER_THREADS_INSERT_COUNT);
             db.execSQL(TRIGGER_THREADS_UPDATE_COUNT);
             db.execSQL(TRIGGER_THREADS_DELETE_COUNT);
+            db.execSQL(TRIGGER_GROUPS_DELETE_MEMBERS);
         }
 
         @Override
@@ -321,6 +395,15 @@ public class MessagesProvider extends ContentProvider {
                         db.execSQL(sql);
                     }
                 }
+
+                // fallback to next upgrade
+                oldVersion = 8;
+            }
+
+            if (oldVersion == 8) {
+                for (String sql : SCHEMA_UPGRADE_V8) {
+                    db.execSQL(sql);
+                }
             }
         }
     }
@@ -338,35 +421,35 @@ public class MessagesProvider extends ContentProvider {
 
         switch (sUriMatcher.match(uri)) {
             case MESSAGES:
-                qb.setTables(TABLE_MESSAGES);
+                qb.setTables(TABLE_MESSAGES_GROUPS);
                 qb.setProjectionMap(messagesProjectionMap);
                 break;
 
             case MESSAGES_ID:
-                qb.setTables(TABLE_MESSAGES);
+                qb.setTables(TABLE_MESSAGES_GROUPS);
                 qb.setProjectionMap(messagesProjectionMap);
                 qb.appendWhere(Messages._ID + "=" + uri.getPathSegments().get(1));
                 break;
 
             case MESSAGES_SERVERID:
-                qb.setTables(TABLE_MESSAGES);
+                qb.setTables(TABLE_MESSAGES_GROUPS);
                 qb.setProjectionMap(messagesProjectionMap);
                 qb.appendWhere(Messages.MESSAGE_ID + "='" + DatabaseUtils.sqlEscapeString(uri.getPathSegments().get(1)) + "'");
                 break;
 
             case THREADS:
-                qb.setTables(TABLE_THREADS);
+                qb.setTables(TABLE_THREADS_GROUPS);
                 qb.setProjectionMap(threadsProjectionMap);
                 break;
 
             case THREADS_ID:
-                qb.setTables(TABLE_THREADS);
+                qb.setTables(TABLE_THREADS_GROUPS);
                 qb.setProjectionMap(threadsProjectionMap);
                 qb.appendWhere(Threads._ID + "=" + uri.getPathSegments().get(1));
                 break;
 
             case THREADS_PEER:
-                qb.setTables(TABLE_THREADS);
+                qb.setTables(TABLE_THREADS_GROUPS);
                 qb.setProjectionMap(threadsProjectionMap);
                 qb.appendWhere(Threads.PEER + "='" + DatabaseUtils.sqlEscapeString(uri.getPathSegments().get(1)) + "'");
                 break;
@@ -393,7 +476,7 @@ public class MessagesProvider extends ContentProvider {
                     qb.setPage(count, Messages._ID, lastId);
                 }
 
-                qb.setTables(TABLE_MESSAGES);
+                qb.setTables(TABLE_MESSAGES_GROUPS);
                 qb.setProjectionMap(messagesProjectionMap);
                 qb.appendWhere(Messages.THREAD_ID + "=" + uri.getPathSegments().get(1));
                 break;
@@ -403,6 +486,34 @@ public class MessagesProvider extends ContentProvider {
                 qb.setProjectionMap(fulltextProjectionMap);
                 qb.appendWhere(Fulltext.CONTENT + " MATCH ?");
                 selectionArgs = new String[] { uri.getQueryParameter("pattern") };
+                break;
+
+            case GROUPS_ID:
+                qb.setTables(TABLE_GROUPS);
+                qb.setProjectionMap(groupsMembersProjectionMap);
+                qb.appendWhere(Groups.GROUP_JID + "=?");
+                if (selectionArgs != null) {
+                    // conditions appended here will get added before the caller-supplied selection
+                    selectionArgs = SystemUtils.concatenate(new String[] { uri.getLastPathSegment() },
+                        selectionArgs);
+                }
+                else {
+                    selectionArgs = new String[] { uri.getLastPathSegment() };
+                }
+                break;
+
+            case GROUPS_MEMBERS:
+                qb.setTables(TABLE_GROUP_MEMBERS);
+                qb.setProjectionMap(groupsMembersProjectionMap);
+                qb.appendWhere(Groups.GROUP_JID + "=?");
+                if (selectionArgs != null) {
+                    // conditions appended here will get added before the caller-supplied selection
+                    selectionArgs = SystemUtils.concatenate(new String[] { uri.getPathSegments().get(1) },
+                        selectionArgs);
+                }
+                else {
+                    selectionArgs = new String[] { uri.getPathSegments().get(1) };
+                }
                 break;
 
             default:
@@ -418,10 +529,13 @@ public class MessagesProvider extends ContentProvider {
 
     @Override
     public synchronized Uri insert(Uri uri, ContentValues initialValues) {
+        if (initialValues == null)
+            throw new IllegalArgumentException("No data");
+
         // only messages and requests virtual table can be inserted
         int match = sUriMatcher.match(uri);
-        if (match != MESSAGES && match != REQUESTS) { throw new IllegalArgumentException("Unknown URI " + uri); }
-        if (initialValues == null) { throw new IllegalArgumentException("No data"); }
+        if (match != MESSAGES && match != REQUESTS && match != GROUPS && match != GROUPS_MEMBERS)
+            throw new IllegalArgumentException("Unknown URI " + uri);
 
         // if this column is present, we'll insert the thread only
         String draft = initialValues.getAsString(Threads.DRAFT);
@@ -435,6 +549,22 @@ public class MessagesProvider extends ContentProvider {
         try {
             beginTransaction(db);
 
+            switch (match) {
+                case GROUPS:
+                    // configure thread as group
+                    insertGroup(db, values, notifications);
+                    success = setTransactionSuccessful(db);
+                    // no uri needed
+                    return null;
+                case GROUPS_MEMBERS:
+                    // insert members into group
+                    String groupJid = uri.getPathSegments().get(1);
+                    insertGroupMembers(db, groupJid, values);
+                    success = setTransactionSuccessful(db);
+                    // no uri needed
+                    return null;
+            }
+
             // we need to know if there previously was a pending request
             // so we can decide if we have to fire a notification or not
             boolean requestExists = false;
@@ -444,8 +574,9 @@ public class MessagesProvider extends ContentProvider {
 
             // create the thread first
             long threadId = updateThreads(db, values, notifications, match == REQUESTS);
+            values.put(Messages.THREAD_ID, threadId);
 
-            if (draft != null || match == REQUESTS) {
+            if (threadId != Messages.NO_THREAD && (draft != null || match == REQUESTS)) {
                 // notify thread change
                 notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
                 // notify conversation change
@@ -453,17 +584,15 @@ public class MessagesProvider extends ContentProvider {
 
                 success = setTransactionSuccessful(db);
 
-                // request only - return conversation
-                if (match == REQUESTS && !requestExists)
+                // draft or request - return conversation
+                if (draft != null || !requestExists)
                     return ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId);
-
-                // draft only - no uri
-                else
-                    return null;
-
             }
 
-            values.put(Messages.THREAD_ID, threadId);
+            // remove reserved columns
+            values.remove(Groups.GROUP_JID);
+            values.remove(Groups.SUBJECT);
+            values.remove(Groups.GROUP_TYPE);
 
             // insert the new message now!
             long rowId = db.insertOrThrow(TABLE_MESSAGES, null, values);
@@ -505,20 +634,24 @@ public class MessagesProvider extends ContentProvider {
             */
 
             if (rowId > 0) {
-                // update fulltext table
-                byte[] content = values.getAsByteArray(Messages.BODY_CONTENT);
-                Boolean encrypted = values.getAsBoolean(Messages.ENCRYPTED);
-                if (content != null && content.length > 0 && (encrypted == null || !encrypted.booleanValue())) {
-                    updateFulltext(db, rowId, threadId, content);
+                if (threadId != Messages.NO_THREAD) {
+                    // update fulltext table
+                    byte[] content = values.getAsByteArray(Messages.BODY_CONTENT);
+                    Boolean encrypted = values.getAsBoolean(Messages.ENCRYPTED);
+                    if (content != null && content.length > 0 && (encrypted == null || !encrypted)) {
+                        updateFulltext(db, rowId, threadId, content);
+                    }
                 }
 
                 Uri msgUri = ContentUris.withAppendedId(uri, rowId);
                 notifications.add(msgUri);
 
-                // notify thread change
-                notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
-                // notify conversation change
-                notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
+                if (threadId != Messages.NO_THREAD) {
+                    // notify thread change
+                    notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
+                    // notify conversation change
+                    notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
+                }
 
                 success = setTransactionSuccessful(db);
                 return msgUri;
@@ -531,6 +664,30 @@ public class MessagesProvider extends ContentProvider {
             ContentResolver cr = getContext().getContentResolver();
             for (Uri nuri : notifications)
                 cr.notifyChange(nuri, null);
+        }
+    }
+
+    private void insertGroup(SQLiteDatabase db, ContentValues values, List<Uri> notifications) {
+        if (notifications != null) {
+            long threadId = values.getAsLong(Groups.THREAD_ID);
+            // notify thread change
+            notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
+            // notify conversation change
+            notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
+        }
+
+        db.insertOrThrow(TABLE_GROUPS, null, values);
+    }
+
+    private void insertGroupMembers(SQLiteDatabase db, String groupJid, ContentValues values) {
+        // TODO shouldn't we notify someone?
+
+        try {
+            values.put(Groups.GROUP_JID, groupJid);
+            db.insertOrThrow(TABLE_GROUP_MEMBERS, null, values);
+        }
+        catch (SQLiteConstraintException e) {
+            // just ignore dups - it doesn't really matter
         }
     }
 
@@ -586,12 +743,21 @@ public class MessagesProvider extends ContentProvider {
      * @return the thread id
      */
     private long updateThreads(SQLiteDatabase db, ContentValues initialValues, List<Uri> notifications, boolean requestOnly) {
-        ContentValues values = new ContentValues();
-        String peer = initialValues.getAsString(CommonColumns.PEER);
-
         long threadId = -1;
-        if (initialValues.containsKey(Messages.THREAD_ID))
+        if (initialValues.containsKey(Messages.THREAD_ID)) {
             threadId = initialValues.getAsLong(Messages.THREAD_ID);
+            if (threadId == Messages.NO_THREAD)
+                return Messages.NO_THREAD;
+        }
+
+        ContentValues values = new ContentValues();
+        // group JID will be the thread peer in this case
+        String peer;
+        String groupJid = initialValues.getAsString(Groups.GROUP_JID);
+        if (groupJid != null)
+            peer = groupJid;
+        else
+            peer = initialValues.getAsString(CommonColumns.PEER);
 
         values.put(Threads.PEER, peer);
         values.put(Threads.TIMESTAMP, initialValues.getAsLong(Messages.TIMESTAMP));
@@ -616,8 +782,13 @@ public class MessagesProvider extends ContentProvider {
             if (initialValues.containsKey(Messages.STATUS_CHANGED))
                 values.put(Threads.STATUS_CHANGED, initialValues.getAsInteger(Messages.STATUS_CHANGED));
             // this column is an exception
-            if (initialValues.containsKey(Threads.DRAFT))
-                values.put(Threads.DRAFT, initialValues.getAsString(Threads.DRAFT));
+            if (initialValues.containsKey(Threads.DRAFT)) {
+                String draft = initialValues.getAsString(Threads.DRAFT);
+                if (draft != null && draft.length() == 0)
+                    values.putNull(Threads.DRAFT);
+                else
+                    values.put(Threads.DRAFT, draft);
+            }
 
             // unread column will be calculated by the trigger
 
@@ -633,11 +804,22 @@ public class MessagesProvider extends ContentProvider {
         try {
             threadId = db.insertOrThrow(TABLE_THREADS, null, values);
 
+            // insert group info if needed
+            if (groupJid != null) {
+                ContentValues groupValues = new ContentValues();
+                groupValues.put(Groups.GROUP_JID, groupJid);
+                groupValues.put(Groups.THREAD_ID, threadId);
+                groupValues.put(Groups.SUBJECT, initialValues.getAsString(Groups.SUBJECT));
+                groupValues.put(Groups.GROUP_TYPE, initialValues.getAsString(Groups.GROUP_TYPE));
+                insertGroup(db, groupValues, null);
+            }
+
             // notify newly created thread by userid
             // this will be used for fixing ticket #18
             notifications.add(Threads.getUri(peer));
         }
         catch (SQLException e) {
+            //Log.w(TAG, "error updating thread: " + e.getClass(), e);
             // clear draft if outgoing message
             Integer direction = values.getAsInteger(Threads.DIRECTION);
             if (direction != null && direction == Messages.DIRECTION_OUT)
@@ -664,12 +846,9 @@ public class MessagesProvider extends ContentProvider {
 
     @Override
     public synchronized int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        if (values == null) { throw new IllegalArgumentException("No data"); }
-
         String table;
         String where;
         String[] args;
-        String messageId = null;
         boolean requestOnly = false;
 
         switch (sUriMatcher.match(uri)) {
@@ -690,8 +869,8 @@ public class MessagesProvider extends ContentProvider {
                 break;
             }
 
-            case MESSAGES_SERVERID:
-                messageId = uri.getPathSegments().get(1);
+            case MESSAGES_SERVERID: {
+                String messageId = uri.getPathSegments().get(1);
                 table = TABLE_MESSAGES;
                 where = Messages.MESSAGE_ID + " = ?";
                 // WARNING selectionArgs is not supported yet
@@ -699,6 +878,7 @@ public class MessagesProvider extends ContentProvider {
                     where += " AND (" + selection + ")";
                 args = new String[] { String.valueOf(messageId) };
                 break;
+            }
 
             case THREADS_ID: {
                 long _id = ContentUris.parseId(uri);
@@ -721,16 +901,69 @@ public class MessagesProvider extends ContentProvider {
                 break;
             }
 
+            case GROUPS: {
+                table = TABLE_GROUPS;
+                where = selection;
+                args = selectionArgs;
+                break;
+            }
+
+            case GROUPS_ID: {
+                table = TABLE_GROUPS;
+                String groupId = uri.getLastPathSegment();
+                where = Groups.GROUP_JID + " = ?";
+                args = new String[] { groupId };
+                if (selection != null) {
+                    where += " AND (" + selection + ")";
+                    if (selectionArgs != null)
+                        args = SystemUtils.concatenate(args, selectionArgs);
+                }
+                break;
+            }
+
+            case GROUPS_MEMBERS: {
+                String groupId = uri.getPathSegments().get(1);
+                table = TABLE_GROUP_MEMBERS;
+                where = Groups.GROUP_JID + " = ?";
+                args = new String[] { groupId };
+                if (selection != null) {
+                    where += " AND (" + selection + ")";
+                    if (selectionArgs != null)
+                        args = SystemUtils.concatenate(args, selectionArgs);
+                }
+                break;
+            }
+
+            case GROUPS_MEMBERS_ID: {
+                table = TABLE_GROUP_MEMBERS;
+                where = Groups.GROUP_JID + " = ? AND " + Groups.PEER + " = ?";
+                args = new String[] { uri.getPathSegments().get(1), uri.getLastPathSegment() };
+                if (selection != null) {
+                    where += " AND (" + selection + ")";
+                    if (selectionArgs != null)
+                        args = SystemUtils.concatenate(args, selectionArgs);
+                }
+                break;
+            }
+
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
         }
 
-        List<Uri> notifications = new ArrayList<Uri>();
+        List<Uri> notifications = null;
         boolean success = false;
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         try {
             beginTransaction(db);
+
+            // handle clear pending flags
+            String pendingFlags = uri.getQueryParameter(Messages.CLEAR_PENDING);
+            if (pendingFlags != null) {
+                updatePendingFlags(db, Integer.parseInt(pendingFlags), where, args);
+                success = setTransactionSuccessful(db);
+                return 0;
+            }
 
             // retrieve old data for notifying.
             // This was done because of the update call could make the old where
@@ -758,6 +991,7 @@ public class MessagesProvider extends ContentProvider {
                 if (requestOnly)
                     uri = Threads.CONTENT_URI;
 
+                notifications = new ArrayList<Uri>();
                 notifications.add(uri);
 
                 if (table.equals(TABLE_MESSAGES)) {
@@ -823,10 +1057,17 @@ public class MessagesProvider extends ContentProvider {
         }
         finally {
             endTransaction(db, success);
-            ContentResolver cr = getContext().getContentResolver();
-            for (Uri nuri : notifications)
-                cr.notifyChange(nuri, null);
+            if (notifications != null) {
+                ContentResolver cr = getContext().getContentResolver();
+                for (Uri nuri : notifications)
+                    cr.notifyChange(nuri, null);
+            }
         }
+    }
+
+    /** Updates group status pending flags. */
+    private void updatePendingFlags(SQLiteDatabase db, int flags, String where, String[] args) {
+        db.execSQL("UPDATE " + TABLE_GROUP_MEMBERS + " SET pending = pending & ~("+flags+") WHERE " + where, args);
     }
 
     private void updateFulltext(SQLiteDatabase db, long id, long threadId, byte[] content) {
@@ -887,9 +1128,32 @@ public class MessagesProvider extends ContentProvider {
                 args = new String[] { uri.getLastPathSegment() };
                 break;
 
+            case GROUPS_ID:
+                table = TABLE_GROUPS;
+                where = Groups.GROUP_JID + "=?";
+                args = new String[] { uri.getLastPathSegment() };
+                if (selection != null) {
+                    where += " AND (" + selection + ")";
+                    if (selectionArgs != null)
+                        args = SystemUtils.concatenate(args, selectionArgs);
+                }
+                break;
+
+            case GROUPS_MEMBERS_ID:
+                table = TABLE_GROUP_MEMBERS;
+                where = Groups.GROUP_JID + " = ? AND " + Groups.PEER + " = ?";
+                args = new String[] { uri.getPathSegments().get(1), uri.getLastPathSegment() };
+                if (selection != null) {
+                    where += " AND (" + selection + ")";
+                    if (selectionArgs != null)
+                        args = SystemUtils.concatenate(args, selectionArgs);
+                }
+                break;
+
             // special case: conversations
             case CONVERSATIONS_ID: {
-                int rows = deleteConversation(uri);
+                boolean keepGroup = Boolean.parseBoolean(uri.getQueryParameter(Messages.KEEP_GROUP));
+                int rows = deleteConversation(uri, keepGroup);
                 if (rows > 0) {
                     ContentResolver cr = getContext().getContentResolver();
                     // first of all, notify conversation
@@ -903,6 +1167,7 @@ public class MessagesProvider extends ContentProvider {
             }
 
             // special case: delete all content
+            // FIXME group tables are not touched by this!!
             case CONVERSATIONS_ALL_ID: {
                 SQLiteDatabase db = dbHelper.getWritableDatabase();
 
@@ -1004,17 +1269,19 @@ public class MessagesProvider extends ContentProvider {
         return rows;
     }
 
-    private int deleteConversation(Uri uri) {
+    private int deleteConversation(Uri uri, boolean keepGroup) {
         long threadId = ContentUris.parseId(uri);
         if (threadId > 0) {
             SQLiteDatabase db = dbHelper.getWritableDatabase();
             boolean success = false;
             try {
-                int num = 0;
+                int num;
 
                 beginTransaction(db);
                 num = db.delete(TABLE_THREADS, Threads._ID + " = " + threadId, null);
                 num += db.delete(TABLE_MESSAGES, Messages.THREAD_ID + " = " + threadId, null);
+                if (!keepGroup)
+                    num += db.delete(TABLE_GROUPS, Groups.THREAD_ID + " = " + threadId, null);
                 // update fulltext
                 db.delete(TABLE_FULLTEXT, Messages.THREAD_ID + " = " + threadId, null);
 
@@ -1047,8 +1314,8 @@ public class MessagesProvider extends ContentProvider {
 
         int rc = -1;
         if (c != null) {
+            ContentValues v = new ContentValues();
             if (c.moveToFirst()) {
-                ContentValues v = new ContentValues();
                 v.put(Threads.MESSAGE_ID, c.getString(0));
                 v.put(Threads.DIRECTION, c.getInt(1));
                 v.put(Threads.STATUS, c.getInt(2));
@@ -1058,12 +1325,19 @@ public class MessagesProvider extends ContentProvider {
                 // use server timestamp if present
                 long ts = c.getLong(7);
                 v.put(Threads.TIMESTAMP, ts > 0 ? ts : c.getLong(6));
-
-                rc = db.update(TABLE_THREADS, v, Threads._ID + " = ?", new String[] { String.valueOf(threadId) });
-                if (rc > 0) {
-                    notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
-                    notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
-                }
+            }
+            else {
+                // empty thread data
+                v.put(Threads.MESSAGE_ID, "draft" + (new Random().nextInt()));
+                v.put(Threads.DIRECTION, Messages.DIRECTION_OUT);
+                v.put(Threads.TIMESTAMP, System.currentTimeMillis());
+                v.putNull(Threads.STATUS);
+                setThreadContent(new byte[0], TextComponent.MIME_TYPE, null, v);
+            }
+            rc = db.update(TABLE_THREADS, v, Threads._ID + "=" + threadId, null);
+            if (rc > 0) {
+                notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
+                notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
             }
             c.close();
         }
@@ -1073,7 +1347,9 @@ public class MessagesProvider extends ContentProvider {
 
     private int deleteEmptyThreads(SQLiteDatabase db) {
         return db.delete(TABLE_THREADS, "\"" + Threads.COUNT + "\"" + " = 0 AND " +
-                Threads.DRAFT + " IS NULL", null);
+                Threads.DRAFT + " IS NULL AND " +
+                "NOT EXISTS (SELECT 1 FROM " + TABLE_GROUPS +
+                    " WHERE "+TABLE_THREADS+"."+Threads._ID+"="+Groups.THREAD_ID+")", null);
     }
 
     @Override
@@ -1130,9 +1406,11 @@ public class MessagesProvider extends ContentProvider {
         }
     }
 
-    public static boolean deleteThread(Context ctx, long id) {
+    public static boolean deleteThread(Context ctx, long id, boolean keepGroup) {
         ContentResolver c = ctx.getContentResolver();
-        return (c.delete(ContentUris.withAppendedId(Conversations.CONTENT_URI, id), null, null) > 0);
+        return (c.delete(ContentUris.withAppendedId(Conversations.CONTENT_URI, id)
+            .buildUpon().appendQueryParameter(Messages.KEEP_GROUP, String.valueOf(keepGroup))
+            .build(), null, null) > 0);
     }
 
     /**
@@ -1208,6 +1486,62 @@ public class MessagesProvider extends ContentProvider {
 
         c.close();
         return count;
+    }
+
+    public static long insertEmptyThread(Context context, String peer, String draft) {
+        ContentValues msgValues = new ContentValues();
+        // must supply a message ID...
+        msgValues.put(Messages.MESSAGE_ID,
+            "draft" + (new Random().nextInt()));
+        // use group id as the peer
+        msgValues.put(Messages.PEER, peer);
+        msgValues.put(Messages.BODY_CONTENT, new byte[0]);
+        msgValues.put(Messages.BODY_LENGTH, 0);
+        msgValues.put(Messages.BODY_MIME, TextComponent.MIME_TYPE);
+        msgValues.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
+        msgValues.put(Messages.TIMESTAMP, System.currentTimeMillis());
+        msgValues.put(Messages.ENCRYPTED, false);
+        if (draft != null)
+            msgValues.put(Threads.DRAFT, draft);
+        Uri newThread = context.getContentResolver().insert(Messages.CONTENT_URI, msgValues);
+        return newThread != null ? ContentUris.parseId(newThread) : 0;
+    }
+
+    public static boolean isGroupThread(Context context, long id) {
+        boolean group = false;
+        Cursor c = context.getContentResolver().query(
+            ContentUris.withAppendedId(Threads.CONTENT_URI, id),
+            new String[] { Groups.GROUP_JID },
+            null, null, null);
+        if (c.moveToFirst())
+            group = (c.getString(0) != null);
+
+        c.close();
+        return group;
+    }
+
+    public static boolean isGroupExisting(Context context, String groupJid) {
+        Cursor c = context.getContentResolver().query(
+            Groups.getUri(groupJid),
+            new String[] { Groups.GROUP_JID }, null, null, null);
+        boolean exist = c.moveToFirst();
+        c.close();
+        return exist;
+    }
+
+    public static String[] getGroupMembers(Context context, String groupJid) {
+        Cursor c = context.getContentResolver()
+            .query(Groups.getMembersUri(groupJid),
+                new String[] { Groups.PEER },
+                null, null, null);
+
+        String[] members = new String[c.getCount()];
+        int i = 0;
+        while (c.moveToNext()) {
+            members[i++] = c.getString(0);
+        }
+        c.close();
+        return members;
     }
 
     private static ContentValues prepareChangeMessageStatus(
@@ -1305,6 +1639,10 @@ public class MessagesProvider extends ContentProvider {
         sUriMatcher.addURI(AUTHORITY, TABLE_MESSAGES + "/*", MESSAGES_SERVERID);
         sUriMatcher.addURI(AUTHORITY, "conversations", CONVERSATIONS_ALL_ID);
         sUriMatcher.addURI(AUTHORITY, "conversations/#", CONVERSATIONS_ID);
+        sUriMatcher.addURI(AUTHORITY, TABLE_GROUPS, GROUPS);
+        sUriMatcher.addURI(AUTHORITY, TABLE_GROUPS + "/*", GROUPS_ID);
+        sUriMatcher.addURI(AUTHORITY, TABLE_GROUPS + "/*/members", GROUPS_MEMBERS);
+        sUriMatcher.addURI(AUTHORITY, TABLE_GROUPS + "/*/members/*", GROUPS_MEMBERS_ID);
         sUriMatcher.addURI(AUTHORITY, TABLE_FULLTEXT, FULLTEXT_ID);
         sUriMatcher.addURI(AUTHORITY, "requests", REQUESTS);
 
@@ -1336,6 +1674,9 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages.ENCRYPTED, Messages.ENCRYPTED);
         messagesProjectionMap.put(Messages.SECURITY_FLAGS, Messages.SECURITY_FLAGS);
         messagesProjectionMap.put(Messages.SERVER_TIMESTAMP, Messages.SERVER_TIMESTAMP);
+        messagesProjectionMap.put(Groups.GROUP_JID, Groups.GROUP_JID);
+        messagesProjectionMap.put(Groups.SUBJECT, Groups.SUBJECT);
+        messagesProjectionMap.put(Groups.GROUP_TYPE, Groups.GROUP_TYPE);
 
         threadsProjectionMap = new HashMap<String, String>();
         threadsProjectionMap.put(Threads._ID, Threads._ID);
@@ -1353,9 +1694,17 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Threads.ENCRYPTED, Threads.ENCRYPTED);
         threadsProjectionMap.put(Threads.DRAFT, Threads.DRAFT);
         threadsProjectionMap.put(Threads.REQUEST_STATUS, Threads.REQUEST_STATUS);
+        threadsProjectionMap.put(Groups.GROUP_JID, Groups.GROUP_JID);
+        threadsProjectionMap.put(Groups.SUBJECT, Groups.SUBJECT);
+        threadsProjectionMap.put(Groups.GROUP_TYPE, Groups.GROUP_TYPE);
 
         fulltextProjectionMap = new HashMap<String, String>();
         fulltextProjectionMap.put(Fulltext.THREAD_ID, Fulltext.THREAD_ID);
         fulltextProjectionMap.put(Fulltext.CONTENT, Fulltext.CONTENT);
+
+        groupsMembersProjectionMap = new HashMap<String, String>();
+        groupsMembersProjectionMap.put(Groups.GROUP_JID, Groups.GROUP_JID);
+        groupsMembersProjectionMap.put(Groups.PEER, Groups.PEER);
+        groupsMembersProjectionMap.put(Groups.PENDING, Groups.PENDING);
     }
 }

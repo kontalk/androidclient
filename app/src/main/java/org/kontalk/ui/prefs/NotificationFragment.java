@@ -35,6 +35,7 @@ import com.afollestad.materialdialogs.color.ColorChooserDialog;
 import org.kontalk.R;
 import org.kontalk.util.Preferences;
 
+
 /**
  * Notification settings fragment
  */

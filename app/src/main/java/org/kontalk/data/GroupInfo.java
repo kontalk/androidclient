@@ -16,22 +16,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui;
+package org.kontalk.data;
 
 
 /**
- * Interface implemented by activities that can be parent of
- * {@link ComposeMessageFragment}.
+ * Group chat information.
  * @author Daniele Ricci
  */
-public interface ComposeMessageParent {
+public class GroupInfo {
+    private final String mJid;
+    private final String mSubject;
+    private final String mType;
 
-    /** Sets title and subtitle. Pass null to any of them to skip. */
-    void setTitle(CharSequence title, CharSequence subtitle);
+    public GroupInfo(String jid, String subject, String type) {
+        mJid = jid;
+        mSubject = subject;
+        mType = type;
+    }
 
-    /** Sets the subtitle in an updating status. */
-    void setUpdatingSubtitle();
+    public String getJid() {
+        return mJid;
+    }
 
-    /** Loads the given conversation, replacing the fragment as needed. */
-    void loadConversation(long threadId);
+    public String getSubject() {
+        return mSubject;
+    }
+
+    public String getType() {
+        return mType;
+    }
 }
