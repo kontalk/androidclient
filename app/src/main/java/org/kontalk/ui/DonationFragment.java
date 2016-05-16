@@ -183,7 +183,7 @@ public class DonationFragment extends Fragment implements OnClickListener {
 
     private void donatePaypal() {
         // just start Paypal donate button URL
-        SystemUtils.openURL(getContext(),getString(R.string.paypal_url));
+        SystemUtils.openURL(getContext(), getString(R.string.paypal_url));
     }
 
     private void setupGoogle(final Dialog progress) {

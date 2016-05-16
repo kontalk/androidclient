@@ -52,7 +52,6 @@ import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
-import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
@@ -60,7 +59,6 @@ import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.NotificationActionReceiver;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
-import org.kontalk.util.SystemUtils;
 
 
 /**
