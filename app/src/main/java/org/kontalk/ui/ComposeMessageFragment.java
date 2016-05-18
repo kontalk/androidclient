@@ -498,16 +498,19 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
 
     /** Sends a subscription request for the current peer. */
     private void requestPresence() {
-        Context context = getActivity();
-        if (context != null) {
-            // all of this shall be done only if there isn't a request from the other contact
-            if (mConversation.getRequestStatus() != Threads.REQUEST_WAITING) {
-                // request last presence
-                Intent i = new Intent(context, MessageCenterService.class);
-                i.setAction(MessageCenterService.ACTION_PRESENCE);
-                i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
-                i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.probe.name());
-                context.startService(i);
+        // do not request presence for domain JIDs
+        if (!XMPPUtils.isDomainJID(mUserJID)) {
+            Context context = getContext();
+            if (context != null) {
+                // all of this shall be done only if there isn't a request from the other contact
+                if (mConversation.getRequestStatus() != Threads.REQUEST_WAITING) {
+                    // request last presence
+                    Intent i = new Intent(context, MessageCenterService.class);
+                    i.setAction(MessageCenterService.ACTION_PRESENCE);
+                    i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
+                    i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.probe.name());
+                    context.startService(i);
+                }
             }
         }
     }

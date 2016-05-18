@@ -208,6 +208,11 @@ public class CompositeMessage {
         return mServerTimestamp;
     }
 
+    // for internal use only.
+    public void setStatus(int status) {
+        mStatus = status;
+    }
+
     public int getStatus() {
         return mStatus;
     }

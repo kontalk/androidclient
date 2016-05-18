@@ -1254,16 +1254,21 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         roster.addRosterLoadedListener(new RosterLoadedListener() {
             @Override
             public void onRosterLoaded(Roster roster) {
-                // send pending subscription replies
-                sendPendingSubscriptionReplies();
-                // resend failed and pending messages
-                resendPendingMessages(false, false);
-                // resend failed and pending received receipts
-                resendPendingReceipts();
-                // resend pending group commands
-                resendPendingGroupCommands();
-                // roster has been loaded
-                broadcast(ACTION_ROSTER_LOADED);
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        // send pending subscription replies
+                        sendPendingSubscriptionReplies();
+                        // resend failed and pending messages
+                        resendPendingMessages(false, false);
+                        // resend failed and pending received receipts
+                        resendPendingReceipts();
+                        // resend pending group commands
+                        resendPendingGroupCommands();
+                        // roster has been loaded
+                        broadcast(ACTION_ROSTER_LOADED);
+                    }
+                });
             }
         });
         roster.setRosterStore(mRosterStore);
@@ -2247,7 +2252,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         GroupCommandComponent group = msg.getComponent(GroupCommandComponent.class);
         boolean isGroupCommand = group != null;
 
-        values.put(Messages.STATUS, Messages.STATUS_INCOMING);
+        values.put(Messages.STATUS, msg.getStatus());
         // group commands don't get notifications
         values.put(Messages.UNREAD, !isGroupCommand);
         values.put(Messages.NEW, !isGroupCommand);

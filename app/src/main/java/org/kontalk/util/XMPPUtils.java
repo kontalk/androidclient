@@ -133,4 +133,10 @@ public class XMPPUtils {
         return MessageUtils.sha1(uid);
     }
 
+    /** Returns true if the given JID is a domain JID (e.g. beta.kontalk.net). */
+    public static boolean isDomainJID(String jid) {
+        return XmppStringUtils.parseDomain(jid)
+            .equalsIgnoreCase(jid);
+    }
+
 }

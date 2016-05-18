@@ -712,4 +712,10 @@ public class PGPCoder extends Coder {
         }
     }
 
+    @Override
+    public VerifyOutput verifyText(byte[] signed) throws GeneralSecurityException {
+        // TODO
+        return null;
+    }
+
 }

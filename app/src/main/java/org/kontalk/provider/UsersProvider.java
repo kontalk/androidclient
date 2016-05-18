@@ -388,7 +388,8 @@ public class UsersProvider extends ContentProvider {
 
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor c = qb.query(db, projection, selection, selectionArgs, null, null, sortOrder);
-        if ((match == USERS || match == USERS_JID) && c.getCount() == 0) {
+        if ((match == USERS || match == USERS_JID) && c.getCount() == 0 &&
+                (match != USERS_JID || !XMPPUtils.isDomainJID(uri.getPathSegments().get(1)))) {
             // empty result set and sync requested
             SyncAdapter.requestSync(getContext(), false);
         }
