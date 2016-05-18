@@ -1254,16 +1254,21 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         roster.addRosterLoadedListener(new RosterLoadedListener() {
             @Override
             public void onRosterLoaded(Roster roster) {
-                // send pending subscription replies
-                sendPendingSubscriptionReplies();
-                // resend failed and pending messages
-                resendPendingMessages(false, false);
-                // resend failed and pending received receipts
-                resendPendingReceipts();
-                // resend pending group commands
-                resendPendingGroupCommands();
-                // roster has been loaded
-                broadcast(ACTION_ROSTER_LOADED);
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        // send pending subscription replies
+                        sendPendingSubscriptionReplies();
+                        // resend failed and pending messages
+                        resendPendingMessages(false, false);
+                        // resend failed and pending received receipts
+                        resendPendingReceipts();
+                        // resend pending group commands
+                        resendPendingGroupCommands();
+                        // roster has been loaded
+                        broadcast(ACTION_ROSTER_LOADED);
+                    }
+                });
             }
         });
         roster.setRosterStore(mRosterStore);
