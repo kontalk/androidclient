@@ -48,10 +48,12 @@ import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.GroupExtension;
 import org.kontalk.client.KontalkGroupManager;
+import org.kontalk.client.OpenPGPSignedMessage;
 import org.kontalk.client.OutOfBandData;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.DecryptException;
 import org.kontalk.crypto.PersonalKey;
+import org.kontalk.crypto.VerifyException;
 import org.kontalk.data.Contact;
 import org.kontalk.data.GroupInfo;
 import org.kontalk.message.AudioComponent;
@@ -256,6 +258,31 @@ class MessageListener extends MessageCenterPacketListener {
                         if (body != null)
                             msg.addComponent(new TextComponent(body));
 
+                        // old PGP signature
+                        ExtensionElement _pgpSigned = m.getExtension(OpenPGPSignedMessage.ELEMENT_NAME, OpenPGPSignedMessage.NAMESPACE);
+                        if (_pgpSigned instanceof OpenPGPSignedMessage) {
+                            OpenPGPSignedMessage pgpSigned = (OpenPGPSignedMessage) _pgpSigned;
+                            byte[] signedData = pgpSigned.getData();
+
+                            // signed message
+                            msg.setSecurityFlags(Coder.SECURITY_BASIC_SIGNED);
+
+                            if (signedData != null) {
+                                // check signature
+                                try {
+                                    checkSignedMessage(msg, pgpSigned.getData());
+                                    // at this point our message should be filled with the verified body
+                                }
+
+                                catch (Exception exc) {
+                                    Log.e(MessageCenterService.TAG, "signature check failed", exc);
+                                    // TODO what to do here?
+                                    msg.setSecurityFlags(msg.getSecurityFlags() |
+                                        Coder.SECURITY_ERROR_INVALID_SIGNATURE);
+                                }
+                            }
+                        }
+
                     }
 
                     // out of band data
@@ -343,9 +370,12 @@ class MessageListener extends MessageCenterPacketListener {
                         return;
                     }
 
+                    boolean needAck = m.hasExtension(DeliveryReceiptRequest.ELEMENT, DeliveryReceipt.NAMESPACE);
+                    msg.setStatus(needAck ? Messages.STATUS_INCOMING : Messages.STATUS_CONFIRMED);
+
                     Uri msgUri = incoming(msg);
 
-                    if (m.hasExtension(DeliveryReceiptRequest.ELEMENT, DeliveryReceipt.NAMESPACE)) {
+                    if (needAck) {
                         // send ack :)
                         sendReceipt(msgUri, msgId, from, waitingReceipt);
                     }
@@ -527,6 +557,87 @@ class MessageListener extends MessageCenterPacketListener {
                         break;
 
                     case DecryptException.DECRYPT_EXCEPTION_INVALID_DATA:
+                        securityFlags |= Coder.SECURITY_ERROR_INVALID_DATA;
+                        break;
+
+                }
+
+                msg.setSecurityFlags(securityFlags);
+            }
+
+            throw exc;
+        }
+    }
+
+    private void checkSignedMessage(CompositeMessage msg, byte[] signedData) throws Exception {
+        try {
+            Context context = getContext();
+            EndpointServer server = getServer();
+            if (server == null)
+                server = Preferences.getEndpointServer(context);
+
+            // TODO retrieve a coder for verifying against the server key, but the server JID is not stored in the users table
+            // FIXME fix this situation maybe by storing the key only (how do we request it?)
+            Coder coder = UsersProvider.getVerifyCoder(context, server, msg.getSender(true));
+
+            // decrypt
+            Coder.VerifyOutput result = coder.verifyText(signedData);
+            String contentText = result.cleartext;
+
+            // clear componenets (we are adding new ones)
+            msg.clearComponents();
+            // decrypted text
+            if (contentText != null)
+                msg.addComponent(new TextComponent(contentText));
+
+            if (result.errors.size() > 0) {
+
+                int securityFlags = msg.getSecurityFlags();
+
+                for (DecryptException err : result.errors) {
+
+                    int code = err.getCode();
+                    switch (code) {
+
+                        case VerifyException.VERIFY_EXCEPTION_INTEGRITY_CHECK:
+                            securityFlags |= Coder.SECURITY_ERROR_INTEGRITY_CHECK;
+                            break;
+
+                        case VerifyException.VERIFY_EXCEPTION_VERIFICATION_FAILED:
+                            securityFlags |= Coder.SECURITY_ERROR_INVALID_SIGNATURE;
+                            break;
+
+                        case VerifyException.VERIFY_EXCEPTION_INVALID_DATA:
+                            securityFlags |= Coder.SECURITY_ERROR_INVALID_DATA;
+                            break;
+
+                        case VerifyException.VERIFY_EXCEPTION_INVALID_TIMESTAMP:
+                            securityFlags |= Coder.SECURITY_ERROR_INVALID_TIMESTAMP;
+                            break;
+
+                    }
+
+                }
+
+                msg.setSecurityFlags(securityFlags);
+            }
+        }
+        catch (Exception exc) {
+            // pass over the message even if encrypted
+            // UI will warn the user about that and wait
+            // for user decisions
+            int securityFlags = msg.getSecurityFlags();
+
+            if (exc instanceof VerifyException) {
+
+                int code = ((VerifyException) exc).getCode();
+                switch (code) {
+
+                    case VerifyException.VERIFY_EXCEPTION_INTEGRITY_CHECK:
+                        securityFlags |= Coder.SECURITY_ERROR_INTEGRITY_CHECK;
+                        break;
+
+                    case VerifyException.VERIFY_EXCEPTION_INVALID_DATA:
                         securityFlags |= Coder.SECURITY_ERROR_INVALID_DATA;
                         break;
 

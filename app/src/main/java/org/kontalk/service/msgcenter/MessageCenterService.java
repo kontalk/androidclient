@@ -2252,7 +2252,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         GroupCommandComponent group = msg.getComponent(GroupCommandComponent.class);
         boolean isGroupCommand = group != null;
 
-        values.put(Messages.STATUS, Messages.STATUS_INCOMING);
+        values.put(Messages.STATUS, msg.getStatus());
         // group commands don't get notifications
         values.put(Messages.UNREAD, !isGroupCommand);
         values.put(Messages.NEW, !isGroupCommand);
