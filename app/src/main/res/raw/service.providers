@@ -244,4 +244,11 @@
         <className>org.kontalk.client.E2EEncryption$Provider</className>
     </extensionProvider>
 
+    <!-- XEP-0027: Current Jabber OpenPGP Usage (Signing) -->
+    <extensionProvider>
+        <elementName>x</elementName>
+        <namespace>jabber:x:signed</namespace>
+        <className>org.kontalk.client.OpenPGPSignedMessage$Provider</className>
+    </extensionProvider>
+
 </smackProviders>
