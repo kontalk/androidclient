@@ -30,13 +30,9 @@ public class VerifyException extends GeneralSecurityException {
     private static final long serialVersionUID = -3210114563479741397L;
 
     /** Signature verification failed. */
-    public static final int VERIFY_EXCEPTION_VERIFICATION_FAILED = 1;
-    /** Invalid or unparsable timestamp. */
-    public static final int VERIFY_EXCEPTION_INVALID_TIMESTAMP = 6;
+    public static final int VERIFY_EXCEPTION_VERIFICATION_FAILED = DecryptException.DECRYPT_EXCEPTION_VERIFICATION_FAILED;
     /** Invalid packet data. */
-    public static final int VERIFY_EXCEPTION_INVALID_DATA = 7;
-    /** Message integrity check failed. */
-    public static final int VERIFY_EXCEPTION_INTEGRITY_CHECK = 8;
+    public static final int VERIFY_EXCEPTION_INVALID_DATA = DecryptException.DECRYPT_EXCEPTION_INVALID_DATA;
 
     private final int mCode;
 

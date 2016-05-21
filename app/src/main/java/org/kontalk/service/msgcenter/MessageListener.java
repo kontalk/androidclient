@@ -486,7 +486,7 @@ class MessageListener extends MessageCenterPacketListener {
                 contentText = result.cleartext;
             }
 
-            // clear componenets (we are adding new ones)
+            // clear components (we are adding new ones)
             msg.clearComponents();
             // decrypted text
             if (contentText != null)
@@ -576,15 +576,14 @@ class MessageListener extends MessageCenterPacketListener {
             if (server == null)
                 server = Preferences.getEndpointServer(context);
 
-            // TODO retrieve a coder for verifying against the server key, but the server JID is not stored in the users table
-            // FIXME fix this situation maybe by storing the key only (how do we request it?)
+            // retrieve a coder for verifying against the server key
             Coder coder = UsersProvider.getVerifyCoder(context, server, msg.getSender(true));
 
             // decrypt
-            Coder.VerifyOutput result = coder.verifyText(signedData);
+            Coder.VerifyOutput result = coder.verifyText(signedData, true);
             String contentText = result.cleartext;
 
-            // clear componenets (we are adding new ones)
+            // clear components (we are adding new ones)
             msg.clearComponents();
             // decrypted text
             if (contentText != null)
@@ -594,14 +593,10 @@ class MessageListener extends MessageCenterPacketListener {
 
                 int securityFlags = msg.getSecurityFlags();
 
-                for (DecryptException err : result.errors) {
+                for (VerifyException err : result.errors) {
 
                     int code = err.getCode();
                     switch (code) {
-
-                        case VerifyException.VERIFY_EXCEPTION_INTEGRITY_CHECK:
-                            securityFlags |= Coder.SECURITY_ERROR_INTEGRITY_CHECK;
-                            break;
 
                         case VerifyException.VERIFY_EXCEPTION_VERIFICATION_FAILED:
                             securityFlags |= Coder.SECURITY_ERROR_INVALID_SIGNATURE;
@@ -609,10 +604,6 @@ class MessageListener extends MessageCenterPacketListener {
 
                         case VerifyException.VERIFY_EXCEPTION_INVALID_DATA:
                             securityFlags |= Coder.SECURITY_ERROR_INVALID_DATA;
-                            break;
-
-                        case VerifyException.VERIFY_EXCEPTION_INVALID_TIMESTAMP:
-                            securityFlags |= Coder.SECURITY_ERROR_INVALID_TIMESTAMP;
                             break;
 
                     }
@@ -632,10 +623,6 @@ class MessageListener extends MessageCenterPacketListener {
 
                 int code = ((VerifyException) exc).getCode();
                 switch (code) {
-
-                    case VerifyException.VERIFY_EXCEPTION_INTEGRITY_CHECK:
-                        securityFlags |= Coder.SECURITY_ERROR_INTEGRITY_CHECK;
-                        break;
 
                     case VerifyException.VERIFY_EXCEPTION_INVALID_DATA:
                         securityFlags |= Coder.SECURITY_ERROR_INVALID_DATA;
