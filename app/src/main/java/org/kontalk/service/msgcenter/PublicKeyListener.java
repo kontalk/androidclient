@@ -54,10 +54,8 @@ class PublicKeyListener extends MessageCenterPacketListener {
     public void processPacket(Stanza packet) {
         PublicKeyPublish p = (PublicKeyPublish) packet;
 
-        byte[] _publicKey = p.getPublicKey();
-
-        // vcard was requested, store but do not broadcast
         if (p.getType() == IQ.Type.result) {
+            byte[] _publicKey = p.getPublicKey();
 
             if (_publicKey != null) {
                 String from = XmppStringUtils.parseBareJid(p.getFrom());
@@ -102,18 +100,32 @@ class PublicKeyListener extends MessageCenterPacketListener {
                 }
 
                 else {
-                    try {
-                        Log.v("pubkey", "Updating key for " + from);
-                        UsersProvider.setUserKey(getContext(), from, _publicKey);
-                        // maybe trust the key
-                        UsersProvider.maybeTrustUserKey(getContext(), from, _publicKey);
-
-                        // invalidate cache for this user
-                        Contact.invalidate(from);
+                    // updating server key
+                    if (XmppStringUtils.parseBareJid(from).equals(from)) {
+                        Log.v("pubkey", "Updating server key for " + from);
+                        try {
+                            UsersProvider.setPublicKeyInternal(getContext(), from, _publicKey);
+                        }
+                        catch (Exception e) {
+                            // TODO warn user
+                            Log.e(MessageCenterService.TAG, "unable to update user key", e);
+                        }
                     }
-                    catch (Exception e) {
-                        // TODO warn user
-                        Log.e(MessageCenterService.TAG, "unable to update user key", e);
+
+                    else {
+                        try {
+                            Log.v("pubkey", "Updating key for " + from);
+                            UsersProvider.setUserKey(getContext(), from, _publicKey);
+                            // maybe trust the key
+                            UsersProvider.maybeTrustUserKey(getContext(), from, _publicKey);
+
+                            // invalidate cache for this user
+                            Contact.invalidate(from);
+                        }
+                        catch (Exception e) {
+                            // TODO warn user
+                            Log.e(MessageCenterService.TAG, "unable to update user key", e);
+                        }
                     }
                 }
             }

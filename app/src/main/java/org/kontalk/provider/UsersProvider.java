@@ -361,7 +361,7 @@ public class UsersProvider extends ContentProvider {
                 TABLE_KEYS + "." + Keys.JID);
             qb.setProjectionMap(usersProjectionMap);
         }
-        else if (match == KEYS) {
+        else if (match == KEYS || match == KEYS_JID) {
             qb.setTables(TABLE_KEYS);
             qb.setProjectionMap(keysProjectionMap);
         }
@@ -371,15 +371,23 @@ public class UsersProvider extends ContentProvider {
                 // nothing to do
                 break;
 
-            case USERS_JID:
+            case USERS_JID: {
                 // TODO append to selection
                 String userId = uri.getPathSegments().get(1);
                 selection = TABLE_USERS + "." + Users.JID + " = ?";
                 selectionArgs = new String[] { userId };
                 break;
+            }
 
             case KEYS:
                 // nothing to do
+                break;
+
+            case KEYS_JID:
+                // TODO append to selection
+                String userId = uri.getPathSegments().get(1);
+                selection = TABLE_KEYS + "." + Keys.JID + " = ?";
+                selectionArgs = new String[] { userId };
                 break;
 
             default:
@@ -1021,6 +1029,12 @@ public class UsersProvider extends ContentProvider {
         return new PGPCoder(server, key, senderKey);
     }
 
+    /** Returns a {@link Coder} instance for verifying data. */
+    public static Coder getVerifyCoder(Context context, EndpointServer server, String sender) {
+        PGPPublicKeyRing senderKey = getPublicKeyInternal(context, sender);
+        return new PGPCoder(server, null, senderKey);
+    }
+
     /** Retrieves the (un)trusted public key for a user. */
     public static PGPPublicKeyRing getPublicKey(Context context, String jid, boolean trusted) {
         byte[] keydata = null;
@@ -1028,6 +1042,30 @@ public class UsersProvider extends ContentProvider {
         Cursor c = res.query(Users.CONTENT_URI.buildUpon()
             .appendPath(jid).build(), new String[] { trusted ?
                 Keys.TRUSTED_PUBLIC_KEY : Users.PUBLIC_KEY },
+            null, null, null);
+
+        if (c.moveToFirst())
+            keydata = c.getBlob(0);
+
+        c.close();
+
+        try {
+            return PGP.readPublicKeyring(keydata);
+        }
+        catch (Exception e) {
+            // ignored
+        }
+
+        return null;
+    }
+
+    /** Retrieves a public key directly from the keys table. */
+    public static PGPPublicKeyRing getPublicKeyInternal(Context context, String jid) {
+        byte[] keydata = null;
+        ContentResolver res = context.getContentResolver();
+        Cursor c = res.query(Keys.CONTENT_URI.buildUpon()
+                .appendPath(jid).build(),
+            new String[] { Keys.PUBLIC_KEY },
             null, null, null);
 
         if (c.moveToFirst())
@@ -1084,6 +1122,16 @@ public class UsersProvider extends ContentProvider {
         values.put(Users.LAST_SEEN, time);
         context.getContentResolver().update(Users.CONTENT_URI,
             values, Users.JID + "=?", new String[] { jid });
+    }
+
+    public static void setPublicKeyInternal(Context context, String jid, byte[] keydata)
+        throws IOException, PGPException {
+        String fingerprint = PGP.getFingerprint(keydata);
+        ContentValues values = new ContentValues(3);
+        values.put(Keys.JID, jid);
+        values.put(Keys.FINGERPRINT, fingerprint);
+        values.put(Keys.PUBLIC_KEY, keydata);
+        context.getContentResolver().insert(Keys.CONTENT_URI, values);
     }
 
     /** Updates a user public key. */
@@ -1208,7 +1256,7 @@ public class UsersProvider extends ContentProvider {
         sUriMatcher.addURI(AUTHORITY, TABLE_KEYS, KEYS);
         sUriMatcher.addURI(AUTHORITY, TABLE_KEYS + "/*", KEYS_JID);
 
-        usersProjectionMap = new HashMap<String, String>();
+        usersProjectionMap = new HashMap<>();
         usersProjectionMap.put(Users._ID, Users._ID);
         usersProjectionMap.put(Users.NUMBER, Users.NUMBER);
         usersProjectionMap.put(Users.DISPLAY_NAME, Users.DISPLAY_NAME);
@@ -1225,9 +1273,10 @@ public class UsersProvider extends ContentProvider {
         usersProjectionMap.put(Keys.TRUSTED_FINGERPRINT, TABLE_KEYS + "." + Keys.FINGERPRINT);
 
         // only for direct access to the keys table (for optimization)
-        keysProjectionMap = new HashMap<String, String>();
+        keysProjectionMap = new HashMap<>();
         keysProjectionMap.put(Keys.JID, Keys.JID);
         keysProjectionMap.put(Keys.FINGERPRINT, Keys.FINGERPRINT);
+        keysProjectionMap.put(Keys.PUBLIC_KEY, Keys.PUBLIC_KEY);
     }
 
 }
