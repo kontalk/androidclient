@@ -1353,6 +1353,22 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             .getInstanceFor(connection, this)
             .onConnectionCompleted();
 
+        // request server key if needed
+        Async.go(new Runnable() {
+            @Override
+            public void run() {
+                final XMPPConnection conn = mConnection;
+                if (conn != null && conn.isConnected()) {
+                    String jid = conn.getServiceName();
+                    if (UsersProvider.getPublicKeyInternal(MessageCenterService.this, jid) == null) {
+                        PublicKeyPublish pub = new PublicKeyPublish();
+                        pub.setTo(jid);
+                        sendPacket(pub, false);
+                    }
+                }
+            }
+        });
+
         // release the wakelock
         mWakeLock.release();
     }

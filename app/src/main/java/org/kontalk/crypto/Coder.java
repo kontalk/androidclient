@@ -99,7 +99,7 @@ public abstract class Coder {
         OutputStream output, List<DecryptException> errors) throws GeneralSecurityException;
 
     /** Verifies a byte array which should contain text. */
-    public abstract Coder.VerifyOutput verifyText(byte[] signed) throws GeneralSecurityException;
+    public abstract Coder.VerifyOutput verifyText(byte[] signed, boolean verify) throws GeneralSecurityException;
 
     /** Returns true if the given security flags has some error bit on. */
     public static boolean isError(int securityFlags) {
@@ -127,10 +127,15 @@ public abstract class Coder {
         }
     }
 
-    public static class VerifyOutput extends DecryptOutput {
+    public static class VerifyOutput {
+        public final String cleartext;
+        public final Date timestamp;
+        public final List<VerifyException> errors;
 
-        VerifyOutput(String cleartext, String mime, Date timestamp, List<DecryptException> errors) {
-            super(cleartext, mime, timestamp, errors);
+        VerifyOutput(String cleartext, Date timestamp, List<VerifyException> errors) {
+            this.cleartext = cleartext;
+            this.timestamp = timestamp;
+            this.errors = errors;
         }
 
     }
