@@ -241,9 +241,11 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     protected boolean isUserId(String jid) {
         if (mConversation != null) {
             String[] users = mConversation.getGroupPeers();
-            for (String user : users) {
-                if (XMPPUtils.equalsBareJID(jid, user))
-                    return true;
+            if (users != null) {
+                for (String user : users) {
+                    if (XMPPUtils.equalsBareJID(jid, user))
+                        return true;
+                }
             }
         }
         return false;
