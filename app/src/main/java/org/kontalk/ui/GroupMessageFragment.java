@@ -206,6 +206,9 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         String status = getResources()
             .getQuantityString(R.plurals.group_people, count, count);
 
+        // disable sending for solo groups
+        mComposer.setSendEnabled(count > 1);
+
         setActivityTitle(subject, status);
     }
 
