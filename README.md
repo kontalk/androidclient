@@ -10,10 +10,11 @@ All releases are available in the [Releases](//github.com/kontalk/androidclient/
 
 Stable versions are available through Google Play Store and F-Droid:  
 <a href="https://play.google.com/store/apps/details?id=org.kontalk"><img
-  alt="Get it on Google Play" height="45"
-  src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge-border.png" /></a>
+  alt="Get it on Google Play" height="80"
+  src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" /></a>
 <a href="https://f-droid.org/repository/browse/?fdid=org.kontalk"><img
-  alt="Available on F-Droid" height="45" src="http://www.kontalk.org/images/fdroid.png" /></a>
+  alt="Get it on F-Droid" height="80"
+  src="https://f-droid.org/badge/get-it-on.png" /></a>
 
 
 ### Community support
