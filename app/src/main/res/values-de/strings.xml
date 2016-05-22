@@ -471,10 +471,10 @@
     <string name="group_untitled">Unbenannte Gruppe</string>
     <string name="title_group_subject">Gruppenname</string>
     <string name="group_command_create">Gruppe erstellt:</string>
-    <string name="group_command_user_parted">%s verliessen die Gruppe.</string>
+    <string name="group_command_user_parted">%s hat die Gruppe verlassen.</string>
     <string name="group_command_text_create">Gruppe erstellt</string>
     <string name="group_command_text_subject">Gruppenname geändert</string>
-    <string name="group_command_text_part">Jemand verließ die Gruppe</string>
+    <string name="group_command_text_part">Jemand hat die Gruppe verlassen</string>
 
     <plurals name="group_people">
 	<item quantity="one">1 Person</item>
