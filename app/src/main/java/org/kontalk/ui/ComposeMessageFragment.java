@@ -774,7 +774,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         if (publicKey != null) {
             PGPPublicKey pk = PGP.getMasterKey(publicKey);
             fingerprint = PGP.formatFingerprint(PGP.getFingerprint(pk));
-            uid = PGP.getUserId(pk, null);    // TODO server!!!
+            uid = PGP.getUserId(pk, XmppStringUtils.parseDomain(mUserJID));
         }
         else {
             // FIXME using another string
