@@ -88,12 +88,13 @@ public class ComposerBar extends RelativeLayout implements
     private Context mContext;
 
     // for the text entry
+    private boolean mSendEnabled = true;
     private EditText mTextEntry;
     private View mSendButton;
     private ComposerListener mListener;
     private TextWatcher mChatStateListener;
 
-    boolean mEnterSend;
+    private boolean mEnterSend;
 
     /** Used during audio recording to restore focus status of the text entry. */
     private boolean mTextEntryFocus;
@@ -195,7 +196,8 @@ public class ComposerBar extends RelativeLayout implements
                     mAudioButton.setVisibility(textPresent ? View.INVISIBLE : View.VISIBLE);
                     mSendButton.setVisibility(textPresent ? View.VISIBLE : View.INVISIBLE);
                 }
-                mSendButton.setEnabled(textPresent);
+                // audio button should already be disabled if needed
+                mSendButton.setEnabled(textPresent && mSendEnabled);
 
                 if (mListener != null)
                     mListener.textChanged(s);
@@ -203,7 +205,7 @@ public class ComposerBar extends RelativeLayout implements
         });
         mTextEntry.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_SEND) {
+                if (actionId == EditorInfo.IME_ACTION_SEND && mSendEnabled) {
                     if (!mEnterSend) {
                         InputMethodManager imm = (InputMethodManager) mContext
                             .getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -217,7 +219,7 @@ public class ComposerBar extends RelativeLayout implements
         });
         mChatStateListener = new TextWatcher() {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (Preferences.getSendTyping(mContext)) {
+                if (mSendEnabled && Preferences.getSendTyping(mContext)) {
                     // send typing notification if necessary
                     if (!mComposeSent && mListener.sendTyping()) {
                         mComposeSent = true;
@@ -352,12 +354,24 @@ public class ComposerBar extends RelativeLayout implements
                 toggleEmojiDrawer();
             }
         });
+
+        doSetSendEnabled();
     }
 
     public void onPause() {
         if (mIsRecordingAudio) {
             abortRecording();
         }
+    }
+
+    public void setSendEnabled(boolean enabled) {
+        mSendEnabled = enabled;
+        doSetSendEnabled();
+    }
+
+    private void doSetSendEnabled() {
+        mSendButton.setEnabled(mSendEnabled);
+        mAudioButton.setEnabled(mSendEnabled);
     }
 
     public void setRootView(View rootView) {
