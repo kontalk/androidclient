@@ -482,7 +482,9 @@
 
     <plurals name="group_people">
 	<item quantity="one">1 особа</item>
-	<item quantity="other">%d особе</item>
+	<item quantity="few">%d особе</item>
+	<item quantity="many">%d особа</item>
+	<item quantity="other"></item>
 </plurals>
 
 
