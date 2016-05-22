@@ -1673,9 +1673,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             filter.addAction(MessageCenterService.ACTION_PRESENCE);
             filter.addAction(MessageCenterService.ACTION_CONNECTED);
             filter.addAction(MessageCenterService.ACTION_ROSTER_LOADED);
-            filter.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
             filter.addAction(MessageCenterService.ACTION_MESSAGE);
-            filter.addAction(MessageCenterService.ACTION_VERSION);
 
             mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
 
