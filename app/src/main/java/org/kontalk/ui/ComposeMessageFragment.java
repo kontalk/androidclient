@@ -564,7 +564,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             // listen for for some stuff we need
             IntentFilter filter = new IntentFilter();
             filter.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
-            filter.addAction(MessageCenterService.ACTION_MESSAGE);
+            filter.addAction(MessageCenterService.ACTION_VERSION);
             mLocalBroadcastManager.registerReceiver(mBroadcastReceiver, filter);
         }
 
@@ -774,7 +774,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         if (publicKey != null) {
             PGPPublicKey pk = PGP.getMasterKey(publicKey);
             fingerprint = PGP.formatFingerprint(PGP.getFingerprint(pk));
-            uid = PGP.getUserId(pk, null);    // TODO server!!!
+            uid = PGP.getUserId(pk, XmppStringUtils.parseDomain(mUserJID));
         }
         else {
             // FIXME using another string

@@ -101,7 +101,7 @@ class PublicKeyListener extends MessageCenterPacketListener {
 
                 else {
                     // updating server key
-                    if (XmppStringUtils.parseBareJid(from).equals(from)) {
+                    if (XmppStringUtils.parseDomain(from).equals(from)) {
                         Log.v("pubkey", "Updating server key for " + from);
                         try {
                             UsersProvider.setPublicKeyInternal(getContext(), from, _publicKey);
