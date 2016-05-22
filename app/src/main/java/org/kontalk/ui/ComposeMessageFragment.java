@@ -564,7 +564,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             // listen for for some stuff we need
             IntentFilter filter = new IntentFilter();
             filter.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
-            filter.addAction(MessageCenterService.ACTION_MESSAGE);
+            filter.addAction(MessageCenterService.ACTION_VERSION);
             mLocalBroadcastManager.registerReceiver(mBroadcastReceiver, filter);
         }
 
