@@ -447,7 +447,7 @@
     <string name="title_public_key_unknown_warning">Clave persoal non fiable</string>
     <string name="msg_public_key_unknown_warning">"Por favor, asegúrese de que a pegada do usuario  corresponde ao exhibido no "<b>1identidade</b>2 diálogo, se non, a comunicación pode ser comprometida!</string>
 
-    <string name="warning_user_blocked">O usuario bloqueoute.</string>
+    <string name="warning_user_blocked">Vostede bloqueou a este usuario.</string>
 
     <string name="about_credits_devteam"><b> 1Foches invitado a Kontalk por:</b> 2</string>
     <string name="about_credits_gfx"><b> 1Gráficos/Iconografia</b> 2</string>
@@ -472,4 +472,23 @@
     <string name="check_do_not_show_again">Non mostrar de novo</string>
 
     <string name="chooser_error_no_browser">Non hai ningún navegador disponible para abrir a ligazón.</string>
-    </resources>
+    <string name="menu_invite_group">Convidar ós usuarios</string>
+    <string name="menu_set_group_subject">Poñer o nome do grupo</string>
+    <string name="menu_leave_group">Abandoar o grupo</string>
+    <string name="group_untitled">Grupo sen nome</string>
+    <string name="title_group_subject">Nome do grupo</string>
+    <string name="group_command_create">Grupo creado por:</string>
+    <string name="group_command_user_parted">%s marchou do grupo.</string>
+    <string name="group_command_subject">O nome do grupo o puso: %s</string>
+
+    <string name="group_command_text_create">Grupo creado</string>
+    <string name="group_command_text_subject">O nome do grupo cambiou</string>
+    <string name="group_command_text_part">Alguén deixou o grupo</string>
+
+    <plurals name="group_people">
+	<item quantity="one">1 persoa</item>
+	<item quantity="other">½d persoas</item>
+</plurals>
+
+
+</resources>

@@ -188,7 +188,7 @@
   <string name="pref_appearance_settings">Ρυθμίσεις εμφάνισης</string>
   <string name="pref_font_size">Μέγεθος γραμματοσειράς</string>
   <string name="menu_status">Κατάσταση</string>
-  <string name="menu_attachment">Επισυναψη</string>
+  <string name="menu_attachment">Επισύναψη</string>
   <string name="menu_smileys">Φατσούλες</string>
   <string name="menu_block_user">Αποκλεισμός</string>
   <string name="menu_unblock_user">Τελος αποκλεισμου</string>
@@ -441,7 +441,7 @@
     <string name="title_public_key_unknown_warning">Αναξιόπιστο προσωπικό κλειδί</string>
     <string name="msg_public_key_unknown_warning">Παρακαλούμε επιβεβαίωστε με το χρήστη ότι το αποτύπωμα τους ταιριάζει με αυτό που εμφανίζεται στο παράθυρο διαλόγου <b>ταυτότητα</b>, διαφορετικά η επικοινωνία σας μπορεί να έχει παραβιαστεί!</string>
 
-    <string name="warning_user_blocked">Ο χρήστης έχει φραγεί από εσάς.</string>
+    <string name="warning_user_blocked">Εσείς έχετε μπλοκάρει αυτόν τον χρήστη.</string>
 
     <string name="about_credits_devteam"><b>Η Kontalk σας παρέχεται από:</b></string>
     <string name="about_credits_gfx"><b>Γραφικά/Εικονογραφία</b></string>
@@ -454,5 +454,34 @@
 	<item quantity="one">Επιλέχθηκε 1</item>
 	<item quantity="other">Επιλέχθηκαν %d</item>
 </plurals>
+
+<string name="menu_invite_group">Προσκαλέστε χρήστες</string>
+    <string name="menu_set_group_subject">Ορίστε το όνομα της ομάδας</string>
+    <string name="menu_leave_group">Έξοδος από την ομάδα</string>
+    <string name="chooser_error_no_gallery_app">Δεν υπάρχει διαθέσιμη εφαρμογή γκαλερί.</string>
+
+    <string name="chooser_error_no_browser">Δεν υπάρχει διαθέσιμο πρόγραμμα περιήγησης για το άνοιγμα του συνδέσμου.</string>
+    <string name="group_untitled">Ομάδα χωρίς όνομα</string>
+    <string name="title_group_subject">Όνομα ομάδας</string>
+    <string name="group_command_create">Η ομάδα δημιουργήθηκε:</string>
+    <string name="group_command_user_parted">%s έφυγε από την ομάδα.</string>
+    <string name="group_command_subject">Το όνομα της ομάδας ορίστηκε σε: %s</string>
+
+    <string name="group_command_text_create">Η ομάδα δημιουργήθηκε</string>
+    <string name="group_command_text_subject">Το όνομα της ομάδας άλλαξε</string>
+    <string name="group_command_text_part">Κάποιος έφυγε από την ομάδα</string>
+
+    <string name="learn_more">Μάθετε περισσότερα</string>
+
+    <string name="title_huawei_protected_apps">Προστατευμένες Εφαρμογές Huawei</string>
+    <string name="msg_huawei_protected_apps">Η Kontalk πρέπει να είναι ενεργοποιημένη στις Προστατευμένες Εφαρμογές για να λειτουργεί κανονικά.</string>
+    <string name="btn_huawei_protected_apps">Προστατευμένες Εφαρμογές</string>
+    <string name="check_do_not_show_again">Να μην εμφανιστεί ξανά</string>
+
+    <plurals name="group_people">
+	<item quantity="one">1 άτομο</item>
+	<item quantity="other">%d άτομα</item>
+</plurals>
+
 
 </resources>

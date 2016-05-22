@@ -467,4 +467,23 @@
     <string name="check_do_not_show_again">Не приказуј поново</string>
 
     <string name="chooser_error_no_browser">Нема прегледача за отварање везе.</string>
-    </resources>
+    <string name="menu_invite_group">Позови кориснике</string>
+    <string name="menu_set_group_subject">Постави назив групе</string>
+    <string name="menu_leave_group">Напусти групу</string>
+    <string name="group_untitled">Група</string>
+    <string name="title_group_subject">Назив групе</string>
+    <string name="group_command_create">Група направљена:</string>
+    <string name="group_command_user_parted">%s напусти групу.</string>
+    <string name="group_command_subject">Назив групе промењен у: %s</string>
+
+    <string name="group_command_text_create">Група направљена</string>
+    <string name="group_command_text_subject">Назив групе промењен</string>
+    <string name="group_command_text_part">Неко је напустио групу</string>
+
+    <plurals name="group_people">
+	<item quantity="one">1 особа</item>
+	<item quantity="other">%d особе</item>
+</plurals>
+
+
+</resources>
