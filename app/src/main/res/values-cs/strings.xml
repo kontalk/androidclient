@@ -480,7 +480,8 @@
 
     <plurals name="group_people">
 	<item quantity="one">1 osoba</item>
-	<item quantity="other">%d osoby</item>
+	<item quantity="few">%d osoby</item>
+	<item quantity="other">%d osob</item>
 </plurals>
 
 
