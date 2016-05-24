@@ -129,6 +129,7 @@ class MessageListener extends MessageCenterPacketListener {
             isAddingMe(ext) ||
             // all other commands require the group to be present in our database
             MessagesProvider.isGroupExisting(getContext(), ext.getJID());
+        // TODO we should also check if the sender is actually in the group
     }
 
     /** Returns true if the given group command is the owner adding me to the group. */
