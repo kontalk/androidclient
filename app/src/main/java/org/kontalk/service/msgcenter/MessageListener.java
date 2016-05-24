@@ -125,8 +125,24 @@ class MessageListener extends MessageCenterPacketListener {
         GroupExtension ext = GroupExtension.from(packet);
         // creation command
         return ext.getType() == GroupExtension.Type.CREATE ||
+            // is the owner adding me to the group?
+            isAddingMe(ext) ||
             // all other commands require the group to be present in our database
             MessagesProvider.isGroupExisting(getContext(), ext.getJID());
+        // TODO we should also check if the sender is actually in the group
+    }
+
+    /** Returns true if the given group command is the owner adding me to the group. */
+    private boolean isAddingMe(GroupExtension ext) {
+        if (ext.getType() == GroupExtension.Type.SET) {
+            String myself = Authenticator.getSelfJID(getContext());
+            for (GroupExtension.Member m : ext.getMembers()) {
+                if (m.operation == GroupExtension.Member.Operation.ADD &&
+                        m.jid.equalsIgnoreCase(myself))
+                    return true;
+            }
+        }
+        return false;
     }
 
     @Override

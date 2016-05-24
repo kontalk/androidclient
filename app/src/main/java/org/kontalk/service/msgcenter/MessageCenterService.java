@@ -2297,6 +2297,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 if (Authenticator.isSelfJID(this, member))
                     continue;
 
+                // FIXME getExistingMembers always include the owner which is added every time
+
                 // add member to group
                 membersValues.put(Groups.PEER, member);
                 getContentResolver().insert(Groups
