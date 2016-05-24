@@ -746,24 +746,26 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                 usersList.add(member);
         }
 
-        String[] users = usersList.toArray(new String[usersList.size()]);
-        long groupThreadId = Conversation.initGroupChat(getActivity(),
-            groupJid, mConversation.getGroupSubject(), users,
-            mComposer.getText().toString());
+        if (usersList.size() > 0) {
+            String[] users = usersList.toArray(new String[usersList.size()]);
+            long groupThreadId = Conversation.initGroupChat(getActivity(),
+                groupJid, mConversation.getGroupSubject(), users,
+                mComposer.getText().toString());
 
-        // store create group command to outbox
-        boolean encrypted = Preferences.getEncryptionEnabled(getContext());
-        String msgId = MessageCenterService.messageId();
-        Uri cmdMsg = storeCreateGroup(groupThreadId, groupJid, users, msgId, encrypted);
-        // TODO check for null
+            // store create group command to outbox
+            boolean encrypted = Preferences.getEncryptionEnabled(getContext());
+            String msgId = MessageCenterService.messageId();
+            Uri cmdMsg = storeCreateGroup(groupThreadId, groupJid, users, msgId, encrypted);
+            // TODO check for null
 
-        // send create group command now
-        MessageCenterService.createGroup(getContext(), groupJid,
-            mConversation.getGroupSubject(), users, encrypted,
-            ContentUris.parseId(cmdMsg), msgId);
+            // send create group command now
+            MessageCenterService.createGroup(getContext(), groupJid,
+                mConversation.getGroupSubject(), users, encrypted,
+                ContentUris.parseId(cmdMsg), msgId);
 
-        // load the new conversation
-        ((ComposeMessageParent) getActivity()).loadConversation(groupThreadId);
+            // load the new conversation
+            ((ComposeMessageParent) getActivity()).loadConversation(groupThreadId);
+        }
     }
 
     private void showIdentityDialog(boolean informationOnly, int titleId) {
