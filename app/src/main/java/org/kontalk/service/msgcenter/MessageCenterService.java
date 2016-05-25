@@ -2287,27 +2287,23 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         if (group != null) {
             // the following operations will work because we are operating with
-            // groups and group_members table (that is, no foreign keys)
+            // groups and group_members table directly (that is, no foreign keys)
 
-            // update group members first
-            ContentValues membersValues = new ContentValues();
-            String[] members = group.getExistingMembers();
-            for (String member : members) {
-                // do not add ourselves
-                if (Authenticator.isSelfJID(this, member))
-                    continue;
+            String[] added = null, removed = null;
 
-                // FIXME getExistingMembers always include the owner which is added every time
-
-                // add member to group
-                membersValues.put(Groups.PEER, member);
-                getContentResolver().insert(Groups
-                    .getMembersUri(group.getContent().getJID()), membersValues);
+            // group creation
+            if (group.isCreateCommand()) {
+                added = group.getExistingMembers();
             }
 
             // add/remove users
-            if (group.isAddOrRemoveCommand()) {
-                String[] added = group.getAddedMembers();
+            else if (group.isAddOrRemoveCommand()) {
+                added = group.getAddedMembers();
+                removed = group.getRemovedMembers();
+            }
+
+            if (added != null) {
+                ContentValues membersValues = new ContentValues();
                 for (String member : added) {
                     // do not add ourselves
                     if (Authenticator.isSelfJID(this, member))
@@ -2316,15 +2312,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     // add member to group
                     membersValues.put(Groups.PEER, member);
                     getContentResolver().insert(Groups
-                        .getMembersUri(group.getContent().getJID()), membersValues);
+                            .getMembersUri(group.getContent().getJID()), membersValues);
                 }
+            }
 
-                String[] removed = group.getRemovedMembers();
+            if (removed != null) {
                 for (String member : removed) {
                     // remove member from group
                     getContentResolver().delete(Groups.getMembersUri(group.getContent().getJID())
-                            .buildUpon().appendEncodedPath(member).build(),
-                        null, null);
+                                    .buildUpon().appendEncodedPath(member).build(),
+                            null, null);
                 }
             }
 
@@ -2337,7 +2334,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             // a user is leaving the group
-            if (group.isPartCommand()) {
+            else if (group.isPartCommand()) {
                 String partMember = group.getFrom();
                 // remove member from group
                 getContentResolver().delete(Groups.getMembersUri(group.getContent().getJID())
