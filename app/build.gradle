@@ -38,7 +38,7 @@ android {
         versionName "4.0-preview"
         targetSdkVersion 22
         minSdkVersion 9
-        resConfigs "en", "de", "fr", "it", "es", "ca", "cs", "el", "fa", "gl", "ja", "nl", "pt", "ru", "sr", "zh-rCN", "ar"
+        resConfigs "en", "de", "fr", "it", "es", "ca", "cs", "el", "fa", "gl", "ja", "nl", "pt", "pt-rBR", "ru", "sr", "zh-rCN", "ar"
         resValue "string", "application_id", applicationId
         resValue "string", "account_type", applicationId + '.account'
         buildConfigField "String", "ACCOUNT_TYPE", '"' + applicationId + '.account"'
@@ -72,6 +72,7 @@ android {
     buildTypes {
         release {
             minifyEnabled true
+            shrinkResources true
             proguardFile 'proguard.cfg'
             if (project.hasProperty('RELEASE_STORE_FILE') || System.getenv("TRAVIS"))
                 signingConfig signingConfigs.release
@@ -82,6 +83,7 @@ android {
             resValue "string", "account_type", defaultConfig.applicationId + '.debug.account'
             buildConfigField "String", "ACCOUNT_TYPE", '"' + defaultConfig.applicationId + '.debug.account"'
             minifyEnabled true
+            shrinkResources true
             proguardFile 'proguard.cfg'
         }
     }
