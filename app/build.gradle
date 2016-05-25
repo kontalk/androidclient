@@ -73,7 +73,7 @@ android {
         release {
             minifyEnabled true
             shrinkResources true
-            proguardFile 'proguard.cfg'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
             if (project.hasProperty('RELEASE_STORE_FILE') || System.getenv("TRAVIS"))
                 signingConfig signingConfigs.release
         }
@@ -84,7 +84,7 @@ android {
             buildConfigField "String", "ACCOUNT_TYPE", '"' + defaultConfig.applicationId + '.debug.account"'
             minifyEnabled true
             shrinkResources true
-            proguardFile 'proguard.cfg'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
         }
     }
 
