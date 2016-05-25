@@ -72,6 +72,7 @@ android {
     buildTypes {
         release {
             minifyEnabled true
+            shrinkResources true
             proguardFile 'proguard.cfg'
             if (project.hasProperty('RELEASE_STORE_FILE') || System.getenv("TRAVIS"))
                 signingConfig signingConfigs.release
@@ -82,6 +83,7 @@ android {
             resValue "string", "account_type", defaultConfig.applicationId + '.debug.account'
             buildConfigField "String", "ACCOUNT_TYPE", '"' + defaultConfig.applicationId + '.debug.account"'
             minifyEnabled true
+            shrinkResources true
             proguardFile 'proguard.cfg'
         }
     }
