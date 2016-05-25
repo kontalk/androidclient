@@ -88,6 +88,7 @@ public class SmackInitializer {
         // disable extensions and experimental - we will load our own extensions
         SmackConfiguration.addDisabledSmackClass("org.jivesoftware.smack.extensions.ExtensionsInitializer");
         SmackConfiguration.addDisabledSmackClass("org.jivesoftware.smack.experimental.ExperimentalInitializer");
+        SmackConfiguration.addDisabledSmackClass("org.jivesoftware.smack.ReconnectionManager");
         if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.FROYO) {
             // java.net.IDN, needed by minidns, is not present on API level 8
             SmackConfiguration.addDisabledSmackClass("org.jivesoftware.smack.util.dns.minidns.MiniDnsResolver");
