@@ -483,4 +483,8 @@
 </plurals>
 
 
-</resources>
+<string name="text_invitation_info">(invitació de xat)</string>
+
+    <string name="group_command_text_add_remove">S\'afegeix o s\'elimina a algú</string>
+
+    </resources>
