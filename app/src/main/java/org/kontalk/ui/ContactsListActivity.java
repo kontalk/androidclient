@@ -18,7 +18,11 @@
 
 package org.kontalk.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -97,6 +101,17 @@ public class ContactsListActivity extends ToolbarActivity
     @Override
     public void onContactSelected(ContactsListFragment fragment, Contact contact) {
         Intent i = new Intent(Intent.ACTION_PICK, Threads.getUri(contact.getJID()));
+        setResult(RESULT_OK, i);
+        finish();
+    }
+
+    @Override
+    public void onContactsSelected(ContactsListFragment fragment, List<Contact> contacts) {
+        Intent i = new Intent(Intent.ACTION_PICK);
+        ArrayList<Uri> uris = new ArrayList<>(contacts.size());
+        for (Contact contact : contacts)
+            uris.add(Threads.getUri(contact.getJID()));
+        i.putParcelableArrayListExtra("org.kontalk.contacts", uris);
         setResult(RESULT_OK, i);
         finish();
     }
