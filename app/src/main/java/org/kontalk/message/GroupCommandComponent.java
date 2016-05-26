@@ -47,6 +47,10 @@ public class GroupCommandComponent extends MessageComponent<GroupExtension> {
     public static final String COMMAND_PART = "part";
     // set subject
     public static final String COMMAND_SUBJECT = "subject";
+    // add members
+    public static final String COMMAND_ADD = "add";
+    // remove members
+    public static final String COMMAND_REMOVE = "remove";
 
     private final String mFrom;
     private final String mOwnJid;
@@ -153,16 +157,18 @@ public class GroupCommandComponent extends MessageComponent<GroupExtension> {
     }
 
     public static String getAddMembersBodyContent(String[] members) {
+        String prefix = GroupCommandComponent.COMMAND_ADD + ":";
         StringBuilder out = new StringBuilder();
         for (String m : members)
-            out.append("add:").append(m).append(";");
+            out.append(prefix).append(m).append(";");
         return out.toString();
     }
 
     public static String getRemoveMembersBodyContent(String[] members) {
+        String prefix = GroupCommandComponent.COMMAND_REMOVE + ":";
         StringBuilder out = new StringBuilder();
         for (String m : members)
-            out.append("remove:").append(m).append(";");
+            out.append(prefix).append(m).append(";");
         return out.toString();
     }
 
@@ -181,7 +187,7 @@ public class GroupCommandComponent extends MessageComponent<GroupExtension> {
     }
 
     private static String[] getPrefixCommandMembers(String body, String prefix) {
-        String[] cmdParams = body.substring(prefix.length()).split(";");
+        String[] cmdParams = body.split(";");
         Set<String> members = new HashSet<>();
         for (String param : cmdParams) {
             if (param.startsWith(prefix))
@@ -207,6 +213,10 @@ public class GroupCommandComponent extends MessageComponent<GroupExtension> {
         return null;
     }
 
+    /**
+     * @deprecated Group command messages shouldn't be visible in the threads table.
+     */
+    @Deprecated
     public static String getTextContent(Context context, String bodyContent) {
         if (bodyContent.startsWith(COMMAND_CREATE)) {
             return context.getString(R.string.group_command_text_create);
@@ -223,9 +233,26 @@ public class GroupCommandComponent extends MessageComponent<GroupExtension> {
     }
 
     public static List<GroupExtension.Member> membersFromJIDs(String[] members) {
-        List<GroupExtension.Member> list = new ArrayList<>(members.length);
-        for (String m : members)
-            list.add(new GroupExtension.Member(m, GroupExtension.Member.Operation.NONE));
+        return membersFromJIDs(members, null, null);
+    }
+
+    public static List<GroupExtension.Member> membersFromJIDs(String[] members, String[] added, String[] removed) {
+        List<GroupExtension.Member> list = new ArrayList<>(
+            (members != null ? members.length : 0) +
+            (added != null ? added.length : 0) +
+            (removed != null ? removed.length : 0));
+        if (members != null) {
+            for (String m : members)
+                list.add(new GroupExtension.Member(m, GroupExtension.Member.Operation.NONE));
+        }
+        if (added != null) {
+            for (String m : added)
+                list.add(new GroupExtension.Member(m, GroupExtension.Member.Operation.ADD));
+        }
+        if (removed != null) {
+            for (String m : removed)
+                list.add(new GroupExtension.Member(m, GroupExtension.Member.Operation.REMOVE));
+        }
         return list;
     }
 

@@ -69,42 +69,76 @@ public class GroupContentView extends TextView
             sizeId = R.style.TextAppearance_CommandMessage;
         setTextAppearance(context, sizeId);
 
-        // TODO build some text based on the command
-        StringBuilder text = new StringBuilder();
-        GroupExtension ext = mComponent.getContent();
+        CharSequence text = null;
 
         // create group
-        if (ext.getType() == GroupExtension.Type.CREATE) {
-            text.append(getResources().getString(R.string.group_command_create));
-            for (GroupExtension.Member member : ext.getMembers()) {
-                if (member.operation != GroupExtension.Member.Operation.NONE)
-                    continue;
-
+        if (component.isCreateCommand()) {
+            text = new StringBuilder();
+            ((StringBuilder) text).append(getResources().getString(R.string.group_command_create));
+            for (String member : component.getExistingMembers()) {
                 // TODO use something more "colorful"
-                text.append("\n");
+                ((StringBuilder) text).append("\n");
 
-                Contact c = Contact.findByUserId(getContext(), member.jid);
+                Contact c = Contact.findByUserId(getContext(), member);
                 if (c != null)
-                    text.append(c.getName());
+                    ((StringBuilder) text).append(c.getName());
                 else
-                    text.append(getResources().getString(R.string.peer_unknown));
+                    ((StringBuilder) text).append(member);
             }
         }
 
         // member left group
-        else if (ext.getType() == GroupExtension.Type.PART) {
+        else if (component.isPartCommand()) {
             Contact c = Contact.findByUserId(getContext(), component.getFrom());
-            text.append(getResources().getString(R.string.group_command_user_parted,
-                (c != null) ? c.getName() : getResources().getString(R.string.peer_unknown)));
+            text = getResources().getString(R.string.group_command_user_parted,
+                (c != null) ? c.getName() : getResources().getString(R.string.peer_unknown));
         }
 
-        else if (ext.getType() == GroupExtension.Type.SET) {
-            // TODO add member(s)
-            // TODO remove member(s)
+        // add/remove members and set subject
+        else if (component.isSetSubjectCommand()) {
+            text = new StringBuilder();
 
-            String subject = ext.getSubject();
+            // add member(s)
+            String[] added = component.getAddedMembers();
+            if (added != null && added.length > 0) {
+                // TODO i18n
+                ((StringBuilder) text).append("Added users:");
+                for (String member : added) {
+                    // TODO use something more "colorful"
+                    ((StringBuilder) text).append("\n");
+
+                    Contact c = Contact.findByUserId(getContext(), member);
+                    if (c != null)
+                        ((StringBuilder) text).append(c.getName());
+                    else
+                        ((StringBuilder) text).append(member);
+                }
+            }
+
+            // remove member(s)
+            String[] removed = component.getRemovedMembers();
+            if (removed != null && removed.length > 0) {
+                if (text.length() > 0)
+                    ((StringBuilder) text).append("\n");
+                // TODO i18n
+                ((StringBuilder) text).append("Removed users:");
+                for (String member : removed) {
+                    // TODO use something more "colorful"
+                    ((StringBuilder) text).append("\n");
+
+                    Contact c = Contact.findByUserId(getContext(), member);
+                    if (c != null)
+                        ((StringBuilder) text).append(c.getName());
+                    else
+                        ((StringBuilder) text).append(member);
+                }
+            }
+
+            String subject = component.getContent().getSubject();
             if (subject != null) {
-                text.append(getResources().getString(R.string.group_command_subject, subject));
+                if (text.length() > 0)
+                    ((StringBuilder) text).append("\n");
+                ((StringBuilder) text).append(getResources().getString(R.string.group_command_subject, subject));
             }
         }
 
