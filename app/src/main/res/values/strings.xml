@@ -374,6 +374,7 @@
     <string name="button_accept">Accept</string>
     <string name="button_block">Block</string>
     <string name="button_identity">Identity</string>
+    <string name="text_invitation_info">(chat invitation)</string>
 
     <string name="msg_connecting_iab">Connecting to Google Play&#8230;</string>
     <string name="msg_iab_thankyou">Thank you!</string>
