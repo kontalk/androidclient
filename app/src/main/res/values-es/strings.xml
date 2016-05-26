@@ -483,4 +483,8 @@
 </plurals>
 
 
-</resources>
+<string name="text_invitation_info">(invitación de chat)</string>
+
+    <string name="group_command_text_add_remove">Se añade o se elimina a alguien</string>
+
+    </resources>
