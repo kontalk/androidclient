@@ -464,7 +464,7 @@
     <string name="check_do_not_show_again">Niet opnieuw tonen</string>
 
     <string name="chooser_error_no_browser">Geen browser beschikbaar om deze link mee te openen.</string>
-    <string name="menu_invite_group">Gebruikers uitnodigen</string>
+    <string name="menu_invite_group">Gebruikers toevoegen</string>
     <string name="menu_set_group_subject">Stel groepstitel in</string>
     <string name="menu_leave_group">Verlaat groep</string>
     <string name="group_untitled">Groep zonder titel</string>

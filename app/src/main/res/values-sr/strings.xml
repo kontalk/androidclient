@@ -467,7 +467,7 @@
     <string name="check_do_not_show_again">Не приказуј поново</string>
 
     <string name="chooser_error_no_browser">Нема прегледача за отварање везе.</string>
-    <string name="menu_invite_group">Позови кориснике</string>
+    <string name="menu_invite_group">Додај кориснике</string>
     <string name="menu_set_group_subject">Постави назив групе</string>
     <string name="menu_leave_group">Напусти групу</string>
     <string name="group_untitled">Група</string>
@@ -482,7 +482,9 @@
 
     <plurals name="group_people">
 	<item quantity="one">1 особа</item>
-	<item quantity="other">%d особе</item>
+	<item quantity="few">%d особе</item>
+	<item quantity="many">%d особа</item>
+	<item quantity="other"></item>
 </plurals>
 
 
