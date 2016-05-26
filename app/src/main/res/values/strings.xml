@@ -481,6 +481,7 @@
     <string name="group_command_text_create">Group created</string>
     <string name="group_command_text_subject">Group title changed</string>
     <string name="group_command_text_part">Someone left the group</string>
+    <string name="group_command_text_add_remove">Someone was added or removed</string>
 
     <string name="learn_more">Learn more</string>
 

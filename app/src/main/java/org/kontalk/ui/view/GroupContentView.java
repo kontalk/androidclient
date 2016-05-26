@@ -27,7 +27,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.kontalk.R;
-import org.kontalk.client.GroupExtension;
 import org.kontalk.data.Contact;
 import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.util.Preferences;

@@ -213,10 +213,6 @@ public class GroupCommandComponent extends MessageComponent<GroupExtension> {
         return null;
     }
 
-    /**
-     * @deprecated Group command messages shouldn't be visible in the threads table.
-     */
-    @Deprecated
     public static String getTextContent(Context context, String bodyContent) {
         if (bodyContent.startsWith(COMMAND_CREATE)) {
             return context.getString(R.string.group_command_text_create);
@@ -227,9 +223,12 @@ public class GroupCommandComponent extends MessageComponent<GroupExtension> {
         else if (bodyContent.startsWith(COMMAND_SUBJECT)) {
             return context.getString(R.string.group_command_text_subject);
         }
+        else if (bodyContent.contains(COMMAND_ADD) || bodyContent.contains(COMMAND_REMOVE)) {
+            return context.getString(R.string.group_command_text_add_remove);
+        }
 
-        // FIXME this shouldn't be needed
-        return "(Unknown group command)";
+        // this shouldn't happen
+        throw new UnsupportedOperationException("Unknown group command: " + bodyContent);
     }
 
     public static List<GroupExtension.Member> membersFromJIDs(String[] members) {
