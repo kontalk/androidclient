@@ -484,4 +484,8 @@
 
 <string name="group_command_subject">Gruppe benannt in: %s</string>
 
+    <string name="text_invitation_info">(Chateinladung)</string>
+
+    <string name="group_command_text_add_remove">Jemand wurde hinzugefügt oder entfernt</string>
+
     </resources>
