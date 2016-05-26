@@ -484,8 +484,12 @@
 	<item quantity="one">1 особа</item>
 	<item quantity="few">%d особе</item>
 	<item quantity="many">%d особа</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
 
 
-</resources>
+<string name="text_invitation_info">(позивница за ћаскање)</string>
+
+    <string name="group_command_text_add_remove">Неко је додат или уклоњен</string>
+
+    </resources>
