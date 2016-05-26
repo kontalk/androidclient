@@ -24,15 +24,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.kontalk.R;
-import org.kontalk.data.Contact;
-import org.kontalk.message.TextComponent;
-import org.kontalk.sync.SyncAdapter;
-import org.kontalk.ui.adapter.ContactsListAdapter;
-import org.kontalk.ui.view.ContactPickerListener;
-import org.kontalk.ui.view.ContactsListItem;
-import org.kontalk.util.RunnableBroadcastReceiver;
-import org.kontalk.util.SystemUtils;
+import com.akalipetis.fragment.ActionModeListFragment;
+import com.akalipetis.fragment.MultiChoiceModeListener;
 
 import android.app.Activity;
 import android.content.ComponentName;
@@ -44,9 +37,10 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
-import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.view.ActionMode;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -54,17 +48,27 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
-import android.widget.AdapterView;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import lb.library.PinnedHeaderListView;
 
+import org.kontalk.R;
+import org.kontalk.data.Contact;
+import org.kontalk.message.TextComponent;
+import org.kontalk.sync.SyncAdapter;
+import org.kontalk.ui.adapter.ContactsListAdapter;
+import org.kontalk.ui.view.ContactPickerListener;
+import org.kontalk.ui.view.ContactsListItem;
+import org.kontalk.util.RunnableBroadcastReceiver;
+import org.kontalk.util.SystemUtils;
+
 
 /** Contacts list selection fragment. */
-public class ContactsListFragment extends Fragment implements
+public class ContactsListFragment extends ActionModeListFragment implements
         ContactsListAdapter.OnContentChangedListener,
         SwipeRefreshLayout.OnRefreshListener,
-        ContactsSyncer {
+        ContactsSyncer, MultiChoiceModeListener {
 
     private Cursor mCursor;
     private ContactsListAdapter mListAdapter;
@@ -77,7 +81,7 @@ public class ContactsListFragment extends Fragment implements
 
     private MenuItem mSyncButton;
 
-    private PinnedHeaderListView mList;
+    private int mCheckedItemCount;
 
     private final RunnableBroadcastReceiver.ActionRunnable mPostSyncAction =
             new RunnableBroadcastReceiver.ActionRunnable() {
@@ -107,18 +111,18 @@ public class ContactsListFragment extends Fragment implements
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mList = (PinnedHeaderListView) view.findViewById(android.R.id.list);
+        PinnedHeaderListView list = (PinnedHeaderListView) getListView();
 
         View pinnedHeaderView = LayoutInflater.from(view.getContext())
-            .inflate(R.layout.pinned_header_listview_side_header, mList, false);
-        mList.setPinnedHeaderView(pinnedHeaderView);
-        mList.setEmptyView(view.findViewById(android.R.id.empty));
+            .inflate(R.layout.pinned_header_listview_side_header, list, false);
+        list.setPinnedHeaderView(pinnedHeaderView);
+        list.setEmptyView(view.findViewById(android.R.id.empty));
 
         mRefresher = (SwipeRefreshLayout) view.findViewById(R.id.refresher);
         mRefresher.setOnRefreshListener(this);
 
         // http://nlopez.io/swiperefreshlayout-with-listview-done-right/
-        mList.setOnScrollListener(new AbsListView.OnScrollListener() {
+        list.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
             }
@@ -126,20 +130,9 @@ public class ContactsListFragment extends Fragment implements
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
                 ((PinnedHeaderListView) view).configureHeaderView(firstVisibleItem);
-                int topRowVerticalPosition =
-                        (view == null || view.getChildCount() == 0) ?
-                                0 : view.getChildAt(0).getTop();
+                int topRowVerticalPosition = (view.getChildCount() == 0) ?
+                            0 : view.getChildAt(0).getTop();
                 mRefresher.setEnabled(firstVisibleItem == 0 && topRowVerticalPosition >= 0);
-            }
-        });
-
-        mList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                ContactPickerListener parent = (ContactPickerListener) getActivity();
-
-                if (parent != null)
-                    parent.onContactSelected(ContactsListFragment.this, ((ContactsListItem) view).getContact());
             }
         });
     }
@@ -150,12 +143,13 @@ public class ContactsListFragment extends Fragment implements
 
         Activity parent = getActivity();
 
-        mListAdapter = new ContactsListAdapter(parent, mList);
+        mListAdapter = new ContactsListAdapter(parent, getListView());
         mListAdapter.setPinnedHeader(parent);
-        mList.setEnableHeaderTransparencyChanges(true);
+        ((PinnedHeaderListView) getListView()).setEnableHeaderTransparencyChanges(true);
 
         mListAdapter.setOnContentChangedListener(this);
-        mList.setAdapter(mListAdapter);
+        setListAdapter(mListAdapter);
+        setMultiChoiceModeListener(this);
 
         mHandler = new Handler();
         mBroadcastManager = LocalBroadcastManager.getInstance(parent);
@@ -214,6 +208,9 @@ public class ContactsListFragment extends Fragment implements
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (isActionModeActive())
+            return true;
+
         switch (item.getItemId()) {
             case R.id.menu_refresh:
                 startSync(true);
@@ -225,6 +222,85 @@ public class ContactsListFragment extends Fragment implements
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public boolean isActionModeActive() {
+        return mCheckedItemCount > 0;
+    }
+
+    @Override
+    public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+        if (checked)
+            mCheckedItemCount++;
+        else
+            mCheckedItemCount--;
+        mode.setTitle(getResources()
+            .getQuantityString(R.plurals.context_selected,
+                mCheckedItemCount, mCheckedItemCount));
+    }
+
+    @Override
+    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+        if (item.getItemId() == R.id.menu_compose) {
+            // using clone because listview returns its original copy
+            openSelectedContacts(SystemUtils
+                .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
+            mode.finish();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+        MenuInflater inflater = mode.getMenuInflater();
+        inflater.inflate(R.menu.contacts_list_ctx, menu);
+        return true;
+    }
+
+    @Override
+    public void onDestroyActionMode(ActionMode mode) {
+        mCheckedItemCount = 0;
+        getListView().clearChoices();
+        mListAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+        return false;
+    }
+
+    private void openSelectedContacts(SparseBooleanArray checked) {
+        List<Contact> selected = new ArrayList<>();
+        for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
+            if (checked.get(i)) {
+                Cursor cursor = (Cursor) mListAdapter.getItem(i);
+                Contact contact = Contact.fromUsersCursor(cursor);
+                selected.add(contact);
+            }
+        }
+        ContactPickerListener parent = (ContactPickerListener) getActivity();
+        if (parent != null) {
+            if (selected.size() == 1)
+                parent.onContactSelected(this, selected.get(0));
+            else
+                parent.onContactsSelected(this, selected);
+        }
+    }
+
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        int choiceMode = l.getChoiceMode();
+        if (choiceMode == ListView.CHOICE_MODE_NONE || choiceMode == ListView.CHOICE_MODE_SINGLE) {
+            ContactPickerListener parent = (ContactPickerListener) getActivity();
+            if (parent != null) {
+                parent.onContactSelected(this, ((ContactsListItem) v).getContact());
+            }
+        }
+        else {
+            super.onListItemClick(l, v, position, id);
+        }
+
     }
 
     @Override
@@ -281,7 +357,7 @@ public class ContactsListFragment extends Fragment implements
         List<ResolveInfo> resInfo = ctx.getPackageManager().queryIntentActivities(shareIntent, 0);
         // having size=1 means that we are the only handlers
         if (resInfo != null && resInfo.size() > 1) {
-            List<Intent> targets = new ArrayList<Intent>();
+            List<Intent> targets = new ArrayList<>();
 
             for (ResolveInfo resolveInfo : resInfo) {
                 String packageName = resolveInfo.activityInfo.packageName;
