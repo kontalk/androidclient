@@ -24,15 +24,17 @@ import org.kontalk.data.Contact;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.widget.Checkable;
 import android.widget.TextView;
 
 
-public class ContactsListItem extends AvatarListItem {
+public class ContactsListItem extends AvatarListItem implements Checkable {
 
     private Contact mContact;
-    private TextView mHeader;
     private TextView mText1;
     private TextView mText2;
+
+    private boolean mChecked;
 
     public ContactsListItem(Context context) {
         super(context);
@@ -46,7 +48,6 @@ public class ContactsListItem extends AvatarListItem {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mHeader = (TextView) findViewById(R.id.header_text);
         mText1 = (TextView) findViewById(android.R.id.text1);
         mText2 = (TextView) findViewById(android.R.id.text2);
 
@@ -92,6 +93,30 @@ public class ContactsListItem extends AvatarListItem {
 
     public Contact getContact() {
         return mContact;
+    }
+
+    @Override
+    public boolean isChecked() {
+        return mChecked;
+    }
+
+    @Override
+    public void setChecked(boolean checked) {
+        mChecked = checked;
+
+        int backgroundId;
+
+        if (mChecked)
+            backgroundId = R.drawable.list_selected_holo_light;
+        else
+            backgroundId = 0;
+
+        setBackgroundResource(backgroundId);
+    }
+
+    @Override
+    public void toggle() {
+        setChecked(!mChecked);
     }
 
 }

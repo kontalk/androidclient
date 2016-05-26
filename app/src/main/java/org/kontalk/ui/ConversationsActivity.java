@@ -18,6 +18,9 @@
 
 package org.kontalk.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 
 import android.app.Activity;
@@ -192,9 +195,14 @@ public class ConversationsActivity extends MainActivity
         // contact chooser
         if (requestCode == REQUEST_CONTACT_PICKER) {
             if (resultCode == Activity.RESULT_OK) {
+                ArrayList<Uri> uris;
                 Uri uri = data.getData();
-                if (uri != null)
+                if (uri != null) {
                     openConversation(uri);
+                }
+                else if ((uris = data.getParcelableArrayListExtra("org.kontalk.contacts")) != null) {
+                    // TODO handle multiple contacts
+                }
             }
         }
     }
@@ -215,11 +223,17 @@ public class ConversationsActivity extends MainActivity
         return findViewById(R.id.fragment_compose_message) != null;
     }
 
-    /** Called when a contact has been selected from a {@link ContactsListFragment}. */
     @Override
     public void onContactSelected(ContactsListFragment fragment, Contact contact) {
         // open by user hash
         openConversation(Threads.getUri(contact.getJID()));
+    }
+
+    /** Called when a contact has been selected from a {@link ContactsListFragment}. */
+    @Override
+    public void onContactsSelected(ContactsListFragment fragment, List<Contact> contacts) {
+        // open by user hash
+        // TODO handle multiple contacts
     }
 
     public void showContactPicker() {
