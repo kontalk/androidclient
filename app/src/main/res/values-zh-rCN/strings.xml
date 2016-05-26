@@ -450,7 +450,7 @@
 	<item quantity="other"/>
 </plurals>
 
-<string name="app_name_offline">Kontalk (离线)</string>
+<string name="app_name_offline">Kontalk （离线）</string>
     <string name="seen_away_label">在线</string>
     <string name="err_import_keypair_read">无法从外置存储器读取密匙。</string>
     <string name="attachment_camera">摄像头</string>
@@ -500,7 +500,7 @@
     <string name="menu_set_group_subject">设置群组名称</string>
     <string name="menu_leave_group">离开群组</string>
     <string name="chooser_error_no_browser">无法使用浏览器打开链接。</string>
-    <string name="text_invitation_info">(聊天申请)</string>
+    <string name="text_invitation_info">（聊天申请）</string>
 
     <string name="group_untitled">未命名群组</string>
     <string name="title_group_subject">群组名称</string>
@@ -522,7 +522,7 @@
 
     <plurals name="group_people">
 	<item quantity="one">1个人</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
 
 
