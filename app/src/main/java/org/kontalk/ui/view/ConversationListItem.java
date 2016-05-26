@@ -144,8 +144,8 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
 
         // last message or draft??
         if (conv.getRequestStatus() == Threads.REQUEST_WAITING) {
-            // TODO i18n and italic (?)
-            text = "(chat invitation)";
+            text = new SpannableString(context.getString(R.string.text_invitation_info));
+            ((Spannable) text).setSpan(STYLE_ITALIC, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
         }
         else {
             String source = (draft != null) ? draft : conv.getSubject();

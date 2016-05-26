@@ -345,7 +345,16 @@ public class CompositeMessage {
                     else if ((subject = GroupCommandComponent.getSubjectCommand(bodyText)) != null) {
                         ext = new GroupExtension(groupId, groupOwner, GroupExtension.Type.SET, subject);
                     }
-                    // TODO add/remove members
+                    else {
+                        String[] addMembers = GroupCommandComponent.getAddCommandMembers(bodyText);
+                        String[] removeMembers = GroupCommandComponent.getRemoveCommandMembers(bodyText);
+                        if (addMembers != null || removeMembers != null) {
+                            ext = new GroupExtension(groupId, groupOwner, GroupExtension.Type.SET,
+                                groupSubject, GroupCommandComponent
+                                    // TODO what about existing members here?
+                                    .membersFromJIDs(null, addMembers, removeMembers));
+                        }
+                    }
 
                     if (ext != null)
                         addComponent(new GroupCommandComponent(ext, peer,
