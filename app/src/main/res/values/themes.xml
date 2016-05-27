@@ -33,6 +33,7 @@
     <item name="colorAccent">@color/app_accent</item>
 
     <item name="windowActionModeOverlay">true</item>
+    <item name="android:windowContentOverlay">@null</item>
   </style>
 
 </resources>
