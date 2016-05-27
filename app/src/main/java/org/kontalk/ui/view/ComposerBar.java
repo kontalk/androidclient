@@ -371,7 +371,8 @@ public class ComposerBar extends RelativeLayout implements
 
     private void doSetSendEnabled() {
         mSendButton.setEnabled(mSendEnabled);
-        mAudioButton.setEnabled(mSendEnabled);
+        if (mAudioButton != null)
+            mAudioButton.setEnabled(mSendEnabled);
     }
 
     public void setRootView(View rootView) {
