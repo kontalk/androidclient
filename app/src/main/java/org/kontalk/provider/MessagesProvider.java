@@ -28,6 +28,7 @@ import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.crypto.Coder;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Messages;
@@ -1505,6 +1506,25 @@ public class MessagesProvider extends ContentProvider {
             msgValues.put(Threads.DRAFT, draft);
         Uri newThread = context.getContentResolver().insert(Messages.CONTENT_URI, msgValues);
         return newThread != null ? ContentUris.parseId(newThread) : 0;
+    }
+
+    public static Uri insertCreateGroup(Context context, long threadId,
+        String groupJid, String[] members, String msgId, boolean encrypted) {
+        ContentValues values = new ContentValues();
+        values.put(MyMessages.Messages.THREAD_ID, threadId);
+        values.put(MyMessages.Messages.MESSAGE_ID, msgId);
+        values.put(MyMessages.Messages.PEER, groupJid);
+        values.put(MyMessages.Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
+        values.put(MyMessages.Messages.BODY_CONTENT, GroupCommandComponent.getCreateBodyContent(members));
+        values.put(MyMessages.Messages.BODY_LENGTH, 0);
+        values.put(MyMessages.Messages.UNREAD, false);
+        values.put(MyMessages.Messages.DIRECTION, MyMessages.Messages.DIRECTION_OUT);
+        values.put(MyMessages.Messages.TIMESTAMP, System.currentTimeMillis());
+        values.put(MyMessages.Messages.STATUS, MyMessages.Messages.STATUS_SENDING);
+        // of course outgoing messages are not encrypted in database
+        values.put(MyMessages.Messages.ENCRYPTED, false);
+        values.put(MyMessages.Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+        return context.getContentResolver().insert(MyMessages.Messages.CONTENT_URI, values);
     }
 
     public static boolean isGroupThread(Context context, long id) {

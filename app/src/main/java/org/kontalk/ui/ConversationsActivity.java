@@ -19,12 +19,18 @@
 package org.kontalk.ui;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 
+import org.jivesoftware.smack.util.StringUtils;
+import org.jxmpp.util.XmppStringUtils;
+
 import android.app.Activity;
 import android.app.SearchManager;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -201,9 +207,44 @@ public class ConversationsActivity extends MainActivity
                     openConversation(uri);
                 }
                 else if ((uris = data.getParcelableArrayListExtra("org.kontalk.contacts")) != null) {
-                    // TODO handle multiple contacts
+                    startGroupChat(uris);
                 }
             }
+        }
+    }
+
+    private void startGroupChat(List<Uri> threads) {
+        String selfJid = Authenticator.getSelfJID(this);
+        String groupId = StringUtils.randomString(20);
+        String groupJid = XmppStringUtils.completeJidFrom(groupId, selfJid);
+
+        // ensure no duplicates
+        Set<String> usersList = new HashSet<>();
+        for (Uri uri : threads) {
+            String member = uri.getLastPathSegment();
+            // exclude ourselves
+            if (!member.equalsIgnoreCase(selfJid))
+                usersList.add(member);
+        }
+
+        if (usersList.size() > 0) {
+            String[] users = usersList.toArray(new String[usersList.size()]);
+            long groupThreadId = Conversation.initGroupChat(this,
+                groupJid, null, users, "");
+
+            // store create group command to outbox
+            boolean encrypted = Preferences.getEncryptionEnabled(this);
+            String msgId = MessageCenterService.messageId();
+            Uri cmdMsg = MessagesProvider.insertCreateGroup(this,
+                groupThreadId, groupJid, users, msgId, encrypted);
+            // TODO check for null
+
+            // send create group command now
+            MessageCenterService.createGroup(this, groupJid, null,
+                users, encrypted, ContentUris.parseId(cmdMsg), msgId);
+
+            // load the new conversation
+            openConversation(Threads.getUri(groupJid));
         }
     }
 
