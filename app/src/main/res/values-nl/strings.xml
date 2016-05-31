@@ -483,4 +483,8 @@
 </plurals>
 
 
-</resources>
+<string name="text_invitation_info">(chat uitnodiging)</string>
+
+    <string name="group_command_text_add_remove">Iemand was toegevoegd of verwijderd</string>
+
+    </resources>

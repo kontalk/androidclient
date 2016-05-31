@@ -439,7 +439,7 @@
     <string name="title_public_key_warning">个人密匙已改变</string>
     <string name="msg_public_key_warning">该用户的个人密匙已改变。请与该用户验证，他/她是否有意识地重新安装了Kontalk或是重新生成了他/她的密匙，否则会话可能已经泄露！</string>
 
-    <string name="warning_user_blocked">用户已被你禁止。</string>
+    <string name="warning_user_blocked">你禁止了该用户。</string>
 
     <string name="about_credits_devteam"><b>为你创造Kontalk的人：</b></string>
     <string name="about_credits_gfx"><b>美工</b></string>
@@ -450,7 +450,7 @@
 	<item quantity="other"/>
 </plurals>
 
-<string name="app_name_offline">Kontalk (离线)</string>
+<string name="app_name_offline">Kontalk （离线）</string>
     <string name="seen_away_label">在线</string>
     <string name="err_import_keypair_read">无法从外置存储器读取密匙。</string>
     <string name="attachment_camera">摄像头</string>
@@ -496,4 +496,34 @@
     <string name="text_search_results_empty">找不到消息。</string>
     <string name="chooser_error_no_gallery_app">没有图库应用。</string>
 
-    </resources>
+    <string name="menu_invite_group">添加用户</string>
+    <string name="menu_set_group_subject">设置群组名称</string>
+    <string name="menu_leave_group">离开群组</string>
+    <string name="chooser_error_no_browser">无法使用浏览器打开链接。</string>
+    <string name="text_invitation_info">（聊天申请）</string>
+
+    <string name="group_untitled">未命名群组</string>
+    <string name="title_group_subject">群组名称</string>
+    <string name="group_command_create">群组创建于：</string>
+    <string name="group_command_user_parted">%s 离开了群组。</string>
+    <string name="group_command_subject">群组名称设置为：%s</string>
+
+    <string name="group_command_text_create">创建了群组</string>
+    <string name="group_command_text_subject">群组名称已修改</string>
+    <string name="group_command_text_part">某人离开了群组</string>
+    <string name="group_command_text_add_remove">某人被添加或删除</string>
+
+    <string name="learn_more">了解更多</string>
+
+    <string name="title_huawei_protected_apps">华为受保护的APP</string>
+    <string name="msg_huawei_protected_apps">Kontalk需要在“被保护的APP”里中启用以正常工作。</string>
+    <string name="btn_huawei_protected_apps">被保护的APP</string>
+    <string name="check_do_not_show_again">不再显示</string>
+
+    <plurals name="group_people">
+	<item quantity="one">1个人</item>
+	<item quantity="other"/>
+</plurals>
+
+
+</resources>

@@ -264,10 +264,10 @@
   <string name="attachment_contact">Kontakt</string>
   <string name="attachment_audio">Audio</string>
   <string name="chooser_send_picture">Bild senden</string>
-  <string name="chooser_error_no_camera">Externer Speicher nicht verfügbar. Es ist nicht möglich, ein Bild von der Kamera aufzunehmen.</string>
+  <string name="chooser_error_no_camera">Externer Speicher nicht verfügbar. Es ist nicht möglich ein Bild von der Kamera aufzunehmen.</string>
   <string name="chooser_select_link">Aktion wählen</string>
   <string name="status_activity_title">Statusnachricht</string>
-  <string name="hint_status_entry">Geben Sie Ihre Statusnachricht hier ein</string>
+  <string name="hint_status_entry">Geben Sie hier Ihre Statusnachricht ein</string>
   <string name="header_recent_status">Kürzlich benutzte Statusnachrichten</string>
   <string name="title_offline_mode_warning">Offline-Modus</string>
   <string name="message_offline_mode_warning">Im Offline-Modus kontaktiert Kontalk den Server nicht bis Sie wieder in den Online-Modus wechseln. Sie können weder Nachrichten senden noch empfangen und Sie werden anderen Nutzern als offline angezeigt.</string>
@@ -285,7 +285,7 @@
   <string name="social_googleplus">Google Plus</string>
   <string name="social_facebook">Facebook</string>
   <string name="social_identica">Identi.ca</string>
-  <string name="donate_text">Kontalk hat laufende Kosten. Jede kleine Spende hilft, den Fortbestand dieses Dienstes zu sichern.</string>
+  <string name="donate_text">Kontalk hat laufende Ausgaben (z.B.Server). Jede kleine Spende hilft, den Fortbestand dieses Dienstes zu sichern.</string>
   <string name="title_bitcoin_dialog">Bitcoin</string>
   <string name="text_bitcoin_dialog">Bitcoinadresse:\n%s</string>
   <string name="donate_wallet">Google Play</string>
@@ -320,7 +320,7 @@
   <string name="button_identity">Identität</string>
   <string name="msg_connecting_iab">Mit Google Play verbinden…</string>
   <string name="msg_iab_thankyou">Vielen Dank!</string>
-  <string name="msg_iab_thankyou_warning">Irgendetwas ging schief, aber die Spende ist eingegangen. Danke!</string>
+  <string name="msg_iab_thankyou_warning">Irgend etwas ging schief, aber die Spende ist eingegangen. Vielen Dank!</string>
   <string name="iab_error_setup">Fehler während der Einrichtung der In-App-Käufe (%d)</string>
   <string name="iab_error_query">Bestandsabfrage für die In-App-Käufe fehlgeschlagen (%d)</string>
   <string name="copy_clipboard">In die Zwischenablage kopieren</string>
@@ -341,11 +341,11 @@
   <string name="msg_delete_account_progress">Ihr Account wird gelöscht…</string>
   <string name="msg_user_blocked">Nutzer wurde blockiert.</string>
   <string name="msg_user_unblocked">Nutzer wurde freigegeben.</string>
-  <string name="msg_block_user_warning">Sie haben vor, diesen Nutzer zu blockieren. Danach wird Ihnen dieser Nutzer keine Nachrichten mehr senden können, bis Sie ihn/sie wieder freigeben. Dieser Nutzer wird Ihren Status oder letzte bekannte Anwesenheit nicht sehen können und auch Sie werden seinen Status nicht sehen. Es wird für Sie auch nicht möglich sein, Nachrichten an ihn/sie zu senden.</string>
-  <string name="msg_unblock_user_warning">Sie haben vor, diesen Nutzer freizugeben. Das bedeutet, er/sie kann Ihnen Nachrichten senden und Ihren Status bzw. letzte bekannte Anwesenheit sehen.</string>
+  <string name="msg_block_user_warning">Sie haben vor diesen Nutzer zu blockieren. Danach wird Ihnen dieser Nutzer keine Nachrichten mehr senden können bis Sie ihn/sie wieder freigeben. Dieser Nutzer wird Ihren Status oder letzte bekannte Anwesenheit nicht sehen können und auch Sie werden seinen Status nicht sehen. Es wird für Sie auch nicht möglich sein Nachrichten an ihn/sie zu senden.</string>
+  <string name="msg_unblock_user_warning">Sie haben vor diesen Nutzer freizugeben. Das bedeutet, er/sie kann Ihnen Nachrichten senden und Ihren Status bzw. letzte bekannte Anwesenheit sehen.</string>
   <string name="notification_text_more">Antippen um mehr zu erfahren</string>
   <string name="title_auth_error">Verifizierungsfehler</string>
-  <string name="msg_auth_error">Das letzte Mal, als versucht wurde, einen Kontalk-Server zu kontaktieren, ist die Authentifizierung fehlgeschlagen. Es könnte ein vorübergehender Serverfehler sein. Am wahrscheinlichsten ist es aber, dass Ihr persönlicher Schlüssel abgelehnt wurde. Wir empfehlen, Ihren Kontalk-Account in den Android-System-Einstellungen zu löschen und sich neu im System zu registrieren (Dabei gehen leider Ihre gesamten Kontalk-Nachrichten verloren).</string>
+  <string name="msg_auth_error">Das letzte Mal als versucht wurde einen Kontalk-Server zu kontaktieren ist die Authentifizierung fehlgeschlagen. Es könnte ein vorübergehender Serverfehler sein. Am wahrscheinlichsten ist es aber, dass Ihr persönlicher Schlüssel abgelehnt wurde. Wir empfehlen, Ihren Kontalk-Account in den Android-System-Einstellungen zu löschen und sich neu im System zu registrieren (Dabei gehen leider Ihre gesamten Kontalk-Nachrichten verloren).</string>
   <string name="warn_invite_no_app">Keine App verfügbar um Nutzer einzuladen.</string>
   <string name="pref_text_enter">Entertaste</string>
   <string name="pref_title_text_enter">Wählen Sie die Funktion der Entertaste</string>
@@ -380,13 +380,13 @@
     <string name="about_credits_gfx"><b>Grafiken/Icons</b></string>
     <string name="err_no_contact">Kontakt nicht gefunden.</string>
 
-    <string name="warning_older_version">Ihr Freund verwendet eine ältere Kontalkversion. Es könnte sein, dass manche Funktionen nicht richtig arbeiten.</string>
+    <string name="warning_older_version">Ihr Freund verwendet eine ältere Kontalk-Version. Es könnte sein, dass manche Funktionen nicht richtig arbeiten.</string>
     <string name="pref_help">Hilfe</string>
     <string name="error_delete_thread">Es ist nicht möglich das Gespräch zu löschen.</string>
     <string name="error_delete_message">Es ist nicht möglich die Nachricht zu löschen.</string>
     <string name="err_validation_nonetwork">Es ist keine Internetverbindung verfügbar. Kontalk benötigt aber eine aktive Internetverbindung, um zu funktionieren.</string>
     <string name="title_nonetwork">Keine Internetverbindung</string>
-    <string name="err_import_keypair_uid_mismatch">Der importierte Schlüssel gehört nicht zu der von Ihnen angegbenen Nummer.</string>
+    <string name="err_import_keypair_uid_mismatch">Der importierte Schlüssel gehört nicht zu der von Ihnen angegebenen Nummer.</string>
     <string name="err_audio_record_noaudio">Es wurde kein Audio aufgenommen.</string>
     <string name="err_custom_background">Beim setzen des Hintergrundes ist ein Fehler aufgetreten. Bitte versuchen Sie ein anderes Bild.</string>
     <string name="hint_ptt">Um Aufzunehmen das Mikrofon gedrückt halten.</string>
@@ -426,7 +426,7 @@
     <string name="err_keypair_export_other">Persönlicher Schlüssel konnte nicht exportiert werden.</string>
 
     <string name="pref_title_custom_background">Wählen Sie einen Hintergrund mit untenstehender Option</string>
-    <string name="pref_title_sync_sim_contacts">SIM Kontakte mit einbeziehen um nach regististrierten Nutzern zu suchen</string>
+    <string name="pref_title_sync_sim_contacts">SIM Kontakte mit einbeziehen um nach registrierten Nutzern zu suchen</string>
 
     <string name="pref_title_sync_invisible_contacts">Im Adressbuch ausgeblendete Kontakte einbeziehen. Auswählen wenn DAVDroid verwendet wird,</string>
 
@@ -434,9 +434,9 @@
 
     <string name="warning_public_key_changed">Der Schlüssel dieses Nutzers hat sich unerwartet geändert!</string>
     <string name="title_public_key_changed_warning">Persönlicher Schlüssel geändert</string>
-    <string name="msg_public_key_changed_warning">Bitte klären Sie mit dem Nutzer, ob er/sie Kontalk neu installiert oder den Schlüssel absichtlich neu generiert hat. Anderenfalls könnte es sein, dass die Kommunikation kompromittiert wurde!</string>
+    <string name="msg_public_key_changed_warning">Bitte klären Sie mit dem Nutzer ob er/sie Kontalk neu installiert oder den Schlüssel absichtlich neu generiert hat. Anderenfalls könnte es sein, dass die Kommunikation kompromittiert wurde!</string>
     <string name="warning_public_key_unknown">Dem persönlichen Schlüssel dieses Nutzers wird nicht vertraut!</string>
-    <string name="msg_public_key_unknown_warning">Bitte klären Sie mit dem Nutzer, ob sein/ihr Fingerabdruck mit dem übereinstimmt, der im <b>Identität</b>-Dialog angezeigt wird. Anderenfalls könnte es sein, dass die Kommunikation kompromittiert wurde!</string>
+    <string name="msg_public_key_unknown_warning">Bitte klären Sie mit dem Nutzer ob sein/ihr Fingerabdruck mit dem übereinstimmt, der im <b>Identität</b>-Dialog angezeigt wird. Anderenfalls könnte es sein, dass die Kommunikation kompromittiert wurde!</string>
 
     <string name="title_public_key_unknown_warning">Unvertrauter persönlicher Schlüssel</string>
     <string name="pref_enable_notification_led">Benachrichtigungs LED</string>
@@ -483,5 +483,9 @@
 
 
 <string name="group_command_subject">Gruppe benannt in: %s</string>
+
+    <string name="text_invitation_info">(Chateinladung)</string>
+
+    <string name="group_command_text_add_remove">Jemand wurde hinzugefügt oder entfernt</string>
 
     </resources>
