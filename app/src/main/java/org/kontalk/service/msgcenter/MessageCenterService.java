@@ -21,6 +21,10 @@ package org.kontalk.service.msgcenter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.ref.WeakReference;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
@@ -35,7 +39,6 @@ import java.util.zip.ZipInputStream;
 
 import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.SmackConfiguration;
-import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPConnection;
@@ -150,7 +153,6 @@ import org.kontalk.util.SystemUtils;
  * Use {@link Intent}s to deliver commands (via {@link Context#startService}).
  * Service will broadcast intents when certain events occur.
  * @author Daniele Ricci
- * @version 4.0
  */
 public class MessageCenterService extends Service implements ConnectionHelperListener {
     public static final String TAG = MessageCenterService.class.getSimpleName();
@@ -833,333 +835,117 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             // proceed to start only if network is available
             boolean canConnect = canConnect();
-            boolean isConnected = isConnected();
-            boolean doConnect = false;
+            boolean doConnect;
 
-            // TODO convert actions to classes
+            switch (action) {
+                case ACTION_HOLD:
+                    doConnect = handleHold(intent);
+                    break;
 
-            if (ACTION_HOLD.equals(action)) {
-                if (!mFirstStart)
-                    mIdleHandler.hold(intent.getBooleanExtra("org.kontalk.activate", false));
-                doConnect = true;
-            }
+                case ACTION_RELEASE:
+                    doConnect = handleRelease();
+                    break;
 
-            else if (ACTION_RELEASE.equals(action)) {
-                mIdleHandler.release();
-            }
+                case ACTION_IDLE:
+                    doConnect = handleIdle();
+                    break;
 
-            else if (ACTION_IDLE.equals(action)) {
-                mIdleHandler.idle();
-            }
+                case ACTION_PUSH_START:
+                    doConnect = handlePushStart();
+                    break;
 
-            else if (ACTION_PUSH_START.equals(action)) {
-                setPushNotifications(true);
-            }
+                case ACTION_PUSH_STOP:
+                    doConnect = handlePushStop();
+                    break;
 
-            else if (ACTION_PUSH_STOP.equals(action)) {
-                setPushNotifications(false);
-            }
+                case ACTION_PUSH_REGISTERED:
+                    doConnect = handlePushRegistered(intent);
+                    break;
 
-            else if (ACTION_PUSH_REGISTERED.equals(action)) {
-                String regId = intent.getStringExtra(PUSH_REGISTRATION_ID);
-                // registration cycle under way
-                if (regId == null && mPushRegistrationCycle) {
-                    mPushRegistrationCycle = false;
-                    pushRegister();
-                }
-                else
-                    setPushRegistrationId(regId);
-            }
+                case ACTION_REGENERATE_KEYPAIR:
+                    doConnect = handleRegenerateKeyPair();
+                    break;
 
-            else if (ACTION_REGENERATE_KEYPAIR.equals(action)) {
-                doConnect = true;
-                beginKeyPairRegeneration();
-            }
+                case ACTION_IMPORT_KEYPAIR:
+                    doConnect = handleImportKeyPair(intent);
+                    break;
 
-            else if (ACTION_IMPORT_KEYPAIR.equals(action)) {
-                // zip file with keys
-                Uri file = intent.getParcelableExtra(EXTRA_KEYPACK);
-                // passphrase to decrypt files
-                String passphrase = intent.getStringExtra(EXTRA_PASSPHRASE);
-                beginKeyPairImport(file, passphrase);
-            }
+                case ACTION_CONNECTED:
+                    doConnect = handleConnected();
+                    break;
 
-            else if (ACTION_CONNECTED.equals(action)) {
-                if (isConnected)
-                    broadcast(ACTION_CONNECTED);
-            }
+                case ACTION_RESTART:
+                    doConnect = handleRestart();
+                    break;
 
-            // restart
-            else if (ACTION_RESTART.equals(action)) {
-                quit(true);
-                doConnect = true;
-            }
+                case ACTION_TEST:
+                    doConnect = handleTest(canConnect);
+                    break;
 
-            else if (ACTION_TEST.equals(action)) {
-                if (isConnected) {
-                    if (canTest()) {
-                        mLastTest = SystemClock.elapsedRealtime();
-                        mIdleHandler.test();
-                    }
-                }
-                else {
-                    if (mHelper != null && mHelper.isBackingOff()) {
-                        // helper is waiting for backoff - restart immediately
-                        quit(true);
-                    }
-                    doConnect = canConnect;
-                }
-            }
+                case ACTION_PING:
+                    doConnect = handlePing(canConnect);
+                    break;
 
-            else if (ACTION_PING.equals(action)) {
-                if (isConnected()) {
-                    // acquire a wake lock
-                    mPingLock.acquire();
-                    final XMPPConnection connection = mConnection;
-                    final PingManager pingManager = PingManager.getInstanceFor(connection);
-                    Async.go(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                if (pingManager.pingMyServer(true, SLOW_PING_TIMEOUT)) {
-                                    AndroidAdaptiveServerPingManager
-                                        .getInstanceFor(connection, MessageCenterService.this)
-                                        .pingSuccess();
-                                }
-                                else {
-                                    AndroidAdaptiveServerPingManager
-                                        .getInstanceFor(connection, MessageCenterService.this)
-                                        .pingFailed();
-                                }
-                            }
-                            catch (SmackException.NotConnectedException e) {
-                                // ignored
-                            }
-                            finally {
-                                // release the wake lock
-                                if (mPingLock != null)
-                                    mPingLock.release();
-                            }
-                        }
-                    }, "PingServerIfNecessary (" + mConnection.getConnectionCounter() + ')');
-                }
-                else {
-                    doConnect = canConnect;
-                }
-            }
+                case ACTION_MESSAGE:
+                    doConnect = handleMessage(intent, canConnect);
+                    break;
 
-            else if (ACTION_MESSAGE.equals(action)) {
-                if (canConnect && isConnected)
-                    sendMessage(intent.getExtras());
-            }
+                case ACTION_ROSTER:
+                case ACTION_ROSTER_MATCH:
+                    doConnect = handleRoster(intent, canConnect);
+                    break;
 
-            else if (ACTION_ROSTER.equals(action) || ACTION_ROSTER_MATCH.equals(action)) {
-                if (canConnect && isConnected) {
-                    Stanza iq;
+                case ACTION_ROSTER_LOADED:
+                    doConnect = handleRosterLoaded();
+                    break;
 
-                    if (ACTION_ROSTER_MATCH.equals(action)) {
-                        iq = new RosterMatch();
-                        String[] list = intent.getStringArrayExtra(EXTRA_JIDLIST);
+                case ACTION_PRESENCE:
+                    doConnect = handlePresence(intent, canConnect);
+                    break;
 
-                        for (String item : list) {
-                            ((RosterMatch) iq).addItem(item);
-                        }
+                case ACTION_LAST_ACTIVITY:
+                    doConnect = handleLastActivity(intent, canConnect);
+                    break;
 
-                        // directed to the probe component
-                        iq.setTo(XmppStringUtils.completeJidFrom("probe", mServer.getNetwork()));
-                    }
-                    else {
-                        iq = new RosterPacket();
-                    }
+                case ACTION_VCARD:
+                    doConnect = handleVCard(intent, canConnect);
+                    break;
 
-                    String id = intent.getStringExtra(EXTRA_PACKET_ID);
-                    iq.setStanzaId(id);
-                    // iq default type is get
+                case ACTION_PUBLICKEY:
+                    doConnect = handlePublicKey(intent, canConnect);
+                    break;
 
-                    sendPacket(iq);
-                }
-            }
+                case ACTION_SERVERLIST:
+                    doConnect = handleServerList(canConnect);
+                    break;
 
-            else if (ACTION_ROSTER_LOADED.equals(action)) {
-                if (isConnected && isRosterLoaded()) {
-                    broadcast(ACTION_ROSTER_LOADED);
-                }
-            }
+                case ACTION_SUBSCRIBED:
+                    doConnect = handleSubscribed(intent, canConnect);
+                    break;
 
-            else if (ACTION_PRESENCE.equals(action)) {
-                if (canConnect && isConnected) {
-                    final String id = intent.getStringExtra(EXTRA_PACKET_ID);
-                    String type = intent.getStringExtra(EXTRA_TYPE);
-                    final String to = intent.getStringExtra(EXTRA_TO);
+                case ACTION_RETRY:
+                    doConnect = handleRetry(intent);
+                    break;
 
-                    if ("probe".equals(type)) {
-                        // probing is actually looking into the roster
-                        final Roster roster = getRoster();
+                case ACTION_BLOCKLIST:
+                    doConnect = handleBlocklist();
+                    break;
 
-                        if (to == null) {
-                            for (RosterEntry entry : roster.getEntries()) {
-                                broadcastPresence(roster, entry, id);
-                            }
+                case ACTION_VERSION:
+                    doConnect = handleVersion(intent);
+                    break;
 
-                            // broadcast our own presence
-                            broadcastMyPresence(id);
-                        }
-                        else {
-                            queueTask(new Runnable() {
-                                @Override
-                                public void run() {
-                                    broadcastPresence(roster, to, id);
-                                }
-                            });
-                        }
-                    }
-                    else {
-                        String show = intent.getStringExtra(EXTRA_SHOW);
-                        Presence p = new Presence(type != null ? Presence.Type.valueOf(type) : Presence.Type.available);
-                        p.setStanzaId(id);
-                        p.setTo(to);
-                        if (intent.hasExtra(EXTRA_PRIORITY))
-                            p.setPriority(intent.getIntExtra(EXTRA_PRIORITY, 0));
-                        p.setStatus(intent.getStringExtra(EXTRA_STATUS));
-                        if (show != null)
-                            p.setMode(Presence.Mode.valueOf(show));
-
-                        sendPacket(p);
-                    }
-
-                }
-            }
-
-            else if (ACTION_LAST_ACTIVITY.equals(action)) {
-                if (canConnect && isConnected) {
-                    LastActivity p = new LastActivity();
-
-                    p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
-                    p.setTo(intent.getStringExtra(EXTRA_TO));
-
-                    sendPacket(p);
-                }
-            }
-
-            else if (ACTION_VCARD.equals(action)) {
-                if (canConnect && isConnected) {
-                    VCard4 p = new VCard4();
-                    p.setTo(intent.getStringExtra(EXTRA_TO));
-
-                    sendPacket(p);
-                }
-            }
-
-            else if (ACTION_PUBLICKEY.equals(action)) {
-                if (canConnect && isConnected) {
-                    String to = intent.getStringExtra(EXTRA_TO);
-                    if (to != null) {
-                        // request public key for a specific user
-                        PublicKeyPublish p = new PublicKeyPublish();
-                        p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
-                        p.setTo(to);
-
-                        sendPacket(p);
-                    }
-                    else {
-                        // request public keys for the whole roster
-                        Collection<RosterEntry> buddies = getRoster().getEntries();
-                        for (RosterEntry buddy : buddies) {
-                            if (isRosterEntrySubscribed(buddy)) {
-                                PublicKeyPublish p = new PublicKeyPublish();
-                                p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
-                                p.setTo(buddy.getUser());
-
-                                sendPacket(p);
-                            }
-                        }
-
-                        // request our own public key (odd eh?)
-                        PublicKeyPublish p = new PublicKeyPublish();
-                        p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
-                        p.setTo(XmppStringUtils.parseBareJid(mConnection.getUser()));
-                        sendPacket(p);
-                    }
-                }
-            }
-
-            else if (ACTION_SERVERLIST.equals(action)) {
-                if (canConnect && isConnected) {
-                    ServerlistCommand p = new ServerlistCommand();
-                    p.setTo(XmppStringUtils.completeJidFrom("network", mServer.getNetwork()));
-
-                    StanzaFilter filter = new StanzaIdFilter(p.getStanzaId());
-                    // TODO cache the listener (it shouldn't change)
-                    mConnection.addAsyncStanzaListener(new StanzaListener() {
-                        public void processPacket(Stanza packet) throws NotConnectedException {
-                            Intent i = new Intent(ACTION_SERVERLIST);
-                            List<String> _items = ((ServerlistCommand.ServerlistCommandData) packet)
-                                .getItems();
-                            if (_items != null && _items.size() != 0 && packet.getError() == null) {
-                                String[] items = new String[_items.size()];
-                                _items.toArray(items);
-
-                                i.putExtra(EXTRA_FROM, packet.getFrom());
-                                i.putExtra(EXTRA_JIDLIST, items);
-                            }
-                            mLocalBroadcastManager.sendBroadcast(i);
-                        }
-                    }, filter);
-
-                    sendPacket(p);
-                }
-            }
-
-            else if (ACTION_SUBSCRIBED.equals(action)) {
-                if (canConnect && isConnected) {
-
-                    sendSubscriptionReply(intent.getStringExtra(EXTRA_TO),
-                        intent.getStringExtra(EXTRA_PACKET_ID),
-                        intent.getIntExtra(EXTRA_PRIVACY, PRIVACY_ACCEPT));
-                }
-            }
-
-            else if (ACTION_RETRY.equals(action)) {
-
-                Uri msgUri = intent.getParcelableExtra(EXTRA_MESSAGE);
-
-                boolean encrypted = Preferences.getEncryptionEnabled(this);
-
-                ContentValues values = new ContentValues(2);
-                values.put(Messages.STATUS, Messages.STATUS_SENDING);
-                values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-                getContentResolver().update(msgUri, values, null, null);
-
-                // FIXME shouldn't we resend just the above message?
-
-                // already connected: resend pending messages
-                if (isConnected)
-                    resendPendingMessages(false, false);
-            }
-
-            else if (ACTION_BLOCKLIST.equals(action)) {
-                if (isConnected)
-                    requestBlocklist();
-            }
-
-            else if (ACTION_VERSION.equals(action)) {
-                if (isConnected) {
-                    Version version = new Version(intent.getStringExtra(EXTRA_TO));
-                    version.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
-                    sendPacket(version);
-                }
-            }
-
-            else {
-                // no command means normal service start, connect if not connected
-                doConnect = true;
+                default:
+                    // no command means normal service start, connect if not connected
+                    doConnect = true;
+                    break;
             }
 
             if (canConnect && doConnect)
                 createConnection();
 
             // no reason to exist
-            if (!canConnect && !doConnect && !isConnected && !isConnecting())
+            if (!canConnect && !doConnect && !isConnected() && !isConnecting())
                 stopSelf();
 
             mFirstStart = false;
@@ -1168,6 +954,372 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             Log.v(TAG, "restarting after service crash");
             start(getApplicationContext());
         }
+    }
+
+    // methods below handle single intent commands
+    // the returned value is assigned to doConnect in onStartCommand()
+
+    /**
+     * For documentation purposes only. Used by the command handler to quickly
+     * find what command string they handle.
+     */
+    @Retention(value = RetentionPolicy.SOURCE)
+    @Target(value = ElementType.METHOD)
+    private @interface CommandHandler {
+        String[] name();
+    }
+
+    @CommandHandler(name = ACTION_HOLD)
+    private boolean handleHold(Intent intent) {
+        if (!mFirstStart)
+            mIdleHandler.hold(intent.getBooleanExtra("org.kontalk.activate", false));
+        return true;
+    }
+
+    @CommandHandler(name = ACTION_RELEASE)
+    private boolean handleRelease() {
+        mIdleHandler.release();
+        return false;
+    }
+
+    @CommandHandler(name = ACTION_IDLE)
+    private boolean handleIdle() {
+        mIdleHandler.idle();
+        return false;
+    }
+
+    @CommandHandler(name = ACTION_PUSH_START)
+    private boolean handlePushStart() {
+        setPushNotifications(true);
+        return false;
+    }
+
+    @CommandHandler(name = ACTION_PUSH_STOP)
+    private boolean handlePushStop() {
+        setPushNotifications(false);
+        return false;
+    }
+
+    @CommandHandler(name = ACTION_PUSH_REGISTERED)
+    private boolean handlePushRegistered(Intent intent) {
+        String regId = intent.getStringExtra(PUSH_REGISTRATION_ID);
+        // registration cycle under way
+        if (regId == null && mPushRegistrationCycle) {
+            mPushRegistrationCycle = false;
+            pushRegister();
+        }
+        else
+            setPushRegistrationId(regId);
+        return false;
+    }
+
+    @CommandHandler(name = ACTION_REGENERATE_KEYPAIR)
+    private boolean handleRegenerateKeyPair() {
+        beginKeyPairRegeneration();
+        return true;
+    }
+
+    @CommandHandler(name = ACTION_IMPORT_KEYPAIR)
+    private boolean handleImportKeyPair(Intent intent) {
+        // zip file with keys
+        Uri file = intent.getParcelableExtra(EXTRA_KEYPACK);
+        // passphrase to decrypt files
+        String passphrase = intent.getStringExtra(EXTRA_PASSPHRASE);
+        beginKeyPairImport(file, passphrase);
+        return false;
+    }
+
+    @CommandHandler(name = ACTION_CONNECTED)
+    private boolean handleConnected() {
+        if (isConnected())
+            broadcast(ACTION_CONNECTED);
+        return false;
+    }
+
+    @CommandHandler(name = ACTION_RESTART)
+    private boolean handleRestart() {
+        quit(true);
+        return true;
+    }
+
+    @CommandHandler(name = ACTION_TEST)
+    private boolean handleTest(boolean canConnect) {
+        if (isConnected()) {
+            if (canTest()) {
+                mLastTest = SystemClock.elapsedRealtime();
+                mIdleHandler.test();
+            }
+            return false;
+        }
+        else {
+            if (mHelper != null && mHelper.isBackingOff()) {
+                // helper is waiting for backoff - restart immediately
+                quit(true);
+            }
+            return canConnect;
+        }
+    }
+
+    @CommandHandler(name = ACTION_PING)
+    private boolean handlePing(boolean canConnect) {
+        if (isConnected()) {
+            // acquire a wake lock
+            mPingLock.acquire();
+            final XMPPConnection connection = mConnection;
+            final PingManager pingManager = PingManager.getInstanceFor(connection);
+            Async.go(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (pingManager.pingMyServer(true, SLOW_PING_TIMEOUT)) {
+                            AndroidAdaptiveServerPingManager
+                                .getInstanceFor(connection, MessageCenterService.this)
+                                .pingSuccess();
+                        }
+                        else {
+                            AndroidAdaptiveServerPingManager
+                                .getInstanceFor(connection, MessageCenterService.this)
+                                .pingFailed();
+                        }
+                    }
+                    catch (NotConnectedException e) {
+                        // ignored
+                    }
+                    finally {
+                        // release the wake lock
+                        if (mPingLock != null)
+                            mPingLock.release();
+                    }
+                }
+            }, "PingServerIfNecessary (" + mConnection.getConnectionCounter() + ')');
+            return false;
+        }
+        else {
+            return canConnect;
+        }
+    }
+
+    @CommandHandler(name = ACTION_MESSAGE)
+    private boolean handleMessage(Intent intent, boolean canConnect) {
+        if (canConnect && isConnected())
+            sendMessage(intent.getExtras());
+        return false;
+    }
+
+    @CommandHandler(name = { ACTION_ROSTER, ACTION_ROSTER_MATCH })
+    private boolean handleRoster(Intent intent, boolean canConnect) {
+        if (canConnect && isConnected()) {
+            Stanza iq;
+
+            if (ACTION_ROSTER_MATCH.equals(intent.getAction())) {
+                iq = new RosterMatch();
+                String[] list = intent.getStringArrayExtra(EXTRA_JIDLIST);
+
+                for (String item : list) {
+                    ((RosterMatch) iq).addItem(item);
+                }
+
+                // directed to the probe component
+                iq.setTo(XmppStringUtils.completeJidFrom("probe", mServer.getNetwork()));
+            }
+            else {
+                iq = new RosterPacket();
+            }
+
+            String id = intent.getStringExtra(EXTRA_PACKET_ID);
+            iq.setStanzaId(id);
+            // iq default type is get
+
+            sendPacket(iq);
+        }
+        return false;
+    }
+
+    @CommandHandler(name = ACTION_ROSTER_LOADED)
+    private boolean handleRosterLoaded() {
+        if (isConnected() && isRosterLoaded())
+            broadcast(ACTION_ROSTER_LOADED);
+        return false;
+    }
+
+    @CommandHandler(name = ACTION_PRESENCE)
+    private boolean handlePresence(Intent intent, boolean canConnect) {
+        if (canConnect && isConnected()) {
+            final String id = intent.getStringExtra(EXTRA_PACKET_ID);
+            String type = intent.getStringExtra(EXTRA_TYPE);
+            final String to = intent.getStringExtra(EXTRA_TO);
+
+            if ("probe".equals(type)) {
+                // probing is actually looking into the roster
+                final Roster roster = getRoster();
+
+                if (to == null) {
+                    for (RosterEntry entry : roster.getEntries()) {
+                        broadcastPresence(roster, entry, id);
+                    }
+
+                    // broadcast our own presence
+                    broadcastMyPresence(id);
+                }
+                else {
+                    queueTask(new Runnable() {
+                        @Override
+                        public void run() {
+                            broadcastPresence(roster, to, id);
+                        }
+                    });
+                }
+            }
+            else {
+                String show = intent.getStringExtra(EXTRA_SHOW);
+                Presence p = new Presence(type != null ? Presence.Type.valueOf(type) : Presence.Type.available);
+                p.setStanzaId(id);
+                p.setTo(to);
+                if (intent.hasExtra(EXTRA_PRIORITY))
+                    p.setPriority(intent.getIntExtra(EXTRA_PRIORITY, 0));
+                p.setStatus(intent.getStringExtra(EXTRA_STATUS));
+                if (show != null)
+                    p.setMode(Presence.Mode.valueOf(show));
+
+                sendPacket(p);
+            }
+        }
+
+        return false;
+    }
+
+    @CommandHandler(name = ACTION_LAST_ACTIVITY)
+    private boolean handleLastActivity(Intent intent, boolean canConnect) {
+        if (canConnect && isConnected()) {
+            LastActivity p = new LastActivity();
+
+            p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
+            p.setTo(intent.getStringExtra(EXTRA_TO));
+
+            sendPacket(p);
+        }
+        return false;
+    }
+
+    @CommandHandler(name = ACTION_VCARD)
+    private boolean handleVCard(Intent intent, boolean canConnect) {
+        if (canConnect && isConnected()) {
+            VCard4 p = new VCard4();
+            p.setTo(intent.getStringExtra(EXTRA_TO));
+
+            sendPacket(p);
+        }
+        return false;
+    }
+
+    @CommandHandler(name = ACTION_PUBLICKEY)
+    private boolean handlePublicKey(Intent intent, boolean canConnect) {
+        if (canConnect && isConnected()) {
+            String to = intent.getStringExtra(EXTRA_TO);
+            if (to != null) {
+                // request public key for a specific user
+                PublicKeyPublish p = new PublicKeyPublish();
+                p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
+                p.setTo(to);
+
+                sendPacket(p);
+            }
+            else {
+                // request public keys for the whole roster
+                Collection<RosterEntry> buddies = getRoster().getEntries();
+                for (RosterEntry buddy : buddies) {
+                    if (isRosterEntrySubscribed(buddy)) {
+                        PublicKeyPublish p = new PublicKeyPublish();
+                        p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
+                        p.setTo(buddy.getUser());
+
+                        sendPacket(p);
+                    }
+                }
+
+                // request our own public key (odd eh?)
+                PublicKeyPublish p = new PublicKeyPublish();
+                p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
+                p.setTo(XmppStringUtils.parseBareJid(mConnection.getUser()));
+                sendPacket(p);
+            }
+        }
+        return false;
+    }
+
+    @CommandHandler(name = ACTION_SERVERLIST)
+    private boolean handleServerList(boolean canConnect) {
+        if (canConnect && isConnected()) {
+            ServerlistCommand p = new ServerlistCommand();
+            p.setTo(XmppStringUtils.completeJidFrom("network", mServer.getNetwork()));
+
+            StanzaFilter filter = new StanzaIdFilter(p.getStanzaId());
+            // TODO cache the listener (it shouldn't change)
+            mConnection.addAsyncStanzaListener(new StanzaListener() {
+                public void processPacket(Stanza packet) throws NotConnectedException {
+                    Intent i = new Intent(ACTION_SERVERLIST);
+                    List<String> _items = ((ServerlistCommand.ServerlistCommandData) packet)
+                        .getItems();
+                    if (_items != null && _items.size() != 0 && packet.getError() == null) {
+                        String[] items = new String[_items.size()];
+                        _items.toArray(items);
+
+                        i.putExtra(EXTRA_FROM, packet.getFrom());
+                        i.putExtra(EXTRA_JIDLIST, items);
+                    }
+                    mLocalBroadcastManager.sendBroadcast(i);
+                }
+            }, filter);
+
+            sendPacket(p);
+        }
+        return false;
+    }
+
+    @CommandHandler(name = ACTION_SUBSCRIBED)
+    private boolean handleSubscribed(Intent intent, boolean canConnect) {
+        if (canConnect && isConnected()) {
+            sendSubscriptionReply(intent.getStringExtra(EXTRA_TO),
+                intent.getStringExtra(EXTRA_PACKET_ID),
+                intent.getIntExtra(EXTRA_PRIVACY, PRIVACY_ACCEPT));
+        }
+        return false;
+    }
+
+    @CommandHandler(name = ACTION_RETRY)
+    private boolean handleRetry(Intent intent) {
+        Uri msgUri = intent.getParcelableExtra(EXTRA_MESSAGE);
+
+        boolean encrypted = Preferences.getEncryptionEnabled(this);
+
+        ContentValues values = new ContentValues(2);
+        values.put(Messages.STATUS, Messages.STATUS_SENDING);
+        values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+        getContentResolver().update(msgUri, values, null, null);
+
+        // FIXME shouldn't we resend just the above message?
+
+        // already connected: resend pending messages
+        if (isConnected())
+            resendPendingMessages(false, false);
+        return false;
+    }
+
+    @CommandHandler(name = ACTION_BLOCKLIST)
+    private boolean handleBlocklist() {
+        if (isConnected())
+            requestBlocklist();
+        return false;
+    }
+
+    @CommandHandler(name = ACTION_VERSION)
+    private boolean handleVersion(Intent intent) {
+        if (isConnected()) {
+            Version version = new Version(intent.getStringExtra(EXTRA_TO));
+            version.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
+            sendPacket(version);
+        }
+        return false;
     }
 
     /** Creates a connection to server if needed. */
