@@ -105,24 +105,27 @@ public class UploadService extends IntentService implements ProgressListener {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (mNotificationManager == null)
-            mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        // crappy firmware - as per docs, intent can't be null in this case
+        if (intent != null) {
+            if (mNotificationManager == null)
+                mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        if (ACTION_UPLOAD_ABORT.equals(intent.getAction())) {
-            String filename = intent.getData().toString();
-            // TODO check for race conditions on queue
-            Long msgId = queue.get(filename);
-            if (msgId != null) {
-                // interrupt worker if running
-                if (msgId.longValue() == mMessageId) {
-                    mConn.abort();
-                    mCanceled = true;
+            if (ACTION_UPLOAD_ABORT.equals(intent.getAction())) {
+                String filename = intent.getData().toString();
+                // TODO check for race conditions on queue
+                Long msgId = queue.get(filename);
+                if (msgId != null) {
+                    // interrupt worker if running
+                    if (msgId == mMessageId) {
+                        mConn.abort();
+                        mCanceled = true;
+                    }
+                    // remove from queue - will never be processed
+                    else
+                        queue.remove(filename);
                 }
-                // remove from queue - will never be processed
-                else
-                    queue.remove(filename);
+                return START_NOT_STICKY;
             }
-            return START_NOT_STICKY;
         }
 
         return super.onStartCommand(intent, flags, startId);
@@ -130,8 +133,12 @@ public class UploadService extends IntentService implements ProgressListener {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        // crappy firmware - as per docs, intent can't be null in this case
+        if (intent == null)
+            return;
         // check for unknown action
-        if (!ACTION_UPLOAD.equals(intent.getAction())) return;
+        if (!ACTION_UPLOAD.equals(intent.getAction()))
+            return;
 
         // local file to upload
         Uri file = intent.getData();
