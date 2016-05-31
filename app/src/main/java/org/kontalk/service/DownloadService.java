@@ -112,17 +112,20 @@ public class DownloadService extends IntentService implements DownloadListener {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (mNotificationManager == null)
-            mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        // crappy firmware - as per docs, intent can't be null in this case
+        if (intent != null) {
+            if (mNotificationManager == null)
+                mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        if (ACTION_DOWNLOAD_ABORT.equals(intent.getAction())) {
-            final Uri uri = intent.getData();
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    onDownloadAbort(uri);
-                }
-            }).start();
+            if (ACTION_DOWNLOAD_ABORT.equals(intent.getAction())) {
+                final Uri uri = intent.getData();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        onDownloadAbort(uri);
+                    }
+                }).start();
+            }
         }
 
         return super.onStartCommand(intent, flags, startId);
@@ -130,6 +133,10 @@ public class DownloadService extends IntentService implements DownloadListener {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        // crappy firmware - as per docs, intent can't be null in this case
+        if (intent == null)
+            return;
+
         String action = intent.getAction();
 
         if (ACTION_DOWNLOAD_URL.equals(action)) {
