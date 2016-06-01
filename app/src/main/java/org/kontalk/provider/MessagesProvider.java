@@ -638,8 +638,10 @@ public class MessagesProvider extends ContentProvider {
                 if (threadId != Messages.NO_THREAD) {
                     // update fulltext table
                     byte[] content = values.getAsByteArray(Messages.BODY_CONTENT);
+                    String mime = values.getAsString(Messages.BODY_MIME);
                     Boolean encrypted = values.getAsBoolean(Messages.ENCRYPTED);
-                    if (content != null && content.length > 0 && (encrypted == null || !encrypted)) {
+                    if (content != null && content.length > 0 && TextComponent.MIME_TYPE.equals(mime) &&
+                            (encrypted == null || !encrypted)) {
                         updateFulltext(db, rowId, threadId, content);
                     }
                 }
@@ -1230,7 +1232,7 @@ public class MessagesProvider extends ContentProvider {
                         // update fulltext
                         int direction = c.getInt(2);
                         int encrypted = c.getInt(3);
-                        if ((direction == Messages.DIRECTION_IN) ? (encrypted == 0) : true)
+                        if (direction != Messages.DIRECTION_IN || encrypted == 0)
                             db.delete(TABLE_FULLTEXT, Fulltext._ID + " = " + c.getLong(1), null);
                     }
 
