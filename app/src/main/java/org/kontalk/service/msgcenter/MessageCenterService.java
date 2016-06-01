@@ -837,7 +837,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             boolean canConnect = canConnect();
             boolean doConnect;
 
-            switch (action) {
+            switch (action != null ? action : "") {
                 case ACTION_HOLD:
                     doConnect = handleHold(intent);
                     break;
