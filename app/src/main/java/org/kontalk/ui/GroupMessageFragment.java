@@ -39,6 +39,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.KontalkGroupManager;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.XMPPUtils;
 
@@ -145,6 +146,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
                     setGroupSubject(!TextUtils.isEmpty(input) ? input.toString() : null);
                 }
             })
+            .inputRange(0, Groups.GROUP_SUBJECT_MAX_LENGTH)
             .show();
     }
 

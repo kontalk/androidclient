@@ -187,6 +187,9 @@ public final class MyMessages {
     public static final class Groups {
         private Groups() {}
 
+        /** Group subject max length. Like a SMS :) */
+        public static final int GROUP_SUBJECT_MAX_LENGTH = 160;
+
         // flags for group_members.pending
         public static final int MEMBER_PENDING_ADDED = 1;
         public static final int MEMBER_PENDING_REMOVED = 1 << 1;
