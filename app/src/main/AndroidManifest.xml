@@ -110,10 +110,6 @@
             </intent-filter>
         </receiver>
 
-        <!-- Other -->
-        <meta-data android:name="android.app.default_searchable"
-            android:value=".ui.SearchActivity" />
-
         <!-- Activities -->
         <activity android:name=".ui.ConversationsActivity"
             android:launchMode="singleTop">
@@ -122,6 +118,8 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
+            <meta-data android:name="android.app.default_searchable"
+                android:value=".ui.SearchActivity" />
         </activity>
 
         <activity android:name=".ui.SearchActivity">
