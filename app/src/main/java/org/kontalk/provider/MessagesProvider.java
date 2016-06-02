@@ -1566,6 +1566,26 @@ public class MessagesProvider extends ContentProvider {
         return members;
     }
 
+    public static boolean isGroupCreatedSent(Context context, long threadId) {
+        Cursor c = context.getContentResolver().query(Messages.CONTENT_URI,
+            new String[] { Messages.STATUS },
+            Messages.THREAD_ID + "=" + threadId + " AND " +
+                Messages.DIRECTION + "=" + Messages.DIRECTION_OUT + " AND " +
+                Messages.BODY_MIME + "=? AND " +
+                Messages.BODY_CONTENT + " LIKE ?",
+            new String[] {
+                GroupCommandComponent.MIME_TYPE,
+                GroupCommandComponent.COMMAND_CREATE + ":%"
+            },
+            null);
+        if (c.moveToNext()) {
+            int status = c.getInt(0);
+            return status == Messages.STATUS_SENT || status == Messages.STATUS_RECEIVED;
+        }
+        c.close();
+        return false;
+    }
+
     private static ContentValues prepareChangeMessageStatus(
             int status, long timestamp, long statusChanged) {
         ContentValues values = new ContentValues();

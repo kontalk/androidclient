@@ -28,8 +28,8 @@ import android.net.Uri;
 import org.kontalk.crypto.Coder;
 import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.provider.MessagesProvider;
-import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Groups;
+import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.MessagingNotification;
@@ -282,18 +282,35 @@ public class Conversation {
     }
 
     private static void deleteInternal(Context context, long threadId, String groupJid, String[] groupPeers) {
-        boolean groupChat = groupJid != null && groupPeers.length > 0;
-        MessagesProvider.deleteThread(context, threadId, groupChat);
         // it makes sense to leave a group if we have someone to tell about it
+        boolean groupChat = groupJid != null && groupPeers.length > 0;
+        boolean groupCreateSent = false;
         if (groupChat) {
-            boolean encrypted = Preferences.getEncryptionEnabled(context);
+            // retrieve status of the group creation message
+            // otherwise don't send the leave message at all
+            groupCreateSent = MessagesProvider.isGroupCreatedSent(context, threadId);
+        }
 
-            String msgId = MessageCenterService.messageId();
-            Uri cmdMsg = storeLeaveGroup(context, groupJid, msgId, encrypted);
-            // TODO check for null
+        // delete messages and thread
+        MessagesProvider.deleteThread(context, threadId, groupChat);
 
-            MessageCenterService.leaveGroup(context, groupJid, groupPeers, encrypted,
-                ContentUris.parseId(cmdMsg), msgId);
+        // send leave message only if the group was created in the first place
+        if (groupChat) {
+            if (groupCreateSent) {
+                boolean encrypted = Preferences.getEncryptionEnabled(context);
+
+                String msgId = MessageCenterService.messageId();
+                Uri cmdMsg = storeLeaveGroup(context, groupJid, msgId, encrypted);
+                // TODO check for null
+
+                MessageCenterService.leaveGroup(context, groupJid, groupPeers, encrypted,
+                    ContentUris.parseId(cmdMsg), msgId);
+            }
+            else {
+                // delete group immediately (members will cascade)
+                context.getContentResolver()
+                    .delete(Groups.getUri(groupJid), null, null);
+            }
         }
     }
 
@@ -393,20 +410,20 @@ public class Conversation {
 
     private Uri storeAddGroupMember(String[] members, String msgId, boolean encrypted) {
         ContentValues values = new ContentValues();
-        values.put(MyMessages.Messages.THREAD_ID, getThreadId());
-        values.put(MyMessages.Messages.MESSAGE_ID, msgId);
-        values.put(MyMessages.Messages.PEER, mGroupJid);
-        values.put(MyMessages.Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
-        values.put(MyMessages.Messages.BODY_CONTENT, GroupCommandComponent.getAddMembersBodyContent(members));
-        values.put(MyMessages.Messages.BODY_LENGTH, 0);
-        values.put(MyMessages.Messages.UNREAD, false);
-        values.put(MyMessages.Messages.DIRECTION, MyMessages.Messages.DIRECTION_OUT);
-        values.put(MyMessages.Messages.TIMESTAMP, System.currentTimeMillis());
-        values.put(MyMessages.Messages.STATUS, MyMessages.Messages.STATUS_SENDING);
+        values.put(Messages.THREAD_ID, getThreadId());
+        values.put(Messages.MESSAGE_ID, msgId);
+        values.put(Messages.PEER, mGroupJid);
+        values.put(Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
+        values.put(Messages.BODY_CONTENT, GroupCommandComponent.getAddMembersBodyContent(members));
+        values.put(Messages.BODY_LENGTH, 0);
+        values.put(Messages.UNREAD, false);
+        values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
+        values.put(Messages.TIMESTAMP, System.currentTimeMillis());
+        values.put(Messages.STATUS, Messages.STATUS_SENDING);
         // of course outgoing messages are not encrypted in database
-        values.put(MyMessages.Messages.ENCRYPTED, false);
-        values.put(MyMessages.Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-        return mContext.getContentResolver().insert(MyMessages.Messages.CONTENT_URI, values);
+        values.put(Messages.ENCRYPTED, false);
+        values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+        return mContext.getContentResolver().insert(Messages.CONTENT_URI, values);
     }
 
     public void setGroupSubject(String subject) {
@@ -437,38 +454,38 @@ public class Conversation {
 
     private Uri storeSetGroupSubject(String subject, String msgId, boolean encrypted) {
         ContentValues values = new ContentValues();
-        values.put(MyMessages.Messages.THREAD_ID, getThreadId());
-        values.put(MyMessages.Messages.MESSAGE_ID, msgId);
-        values.put(MyMessages.Messages.PEER, mGroupJid);
-        values.put(MyMessages.Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
-        values.put(MyMessages.Messages.BODY_CONTENT, GroupCommandComponent.getSetSubjectCommandBodyContent(subject));
-        values.put(MyMessages.Messages.BODY_LENGTH, 0);
-        values.put(MyMessages.Messages.UNREAD, false);
-        values.put(MyMessages.Messages.DIRECTION, MyMessages.Messages.DIRECTION_OUT);
-        values.put(MyMessages.Messages.TIMESTAMP, System.currentTimeMillis());
-        values.put(MyMessages.Messages.STATUS, MyMessages.Messages.STATUS_SENDING);
+        values.put(Messages.THREAD_ID, getThreadId());
+        values.put(Messages.MESSAGE_ID, msgId);
+        values.put(Messages.PEER, mGroupJid);
+        values.put(Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
+        values.put(Messages.BODY_CONTENT, GroupCommandComponent.getSetSubjectCommandBodyContent(subject));
+        values.put(Messages.BODY_LENGTH, 0);
+        values.put(Messages.UNREAD, false);
+        values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
+        values.put(Messages.TIMESTAMP, System.currentTimeMillis());
+        values.put(Messages.STATUS, Messages.STATUS_SENDING);
         // of course outgoing messages are not encrypted in database
-        values.put(MyMessages.Messages.ENCRYPTED, false);
-        values.put(MyMessages.Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-        return mContext.getContentResolver().insert(MyMessages.Messages.CONTENT_URI, values);
+        values.put(Messages.ENCRYPTED, false);
+        values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+        return mContext.getContentResolver().insert(Messages.CONTENT_URI, values);
     }
 
     private static Uri storeLeaveGroup(Context context, String groupJid, String msgId, boolean encrypted) {
         ContentValues values = new ContentValues();
-        values.put(MyMessages.Messages.THREAD_ID, MyMessages.Messages.NO_THREAD);
-        values.put(MyMessages.Messages.MESSAGE_ID, msgId);
-        values.put(MyMessages.Messages.PEER, groupJid);
-        values.put(MyMessages.Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
-        values.put(MyMessages.Messages.BODY_CONTENT, GroupCommandComponent.getLeaveCommandBodyContent());
-        values.put(MyMessages.Messages.BODY_LENGTH, 0);
-        values.put(MyMessages.Messages.UNREAD, false);
-        values.put(MyMessages.Messages.DIRECTION, MyMessages.Messages.DIRECTION_OUT);
-        values.put(MyMessages.Messages.TIMESTAMP, System.currentTimeMillis());
-        values.put(MyMessages.Messages.STATUS, MyMessages.Messages.STATUS_SENDING);
+        values.put(Messages.THREAD_ID, Messages.NO_THREAD);
+        values.put(Messages.MESSAGE_ID, msgId);
+        values.put(Messages.PEER, groupJid);
+        values.put(Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
+        values.put(Messages.BODY_CONTENT, GroupCommandComponent.getLeaveCommandBodyContent());
+        values.put(Messages.BODY_LENGTH, 0);
+        values.put(Messages.UNREAD, false);
+        values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
+        values.put(Messages.TIMESTAMP, System.currentTimeMillis());
+        values.put(Messages.STATUS, Messages.STATUS_SENDING);
         // of course outgoing messages are not encrypted in database
-        values.put(MyMessages.Messages.ENCRYPTED, false);
-        values.put(MyMessages.Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-        return context.getContentResolver().insert(MyMessages.Messages.CONTENT_URI, values);
+        values.put(Messages.ENCRYPTED, false);
+        values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+        return context.getContentResolver().insert(Messages.CONTENT_URI, values);
     }
 
     public void markAsRead() {
