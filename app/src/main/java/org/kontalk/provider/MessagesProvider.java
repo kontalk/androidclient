@@ -1517,7 +1517,7 @@ public class MessagesProvider extends ContentProvider {
         values.put(MyMessages.Messages.MESSAGE_ID, msgId);
         values.put(MyMessages.Messages.PEER, groupJid);
         values.put(MyMessages.Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
-        values.put(MyMessages.Messages.BODY_CONTENT, GroupCommandComponent.getCreateBodyContent(members));
+        values.put(MyMessages.Messages.BODY_CONTENT, GroupCommandComponent.getCreateBodyContent(members).getBytes());
         values.put(MyMessages.Messages.BODY_LENGTH, 0);
         values.put(MyMessages.Messages.UNREAD, false);
         values.put(MyMessages.Messages.DIRECTION, MyMessages.Messages.DIRECTION_OUT);

@@ -414,7 +414,7 @@ public class Conversation {
         values.put(Messages.MESSAGE_ID, msgId);
         values.put(Messages.PEER, mGroupJid);
         values.put(Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
-        values.put(Messages.BODY_CONTENT, GroupCommandComponent.getAddMembersBodyContent(members));
+        values.put(Messages.BODY_CONTENT, GroupCommandComponent.getAddMembersBodyContent(members).getBytes());
         values.put(Messages.BODY_LENGTH, 0);
         values.put(Messages.UNREAD, false);
         values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
@@ -458,7 +458,7 @@ public class Conversation {
         values.put(Messages.MESSAGE_ID, msgId);
         values.put(Messages.PEER, mGroupJid);
         values.put(Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
-        values.put(Messages.BODY_CONTENT, GroupCommandComponent.getSetSubjectCommandBodyContent(subject));
+        values.put(Messages.BODY_CONTENT, GroupCommandComponent.getSetSubjectCommandBodyContent(subject).getBytes());
         values.put(Messages.BODY_LENGTH, 0);
         values.put(Messages.UNREAD, false);
         values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
@@ -476,7 +476,7 @@ public class Conversation {
         values.put(Messages.MESSAGE_ID, msgId);
         values.put(Messages.PEER, groupJid);
         values.put(Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
-        values.put(Messages.BODY_CONTENT, GroupCommandComponent.getLeaveCommandBodyContent());
+        values.put(Messages.BODY_CONTENT, GroupCommandComponent.getLeaveCommandBodyContent().getBytes());
         values.put(Messages.BODY_LENGTH, 0);
         values.put(Messages.UNREAD, false);
         values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
