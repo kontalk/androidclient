@@ -22,9 +22,9 @@
     <uses-permission android:name="com.android.vending.BILLING" />
 
     <!-- internal permissions -->
-    <permission android:name="org.kontalk.permission.C2D_MESSAGE" android:protectionLevel="signature" />
+    <permission android:name="${applicationId}.permission.C2D_MESSAGE" android:protectionLevel="signature" />
 
-    <uses-permission android:name="org.kontalk.permission.C2D_MESSAGE" />
+    <uses-permission android:name="${applicationId}.permission.C2D_MESSAGE" />
 
     <application>
 
