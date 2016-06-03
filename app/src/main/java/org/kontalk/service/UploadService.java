@@ -32,6 +32,7 @@ import java.util.Map;
 
 import org.kontalk.R;
 import org.kontalk.provider.MessagesProvider;
+import org.kontalk.provider.MessagesProviderUtils;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.ConversationsActivity;
@@ -307,7 +308,7 @@ public class UploadService extends IntentService implements ProgressListener {
 
     @Override
     public void progress(UploadConnection conn, long bytes) {
-        if (mCanceled || !MessagesProvider.exists(this, mMessageId)) {
+        if (mCanceled || !MessagesProviderUtils.exists(this, mMessageId)) {
             Log.v(TAG, "upload canceled or message deleted - aborting");
             mConn.abort();
             mCanceled = true;

@@ -18,7 +18,6 @@
 
 package org.kontalk.provider;
 
-
 import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.BaseColumns;

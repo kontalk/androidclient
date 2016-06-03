@@ -129,7 +129,7 @@ import org.kontalk.message.GroupComponent;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
-import org.kontalk.provider.MessagesProvider;
+import org.kontalk.provider.MessagesProviderUtils;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
@@ -1739,7 +1739,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             String[] groupMembers = null;
             if (groupJid != null) {
-                groupMembers = MessagesProvider.getGroupMembers(this, groupJid);
+                groupMembers = MessagesProviderUtils.getGroupMembers(this, groupJid);
             }
 
             // media message encountered and no upload service available - delay message

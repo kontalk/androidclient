@@ -101,7 +101,7 @@ import org.kontalk.message.ImageComponent;
 import org.kontalk.message.MessageComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
-import org.kontalk.provider.MessagesProvider;
+import org.kontalk.provider.MessagesProviderUtils;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
@@ -690,53 +690,24 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             }
 
             // save to database
-            ContentValues values = new ContentValues();
-            values.put(Messages.MESSAGE_ID, msgId);
-            values.put(Messages.PEER, getUserId());
-
-            /* TODO ask for a text to send with the image
-            values.put(Messages.BODY_MIME, TextComponent.MIME_TYPE);
-            values.put(Messages.BODY_CONTENT, content.getBytes());
-            values.put(Messages.BODY_LENGTH, content.length());
-             */
-
-            values.put(Messages.UNREAD, false);
-            // of course outgoing messages are not encrypted in database
-            values.put(Messages.ENCRYPTED, false);
-            values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-            values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
-            values.put(Messages.TIMESTAMP, System.currentTimeMillis());
-            values.put(Messages.STATUS, Messages.STATUS_SENDING);
-
-            if (previewFile != null)
-                values.put(Messages.ATTACHMENT_PREVIEW_PATH, previewFile.getAbsolutePath());
-
-            values.put(Messages.ATTACHMENT_MIME, mime);
-            values.put(Messages.ATTACHMENT_LOCAL_URI, uri.toString());
-            values.put(Messages.ATTACHMENT_LENGTH, length);
-            values.put(Messages.ATTACHMENT_COMPRESS, compress);
-
-            newMsg = getContext().getContentResolver().insert(
-                    Messages.CONTENT_URI, values);
+            newMsg = MessagesProviderUtils.newOutgoingMessage(getContext(), msgId,
+                getUserId(), mime, uri, length, compress, previewFile, encrypted);
         }
         catch (Exception e) {
             Log.e(TAG, "unable to store media", e);
         }
 
         if (newMsg != null) {
-
             // update thread id from the inserted message
             if (threadId <= 0) {
-                Cursor c = getContext().getContentResolver().query(newMsg,
-                        new String[] { Messages.THREAD_ID }, null, null, null);
-                if (c.moveToFirst()) {
-                    threadId = c.getLong(0);
+                threadId = MessagesProviderUtils.getThreadByMessage(getContext(), newMsg);
+                if (threadId > 0) {
+                    // we can run it here because progress=false
                     startQuery(false);
                 }
                 else {
                     Log.v(TAG, "no data - cannot start query for this composer");
                 }
-                c.close();
             }
 
             // send message!
@@ -777,42 +748,23 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 v.bind(getActivity(), msg, contact, null);
                 getListView().addFooterView(v);
                 */
-                byte[] bytes = mText.getBytes();
 
                 String msgId = MessageUtils.messageId();
 
                 // save to local storage
-                ContentValues values = new ContentValues();
-                // must supply a message ID...
-                values.put(Messages.MESSAGE_ID, msgId);
-                values.put(Messages.PEER, getUserId());
-                values.put(Messages.BODY_MIME, TextComponent.MIME_TYPE);
-                values.put(Messages.BODY_CONTENT, bytes);
-                values.put(Messages.BODY_LENGTH, bytes.length);
-                values.put(Messages.UNREAD, false);
-                values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
-                values.put(Messages.TIMESTAMP, System.currentTimeMillis());
-                values.put(Messages.STATUS, Messages.STATUS_SENDING);
-                // of course outgoing messages are not encrypted in database
-                values.put(Messages.ENCRYPTED, false);
-                values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-                Uri newMsg = getActivity().getContentResolver().insert(
-                        Messages.CONTENT_URI, values);
+                Uri newMsg = MessagesProviderUtils.newOutgoingMessage(getContext(),
+                    msgId, getUserId(), mText, encrypted);
                 if (newMsg != null) {
                     // update thread id from the inserted message
                     if (threadId <= 0) {
-                        Cursor c = getActivity().getContentResolver().query(newMsg,
-                                new String[] { Messages.THREAD_ID }, null, null,
-                                null);
-                        if (c.moveToFirst()) {
-                            threadId = c.getLong(0);
+                        threadId = MessagesProviderUtils.getThreadByMessage(getContext(), newMsg);
+                        if (threadId > 0) {
                             // we can run it here because progress=false
                             startQuery(false);
                         }
                         else {
                             Log.v(TAG, "no data - cannot start query for this composer");
                         }
-                        c.close();
                     }
 
                     // send message!
@@ -1911,7 +1863,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             if (len > 0) {
                 // save to local storage
                 try {
-                    MessagesProvider.insertEmptyThread(getActivity(), getUserId(), text.toString());
+                    MessagesProviderUtils.insertEmptyThread(getActivity(), getUserId(), text.toString());
                 }
                 catch (SQLiteDiskIOException e) {
                     // TODO warn user
@@ -2232,7 +2184,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             });
 
             view.setProgressChangeListener(false);
-            if (!MessagesProvider.exists(getActivity(), messageId)) {
+            if (!MessagesProviderUtils.exists(getActivity(), messageId)) {
                 resetAudio(view);
             }
 

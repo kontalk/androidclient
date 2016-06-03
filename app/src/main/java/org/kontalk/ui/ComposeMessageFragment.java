@@ -62,7 +62,7 @@ import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.CompositeMessage;
-import org.kontalk.provider.MessagesProvider;
+import org.kontalk.provider.KontalkGroupCommands;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Threads;
@@ -713,7 +713,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
     protected void addUsers(String[] members) {
         String selfJid = Authenticator.getSelfJID(getContext());
         String groupId = StringUtils.randomString(20);
-        String groupJid = XmppStringUtils.completeJidFrom(groupId, selfJid);
+        String groupJid = KontalkGroupCommands.createGroupJid(groupId, selfJid);
 
         // ensure no duplicates
         Set<String> usersList = new HashSet<>();
@@ -735,7 +735,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             // store create group command to outbox
             boolean encrypted = Preferences.getEncryptionEnabled(getContext());
             String msgId = MessageCenterService.messageId();
-            Uri cmdMsg = MessagesProvider.insertCreateGroup(getContext(),
+            Uri cmdMsg = KontalkGroupCommands.createGroup(getContext(),
                 groupThreadId, groupJid, users, msgId, encrypted);
             // TODO check for null
 

@@ -36,6 +36,7 @@ import android.os.Parcelable;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.GroupExtension;
 import org.kontalk.data.GroupInfo;
+import org.kontalk.provider.MessagesProviderUtils;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
@@ -443,9 +444,7 @@ public class CompositeMessage {
     }
 
     public static void deleteFromCursor(Context context, Cursor cursor) {
-        context.getContentResolver().delete(ContentUris
-            .withAppendedId(Messages.CONTENT_URI,
-                cursor.getLong(COLUMN_ID)), null, null);
+        MessagesProviderUtils.deleteMessage(context, cursor.getLong(COLUMN_ID));
     }
 
     public static void startQuery(AsyncQueryHandler handler, int token, long threadId, long count, long lastId) {

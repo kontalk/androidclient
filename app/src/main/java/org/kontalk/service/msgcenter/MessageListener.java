@@ -65,7 +65,7 @@ import org.kontalk.message.MessageComponent;
 import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
-import org.kontalk.provider.MessagesProvider;
+import org.kontalk.provider.MessagesProviderUtils;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.util.MediaStorage;
@@ -128,7 +128,7 @@ class MessageListener extends MessageCenterPacketListener {
             // is the owner adding me to the group?
             isAddingMe(ext) ||
             // all other commands require the group to be present in our database
-            MessagesProvider.isGroupExisting(getContext(), ext.getJID());
+            MessagesProviderUtils.isGroupExisting(getContext(), ext.getJID());
         // TODO we should also check if the sender is actually in the group
     }
 

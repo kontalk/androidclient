@@ -23,22 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-import org.kontalk.BuildConfig;
-import org.kontalk.client.EndpointServer;
-import org.kontalk.client.ServerList;
-import org.kontalk.crypto.Coder;
-import org.kontalk.message.CompositeMessage;
-import org.kontalk.message.GroupCommandComponent;
-import org.kontalk.message.TextComponent;
-import org.kontalk.provider.MyMessages.CommonColumns;
-import org.kontalk.provider.MyMessages.Messages;
-import org.kontalk.provider.MyMessages.Threads;
-import org.kontalk.provider.MyMessages.Messages.Fulltext;
-import org.kontalk.provider.MyMessages.Threads.Conversations;
-import org.kontalk.provider.MyMessages.Groups;
-import org.kontalk.service.ServerListUpdater;
-import org.kontalk.util.SystemUtils;
-
 import android.annotation.TargetApi;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
@@ -53,7 +37,23 @@ import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.util.Log;
+
+import org.kontalk.BuildConfig;
+import org.kontalk.client.EndpointServer;
+import org.kontalk.client.ServerList;
+import org.kontalk.crypto.Coder;
+import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.TextComponent;
+import org.kontalk.provider.MyMessages.CommonColumns;
+import org.kontalk.provider.MyMessages.Groups;
+import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.provider.MyMessages.Messages.Fulltext;
+import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.provider.MyMessages.Threads.Conversations;
+import org.kontalk.service.ServerListUpdater;
+import org.kontalk.util.SystemUtils;
 
 
 /**
@@ -98,6 +98,7 @@ public class MessagesProvider extends ContentProvider {
     private static HashMap<String, String> threadsProjectionMap;
     private static HashMap<String, String> fulltextProjectionMap;
     private static HashMap<String, String> groupsMembersProjectionMap;
+    private static HashMap<String, String> groupsProjectionMap;
 
     private static class DatabaseHelper extends SQLiteOpenHelper {
         private static final int DATABASE_VERSION = 9;
@@ -416,7 +417,7 @@ public class MessagesProvider extends ContentProvider {
     }
 
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection,
+    public Cursor query(@NonNull Uri uri, String[] projection, String selection,
             String[] selectionArgs, String sortOrder) {
         SQLitePagedQueryBuilder qb = new SQLitePagedQueryBuilder();
 
@@ -491,7 +492,8 @@ public class MessagesProvider extends ContentProvider {
 
             case GROUPS_ID:
                 qb.setTables(TABLE_GROUPS);
-                qb.setProjectionMap(groupsMembersProjectionMap);
+                qb.setProjectionMap(groupsProjectionMap
+                );
                 qb.appendWhere(Groups.GROUP_JID + "=?");
                 if (selectionArgs != null) {
                     // conditions appended here will get added before the caller-supplied selection
@@ -529,7 +531,7 @@ public class MessagesProvider extends ContentProvider {
     }
 
     @Override
-    public synchronized Uri insert(Uri uri, ContentValues initialValues) {
+    public synchronized Uri insert(@NonNull Uri uri, ContentValues initialValues) {
         if (initialValues == null)
             throw new IllegalArgumentException("No data");
 
@@ -545,7 +547,7 @@ public class MessagesProvider extends ContentProvider {
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         boolean success = false;
-        List<Uri> notifications = new ArrayList<Uri>();
+        List<Uri> notifications = new ArrayList<>();
 
         try {
             beginTransaction(db);
@@ -848,7 +850,7 @@ public class MessagesProvider extends ContentProvider {
     }
 
     @Override
-    public synchronized int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+    public synchronized int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         String table;
         String where;
         String[] args;
@@ -994,7 +996,7 @@ public class MessagesProvider extends ContentProvider {
                 if (requestOnly)
                     uri = Threads.CONTENT_URI;
 
-                notifications = new ArrayList<Uri>();
+                notifications = new ArrayList<>();
                 notifications.add(uri);
 
                 if (table.equals(TABLE_MESSAGES)) {
@@ -1085,7 +1087,7 @@ public class MessagesProvider extends ContentProvider {
     }
 
     @Override
-    public synchronized int delete(Uri uri, String selection, String[] selectionArgs) {
+    public synchronized int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
         String table;
         String where;
         String[] args;
@@ -1208,7 +1210,7 @@ public class MessagesProvider extends ContentProvider {
         int rows = 0;
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         boolean success = false;
-        List<Uri> notifications = new ArrayList<Uri>();
+        List<Uri> notifications = new ArrayList<>();
         try {
             // let's begin this big transaction :S
             beginTransaction(db);
@@ -1356,7 +1358,7 @@ public class MessagesProvider extends ContentProvider {
     }
 
     @Override
-    public String getType(Uri uri) {
+    public String getType(@NonNull Uri uri) {
         switch (sUriMatcher.match(uri)) {
             case MESSAGES:
             case CONVERSATIONS_ID:
@@ -1377,7 +1379,7 @@ public class MessagesProvider extends ContentProvider {
 
     @TargetApi(android.os.Build.VERSION_CODES.HONEYCOMB)
     private void beginTransaction(SQLiteDatabase db) {
-        if (android.os.Build.VERSION.SDK_INT >= 11)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
             db.beginTransactionNonExclusive();
         else
             // this is because API < 11 doesn't have beginTransactionNonExclusive()
@@ -1385,13 +1387,13 @@ public class MessagesProvider extends ContentProvider {
     }
 
     private boolean setTransactionSuccessful(SQLiteDatabase db) {
-        if (android.os.Build.VERSION.SDK_INT >= 11)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
             db.setTransactionSuccessful();
         return true;
     }
 
     private void endTransaction(SQLiteDatabase db, boolean success) {
-        if (android.os.Build.VERSION.SDK_INT >= 11)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
             db.endTransaction();
         else
             db.execSQL(success ? "COMMIT" : "ROLLBACK");
@@ -1407,13 +1409,6 @@ public class MessagesProvider extends ContentProvider {
             Log.e(TAG, "error during database delete!", e);
             return false;
         }
-    }
-
-    public static boolean deleteThread(Context ctx, long id, boolean keepGroup) {
-        ContentResolver c = ctx.getContentResolver();
-        return (c.delete(ContentUris.withAppendedId(Conversations.CONTENT_URI, id)
-            .buildUpon().appendQueryParameter(Messages.KEEP_GROUP, String.valueOf(keepGroup))
-            .build(), null, null) > 0);
     }
 
     /**
@@ -1474,116 +1469,6 @@ public class MessagesProvider extends ContentProvider {
                 Messages.NEW + " <> 0 AND " +
                 Messages.DIRECTION + " = " + Messages.DIRECTION_IN,
                 null);
-    }
-
-    public static int getThreadUnreadCount(Context context, long id) {
-        int count = 0;
-        ContentResolver res = context.getContentResolver();
-        Cursor c = res.query(
-                ContentUris.withAppendedId(Threads.CONTENT_URI, id),
-                new String[] { Threads.UNREAD },
-                Threads.UNREAD + " > 0",
-                null, null);
-        if (c.moveToFirst())
-            count = c.getInt(0);
-
-        c.close();
-        return count;
-    }
-
-    public static long insertEmptyThread(Context context, String peer, String draft) {
-        ContentValues msgValues = new ContentValues();
-        // must supply a message ID...
-        msgValues.put(Messages.MESSAGE_ID,
-            "draft" + (new Random().nextInt()));
-        // use group id as the peer
-        msgValues.put(Messages.PEER, peer);
-        msgValues.put(Messages.BODY_CONTENT, new byte[0]);
-        msgValues.put(Messages.BODY_LENGTH, 0);
-        msgValues.put(Messages.BODY_MIME, TextComponent.MIME_TYPE);
-        msgValues.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
-        msgValues.put(Messages.TIMESTAMP, System.currentTimeMillis());
-        msgValues.put(Messages.ENCRYPTED, false);
-        if (draft != null)
-            msgValues.put(Threads.DRAFT, draft);
-        Uri newThread = context.getContentResolver().insert(Messages.CONTENT_URI, msgValues);
-        return newThread != null ? ContentUris.parseId(newThread) : 0;
-    }
-
-    public static Uri insertCreateGroup(Context context, long threadId,
-        String groupJid, String[] members, String msgId, boolean encrypted) {
-        ContentValues values = new ContentValues();
-        values.put(MyMessages.Messages.THREAD_ID, threadId);
-        values.put(MyMessages.Messages.MESSAGE_ID, msgId);
-        values.put(MyMessages.Messages.PEER, groupJid);
-        values.put(MyMessages.Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
-        values.put(MyMessages.Messages.BODY_CONTENT, GroupCommandComponent.getCreateBodyContent(members).getBytes());
-        values.put(MyMessages.Messages.BODY_LENGTH, 0);
-        values.put(MyMessages.Messages.UNREAD, false);
-        values.put(MyMessages.Messages.DIRECTION, MyMessages.Messages.DIRECTION_OUT);
-        values.put(MyMessages.Messages.TIMESTAMP, System.currentTimeMillis());
-        values.put(MyMessages.Messages.STATUS, MyMessages.Messages.STATUS_SENDING);
-        // of course outgoing messages are not encrypted in database
-        values.put(MyMessages.Messages.ENCRYPTED, false);
-        values.put(MyMessages.Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-        return context.getContentResolver().insert(MyMessages.Messages.CONTENT_URI, values);
-    }
-
-    public static boolean isGroupThread(Context context, long id) {
-        boolean group = false;
-        Cursor c = context.getContentResolver().query(
-            ContentUris.withAppendedId(Threads.CONTENT_URI, id),
-            new String[] { Groups.GROUP_JID },
-            null, null, null);
-        if (c.moveToFirst())
-            group = (c.getString(0) != null);
-
-        c.close();
-        return group;
-    }
-
-    public static boolean isGroupExisting(Context context, String groupJid) {
-        Cursor c = context.getContentResolver().query(
-            Groups.getUri(groupJid),
-            new String[] { Groups.GROUP_JID }, null, null, null);
-        boolean exist = c.moveToFirst();
-        c.close();
-        return exist;
-    }
-
-    public static String[] getGroupMembers(Context context, String groupJid) {
-        Cursor c = context.getContentResolver()
-            .query(Groups.getMembersUri(groupJid),
-                new String[] { Groups.PEER },
-                null, null, null);
-
-        String[] members = new String[c.getCount()];
-        int i = 0;
-        while (c.moveToNext()) {
-            members[i++] = c.getString(0);
-        }
-        c.close();
-        return members;
-    }
-
-    public static boolean isGroupCreatedSent(Context context, long threadId) {
-        Cursor c = context.getContentResolver().query(Messages.CONTENT_URI,
-            new String[] { Messages.STATUS },
-            Messages.THREAD_ID + "=" + threadId + " AND " +
-                Messages.DIRECTION + "=" + Messages.DIRECTION_OUT + " AND " +
-                Messages.BODY_MIME + "=? AND " +
-                Messages.BODY_CONTENT + " LIKE ?",
-            new String[] {
-                GroupCommandComponent.MIME_TYPE,
-                GroupCommandComponent.COMMAND_CREATE + ":%"
-            },
-            null);
-        if (c.moveToNext()) {
-            int status = c.getInt(0);
-            return status == Messages.STATUS_SENT || status == Messages.STATUS_RECEIVED;
-        }
-        c.close();
-        return false;
     }
 
     private static ContentValues prepareChangeMessageStatus(
@@ -1647,28 +1532,12 @@ public class MessagesProvider extends ContentProvider {
     }
     */
 
-    public static long getConversationByMessage(Context context, long msgId) {
-        // TODO
-        return 0;
-    }
-
+    /** Set the fetch URL of a media message, marking it as uploaded. */
     public static void uploaded(Context context, long msgId, String fetchUrl) {
         ContentValues values = new ContentValues(1);
         values.put(Messages.ATTACHMENT_FETCH_URL, fetchUrl);
         context.getContentResolver().update(Messages.CONTENT_URI, values,
             Messages._ID + " = " + msgId, null);
-    }
-
-    public static boolean exists(Context context, long msgId) {
-        // check if the message lives :)
-        boolean b = false;
-        Cursor c = context.getContentResolver().
-            query(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
-                null, null, null, null);
-        if (c.moveToFirst())
-            b = true;
-        c.close();
-        return b;
     }
 
     static {
@@ -1688,7 +1557,7 @@ public class MessagesProvider extends ContentProvider {
         sUriMatcher.addURI(AUTHORITY, TABLE_FULLTEXT, FULLTEXT_ID);
         sUriMatcher.addURI(AUTHORITY, "requests", REQUESTS);
 
-        messagesProjectionMap = new HashMap<String, String>();
+        messagesProjectionMap = new HashMap<>();
         messagesProjectionMap.put(Messages._ID, Messages._ID);
         messagesProjectionMap.put(Messages.THREAD_ID, Messages.THREAD_ID);
         messagesProjectionMap.put(Messages.MESSAGE_ID, Messages.MESSAGE_ID);
@@ -1720,7 +1589,7 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Groups.SUBJECT, Groups.SUBJECT);
         messagesProjectionMap.put(Groups.GROUP_TYPE, Groups.GROUP_TYPE);
 
-        threadsProjectionMap = new HashMap<String, String>();
+        threadsProjectionMap = new HashMap<>();
         threadsProjectionMap.put(Threads._ID, Threads._ID);
         threadsProjectionMap.put(Threads.MESSAGE_ID, Threads.MESSAGE_ID);
         threadsProjectionMap.put(Threads.PEER, Threads.PEER);
@@ -1740,11 +1609,17 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Groups.SUBJECT, Groups.SUBJECT);
         threadsProjectionMap.put(Groups.GROUP_TYPE, Groups.GROUP_TYPE);
 
-        fulltextProjectionMap = new HashMap<String, String>();
+        fulltextProjectionMap = new HashMap<>();
         fulltextProjectionMap.put(Fulltext.THREAD_ID, Fulltext.THREAD_ID);
         fulltextProjectionMap.put(Fulltext.CONTENT, Fulltext.CONTENT);
 
-        groupsMembersProjectionMap = new HashMap<String, String>();
+        groupsProjectionMap = new HashMap<>();
+        groupsProjectionMap.put(Groups.GROUP_JID, Groups.GROUP_JID);
+        groupsProjectionMap.put(Groups.THREAD_ID, Groups.THREAD_ID);
+        groupsProjectionMap.put(Groups.GROUP_TYPE, Groups.GROUP_TYPE);
+        groupsProjectionMap.put(Groups.SUBJECT, Groups.SUBJECT);
+
+        groupsMembersProjectionMap = new HashMap<>();
         groupsMembersProjectionMap.put(Groups.GROUP_JID, Groups.GROUP_JID);
         groupsMembersProjectionMap.put(Groups.PEER, Groups.PEER);
         groupsMembersProjectionMap.put(Groups.PENDING, Groups.PENDING);

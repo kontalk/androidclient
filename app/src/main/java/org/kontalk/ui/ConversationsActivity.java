@@ -26,7 +26,6 @@ import java.util.Set;
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 
 import org.jivesoftware.smack.util.StringUtils;
-import org.jxmpp.util.XmppStringUtils;
 
 import android.app.Activity;
 import android.app.SearchManager;
@@ -49,6 +48,7 @@ import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
+import org.kontalk.provider.KontalkGroupCommands;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.msgcenter.MessageCenterService;
@@ -216,7 +216,7 @@ public class ConversationsActivity extends MainActivity
     private void startGroupChat(List<Uri> threads) {
         String selfJid = Authenticator.getSelfJID(this);
         String groupId = StringUtils.randomString(20);
-        String groupJid = XmppStringUtils.completeJidFrom(groupId, selfJid);
+        String groupJid = KontalkGroupCommands.createGroupJid(groupId, selfJid);
 
         // ensure no duplicates
         Set<String> usersList = new HashSet<>();
@@ -235,7 +235,7 @@ public class ConversationsActivity extends MainActivity
             // store create group command to outbox
             boolean encrypted = Preferences.getEncryptionEnabled(this);
             String msgId = MessageCenterService.messageId();
-            Uri cmdMsg = MessagesProvider.insertCreateGroup(this,
+            Uri cmdMsg = KontalkGroupCommands.createGroup(this,
                 groupThreadId, groupJid, users, msgId, encrypted);
             // TODO check for null
 

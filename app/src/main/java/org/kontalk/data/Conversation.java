@@ -20,16 +20,14 @@ package org.kontalk.data;
 
 import android.content.AsyncQueryHandler;
 import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 
-import org.kontalk.crypto.Coder;
-import org.kontalk.message.GroupCommandComponent;
+import org.kontalk.provider.KontalkGroupCommands;
 import org.kontalk.provider.MessagesProvider;
+import org.kontalk.provider.MessagesProviderUtils;
 import org.kontalk.provider.MyMessages.Groups;
-import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.MessagingNotification;
@@ -288,11 +286,11 @@ public class Conversation {
         if (groupChat) {
             // retrieve status of the group creation message
             // otherwise don't send the leave message at all
-            groupCreateSent = MessagesProvider.isGroupCreatedSent(context, threadId);
+            groupCreateSent = KontalkGroupCommands.isGroupCreatedSent(context, threadId);
         }
 
         // delete messages and thread
-        MessagesProvider.deleteThread(context, threadId, groupChat);
+        MessagesProviderUtils.deleteThread(context, threadId, groupChat);
 
         // send leave message only if the group was created in the first place
         if (groupChat) {
@@ -300,7 +298,8 @@ public class Conversation {
                 boolean encrypted = Preferences.getEncryptionEnabled(context);
 
                 String msgId = MessageCenterService.messageId();
-                Uri cmdMsg = storeLeaveGroup(context, groupJid, msgId, encrypted);
+                Uri cmdMsg = KontalkGroupCommands
+                    .leaveGroup(context, groupJid, msgId, encrypted);
                 // TODO check for null
 
                 MessageCenterService.leaveGroup(context, groupJid, groupPeers, encrypted,
@@ -321,7 +320,7 @@ public class Conversation {
     }
 
     private static String[] loadGroupPeersInternal(Context context, String groupJid) {
-        return MessagesProvider.getGroupMembers(context, groupJid);
+        return MessagesProviderUtils.getGroupMembers(context, groupJid);
     }
 
     public static void startQuery(AsyncQueryHandler handler, int token) {
@@ -353,52 +352,21 @@ public class Conversation {
      * @return a newly created thread ID.
      */
     public static long initGroupChat(Context context, String groupJid, String subject, String[] members, String draft) {
-        // insert group
-        ContentValues values = new ContentValues();
-        values.put(Groups.GROUP_JID, groupJid);
-
-        // create new conversation
-        long threadId = MessagesProvider.insertEmptyThread(context, groupJid, draft);
-
-        values.put(Groups.THREAD_ID, threadId);
-        values.put(Groups.SUBJECT, subject);
-        values.put(Groups.GROUP_TYPE, GroupCommandComponent.GROUP_TYPE);
-        context.getContentResolver().insert(Groups.CONTENT_URI, values);
-
-        // remove values not for members table
-        values.remove(Groups.GROUP_JID);
-        values.remove(Groups.THREAD_ID);
-        values.remove(Groups.SUBJECT);
-        values.remove(Groups.GROUP_TYPE);
-
-        // insert group members
-        for (String member : members) {
-            // FIXME turn this into batch operations
-            values.put(Groups.PEER, member);
-            context.getContentResolver()
-                .insert(Groups.getMembersUri(groupJid), values);
-        }
-
-        return threadId;
+        return MessagesProviderUtils.createGroupThread(context, groupJid, subject, members, draft);
     }
 
     public void addUsers(String[] members) {
         if (!isGroupChat())
             throw new UnsupportedOperationException("Not a group chat conversation");
 
-        ContentValues values = new ContentValues();
-        values.put(Groups.GROUP_JID, mGroupJid);
-        for (String member : members) {
-            // FIXME turn this into batch operations
-            values.put(Groups.PEER, member);
-            mContext.getContentResolver()
-                .insert(Groups.getMembersUri(mGroupJid), values);
-        }
+        // add members to the group
+        MessagesProviderUtils.addGroupMembers(mContext, mGroupJid, members);
 
         // store add group member command to outbox
         boolean encrypted = Preferences.getEncryptionEnabled(mContext);
         String msgId = MessageCenterService.messageId();
-        Uri cmdMsg = storeAddGroupMember(members, msgId, encrypted);
+        Uri cmdMsg = KontalkGroupCommands
+            .addGroupMember(mContext, getThreadId(), mGroupJid, members, msgId, encrypted);
         // TODO check for null
 
         // send add group member command now
@@ -408,41 +376,18 @@ public class Conversation {
             ContentUris.parseId(cmdMsg), msgId);
     }
 
-    private Uri storeAddGroupMember(String[] members, String msgId, boolean encrypted) {
-        ContentValues values = new ContentValues();
-        values.put(Messages.THREAD_ID, getThreadId());
-        values.put(Messages.MESSAGE_ID, msgId);
-        values.put(Messages.PEER, mGroupJid);
-        values.put(Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
-        values.put(Messages.BODY_CONTENT, GroupCommandComponent.getAddMembersBodyContent(members).getBytes());
-        values.put(Messages.BODY_LENGTH, 0);
-        values.put(Messages.UNREAD, false);
-        values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
-        values.put(Messages.TIMESTAMP, System.currentTimeMillis());
-        values.put(Messages.STATUS, Messages.STATUS_SENDING);
-        // of course outgoing messages are not encrypted in database
-        values.put(Messages.ENCRYPTED, false);
-        values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-        return mContext.getContentResolver().insert(Messages.CONTENT_URI, values);
-    }
-
     public void setGroupSubject(String subject) {
         if (!isGroupChat())
             throw new UnsupportedOperationException("Not a group chat conversation");
 
-        ContentValues values = new ContentValues();
-        if (subject != null)
-            values.put(Groups.SUBJECT, subject);
-        else
-            values.putNull(Groups.SUBJECT);
-
-        mContext.getContentResolver().update(Groups.getUri(mGroupJid),
-            values, null, null);
+        // set group subject
+        MessagesProviderUtils.setGroupSubject(mContext, mGroupJid, subject);
 
         // store set group subject command to outbox
         boolean encrypted = Preferences.getEncryptionEnabled(mContext);
         String msgId = MessageCenterService.messageId();
-        Uri cmdMsg = storeSetGroupSubject(subject, msgId, encrypted);
+        Uri cmdMsg = KontalkGroupCommands
+            .setGroupSubject(mContext, getThreadId(), mGroupJid, subject, msgId, encrypted);
         // TODO check for null
 
         // send set group subject command now
@@ -450,42 +395,6 @@ public class Conversation {
         MessageCenterService.setGroupSubject(mContext, mGroupJid,
             subject, currentMembers, encrypted,
             ContentUris.parseId(cmdMsg), msgId);
-    }
-
-    private Uri storeSetGroupSubject(String subject, String msgId, boolean encrypted) {
-        ContentValues values = new ContentValues();
-        values.put(Messages.THREAD_ID, getThreadId());
-        values.put(Messages.MESSAGE_ID, msgId);
-        values.put(Messages.PEER, mGroupJid);
-        values.put(Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
-        values.put(Messages.BODY_CONTENT, GroupCommandComponent.getSetSubjectCommandBodyContent(subject).getBytes());
-        values.put(Messages.BODY_LENGTH, 0);
-        values.put(Messages.UNREAD, false);
-        values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
-        values.put(Messages.TIMESTAMP, System.currentTimeMillis());
-        values.put(Messages.STATUS, Messages.STATUS_SENDING);
-        // of course outgoing messages are not encrypted in database
-        values.put(Messages.ENCRYPTED, false);
-        values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-        return mContext.getContentResolver().insert(Messages.CONTENT_URI, values);
-    }
-
-    private static Uri storeLeaveGroup(Context context, String groupJid, String msgId, boolean encrypted) {
-        ContentValues values = new ContentValues();
-        values.put(Messages.THREAD_ID, Messages.NO_THREAD);
-        values.put(Messages.MESSAGE_ID, msgId);
-        values.put(Messages.PEER, groupJid);
-        values.put(Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
-        values.put(Messages.BODY_CONTENT, GroupCommandComponent.getLeaveCommandBodyContent().getBytes());
-        values.put(Messages.BODY_LENGTH, 0);
-        values.put(Messages.UNREAD, false);
-        values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
-        values.put(Messages.TIMESTAMP, System.currentTimeMillis());
-        values.put(Messages.STATUS, Messages.STATUS_SENDING);
-        // of course outgoing messages are not encrypted in database
-        values.put(Messages.ENCRYPTED, false);
-        values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-        return context.getContentResolver().insert(Messages.CONTENT_URI, values);
     }
 
     public void markAsRead() {
