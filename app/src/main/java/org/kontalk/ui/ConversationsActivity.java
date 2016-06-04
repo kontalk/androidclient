@@ -485,7 +485,7 @@ public class ConversationsActivity extends MainActivity
         builder.setMessage(R.string.confirm_will_delete_all);
         builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                MessagesProvider.deleteDatabase(ConversationsActivity.this);
+                Conversation.deleteAll(ConversationsActivity.this);
                 MessagingNotification.updateMessagesNotification(getApplicationContext(), false);
             }
         });

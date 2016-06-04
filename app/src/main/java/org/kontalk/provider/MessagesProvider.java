@@ -1172,9 +1172,9 @@ public class MessagesProvider extends ContentProvider {
             }
 
             // special case: delete all content
-            // FIXME group tables are not touched by this!!
             case CONVERSATIONS_ALL_ID: {
                 SQLiteDatabase db = dbHelper.getWritableDatabase();
+                boolean keepGroup = Boolean.parseBoolean(uri.getQueryParameter(Messages.KEEP_GROUP));
 
                 boolean success = false;
                 int num = 0;
@@ -1185,6 +1185,11 @@ public class MessagesProvider extends ContentProvider {
                     db.delete(TABLE_MESSAGES, null, null);
                     // update fulltext
                     db.delete(TABLE_FULLTEXT, null, null);
+                    if (!keepGroup) {
+                        // delete groups and members
+                        db.delete(TABLE_GROUPS, null, null);
+                        db.delete(TABLE_GROUP_MEMBERS, null, null);
+                    }
 
                     // set transaction successful
                     success = setTransactionSuccessful(db);

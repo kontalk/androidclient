@@ -170,6 +170,15 @@ public class Conversation {
         deleteInternal(context, cursor.getLong(COLUMN_ID), groupJid, groupPeers);
     }
 
+    public static void deleteAll(Context context) {
+        Cursor c = context.getContentResolver().query(Threads.CONTENT_URI,
+            ALL_THREADS_PROJECTION, null, null, null);
+        while (c.moveToNext()) {
+            deleteFromCursor(context, c);
+        }
+        c.close();
+    }
+
     private void loadContact() {
         if (isGroupChat())
             mContact = null;
