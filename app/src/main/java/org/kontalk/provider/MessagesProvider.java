@@ -1186,9 +1186,8 @@ public class MessagesProvider extends ContentProvider {
                     // update fulltext
                     db.delete(TABLE_FULLTEXT, null, null);
                     if (!keepGroup) {
-                        // delete groups and members
+                        // delete groups (members will cascade)
                         db.delete(TABLE_GROUPS, null, null);
-                        db.delete(TABLE_GROUP_MEMBERS, null, null);
                     }
 
                     // set transaction successful
