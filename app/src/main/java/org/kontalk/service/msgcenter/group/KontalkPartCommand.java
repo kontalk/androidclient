@@ -22,15 +22,15 @@ package org.kontalk.service.msgcenter.group;
 public class KontalkPartCommand extends KontalkGroupCommand
         implements PartCommand {
 
-    // for part message future delete
     private long mDatabaseId;
 
     @Override
-    public void setAdditionalData(Object data) {
-        mDatabaseId = (data instanceof Long) ? (Long) data : 0;
+    public void setDatabaseId(long databaseId) {
+        mDatabaseId = databaseId;
     }
 
-    public Long getDatabaseId() {
+    @Override
+    public long getDatabaseId() {
         return mDatabaseId;
     }
 

@@ -329,7 +329,7 @@ public class Conversation {
     }
 
     private static String[] loadGroupPeersInternal(Context context, String groupJid) {
-        return MessagesProviderUtils.getGroupMembers(context, groupJid);
+        return MessagesProviderUtils.getGroupMembers(context, groupJid, 0);
     }
 
     public static void startQuery(AsyncQueryHandler handler, int token) {
@@ -369,7 +369,7 @@ public class Conversation {
             throw new UnsupportedOperationException("Not a group chat conversation");
 
         // add members to the group
-        MessagesProviderUtils.addGroupMembers(mContext, mGroupJid, members);
+        MessagesProviderUtils.addGroupMembers(mContext, mGroupJid, members, true);
 
         // store add group member command to outbox
         boolean encrypted = Preferences.getEncryptionEnabled(mContext);
@@ -379,9 +379,8 @@ public class Conversation {
         // TODO check for null
 
         // send add group member command now
-        String[] currentMembers = getGroupPeers(true);
         MessageCenterService.addGroupMembers(mContext, mGroupJid,
-            mGroupSubject, currentMembers, members, encrypted,
+            mGroupSubject, getGroupPeers(), members, encrypted,
             ContentUris.parseId(cmdMsg), msgId);
     }
 

@@ -308,7 +308,7 @@ public final class SystemUtils {
         @SuppressWarnings("unchecked")
         T[] c = (T[]) Array.newInstance(a.getClass().getComponentType(), aLen + 1);
         System.arraycopy(a, 0, c, 0, aLen);
-        System.arraycopy(b, 0, c, aLen, 1);
+        c[aLen] = b;
 
         return c;
     }

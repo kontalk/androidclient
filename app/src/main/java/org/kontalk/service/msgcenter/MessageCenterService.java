@@ -1742,7 +1742,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             String[] groupMembers = null;
             if (groupJid != null) {
-                groupMembers = MessagesProviderUtils.getGroupMembers(this, groupJid);
+                groupMembers = MessagesProviderUtils.getGroupMembers(this, groupJid, 0);
             }
 
             // media message encountered and no upload service available - delay message
@@ -2229,8 +2229,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 switch (groupCommandId) {
                     case GROUP_COMMAND_PART:
                         groupCommand = group.part();
-                        // FIXME needs abstraction
-                        ((PartCommand) groupCommand).setAdditionalData(msgId);
+                        ((PartCommand) groupCommand).setDatabaseId(msgId);
                         // FIXME careful to this, might need abstraction
                         groupCommand.setMembers(toGroup);
                         groupCommand.setGroupJid(groupJid);
@@ -2239,7 +2238,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         String subject = data.getString("org.kontalk.message.group.subject");
                         groupCommand = group.createGroup();
                         ((CreateGroupCommand) groupCommand).setSubject(subject);
-                        ((CreateGroupCommand) groupCommand).setMembers(toGroup);
+                        groupCommand.setMembers(toGroup);
                         groupCommand.setGroupJid(groupJid);
                         break;
                     }

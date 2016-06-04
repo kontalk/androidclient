@@ -30,9 +30,6 @@ public interface GroupController<T extends Stanza> {
     /** Returns the group type. */
     String getGroupType();
 
-    /** Returns the type of stanza used to control groups. */
-    Class<T> getCommandInterface();
-
     /** Returns a new stanza with group command information before encrypting it. */
     T beforeEncryption(GroupCommand command, Stanza packet);
 

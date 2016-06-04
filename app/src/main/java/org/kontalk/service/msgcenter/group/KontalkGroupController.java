@@ -55,11 +55,6 @@ public class KontalkGroupController implements GroupController<Message> {
     }
 
     @Override
-    public Class<Message> getCommandInterface() {
-        return Message.class;
-    }
-
-    @Override
     public Message beforeEncryption(GroupCommand command, Stanza packet) {
         String groupJid = command.getGroupJid();
         KontalkGroupManager.KontalkGroup group = KontalkGroupManager.getInstanceFor(mConnection)
@@ -95,15 +90,17 @@ public class KontalkGroupController implements GroupController<Message> {
     public Message afterEncryption(GroupCommand command, Stanza packet) {
         if (packet == null)
             throw new IllegalArgumentException("packet must be provided");
+        if (!(command instanceof KontalkGroupCommand))
+            throw new IllegalArgumentException("invalid command");
 
         String groupJid = command.getGroupJid();
         KontalkGroupManager.KontalkGroup group = KontalkGroupManager.getInstanceFor(mConnection)
             .getGroup(groupJid);
 
-        if (command instanceof KontalkPartCommand) {
+        if (command instanceof PartCommand) {
             try {
                 String id = packet.getStanzaId();
-                long msgId = ((KontalkPartCommand) command).getDatabaseId();
+                long msgId = ((PartCommand) command).getDatabaseId();
 
                 // delete the command afterwards (only for part commands)
                 Uri msgUri = (msgId > 0) ? MyMessages.Messages.getUri(msgId) : null;
@@ -111,6 +108,21 @@ public class KontalkGroupController implements GroupController<Message> {
                 mConnection.addStanzaIdAcknowledgedListener(id,
                     new GroupCommandAckListener(mInstance, group,
                         GroupExtension.from(packet), msgUri));
+            }
+            catch (StreamManagementException.StreamManagementNotEnabledException e) {
+                Log.e(TAG, "server does not support stream management?!?");
+                // weird situation, report it
+                ReportingManager.logException(e);
+            }
+        }
+        else if (command instanceof AddRemoveMembersCommand) {
+            try {
+                String id = packet.getStanzaId();
+
+                // wait for confirmation
+                mConnection.addStanzaIdAcknowledgedListener(id,
+                    new GroupCommandAckListener(mInstance, group,
+                        GroupExtension.from(packet), null));
             }
             catch (StreamManagementException.StreamManagementNotEnabledException e) {
                 Log.e(TAG, "server does not support stream management?!?");

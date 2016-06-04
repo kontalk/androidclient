@@ -18,7 +18,10 @@
 
 package org.kontalk.provider;
 
+import java.util.Arrays;
+
 import org.jivesoftware.smack.util.StringUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,6 +41,7 @@ import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.SystemUtils;
 
 
 @RunWith(AndroidJUnit4.class)
@@ -51,19 +55,26 @@ public class MessagesProviderTest extends ProviderTestCase2<MessagesProvider> {
     }
 
     @Before
+    @Override
     public void setUp() throws Exception {
         setContext(InstrumentationRegistry.getTargetContext());
         super.setUp();
     }
 
+    @After
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+    }
+
     @Test
-    public void testSetup() throws Exception {
+    public void testSetup() {
         assertQuery(Messages.CONTENT_URI);
         assertQuery(Threads.CONTENT_URI);
     }
 
     @Test
-    public void testInsertMessages() throws Exception {
+    public void testInsertMessages() {
         String msgId = MessageUtils.messageId();
         Uri msg = MessagesProviderUtils.newOutgoingMessage(getMockContext(),
             msgId, TEST_USERID, "Test message for you", true);
@@ -76,7 +87,7 @@ public class MessagesProviderTest extends ProviderTestCase2<MessagesProvider> {
     }
 
     @Test
-    public void testDeleteMessage() throws Exception {
+    public void testDeleteMessage() {
         String msgId = MessageUtils.messageId();
         Uri msg = MessagesProviderUtils.newOutgoingMessage(getMockContext(),
             msgId, TEST_USERID, "Test message for you", true);
@@ -86,7 +97,7 @@ public class MessagesProviderTest extends ProviderTestCase2<MessagesProvider> {
     }
 
     @Test
-    public void testDeleteThread() throws Exception {
+    public void testDeleteThread() {
         String msgId = MessageUtils.messageId();
         Uri msg = MessagesProviderUtils.newOutgoingMessage(getMockContext(),
             msgId, TEST_USERID, "Test message for you", true);
@@ -99,7 +110,7 @@ public class MessagesProviderTest extends ProviderTestCase2<MessagesProvider> {
     }
 
     @Test
-    public void testCreateGroup() throws Exception {
+    public void testCreateGroup() {
         String groupId = StringUtils.randomString(20);
         String groupOwner = TEST_USERID;
         String groupJid = KontalkGroupCommands.createGroupJid(groupId, groupOwner);
@@ -116,17 +127,51 @@ public class MessagesProviderTest extends ProviderTestCase2<MessagesProvider> {
         assertQueryValues(Groups.getUri(groupJid),
             Groups.THREAD_ID, String.valueOf(threadId));
 
-        String[] actualMembers = MessagesProviderUtils.getGroupMembers(getMockContext(), groupJid);
+        String[] actualMembers = MessagesProviderUtils.getGroupMembers(getMockContext(), groupJid, 0);
         MoreAsserts.assertEquals(members, actualMembers);
     }
 
-    private void assertQuery(Uri uri) throws Exception {
+    @Test
+    public void testGroupAddRemove() {
+        String groupId = StringUtils.randomString(20);
+        String groupOwner = TEST_USERID;
+        String groupJid = KontalkGroupCommands.createGroupJid(groupId, groupOwner);
+        String[] members = {
+            "alice@prime.kontalk.net",
+            "bob@prime.kontalk.net",
+        };
+        long threadId = MessagesProviderUtils.createGroupThread(getMockContext(), groupJid, null,
+            members, "");
+        assertTrue(threadId > 0);
+
+        // add a user now
+        MessagesProviderUtils.addGroupMembers(getMockContext(), groupJid,
+            new String[] { "charlie@prime.kontalk.net" }, true);
+
+        // user list should return the same list as per create message
+        String[] actualMembers = MessagesProviderUtils.getGroupMembers(getMockContext(), groupJid, 0);
+        MoreAsserts.assertEquals(members, actualMembers);
+
+        // clear pending flag
+        getMockContext().getContentResolver().update(Groups
+            .getMembersUri(groupJid).buildUpon()
+            .appendPath("charlie@prime.kontalk.net")
+            .appendQueryParameter(Messages.CLEAR_PENDING, String.valueOf(Groups.MEMBER_PENDING_ADDED))
+            .build(), null, null, null);
+
+        // user list should return charlie too now
+        actualMembers = MessagesProviderUtils.getGroupMembers(getMockContext(), groupJid, 0);
+        members = SystemUtils.concatenate(members, "charlie@prime.kontalk.net");
+        MoreAsserts.assertContentsInAnyOrder(Arrays.asList(actualMembers), members);
+    }
+
+    private void assertQuery(Uri uri) {
         Cursor c = getMockContentResolver().query(uri, null, null, null, null);
         assertNotNull(c);
         c.close();
     }
 
-    private void assertQueryCount(Uri uri, int count) throws Exception {
+    private void assertQueryCount(Uri uri, int count) {
         Cursor c = getMockContentResolver().query(uri, null, null, null, null);
         assertNotNull(c);
         assertEquals(count, c.getCount());
@@ -134,7 +179,7 @@ public class MessagesProviderTest extends ProviderTestCase2<MessagesProvider> {
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    private void assertQueryValues(Uri uri, String... columnsExpected) throws Exception {
+    private void assertQueryValues(Uri uri, String... columnsExpected) {
         String[] columns = new String[columnsExpected.length / 2];
         for (int i = 0; i < columns.length; i++)
             columns[i] = columnsExpected[i*2];

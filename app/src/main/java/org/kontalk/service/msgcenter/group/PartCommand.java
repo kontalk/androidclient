@@ -21,6 +21,13 @@ package org.kontalk.service.msgcenter.group;
 
 public interface PartCommand extends GroupCommand {
 
-    void setAdditionalData(Object data);
+    /**
+     * A message has been stored to process this part command. It needs to be
+     * deleted after the message has been processed. Give this method the
+     * database id and the command handler will handle the rest.
+     */
+    void setDatabaseId(long messageId);
+
+    long getDatabaseId();
 
 }

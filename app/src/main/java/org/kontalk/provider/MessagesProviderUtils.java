@@ -189,12 +189,13 @@ public class MessagesProviderUtils {
         return threadId;
     }
 
-    public static void addGroupMembers(Context context, String groupJid, String[] members) {
+    public static void addGroupMembers(Context context, String groupJid, String[] members, boolean pending) {
         ContentValues values = new ContentValues();
         values.put(Groups.GROUP_JID, groupJid);
         for (String member : members) {
             // FIXME turn this into batch operations
             values.put(Groups.PEER, member);
+            values.put(Groups.PENDING, pending ? 1 : 0);
             context.getContentResolver()
                 .insert(Groups.getMembersUri(groupJid), values);
         }
@@ -220,11 +221,14 @@ public class MessagesProviderUtils {
         return exist;
     }
 
-    public static String[] getGroupMembers(Context context, String groupJid) {
+    public static String[] getGroupMembers(Context context, String groupJid, int flags) {
         Cursor c = context.getContentResolver()
             .query(Groups.getMembersUri(groupJid),
                 new String[] { Groups.PEER },
-                null, null, null);
+                // handle zero flags special case (means all flags cleared)
+                flags != 0 ?
+                    "(" + Groups.PENDING + " & " + flags + ") = " + flags :
+                    Groups.PENDING + "=0", null, null);
 
         String[] members = new String[c.getCount()];
         int i = 0;

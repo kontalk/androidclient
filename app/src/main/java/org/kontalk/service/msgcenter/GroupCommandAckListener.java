@@ -18,6 +18,8 @@
 
 package org.kontalk.service.msgcenter;
 
+import java.util.List;
+
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.packet.Stanza;
 
@@ -26,6 +28,7 @@ import android.net.Uri;
 import org.kontalk.client.GroupExtension;
 import org.kontalk.client.KontalkGroupManager;
 import org.kontalk.provider.MyMessages.Groups;
+import org.kontalk.provider.MyMessages.Messages;
 
 
 /**
@@ -55,7 +58,23 @@ public class GroupCommandAckListener extends MessageCenterPacketListener {
 
         switch (type) {
             case SET:
-                // TODO clear pending subject or member add/remove
+                // clear pending member add/remove
+                List<GroupExtension.Member> members = mExtension.getMembers();
+                for (GroupExtension.Member m : members) {
+                    int flags = 0;
+                    if (m.operation == GroupExtension.Member.Operation.ADD)
+                        flags = Groups.MEMBER_PENDING_ADDED;
+                    else if (m.operation == GroupExtension.Member.Operation.REMOVE)
+                        flags = Groups.MEMBER_PENDING_REMOVED;
+
+                    if (flags > 0) {
+                        getContext().getContentResolver().update(Groups
+                            .getMembersUri(mGroup.getJID()).buildUpon()
+                            .appendPath(m.jid)
+                            .appendQueryParameter(Messages.CLEAR_PENDING, String.valueOf(flags))
+                        .build(), null, null, null);
+                    }
+                }
                 break;
             case PART:
                 // delete group (members will cascade)

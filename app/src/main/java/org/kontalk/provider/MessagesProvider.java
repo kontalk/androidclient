@@ -417,6 +417,11 @@ public class MessagesProvider extends ContentProvider {
     }
 
     @Override
+    public void shutdown() {
+        dbHelper.close();
+    }
+
+    @Override
     public Cursor query(@NonNull Uri uri, String[] projection, String selection,
             String[] selectionArgs, String sortOrder) {
         SQLitePagedQueryBuilder qb = new SQLitePagedQueryBuilder();
