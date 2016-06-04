@@ -52,7 +52,6 @@ import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.roster.RosterEntry;
 import org.jivesoftware.smack.roster.RosterLoadedListener;
 import org.jivesoftware.smack.roster.packet.RosterPacket;
-import org.jivesoftware.smack.sm.StreamManagementException;
 import org.jivesoftware.smack.util.Async;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.caps.packet.CapsExtension;
@@ -108,9 +107,7 @@ import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.BlockingCommand;
 import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.EndpointServer;
-import org.kontalk.client.GroupExtension;
 import org.kontalk.client.KontalkConnection;
-import org.kontalk.client.KontalkGroupManager;
 import org.kontalk.client.OutOfBandData;
 import org.kontalk.client.PublicKeyPublish;
 import org.kontalk.client.PushRegistration;
@@ -141,6 +138,14 @@ import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.UploadService;
 import org.kontalk.service.XMPPConnectionHelper;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
+import org.kontalk.service.msgcenter.group.AddRemoveMembersCommand;
+import org.kontalk.service.msgcenter.group.CreateGroupCommand;
+import org.kontalk.service.msgcenter.group.GroupCommand;
+import org.kontalk.service.msgcenter.group.GroupController;
+import org.kontalk.service.msgcenter.group.GroupControllerFactory;
+import org.kontalk.service.msgcenter.group.KontalkGroupController;
+import org.kontalk.service.msgcenter.group.PartCommand;
+import org.kontalk.service.msgcenter.group.SetSubjectCommand;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
@@ -1415,8 +1420,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         resendPendingMessages(false, false);
                         // resend failed and pending received receipts
                         resendPendingReceipts();
-                        // resend pending group commands
-                        resendPendingGroupCommands();
                         // roster has been loaded
                         broadcast(ACTION_ROSTER_LOADED);
                     }
@@ -1770,8 +1773,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             if (GroupCommandComponent.MIME_TYPE.equals(bodyMime)) {
                 int cmd = 0;
-                // use database conversion facility
-                String command = c.getString(3);
+                byte[] _command = c.getBlob(3);
+                String command = new String(_command);
 
                 String[] createMembers;
                 String[] addMembers;
@@ -1852,13 +1855,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         c.close();
-    }
-
-    /**
-     * Queries for pending group commands and send them through.
-     */
-    void resendPendingGroupCommands() {
-        // TODO
     }
 
     private void sendPendingSubscriptionReplies() {
@@ -2219,9 +2215,71 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // hold on to message center while we send the message
             mIdleHandler.hold(false);
 
-            // message stanza
-            org.jivesoftware.smack.packet.Message m = new org.jivesoftware.smack.packet.Message();
-            m.setType(org.jivesoftware.smack.packet.Message.Type.chat);
+            Stanza m;
+
+            // pre-process message for group delivery
+            GroupController group = null;
+            GroupCommand groupCommand = null;
+            if (isGroupMsg) {
+                // TODO take type from data
+                group = GroupControllerFactory
+                    .createController(KontalkGroupController.GROUP_TYPE, mConnection, this);
+
+                int groupCommandId = data.getInt("org.kontalk.message.group.command", 0);
+                switch (groupCommandId) {
+                    case GROUP_COMMAND_PART:
+                        groupCommand = group.part();
+                        // FIXME needs abstraction
+                        ((PartCommand) groupCommand).setAdditionalData(msgId);
+                        // FIXME careful to this, might need abstraction
+                        groupCommand.setMembers(toGroup);
+                        groupCommand.setGroupJid(groupJid);
+                        break;
+                    case GROUP_COMMAND_CREATE: {
+                        String subject = data.getString("org.kontalk.message.group.subject");
+                        groupCommand = group.createGroup();
+                        ((CreateGroupCommand) groupCommand).setSubject(subject);
+                        ((CreateGroupCommand) groupCommand).setMembers(toGroup);
+                        groupCommand.setGroupJid(groupJid);
+                        break;
+                    }
+                    case GROUP_COMMAND_SUBJECT: {
+                        String subject = data.getString("org.kontalk.message.group.subject");
+                        groupCommand = group.setSubject();
+                        ((SetSubjectCommand) groupCommand).setSubject(subject);
+                        // FIXME careful to this, might need abstraction
+                        groupCommand.setMembers(toGroup);
+                        groupCommand.setGroupJid(groupJid);
+                        break;
+                    }
+                    case GROUP_COMMAND_MEMBERS: {
+                        String subject = data.getString("org.kontalk.message.group.subject");
+                        String[] added = data.getStringArray("org.kontalk.message.group.add");
+                        String[] removed = data.getStringArray("org.kontalk.message.group.remove");
+                        groupCommand = group.addRemoveMembers();
+                        ((AddRemoveMembersCommand) groupCommand).setSubject(subject);
+                        ((AddRemoveMembersCommand) groupCommand).setAddedMembers(added);
+                        ((AddRemoveMembersCommand) groupCommand).setRemovedMembers(removed);
+                        groupCommand.setMembers(toGroup);
+                        groupCommand.setGroupJid(groupJid);
+                        break;
+                    }
+                    default:
+                        groupCommand = group.info();
+                        // FIXME careful to this, might need abstraction
+                        groupCommand.setMembers(toGroup);
+                        groupCommand.setGroupJid(groupJid);
+                }
+
+                m = group.beforeEncryption(groupCommand, null);
+            }
+            else {
+                // message stanza
+                m = new org.jivesoftware.smack.packet.Message();
+            }
+
+            boolean isMessage = (m instanceof org.jivesoftware.smack.packet.Message);
+
             if (to != null) m.setTo(to);
 
             // set message id
@@ -2229,173 +2287,132 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             if (msgId > 0)
                 mWaitingReceipt.put(id, msgId);
 
-            String body = data.getString("org.kontalk.message.body");
-            if (body != null)
-                m.setBody(body);
+            // message server id
+            String serverId = isMessage ? data.getString("org.kontalk.message.ack") : null;
+            boolean ackRequest = isMessage && !data.getBoolean("org.kontalk.message.standalone", false);
 
-            String fetchUrl = data.getString("org.kontalk.message.fetch.url");
+            if (isMessage) {
+                org.jivesoftware.smack.packet.Message msg = (org.jivesoftware.smack.packet.Message) m;
+                msg.setType(org.jivesoftware.smack.packet.Message.Type.chat);
+                String body = data.getString("org.kontalk.message.body");
+                if (body != null)
+                    msg.setBody(body);
 
-            // generate preview if needed
-            String _previewUri = data.getString("org.kontalk.message.preview.uri");
-            String previewFilename = data.getString("org.kontalk.message.preview.path");
-            if (_previewUri != null && previewFilename != null) {
-                File previewPath = new File(previewFilename);
-                if (!previewPath.isFile()) {
-                    Uri previewUri = Uri.parse(_previewUri);
+                String fetchUrl = data.getString("org.kontalk.message.fetch.url");
+
+                // generate preview if needed
+                String _previewUri = data.getString("org.kontalk.message.preview.uri");
+                String previewFilename = data.getString("org.kontalk.message.preview.path");
+                if (_previewUri != null && previewFilename != null) {
+                    File previewPath = new File(previewFilename);
+                    if (!previewPath.isFile()) {
+                        Uri previewUri = Uri.parse(_previewUri);
+                        try {
+                            MediaStorage.cacheThumbnail(this, previewUri, previewPath, true);
+                        }
+                        catch (IOException e) {
+                            Log.w(TAG, "unable to generate preview for media", e);
+                        }
+                    }
+
+                    m.addExtension(new BitsOfBinary(MediaStorage.THUMBNAIL_MIME_NETWORK, previewPath));
+                }
+
+                // add download url if present
+                if (fetchUrl != null) {
+                    // in this case we will need the length too
+                    long length = data.getLong("org.kontalk.message.length");
+                    m.addExtension(new OutOfBandData(fetchUrl, mime, length, encrypt));
+                }
+
+                if (encrypt) {
+                    byte[] toMessage = null;
                     try {
-                        MediaStorage.cacheThumbnail(this, previewUri, previewPath, true);
-                    }
-                    catch (IOException e) {
-                        Log.w(TAG, "unable to generate preview for media", e);
-                    }
-                }
+                        Coder coder = UsersProvider.getEncryptCoder(this, mServer, key, toGroup);
+                        if (coder != null) {
 
-                m.addExtension(new BitsOfBinary(MediaStorage.THUMBNAIL_MIME_NETWORK, previewPath));
-            }
+                            // no extensions, create a simple text version to save space
+                            if (m.getExtensions().size() == 0) {
+                                toMessage = coder.encryptText(body);
+                            }
 
-            ChatState chatState;
-            try {
-                chatState = ChatState.valueOf(data.getString("org.kontalk.message.chatState"));
-            }
-            catch (Exception e) {
-                chatState = null;
-            }
+                            // some extension, encrypt whole stanza just to be sure
+                            else {
+                                toMessage = coder.encryptStanza(m.toXML());
+                            }
 
-            // add download url if present
-            if (fetchUrl != null) {
-                // in this case we will need the length too
-                long length = data.getLong("org.kontalk.message.length");
-                m.addExtension(new OutOfBandData(fetchUrl, mime, length, encrypt));
-            }
-
-            // pre-process message for group delivery
-            KontalkGroupManager.KontalkGroup group = null;
-            if (isGroupMsg) {
-                group = KontalkGroupManager.getInstanceFor(mConnection)
-                    .getGroup(groupJid);
-
-                int groupCommand = data.getInt("org.kontalk.message.group.command", 0);
-                switch (groupCommand) {
-                    case GROUP_COMMAND_PART:
-                        group.leave(m);
-                        break;
-                    case GROUP_COMMAND_CREATE: {
-                        String subject = data.getString("org.kontalk.message.group.subject");
-                        group.create(subject, toGroup, m);
-                        break;
-                    }
-                    case GROUP_COMMAND_SUBJECT: {
-                        String subject = data.getString("org.kontalk.message.group.subject");
-                        group.setSubject(subject, m);
-                        break;
-                    }
-                    case GROUP_COMMAND_MEMBERS: {
-                        String subject = data.getString("org.kontalk.message.group.subject");
-                        String[] added = data.getStringArray("org.kontalk.message.group.add");
-                        String[] removed = data.getStringArray("org.kontalk.message.group.remove");
-                        group.addRemoveMembers(subject, toGroup, added, removed, m);
-                        break;
-                    }
-                    default:
-                        group.groupInfo(m);
-                }
-
-                try {
-                    // delete the command afterwards (only for part commands)
-                    Uri msgUri = (msgId > 0 && groupCommand == GROUP_COMMAND_PART) ?
-                        Messages.getUri(msgId) : null;
-                    // wait for confirmation
-                    mConnection.addStanzaIdAcknowledgedListener(id,
-                        new GroupCommandAckListener(this, group, GroupExtension.from(m), msgUri));
-                }
-                catch (StreamManagementException.StreamManagementNotEnabledException e) {
-                    Log.e(TAG, "server does not support stream management?!?");
-                }
-            }
-
-            if (encrypt) {
-                byte[] toMessage = null;
-                try {
-                    Coder coder = UsersProvider.getEncryptCoder(this, mServer, key, toGroup);
-                    if (coder != null) {
-
-                        // no extensions, create a simple text version to save space
-                        if (m.getExtensions().size() == 0) {
-                            toMessage = coder.encryptText(body);
-                        }
-
-                        // some extension, encrypt whole stanza just to be sure
-                        else {
-                            toMessage = coder.encryptStanza(m.toXML());
-                        }
-
-                        org.jivesoftware.smack.packet.Message encMsg =
+                            org.jivesoftware.smack.packet.Message encMsg =
                                 new org.jivesoftware.smack.packet.Message(m.getTo(),
-                                        m.getType());
+                                    ((org.jivesoftware.smack.packet.Message) m).getType());
 
-                        encMsg.setBody(getString(R.string.text_encrypted));
-                        encMsg.setStanzaId(m.getStanzaId());
-                        encMsg.addExtension(new E2EEncryption(toMessage));
+                            encMsg.setBody(getString(R.string.text_encrypted));
+                            encMsg.setStanzaId(m.getStanzaId());
+                            encMsg.addExtension(new E2EEncryption(toMessage));
 
-                        m = encMsg;
+                            m = encMsg;
+                        }
                     }
-                }
 
-                // FIXME there is some very ugly code here
-                // FIXME notify just once per session (store in Kontalk instance?)
+                    // FIXME there is some very ugly code here
+                    // FIXME notify just once per session (store in Kontalk instance?)
 
-                catch (IllegalArgumentException noPublicKey) {
-                    // warn user: message will be not sent
-                    if (MessagingNotification.isPaused(to)) {
-                        Toast.makeText(this, R.string.warn_no_public_key,
-                            Toast.LENGTH_LONG).show();
+                    catch (IllegalArgumentException noPublicKey) {
+                        // warn user: message will be not sent
+                        if (MessagingNotification.isPaused(to)) {
+                            Toast.makeText(this, R.string.warn_no_public_key,
+                                Toast.LENGTH_LONG).show();
+                        }
                     }
-                }
 
-                catch (GeneralSecurityException e) {
-                    // warn user: message will not be sent
-                    if (MessagingNotification.isPaused(to)) {
-                        Toast.makeText(this, R.string.warn_encryption_failed,
-                            Toast.LENGTH_LONG).show();
+                    catch (GeneralSecurityException e) {
+                        // warn user: message will not be sent
+                        if (MessagingNotification.isPaused(to)) {
+                            Toast.makeText(this, R.string.warn_encryption_failed,
+                                Toast.LENGTH_LONG).show();
+                        }
                     }
-                }
 
-                if (toMessage == null) {
-                    // message was not encrypted for some reason, mark it pending user review
-                    ContentValues values = new ContentValues(1);
-                    values.put(Messages.STATUS, Messages.STATUS_PENDING);
-                    getContentResolver().update(ContentUris.withAppendedId
+                    if (toMessage == null) {
+                        // message was not encrypted for some reason, mark it pending user review
+                        ContentValues values = new ContentValues(1);
+                        values.put(Messages.STATUS, Messages.STATUS_PENDING);
+                        getContentResolver().update(ContentUris.withAppendedId
                             (Messages.CONTENT_URI, msgId), values, null, null);
 
-                    // do not send the message
-                    if (msgId > 0)
-                        mWaitingReceipt.remove(id);
-                    mIdleHandler.release();
-                    return;
+                        // do not send the message
+                        if (msgId > 0)
+                            mWaitingReceipt.remove(id);
+                        mIdleHandler.release();
+                        return;
+                    }
                 }
             }
 
-            // message server id
-            String serverId = data.getString("org.kontalk.message.ack");
-            boolean ackRequest = !data.getBoolean("org.kontalk.message.standalone", false);
-
             // post-process for group delivery
-            if (isGroupMsg) {
-                group.addRouteExtension(toGroup, m);
+            if (isGroupMsg && groupCommand != null) {
+                m = group.afterEncryption(groupCommand, m);
             }
 
-            // received receipt
-            if (serverId != null) {
-                m.addExtension(new DeliveryReceipt(serverId));
-            }
-            else {
-                // add chat state if message is not a received receipt
-                if (chatState != null)
-                    m.addExtension(new ChatStateExtension(chatState));
+            if (isMessage) {
+                // received receipt
+                if (serverId != null) {
+                    m.addExtension(new DeliveryReceipt(serverId));
+                }
+                else {
+                    ChatState chatState;
+                    try {
+                        chatState = ChatState.valueOf(data.getString("org.kontalk.message.chatState"));
+                        // add chat state if message is not a received receipt
+                        if (chatState != null)
+                            m.addExtension(new ChatStateExtension(chatState));
+                    }
+                    catch (Exception ignored) {
+                    }
 
-                // standalone message: no receipt
-                if (ackRequest)
-                    DeliveryReceiptRequest.addTo(m);
+                    // standalone message: no receipt
+                    if (ackRequest)
+                        DeliveryReceiptRequest.addTo((org.jivesoftware.smack.packet.Message) m);
+                }
             }
 
             sendPacket(m);
@@ -2430,7 +2447,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         GroupComponent groupInfo = msg.getComponent(GroupComponent.class);
         if (groupInfo != null) {
             values.put(Groups.GROUP_JID, groupInfo.getContent().getJid());
-            values.put(Groups.GROUP_TYPE, GroupCommandComponent.GROUP_TYPE);
+            values.put(Groups.GROUP_TYPE, KontalkGroupController.GROUP_TYPE);
 
             String groupSubject = groupInfo.getContent().getSubject();
             if (groupSubject != null)

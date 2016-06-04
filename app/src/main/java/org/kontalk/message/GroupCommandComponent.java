@@ -36,8 +36,6 @@ import org.kontalk.client.GroupExtension;
  */
 public class GroupCommandComponent extends MessageComponent<GroupExtension> {
 
-    /** Group type identifier. */
-    public static final String GROUP_TYPE = "kontalk";
     /** MIME type for command messages. */
     public static final String MIME_TYPE = "application/x-kontalk-group";
 

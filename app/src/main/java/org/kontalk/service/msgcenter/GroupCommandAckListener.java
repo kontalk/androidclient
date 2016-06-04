@@ -42,7 +42,7 @@ public class GroupCommandAckListener extends MessageCenterPacketListener {
      * Builds a new group command ack listener.
      * @param commandMessage if not null, this Uri will be deleted after successful confirmation
      */
-    GroupCommandAckListener(MessageCenterService instance, KontalkGroupManager.KontalkGroup group, GroupExtension extension, Uri commandMessage) {
+    public GroupCommandAckListener(MessageCenterService instance, KontalkGroupManager.KontalkGroup group, GroupExtension extension, Uri commandMessage) {
         super(instance);
         mGroup = group;
         mExtension = extension;

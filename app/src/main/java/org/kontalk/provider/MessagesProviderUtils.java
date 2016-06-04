@@ -18,7 +18,6 @@
 
 package org.kontalk.provider;
 
-
 import java.io.File;
 import java.util.Random;
 
@@ -30,11 +29,11 @@ import android.database.Cursor;
 import android.net.Uri;
 
 import org.kontalk.crypto.Coder;
-import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.service.msgcenter.group.KontalkGroupController;
 
 
 /**
@@ -170,7 +169,7 @@ public class MessagesProviderUtils {
 
         values.put(Groups.THREAD_ID, threadId);
         values.put(Groups.SUBJECT, subject);
-        values.put(Groups.GROUP_TYPE, GroupCommandComponent.GROUP_TYPE);
+        values.put(Groups.GROUP_TYPE, KontalkGroupController.GROUP_TYPE);
         context.getContentResolver().insert(Groups.CONTENT_URI, values);
 
         // remove values not for members table
