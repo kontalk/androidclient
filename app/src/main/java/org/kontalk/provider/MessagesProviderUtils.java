@@ -128,6 +128,17 @@ public class MessagesProviderUtils {
         }
     }
 
+    public static int updateDraft(Context context, long threadId, String draft) {
+        ContentValues values = new ContentValues(1);
+        if (draft != null && draft.length() > 0)
+            values.put(Threads.DRAFT, draft);
+        else
+            values.putNull(Threads.DRAFT);
+        return context.getContentResolver().update(
+            ContentUris.withAppendedId(Threads.CONTENT_URI, threadId),
+            values, null, null);
+    }
+
     public static int deleteMessage(Context context, long id) {
         return context.getContentResolver().delete(ContentUris
             .withAppendedId(Messages.CONTENT_URI, id), null, null);

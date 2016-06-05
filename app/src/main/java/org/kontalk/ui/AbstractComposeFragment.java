@@ -45,7 +45,6 @@ import android.content.AsyncQueryHandler;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -1843,12 +1842,8 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
             // update draft
             else {
-                ContentValues values = new ContentValues(1);
-                values.put(Threads.DRAFT, (len > 0) ? text.toString() : null);
                 try {
-                    getActivity().getContentResolver().update(
-                        ContentUris.withAppendedId(Threads.CONTENT_URI, threadId),
-                        values, null, null);
+                    MessagesProviderUtils.updateDraft(getContext(), threadId, text.toString());
                 }
                 catch (SQLiteDiskIOException e) {
                     // TODO warn user

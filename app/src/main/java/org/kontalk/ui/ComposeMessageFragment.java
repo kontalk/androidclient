@@ -37,7 +37,6 @@ import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -64,9 +63,7 @@ import org.kontalk.data.Conversation;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.provider.KontalkGroupCommands;
 import org.kontalk.provider.MyMessages;
-import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Threads;
-import org.kontalk.provider.MyMessages.Threads.Requests;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.Syncer;
@@ -635,14 +632,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         Context ctx = getActivity();
 
         // mark request as pending accepted
-        ContentValues values = new ContentValues(1);
-        values.put(Threads.REQUEST_STATUS, status);
-
-        // FIXME this won't work on new threads
-
-        ctx.getContentResolver().update(Requests.CONTENT_URI,
-            values, CommonColumns.PEER + "=?",
-                new String[] { mUserJID });
+        UsersProvider.setRequestStatus(ctx, mUserJID, status);
 
         // accept invitation
         if (action == PRIVACY_ACCEPT) {

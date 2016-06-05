@@ -1172,6 +1172,16 @@ public class UsersProvider extends ContentProvider {
             .appendPath(jid).build(), values, null, null);
     }
 
+    public static int setRequestStatus(Context context, String jid, int status) {
+        ContentValues values = new ContentValues(1);
+        values.put(MyMessages.Threads.REQUEST_STATUS, status);
+
+        // FIXME this won't work on new threads
+        return context.getContentResolver().update(MyMessages.Threads.Requests.CONTENT_URI,
+            values, MyMessages.CommonColumns.PEER + "=?",
+            new String[] { jid });
+    }
+
     public static int resync(Context context) {
         // update users database
         Uri uri = Users.CONTENT_URI.buildUpon()

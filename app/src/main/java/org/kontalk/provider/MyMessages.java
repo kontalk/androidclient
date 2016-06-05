@@ -195,8 +195,6 @@ public final class MyMessages {
 
         public static final Uri CONTENT_URI = Uri.parse("content://"
             + MessagesProvider.AUTHORITY + "/groups");
-        public static final Uri MEMBERS_CONTENT_URI = Uri.parse("content://"
-            + MessagesProvider.AUTHORITY + "/groups/members");
 
         public static Uri getUri(String jid) {
             return Uri.parse("content://"
