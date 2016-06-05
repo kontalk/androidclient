@@ -477,7 +477,7 @@
     <string name="group_command_subject">Назив групе промењен у: %s</string>
 
     <string name="group_command_text_create">Група направљена</string>
-    <string name="group_command_text_subject">Назив групе промењен</string>
+    <string name="group_command_text_subject">Назив групе измењен</string>
     <string name="group_command_text_part">Неко је напустио групу</string>
 
     <plurals name="group_people">
@@ -491,5 +491,11 @@
 <string name="text_invitation_info">(позивница за ћаскање)</string>
 
     <string name="group_command_text_add_remove">Неко је додат или уклоњен</string>
+
+    <string name="groupinfo_activity_title">Подаци о групи</string>
+
+    <string name="group_info_set_title">Измени назив</string>
+    <string name="group_info_leave">Напусти групу</string>
+    <string name="group_info_members">Чланови групе</string>
 
     </resources>
