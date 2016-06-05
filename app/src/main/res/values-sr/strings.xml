@@ -498,4 +498,6 @@
     <string name="group_info_leave">Напусти групу</string>
     <string name="group_info_members">Чланови групе</string>
 
+    <string name="confirm_will_leave_group">Нећете моћи поново да уђете у ову групу ако је напустите.</string>
+
     </resources>
