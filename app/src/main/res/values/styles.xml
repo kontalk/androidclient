@@ -66,4 +66,8 @@
         <item name="android:textStyle">italic</item>
     </style>
 
+    <style name="TextAppearance.GroupInfo.Title" parent="android:TextAppearance.Medium">
+        <item name="android:textStyle">bold</item>
+    </style>
+
 </resources>

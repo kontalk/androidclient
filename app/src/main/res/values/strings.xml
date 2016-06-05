@@ -483,6 +483,12 @@
     <string name="group_command_text_part">Someone left the group</string>
     <string name="group_command_text_add_remove">Someone was added or removed</string>
 
+    <string name="groupinfo_activity_title">Group info</string>
+
+    <string name="group_info_set_title">Change title</string>
+    <string name="group_info_leave">Leave group</string>
+    <string name="group_info_members">Group members</string>
+
     <string name="learn_more">Learn more</string>
 
     <string name="title_huawei_protected_apps">Huawei Protected Apps</string>

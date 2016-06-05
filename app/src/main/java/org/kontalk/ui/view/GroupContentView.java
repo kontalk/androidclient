@@ -97,47 +97,51 @@ public class GroupContentView extends TextView
         else if (component.isSetSubjectCommand()) {
             text = new StringBuilder();
 
-            // add member(s)
-            String[] added = component.getAddedMembers();
-            if (added != null && added.length > 0) {
-                // TODO i18n
-                ((StringBuilder) text).append("Added users:");
-                for (String member : added) {
-                    // TODO use something more "colorful"
-                    ((StringBuilder) text).append("\n");
+            if (component.isAddOrRemoveCommand()) {
+                // add member(s)
+                String[] added = component.getAddedMembers();
+                if (added != null && added.length > 0) {
+                    // TODO i18n
+                    ((StringBuilder) text).append("Added users:");
+                    for (String member : added) {
+                        // TODO use something more "colorful"
+                        ((StringBuilder) text).append("\n");
 
-                    Contact c = Contact.findByUserId(getContext(), member);
-                    if (c != null)
-                        ((StringBuilder) text).append(c.getName());
-                    else
-                        ((StringBuilder) text).append(member);
+                        Contact c = Contact.findByUserId(getContext(), member);
+                        if (c != null)
+                            ((StringBuilder) text).append(c.getName());
+                        else
+                            ((StringBuilder) text).append(member);
+                    }
+                }
+
+                // remove member(s)
+                String[] removed = component.getRemovedMembers();
+                if (removed != null && removed.length > 0) {
+                    if (text.length() > 0)
+                        ((StringBuilder) text).append("\n");
+                    // TODO i18n
+                    ((StringBuilder) text).append("Removed users:");
+                    for (String member : removed) {
+                        // TODO use something more "colorful"
+                        ((StringBuilder) text).append("\n");
+
+                        Contact c = Contact.findByUserId(getContext(), member);
+                        if (c != null)
+                            ((StringBuilder) text).append(c.getName());
+                        else
+                            ((StringBuilder) text).append(member);
+                    }
                 }
             }
 
-            // remove member(s)
-            String[] removed = component.getRemovedMembers();
-            if (removed != null && removed.length > 0) {
-                if (text.length() > 0)
-                    ((StringBuilder) text).append("\n");
-                // TODO i18n
-                ((StringBuilder) text).append("Removed users:");
-                for (String member : removed) {
-                    // TODO use something more "colorful"
-                    ((StringBuilder) text).append("\n");
-
-                    Contact c = Contact.findByUserId(getContext(), member);
-                    if (c != null)
-                        ((StringBuilder) text).append(c.getName());
-                    else
-                        ((StringBuilder) text).append(member);
+            else {
+                String subject = component.getContent().getSubject();
+                if (subject != null) {
+                    if (text.length() > 0)
+                        ((StringBuilder) text).append("\n");
+                    ((StringBuilder) text).append(getResources().getString(R.string.group_command_subject, subject));
                 }
-            }
-
-            String subject = component.getContent().getSubject();
-            if (subject != null) {
-                if (text.length() > 0)
-                    ((StringBuilder) text).append("\n");
-                ((StringBuilder) text).append(getResources().getString(R.string.group_command_subject, subject));
             }
         }
 

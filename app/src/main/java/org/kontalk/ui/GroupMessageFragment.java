@@ -263,4 +263,10 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         // TODO
         return false;
     }
+
+    public void viewGroupInfo() {
+        // TODO tablet support
+        GroupInfoActivity.start(getContext(), getThreadId());
+    }
+
 }

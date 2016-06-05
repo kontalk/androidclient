@@ -190,8 +190,10 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     }
 
     public void onTitleClick() {
-        if (mFragment != null && mFragment instanceof ComposeMessageFragment)
+        if (mFragment instanceof ComposeMessageFragment)
             ((ComposeMessageFragment) mFragment).viewContact();
+        else if (mFragment instanceof GroupMessageFragment)
+            ((GroupMessageFragment) mFragment).viewGroupInfo();
     }
 
     private AbstractComposeFragment getComposeFragment(Bundle savedInstanceState) {
