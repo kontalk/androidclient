@@ -488,4 +488,10 @@
 
     <string name="group_command_text_add_remove">Qualcuno è stato aggiunto o rimosso</string>
 
+    <string name="groupinfo_activity_title">Info gruppo</string>
+
+    <string name="group_info_set_title">Imposta titolo</string>
+    <string name="group_info_leave">Abbandona gruppo</string>
+    <string name="group_info_members">Membri del gruppo</string>
+
     </resources>
