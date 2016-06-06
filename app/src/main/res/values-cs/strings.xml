@@ -485,4 +485,14 @@
 </plurals>
 
 
-</resources>
+<string name="text_invitation_info">(pozvánka na chat)</string>
+
+    <string name="group_command_text_add_remove">Někdo byl přidán nebo odebrán</string>
+
+    <string name="groupinfo_activity_title">Info o skupině</string>
+
+    <string name="group_info_set_title">Změnit název</string>
+    <string name="group_info_leave">Opustit skupinu</string>
+    <string name="group_info_members">Členové skupiny</string>
+
+    </resources>
