@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2016 Kontalk Devteam <devteam@kontalk.org>
 
@@ -500,4 +500,5 @@
 
     <string name="confirm_will_leave_group">Нећете моћи поново да уђете у ову групу ако је напустите.</string>
 
+    <string name="group_command_self_parted">Напустили сте групу.</string>
     </resources>
