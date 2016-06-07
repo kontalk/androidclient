@@ -85,6 +85,7 @@ public class GroupInfoFragment extends Fragment {
         // load members
         // TODO sort
         String[] members = getGroupMembers();
+        mMembersAdapter.clear();
         for (String jid : members) {
             mMembersAdapter.add(jid);
         }
