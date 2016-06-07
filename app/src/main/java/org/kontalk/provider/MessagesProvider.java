@@ -101,7 +101,7 @@ public class MessagesProvider extends ContentProvider {
     private static HashMap<String, String> groupsProjectionMap;
 
     private static class DatabaseHelper extends SQLiteOpenHelper {
-        private static final int DATABASE_VERSION = 9;
+        private static final int DATABASE_VERSION = 10;
         private static final String DATABASE_NAME = "messages.db";
 
         private static final String _SCHEMA_MESSAGES = "(" +
@@ -178,7 +178,8 @@ public class MessagesProvider extends ContentProvider {
             "group_jid TEXT NOT NULL PRIMARY KEY, " +
             "thread_id INTEGER NOT NULL," +
             "group_type TEXT NOT NULL," +
-            "subject TEXT" +
+            "subject TEXT," +
+            "membership INTEGER NOT NULL DEFAULT 1" +
             ")";
 
         /** This table will contain the groups definitions.*/
@@ -202,7 +203,8 @@ public class MessagesProvider extends ContentProvider {
             "SELECT " + TABLE_MESSAGES + ".*," +
                 TABLE_GROUPS + "." + Groups.GROUP_JID + "," +
                 TABLE_GROUPS + "." + Groups.SUBJECT + "," +
-                TABLE_GROUPS + "." + Groups.GROUP_TYPE +
+                TABLE_GROUPS + "." + Groups.GROUP_TYPE + "," +
+                TABLE_GROUPS + "." + Groups.MEMBERSHIP +
             " FROM " + TABLE_MESSAGES + " LEFT JOIN " + TABLE_THREADS +
             " ON " + TABLE_MESSAGES + "." + Messages.THREAD_ID + "=" + TABLE_THREADS + "." + Threads._ID +
             " LEFT OUTER JOIN " + TABLE_GROUPS + " ON " +
@@ -350,6 +352,12 @@ public class MessagesProvider extends ContentProvider {
             TRIGGER_GROUPS_DELETE_MEMBERS,
         };
 
+        private static final String[] SCHEMA_UPGRADE_V9 = {
+            "ALTER TABLE groups ADD COLUMN membership INTEGER NOT NULL DEFAULT 1",
+            "DROP VIEW " + TABLE_MESSAGES_GROUPS,
+            SCHEMA_MESSAGES_GROUPS,
+        };
+
         private Context mContext;
 
         protected DatabaseHelper(Context context) {
@@ -404,6 +412,11 @@ public class MessagesProvider extends ContentProvider {
 
             if (oldVersion == 8) {
                 for (String sql : SCHEMA_UPGRADE_V8) {
+                    db.execSQL(sql);
+                }
+            }
+            else if (oldVersion == 9) {
+                for (String sql : SCHEMA_UPGRADE_V9) {
                     db.execSQL(sql);
                 }
             }
@@ -1597,6 +1610,7 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Groups.GROUP_JID, Groups.GROUP_JID);
         messagesProjectionMap.put(Groups.SUBJECT, Groups.SUBJECT);
         messagesProjectionMap.put(Groups.GROUP_TYPE, Groups.GROUP_TYPE);
+        messagesProjectionMap.put(Groups.MEMBERSHIP, Groups.MEMBERSHIP);
 
         threadsProjectionMap = new HashMap<>();
         threadsProjectionMap.put(Threads._ID, Threads._ID);
@@ -1617,6 +1631,7 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Groups.GROUP_JID, Groups.GROUP_JID);
         threadsProjectionMap.put(Groups.SUBJECT, Groups.SUBJECT);
         threadsProjectionMap.put(Groups.GROUP_TYPE, Groups.GROUP_TYPE);
+        threadsProjectionMap.put(Groups.MEMBERSHIP, Groups.MEMBERSHIP);
 
         fulltextProjectionMap = new HashMap<>();
         fulltextProjectionMap.put(Fulltext.THREAD_ID, Fulltext.THREAD_ID);
@@ -1627,6 +1642,7 @@ public class MessagesProvider extends ContentProvider {
         groupsProjectionMap.put(Groups.THREAD_ID, Groups.THREAD_ID);
         groupsProjectionMap.put(Groups.GROUP_TYPE, Groups.GROUP_TYPE);
         groupsProjectionMap.put(Groups.SUBJECT, Groups.SUBJECT);
+        groupsProjectionMap.put(Groups.MEMBERSHIP, Groups.MEMBERSHIP);
 
         groupsMembersProjectionMap = new HashMap<>();
         groupsMembersProjectionMap.put(Groups.GROUP_JID, Groups.GROUP_JID);

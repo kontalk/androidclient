@@ -488,6 +488,7 @@
     <string name="group_info_set_title">Change title</string>
     <string name="group_info_leave">Leave group</string>
     <string name="group_info_members">Group members</string>
+    <string name="confirm_will_leave_group">You won\'t be able to enter this group again after you leave.</string>
 
     <string name="learn_more">Learn more</string>
 

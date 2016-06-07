@@ -86,6 +86,7 @@ public class CompositeMessage {
         Groups.GROUP_JID,
         Groups.SUBJECT,
         Groups.GROUP_TYPE,
+        Groups.MEMBERSHIP,
     };
 
     // these indexes matches MESSAGE_LIST_PROJECTION
@@ -112,6 +113,7 @@ public class CompositeMessage {
     public static final int COLUMN_GROUP_JID = 20;
     public static final int COLUMN_GROUP_SUBJECT = 21;
     public static final int COLUMN_GROUP_TYPE = 22;
+    public static final int COLUMN_GROUP_MEMBERSHIP = 23;
 
     public static final String MSG_ID = "org.kontalk.message.id";
     public static final String MSG_SENDER = "org.kontalk.message.sender";
@@ -317,6 +319,7 @@ public class CompositeMessage {
             String groupJid = c.getString(COLUMN_GROUP_JID);
             String groupSubject = c.getString(COLUMN_GROUP_SUBJECT);
             String groupType = c.getString(COLUMN_GROUP_TYPE);
+            int groupMembership = c.getInt(COLUMN_GROUP_MEMBERSHIP);
 
             if (body != null) {
                 // remove trailing zero
@@ -413,7 +416,7 @@ public class CompositeMessage {
 
             // group information
             if (groupJid != null) {
-                GroupInfo groupInfo = new GroupInfo(groupJid, groupSubject, groupType);
+                GroupInfo groupInfo = new GroupInfo(groupJid, groupSubject, groupType, groupMembership);
                 addComponent(new GroupComponent(groupInfo));
             }
 

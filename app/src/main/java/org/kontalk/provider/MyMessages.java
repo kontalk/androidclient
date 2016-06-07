@@ -193,6 +193,14 @@ public final class MyMessages {
         public static final int MEMBER_PENDING_ADDED = 1;
         public static final int MEMBER_PENDING_REMOVED = 1 << 1;
 
+        // values for groups.membership
+        /** You left the group. */
+        public static final int MEMBERSHIP_PARTED = 0;
+        /** You are a current member. */
+        public static final int MEMBERSHIP_MEMBER = 1;
+        /** You are an observer. */
+        public static final int MEMBERSHIP_OBSERVER = 2;
+
         public static final Uri CONTENT_URI = Uri.parse("content://"
             + MessagesProvider.AUTHORITY + "/groups");
 
@@ -211,6 +219,7 @@ public final class MyMessages {
         public static final String THREAD_ID = Messages.THREAD_ID;
         public static final String GROUP_TYPE = "group_type";
         public static final String SUBJECT = "subject";
+        public static final String MEMBERSHIP = "membership";
         /**
          * Status used for members. It's set on request and cleared back to 0
          * when the command has been confirmed.

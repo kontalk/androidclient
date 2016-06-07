@@ -66,6 +66,7 @@ import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
 import org.kontalk.provider.MessagesProviderUtils;
+import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.group.KontalkGroupController;
@@ -102,7 +103,8 @@ class MessageListener extends MessageCenterPacketListener {
             String subject = ext.getSubject();
 
             // group information
-            GroupInfo groupInfo = new GroupInfo(groupJid, subject, KontalkGroupController.GROUP_TYPE);
+            GroupInfo groupInfo = new GroupInfo(groupJid, subject,
+                KontalkGroupController.GROUP_TYPE, MyMessages.Groups.MEMBERSHIP_MEMBER);
             msg.addComponent(new GroupComponent(groupInfo));
 
             if (ext.getType() == GroupExtension.Type.CREATE ||
