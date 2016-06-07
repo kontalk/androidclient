@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2016 Kontalk Devteam <devteam@kontalk.org>
 
@@ -495,4 +495,5 @@
 
     <string name="confirm_will_leave_group">Je kan deze groep niet opnieuw bij treden nadat je deze verlaat.</string>
 
+    <string name="group_command_self_parted">Je hebt de groep verlaten.</string>
     </resources>
