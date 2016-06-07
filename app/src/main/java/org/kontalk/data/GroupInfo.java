@@ -27,11 +27,13 @@ public class GroupInfo {
     private final String mJid;
     private final String mSubject;
     private final String mType;
+    private final int mMembership;
 
-    public GroupInfo(String jid, String subject, String type) {
+    public GroupInfo(String jid, String subject, String type, int membership) {
         mJid = jid;
         mSubject = subject;
         mType = type;
+        mMembership = membership;
     }
 
     public String getJid() {
@@ -44,5 +46,9 @@ public class GroupInfo {
 
     public String getType() {
         return mType;
+    }
+
+    public int getMembership() {
+        return mMembership;
     }
 }

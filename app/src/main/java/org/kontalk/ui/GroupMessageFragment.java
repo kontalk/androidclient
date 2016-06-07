@@ -22,10 +22,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import org.jivesoftware.smack.packet.Presence;
 
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -108,6 +110,9 @@ public class GroupMessageFragment extends AbstractComposeFragment {
             case R.id.group_subject:
                 changeGroupSubject();
                 return true;
+            case R.id.leave_group:
+                leaveGroup();
+                return true;
         }
 
         return false;
@@ -133,6 +138,21 @@ public class GroupMessageFragment extends AbstractComposeFragment {
             // reload conversation
             ((ComposeMessageParent) getActivity()).loadConversation(getThreadId());
         }
+    }
+
+    private void leaveGroup() {
+        new AlertDialogWrapper.Builder(getActivity())
+            .setMessage(R.string.confirm_will_leave_group)
+            .setPositiveButton(android.R.string.ok,
+            new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    // TODO leave group
+                    // TODO set group membership to PARTED
+                }
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
     }
 
     private void changeGroupSubject() {

@@ -1120,6 +1120,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                     public void onClick(DialogInterface dialog, int which) {
                         mComposer.setText("");
                         try {
+                            // TODO do we want this to also leave the group?
                             mConversation.delete();
                             // this will void group chat fields
                             mConversation.cancelGroupChat();
