@@ -88,6 +88,8 @@ public class GroupInfoFragment extends Fragment {
         for (String jid : members) {
             mMembersAdapter.add(jid);
         }
+
+        mMembersAdapter.notifyDataSetChanged();
     }
 
     private String[] getGroupMembers() {
