@@ -493,4 +493,6 @@
     <string name="group_info_leave">Verlaat groep</string>
     <string name="group_info_members">Groepsleden</string>
 
+    <string name="confirm_will_leave_group">Je kan deze groep niet opnieuw bij treden nadat je deze verlaat.</string>
+
     </resources>
