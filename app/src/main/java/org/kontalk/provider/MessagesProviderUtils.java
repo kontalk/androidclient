@@ -250,4 +250,11 @@ public class MessagesProviderUtils {
         return members;
     }
 
+    public static int setGroupMembership(Context context, String groupJid, int membership) {
+        ContentValues values = new ContentValues(1);
+        values.put(Groups.MEMBERSHIP, membership);
+        return context.getContentResolver().update(Groups.getUri(groupJid),
+            values, null, null);
+    }
+
 }

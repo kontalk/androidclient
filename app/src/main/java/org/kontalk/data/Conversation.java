@@ -167,7 +167,7 @@ public class Conversation {
         String[] groupPeers = null;
         if (groupJid != null)
             groupPeers = loadGroupPeersInternal(context, groupJid);
-        deleteInternal(context, cursor.getLong(COLUMN_ID), groupJid, groupPeers);
+        deleteInternal(context, cursor.getLong(COLUMN_ID), groupJid, groupPeers, false);
     }
 
     public static void deleteAll(Context context) {
@@ -283,16 +283,35 @@ public class Conversation {
         mGroupPeers = null;
     }
 
-    public void delete() {
+    public void leaveGroup() {
+        // it makes sense to leave a group if we have someone to tell about it
         loadGroupPeers(false);
-        deleteInternal(mContext, mThreadId, mGroupJid, mGroupPeers);
+        if (mGroupJid != null && mGroupPeers.length > 0) {
+            boolean encrypted = Preferences.getEncryptionEnabled(mContext);
+
+            String msgId = MessageCenterService.messageId();
+            Uri cmdMsg = KontalkGroupCommands
+                .leaveGroup(mContext, mGroupJid, msgId, encrypted);
+            // TODO check for null
+
+            // mark group as parted
+            MessagesProviderUtils.setGroupMembership(mContext, mGroupJid, Groups.MEMBERSHIP_PARTED);
+
+            MessageCenterService.leaveGroup(mContext, mGroupJid, mGroupPeers, encrypted,
+                ContentUris.parseId(cmdMsg), msgId);
+        }
     }
 
-    private static void deleteInternal(Context context, long threadId, String groupJid, String[] groupPeers) {
+    public void delete(boolean leaveGroup) {
+        loadGroupPeers(false);
+        deleteInternal(mContext, mThreadId, mGroupJid, mGroupPeers, leaveGroup);
+    }
+
+    private static void deleteInternal(Context context, long threadId, String groupJid, String[] groupPeers, boolean leaveGroup) {
         // it makes sense to leave a group if we have someone to tell about it
         boolean groupChat = groupJid != null && groupPeers.length > 0;
         boolean groupCreateSent = false;
-        if (groupChat) {
+        if (groupChat && leaveGroup) {
             // retrieve status of the group creation message
             // otherwise don't send the leave message at all
             groupCreateSent = KontalkGroupCommands.isGroupCreatedSent(context, threadId);
@@ -302,7 +321,7 @@ public class Conversation {
         MessagesProviderUtils.deleteThread(context, threadId, groupChat);
 
         // send leave message only if the group was created in the first place
-        if (groupChat) {
+        if (groupChat && leaveGroup) {
             if (groupCreateSent) {
                 boolean encrypted = Preferences.getEncryptionEnabled(context);
 

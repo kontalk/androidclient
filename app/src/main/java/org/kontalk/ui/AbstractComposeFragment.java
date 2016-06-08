@@ -27,6 +27,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.akalipetis.fragment.ActionModeListFragment;
 import com.akalipetis.fragment.MultiChoiceModeListener;
 import com.nispok.snackbar.Snackbar;
@@ -65,6 +67,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.view.ActionMode;
@@ -1111,29 +1114,35 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             .findFragmentByTag("audio") : null;
     }
 
+    private void deleteConversation(boolean cancelGroupChat) {
+        try {
+            // this will also leave the group if true is passed
+            mConversation.delete(cancelGroupChat);
+            if (cancelGroupChat) {
+                // this will void group chat fields
+                mConversation.cancelGroupChat();
+            }
+        }
+        catch (SQLiteDiskIOException e) {
+            Log.w(TAG, "error deleting thread");
+            Toast.makeText(getActivity(), R.string.error_delete_thread,
+                Toast.LENGTH_LONG).show();
+        }
+    }
+
     private void deleteThread() {
-        AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(getActivity());
-        builder.setMessage(R.string.confirm_will_delete_thread);
-        builder.setPositiveButton(android.R.string.ok,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        mComposer.setText("");
-                        try {
-                            // TODO do we want this to also leave the group?
-                            mConversation.delete();
-                            // this will void group chat fields
-                            mConversation.cancelGroupChat();
-                        }
-                        catch (SQLiteDiskIOException e) {
-                            Log.w(TAG, "error deleting thread");
-                            Toast.makeText(getActivity(), R.string.error_delete_thread,
-                                Toast.LENGTH_LONG).show();
-                        }
-                    }
-                });
-        builder.setNegativeButton(android.R.string.cancel, null);
-        builder.create().show();
+        new MaterialDialog.Builder(getActivity())
+            .content(R.string.confirm_will_delete_thread)
+            .positiveText(android.R.string.ok)
+            .positiveColorRes(R.color.button_danger)
+            .negativeText(android.R.string.cancel)
+            .onPositive(new MaterialDialog.SingleButtonCallback() {
+                @Override
+                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                    deleteConversation(false);
+                }
+            })
+            .show();
     }
 
     private void addUsers() {
@@ -1838,7 +1847,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                     mConversation.getRequestStatus() != Threads.REQUEST_WAITING &&
                     !mConversation.isGroupChat()) {
 
-                mConversation.delete();
+                mConversation.delete(false);
             }
 
             // update draft
