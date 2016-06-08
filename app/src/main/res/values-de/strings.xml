@@ -107,7 +107,7 @@
   <string name="pref_title_on_encrypt">Alle Nachrichten werden ab sofort verschlüsselt</string>
   <string name="pref_title_off_encrypt">Alle Nachrichten werden ab sofort im Klartext gesendet</string>
   <string name="pref_encrypt_userdata">Persönliche Daten verbergen</string>
-  <string name="pref_title_on_encrypt_userdata">Statusnachricht nur Kontakten anzeigen, die meine Tel.Nr. im Adressbuch haben</string>
+  <string name="pref_title_on_encrypt_userdata">Statusnachricht nur Kontakten anzeigen, die meine Telefonnummer im Adressbuch haben</string>
   <string name="pref_title_off_encrypt_userdata">Statusnachricht ist für jeden sichtbar</string>
   <string name="pref_auto_accept_subscriptions">Einladungen automatisch annehmen</string>
   <string name="pref_title_auto_accept_subscriptions">Einladungen zum Chat von anderen Nutzern automatisch annehmen</string>
