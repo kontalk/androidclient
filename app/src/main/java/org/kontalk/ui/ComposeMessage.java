@@ -210,7 +210,10 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
             else if (ACTION_VIEW_USERID.equals(action)) {
                 String userId =  threadUri.getLastPathSegment();
                 Conversation conv = Conversation.loadFromUserId(this, userId);
-                f = AbstractComposeFragment.fromConversation(this, conv);
+                if (conv != null)
+                    f = AbstractComposeFragment.fromConversation(this, conv);
+                else
+                    f = AbstractComposeFragment.fromUserId(this, userId);
             }
             else {
                 // default to a single user chat
