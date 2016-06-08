@@ -205,21 +205,23 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
             if (ACTION_VIEW_CONVERSATION.equals(action)) {
                 long threadId = ContentUris.parseId(threadUri);
                 Conversation conv = Conversation.loadFromId(this, threadId);
-                f = AbstractComposeFragment.fromConversation(this, conv);
+                f = conv.isGroupChat() ?
+                    new GroupMessageFragment() :
+                    new ComposeMessageFragment();
             }
             else if (ACTION_VIEW_USERID.equals(action)) {
                 String userId =  threadUri.getLastPathSegment();
                 Conversation conv = Conversation.loadFromUserId(this, userId);
-                if (conv != null)
-                    f = AbstractComposeFragment.fromConversation(this, conv);
-                else
-                    f = AbstractComposeFragment.fromUserId(this, userId);
+                f = conv != null && conv.isGroupChat() ?
+                    new GroupMessageFragment() :
+                    new ComposeMessageFragment();
             }
             else {
                 // default to a single user chat
                 f = new ComposeMessageFragment();
-                f.setMyArguments(args);
             }
+
+            f.setMyArguments(args);
             return f;
         }
 
