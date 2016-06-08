@@ -51,6 +51,7 @@ import org.kontalk.util.XMPPUtils;
  * @author Daniele Ricci
  */
 public class GroupMessageFragment extends AbstractComposeFragment {
+    private static final String TAG = ComposeMessage.TAG;
 
     /** The virtual or real group JID. */
     private String mGroupJID;
@@ -147,8 +148,9 @@ public class GroupMessageFragment extends AbstractComposeFragment {
             new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    // TODO leave group
-                    // TODO set group membership to PARTED
+                    // leave group
+                    mConversation.leaveGroup();
+                    // set group membership to PARTED
                 }
             })
             .setNegativeButton(android.R.string.cancel, null)
