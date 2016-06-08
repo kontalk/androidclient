@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2016 Kontalk Devteam <devteam@kontalk.org>
 
@@ -496,4 +496,5 @@
 
     <string name="confirm_will_leave_group">Sie werden dieser Gruppe nach dem Verlassen nicht wieder beitreten können.</string>
 
+    <string name="group_command_self_parted">Sie haben die Gruppe verlassen.</string>
     </resources>
