@@ -38,6 +38,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import org.kontalk.BuildConfig;
@@ -1273,16 +1274,7 @@ public class MessagesProvider extends ContentProvider {
                 notifications.add(uri);
 
             if (table.equals(TABLE_MESSAGES)) {
-                // check for empty threads
-                if (deleteEmptyThreads(db) > 0)
-                    notifications.add(Threads.CONTENT_URI);
-                // update thread with latest info and status
-                if (threadId > 0) {
-                    updateThreadInfo(db, threadId, notifications);
-                }
-                else
-                    Log.e(TAG, "unable to update thread metadata (threadId not found)");
-                // change notifications get triggered by previous method calls
+                updateThreadAfterDelete(db, threadId, notifications);
             }
 
             success = setTransactionSuccessful(db);
@@ -1295,6 +1287,19 @@ public class MessagesProvider extends ContentProvider {
         }
 
         return rows;
+    }
+
+    private void updateThreadAfterDelete(SQLiteDatabase db, long threadId, @Nullable List<Uri> notifications) {
+        // check for empty threads
+        if (deleteEmptyThreads(db) > 0 && notifications != null)
+            notifications.add(Threads.CONTENT_URI);
+        // update thread with latest info and status
+        if (threadId > 0) {
+            updateThreadInfo(db, threadId, notifications);
+        }
+        else
+            Log.e(TAG, "unable to update thread metadata (threadId not found)");
+        // change notifications get triggered by previous method calls
     }
 
     private int deleteConversation(Uri uri, boolean keepGroup) {
@@ -1326,6 +1331,9 @@ public class MessagesProvider extends ContentProvider {
                 // update fulltext
                 db.delete(TABLE_FULLTEXT, Messages.THREAD_ID + " = " + threadId, null);
 
+                // update thread information
+                updateThreadAfterDelete(db, threadId, null);
+
                 // set transaction successful
                 success = setTransactionSuccessful(db);
 
@@ -1340,7 +1348,7 @@ public class MessagesProvider extends ContentProvider {
     }
 
     /** Updates metadata of a given thread. */
-    private int updateThreadInfo(SQLiteDatabase db, long threadId, List<Uri> notifications) {
+    private int updateThreadInfo(SQLiteDatabase db, long threadId, @Nullable List<Uri> notifications) {
         Cursor c = db.query(TABLE_MESSAGES, new String[] {
                 Messages.MESSAGE_ID,
                 Messages.DIRECTION,
@@ -1376,7 +1384,7 @@ public class MessagesProvider extends ContentProvider {
                 setThreadContent(new byte[0], TextComponent.MIME_TYPE, null, v);
             }
             rc = db.update(TABLE_THREADS, v, Threads._ID + "=" + threadId, null);
-            if (rc > 0) {
+            if (rc > 0 && notifications != null) {
                 notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
                 notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
             }

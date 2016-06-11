@@ -27,7 +27,9 @@ import android.net.Uri;
 import org.kontalk.provider.KontalkGroupCommands;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MessagesProviderUtils;
+import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Groups;
+import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.MessagingNotification;
@@ -291,7 +293,7 @@ public class Conversation {
 
             String msgId = MessageCenterService.messageId();
             Uri cmdMsg = KontalkGroupCommands
-                .leaveGroup(mContext, mGroupJid, msgId, encrypted);
+                .leaveGroup(mContext, mThreadId, mGroupJid, msgId, encrypted);
             // TODO check for null
 
             // mark group as parted
@@ -327,7 +329,7 @@ public class Conversation {
 
                 String msgId = MessageCenterService.messageId();
                 Uri cmdMsg = KontalkGroupCommands
-                    .leaveGroup(context, groupJid, msgId, encrypted);
+                    .leaveGroup(context, Messages.NO_THREAD, groupJid, msgId, encrypted);
                 // TODO check for null
 
                 MessageCenterService.leaveGroup(context, groupJid, groupPeers, encrypted,

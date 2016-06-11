@@ -97,9 +97,9 @@ public class KontalkGroupCommands {
         return context.getContentResolver().insert(MyMessages.Messages.CONTENT_URI, values);
     }
 
-    public static Uri leaveGroup(Context context, String groupJid, String msgId, boolean encrypted) {
+    public static Uri leaveGroup(Context context, long threadId, String groupJid, String msgId, boolean encrypted) {
         ContentValues values = new ContentValues();
-        values.put(MyMessages.Messages.THREAD_ID, MyMessages.Messages.NO_THREAD);
+        values.put(MyMessages.Messages.THREAD_ID, threadId);
         values.put(MyMessages.Messages.MESSAGE_ID, msgId);
         values.put(MyMessages.Messages.PEER, groupJid);
         values.put(MyMessages.Messages.BODY_MIME, GroupCommandComponent.MIME_TYPE);
