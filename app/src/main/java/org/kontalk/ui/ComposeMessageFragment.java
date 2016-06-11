@@ -43,11 +43,13 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDiskIOException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -339,6 +341,19 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             return true;
         }
         return false;
+    }
+
+    @Override
+    protected void deleteConversation() {
+        try {
+            // delete all
+            mConversation.delete(true);
+        }
+        catch (SQLiteDiskIOException e) {
+            Log.w(TAG, "error deleting thread");
+            Toast.makeText(getActivity(), R.string.error_delete_thread,
+                Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override

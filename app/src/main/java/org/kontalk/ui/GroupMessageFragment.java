@@ -28,13 +28,16 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import org.jivesoftware.smack.packet.Presence;
 
 import android.content.DialogInterface;
+import android.database.sqlite.SQLiteDiskIOException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
@@ -138,6 +141,19 @@ public class GroupMessageFragment extends AbstractComposeFragment {
             mConversation.addUsers(users);
             // reload conversation
             ((ComposeMessageParent) getActivity()).loadConversation(getThreadId());
+        }
+    }
+
+    @Override
+    protected void deleteConversation() {
+        try {
+            // this will also leave the group if true is passed
+            mConversation.delete(false);
+        }
+        catch (SQLiteDiskIOException e) {
+            Log.w(TAG, "error deleting thread");
+            Toast.makeText(getActivity(), R.string.error_delete_thread,
+                Toast.LENGTH_LONG).show();
         }
     }
 

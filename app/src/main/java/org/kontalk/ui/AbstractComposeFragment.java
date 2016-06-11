@@ -1114,21 +1114,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             .findFragmentByTag("audio") : null;
     }
 
-    private void deleteConversation(boolean cancelGroupChat) {
-        try {
-            // this will also leave the group if true is passed
-            mConversation.delete(cancelGroupChat);
-            if (cancelGroupChat) {
-                // this will void group chat fields
-                mConversation.cancelGroupChat();
-            }
-        }
-        catch (SQLiteDiskIOException e) {
-            Log.w(TAG, "error deleting thread");
-            Toast.makeText(getActivity(), R.string.error_delete_thread,
-                Toast.LENGTH_LONG).show();
-        }
-    }
+    protected abstract void deleteConversation();
 
     private void deleteThread() {
         new MaterialDialog.Builder(getActivity())
@@ -1139,7 +1125,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                    deleteConversation(false);
+                    deleteConversation();
                 }
             })
             .show();

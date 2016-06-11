@@ -45,6 +45,7 @@ import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.crypto.Coder;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Groups;
@@ -1302,13 +1303,26 @@ public class MessagesProvider extends ContentProvider {
             SQLiteDatabase db = dbHelper.getWritableDatabase();
             boolean success = false;
             try {
-                int num;
+                int num = 0;
 
                 beginTransaction(db);
-                num = db.delete(TABLE_THREADS, Threads._ID + " = " + threadId, null);
-                num += db.delete(TABLE_MESSAGES, Messages.THREAD_ID + " = " + threadId, null);
+
                 if (!keepGroup)
+                    num = db.delete(TABLE_THREADS, Threads._ID + " = " + threadId, null);
+
+                // exclude group commands from delete if we are keeping the group
+                String where = Messages.THREAD_ID + " = " + threadId;
+                String[] args = null;
+                if (keepGroup) {
+                    where += " AND " + Messages.BODY_MIME + " <> ?";
+                    args = new String[] { GroupCommandComponent.MIME_TYPE };
+                }
+                num += db.delete(TABLE_MESSAGES, where, args);
+
+                if (!keepGroup)
+                    // delete group if requested
                     num += db.delete(TABLE_GROUPS, Groups.THREAD_ID + " = " + threadId, null);
+
                 // update fulltext
                 db.delete(TABLE_FULLTEXT, Messages.THREAD_ID + " = " + threadId, null);
 

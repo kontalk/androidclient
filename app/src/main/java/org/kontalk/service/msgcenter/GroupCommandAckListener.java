@@ -78,12 +78,12 @@ public class GroupCommandAckListener extends MessageCenterPacketListener {
                 break;
             case PART:
                 // delete group (members will cascade)
-                // FIXME this won't work for parted groups because the thread is still there and group data must remain too
                 getContext().getContentResolver()
                     .delete(Groups.getUri(mGroup.getJID()), null, null);
                 if (mCommandMessage != null) {
                     getContext().getContentResolver()
-                        .delete(mCommandMessage, null, null);
+                        // delete message only if it's not linked to a thread
+                        .delete(mCommandMessage, Messages.THREAD_ID + " < 0", null);
                 }
                 break;
         }
