@@ -494,4 +494,6 @@
     <string name="group_info_leave">Abbandona gruppo</string>
     <string name="group_info_members">Membri del gruppo</string>
 
+    <string name="confirm_will_leave_group">Non potrai rientrare nel gruppo una volta abbandonato.</string>
+
     </resources>

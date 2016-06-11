@@ -107,7 +107,7 @@
   <string name="pref_title_on_encrypt">Alle Nachrichten werden ab sofort verschlüsselt</string>
   <string name="pref_title_off_encrypt">Alle Nachrichten werden ab sofort im Klartext gesendet</string>
   <string name="pref_encrypt_userdata">Persönliche Daten verbergen</string>
-  <string name="pref_title_on_encrypt_userdata">Statusnachricht nur Kontakten anzeigen, die meine Tel.Nr. im Adressbuch haben</string>
+  <string name="pref_title_on_encrypt_userdata">Statusnachricht nur Kontakten anzeigen, die meine Telefonnummer im Adressbuch haben</string>
   <string name="pref_title_off_encrypt_userdata">Statusnachricht ist für jeden sichtbar</string>
   <string name="pref_auto_accept_subscriptions">Einladungen automatisch annehmen</string>
   <string name="pref_title_auto_accept_subscriptions">Einladungen zum Chat von anderen Nutzern automatisch annehmen</string>
@@ -428,7 +428,7 @@
     <string name="pref_title_custom_background">Wählen Sie einen Hintergrund mit untenstehender Option</string>
     <string name="pref_title_sync_sim_contacts">SIM Kontakte mit einbeziehen um nach registrierten Nutzern zu suchen</string>
 
-    <string name="pref_title_sync_invisible_contacts">Im Adressbuch ausgeblendete Kontakte einbeziehen. Auswählen wenn DAVDroid verwendet wird,</string>
+    <string name="pref_title_sync_invisible_contacts">Im Adressbuch ausgeblendete Kontakte einbeziehen. Aktivieren wenn DAVDroid verwendet wird</string>
 
     <string name="pref_show_blocked_users">Blockierte Nutzer anzeigen</string>
 
@@ -493,5 +493,7 @@
     <string name="group_info_set_title">Titel ändern</string>
     <string name="group_info_leave">Gruppe verlassen</string>
     <string name="group_info_members">Gruppenmitglieder</string>
+
+    <string name="confirm_will_leave_group">Sie werden dieser Gruppe nach dem Verlassen nicht wieder beitreten können.</string>
 
     </resources>

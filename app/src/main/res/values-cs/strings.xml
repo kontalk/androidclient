@@ -495,4 +495,6 @@
     <string name="group_info_leave">Opustit skupinu</string>
     <string name="group_info_members">Členové skupiny</string>
 
+    <string name="confirm_will_leave_group">Poté, co tuto skupinu opustíte, už do ní nebudete moct znovu vstoupit.</string>
+
     </resources>
