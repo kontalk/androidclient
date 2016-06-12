@@ -90,7 +90,8 @@ public class GroupContentView extends TextView
 
         // member left group
         else if (component.isPartCommand()) {
-            if (Authenticator.isSelfJID(getContext(), component.getFrom())) {
+            // sending to the group JID, this is our own part command
+            if (component.getContent().getJID().equalsIgnoreCase(component.getFrom())) {
                 text = getResources().getString(R.string.group_command_self_parted);
             }
             else {
