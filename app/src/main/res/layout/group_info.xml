@@ -59,7 +59,7 @@
         android:text="@string/group_info_members"
         style="?android:attr/listSeparatorTextViewStyle" />
 
-    <ListView android:id="@+id/members_list"
+    <ListView android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:isScrollContainer="false"/>

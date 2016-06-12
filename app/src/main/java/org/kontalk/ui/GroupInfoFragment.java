@@ -23,20 +23,27 @@ import java.util.List;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.akalipetis.fragment.ActionModeListFragment;
+import com.akalipetis.fragment.MultiChoiceModeListener;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.view.ActionMode;
 import android.text.TextUtils;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import org.kontalk.R;
@@ -54,16 +61,20 @@ import org.kontalk.util.SystemUtils;
  * Group information fragment
  * @author Daniele Ricci
  */
-public class GroupInfoFragment extends Fragment {
+public class GroupInfoFragment extends ActionModeListFragment
+        implements Contact.ContactChangeListener, MultiChoiceModeListener {
 
     private TextView mTitle;
-    private ListView mMembers;
     private Button mSetSubject;
     private Button mLeave;
+    private MenuItem mRemoveMenu;
+    private MenuItem mComposeMenu;
 
     private GroupMembersAdapter mMembersAdapter;
 
     private Conversation mConversation;
+
+    private int mCheckedItemCount;
 
     public static GroupInfoFragment newInstance(long threadId) {
         GroupInfoFragment f = new GroupInfoFragment();
@@ -94,6 +105,18 @@ public class GroupInfoFragment extends Fragment {
         }
 
         mMembersAdapter.notifyDataSetChanged();
+        updateUI();
+    }
+
+    private void updateUI() {
+        if (mRemoveMenu != null) {
+            String selfJid = Authenticator.getSelfJID(getContext());
+            boolean isOwner = KontalkGroup.checkOwnership(mConversation.getGroupJid(), selfJid);
+            mRemoveMenu.setVisible(isOwner);
+            MenuItemCompat.setShowAsAction(mRemoveMenu, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+            MenuItemCompat.setShowAsAction(mComposeMenu, isOwner ?
+                MenuItemCompat.SHOW_AS_ACTION_IF_ROOM : MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+        }
     }
 
     private String[] getGroupMembers() {
@@ -109,6 +132,7 @@ public class GroupInfoFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mMembersAdapter = new GroupMembersAdapter(getContext());
+        setMultiChoiceModeListener(this);
     }
 
     @Override
@@ -116,8 +140,6 @@ public class GroupInfoFragment extends Fragment {
         View view = inflater.inflate(R.layout.group_info, container, false);
 
         mTitle = (TextView) view.findViewById(R.id.title);
-        mMembers = (ListView) view.findViewById(R.id.members_list);
-        mMembers.setAdapter(mMembersAdapter);
 
         mSetSubject = (Button) view.findViewById(R.id.btn_change_title);
         mSetSubject.setOnClickListener(new View.OnClickListener() {
@@ -165,10 +187,98 @@ public class GroupInfoFragment extends Fragment {
         reload();
     }
 
-    private void dismiss() {
-        GroupInfoParent parent = (GroupInfoParent) getActivity();
-        if (parent != null)
-            parent.dismiss();
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        return isActionModeActive() || super.onOptionsItemSelected(item);
+    }
+
+    public boolean isActionModeActive() {
+        return mCheckedItemCount > 0;
+    }
+
+    @Override
+    public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+        if (checked)
+            mCheckedItemCount++;
+        else
+            mCheckedItemCount--;
+        mode.setTitle(getResources()
+            .getQuantityString(R.plurals.context_selected,
+                mCheckedItemCount, mCheckedItemCount));
+    }
+
+    @Override
+    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_remove:
+                // using clone because listview returns its original copy
+                removeSelectedUsers(SystemUtils
+                    .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
+                mode.finish();
+                return true;
+            case R.id.menu_compose:
+                // using clone because listview returns its original copy
+                composeSelectedUsers(SystemUtils
+                    .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
+                mode.finish();
+                return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+        MenuInflater inflater = mode.getMenuInflater();
+        inflater.inflate(R.menu.group_info_ctx, menu);
+        mRemoveMenu = menu.findItem(R.id.menu_remove);
+        mComposeMenu = menu.findItem(R.id.menu_compose);
+        updateUI();
+        return true;
+    }
+
+    @Override
+    public void onDestroyActionMode(ActionMode mode) {
+        mCheckedItemCount = 0;
+        getListView().clearChoices();
+        mMembersAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+        return false;
+    }
+
+    private void removeSelectedUsers(final SparseBooleanArray checked) {
+        List<String> users = new LinkedList<>();
+        for (int i = 0, c = mMembersAdapter.getCount(); i < c; ++i) {
+            if (checked.get(i))
+                users.add((String) mMembersAdapter.getItem(i));
+        }
+        mConversation.removeUsers(users.toArray(new String[users.size()]));
+        reload();
+    }
+
+    private void composeSelectedUsers(final SparseBooleanArray checked) {
+        List<String> users = new LinkedList<>();
+        for (int i = 0, c = mMembersAdapter.getCount(); i < c; ++i) {
+            if (checked.get(i))
+                users.add((String) mMembersAdapter.getItem(i));
+        }
+        // TODO create group with users
+    }
+
+    @Override
+    public void onContactInvalidated(String userId) {
+        Activity context = getActivity();
+        if (context != null) {
+            context.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    // just reload
+                    reload();
+                }
+            });
+        }
     }
 
     private void reload() {
@@ -181,7 +291,14 @@ public class GroupInfoFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        setListAdapter(mMembersAdapter);
         reload();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        setListAdapter(null);
     }
 
     @Override

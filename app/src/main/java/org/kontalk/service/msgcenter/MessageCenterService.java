@@ -2485,12 +2485,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             if (removed != null) {
-                for (String member : removed) {
-                    // remove member from group
-                    getContentResolver().delete(Groups.getMembersUri(group.getContent().getJID())
-                                    .buildUpon().appendEncodedPath(member).build(),
-                            null, null);
-                }
+                // remove members from group
+                MessagesProviderUtils.removeGroupMembers(this, group.getContent().getJID(),
+                    removed, false);
             }
 
             // set subject
@@ -2838,6 +2835,23 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.group.subject", groupSubject);
         i.putExtra("org.kontalk.message.group.command", GROUP_COMMAND_MEMBERS);
         i.putExtra("org.kontalk.message.group.add", members);
+        i.putExtra("org.kontalk.message.to", to);
+        i.putExtra("org.kontalk.message.encrypt", encrypt);
+        i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
+        context.startService(i);
+    }
+
+    public static void removeGroupMembers(final Context context, String groupJid,
+        String groupSubject, String[] to, String[] members, boolean encrypt, long msgId, String packetId) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_MESSAGE);
+        i.putExtra("org.kontalk.message.msgId", msgId);
+        i.putExtra("org.kontalk.message.packetId", packetId);
+        i.putExtra("org.kontalk.message.mime", GroupCommandComponent.MIME_TYPE);
+        i.putExtra("org.kontalk.message.group.jid", groupJid);
+        i.putExtra("org.kontalk.message.group.subject", groupSubject);
+        i.putExtra("org.kontalk.message.group.command", GROUP_COMMAND_MEMBERS);
+        i.putExtra("org.kontalk.message.group.remove", members);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra("org.kontalk.message.chatState", ChatState.active.name());

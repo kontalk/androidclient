@@ -61,18 +61,21 @@ public class GroupCommandAckListener extends MessageCenterPacketListener {
                 // clear pending member add/remove
                 List<GroupExtension.Member> members = mExtension.getMembers();
                 for (GroupExtension.Member m : members) {
-                    int flags = 0;
-                    if (m.operation == GroupExtension.Member.Operation.ADD)
-                        flags = Groups.MEMBER_PENDING_ADDED;
-                    else if (m.operation == GroupExtension.Member.Operation.REMOVE)
-                        flags = Groups.MEMBER_PENDING_REMOVED;
-
-                    if (flags > 0) {
+                    if (m.operation == GroupExtension.Member.Operation.ADD) {
+                        // mark user as added (clear pending flag)
                         getContext().getContentResolver().update(Groups
                             .getMembersUri(mGroup.getJID()).buildUpon()
                             .appendPath(m.jid)
-                            .appendQueryParameter(Messages.CLEAR_PENDING, String.valueOf(flags))
-                        .build(), null, null, null);
+                            .appendQueryParameter(Messages.CLEAR_PENDING,
+                                String.valueOf(Groups.MEMBER_PENDING_ADDED))
+                            .build(), null, null, null);
+                    }
+                    else if (m.operation == GroupExtension.Member.Operation.REMOVE) {
+                        // remove the user
+                        getContext().getContentResolver().delete(Groups
+                            .getMembersUri(mGroup.getJID()).buildUpon()
+                            .appendPath(m.jid)
+                            .build(), null, null);
                     }
                 }
                 break;

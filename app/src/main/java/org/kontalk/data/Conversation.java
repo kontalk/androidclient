@@ -403,11 +403,31 @@ public class Conversation {
         boolean encrypted = Preferences.getEncryptionEnabled(mContext);
         String msgId = MessageCenterService.messageId();
         Uri cmdMsg = KontalkGroupCommands
-            .addGroupMember(mContext, getThreadId(), mGroupJid, members, msgId, encrypted);
+            .addGroupMembers(mContext, getThreadId(), mGroupJid, members, msgId, encrypted);
         // TODO check for null
 
         // send add group member command now
         MessageCenterService.addGroupMembers(mContext, mGroupJid,
+            mGroupSubject, getGroupPeers(), members, encrypted,
+            ContentUris.parseId(cmdMsg), msgId);
+    }
+
+    public void removeUsers(String[] members) {
+        if (!isGroupChat())
+            throw new UnsupportedOperationException("Not a group chat conversation");
+
+        // remove members to the group
+        MessagesProviderUtils.removeGroupMembers(mContext, mGroupJid, members, true);
+
+        // store remove group member command to outbox
+        boolean encrypted = Preferences.getEncryptionEnabled(mContext);
+        String msgId = MessageCenterService.messageId();
+        Uri cmdMsg = KontalkGroupCommands
+            .removeGroupMembers(mContext, getThreadId(), mGroupJid, members, msgId, encrypted);
+        // TODO check for null
+
+        // send add group member command now
+        MessageCenterService.removeGroupMembers(mContext, mGroupJid,
             mGroupSubject, getGroupPeers(), members, encrypted,
             ContentUris.parseId(cmdMsg), msgId);
     }
