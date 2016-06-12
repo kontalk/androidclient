@@ -251,7 +251,7 @@ public class ConversationListFragment extends ActionModeListFragment
                     Context ctx = getActivity();
                     for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
                         if (checked.get(i))
-                            Conversation.deleteFromCursor(ctx, (Cursor) mListAdapter.getItem(i));
+                            Conversation.deleteFromCursor(ctx, (Cursor) mListAdapter.getItem(i), true);
                     }
                     mListAdapter.notifyDataSetChanged();
                 }
