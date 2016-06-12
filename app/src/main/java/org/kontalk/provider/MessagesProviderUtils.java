@@ -212,6 +212,28 @@ public class MessagesProviderUtils {
         }
     }
 
+    public static void removeGroupMembers(Context context, String groupJid, String[] members, boolean pending) {
+        if (pending) {
+            ContentValues values = new ContentValues();
+            values.put(Groups.GROUP_JID, groupJid);
+            for (String member : members) {
+                // FIXME turn this into batch operations
+                values.put(Groups.PEER, member);
+                values.put(Groups.PENDING, 1);
+                context.getContentResolver()
+                    .insert(Groups.getMembersUri(groupJid), values);
+            }
+        }
+        else {
+            for (String member : members) {
+                // just beat it!
+                context.getContentResolver()
+                    .delete(Groups.getMembersUri(groupJid).buildUpon()
+                        .appendPath(member).build(), null, null);
+            }
+        }
+    }
+
     public static int setGroupSubject(Context context, String groupJid, String subject) {
         ContentValues values = new ContentValues();
         if (subject != null)
