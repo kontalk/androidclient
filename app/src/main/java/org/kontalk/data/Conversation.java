@@ -167,19 +167,19 @@ public class Conversation {
         return cursor.getLong(COLUMN_ID);
     }
 
-    public static void deleteFromCursor(Context context, Cursor cursor) {
+    public static void deleteFromCursor(Context context, Cursor cursor, boolean leaveGroup) {
         String groupJid = cursor.getString(COLUMN_GROUP_JID);
         String[] groupPeers = null;
         if (groupJid != null)
             groupPeers = loadGroupPeersInternal(context, groupJid);
-        deleteInternal(context, cursor.getLong(COLUMN_ID), groupJid, groupPeers, false);
+        deleteInternal(context, cursor.getLong(COLUMN_ID), groupJid, groupPeers, leaveGroup);
     }
 
     public static void deleteAll(Context context) {
         Cursor c = context.getContentResolver().query(Threads.CONTENT_URI,
             ALL_THREADS_PROJECTION, null, null, null);
         while (c.moveToNext()) {
-            deleteFromCursor(context, c);
+            deleteFromCursor(context, c, false);
         }
         c.close();
     }
@@ -327,7 +327,7 @@ public class Conversation {
         }
 
         // delete messages and thread
-        MessagesProviderUtils.deleteThread(context, threadId, groupChat);
+        MessagesProviderUtils.deleteThread(context, threadId, groupChat && !leaveGroup);
 
         // send leave message only if the group was created in the first place
         if (groupChat && leaveGroup) {
