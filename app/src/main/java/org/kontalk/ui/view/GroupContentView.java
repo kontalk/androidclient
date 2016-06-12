@@ -27,11 +27,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
 import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.util.Preferences;
-import org.kontalk.util.XMPPUtils;
 
 
 /**
@@ -90,7 +88,8 @@ public class GroupContentView extends TextView
 
         // member left group
         else if (component.isPartCommand()) {
-            if (Authenticator.isSelfJID(getContext(), component.getFrom())) {
+            // sending to the group JID, this is our own part command
+            if (component.getContent().getJID().equalsIgnoreCase(component.getFrom())) {
                 text = getResources().getString(R.string.group_command_self_parted);
             }
             else {

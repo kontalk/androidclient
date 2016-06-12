@@ -27,7 +27,6 @@ import android.net.Uri;
 import org.kontalk.provider.KontalkGroupCommands;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MessagesProviderUtils;
-import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
@@ -57,6 +56,7 @@ public class Conversation {
         Groups.GROUP_JID,
         Groups.SUBJECT,
         Groups.GROUP_TYPE,
+        Groups.MEMBERSHIP,
     };
 
     private static final int COLUMN_ID = 0;
@@ -73,6 +73,7 @@ public class Conversation {
     private static final int COLUMN_GROUP_JID = 11;
     private static final int COLUMN_GROUP_SUBJECT = 12;
     private static final int COLUMN_GROUP_TYPE = 13;
+    private static final int COLUMN_GROUP_MEMBERSHIP = 14;
 
     private final Context mContext;
 
@@ -97,6 +98,7 @@ public class Conversation {
     private String[] mGroupPeers;
     private String mGroupSubject;
     private String mGroupType;
+    private int mGroupMembership;
 
     private Conversation(Context context) {
         mContext = context;
@@ -123,6 +125,7 @@ public class Conversation {
             mGroupJid = c.getString(COLUMN_GROUP_JID);
             mGroupSubject = c.getString(COLUMN_GROUP_SUBJECT);
             mGroupType = c.getString(COLUMN_GROUP_TYPE);
+            mGroupMembership = c.getInt(COLUMN_GROUP_MEMBERSHIP);
             // group peers are loaded on demand
 
             loadContact();
@@ -278,6 +281,10 @@ public class Conversation {
 
     public String getGroupSubject() {
         return mGroupSubject;
+    }
+
+    public int getGroupMembership() {
+        return mGroupMembership;
     }
 
     public void cancelGroupChat() {

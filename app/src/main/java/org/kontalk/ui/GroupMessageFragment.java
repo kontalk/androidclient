@@ -166,7 +166,6 @@ public class GroupMessageFragment extends AbstractComposeFragment {
                 public void onClick(DialogInterface dialog, int which) {
                     // leave group
                     mConversation.leaveGroup();
-                    // set group membership to PARTED
                 }
             })
             .setNegativeButton(android.R.string.cancel, null)
