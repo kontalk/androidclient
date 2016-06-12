@@ -59,6 +59,7 @@ public class GroupInfoFragment extends Fragment {
     private TextView mTitle;
     private ListView mMembers;
     private Button mSetSubject;
+    private Button mLeave;
 
     private GroupMembersAdapter mMembersAdapter;
 
@@ -80,7 +81,9 @@ public class GroupInfoFragment extends Fragment {
 
         String selfJid = Authenticator.getSelfJID(getContext());
         boolean isOwner = KontalkGroup.checkOwnership(mConversation.getGroupJid(), selfJid);
-        mSetSubject.setEnabled(isOwner);
+        boolean isMember = mConversation.getGroupMembership() == Groups.MEMBERSHIP_MEMBER;
+        mSetSubject.setEnabled(isOwner && isMember);
+        mLeave.setEnabled(isMember);
 
         // load members
         // TODO sort
@@ -134,23 +137,22 @@ public class GroupInfoFragment extends Fragment {
                     .show();
             }
         });
-        view.findViewById(R.id.btn_leave).setOnClickListener(new View.OnClickListener() {
+        mLeave = (Button) view.findViewById(R.id.btn_leave);
+        mLeave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(getActivity());
-                builder.setMessage(R.string.confirm_will_delete_thread);
-                builder.setPositiveButton(android.R.string.ok,
-                    new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            // TODO this needs to be delegated to the compose fragment or activity
-                            // create an interface that makes use of either onActivityResult or some other method
-                            // to deliver results to the parent activity/fragment/whatever.
-                        }
-                    });
-                builder.setNegativeButton(android.R.string.cancel, null);
-                builder.create().show();
-
+                new AlertDialogWrapper.Builder(getActivity())
+                    .setMessage(R.string.confirm_will_leave_group)
+                    .setPositiveButton(android.R.string.ok,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                // leave group
+                                mConversation.leaveGroup();
+                            }
+                        })
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show();
             }
         });
 
