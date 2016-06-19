@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2016 Kontalk Devteam <devteam@kontalk.org>
 
@@ -484,4 +484,16 @@
 </plurals>
 
 
-</resources>
+<string name="text_invitation_info">(πρόσκληση σε συνομιλία)</string>
+
+    <string name="group_command_self_parted">Αποχωρήσατε από την ομάδα.</string>
+    <string name="group_command_text_add_remove">Κάποιος/α προστέθηκε ή αφαιρέθηκε</string>
+
+    <string name="groupinfo_activity_title">Πληροφορίες Ομάδας</string>
+
+    <string name="group_info_set_title">Αλλαγή τίτλου</string>
+    <string name="group_info_leave">Αποχώρηση από την ομάδα</string>
+    <string name="group_info_members">Μέλη ομάδας</string>
+    <string name="confirm_will_leave_group">Δεν θα μπορείτε να εισέλθετε ξανά σε αυτήν την ομάδα μετά την αποχώρησή σας.</string>
+
+    </resources>
