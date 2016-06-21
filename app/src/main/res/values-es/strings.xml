@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2016 Kontalk Devteam <devteam@kontalk.org>
 
@@ -486,5 +486,13 @@
 <string name="text_invitation_info">(invitación de chat)</string>
 
     <string name="group_command_text_add_remove">Se añade o se elimina a alguien</string>
+
+    <string name="group_command_self_parted">Usted dejó el grupo.</string>
+    <string name="groupinfo_activity_title">Información del Grupo</string>
+
+    <string name="group_info_set_title">Cambiar el Título</string>
+    <string name="group_info_leave">Salir del grupo</string>
+    <string name="group_info_members">Miembros del grupo</string>
+    <string name="confirm_will_leave_group">Usted no será capaz de entrar en este grupo de nuevo después de salir.</string>
 
     </resources>
