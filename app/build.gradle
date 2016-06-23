@@ -29,8 +29,8 @@ task checkstyle(type: Checkstyle){
 }
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion '23.0.3'
+    compileSdkVersion 24
+    buildToolsVersion '24.0.0'
 
     defaultConfig {
         applicationId "org.kontalk"
@@ -127,17 +127,17 @@ dependencies {
     compile "com.madgag.spongycastle:pkix:$spongyCastleVersion"
     compile "com.madgag.spongycastle:pg:$spongyCastleVersion"
     compile 'info.guardianproject.netcipher:netcipher:1.2.1'
-    compile 'com.googlecode.libphonenumber:libphonenumber:7.4.0'
+    compile 'com.googlecode.libphonenumber:libphonenumber:7.4.3'
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'com.google.zxing:core:3.2.1'
     compile 'com.segment.backo:backo:1.0.0'
     compile "org.igniterealtime.smack:smack-experimental:$smackVersion"
     compile "org.igniterealtime.smack:smack-android:$smackVersion"
     compile 'com.github.machinarius:preferencefragment:0.1.1'
-    compile('com.github.afollestad.material-dialogs:core:0.8.5.8@aar') {
+    compile('com.github.afollestad.material-dialogs:core:0.8.6.0@aar') {
         transitive = true
     }
-    compile('com.github.afollestad.material-dialogs:commons:0.8.5.8@aar') {
+    compile('com.github.afollestad.material-dialogs:commons:0.8.6.0@aar') {
         transitive = true
     }
     compile 'com.github.castorflex.smoothprogressbar:library:1.1.0'
