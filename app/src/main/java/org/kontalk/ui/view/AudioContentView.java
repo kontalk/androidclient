@@ -140,7 +140,9 @@ public class AudioContentView extends RelativeLayout
 
     @Override
     public void onClick(View v) {
-        mAudioPlayerControl.buttonClick(new File(mComponent.getLocalUri().getPath()), this, mMessageId);
+        Uri localUri = mComponent.getLocalUri();
+        if (localUri != null)
+            mAudioPlayerControl.buttonClick(new File(localUri.getPath()), this, mMessageId);
     }
 
     @Override
