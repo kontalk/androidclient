@@ -338,12 +338,16 @@ public class Contact {
     }
 
     private static Drawable generateRandomAvatar(Context context, Contact contact) {
+        String letter = (contact.mName != null && contact.mName.length() > 0) ?
+            contact.mName : contact.mJID;
+        int size = context.getResources().getDimensionPixelSize(R.dimen.avatar_size);
+
         return TextDrawable.builder()
             .beginConfig()
-            .width(context.getResources().getDimensionPixelSize(R.dimen.avatar_size))
-            .height(context.getResources().getDimensionPixelSize(R.dimen.avatar_size))
+            .width(size)
+            .height(size)
             .endConfig()
-            .buildRect(contact.mName.substring(0, 1).toUpperCase(Locale.US),
+            .buildRect(letter.substring(0, 1).toUpperCase(Locale.US),
                 ColorGenerator.MATERIAL.getColor(contact.mJID));
     }
 
