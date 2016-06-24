@@ -503,11 +503,11 @@ public class ComposerBar extends RelativeLayout implements
         }
 
         mRecord = new MediaRecorder();
-        mRecord.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mRecord.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mRecord.setOutputFile(mRecordFile.getAbsolutePath());
-        mRecord.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
         try {
+            mRecord.setAudioSource(MediaRecorder.AudioSource.MIC);
+            mRecord.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+            mRecord.setOutputFile(mRecordFile.getAbsolutePath());
+            mRecord.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
             mVibrator.vibrate(AUDIO_RECORD_VIBRATION);
             startTimer();
             mRecord.prepare();
