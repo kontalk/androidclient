@@ -189,6 +189,18 @@ abstract class MessageCenterPacketListener implements StanzaListener {
         return (instance != null) ? instance.mIdleHandler: null;
     }
 
+    protected void hold(boolean activate) {
+        IdleConnectionHandler handler = getIdleHandler();
+        if (handler != null)
+            handler.hold(activate);
+    }
+
+    protected void release() {
+        IdleConnectionHandler handler = getIdleHandler();
+        if (handler != null)
+            handler.release();
+    }
+
     protected void runOnUiThread(Runnable action) {
         MessageCenterService instance = mInstance.get();
         if (instance != null)

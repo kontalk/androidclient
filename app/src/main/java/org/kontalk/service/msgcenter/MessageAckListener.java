@@ -86,7 +86,7 @@ class MessageAckListener extends MessageCenterPacketListener {
 
                 // we can now release the message center. Hopefully
                 // there will be one hold and one matching release.
-                getIdleHandler().release();
+                release();
             }
             else if (id != null) {
                 // the user wasn't expecting ack for this message
