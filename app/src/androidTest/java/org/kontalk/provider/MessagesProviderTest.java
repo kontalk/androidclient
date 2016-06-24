@@ -165,6 +165,24 @@ public class MessagesProviderTest extends ProviderTestCase2<MessagesProvider> {
         MoreAsserts.assertContentsInAnyOrder(Arrays.asList(actualMembers), members);
     }
 
+    /** Tries to reproduce issue #761. */
+    @Test
+    public void testEmptyPeer() {
+        // from MessagingNotification
+        String query = MyMessages.CommonColumns.NEW + " <> 0 AND " +
+            MyMessages.CommonColumns.DIRECTION + " = " + Messages.DIRECTION_IN +
+            " AND " + MyMessages.CommonColumns.PEER + " <> ? AND " +
+            Groups.GROUP_JID + " <> ?";
+        String[] args = { "", "" };
+        Cursor c = getMockContentResolver().query(Threads.CONTENT_URI, null, query, args, null);
+        assertNotNull(c);
+        c.close();
+        args = new String[] { "   ", "       " };
+        c = getMockContentResolver().query(Threads.CONTENT_URI, null, query, args, null);
+        assertNotNull(c);
+        c.close();
+    }
+
     private void assertQuery(Uri uri) {
         Cursor c = getMockContentResolver().query(uri, null, null, null, null);
         assertNotNull(c);
