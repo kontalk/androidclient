@@ -1728,8 +1728,8 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     private synchronized void unregisterPeerObserver() {
         if (mPeerObserver != null) {
-            getActivity().getContentResolver().unregisterContentObserver(
-                mPeerObserver);
+            Context context = mPeerObserver.mContext;
+            context.getContentResolver().unregisterContentObserver(mPeerObserver);
             mPeerObserver = null;
         }
     }
