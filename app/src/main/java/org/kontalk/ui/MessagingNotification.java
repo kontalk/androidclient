@@ -360,9 +360,8 @@ public class MessagingNotification {
                     context.getString(R.string.peer_unknown);
 
                 if (conv.groupJid != null) {
-                    // TODO i18n
                     name += " @ " + (TextUtils.isEmpty(conv.groupSubject) ?
-                        "Untitled group" : conv.groupSubject);
+                        context.getString(R.string.group_untitled) : conv.groupSubject);
                 }
 
                 SpannableStringBuilder buf = new SpannableStringBuilder();
