@@ -439,7 +439,7 @@ class MessageListener extends MessageCenterPacketListener {
 
                     // we can now release the message center. Hopefully
                     // there will be one hold and one matching release.
-                    getIdleHandler().release();
+                    release();
                 }
                 else if (id != null) {
                     // FIXME this could lead to fake delivery receipts because message IDs are client-generated
@@ -465,7 +465,7 @@ class MessageListener extends MessageCenterPacketListener {
 
         if (msgUri != null) {
             // hold on to message center
-            getIdleHandler().hold(false);
+            hold(false);
             // will mark this message as confirmed
             long storageId = ContentUris.parseId(msgUri);
             waitingReceipt.put(ack.getStanzaId(), storageId);
