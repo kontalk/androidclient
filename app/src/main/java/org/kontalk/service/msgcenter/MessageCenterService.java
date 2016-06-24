@@ -1072,6 +1072,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             mPingLock.acquire();
             final XMPPConnection connection = mConnection;
             final PingManager pingManager = PingManager.getInstanceFor(connection);
+            final WakeLock pingLock = mPingLock;
             Async.go(new Runnable() {
                 @Override
                 public void run() {
@@ -1092,8 +1093,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     }
                     finally {
                         // release the wake lock
-                        if (mPingLock != null)
-                            mPingLock.release();
+                        if (pingLock != null)
+                            pingLock.release();
                     }
                 }
             }, "PingServerIfNecessary (" + mConnection.getConnectionCounter() + ')');
