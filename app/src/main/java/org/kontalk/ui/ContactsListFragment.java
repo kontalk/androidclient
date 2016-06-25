@@ -339,8 +339,11 @@ public class ContactsListFragment extends ActionModeListFragment implements
     }
 
     public void startQuery() {
-        mCursor = Contact.queryContacts(getActivity());
-        mListAdapter.changeCursor(mCursor);
+        final Context context = getContext();
+        if (context != null) {
+            mCursor = Contact.queryContacts(context);
+            mListAdapter.changeCursor(mCursor);
+        }
     }
 
     @Override
