@@ -22,7 +22,7 @@ task checkstyle(type: Checkstyle){
         '**/KeyboardAwareRelativeLayout.java', '**/FrameLayoutFixed.java',
         '**/AbsListViewScrollDetector.java', '**/NoCacheMiniDnsResolver.java',
         '**/XMPPTCPConnection.java',
-        'main/java/com/**'
+        'main/java/com/**', 'main/java/io/**'
     def configProps = ['baseDir': projectDir.absolutePath]
     configProperties configProps
     classpath = files()
@@ -113,9 +113,6 @@ dependencies {
         exclude group: 'net.sf.kxml'
     }
     compile project(':emojicon:library')
-    compile (project(':CircularReveal:circualreveal')) {
-        transitive = true;
-    }
 
     compile "com.android.support:appcompat-v7:$appcompatVersion"
 
