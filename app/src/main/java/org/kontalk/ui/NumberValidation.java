@@ -1066,7 +1066,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     private void userExistsWarning() {
-        new MaterialDialog.Builder(this)
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(this)
             .content(R.string.err_validation_user_exists)
             .positiveText(android.R.string.ok)
             .negativeText(android.R.string.cancel)
@@ -1084,8 +1084,12 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                             break;
                     }
                 }
-            })
-            .show();
+            });
+        try {
+            builder.show();
+        }
+        catch (MaterialDialog.DialogException ignored) {
+        }
     }
 
     /** Proceeds to the next step in manual validation. */
