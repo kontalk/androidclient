@@ -1,4 +1,3 @@
 include ':client-common-java'
 include ':emojicon:library'
-include ':CircularReveal:circualreveal'
 include ':app'
