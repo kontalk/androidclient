@@ -988,18 +988,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
     }
 
     @Override
-    protected void sendTextMessageInternal(String text, boolean encrypt, long msgId, String packetId) {
-        MessageCenterService.sendTextMessage(getContext(), mUserJID, text, encrypt, msgId, packetId);
-    }
-
-    @Override
-    protected void sendBinaryMessageInternal(String mime, Uri localUri, long length, String previewPath, boolean encrypt, int compress, long msgId, String packetId) {
-        MessageCenterService.sendBinaryMessage(getContext(),
-            mUserJID, mime, localUri, length, previewPath, encrypt, compress,
-            msgId, packetId);
-    }
-
-    @Override
     public String getUserId() {
         return mUserJID;
     }
