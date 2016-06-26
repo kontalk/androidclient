@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 
 import org.kontalk.R;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.ui.view.AudioPlayerControl;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.ui.view.MessageListItem;
@@ -82,24 +83,35 @@ public class MessageListAdapter extends CursorAdapter {
         headerView.bind(context, msg, mHighlight, previous, mAudioPlayerControl);
     }
 
+    private boolean isEvent(Cursor cursor) {
+        String mime = cursor.getString(CompositeMessage.COLUMN_BODY_MIME);
+        return (GroupCommandComponent.supportsMimeType(mime));
+    }
+
     @Override
     public int getItemViewType(int position) {
         Cursor c = (Cursor) getItem(position);
-        return c.getInt(CompositeMessage.COLUMN_DIRECTION);
+        int type = c.getInt(CompositeMessage.COLUMN_DIRECTION);
+        // MyMessages.DIRECTION_* OR-ed with 2 for group events
+        if (isEvent(c))
+            type |= 2;
+        return type;
     }
 
     @Override
     public int getViewTypeCount() {
-        // incoming+outgoing
-        return 2;
+        // incoming (0), incoming event (2), outgoing (1), outgoing event (3)
+        // MyMessages.DIRECTION_* OR-ed with 2
+        return 4;
     }
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
         int type = cursor.getInt(CompositeMessage.COLUMN_DIRECTION);
+        boolean event = isEvent(cursor);
         MessageListItem view = (MessageListItem) mFactory
             .inflate(R.layout.message_list_item, parent, false);
-        view.afterInflate(type);
+        view.afterInflate(type, event);
         return view;
     }
 

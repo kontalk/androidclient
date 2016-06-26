@@ -43,6 +43,12 @@
 
     <style name="AvatarListItemSubtitleStyle" parent="android:TextAppearance.Small" />
 
+    <style name="DateHeader">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">?android:attr/textColorPrimaryInverse</item>
+        <item name="android:background">@drawable/date_stamp</item>
+    </style>
+
     <style name="PinnedHeader">
         <item name="android:background">?android:attr/colorBackground</item>
         <item name="android:gravity">center_vertical|left</item>

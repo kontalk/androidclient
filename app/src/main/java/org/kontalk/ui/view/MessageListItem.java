@@ -90,10 +90,10 @@ public class MessageListItem extends RelativeLayout implements Checkable {
         mDateHeader = (TextView) findViewById(R.id.date_header);
     }
 
-    public void afterInflate(int direction) {
+    public void afterInflate(int direction, boolean event) {
         ViewStub stub = (ViewStub) findViewById(R.id.balloon_stub);
         String theme = Preferences.getBalloonTheme(getContext());
-        mBalloonTheme = MessageListItemThemeFactory.createTheme(theme, direction);
+        mBalloonTheme = MessageListItemThemeFactory.createTheme(theme, direction, event);
         mBalloonTheme.inflate(stub);
     }
 

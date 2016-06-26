@@ -44,6 +44,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.KontalkGroupManager;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.XMPPUtils;
@@ -195,9 +196,12 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
     @Override
     protected String getDecodedPeer(CompositeMessage msg) {
-        String userId = msg.getSender();
-        Contact c = Contact.findByUserId(getContext(), userId);
-        return c != null ? c.getNumber() : userId;
+        if (msg.getDirection() == MyMessages.Messages.DIRECTION_IN) {
+            String userId = msg.getSender();
+            Contact c = Contact.findByUserId(getContext(), userId);
+            return c != null ? c.getNumber() : userId;
+        }
+        return null;
     }
 
     @Override

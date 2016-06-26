@@ -79,11 +79,16 @@ public class MessageListItemThemeFactory {
     private MessageListItemThemeFactory() {
     }
 
-    public static MessageListItemTheme createTheme(String theme, int direction) {
-        FactoryCreator factory = mThemes.get(theme);
-        if (factory == null)
-            throw new IllegalArgumentException("theme not found: " + theme);
+    public static MessageListItemTheme createTheme(String theme, int direction, boolean event) {
+        if (event) {
+            return new EventMessageTheme(R.layout.balloon_event);
+        }
+        else {
+            FactoryCreator factory = mThemes.get(theme);
+            if (factory == null)
+                throw new IllegalArgumentException("theme not found: " + theme);
 
-        return factory.create(direction);
+            return factory.create(direction);
+        }
     }
 }
