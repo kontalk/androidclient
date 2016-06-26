@@ -402,10 +402,8 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
             // some commands can be used only on unencrypted messages
             if (!msg.isEncrypted()) {
-                AttachmentComponent attachment = (AttachmentComponent) msg
-                    .getComponent(AttachmentComponent.class);
-                TextComponent text = (TextComponent) msg
-                    .getComponent(TextComponent.class);
+                AttachmentComponent attachment = msg.getComponent(AttachmentComponent.class);
+                TextComponent text = msg.getComponent(TextComponent.class);
 
                 // sharing media messages has no purpose if media file hasn't been
                 // retrieved yet
@@ -488,8 +486,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             case R.id.menu_copy_text: {
                 CompositeMessage msg = getCheckedItem();
 
-                TextComponent txt = (TextComponent) msg
-                    .getComponent(TextComponent.class);
+                TextComponent txt = msg.getComponent(TextComponent.class);
 
                 String text = (txt != null) ? txt.getContent() : "";
 
@@ -850,8 +847,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             MessageListItem item = (MessageListItem) view;
             final CompositeMessage msg = item.getMessage();
 
-            AttachmentComponent attachment = (AttachmentComponent) msg
-                .getComponent(AttachmentComponent.class);
+            AttachmentComponent attachment = msg.getComponent(AttachmentComponent.class);
 
             if (attachment != null && (attachment.getFetchUrl() != null || attachment.getLocalUri() != null)) {
 
@@ -921,8 +917,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     }
 
     private void stopDownload(CompositeMessage msg) {
-        AttachmentComponent attachment = (AttachmentComponent) msg
-                .getComponent(AttachmentComponent.class);
+        AttachmentComponent attachment = msg.getComponent(AttachmentComponent.class);
 
         if (attachment != null && attachment.getFetchUrl() != null) {
             Intent i = new Intent(getActivity(), DownloadService.class);
@@ -933,8 +928,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     }
 
     private void openFile(CompositeMessage msg) {
-        AttachmentComponent attachment = (AttachmentComponent) msg
-                .getComponent(AttachmentComponent.class);
+        AttachmentComponent attachment = msg.getComponent(AttachmentComponent.class);
 
         if (attachment != null) {
             Intent i = new Intent(Intent.ACTION_VIEW);
@@ -1193,8 +1187,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     private void shareMessage(CompositeMessage msg) {
         Intent i = null;
-        AttachmentComponent attachment = (AttachmentComponent) msg
-            .getComponent(AttachmentComponent.class);
+        AttachmentComponent attachment = msg.getComponent(AttachmentComponent.class);
 
         if (attachment != null) {
             i = ComposeMessage.sendMediaMessage(attachment.getLocalUri(),
@@ -1202,8 +1195,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         }
 
         else {
-            TextComponent txt = (TextComponent) msg
-                .getComponent(TextComponent.class);
+            TextComponent txt = msg.getComponent(TextComponent.class);
 
             if (txt != null)
                 i = ComposeMessage.sendTextMessage(txt.getContent());

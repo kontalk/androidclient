@@ -151,7 +151,7 @@ public class AvatarMessageTheme extends BaseMessageTheme implements Contact.Cont
             // be sure the contact is still the same
             // this is an insane workaround against race conditions
             Integer contactTag = (Integer) mAvatar.getTag();
-            if (contactTag != null && contactTag.intValue() == contact.hashCode())
+            if (contactTag != null && contactTag == contact.hashCode())
                 mAvatar.setImageDrawable(avatar);
         }
         catch (Exception e) {
