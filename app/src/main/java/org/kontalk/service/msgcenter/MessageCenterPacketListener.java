@@ -49,7 +49,7 @@ abstract class MessageCenterPacketListener implements StanzaListener {
     private WeakReference<MessageCenterService> mInstance;
 
     MessageCenterPacketListener(MessageCenterService instance) {
-        mInstance = new WeakReference<MessageCenterService>(instance);
+        mInstance = new WeakReference<>(instance);
     }
 
     protected MessageCenterService getInstance() {
@@ -177,11 +177,9 @@ abstract class MessageCenterPacketListener implements StanzaListener {
     }
 
     protected Uri incoming(CompositeMessage msg) {
-        MessageCenterService instance = mInstance.get();
-        if (instance != null)
-            return instance.incoming(msg);
-
-        return null;
+        Context context = getContext();
+        return (context != null) ? Kontalk
+            .getMessagesController(context).incoming(msg) : null;
     }
 
     protected IdleConnectionHandler getIdleHandler() {

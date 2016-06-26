@@ -90,6 +90,7 @@ import android.widget.Toast;
 import io.codetail.animation.SupportAnimator;
 import io.codetail.animation.ViewAnimationUtils;
 
+import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.Coder;
@@ -107,6 +108,7 @@ import org.kontalk.provider.MessagesProviderUtils;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.adapter.MessageListAdapter;
@@ -649,54 +651,17 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     public void sendBinaryMessage(Uri uri, String mime, boolean media,
             Class<? extends MessageComponent<?>> klass) {
         Log.v(TAG, "sending binary content: " + uri);
-        Uri newMsg = null;
-        String msgId = null;
-        File previewFile = null;
-        long length = -1;
-
-        boolean encrypted = Preferences.getEncryptionEnabled(getContext());
-        int compress = 0;
-        if (klass == ImageComponent.class) {
-            compress = Preferences.getImageCompression(getContext());
-        }
 
         try {
             // TODO convert to thread (?)
 
             offlineModeWarning();
 
-            msgId = MessageCenterService.messageId();
+            final Context context = getContext();
+            final Conversation conv = mConversation;
+            Uri newMsg = Kontalk.getMessagesController(context)
+                .sendBinaryMessage(conv, uri, mime, media, klass);
 
-            // generate thumbnail
-            // FIXME this is blocking!!!!
-            if (media && klass == ImageComponent.class) {
-                // FIXME hard-coded to ImageComponent
-                String filename = ImageComponent.buildMediaFilename(msgId, MediaStorage.THUMBNAIL_MIME_NETWORK);
-                previewFile = MediaStorage.cacheThumbnail(getContext(), uri,
-                        filename, true);
-            }
-
-            if (compress > 0) {
-                File compressed = MediaStorage.resizeImage(getContext(), uri, compress);
-                length = compressed.length();
-                // use the compressed image from now on
-                uri = Uri.fromFile(compressed);
-            }
-            else {
-                File copy = MediaStorage.copyOutgoingMedia(getContext(), uri);
-                length = copy.length();
-                uri = Uri.fromFile(copy);
-            }
-
-            // save to database
-            newMsg = MessagesProviderUtils.newOutgoingMessage(getContext(), msgId,
-                getUserId(), mime, uri, length, compress, previewFile, encrypted);
-        }
-        catch (Exception e) {
-            Log.e(TAG, "unable to store media", e);
-        }
-
-        if (newMsg != null) {
             // update thread id from the inserted message
             if (threadId <= 0) {
                 threadId = MessagesProviderUtils.getThreadByMessage(getContext(), newMsg);
@@ -708,13 +673,18 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                     Log.v(TAG, "no data - cannot start query for this composer");
                 }
             }
-
-            // send message!
-            String previewPath = (previewFile != null) ? previewFile.getAbsolutePath() : null;
-            sendBinaryMessageInternal(mime, uri, length, previewPath,
-                encrypted, compress, ContentUris.parseId(newMsg), msgId);
         }
-        else {
+        catch (SQLiteDiskIOException e) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getActivity(), R.string.error_store_outbox,
+                        Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+        catch (Exception e) {
+            ReportingManager.logException(e);
             getActivity().runOnUiThread(new Runnable() {
                 public void run() {
                     Toast.makeText(getActivity(),
@@ -724,10 +694,6 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             });
         }
     }
-
-    protected abstract void sendBinaryMessageInternal(String mime, Uri localUri,
-        long length, String previewPath, boolean encrypt, int compress,
-        long msgId, String packetId);
 
     private final class TextMessageThread extends Thread {
         private final String mText;
@@ -739,39 +705,21 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         @Override
         public void run() {
             try {
-                boolean encrypted = Preferences.getEncryptionEnabled(getActivity());
+                final Context context = getContext();
+                final Conversation conv = mConversation;
+                Uri newMsg = Kontalk.getMessagesController(context)
+                    .sendTextMessage(conv, mText);
 
-                /* TODO maybe this hack could work...?
-                MessageListItem v = (MessageListItem) LayoutInflater.from(getActivity())
-                        .inflate(R.layout.message_list_item, getListView(), false);
-                v.bind(getActivity(), msg, contact, null);
-                getListView().addFooterView(v);
-                */
-
-                String msgId = MessageUtils.messageId();
-
-                // save to local storage
-                Uri newMsg = MessagesProviderUtils.newOutgoingMessage(getContext(),
-                    msgId, getUserId(), mText, encrypted);
-                if (newMsg != null) {
-                    // update thread id from the inserted message
-                    if (threadId <= 0) {
-                        threadId = MessagesProviderUtils.getThreadByMessage(getContext(), newMsg);
-                        if (threadId > 0) {
-                            // we can run it here because progress=false
-                            startQuery(false);
-                        }
-                        else {
-                            Log.v(TAG, "no data - cannot start query for this composer");
-                        }
+                // update thread id from the inserted message
+                if (threadId <= 0) {
+                    threadId = MessagesProviderUtils.getThreadByMessage(context, newMsg);
+                    if (threadId > 0) {
+                        // we can run it here because progress=false
+                        startQuery(false);
                     }
-
-                    // send message!
-                    sendTextMessageInternal(mText, encrypted,
-                        ContentUris.parseId(newMsg), msgId);
-                }
-                else {
-                    throw new SQLiteDiskIOException();
+                    else {
+                        Log.v(TAG, "no data - cannot start query for this composer");
+                    }
                 }
             }
             catch (SQLiteDiskIOException e) {
@@ -784,14 +732,17 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 });
             }
             catch (Exception e) {
-                // TODO warn user
-                Log.d(TAG, "broken message thread", e);
+                ReportingManager.logException(e);
+                getActivity().runOnUiThread(new Runnable() {
+                    public void run() {
+                        Toast.makeText(getActivity(),
+                            R.string.err_store_message_failed,
+                            Toast.LENGTH_LONG).show();
+                    }
+                });
             }
         }
     }
-
-    protected abstract void sendTextMessageInternal(String text,
-        boolean encrypted, long msgId, String packetId);
 
     /** Sends out the text message in the composing entry. */
     @Override
