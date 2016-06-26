@@ -46,7 +46,6 @@ import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Groups;
-import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.XMPPUtils;
 
 
@@ -62,22 +61,6 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
     private MenuItem mInviteGroupMenu;
     private MenuItem mSetGroupSubjectMenu;
-
-    @Override
-    protected void sendBinaryMessageInternal(String mime, Uri localUri, long length,
-            String previewPath, boolean encrypt, int compress, long msgId, String packetId) {
-        MessageCenterService.sendGroupBinaryMessage(getContext(),
-            mConversation.getGroupJid(), mConversation.getGroupPeers(),
-            mime, localUri, length, previewPath, encrypt, compress,
-            msgId, packetId);
-    }
-
-    @Override
-    protected void sendTextMessageInternal(String text, boolean encrypted, long msgId, String packetId) {
-        MessageCenterService.sendGroupTextMessage(getContext(),
-            mConversation.getGroupJid(), mConversation.getGroupSubject(),
-            mConversation.getGroupPeers(), text, encrypted, msgId, packetId);
-    }
 
     @Override
     public boolean sendInactive() {

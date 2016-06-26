@@ -102,6 +102,9 @@ public class Kontalk extends Application {
      */
     private int mRefCounter;
 
+    /** Messages controller singleton instance. */
+    private MessagesController mMessagesController;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -259,6 +262,18 @@ public class Kontalk extends Application {
     public String getCachedPassphrase()  {
         ensureCachedPassphrase();
         return mKeyPassphrase;
+    }
+
+    /** Returns the messages controller singleton instance. */
+    public MessagesController getMessagesController() {
+        if (mMessagesController == null)
+            mMessagesController = new MessagesController(this);
+        return mMessagesController;
+    }
+
+    /** Returns the messages controller singleton instance. */
+    public static MessagesController getMessagesController(Context context) {
+        return get(context).getMessagesController();
     }
 
     /** Returns true if we are using a two-panes UI. */
