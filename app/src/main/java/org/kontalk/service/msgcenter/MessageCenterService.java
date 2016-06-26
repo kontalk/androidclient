@@ -2435,12 +2435,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         MessageUtils.fillContentValues(values, msg);
 
         GroupCommandComponent group = msg.getComponent(GroupCommandComponent.class);
-        boolean isGroupCommand = group != null;
+        // notify for 1-to-1 messages and group creation and part group commands
+        boolean notify = (group == null || group.isCreateCommand() || group.isPartCommand());
 
         values.put(Messages.STATUS, msg.getStatus());
         // group commands don't get notifications
-        values.put(Messages.UNREAD, !isGroupCommand);
-        values.put(Messages.NEW, !isGroupCommand);
+        values.put(Messages.UNREAD, notify);
+        values.put(Messages.NEW, notify);
         values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
         values.put(Messages.TIMESTAMP, System.currentTimeMillis());
 
@@ -2535,7 +2536,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // fire notification only if message was actually inserted to database
         // and the conversation is not open already
         String paused = groupInfo != null ? groupInfo.getContent().getJid() : sender;
-        if (!isGroupCommand && msgUri != null && !MessagingNotification.isPaused(paused)) {
+        if (notify && msgUri != null && !MessagingNotification.isPaused(paused)) {
             // update notifications (delayed)
             MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
         }

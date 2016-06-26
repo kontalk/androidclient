@@ -295,7 +295,7 @@ public final class MessageUtils {
         details.append(res.getString(R.string.message_type_label));
 
         int resId = R.string.text_message;
-        AttachmentComponent attachment = (AttachmentComponent) msg
+        AttachmentComponent attachment = msg
                 .getComponent(AttachmentComponent.class);
 
         if (attachment != null) {
