@@ -1125,6 +1125,11 @@ public class MessagesProvider extends ContentProvider {
                 _id = ContentUris.parseId(uri);
                 where = "_id = ?";
                 args = new String[] { String.valueOf(_id) };
+                if (selection != null) {
+                    where += " AND (" + selection + ")";
+                    if (selectionArgs != null)
+                        args = SystemUtils.concatenate(args, selectionArgs);
+                }
                 break;
 
             case MESSAGES_SERVERID:
@@ -1132,6 +1137,11 @@ public class MessagesProvider extends ContentProvider {
                 String sid = uri.getPathSegments().get(1);
                 where = "msg_id = ?";
                 args = new String[] { String.valueOf(sid) };
+                if (selection != null) {
+                    where += " AND (" + selection + ")";
+                    if (selectionArgs != null)
+                        args = SystemUtils.concatenate(args, selectionArgs);
+                }
                 break;
 
             case THREADS:
@@ -1145,12 +1155,22 @@ public class MessagesProvider extends ContentProvider {
                 _id = ContentUris.parseId(uri);
                 where = "_id = ?";
                 args = new String[] { String.valueOf(_id) };
+                if (selection != null) {
+                    where += " AND (" + selection + ")";
+                    if (selectionArgs != null)
+                        args = SystemUtils.concatenate(args, selectionArgs);
+                }
                 break;
 
             case THREADS_PEER:
                 table = TABLE_THREADS;
                 where = "peer = ?";
                 args = new String[] { uri.getLastPathSegment() };
+                if (selection != null) {
+                    where += " AND (" + selection + ")";
+                    if (selectionArgs != null)
+                        args = SystemUtils.concatenate(args, selectionArgs);
+                }
                 break;
 
             case GROUPS_ID:

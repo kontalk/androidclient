@@ -80,13 +80,16 @@ public class GroupCommandAckListener extends MessageCenterPacketListener {
                 }
                 break;
             case PART:
-                // delete group (members will cascade)
-                getContext().getContentResolver()
-                    .delete(Groups.getUri(mGroup.getJID()), null, null);
                 if (mCommandMessage != null) {
-                    getContext().getContentResolver()
-                        // delete message only if it's not linked to a thread
-                        .delete(mCommandMessage, Messages.THREAD_ID + " < 0", null);
+                    // delete message only if it's not linked to a thread
+                    if (getContext().getContentResolver()
+                            .delete(mCommandMessage, Messages.THREAD_ID + " < 0", null) > 0) {
+                        // group should be deleted only if the message was not linked to a thread
+                        // that is, no thread exists anymore for this group, so no reason to keep the group
+                        // delete group (members will cascade)
+                        getContext().getContentResolver()
+                            .delete(Groups.getUri(mGroup.getJID()), null, null);
+                    }
                 }
                 break;
         }

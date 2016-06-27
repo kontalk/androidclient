@@ -34,7 +34,7 @@ public interface GroupController<T extends Stanza> {
     T beforeEncryption(GroupCommand command, Stanza packet);
 
     /** Returns a new stanza with group command information after it's been encrypted. */
-    T afterEncryption(GroupCommand command, Stanza packet);
+    T afterEncryption(GroupCommand command, Stanza packet, Stanza original);
 
     /** Returns a new create group command. */
     CreateGroupCommand createGroup();

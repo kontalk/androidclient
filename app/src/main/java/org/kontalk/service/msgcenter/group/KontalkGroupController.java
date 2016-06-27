@@ -87,7 +87,7 @@ public class KontalkGroupController implements GroupController<Message> {
     }
 
     @Override
-    public Message afterEncryption(GroupCommand command, Stanza packet) {
+    public Message afterEncryption(GroupCommand command, Stanza packet, Stanza original) {
         if (packet == null)
             throw new IllegalArgumentException("packet must be provided");
         if (!(command instanceof KontalkGroupCommand))
@@ -107,7 +107,7 @@ public class KontalkGroupController implements GroupController<Message> {
                 // wait for confirmation
                 mConnection.addStanzaIdAcknowledgedListener(id,
                     new GroupCommandAckListener(mInstance, group,
-                        GroupExtension.from(packet), msgUri));
+                        GroupExtension.from(original), msgUri));
             }
             catch (StreamManagementException.StreamManagementNotEnabledException e) {
                 Log.e(TAG, "server does not support stream management?!?");
@@ -122,7 +122,7 @@ public class KontalkGroupController implements GroupController<Message> {
                 // wait for confirmation
                 mConnection.addStanzaIdAcknowledgedListener(id,
                     new GroupCommandAckListener(mInstance, group,
-                        GroupExtension.from(packet), null));
+                        GroupExtension.from(original), null));
             }
             catch (StreamManagementException.StreamManagementNotEnabledException e) {
                 Log.e(TAG, "server does not support stream management?!?");

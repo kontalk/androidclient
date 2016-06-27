@@ -2217,7 +2217,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // hold on to message center while we send the message
             mIdleHandler.hold(false);
 
-            Stanza m;
+            Stanza m, originalStanza;
 
             // pre-process message for group delivery
             GroupController group = null;
@@ -2279,6 +2279,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 m = new org.jivesoftware.smack.packet.Message();
             }
 
+            originalStanza = m;
             boolean isMessage = (m instanceof org.jivesoftware.smack.packet.Message);
 
             if (to != null) m.setTo(to);
@@ -2350,6 +2351,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             encMsg.setStanzaId(m.getStanzaId());
                             encMsg.addExtension(new E2EEncryption(toMessage));
 
+                            // save the unencrypted stanza for later
+                            originalStanza = m;
                             m = encMsg;
                         }
                     }
@@ -2391,7 +2394,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             // post-process for group delivery
             if (isGroupMsg && groupCommand != null) {
-                m = group.afterEncryption(groupCommand, m);
+                m = group.afterEncryption(groupCommand, m, originalStanza);
             }
 
             if (isMessage) {
