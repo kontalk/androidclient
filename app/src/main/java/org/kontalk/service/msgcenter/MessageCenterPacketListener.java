@@ -201,7 +201,7 @@ abstract class MessageCenterPacketListener implements StanzaListener {
 
     protected void runOnUiThread(Runnable action) {
         MessageCenterService instance = mInstance.get();
-        if (instance != null)
+        if (instance != null && instance.mHandler != null)
             instance.mHandler.post(action);
     }
 
