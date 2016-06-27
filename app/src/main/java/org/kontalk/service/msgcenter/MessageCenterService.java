@@ -737,8 +737,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // quit the idle handler
             mIdleHandler.quit();
             mIdleHandler = null;
-            // quit the service handler
-            mHandler.getLooper().quit();
+            // destroy the service handler
+            // (can't stop it because it's the main thread)
             mHandler = null;
         }
         else {
@@ -1533,11 +1533,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void broadcast(String action, String extraName, String extraValue) {
-        Intent i = new Intent(action);
-        if (extraName != null)
-            i.putExtra(extraName, extraValue);
+        if (mLocalBroadcastManager != null) {
+            Intent i = new Intent(action);
+            if (extraName != null)
+                i.putExtra(extraName, extraValue);
 
-        mLocalBroadcastManager.sendBroadcast(i);
+            mLocalBroadcastManager.sendBroadcast(i);
+        }
     }
 
     /** Discovers info and items. */
