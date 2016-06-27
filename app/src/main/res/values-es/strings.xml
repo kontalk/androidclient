@@ -465,7 +465,7 @@
 
     <string name="chooser_error_no_browser">No hay ningún navegador disponible para abrir el enlace.</string>
     <string name="menu_invite_group">Añadir usuarios</string>
-    <string name="menu_set_group_subject">Asignar el nombre del grupo</string>
+    <string name="menu_set_group_subject">Asignar nombre al grupo</string>
     <string name="menu_leave_group">Salir del grupo</string>
     <string name="group_untitled">Grupo sin nombre</string>
     <string name="title_group_subject">Nombre del grupo</string>
