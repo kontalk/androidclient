@@ -61,6 +61,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
     private MenuItem mInviteGroupMenu;
     private MenuItem mSetGroupSubjectMenu;
+    private MenuItem mLeaveGroupMenu;
 
     @Override
     public boolean sendInactive() {
@@ -72,13 +73,22 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     protected void updateUI() {
         super.updateUI();
         if (mInviteGroupMenu != null) {
+            boolean visible;
             String myUser = Authenticator.getSelfJID(getContext());
-            boolean visible = KontalkGroupManager.KontalkGroup
-                .checkOwnership(mConversation.getGroupJid(), myUser);
+
+            // menu items requiring ownership and membership
+            visible = KontalkGroupManager.KontalkGroup
+                .checkOwnership(mConversation.getGroupJid(), myUser) &&
+                mConversation.getGroupMembership() == Groups.MEMBERSHIP_MEMBER;
             mInviteGroupMenu.setVisible(visible);
             mInviteGroupMenu.setEnabled(visible);
             mSetGroupSubjectMenu.setVisible(visible);
             mSetGroupSubjectMenu.setEnabled(visible);
+
+            // menu items requiring membershop
+            visible = mConversation.getGroupMembership() == Groups.MEMBERSHIP_MEMBER;
+            mLeaveGroupMenu.setVisible(visible);
+            mLeaveGroupMenu.setEnabled(visible);
         }
     }
 
@@ -87,6 +97,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         inflater.inflate(R.menu.group_message_menu, menu);
         mInviteGroupMenu = menu.findItem(R.id.invite_group);
         mSetGroupSubjectMenu = menu.findItem(R.id.group_subject);
+        mLeaveGroupMenu = menu.findItem(R.id.leave_group);
     }
 
     @Override
