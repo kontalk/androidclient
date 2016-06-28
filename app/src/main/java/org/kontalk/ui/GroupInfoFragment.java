@@ -171,6 +171,7 @@ public class GroupInfoFragment extends ActionModeListFragment
                             public void onClick(DialogInterface dialog, int which) {
                                 // leave group
                                 mConversation.leaveGroup();
+                                reload();
                             }
                         })
                     .setNegativeButton(android.R.string.cancel, null)
@@ -183,7 +184,6 @@ public class GroupInfoFragment extends ActionModeListFragment
 
     private void setGroupSubject(String subject) {
         mConversation.setGroupSubject(subject);
-        // reload conversation
         reload();
     }
 

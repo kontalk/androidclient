@@ -295,19 +295,25 @@ public class Conversation {
     public void leaveGroup() {
         // it makes sense to leave a group if we have someone to tell about it
         loadGroupPeers(false);
-        if (mGroupJid != null && mGroupPeers.length > 0) {
+        if (mGroupJid != null) {
             boolean encrypted = Preferences.getEncryptionEnabled(mContext);
+
+            // send the command if there is someone to talk to
+            // FIXME defeating the purpose of having a group controller interface
+            boolean actuallySend = getGroupPeers().length > 0;
 
             String msgId = MessageCenterService.messageId();
             Uri cmdMsg = KontalkGroupCommands
-                .leaveGroup(mContext, mThreadId, mGroupJid, msgId, encrypted);
+                .leaveGroup(mContext, mThreadId, mGroupJid, msgId, encrypted, !actuallySend);
             // TODO check for null
 
             // mark group as parted
             MessagesProviderUtils.setGroupMembership(mContext, mGroupJid, Groups.MEMBERSHIP_PARTED);
 
-            MessageCenterService.leaveGroup(mContext, mGroupJid, mGroupPeers, encrypted,
-                ContentUris.parseId(cmdMsg), msgId);
+            if (actuallySend) {
+                MessageCenterService.leaveGroup(mContext, mGroupJid, mGroupPeers, encrypted,
+                    ContentUris.parseId(cmdMsg), msgId);
+            }
         }
     }
 
@@ -318,9 +324,12 @@ public class Conversation {
 
     private static void deleteInternal(Context context, long threadId, String groupJid, String[] groupPeers, boolean leaveGroup) {
         // it makes sense to leave a group if we have someone to tell about it
-        boolean groupChat = groupJid != null && groupPeers.length > 0;
+        boolean groupChat = groupJid != null;
+        // FIXME defeating the purpose of having a group controller interface
+        boolean actuallySend = groupChat && groupPeers.length > 0;
+
         boolean groupCreateSent = false;
-        if (groupChat && leaveGroup) {
+        if (groupChat && actuallySend && leaveGroup) {
             // retrieve status of the group creation message
             // otherwise don't send the leave message at all
             groupCreateSent = KontalkGroupCommands.isGroupCreatedSent(context, threadId);
@@ -336,7 +345,7 @@ public class Conversation {
 
                 String msgId = MessageCenterService.messageId();
                 Uri cmdMsg = KontalkGroupCommands
-                    .leaveGroup(context, Messages.NO_THREAD, groupJid, msgId, encrypted);
+                    .leaveGroup(context, Messages.NO_THREAD, groupJid, msgId, encrypted, false);
                 // TODO check for null
 
                 MessageCenterService.leaveGroup(context, groupJid, groupPeers, encrypted,
@@ -439,18 +448,24 @@ public class Conversation {
         // set group subject
         MessagesProviderUtils.setGroupSubject(mContext, mGroupJid, subject);
 
+        // send the command if there is someone to talk to
+        // FIXME defeating the purpose of having a group controller interface
+        boolean actuallySend = getGroupPeers().length > 0;
+
         // store set group subject command to outbox
         boolean encrypted = Preferences.getEncryptionEnabled(mContext);
         String msgId = MessageCenterService.messageId();
         Uri cmdMsg = KontalkGroupCommands
-            .setGroupSubject(mContext, getThreadId(), mGroupJid, subject, msgId, encrypted);
+            .setGroupSubject(mContext, getThreadId(), mGroupJid, subject, msgId, encrypted, !actuallySend);
         // TODO check for null
 
-        // send set group subject command now
-        String[] currentMembers = getGroupPeers(false);
-        MessageCenterService.setGroupSubject(mContext, mGroupJid,
-            subject, currentMembers, encrypted,
-            ContentUris.parseId(cmdMsg), msgId);
+        if (actuallySend) {
+            // send set group subject command now
+            String[] currentMembers = getGroupPeers();
+            MessageCenterService.setGroupSubject(mContext, mGroupJid,
+                subject, currentMembers, encrypted,
+                ContentUris.parseId(cmdMsg), msgId);
+        }
     }
 
     public void markAsRead() {
