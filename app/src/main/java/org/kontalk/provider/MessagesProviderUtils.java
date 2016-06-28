@@ -206,7 +206,7 @@ public class MessagesProviderUtils {
         for (String member : members) {
             // FIXME turn this into batch operations
             values.put(Groups.PEER, member);
-            values.put(Groups.PENDING, pending ? 1 : 0);
+            values.put(Groups.PENDING, pending ? Groups.MEMBER_PENDING_ADDED : 0);
             context.getContentResolver()
                 .insert(Groups.getMembersUri(groupJid), values);
         }
@@ -214,14 +214,13 @@ public class MessagesProviderUtils {
 
     public static void removeGroupMembers(Context context, String groupJid, String[] members, boolean pending) {
         if (pending) {
-            ContentValues values = new ContentValues();
-            values.put(Groups.GROUP_JID, groupJid);
+            ContentValues values = new ContentValues(1);
+            values.put(Groups.PENDING, Groups.MEMBER_PENDING_REMOVED);
             for (String member : members) {
                 // FIXME turn this into batch operations
-                values.put(Groups.PEER, member);
-                values.put(Groups.PENDING, 1);
                 context.getContentResolver()
-                    .insert(Groups.getMembersUri(groupJid), values);
+                    .update(Groups.getMembersUri(groupJid).buildUpon()
+                        .appendPath(member).build(), values, null, null);
             }
         }
         else {

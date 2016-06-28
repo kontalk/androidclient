@@ -85,7 +85,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
             mSetGroupSubjectMenu.setVisible(visible);
             mSetGroupSubjectMenu.setEnabled(visible);
 
-            // menu items requiring membershop
+            // menu items requiring membership
             visible = mConversation.getGroupMembership() == Groups.MEMBERSHIP_MEMBER;
             mLeaveGroupMenu.setVisible(visible);
             mLeaveGroupMenu.setEnabled(visible);
@@ -161,6 +161,8 @@ public class GroupMessageFragment extends AbstractComposeFragment {
                 public void onClick(DialogInterface dialog, int which) {
                     // leave group
                     mConversation.leaveGroup();
+                    // reload conversation
+                    ((ComposeMessageParent) getActivity()).loadConversation(getThreadId());
                 }
             })
             .setNegativeButton(android.R.string.cancel, null)

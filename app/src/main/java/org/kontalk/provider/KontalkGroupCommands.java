@@ -97,7 +97,7 @@ public class KontalkGroupCommands {
         return context.getContentResolver().insert(MyMessages.Messages.CONTENT_URI, values);
     }
 
-    public static Uri setGroupSubject(Context context, long threadId, String groupJid, String subject, String msgId, boolean encrypted) {
+    public static Uri setGroupSubject(Context context, long threadId, String groupJid, String subject, String msgId, boolean encrypted, boolean fakeSend) {
         ContentValues values = new ContentValues();
         values.put(MyMessages.Messages.THREAD_ID, threadId);
         values.put(MyMessages.Messages.MESSAGE_ID, msgId);
@@ -108,14 +108,14 @@ public class KontalkGroupCommands {
         values.put(MyMessages.Messages.UNREAD, false);
         values.put(MyMessages.Messages.DIRECTION, MyMessages.Messages.DIRECTION_OUT);
         values.put(MyMessages.Messages.TIMESTAMP, System.currentTimeMillis());
-        values.put(MyMessages.Messages.STATUS, MyMessages.Messages.STATUS_SENDING);
+        values.put(MyMessages.Messages.STATUS, fakeSend ? MyMessages.Messages.STATUS_SENT : MyMessages.Messages.STATUS_SENDING);
         // of course outgoing messages are not encrypted in database
         values.put(MyMessages.Messages.ENCRYPTED, false);
         values.put(MyMessages.Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
         return context.getContentResolver().insert(MyMessages.Messages.CONTENT_URI, values);
     }
 
-    public static Uri leaveGroup(Context context, long threadId, String groupJid, String msgId, boolean encrypted) {
+    public static Uri leaveGroup(Context context, long threadId, String groupJid, String msgId, boolean encrypted, boolean fakeSend) {
         ContentValues values = new ContentValues();
         values.put(MyMessages.Messages.THREAD_ID, threadId);
         values.put(MyMessages.Messages.MESSAGE_ID, msgId);
@@ -126,7 +126,7 @@ public class KontalkGroupCommands {
         values.put(MyMessages.Messages.UNREAD, false);
         values.put(MyMessages.Messages.DIRECTION, MyMessages.Messages.DIRECTION_OUT);
         values.put(MyMessages.Messages.TIMESTAMP, System.currentTimeMillis());
-        values.put(MyMessages.Messages.STATUS, MyMessages.Messages.STATUS_SENDING);
+        values.put(MyMessages.Messages.STATUS, fakeSend ? MyMessages.Messages.STATUS_SENT : MyMessages.Messages.STATUS_SENDING);
         // of course outgoing messages are not encrypted in database
         values.put(MyMessages.Messages.ENCRYPTED, false);
         values.put(MyMessages.Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
