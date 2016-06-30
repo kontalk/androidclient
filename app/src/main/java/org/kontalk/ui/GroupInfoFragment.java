@@ -129,9 +129,10 @@ public class GroupInfoFragment extends ActionModeListFragment
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         mMembersAdapter = new GroupMembersAdapter(getContext());
+        setListAdapter(mMembersAdapter);
         setMultiChoiceModeListener(this);
     }
 
@@ -291,14 +292,7 @@ public class GroupInfoFragment extends ActionModeListFragment
     @Override
     public void onResume() {
         super.onResume();
-        setListAdapter(mMembersAdapter);
         reload();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        setListAdapter(null);
     }
 
     @Override
