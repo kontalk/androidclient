@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.MaterialDialog;
 
 import org.jivesoftware.smack.util.StringUtils;
 
@@ -36,9 +37,11 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListAdapter;
@@ -50,6 +53,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.KontalkGroupCommands;
 import org.kontalk.provider.MessagesProvider;
+import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.Syncer;
@@ -228,24 +232,42 @@ public class ConversationsActivity extends MainActivity
         }
 
         if (usersList.size() > 0) {
-            String[] users = usersList.toArray(new String[usersList.size()]);
-            long groupThreadId = Conversation.initGroupChat(this,
-                groupJid, null, users, "");
-
-            // store create group command to outbox
-            boolean encrypted = Preferences.getEncryptionEnabled(this);
-            String msgId = MessageCenterService.messageId();
-            Uri cmdMsg = KontalkGroupCommands.createGroup(this,
-                groupThreadId, groupJid, users, msgId, encrypted);
-            // TODO check for null
-
-            // send create group command now
-            MessageCenterService.createGroup(this, groupJid, null,
-                users, encrypted, ContentUris.parseId(cmdMsg), msgId);
-
-            // load the new conversation
-            openConversation(Threads.getUri(groupJid));
+            askGroupSubject(usersList, groupJid);
         }
+    }
+
+    private void askGroupSubject(final Set<String> usersList, final String groupJid) {
+        new MaterialDialog.Builder(this)
+            .title(R.string.title_group_subject)
+            .positiveText(android.R.string.ok)
+            .negativeText(android.R.string.cancel)
+            .input(null, null, true, new MaterialDialog.InputCallback() {
+                @Override
+                public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+                    String title = !TextUtils.isEmpty(input) ? input.toString() : null;
+                    Context ctx = ConversationsActivity.this;
+
+                    String[] users = usersList.toArray(new String[usersList.size()]);
+                    long groupThreadId = Conversation.initGroupChat(ctx,
+                        groupJid, title, users, "");
+
+                    // store create group command to outbox
+                    boolean encrypted = Preferences.getEncryptionEnabled(ctx);
+                    String msgId = MessageCenterService.messageId();
+                    Uri cmdMsg = KontalkGroupCommands.createGroup(ctx,
+                        groupThreadId, groupJid, users, msgId, encrypted);
+                    // TODO check for null
+
+                    // send create group command now
+                    MessageCenterService.createGroup(ConversationsActivity.this, groupJid, title,
+                        users, encrypted, ContentUris.parseId(cmdMsg), msgId);
+
+                    // load the new conversation
+                    openConversation(Threads.getUri(groupJid));
+                }
+            })
+            .inputRange(0, MyMessages.Groups.GROUP_SUBJECT_MAX_LENGTH)
+            .show();
     }
 
     public void setOfflineModeTitle() {

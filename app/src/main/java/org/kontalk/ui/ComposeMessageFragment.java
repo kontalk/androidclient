@@ -49,6 +49,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -732,26 +733,43 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         }
 
         if (usersList.size() > 0) {
-            String[] users = usersList.toArray(new String[usersList.size()]);
-            long groupThreadId = Conversation.initGroupChat(getContext(),
-                groupJid, mConversation.getGroupSubject(), users,
-                mComposer.getText().toString());
-
-            // store create group command to outbox
-            boolean encrypted = Preferences.getEncryptionEnabled(getContext());
-            String msgId = MessageCenterService.messageId();
-            Uri cmdMsg = KontalkGroupCommands.createGroup(getContext(),
-                groupThreadId, groupJid, users, msgId, encrypted);
-            // TODO check for null
-
-            // send create group command now
-            MessageCenterService.createGroup(getContext(), groupJid,
-                mConversation.getGroupSubject(), users, encrypted,
-                ContentUris.parseId(cmdMsg), msgId);
-
-            // open the new conversation
-            ((ComposeMessageParent) getActivity()).loadConversation(groupThreadId);
+            askGroupSubject(usersList, groupJid);
         }
+    }
+
+    private void askGroupSubject(final Set<String> usersList, final String groupJid) {
+        new MaterialDialog.Builder(getContext())
+            .title(R.string.title_group_subject)
+            .positiveText(android.R.string.ok)
+            .negativeText(android.R.string.cancel)
+            .input(null, null, true, new MaterialDialog.InputCallback() {
+                @Override
+                public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+                    String title = !TextUtils.isEmpty(input) ? input.toString() : null;
+
+                    String[] users = usersList.toArray(new String[usersList.size()]);
+                    long groupThreadId = Conversation.initGroupChat(getContext(),
+                        groupJid, title, users,
+                        mComposer.getText().toString());
+
+                    // store create group command to outbox
+                    boolean encrypted = Preferences.getEncryptionEnabled(getContext());
+                    String msgId = MessageCenterService.messageId();
+                    Uri cmdMsg = KontalkGroupCommands.createGroup(getContext(),
+                        groupThreadId, groupJid, users, msgId, encrypted);
+                    // TODO check for null
+
+                    // send create group command now
+                    MessageCenterService.createGroup(getContext(), groupJid,
+                        title, users, encrypted,
+                        ContentUris.parseId(cmdMsg), msgId);
+
+                    // open the new conversation
+                    ((ComposeMessageParent) getActivity()).loadConversation(groupThreadId);
+                }
+            })
+            .inputRange(0, MyMessages.Groups.GROUP_SUBJECT_MAX_LENGTH)
+            .show();
     }
 
     private void showIdentityDialog(boolean informationOnly, int titleId) {
