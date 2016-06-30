@@ -211,12 +211,13 @@ public class GroupCommandComponent extends MessageComponent<GroupExtension> {
         return null;
     }
 
-    public static String getTextContent(Context context, String bodyContent) {
+    public static String getTextContent(Context context, String bodyContent, boolean incoming) {
         if (bodyContent.startsWith(COMMAND_CREATE)) {
             return context.getString(R.string.group_command_text_create);
         }
         else if (bodyContent.startsWith(COMMAND_PART)) {
-            return context.getString(R.string.group_command_text_part);
+            return context.getString(incoming ?
+                R.string.group_command_text_part : R.string.group_command_text_part_self);
         }
         else if (bodyContent.startsWith(COMMAND_SUBJECT)) {
             return context.getString(R.string.group_command_text_subject);

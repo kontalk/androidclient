@@ -240,13 +240,22 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         if (TextUtils.isEmpty(subject))
             subject = getString(R.string.group_untitled);
 
-        // +1 because we are not included in the members list
-        int count = mConversation.getGroupPeers().length + 1;
-        String status = getResources()
-            .getQuantityString(R.plurals.group_people, count, count);
+        String status;
+        boolean sendEnabled;
+        if (mConversation.getGroupMembership() != Groups.MEMBERSHIP_PARTED) {
+            // +1 because we are not included in the members list
+            int count = mConversation.getGroupPeers().length + 1;
+            status = getResources()
+                .getQuantityString(R.plurals.group_people, count, count);
+            sendEnabled = count > 1;
+        }
+        else {
+            status = getString(R.string.group_command_text_part_self);
+            sendEnabled = false;
+        }
 
-        // disable sending for solo groups
-        mComposer.setSendEnabled(count > 1);
+        // disable sending if necessary
+        mComposer.setSendEnabled(sendEnabled);
 
         setActivityTitle(subject, status);
     }

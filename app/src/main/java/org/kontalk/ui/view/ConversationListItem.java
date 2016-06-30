@@ -152,7 +152,9 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
 
             if (source != null) {
                 if (GroupCommandComponent.supportsMimeType(conv.getMime())) {
-                    text = new SpannableString(GroupCommandComponent.getTextContent(getContext(), conv.getSubject()));
+                    boolean incoming = conv.getStatus() == Messages.STATUS_INCOMING ||
+                        conv.getStatus() == Messages.STATUS_CONFIRMED;
+                    text = new SpannableString(GroupCommandComponent.getTextContent(getContext(), conv.getSubject(), incoming));
                     ((Spannable) text).setSpan(STYLE_ITALIC, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
                 }
                 else {
