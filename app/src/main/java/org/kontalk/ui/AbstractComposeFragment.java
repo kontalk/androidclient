@@ -21,6 +21,7 @@ package org.kontalk.ui;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -1287,11 +1288,20 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         // invite user
         else if (requestCode == REQUEST_INVITE_USERS) {
             if (resultCode == Activity.RESULT_OK) {
+
+                ArrayList<Uri> uris;
                 Uri threadUri = data.getData();
                 if (threadUri != null) {
                     String userId = threadUri.getLastPathSegment();
                     addUsers(new String[] { userId });
                 }
+                else if ((uris = data.getParcelableArrayListExtra("org.kontalk.contacts")) != null) {
+                    String[] users = new String[uris.size()];
+                    for (int i = 0; i < users.length; i++)
+                        users[i] = uris.get(i).getLastPathSegment();
+                    addUsers(users);
+                }
+
             }
         }
     }
