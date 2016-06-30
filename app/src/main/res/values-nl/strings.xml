@@ -499,4 +499,6 @@
     <string name="group_command_text_part_self">Je hebt deze groep verlaten</string>
     <string name="chooser_error_no_audioplayer_app">Geen audio speler app beschikbaar.</string>
 
+    <string name="chooser_error_no_app">Geen app beschikbaar om het bestand mee te openen.</string>
+
     </resources>
