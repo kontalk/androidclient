@@ -498,4 +498,6 @@
 
     <string name="group_command_self_parted">Hai abbandonato il gruppo.</string>
     <string name="group_command_text_part_self">Hai lasciato il gruppo</string>
+    <string name="chooser_error_no_app">Nessuna applicazione trovata per aprire il file.</string>
+
     </resources>
