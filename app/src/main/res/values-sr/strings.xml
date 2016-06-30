@@ -504,4 +504,6 @@
     <string name="group_command_text_part_self">Напустили сте групу</string>
     <string name="chooser_error_no_audioplayer_app">Нема апликације за пуштање звука.</string>
 
+    <string name="chooser_error_no_app">Нема подесне апликације за отварање фајла.</string>
+
     </resources>
