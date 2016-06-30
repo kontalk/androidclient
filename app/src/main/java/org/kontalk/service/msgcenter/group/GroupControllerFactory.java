@@ -18,6 +18,9 @@
 
 package org.kontalk.service.msgcenter.group;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jivesoftware.smack.XMPPConnection;
 
 import org.kontalk.service.msgcenter.MessageCenterService;
@@ -28,7 +31,28 @@ import org.kontalk.service.msgcenter.MessageCenterService;
  */
 public class GroupControllerFactory {
 
+    private static Map<String, GroupController> CHECK_INSTANCES;
+
     private GroupControllerFactory() {
+    }
+
+    private static GroupController getControllerInstance(String groupType) {
+        GroupController instance = null;
+        if (CHECK_INSTANCES == null) {
+            CHECK_INSTANCES = new HashMap<>();
+        }
+        else {
+            instance = CHECK_INSTANCES.get(groupType);
+        }
+        if (instance == null) {
+            instance = createController(groupType);
+            CHECK_INSTANCES.put(groupType, instance);
+        }
+        return instance;
+    }
+
+    private static GroupController createController(String groupType) {
+        return createController(groupType, null, null);
     }
 
     public static GroupController createController(String groupType, XMPPConnection connection, MessageCenterService instance) {
@@ -39,6 +63,10 @@ public class GroupControllerFactory {
         }
 
         throw new IllegalArgumentException("Unsupported group type: " + groupType);
+    }
+
+    public static boolean canSendCommandsWithEmptyGroup(String groupType) {
+        return getControllerInstance(groupType).canSendCommandsWithEmptyGroup();
     }
 
 }

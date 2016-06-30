@@ -51,4 +51,7 @@ public interface GroupController<T extends Stanza> {
     /** Returns a new group info command. */
     InfoCommand info();
 
+    /** Returns true if this group controller should allow sending a command to an empty group. */
+    boolean canSendCommandsWithEmptyGroup();
+
 }

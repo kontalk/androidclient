@@ -160,4 +160,9 @@ public class KontalkGroupController implements GroupController<Message> {
         return new KontalkGroupInfoCommand();
     }
 
+    @Override
+    public boolean canSendCommandsWithEmptyGroup() {
+        return false;
+    }
+
 }

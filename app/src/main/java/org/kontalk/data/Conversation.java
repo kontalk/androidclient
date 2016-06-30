@@ -31,6 +31,7 @@ import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.group.GroupControllerFactory;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.util.Preferences;
 
@@ -170,9 +171,12 @@ public class Conversation {
     public static void deleteFromCursor(Context context, Cursor cursor, boolean leaveGroup) {
         String groupJid = cursor.getString(COLUMN_GROUP_JID);
         String[] groupPeers = null;
-        if (groupJid != null)
+        String groupType = null;
+        if (groupJid != null) {
+            groupType = cursor.getString(COLUMN_GROUP_TYPE);
             groupPeers = loadGroupPeersInternal(context, groupJid);
-        deleteInternal(context, cursor.getLong(COLUMN_ID), groupJid, groupPeers, leaveGroup);
+        }
+        deleteInternal(context, cursor.getLong(COLUMN_ID), groupJid, groupPeers, groupType, leaveGroup);
     }
 
     public static void deleteAll(Context context) {
@@ -299,8 +303,8 @@ public class Conversation {
             boolean encrypted = Preferences.getEncryptionEnabled(mContext);
 
             // send the command if there is someone to talk to
-            // FIXME defeating the purpose of having a group controller interface
-            boolean actuallySend = getGroupPeers().length > 0;
+            boolean actuallySend = GroupControllerFactory.canSendCommandsWithEmptyGroup(mGroupType) ||
+                getGroupPeers().length > 0;
 
             String msgId = MessageCenterService.messageId();
             Uri cmdMsg = KontalkGroupCommands
@@ -319,14 +323,14 @@ public class Conversation {
 
     public void delete(boolean leaveGroup) {
         loadGroupPeers(false);
-        deleteInternal(mContext, mThreadId, mGroupJid, mGroupPeers, leaveGroup);
+        deleteInternal(mContext, mThreadId, mGroupJid, mGroupPeers, mGroupType, leaveGroup);
     }
 
-    private static void deleteInternal(Context context, long threadId, String groupJid, String[] groupPeers, boolean leaveGroup) {
+    private static void deleteInternal(Context context, long threadId, String groupJid, String[] groupPeers, String groupType, boolean leaveGroup) {
         // it makes sense to leave a group if we have someone to tell about it
         boolean groupChat = groupJid != null;
-        // FIXME defeating the purpose of having a group controller interface
-        boolean actuallySend = groupChat && groupPeers.length > 0;
+        boolean actuallySend = groupChat &&
+            (GroupControllerFactory.canSendCommandsWithEmptyGroup(groupType) || groupPeers.length > 0);
 
         boolean groupCreateSent = false;
         if (groupChat && actuallySend && leaveGroup) {
@@ -449,8 +453,8 @@ public class Conversation {
         MessagesProviderUtils.setGroupSubject(mContext, mGroupJid, subject);
 
         // send the command if there is someone to talk to
-        // FIXME defeating the purpose of having a group controller interface
-        boolean actuallySend = getGroupPeers().length > 0;
+        boolean actuallySend = GroupControllerFactory.canSendCommandsWithEmptyGroup(mGroupType) ||
+            getGroupPeers().length > 0;
 
         // store set group subject command to outbox
         boolean encrypted = Preferences.getEncryptionEnabled(mContext);
