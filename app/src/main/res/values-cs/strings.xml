@@ -501,4 +501,6 @@
     <string name="group_command_text_part_self">Opustil(a) jste tuto skupinu</string>
     <string name="chooser_error_no_audioplayer_app">Není dostupná žádná aplikace pro přehrání zvuku.</string>
 
+    <string name="chooser_error_no_app">Pro otevření souboru není k dispozici vhodná aplikace.</string>
+
     </resources>
