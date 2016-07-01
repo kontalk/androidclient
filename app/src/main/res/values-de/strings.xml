@@ -500,4 +500,6 @@
     <string name="group_command_text_part_self">Sie haben diese Gruppe verlassen</string>
     <string name="chooser_error_no_audioplayer_app">Keine Audioplayer App verfügbar.</string>
 
+    <string name="chooser_error_no_app">Keine passende App verfügbar um diese Datei zu öffnen.</string>
+
     </resources>
