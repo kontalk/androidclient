@@ -499,4 +499,6 @@
 
     <string name="group_command_self_parted">Opustil(a) jste skupinu.</string>
     <string name="group_command_text_part_self">Opustil(a) jste tuto skupinu</string>
+    <string name="chooser_error_no_audioplayer_app">Není dostupná žádná aplikace pro přehrání zvuku.</string>
+
     </resources>
