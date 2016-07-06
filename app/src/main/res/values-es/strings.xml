@@ -496,4 +496,6 @@
     <string name="confirm_will_leave_group">Usted no será capaz de entrar en este grupo de nuevo después de salir.</string>
 
     <string name="group_command_text_part_self">Dejaste este grupo</string>
+    <string name="chooser_error_no_audioplayer_app">No hay aplicación de audio disponible.</string>
+
     </resources>
