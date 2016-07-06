@@ -475,7 +475,7 @@
 
     <string name="group_command_text_create">Grupo creado</string>
     <string name="group_command_text_subject">El nombre del grupo cambió</string>
-    <string name="group_command_text_part">Alguien dejó el grupo</string>
+    <string name="group_command_text_part">Alguien dejó este grupo</string>
 
     <plurals name="group_people">
 	<item quantity="one">1 persona</item>
@@ -495,4 +495,5 @@
     <string name="group_info_members">Miembros del grupo</string>
     <string name="confirm_will_leave_group">Usted no será capaz de entrar en este grupo de nuevo después de salir.</string>
 
+    <string name="group_command_text_part_self">Dejaste este grupo</string>
     </resources>
