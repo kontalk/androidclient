@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2016 Kontalk Devteam <devteam@kontalk.org>
 
@@ -188,7 +188,7 @@
     <string name="title_no_name">نام شما</string>
     <string name="msg_no_name">لطفاً نامی وارد کنید.</string>
     <string name="menu_refresh">تازه‌سازی</string>
-    <string name="menu_invite">کاربران نامعتبر</string>
+    <string name="menu_invite">کاربرانی را دعوت کن</string>
     <string name="title_error">خطا</string>
     <string name="msg_do_refresh">برای به‌روز رسانی فهرست مخاطبان، به پایین بکشید.</string>
     <string name="msg_sync_progress">در حال تازه‌سازی فهرست مخاطبان…</string>
