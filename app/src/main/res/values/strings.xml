@@ -303,6 +303,7 @@
     <string name="chooser_error_no_camera">External storage not available. Taking picture from camera will not be enabled.</string>
     <string name="chooser_error_no_camera_app">No camera app available.</string>
     <string name="chooser_error_no_gallery_app">No gallery app available.</string>
+    <string name="chooser_error_no_audioplayer_app">No audio player app available.</string>
 
     <string name="chooser_error_no_browser">No browser available to open link.</string>
     <string name="chooser_select_link">Choose action</string>
