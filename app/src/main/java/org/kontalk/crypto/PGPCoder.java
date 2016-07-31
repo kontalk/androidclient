@@ -613,7 +613,7 @@ public class PGPCoder extends Coder {
 
                 PGPOnePassSignature ops = null;
                 if (message instanceof PGPOnePassSignatureList) {
-                    if (verify) {
+                    if (verify && mSender != null) {
                         ops = ((PGPOnePassSignatureList) message).get(0);
                         ops.init(new BcPGPContentVerifierBuilderProvider(), PGP.getSigningKey(mSender));
                     }
