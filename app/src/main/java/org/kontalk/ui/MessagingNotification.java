@@ -206,10 +206,11 @@ public class MessagingNotification {
         }
 
         // is there a peer to not notify for?
-        if (sPaused != null) {
+        final String paused = sPaused;
+        if (paused != null) {
             query += " AND " + CommonColumns.PEER + " <> ? AND " +
                 Groups.GROUP_JID + " <> ?";
-            args = new String[] { sPaused, sPaused };
+            args = new String[] { paused, paused };
         }
 
         // TODO we need the group subject to correctly notify group messages (e.g. alice @ team: hey buddy!)
