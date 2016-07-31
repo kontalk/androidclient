@@ -885,7 +885,13 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         if (attachment != null) {
             Intent i = new Intent(Intent.ACTION_VIEW);
             i.setDataAndType(attachment.getLocalUri(), attachment.getMime());
-            startActivity(i);
+            try {
+                startActivity(i);
+            }
+            catch (ActivityNotFoundException e) {
+                Toast.makeText(getActivity(), R.string.chooser_error_no_audioplayer_app,
+                    Toast.LENGTH_LONG).show();
+            }
         }
     }
 
