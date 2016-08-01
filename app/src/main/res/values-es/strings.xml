@@ -107,7 +107,7 @@
   <string name="pref_title_on_encrypt">Todos los mensajes se cifrarán a partir de ahora</string>
   <string name="pref_title_off_encrypt">A partir de ahora, todos los mensajes serán enviados sin cifrar</string>
   <string name="pref_encrypt_userdata">Cifrar los datos personales</string>
-  <string name="pref_title_on_encrypt_userdata">El mensaje de estado solo será visible para aquellos que tengan su número de teléfono</string>
+  <string name="pref_title_on_encrypt_userdata">El mensaje de estado solo será visible para quienes tengan su número de teléfono</string>
   <string name="pref_title_off_encrypt_userdata">El mensaje de estado será visible para cualquiera</string>
   <string name="pref_auto_accept_subscriptions">Aceptar invitaciones automáticamente</string>
   <string name="pref_title_auto_accept_subscriptions">Aceptar automáticamente invitaciones de otros usuarios para conversar</string>
@@ -493,7 +493,7 @@
     <string name="group_info_set_title">Cambiar el Título</string>
     <string name="group_info_leave">Salir del grupo</string>
     <string name="group_info_members">Miembros del grupo</string>
-    <string name="confirm_will_leave_group">Usted no será capaz de entrar en este grupo de nuevo después de salir.</string>
+    <string name="confirm_will_leave_group">Usted no será capaz de volver a entrar a este grupo luego de salir.</string>
 
     <string name="group_command_text_part_self">Dejaste este grupo</string>
     <string name="chooser_error_no_audioplayer_app">No hay aplicación de audio disponible.</string>
