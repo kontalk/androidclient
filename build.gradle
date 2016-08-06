@@ -23,6 +23,6 @@ allprojects {
         smackVersion = project(':client-common-java').smackVersion
         spongyCastleVersion = '1.52.0.0'
         appcompatVersion = '24.1.1'
-        googlePlayServicesVersion = '9.2.1'
+        googlePlayServicesVersion = '9.4.0'
     }
 }

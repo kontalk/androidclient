@@ -131,10 +131,10 @@ dependencies {
     compile "org.igniterealtime.smack:smack-experimental:$smackVersion"
     compile "org.igniterealtime.smack:smack-android:$smackVersion"
     compile 'com.github.machinarius:preferencefragment:0.1.1'
-    compile('com.github.afollestad.material-dialogs:core:0.8.6.0@aar') {
+    compile('com.github.afollestad.material-dialogs:core:0.8.6.2@aar') {
         transitive = true
     }
-    compile('com.github.afollestad.material-dialogs:commons:0.8.6.0@aar') {
+    compile('com.github.afollestad.material-dialogs:commons:0.8.6.2@aar') {
         transitive = true
     }
     compile 'com.github.castorflex.smoothprogressbar:library:1.1.0'
