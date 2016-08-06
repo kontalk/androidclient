@@ -151,8 +151,17 @@ public class ConversationsActivity extends MainActivity
         if (list == null || list.getCount() == 0)
             return false;
 
-        startSearch(null, false, null, false);
-        return true;
+        toggleSearch();
+        return false;
+    }
+
+    private void toggleSearch() {
+        if (mSearchMenu != null) {
+            if (MenuItemCompat.isActionViewExpanded(mSearchMenu))
+                MenuItemCompat.collapseActionView(mSearchMenu);
+            else
+                MenuItemCompat.expandActionView(mSearchMenu);
+        }
     }
 
     @Override
