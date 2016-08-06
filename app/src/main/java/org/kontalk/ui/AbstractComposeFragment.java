@@ -253,7 +253,6 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         // setListAdapter() is post-poned
 
         ListView list = getListView();
-        list.setFastScrollEnabled(true);
 
         setMultiChoiceModeListener(this);
 

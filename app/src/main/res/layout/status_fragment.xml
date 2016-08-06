@@ -58,7 +58,7 @@
         android:layout_height="match_parent"
         android:drawSelectorOnTop="false"
         android:fadingEdgeLength="16dip"
-        android:fastScrollEnabled="true"
+        android:fastScrollEnabled="false"
         android:scrollbarAlwaysDrawVerticalTrack="true"
         android:scrollbarStyle="insideInset"
         android:smoothScrollbar="false"
