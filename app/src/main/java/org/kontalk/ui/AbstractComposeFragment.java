@@ -253,7 +253,6 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         // setListAdapter() is post-poned
 
         ListView list = getListView();
-        list.setFastScrollEnabled(true);
 
         setMultiChoiceModeListener(this);
 
@@ -889,7 +888,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 startActivity(i);
             }
             catch (ActivityNotFoundException e) {
-                Toast.makeText(getActivity(), R.string.chooser_error_no_audioplayer_app,
+                Toast.makeText(getActivity(), R.string.chooser_error_no_app,
                     Toast.LENGTH_LONG).show();
             }
         }

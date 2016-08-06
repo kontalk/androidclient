@@ -349,9 +349,7 @@ public class GroupInfoFragment extends ActionModeListFragment
 
         private View newView(ViewGroup parent) {
             ContactsListItem view = (ContactsListItem) LayoutInflater.from(mContext)
-                .inflate(R.layout.contacts_list_item, parent, false);
-            // FIXME this is really a terrible hack
-            view.removeView(view.findViewById(R.id.header_container));
+                .inflate(R.layout.contact_item, parent, false);
             return view;
         }
 
