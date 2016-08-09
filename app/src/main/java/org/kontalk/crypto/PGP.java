@@ -377,8 +377,7 @@ public class PGP {
     }
 
     public static String getFingerprint(byte[] publicKeyring) throws IOException, PGPException {
-        PGPPublicKey pk = getMasterKey(publicKeyring);
-        return MessageUtils.bytesToHex(pk.getFingerprint()).toUpperCase(Locale.US);
+        return getFingerprint(getMasterKey(publicKeyring));
     }
 
     // FIXME very ugly method

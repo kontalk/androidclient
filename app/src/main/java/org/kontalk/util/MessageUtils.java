@@ -64,8 +64,8 @@ import org.kontalk.message.ImageComponent;
 import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
+import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MyMessages.Messages;
-import org.kontalk.provider.UsersProvider;
 
 
 public final class MessageUtils {
@@ -179,7 +179,7 @@ public final class MessageUtils {
     }
 
     public static String bytesToHex(byte[] data) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < data.length; i++) {
             int halfbyte = (data[i] >>> 4) & 0x0F;
             int two_halfs = 0;
@@ -237,7 +237,7 @@ public final class MessageUtils {
         details.append(res.getString(R.string.message_type_label));
 
         int resId = R.string.text_message;
-        AttachmentComponent attachment = (AttachmentComponent) msg
+        AttachmentComponent attachment = msg
                 .getComponent(AttachmentComponent.class);
 
         if (attachment != null) {
@@ -262,7 +262,7 @@ public final class MessageUtils {
         }
         else {
             // text content length (if found)
-            TextComponent txt = (TextComponent) msg
+            TextComponent txt = msg
                     .getComponent(TextComponent.class);
 
             if (txt != null)
@@ -404,7 +404,7 @@ public final class MessageUtils {
         }
         else {
             // text content length (if found)
-            TextComponent txt = (TextComponent) msg
+            TextComponent txt = msg
                     .getComponent(TextComponent.class);
 
             if (txt != null)
@@ -550,7 +550,7 @@ public final class MessageUtils {
             throws GeneralSecurityException, IOException, PGPException {
         PersonalKey key = Kontalk.get(context).getPersonalKey();
         EndpointServer server = Preferences.getEndpointServer(context);
-        Coder coder = UsersProvider.getEncryptCoder(context, server, key, new String[] { user });
+        Coder coder = Keyring.getEncryptCoder(context, server, key, new String[] { user });
         // create a temporary file to store encrypted data
         File temp = File.createTempFile("media", null, context.getCacheDir());
         FileOutputStream out = new FileOutputStream(temp);
@@ -607,7 +607,7 @@ public final class MessageUtils {
             };
 
             for (Class<AttachmentComponent> klass : tryComponents) {
-                AttachmentComponent att = (AttachmentComponent) msg.getComponent(klass);
+                AttachmentComponent att = msg.getComponent(klass);
                 if (att != null) {
 
                     values.put(Messages.ATTACHMENT_MIME, att.getMime());

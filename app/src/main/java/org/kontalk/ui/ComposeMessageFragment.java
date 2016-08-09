@@ -64,9 +64,11 @@ import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.provider.Keyring;
 import org.kontalk.provider.KontalkGroupCommands;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.Syncer;
@@ -653,7 +655,8 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         // accept invitation
         if (action == PRIVACY_ACCEPT) {
             // trust the key
-            UsersProvider.trustUserKey(ctx, mUserJID);
+            Keyring.setTrustLevel(ctx, mUserJID, getContact().getFingerprint(),
+                MyUsers.Keys.TRUST_VERIFIED);
             // reload contact
             invalidateContact();
         }
@@ -776,7 +779,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         String fingerprint;
         String uid;
 
-        PGPPublicKeyRing publicKey = UsersProvider.getPublicKey(getActivity(), mUserJID, false);
+        PGPPublicKeyRing publicKey = Keyring.getPublicKey(getActivity(), mUserJID, MyUsers.Keys.TRUST_UNKNOWN);
         if (publicKey != null) {
             PGPPublicKey pk = PGP.getMasterKey(publicKey);
             fingerprint = PGP.formatFingerprint(PGP.getFingerprint(pk));
@@ -848,7 +851,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
 
     private void trustKeyChange() {
         // mark current key as trusted
-        UsersProvider.trustUserKey(getActivity(), mUserJID);
+        Keyring.setTrustLevel(getActivity(), mUserJID, getContact().getFingerprint(), MyUsers.Keys.TRUST_VERIFIED);
         // reload contact
         invalidateContact();
     }

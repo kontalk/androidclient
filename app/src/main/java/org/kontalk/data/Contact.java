@@ -51,6 +51,7 @@ import android.util.Log;
 
 import org.kontalk.R;
 import org.kontalk.crypto.PGPLazyPublicKeyRingLoader;
+import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MyUsers.Keys;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.util.Preferences;
@@ -72,9 +73,7 @@ public class Contact {
         Users.JID,
         Users.REGISTERED,
         Users.STATUS,
-        Users.FINGERPRINT,
         Users.BLOCKED,
-        Keys.TRUSTED_PUBLIC_KEY,
     };
 
     public static final int COLUMN_ID = 0;
@@ -85,9 +84,7 @@ public class Contact {
     public static final int COLUMN_JID = 5;
     public static final int COLUMN_REGISTERED = 6;
     public static final int COLUMN_STATUS = 7;
-    public static final int COLUMN_FINGERPRINT = 8;
-    public static final int COLUMN_BLOCKED = 9;
-    public static final int COLUMN_TRUSTED_PUBLIC_KEY = 10;
+    public static final int COLUMN_BLOCKED = 8;
 
     /** The aggregated Contact id identified by this object. */
     private final long mContactId;
@@ -113,11 +110,11 @@ public class Contact {
     private long mLastSeen;
 
     public interface ContactCallback {
-        public void avatarLoaded(Contact contact, Drawable avatar);
+        void avatarLoaded(Contact contact, Drawable avatar);
     }
 
     public interface ContactChangeListener {
-        public void onContactInvalidated(String userId);
+        void onContactInvalidated(String userId);
     }
 
     private static final Set<ContactChangeListener> sListeners = new HashSet<>();
@@ -432,7 +429,7 @@ public class Contact {
     }
 
     /** Builds a contact from a UsersProvider cursor. */
-    public static Contact fromUsersCursor(Cursor cursor) {
+    public static Contact fromUsersCursor(Context context, Cursor cursor) {
         // try the cache
         String jid = cursor.getString(COLUMN_JID);
         Contact c = cache.get(jid);
@@ -444,14 +441,16 @@ public class Contact {
             final String number = cursor.getString(COLUMN_NUMBER);
             final boolean registered = (cursor.getInt(COLUMN_REGISTERED) != 0);
             final String status = cursor.getString(COLUMN_STATUS);
-            final String fingerprint = cursor.getString(COLUMN_FINGERPRINT);
             final boolean blocked = (cursor.getInt(COLUMN_BLOCKED) != 0);
-            final byte[] trustedKeyring = cursor.getBlob(COLUMN_TRUSTED_PUBLIC_KEY);
 
             c = new Contact(contactId, key, name, number, jid, blocked);
             c.mRegistered = registered;
             c.mStatus = status;
-            c.mFingerprint = fingerprint;
+
+            // trusted key
+            byte[] trustedKeyring = Keyring.getPublicKeyData(context, jid, Keys.TRUST_IGNORED);
+            // latest (possibly unknown) fingerprint
+            c.mFingerprint = Keyring.getFingerprint(context, jid, Keys.TRUST_UNKNOWN);
             if (trustedKeyring != null)
                 c.mTrustedKeyRing = new PGPLazyPublicKeyRingLoader(trustedKeyring);
 
@@ -497,9 +496,7 @@ public class Contact {
                 Users.CONTACT_ID,
                 Users.REGISTERED,
                 Users.STATUS,
-                Users.FINGERPRINT,
                 Users.BLOCKED,
-                Keys.TRUSTED_PUBLIC_KEY,
             }, null, null, null);
 
         if (c.moveToFirst()) {
@@ -509,15 +506,17 @@ public class Contact {
             final long cid = c.getLong(3);
             final boolean registered = (c.getInt(4) != 0);
             final String status = c.getString(5);
-            final String fingerprint = c.getString(6);
-            final boolean blocked = (c.getInt(7) != 0);
-            final byte[] trustedKeyring = c.getBlob(8);
+            final boolean blocked = (c.getInt(6) != 0);
             c.close();
 
             Contact contact = new Contact(cid, key, name, number, userId, blocked);
             contact.mRegistered = registered;
             contact.mStatus = status;
-            contact.mFingerprint = fingerprint;
+
+            // trusted key
+            byte[] trustedKeyring = Keyring.getPublicKeyData(context, userId, Keys.TRUST_IGNORED);
+            // latest (possibly unknown) fingerprint
+            contact.mFingerprint = Keyring.getFingerprint(context, userId, Keys.TRUST_UNKNOWN);
             if (trustedKeyring != null)
                 contact.mTrustedKeyRing = new PGPLazyPublicKeyRingLoader(trustedKeyring);
 

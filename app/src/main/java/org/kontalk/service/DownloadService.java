@@ -56,8 +56,8 @@ import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.DecryptException;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MyMessages.Messages;
-import org.kontalk.provider.UsersProvider;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.ConversationsActivity;
@@ -272,7 +272,7 @@ public class DownloadService extends IntentService implements DownloadListener {
             try {
                 EndpointServer server = Preferences.getEndpointServer(this);
                 PersonalKey key = ((Kontalk) getApplicationContext()).getPersonalKey();
-                Coder coder = UsersProvider.getDecryptCoder(this, server, key, mPeer);
+                Coder coder = Keyring.getDecryptCoder(this, server, key, mPeer);
                 if (coder != null) {
                     in = new FileInputStream(destination);
 

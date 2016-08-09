@@ -60,7 +60,7 @@ import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyExporter;
-import org.kontalk.provider.UsersProvider;
+import org.kontalk.provider.Keyring;
 import org.kontalk.ui.NumberValidation;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.XMPPUtils;
@@ -193,7 +193,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
         byte[] publicKey = Base64.decode(pubKeyData, Base64.DEFAULT);
 
         // trusted keys
-        Map<String, String> trustedKeys = UsersProvider.getTrustedKeys(ctx);
+        Map<String, Keyring.TrustedFingerprint> trustedKeys = Keyring.getTrustedKeys(ctx);
 
         PersonalKeyExporter exp = new PersonalKeyExporter();
         exp.save(privateKey, publicKey, dest, passphrase, exportPassphrase, bridgeCert, trustedKeys);
