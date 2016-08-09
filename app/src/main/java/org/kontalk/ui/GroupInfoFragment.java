@@ -97,7 +97,7 @@ public class GroupInfoFragment extends ActionModeListFragment
         mLeave.setEnabled(isMember);
 
         // load members
-        // TODO sort
+        // TODO sort by display name
         String[] members = getGroupMembers();
         mMembersAdapter.clear();
         for (String jid : members) {
@@ -124,7 +124,12 @@ public class GroupInfoFragment extends ActionModeListFragment
         String[] added = MessagesProviderUtils.getGroupMembers(getContext(),
             mConversation.getGroupJid(), Groups.MEMBER_PENDING_ADDED);
         if (added.length > 0)
-            return SystemUtils.concatenate(members, added);
+            members = SystemUtils.concatenate(members, added);
+        // if we are in the group, add ourself to the list
+        if (mConversation.getGroupMembership() == Groups.MEMBERSHIP_MEMBER) {
+            String selfJid = Authenticator.getSelfJID(getContext());
+            members = SystemUtils.concatenate(members, selfJid);
+        }
         return members;
     }
 
@@ -348,9 +353,8 @@ public class GroupInfoFragment extends ActionModeListFragment
         }
 
         private View newView(ViewGroup parent) {
-            ContactsListItem view = (ContactsListItem) LayoutInflater.from(mContext)
+            return LayoutInflater.from(mContext)
                 .inflate(R.layout.contact_item, parent, false);
-            return view;
         }
 
         private void bindView(View v, int position) {
