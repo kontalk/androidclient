@@ -135,10 +135,10 @@ public class Keyring {
      * @param trustLevel the minimum trust level to consider
      */
     public static PGPPublicKeyRing getPublicKey(Context context, String jid, int trustLevel) {
-        byte[] keydata = getPublicKeyData(context, jid, trustLevel);
+        TrustedPublicKeyData key = getPublicKeyData(context, jid, trustLevel);
 
         try {
-            return PGP.readPublicKeyring(keydata);
+            return PGP.readPublicKeyring(key.keyData);
         }
         catch (Exception e) {
             // ignored
@@ -151,16 +151,20 @@ public class Keyring {
      * Retrieves the latest public key with the minimum given trust level.
      * @param trustLevel the minimum trust level to consider
      */
-    public static byte[] getPublicKeyData(Context context, String jid, int trustLevel) {
-        byte[] keydata = null;
+    public static TrustedPublicKeyData getPublicKeyData(Context context, String jid, int trustLevel) {
+        TrustedPublicKeyData data = null;
 
-        Cursor c = queryLatestWithMinimumTrustLevel(context, jid, trustLevel, MyUsers.Keys.PUBLIC_KEY);
-        if (c.moveToFirst())
-            keydata = c.getBlob(0);
+        Cursor c = queryLatestWithMinimumTrustLevel(context, jid, trustLevel,
+            MyUsers.Keys.PUBLIC_KEY, MyUsers.Keys.TRUST_LEVEL);
+        if (c.moveToFirst()) {
+            byte[] keydata = c.getBlob(0);
+            int trustStatus = c.getInt(1);
+            data = new TrustedPublicKeyData(keydata, trustStatus);
+        }
 
         c.close();
 
-        return keydata;
+        return data;
     }
 
     private static Cursor queryLatestWithMinimumTrustLevel(Context context, String jid, int trustLevel, String... columns) {
@@ -198,6 +202,16 @@ public class Keyring {
         @Override
         public String toString() {
             return fingerprint + "|" + trustLevel;
+        }
+    }
+
+    public static final class TrustedPublicKeyData {
+        public final byte[] keyData;
+        public final int trustLevel;
+
+        private TrustedPublicKeyData(byte[] keyData, int trustLevel) {
+            this.keyData = keyData;
+            this.trustLevel = trustLevel;
         }
     }
 
