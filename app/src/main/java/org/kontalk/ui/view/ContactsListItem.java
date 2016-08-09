@@ -20,11 +20,13 @@ package org.kontalk.ui.view;
 
 import org.kontalk.R;
 import org.kontalk.data.Contact;
+import org.kontalk.provider.MyUsers;
 
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.widget.Checkable;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 
@@ -33,6 +35,7 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
     private Contact mContact;
     private TextView mText1;
     private TextView mText2;
+    private ImageView mTrustStatus;
 
     private boolean mChecked;
 
@@ -50,6 +53,7 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
 
         mText1 = (TextView) findViewById(android.R.id.text1);
         mText2 = (TextView) findViewById(android.R.id.text2);
+        mTrustStatus = (ImageView) findViewById(R.id.trust_status);
 
         if (isInEditMode()) {
             mText1.setText("Test contact");
@@ -77,6 +81,31 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
             mText2.setTextColor(getResources().getColor(android.R.color.secondary_text_light));
         }
         mText2.setText(text2);
+
+        if (mTrustStatus != null) {
+            int resId;
+            switch (contact.getTrustedLevel()) {
+                case MyUsers.Keys.TRUST_UNKNOWN:
+                    resId = R.drawable.ic_trust_unknown;
+                    break;
+                case MyUsers.Keys.TRUST_IGNORED:
+                    resId = R.drawable.ic_trust_ignored;
+                    break;
+                case MyUsers.Keys.TRUST_VERIFIED:
+                    resId = R.drawable.ic_trust_verified;
+                    break;
+                default:
+                    resId = -1;
+            }
+
+            if (resId > 0) {
+                mTrustStatus.setImageResource(resId);
+            }
+            else {
+                mTrustStatus.setImageDrawable(null);
+            }
+        }
+
     }
 
     public final void unbind() {

@@ -105,6 +105,8 @@ public class Contact {
 
     private String mFingerprint;
     private PGPLazyPublicKeyRingLoader mTrustedKeyRing;
+    // trust level for the above trusted keyring
+    private int mTrustedLevel;
 
     /** Timestamp the user was last seen. Not coming from the database. */
     private long mLastSeen;
@@ -322,6 +324,10 @@ public class Contact {
         return null;
     }
 
+    public int getTrustedLevel() {
+        return mTrustedLevel;
+    }
+
     public String getFingerprint() {
         return mFingerprint;
     }
@@ -448,11 +454,13 @@ public class Contact {
             c.mStatus = status;
 
             // trusted key
-            byte[] trustedKeyring = Keyring.getPublicKeyData(context, jid, Keys.TRUST_IGNORED);
+            Keyring.TrustedPublicKeyData trustedKeyring = Keyring.getPublicKeyData(context, jid, Keys.TRUST_IGNORED);
             // latest (possibly unknown) fingerprint
             c.mFingerprint = Keyring.getFingerprint(context, jid, Keys.TRUST_UNKNOWN);
-            if (trustedKeyring != null)
-                c.mTrustedKeyRing = new PGPLazyPublicKeyRingLoader(trustedKeyring);
+            if (trustedKeyring != null) {
+                c.mTrustedKeyRing = new PGPLazyPublicKeyRingLoader(trustedKeyring.keyData);
+                c.mTrustedLevel = trustedKeyring.trustLevel;
+            }
 
             cache.put(jid, c);
         }
@@ -514,11 +522,13 @@ public class Contact {
             contact.mStatus = status;
 
             // trusted key
-            byte[] trustedKeyring = Keyring.getPublicKeyData(context, userId, Keys.TRUST_IGNORED);
+            Keyring.TrustedPublicKeyData trustedKeyring = Keyring.getPublicKeyData(context, userId, Keys.TRUST_IGNORED);
             // latest (possibly unknown) fingerprint
             contact.mFingerprint = Keyring.getFingerprint(context, userId, Keys.TRUST_UNKNOWN);
-            if (trustedKeyring != null)
-                contact.mTrustedKeyRing = new PGPLazyPublicKeyRingLoader(trustedKeyring);
+            if (trustedKeyring != null) {
+                contact.mTrustedKeyRing = new PGPLazyPublicKeyRingLoader(trustedKeyring.keyData);
+                contact.mTrustedLevel = trustedKeyring.trustLevel;
+            }
 
             return contact;
         }
