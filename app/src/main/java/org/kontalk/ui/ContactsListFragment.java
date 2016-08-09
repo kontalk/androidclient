@@ -275,7 +275,7 @@ public class ContactsListFragment extends ActionModeListFragment implements
         for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
             if (checked.get(i)) {
                 Cursor cursor = (Cursor) mListAdapter.getItem(i);
-                Contact contact = Contact.fromUsersCursor(cursor);
+                Contact contact = Contact.fromUsersCursor(getContext(), cursor);
                 selected.add(contact);
             }
         }
