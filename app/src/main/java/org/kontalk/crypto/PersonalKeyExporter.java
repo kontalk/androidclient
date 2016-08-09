@@ -39,6 +39,8 @@ import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.util.io.pem.PemObject;
 import org.spongycastle.util.io.pem.PemWriter;
 
+import org.kontalk.provider.Keyring;
+
 
 /**
  * Exporter for a personal key.
@@ -46,7 +48,7 @@ import org.spongycastle.util.io.pem.PemWriter;
  */
 public class PersonalKeyExporter implements PersonalKeyPack {
 
-    public void save(byte[] privateKey, byte[] publicKey, OutputStream dest, String passphrase, String exportPassphrase, byte[] bridgeCert, Map<String, String> trustedKeys)
+    public void save(byte[] privateKey, byte[] publicKey, OutputStream dest, String passphrase, String exportPassphrase, byte[] bridgeCert, Map<String, Keyring.TrustedFingerprint> trustedKeys)
         throws PGPException, IOException, CertificateException, NoSuchProviderException, KeyStoreException, NoSuchAlgorithmException {
 
         // put everything in a zip file

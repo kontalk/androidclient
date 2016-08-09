@@ -96,7 +96,7 @@ public class ContactsListAdapter extends SearchablePinnedHeaderCursorListViewAda
         }
 
         ContactsListItem headerView = (ContactsListItem) view;
-        Contact contact = Contact.fromUsersCursor(cursor);
+        Contact contact = Contact.fromUsersCursor(context, cursor);
         headerView.bind(context, contact);
     }
 

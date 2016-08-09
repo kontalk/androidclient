@@ -30,7 +30,7 @@ import org.kontalk.client.PublicKeyPublish;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.X509Bridge;
 import org.kontalk.data.Contact;
-import org.kontalk.provider.UsersProvider;
+import org.kontalk.provider.Keyring;
 import org.kontalk.sync.SyncAdapter;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_PUBLICKEY;
@@ -104,7 +104,7 @@ class PublicKeyListener extends MessageCenterPacketListener {
                     if (XmppStringUtils.parseDomain(from).equals(from)) {
                         Log.v("pubkey", "Updating server key for " + from);
                         try {
-                            UsersProvider.setPublicKeyInternal(getContext(), from, _publicKey);
+                            Keyring.setKey(getContext(), from, _publicKey);
                         }
                         catch (Exception e) {
                             // TODO warn user
@@ -115,9 +115,7 @@ class PublicKeyListener extends MessageCenterPacketListener {
                     else {
                         try {
                             Log.v("pubkey", "Updating key for " + from);
-                            UsersProvider.setUserKey(getContext(), from, _publicKey);
-                            // maybe trust the key
-                            UsersProvider.maybeTrustUserKey(getContext(), from, _publicKey);
+                            Keyring.setKey(getContext(), from, _publicKey);
 
                             // invalidate cache for this user
                             Contact.invalidate(from);
@@ -133,4 +131,3 @@ class PublicKeyListener extends MessageCenterPacketListener {
         }
     }
 }
-

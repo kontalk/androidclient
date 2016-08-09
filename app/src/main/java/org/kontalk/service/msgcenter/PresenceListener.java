@@ -19,6 +19,7 @@
 package org.kontalk.service.msgcenter;
 
 import java.io.IOException;
+import java.util.Date;
 
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.packet.ExtensionElement;
@@ -43,8 +44,10 @@ import org.kontalk.client.PublicKeyPublish;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PGPUserID;
 import org.kontalk.data.Contact;
+import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Threads.Requests;
+import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.ui.MessagingNotification;
@@ -90,9 +93,7 @@ class PresenceListener extends MessageCenterPacketListener {
 
                 String jid = XmppStringUtils.parseBareJid(p.getFrom());
                 // store key to users table
-                UsersProvider.setUserKey(getContext(), jid, keydata);
-                // maybe trust the key
-                UsersProvider.trustUserKey(getContext(), jid);
+                Keyring.setKey(getContext(), jid, keydata, MyUsers.Keys.TRUST_VERIFIED);
             }
 
             Presence p2 = new Presence(Presence.Type.subscribed);
@@ -176,7 +177,7 @@ class PresenceListener extends MessageCenterPacketListener {
             String from = XmppStringUtils.parseBareJid(p.getFrom());
 
             // extract public key
-            String name = null, fingerprint = null;
+            String name = null;
             byte[] publicKey = null;
             ExtensionElement _pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
             if (_pkey instanceof PublicKeyPresence) {
@@ -191,7 +192,6 @@ class PresenceListener extends MessageCenterPacketListener {
                         PGPUserID uid = PGPUserID.parse(PGP.getUserId(pk, getServer().getNetwork()));
                         if (uid != null)
                             name = uid.getName();
-                        fingerprint = PGP.getFingerprint(pk);
                         publicKey = _publicKey;
                     }
                 }
@@ -206,15 +206,16 @@ class PresenceListener extends MessageCenterPacketListener {
             // insert public key into the users table
             values.put(Users.JID, from);
             values.put(Users.NUMBER, from);
-            if (publicKey != null && fingerprint != null) {
-                values.put(Users.FINGERPRINT, fingerprint);
-                values.put(Users.PUBLIC_KEY, publicKey);
-            }
             values.put(Users.DISPLAY_NAME, name);
             values.put(Users.REGISTERED, true);
             cr.insert(Users.CONTENT_URI.buildUpon()
                     .appendQueryParameter(Users.DISCARD_NAME, "true")
                     .build(), values);
+
+            // insert key if any
+            if (publicKey != null) {
+                Keyring.setKey(ctx, from, publicKey, MyUsers.Keys.TRUST_UNKNOWN);
+            }
 
             // invalidate cache for this user
             Contact.invalidate(from);
@@ -245,7 +246,7 @@ class PresenceListener extends MessageCenterPacketListener {
             UsersProvider.setLastSeen(getContext(), from, delay.getStamp().getTime());
         }
 
-        if (UsersProvider.getPublicKey(getContext(), from, false) == null) {
+        if (Keyring.getPublicKey(getContext(), from, MyUsers.Keys.TRUST_UNKNOWN) == null) {
             // public key not found
             // assuming the user has allowed us, request it
 
@@ -279,8 +280,8 @@ class PresenceListener extends MessageCenterPacketListener {
                 String newFingerprint = PublicKeyPresence.getFingerprint(p);
                 if (newFingerprint != null) {
                     String jid = XmppStringUtils.parseBareJid(p.getFrom());
-                    PGPPublicKeyRing pubRing = UsersProvider.getPublicKey(getContext(),
-                        jid, false);
+                    PGPPublicKeyRing pubRing = Keyring.getPublicKey(getContext(),
+                        jid, MyUsers.Keys.TRUST_UNKNOWN);
                     if (pubRing != null) {
                         String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(pubRing));
                         if (!newFingerprint.equalsIgnoreCase(oldFingerprint)) {
@@ -328,7 +329,7 @@ class PresenceListener extends MessageCenterPacketListener {
         String fingerprint = PublicKeyPresence.getFingerprint(p);
         if (fingerprint == null) {
             // try untrusted fingerprint from database
-            fingerprint = UsersProvider.getFingerprint(ctx, jid, false);
+            fingerprint = Keyring.getFingerprint(ctx, jid, MyUsers.Keys.TRUST_UNKNOWN);
         }
         i.putExtra(EXTRA_FINGERPRINT, fingerprint);
 
@@ -378,8 +379,10 @@ class PresenceListener extends MessageCenterPacketListener {
         PublicKeyPresence pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
         if (pkey != null) {
             String fingerprint = pkey.getFingerprint();
-            if (fingerprint != null)
-                values.put(Users.FINGERPRINT, fingerprint);
+            if (fingerprint != null) {
+                // insert new key with empty key data
+                Keyring.setKey(getContext(), jid, fingerprint, new Date());
+            }
         }
 
         return getContext().getContentResolver().update(Users.CONTENT_URI,

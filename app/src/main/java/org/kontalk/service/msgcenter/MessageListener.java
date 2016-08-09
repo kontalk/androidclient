@@ -65,10 +65,10 @@ import org.kontalk.message.MessageComponent;
 import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
+import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MessagesProviderUtils;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Messages;
-import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.group.KontalkGroupController;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
@@ -485,7 +485,7 @@ class MessageListener extends MessageCenterPacketListener {
             if (server == null)
                 server = Preferences.getEndpointServer(context);
 
-            Coder coder = UsersProvider.getDecryptCoder(context, server, key, msg.getSender(true));
+            Coder coder = Keyring.getDecryptCoder(context, server, key, msg.getSender(true));
 
             // decrypt
             Coder.DecryptOutput result = coder.decryptText(encryptedData, true);
@@ -596,7 +596,7 @@ class MessageListener extends MessageCenterPacketListener {
                 server = Preferences.getEndpointServer(context);
 
             // retrieve a coder for verifying against the server key
-            Coder coder = UsersProvider.getVerifyCoder(context, server, msg.getSender(true));
+            Coder coder = Keyring.getVerifyCoder(context, server, msg.getSender(true));
 
             // decrypt
             Coder.VerifyOutput result = coder.verifyText(signedData, true);

@@ -120,12 +120,14 @@ import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.TextComponent;
+import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MessagesProviderUtils;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Requests;
+import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.UploadService;
@@ -1515,7 +1517,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 final XMPPConnection conn = mConnection;
                 if (conn != null && conn.isConnected()) {
                     String jid = conn.getServiceName();
-                    if (UsersProvider.getPublicKeyInternal(MessageCenterService.this, jid) == null) {
+                    if (Keyring.getPublicKey(MessageCenterService.this, jid, MyUsers.Keys.TRUST_UNKNOWN) == null) {
                         PublicKeyPublish pub = new PublicKeyPublish();
                         pub.setTo(jid);
                         sendPacket(pub, false);
@@ -2330,7 +2332,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 if (encrypt) {
                     byte[] toMessage = null;
                     try {
-                        Coder coder = UsersProvider.getEncryptCoder(this, mServer, key, toGroup);
+                        Coder coder = Keyring.getEncryptCoder(this, mServer, key, toGroup);
                         if (coder != null) {
 
                             // no extensions, create a simple text version to save space
