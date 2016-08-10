@@ -521,7 +521,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     private boolean checkInput(boolean importing) {
-        mPhoneNumber = null;
         String phoneStr = null;
 
         // check name first
@@ -531,59 +530,59 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 error(R.string.msg_no_name);
                 return false;
             }
-        }
-        else {
-            // we will use the one in the imported key
-            mName = null;
-        }
 
-        PhoneNumberUtil util = PhoneNumberUtil.getInstance();
-        CountryCode cc = (CountryCode) mCountryCode.getSelectedItem();
-        if (!BuildConfig.DEBUG) {
-            PhoneNumber phone;
-            try {
-                phone = util.parse(mPhone.getText().toString(), cc.regionCode);
-                // autoselect correct country if user entered country code too
-                if (phone.hasCountryCode()) {
-                    CountryCode ccLookup = new CountryCode();
-                    ccLookup.regionCode = util.getRegionCodeForNumber(phone);
-                    ccLookup.countryCode = phone.getCountryCode();
-                    int position = ((CountryCodesAdapter) mCountryCode.getAdapter()).getPositionForId(ccLookup);
-                    if (position >= 0) {
-                        mCountryCode.setSelection(position);
-                        cc = (CountryCode) mCountryCode.getItemAtPosition(position);
+            PhoneNumberUtil util = PhoneNumberUtil.getInstance();
+            CountryCode cc = (CountryCode) mCountryCode.getSelectedItem();
+            if (!BuildConfig.DEBUG) {
+                PhoneNumber phone;
+                try {
+                    phone = util.parse(mPhone.getText().toString(), cc.regionCode);
+                    // autoselect correct country if user entered country code too
+                    if (phone.hasCountryCode()) {
+                        CountryCode ccLookup = new CountryCode();
+                        ccLookup.regionCode = util.getRegionCodeForNumber(phone);
+                        ccLookup.countryCode = phone.getCountryCode();
+                        int position = ((CountryCodesAdapter) mCountryCode.getAdapter()).getPositionForId(ccLookup);
+                        if (position >= 0) {
+                            mCountryCode.setSelection(position);
+                            cc = (CountryCode) mCountryCode.getItemAtPosition(position);
+                        }
+                    }
+                    if (!util.isValidNumberForRegion(phone, cc.regionCode)) {
+                        throw new NumberParseException(ErrorType.INVALID_COUNTRY_CODE, "invalid number for region " + cc.regionCode);
                     }
                 }
-                if (!util.isValidNumberForRegion(phone, cc.regionCode)) {
-                    throw new NumberParseException(ErrorType.INVALID_COUNTRY_CODE, "invalid number for region " + cc.regionCode);
+                catch (NumberParseException e1) {
+                    error(R.string.msg_invalid_number);
+                    return false;
                 }
-            }
-            catch (NumberParseException e1) {
-                error(R.string.msg_invalid_number);
-                return false;
-            }
 
-            // check phone number format
-            if (phone != null) {
+                // check phone number format
                 phoneStr = util.format(phone, PhoneNumberFormat.E164);
                 if (!PhoneNumberUtils.isWellFormedSmsAddress(phoneStr)) {
                     Log.i(TAG, "not a well formed SMS address");
                 }
             }
+            else {
+                phoneStr = String.format(Locale.US, "+%d%s", cc.countryCode, mPhone.getText().toString());
+            }
+
+            // phone is null - invalid number
+            if (phoneStr == null) {
+                Toast.makeText(this, R.string.warn_invalid_number, Toast.LENGTH_SHORT)
+                    .show();
+                return false;
+            }
+
+            Log.v(TAG, "Using phone number to register: " + phoneStr);
+            mPhoneNumber = phoneStr;
         }
         else {
-            phoneStr = String.format(Locale.US, "+%d%s", cc.countryCode, mPhone.getText().toString());
+            // we will use the data from the imported key
+            mName = null;
+            mPhoneNumber = null;
         }
 
-        // phone is null - invalid number
-        if (phoneStr == null) {
-            Toast.makeText(this, R.string.warn_invalid_number, Toast.LENGTH_SHORT)
-                .show();
-            return false;
-        }
-
-        Log.v(TAG, "Using phone number to register: " + phoneStr);
-        mPhoneNumber = phoneStr;
         return true;
     }
 
