@@ -136,7 +136,11 @@ class PresenceListener extends MessageCenterPacketListener {
 
             else if (p.getType() == Presence.Type.available || p.getType() == Presence.Type.unavailable) {
                 if (p.getType() == Presence.Type.unavailable) {
+                    // clear contact volatile state
                     Contact.clearState(p.getFrom());
+                    // update last seen to now
+                    Contact.setLastSeen(XmppStringUtils.parseBareJid(p.getFrom()),
+                        System.currentTimeMillis());
                 }
 
                 handlePresence(p);
