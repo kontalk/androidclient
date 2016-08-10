@@ -262,6 +262,12 @@ public class Contact {
         sStates.remove(jid);
     }
 
+    public static void setLastSeen(String jid, long timestamp) {
+        Contact c = cache.get(jid);
+        if (c != null)
+            c.setLastSeen(timestamp);
+    }
+
     private Contact(long contactId, String lookupKey, String name, String number, String jid, boolean blocked) {
         mContactId = contactId;
         mLookupKey = lookupKey;
