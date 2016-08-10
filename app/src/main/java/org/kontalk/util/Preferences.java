@@ -34,6 +34,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.crypto.PersonalKey;
+import org.kontalk.provider.Keyring;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.msgcenter.MessageCenterService;
 
@@ -560,7 +561,7 @@ public final class Preferences {
     public static boolean saveRegistrationProgress(Context context, String name,
         String phoneNumber, PersonalKey key, String passphrase,
         byte[] importedPublicKey, byte[] importedPrivateKey, String serverUri,
-        String sender, boolean force, Map<String, String> trustedKeys) {
+        String sender, boolean force, Map<String, Keyring.TrustedFingerprint> trustedKeys) {
 
         ByteArrayOutputStream trustedKeysOut = null;
         if (trustedKeys != null) {

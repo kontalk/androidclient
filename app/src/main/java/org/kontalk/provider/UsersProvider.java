@@ -19,7 +19,6 @@
 package org.kontalk.provider;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -1052,19 +1051,6 @@ public class UsersProvider extends ContentProvider {
             .appendQueryParameter(Users.RESYNC, "true")
             .build();
         return context.getContentResolver().update(uri, new ContentValues(), null, null);
-    }
-
-    /** Sets the trusted keys, deleting all previous entries. */
-    public static int setTrustedKeys(Context context, Map<String, String> trustedKeys) {
-        ContentValues[] values = new ContentValues[trustedKeys.size()];
-        Iterator<Map.Entry<String, String>> entries = trustedKeys.entrySet().iterator();
-        for (int i = 0; i < values.length; i++) {
-            Map.Entry<String, String> e = entries.next();
-            values[i] = new ContentValues(2);
-            values[i].put(Keys.JID, e.getKey());
-            values[i].put(Keys.FINGERPRINT, e.getValue());
-        }
-        return context.getContentResolver().bulkInsert(Keys.CONTENT_URI, values);
     }
 
     /* Transactions compatibility layer */
