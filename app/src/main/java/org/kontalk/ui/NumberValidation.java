@@ -45,7 +45,6 @@ import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 import org.jivesoftware.smack.util.StringUtils;
 import org.jxmpp.util.XmppStringUtils;
-import org.kontalk.ui.prefs.PreferencesActivity;
 import org.spongycastle.openpgp.PGPException;
 
 import android.accounts.Account;
@@ -97,7 +96,7 @@ import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyImporter;
 import org.kontalk.crypto.PersonalKeyPack;
 import org.kontalk.crypto.X509Bridge;
-import org.kontalk.provider.UsersProvider;
+import org.kontalk.provider.Keyring;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
@@ -105,6 +104,7 @@ import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.adapter.CountryCodesAdapter;
 import org.kontalk.ui.adapter.CountryCodesAdapter.CountryCode;
+import org.kontalk.ui.prefs.PreferencesActivity;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
@@ -144,7 +144,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private String mPassphrase;
     private byte[] mImportedPublicKey;
     private byte[] mImportedPrivateKey;
-    private Map<String, String> mTrustedKeys;
+    private Map<String, Keyring.TrustedFingerprint> mTrustedKeys;
     private boolean mForce;
 
     private LocalBroadcastManager lbm;
@@ -751,6 +751,14 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             if (uid == null)
                 throw new PGPException("malformed user ID: " + uidStr);
 
+            Map<String, String> accountInfo = importer.getAccountInfo();
+            if (accountInfo != null) {
+                String phoneNumber = accountInfo.get("phoneNumber");
+                if (!TextUtils.isEmpty(phoneNumber)) {
+                    mPhoneNumber = phoneNumber;
+                }
+            }
+
             // check that uid matches phone number
             String email = uid.getEmail();
             String numberHash = MessageUtils.sha1(mPhoneNumber);
@@ -968,7 +976,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         setProgressMessage(getString(R.string.msg_initializing));
     }
 
-    protected void finishLogin(final String serverUri, final byte[] privateKeyData, final byte[] publicKeyData, boolean updateKey, Map<String, String> trustedKeys) {
+    protected void finishLogin(final String serverUri, final byte[] privateKeyData, final byte[] publicKeyData, boolean updateKey, Map<String, Keyring.TrustedFingerprint> trustedKeys) {
         Log.v(TAG, "finishing login");
         statusInitializing();
 
@@ -986,7 +994,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         completeLogin(serverUri, privateKeyData, publicKeyData, trustedKeys);
     }
 
-    private void completeLogin(String serverUri, byte[] privateKeyData, byte[] publicKeyData, Map<String, String> trustedKeys) {
+    private void completeLogin(String serverUri, byte[] privateKeyData, byte[] publicKeyData, Map<String, Keyring.TrustedFingerprint> trustedKeys) {
         // generate the bridge certificate
         byte[] bridgeCertData;
         try {
@@ -1148,12 +1156,12 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         private final byte[] bridgeCertData;
         private final String name;
         private final String serverUri;
-        private final Map<String, String> trustedKeys;
+        private final Map<String, Keyring.TrustedFingerprint> trustedKeys;
 
         public AccountRemovalCallback(NumberValidation activity, Account account,
                 String passphrase, byte[] privateKeyData, byte[] publicKeyData,
-                byte[] bridgeCertData, String name, String serverUri, Map<String, String> trustedKeys) {
-            this.a = new WeakReference<NumberValidation>(activity);
+                byte[] bridgeCertData, String name, String serverUri, Map<String, Keyring.TrustedFingerprint> trustedKeys) {
+            this.a = new WeakReference<>(activity);
             this.account = account;
             this.passphrase = passphrase;
             this.privateKeyData = privateKeyData;
@@ -1170,7 +1178,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             if (ctx != null) {
                 // store trusted keys
                 if (trustedKeys != null) {
-                    UsersProvider.setTrustedKeys(ctx, trustedKeys);
+                    Keyring.setTrustedKeys(ctx, trustedKeys);
                 }
 
                 AccountManager am = (AccountManager) ctx

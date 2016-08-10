@@ -48,7 +48,8 @@ import org.kontalk.provider.Keyring;
  */
 public class PersonalKeyExporter implements PersonalKeyPack {
 
-    public void save(byte[] privateKey, byte[] publicKey, OutputStream dest, String passphrase, String exportPassphrase, byte[] bridgeCert, Map<String, Keyring.TrustedFingerprint> trustedKeys)
+    public void save(byte[] privateKey, byte[] publicKey, OutputStream dest, String passphrase, String exportPassphrase, byte[] bridgeCert,
+                     Map<String, Keyring.TrustedFingerprint> trustedKeys, String phoneNumber)
         throws PGPException, IOException, CertificateException, NoSuchProviderException, KeyStoreException, NoSuchAlgorithmException {
 
         // put everything in a zip file
@@ -122,6 +123,13 @@ public class PersonalKeyExporter implements PersonalKeyPack {
             prop.store(zip, null);
             zip.closeEntry();
         }
+
+        // export account info
+        Properties info = new Properties();
+        info.setProperty("phoneNumber", phoneNumber);
+        zip.putNextEntry(new ZipEntry(ACCOUNT_INFO_FILENAME));
+        info.store(zip, null);
+        zip.closeEntry();
 
         // finalize the zip file
         zip.close();
