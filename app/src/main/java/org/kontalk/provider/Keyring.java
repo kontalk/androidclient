@@ -21,6 +21,7 @@ package org.kontalk.provider;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.spongycastle.openpgp.PGPException;
@@ -30,6 +31,7 @@ import org.spongycastle.openpgp.PGPPublicKeyRing;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.text.TextUtils;
 
 import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.Coder;
@@ -173,6 +175,20 @@ public class Keyring {
             null, MyUsers.Keys.TIMESTAMP + " DESC");
     }
 
+    /** Sets the trusted keys, deleting all previous entries. */
+    public static int setTrustedKeys(Context context, Map<String, TrustedFingerprint> trustedKeys) {
+        ContentValues[] values = new ContentValues[trustedKeys.size()];
+        Iterator<Map.Entry<String, TrustedFingerprint>> entries = trustedKeys.entrySet().iterator();
+        for (int i = 0; i < values.length; i++) {
+            Map.Entry<String, TrustedFingerprint> e = entries.next();
+            values[i] = new ContentValues(2);
+            values[i].put(MyUsers.Keys.JID, e.getKey());
+            values[i].put(MyUsers.Keys.FINGERPRINT, e.getValue().fingerprint);
+            values[i].put(MyUsers.Keys.TRUST_LEVEL, e.getValue().trustLevel);
+        }
+        return context.getContentResolver().bulkInsert(MyUsers.Keys.CONTENT_URI, values);
+    }
+
     /** Returns a JID-fingerprint map of trusted keys. */
     public static Map<String, TrustedFingerprint> getTrustedKeys(Context context) {
         Cursor c = context.getContentResolver().query(MyUsers.Keys.CONTENT_URI, new String[] {
@@ -202,6 +218,25 @@ public class Keyring {
         @Override
         public String toString() {
             return fingerprint + "|" + trustLevel;
+        }
+
+        public static TrustedFingerprint fromString(String value) {
+            if (!TextUtils.isEmpty(value)) {
+                String[] parsed = value.split("\\|");
+                String fingerprint = parsed[0];
+                int trustLevel = MyUsers.Keys.TRUST_UNKNOWN;
+                if (parsed.length > 1) {
+                    String _trustLevel = parsed[1];
+                    try {
+                        trustLevel = Integer.parseInt(_trustLevel);
+                    }
+                    catch (NumberFormatException ignored) {
+                    }
+                }
+
+                return new TrustedFingerprint(fingerprint, trustLevel);
+            }
+            return null;
         }
     }
 
