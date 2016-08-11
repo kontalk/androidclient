@@ -602,6 +602,8 @@ public abstract class MediaStorage {
 
         // Create a file with the requested MIME type.
         intent.setType(mimeType);
+        // Note: This is not documented, but works
+        intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
         intent.putExtra(Intent.EXTRA_TITLE, fileName);
         fragment.startActivityForResult(intent, requestCode);
     }
