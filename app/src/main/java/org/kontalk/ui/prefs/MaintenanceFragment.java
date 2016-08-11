@@ -22,11 +22,13 @@ import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.Preference;
+import android.support.annotation.NonNull;
 import android.text.InputType;
 import android.util.Log;
 import android.widget.Toast;
@@ -40,6 +42,7 @@ import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyPack;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.LockedDialog;
 import org.kontalk.ui.PasswordInputDialog;
@@ -152,19 +155,26 @@ public class MaintenanceFragment extends RootPreferenceFragment {
                 final OnPassphraseChangedListener action = new OnPassphraseChangedListener() {
                     public void onPassphraseChanged(String passphrase) {
                         mPassphrase = passphrase;
-                        if (MediaStorage.isStorageAccessFrameworkAvailable()) {
-                            MediaStorage.createFile(MaintenanceFragment.this,
+                        try {
+                            if (MediaStorage.isStorageAccessFrameworkAvailable()) {
+                                MediaStorage.createFile(MaintenanceFragment.this,
                                     PersonalKeyPack.KEYPACK_MIME,
                                     PersonalKeyPack.KEYPACK_FILENAME,
                                     REQUEST_CREATE_KEYPACK);
-                        }
-                        else {
-                            PreferencesActivity ctx = (PreferencesActivity) getActivity();
-                            if (ctx != null) {
-                                new FolderChooserDialog.Builder(ctx)
-                                        .initialPath(PersonalKeyPack.DEFAULT_KEYPACK.getParent())
-                                        .show();
+                                return;
                             }
+                        }
+                        catch (ActivityNotFoundException e) {
+                            Log.w(TAG, "Storage Access Framework not working properly");
+                            ReportingManager.logException(e);
+                        }
+
+                        // also used as a fallback if SAF is not working properly
+                        PreferencesActivity ctx = (PreferencesActivity) getActivity();
+                        if (ctx != null) {
+                            new FolderChooserDialog.Builder(ctx)
+                                    .initialPath(PersonalKeyPack.DEFAULT_KEYPACK.getParent())
+                                    .show();
                         }
                     }
                 };
@@ -260,7 +270,7 @@ public class MaintenanceFragment extends RootPreferenceFragment {
                 .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
                 .input(0, 0, true, new MaterialDialog.InputCallback() {
                     @Override
-                    public void onInput(MaterialDialog dialog, CharSequence input) {
+                    public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                         String passphrase = input.toString();
                         // user-entered passphrase is hashed, so compare with SHA-1 version
                         String hashed = MessageUtils.sha1(passphrase);
