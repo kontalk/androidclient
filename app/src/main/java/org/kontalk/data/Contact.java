@@ -29,6 +29,7 @@ import java.util.Set;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 
+import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.content.ContentResolver;
@@ -262,12 +263,6 @@ public class Contact {
         sStates.remove(jid);
     }
 
-    public static void setLastSeen(String jid, long timestamp) {
-        Contact c = cache.get(jid);
-        if (c != null)
-            c.setLastSeen(timestamp);
-    }
-
     private Contact(long contactId, String lookupKey, String name, String number, String jid, boolean blocked) {
         mContactId = contactId;
         mLookupKey = lookupKey;
@@ -424,6 +419,15 @@ public class Contact {
         }
         // invalidate contact state
         sStates.clear();
+    }
+
+    /** Invalidates cached data for the given contact. Does not delete contact information. */
+    public static void invalidateData(String userId) {
+        Contact c = cache.get(XmppStringUtils.parseBareJid(userId));
+        if (c != null)
+            c.clear();
+        // invalidate contact state
+        clearState(userId);
     }
 
     public static void registerContactChangeListener(ContactChangeListener l) {
