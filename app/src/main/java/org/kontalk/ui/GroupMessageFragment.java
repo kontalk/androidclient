@@ -46,6 +46,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Groups;
+import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.XMPPUtils;
 
 
@@ -190,6 +191,17 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         ((ComposeMessageParent) getActivity()).loadConversation(getThreadId());
     }
 
+    private void requestPresence() {
+        if (mConversation != null) {
+            String[] users = mConversation.getGroupPeers();
+            if (users != null) {
+                for (String user : users) {
+                    MessageCenterService.requestPresence(getContext(), user);
+                }
+            }
+        }
+    }
+
     @Override
     protected String getDecodedPeer(CompositeMessage msg) {
         if (msg.getDirection() == MyMessages.Messages.DIRECTION_IN) {
@@ -263,6 +275,11 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     @Override
     protected void onPresence(String jid, Presence.Type type, boolean removed, Presence.Mode mode, String fingerprint) {
         // TODO
+        Log.v(TAG, "group member presence from " + jid + " (type=" + type + ", fingerprint=" + fingerprint + ")");
+
+        // TODO handle null type - meaning no subscription (warn user)
+        // TODO handle unknown/changed keys (warn user)
+        // TODO the above warnings should have a priority over one another
     }
 
     @Override
@@ -272,7 +289,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
     @Override
     protected void onRosterLoaded() {
-        // TODO
+        requestPresence();
     }
 
     @Override

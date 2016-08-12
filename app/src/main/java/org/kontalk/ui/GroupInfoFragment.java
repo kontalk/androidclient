@@ -22,9 +22,14 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.akalipetis.fragment.ActionModeListFragment;
 import com.akalipetis.fragment.MultiChoiceModeListener;
+
+import org.jxmpp.util.XmppStringUtils;
+import org.spongycastle.openpgp.PGPPublicKey;
+import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.app.Activity;
 import android.content.Context;
@@ -34,6 +39,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.view.ActionMode;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
@@ -44,16 +51,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.KontalkGroupManager.KontalkGroup;
+import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
+import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MessagesProviderUtils;
 import org.kontalk.provider.MyMessages.Groups;
+import org.kontalk.provider.MyUsers;
 import org.kontalk.ui.view.ContactsListItem;
+import org.kontalk.util.MessageUtils;
 import org.kontalk.util.SystemUtils;
 
 
@@ -285,6 +297,108 @@ public class GroupInfoFragment extends ActionModeListFragment
                 }
             });
         }
+    }
+
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        int choiceMode = l.getChoiceMode();
+        if (choiceMode == ListView.CHOICE_MODE_NONE || choiceMode == ListView.CHOICE_MODE_SINGLE) {
+            // open identity dialog
+            // one day this will be the contact info activity
+            showIdentityDialog(((ContactsListItem) v).getContact());
+        }
+        else {
+            super.onListItemClick(l, v, position, id);
+        }
+    }
+
+    private void showIdentityDialog(Contact c) {
+        final String jid = c.getJID();
+        final String dialogFingerprint;
+        final String fingerprint;
+        int titleResId = R.string.title_identity;
+        String uid;
+
+        PGPPublicKeyRing publicKey = Keyring.getPublicKey(getActivity(), jid, MyUsers.Keys.TRUST_UNKNOWN);
+        if (publicKey != null) {
+            PGPPublicKey pk = PGP.getMasterKey(publicKey);
+            String rawFingerprint = PGP.getFingerprint(pk);
+            fingerprint = PGP.formatFingerprint(rawFingerprint);
+
+            uid = PGP.getUserId(pk, XmppStringUtils.parseDomain(jid));
+
+            if (Authenticator.isSelfJID(getContext(), jid)) {
+                rawFingerprint = null;
+                titleResId = R.string.title_identity_self;
+            }
+            dialogFingerprint = rawFingerprint;
+        }
+        else {
+            // FIXME using another string
+            fingerprint = uid = getString(R.string.peer_unknown);
+            dialogFingerprint = null;
+        }
+
+        SpannableStringBuilder text = new SpannableStringBuilder();
+
+        if (c.getName() != null && c.getNumber() != null) {
+            text.append(c.getName())
+                .append('\n')
+                .append(c.getNumber());
+        }
+        else {
+            int start = text.length() - 1;
+            text.append(uid);
+            text.setSpan(MessageUtils.STYLE_BOLD, start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+
+        text.append('\n')
+            .append(getString(R.string.text_invitation2))
+            .append('\n');
+
+        int start = text.length() - 1;
+        text.append(fingerprint);
+        text.setSpan(MessageUtils.STYLE_BOLD, start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(getContext())
+            .content(text)
+            .title(titleResId);
+
+        if (dialogFingerprint != null) {
+            builder.onAny(new MaterialDialog.SingleButtonCallback() {
+                @Override
+                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                    switch (which) {
+                        case POSITIVE:
+                            // trust the key
+                            trustKey(jid, dialogFingerprint, MyUsers.Keys.TRUST_VERIFIED);
+                            break;
+                        case NEUTRAL:
+                            // ignore the key
+                            trustKey(jid, dialogFingerprint, MyUsers.Keys.TRUST_IGNORED);
+                            break;
+                        case NEGATIVE:
+                            // block user immediately
+                            trustKey(jid, dialogFingerprint, MyUsers.Keys.TRUST_UNKNOWN);
+                            // TODO setPrivacy(PRIVACY_BLOCK);
+                            break;
+                    }
+                }
+            })
+            .positiveText(R.string.button_accept)
+            .positiveColorRes(R.color.button_success)
+            .neutralText(R.string.button_ignore)
+            .negativeText(R.string.button_block)
+            .negativeColorRes(R.color.button_danger);
+        }
+
+        builder.show();
+    }
+
+    private void trustKey(String jid, String fingerprint, int trustLevel) {
+        Keyring.setTrustLevel(getContext(), jid, fingerprint, trustLevel);
+        Contact.invalidate(jid);
+        reload();
     }
 
     private void reload() {

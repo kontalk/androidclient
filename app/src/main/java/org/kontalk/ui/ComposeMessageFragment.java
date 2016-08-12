@@ -519,11 +519,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                 // all of this shall be done only if there isn't a request from the other contact
                 if (mConversation.getRequestStatus() != Threads.REQUEST_WAITING) {
                     // request last presence
-                    Intent i = new Intent(context, MessageCenterService.class);
-                    i.setAction(MessageCenterService.ACTION_PRESENCE);
-                    i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
-                    i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.probe.name());
-                    context.startService(i);
+                    MessageCenterService.requestPresence(context, mUserJID);
                 }
             }
         }
@@ -815,6 +811,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         text.append(fingerprint);
         text.setSpan(MessageUtils.STYLE_BOLD, start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
+        // TODO dismiss AlertDialogWrapper and tint buttons (and add ignore button for ignored trust level)
         AlertDialogWrapper.Builder builder = new AlertDialogWrapper
             .Builder(getActivity())
             .setMessage(text);
