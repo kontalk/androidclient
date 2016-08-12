@@ -1746,7 +1746,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             String[] groupMembers = null;
             if (groupJid != null) {
-                groupMembers = MessagesProviderUtils.getGroupMembers(this, groupJid, 0);
+                /*
+                 * Huge potential issue here. Selecting all members, regardless of pending flags,
+                 * might e.g. deliver messages to removed users if there is a content message right
+                 * after a remove command.
+                 * However, selecting members with zero flags will make a remove command to be sent
+                 * only to existing members and not to the ones being removed.
+                 */
+                groupMembers = MessagesProviderUtils.getGroupMembers(this, groupJid, -1);
             }
 
             // media message encountered and no upload service available - delay message
@@ -2099,6 +2106,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         String groupJid = data.getString("org.kontalk.message.group.jid");
         String to;
+        // used for verifying isPaused()
+        String convJid;
         String[] toGroup;
 
         boolean isGroupMsg = (groupJid != null);
@@ -2106,10 +2115,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             toGroup = data.getStringArray("org.kontalk.message.to");
             // TODO this should be discovered first
             to = mConnection.getServiceName();
+            convJid = groupJid;
         }
         else {
             to = data.getString("org.kontalk.message.to");
             toGroup = new String[] { to };
+            convJid = to;
         }
 
         if (!isGroupMsg && !isAuthorized(to)) {
@@ -2129,7 +2140,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         catch (Exception pgpe) {
             Log.w(TAG, "no personal key available - not allowed to send messages");
             // warn user: message will not be sent
-            if (MessagingNotification.isPaused(to)) {
+            if (MessagingNotification.isPaused(convJid)) {
                 Toast.makeText(this, R.string.warn_no_personal_key,
                     Toast.LENGTH_LONG).show();
             }
@@ -2364,7 +2375,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                     catch (IllegalArgumentException noPublicKey) {
                         // warn user: message will be not sent
-                        if (MessagingNotification.isPaused(to)) {
+                        if (MessagingNotification.isPaused(convJid)) {
                             Toast.makeText(this, R.string.warn_no_public_key,
                                 Toast.LENGTH_LONG).show();
                         }
@@ -2372,7 +2383,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                     catch (GeneralSecurityException e) {
                         // warn user: message will not be sent
-                        if (MessagingNotification.isPaused(to)) {
+                        if (MessagingNotification.isPaused(convJid)) {
                             Toast.makeText(this, R.string.warn_encryption_failed,
                                 Toast.LENGTH_LONG).show();
                         }
