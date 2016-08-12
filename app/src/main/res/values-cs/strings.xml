@@ -503,4 +503,8 @@
 
     <string name="chooser_error_no_app">Pro otevření souboru není k dispozici vhodná aplikace.</string>
 
+    <string name="button_ignore">Ignorovat</string>
+    <string name="title_identity">Identita</string>
+    <string name="title_identity_self">Identita (toto jste vy!)</string>
+
     </resources>
