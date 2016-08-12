@@ -502,4 +502,8 @@
 
     <string name="chooser_error_no_app">Keine passende App verfügbar um diese Datei zu öffnen.</string>
 
+    <string name="button_ignore">Ignorieren</string>
+    <string name="title_identity">"Identität "</string>
+    <string name="title_identity_self">Identität (das sind Sie!)</string>
+
     </resources>
