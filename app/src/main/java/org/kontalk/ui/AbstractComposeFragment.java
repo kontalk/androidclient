@@ -995,31 +995,47 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     /** Starts an activity for picture attachment selection. */
     @TargetApi(Build.VERSION_CODES.KITKAT)
     private void selectGalleryAttachment() {
-        Intent pictureIntent;
-
-        if (!MediaStorage.isStorageAccessFrameworkAvailable()) {
-            pictureIntent = new Intent(Intent.ACTION_GET_CONTENT)
-                .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-                .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
-                    | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        }
-        else {
-            pictureIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        }
-
-        pictureIntent
-            .addCategory(Intent.CATEGORY_OPENABLE)
-            .setType("image/*")
-            .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
-            .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        boolean useSAF = MediaStorage.isStorageAccessFrameworkAvailable();
+        Intent pictureIntent = createGalleryIntent(useSAF);
 
         try {
             startActivityForResult(pictureIntent, SELECT_ATTACHMENT_OPENABLE);
         }
-        catch (ActivityNotFoundException e) {
-            Toast.makeText(getActivity(), R.string.chooser_error_no_gallery_app,
-                Toast.LENGTH_LONG).show();
+        catch (ActivityNotFoundException e1) {
+            try {
+                if (useSAF) {
+                    // try direct file system access
+                    pictureIntent = createGalleryIntent(false);
+                    startActivityForResult(pictureIntent, SELECT_ATTACHMENT_OPENABLE);
+                }
+                else {
+                    // simulate error
+                    throw new ActivityNotFoundException("gallery");
+                }
+            }
+            catch (ActivityNotFoundException e2) {
+                Toast.makeText(getActivity(), R.string.chooser_error_no_gallery_app,
+                    Toast.LENGTH_LONG).show();
+            }
         }
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    private Intent createGalleryIntent(boolean useSAF) {
+        Intent intent;
+        if (!useSAF) {
+            intent = new Intent(Intent.ACTION_GET_CONTENT)
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        }
+        else {
+            intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        }
+
+        return intent
+            .addCategory(Intent.CATEGORY_OPENABLE)
+            .setType("image/*")
+            .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+            .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
     }
 
     /** Starts activity for a vCard attachment from a contact. */
