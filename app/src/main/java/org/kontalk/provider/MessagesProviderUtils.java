@@ -254,13 +254,23 @@ public class MessagesProviderUtils {
     }
 
     public static String[] getGroupMembers(Context context, String groupJid, int flags) {
+        String where;
+        if (flags > 0) {
+            where = "(" + Groups.PENDING + " & " + flags + ") = " + flags;
+        }
+        else if (flags == 0) {
+            // handle zero flags special case (means all flags cleared)
+            where = Groups.PENDING + "=0";
+        }
+        else {
+            // any flag
+            where = null;
+        }
+
         Cursor c = context.getContentResolver()
             .query(Groups.getMembersUri(groupJid),
                 new String[] { Groups.PEER },
-                // handle zero flags special case (means all flags cleared)
-                flags != 0 ?
-                    "(" + Groups.PENDING + " & " + flags + ") = " + flags :
-                    Groups.PENDING + "=0", null, null);
+                where, null, null);
 
         String[] members = new String[c.getCount()];
         int i = 0;

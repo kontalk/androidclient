@@ -935,6 +935,10 @@ public class UsersProvider extends ContentProvider {
             ContentValues insertValues = new ContentValues(values);
             insertValues.put(Keys.JID, jid);
             insertValues.put(Keys.FINGERPRINT, fingerprint);
+            // use current timestamp if the caller didn't provide any
+            long timestamp = values.containsKey(Keys.TIMESTAMP) ?
+                values.getAsLong(Keys.TIMESTAMP) : System.currentTimeMillis();
+            insertValues.put(Keys.TIMESTAMP, timestamp);
             db.insertOrThrow(TABLE_KEYS, null, insertValues);
             rows = 1;
         }
