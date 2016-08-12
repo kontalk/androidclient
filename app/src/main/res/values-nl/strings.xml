@@ -501,4 +501,8 @@
 
     <string name="chooser_error_no_app">Geen app beschikbaar om het bestand mee te openen.</string>
 
+    <string name="button_ignore">Negeer</string>
+    <string name="title_identity">Identiteit</string>
+    <string name="title_identity_self">Identiteit (dit ben jij!)</string>
+
     </resources>
