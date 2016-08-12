@@ -506,4 +506,8 @@
 
     <string name="chooser_error_no_app">Нема подесне апликације за отварање фајла.</string>
 
+    <string name="button_ignore">Игнориши</string>
+    <string name="title_identity">Идентитет</string>
+    <string name="title_identity_self">Идентитет (ово сте ви!)</string>
+
     </resources>
