@@ -2849,6 +2849,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
+    public static void requestPresence(final Context context, String to) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_PRESENCE);
+        i.putExtra(MessageCenterService.EXTRA_TO, to);
+        i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.probe.name());
+        context.startService(i);
+    }
+
     public static void requestLastActivity(final Context context, String to, String id) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_LAST_ACTIVITY);

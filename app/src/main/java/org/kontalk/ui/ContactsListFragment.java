@@ -300,7 +300,6 @@ public class ContactsListFragment extends ActionModeListFragment implements
         else {
             super.onListItemClick(l, v, position, id);
         }
-
     }
 
     @Override
