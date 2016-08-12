@@ -498,4 +498,10 @@
     <string name="group_command_text_part_self">Dejaste este grupo</string>
     <string name="chooser_error_no_audioplayer_app">No hay aplicación de audio disponible.</string>
 
+    <string name="chooser_error_no_app">No hay aplicación disponible para abrir el archivo.</string>
+
+    <string name="button_ignore">Ignorar</string>
+    <string name="title_identity">Identidad</string>
+    <string name="title_identity_self">Identidad (¡este eres tu!)</string>
+
     </resources>
