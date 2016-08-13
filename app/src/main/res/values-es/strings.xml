@@ -504,4 +504,9 @@
     <string name="title_identity">Identidad</string>
     <string name="title_identity_self">Identidad (¡este eres tu!)</string>
 
+    <string name="status_label">"Estatus: "</string>
+    <string name="trust_unknown">No verificado</string>
+    <string name="trust_ignored">Ignorado</string>
+    <string name="trust_verified">Verificado</string>
+
     </resources>
