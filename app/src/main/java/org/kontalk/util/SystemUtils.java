@@ -46,6 +46,10 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.ContactsContract;
+import android.support.annotation.ColorRes;
+import android.text.style.CharacterStyle;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.util.SparseBooleanArray;
 import android.view.Display;
 import android.view.Surface;
@@ -372,5 +376,12 @@ public final class SystemUtils {
         return "";
     }
 
+    public static CharacterStyle getColoredSpan(Context context, @ColorRes int colorResId) {
+        return new ForegroundColorSpan(context.getResources().getColor(colorResId));
+    }
+
+    public static CharacterStyle getTypefaceSpan(int typeface) {
+        return new StyleSpan(typeface);
+    }
 
 }

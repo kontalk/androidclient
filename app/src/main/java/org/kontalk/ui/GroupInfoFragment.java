@@ -21,7 +21,6 @@ package org.kontalk.ui;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.akalipetis.fragment.ActionModeListFragment;
@@ -33,7 +32,7 @@ import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -42,6 +41,7 @@ import android.support.v7.view.ActionMode;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.style.CharacterStyle;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -65,7 +65,6 @@ import org.kontalk.provider.MessagesProviderUtils;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyUsers;
 import org.kontalk.ui.view.ContactsListItem;
-import org.kontalk.util.MessageUtils;
 import org.kontalk.util.SystemUtils;
 
 
@@ -181,18 +180,18 @@ public class GroupInfoFragment extends ActionModeListFragment
         mLeave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new AlertDialogWrapper.Builder(getActivity())
-                    .setMessage(R.string.confirm_will_leave_group)
-                    .setPositiveButton(android.R.string.ok,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                // leave group
-                                mConversation.leaveGroup();
-                                reload();
-                            }
-                        })
-                    .setNegativeButton(android.R.string.cancel, null)
+                new MaterialDialog.Builder(getContext())
+                    .content(R.string.confirm_will_leave_group)
+                    .positiveText(android.R.string.ok)
+                    .negativeText(android.R.string.cancel)
+                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            // leave group
+                            mConversation.leaveGroup();
+                            reload();
+                        }
+                    })
                     .show();
             }
         });
@@ -349,7 +348,7 @@ public class GroupInfoFragment extends ActionModeListFragment
         else {
             int start = text.length() - 1;
             text.append(uid);
-            text.setSpan(MessageUtils.STYLE_BOLD, start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            text.setSpan(SystemUtils.getTypefaceSpan(Typeface.BOLD), start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
 
         text.append('\n')
@@ -358,7 +357,42 @@ public class GroupInfoFragment extends ActionModeListFragment
 
         int start = text.length() - 1;
         text.append(fingerprint);
-        text.setSpan(MessageUtils.STYLE_BOLD, start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        text.setSpan(SystemUtils.getTypefaceSpan(Typeface.BOLD), start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        int trustStringId;
+        CharacterStyle[] trustSpans;
+        switch (c.getTrustedLevel()) {
+            case MyUsers.Keys.TRUST_IGNORED:
+                trustStringId = R.string.trust_ignored;
+                trustSpans = new CharacterStyle[] {
+                    SystemUtils.getTypefaceSpan(Typeface.BOLD),
+                    SystemUtils.getColoredSpan(getContext(), R.color.button_danger)
+                };
+                break;
+
+            case MyUsers.Keys.TRUST_VERIFIED:
+                trustStringId = R.string.trust_verified;
+                trustSpans = new CharacterStyle[] {
+                    SystemUtils.getTypefaceSpan(Typeface.BOLD),
+                    SystemUtils.getColoredSpan(getContext(), R.color.button_success)
+                };
+                break;
+
+            case MyUsers.Keys.TRUST_UNKNOWN:
+            default:
+                trustStringId = R.string.trust_unknown;
+                trustSpans = new CharacterStyle[] {
+                    SystemUtils.getTypefaceSpan(Typeface.BOLD),
+                    SystemUtils.getColoredSpan(getContext(), R.color.button_danger)
+                };
+                break;
+        }
+
+        text.append('\n').append(getString(R.string.status_label));
+        start = text.length();
+        text.append(getString(trustStringId));
+        for (CharacterStyle span : trustSpans)
+            text.setSpan(span, start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         MaterialDialog.Builder builder = new MaterialDialog.Builder(getContext())
             .content(text)
@@ -426,7 +460,7 @@ public class GroupInfoFragment extends ActionModeListFragment
         private final Context mContext;
         private List<String> mMembers;
 
-        public GroupMembersAdapter(Context context) {
+        private GroupMembersAdapter(Context context) {
             mContext = context;
             mMembers = new LinkedList<>();
         }
