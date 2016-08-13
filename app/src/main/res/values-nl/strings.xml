@@ -510,4 +510,6 @@
     <string name="trust_ignored">Genegeerd</string>
     <string name="trust_verified">Geverifieerd</string>
 
+    <string name="warning_public_key_group_unverified">Sommige groepsleden zijn niet geverifieerd.</string>
+
     </resources>
