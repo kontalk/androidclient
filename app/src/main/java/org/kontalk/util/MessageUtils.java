@@ -70,8 +70,12 @@ import org.kontalk.provider.MyMessages.Messages;
 
 public final class MessageUtils {
     // TODO convert these to XML styles
+    // these spans can't be used more than once in a Spanned because it's the same object reference!!!
+    @Deprecated
     public static final StyleSpan STYLE_BOLD = new StyleSpan(Typeface.BOLD);
+    @Deprecated
     private static final ForegroundColorSpan STYLE_RED = new ForegroundColorSpan(Color.RED);
+    @Deprecated
     private static final ForegroundColorSpan STYLE_GREEN = new ForegroundColorSpan(Color.rgb(0, 0xAA, 0));
 
     public static final int MILLISECONDS_IN_DAY = 86400000;
