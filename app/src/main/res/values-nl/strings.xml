@@ -505,4 +505,9 @@
     <string name="title_identity">Identiteit</string>
     <string name="title_identity_self">Identiteit (dit ben jij!)</string>
 
+    <string name="status_label">"Status: "</string>
+    <string name="trust_unknown">Niet geverifieerd</string>
+    <string name="trust_ignored">Genegeerd</string>
+    <string name="trust_verified">Geverifieerd</string>
+
     </resources>
