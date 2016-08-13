@@ -510,4 +510,5 @@
     <string name="title_identity">Идентитет</string>
     <string name="title_identity_self">Идентитет (ово сте ви!)</string>
 
+    <string name="status_label">"Стање: "</string>
     </resources>
