@@ -18,7 +18,6 @@
 
 package org.kontalk.ui.prefs;
 
-import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import android.app.Dialog;
@@ -78,10 +77,10 @@ public class NetworkFragment extends RootPreferenceFragment {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 String value = newValue.toString().trim();
                 if (value.length() > 0 && !EndpointServer.validate(value)) {
-                    new AlertDialogWrapper.Builder(getActivity())
-                        .setTitle(R.string.pref_network_uri)
-                        .setMessage(R.string.err_server_invalid_format)
-                        .setPositiveButton(android.R.string.ok, null)
+                    new MaterialDialog.Builder(getActivity())
+                        .title(R.string.pref_network_uri)
+                        .content(R.string.err_server_invalid_format)
+                        .positiveText(android.R.string.ok)
                         .show();
                     return false;
                 }

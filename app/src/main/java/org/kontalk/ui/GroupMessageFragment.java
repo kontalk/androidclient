@@ -22,12 +22,14 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import org.jivesoftware.smack.packet.Presence;
+import org.jxmpp.util.XmppStringUtils;
+import org.spongycastle.openpgp.PGPPublicKeyRing;
 
-import android.content.DialogInterface;
+import android.app.Activity;
 import android.database.sqlite.SQLiteDiskIOException;
 import android.net.Uri;
 import android.os.Bundle;
@@ -37,11 +39,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.KontalkGroupManager;
+import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.provider.MyMessages;
@@ -154,19 +158,20 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     }
 
     private void leaveGroup() {
-        new AlertDialogWrapper.Builder(getActivity())
-            .setMessage(R.string.confirm_will_leave_group)
-            .setPositiveButton(android.R.string.ok,
-            new DialogInterface.OnClickListener() {
+        new MaterialDialog.Builder(getActivity())
+            .content(R.string.confirm_will_leave_group)
+            .positiveText(android.R.string.ok)
+            .positiveColorRes(R.color.button_danger)
+            .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
-                public void onClick(DialogInterface dialog, int which) {
+                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                     // leave group
                     mConversation.leaveGroup();
                     // reload conversation
                     ((ComposeMessageParent) getActivity()).loadConversation(getThreadId());
                 }
             })
-            .setNegativeButton(android.R.string.cancel, null)
+            .negativeText(android.R.string.cancel)
             .show();
     }
 
@@ -246,6 +251,9 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
     @Override
     protected void onConversationCreated() {
+        // warning will be reloaded if necessary
+        hideWarning();
+
         super.onConversationCreated();
         // set group title
         String subject = mConversation.getGroupSubject();
@@ -272,14 +280,59 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         setActivityTitle(subject, status);
     }
 
+    private void showKeyWarning() {
+        Activity context = getActivity();
+        if (context != null) {
+            showWarning(context.getText(R.string.warning_public_key_group_unverified), new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    viewGroupInfo();
+                }
+            }, WarningType.FATAL);
+        }
+    }
+
     @Override
     protected void onPresence(String jid, Presence.Type type, boolean removed, Presence.Mode mode, String fingerprint) {
         // TODO
         Log.v(TAG, "group member presence from " + jid + " (type=" + type + ", fingerprint=" + fingerprint + ")");
 
         // TODO handle null type - meaning no subscription (warn user)
-        // TODO handle unknown/changed keys (warn user)
-        // TODO the above warnings should have a priority over one another
+        if (type == null) {
+            // some users are missing subscription - disable sending
+            // FIXME a toast isn't the right way to warn about this (discussion going on in #179)
+            Toast.makeText(getContext(),
+                "You can't chat with some of the group members because you haven't been authorized yet. Open a private chat with unknown users first.",
+                Toast.LENGTH_LONG).show();
+            mComposer.setSendEnabled(false);
+        }
+
+        else if (type == Presence.Type.available || type == Presence.Type.unavailable) {
+            String bareJid = XmppStringUtils.parseBareJid(jid);
+
+            Contact contact = Contact.findByUserId(getContext(), bareJid);
+            if (contact != null) {
+                // if this is null, we are accepting the key for the first time
+                PGPPublicKeyRing trustedPublicKey = contact.getTrustedPublicKeyRing();
+
+                // request the key if we don't have a trusted one and of course if the user has a key
+                boolean unknownKey = (trustedPublicKey == null && contact.getFingerprint() != null);
+                boolean changedKey = false;
+                // check if fingerprint changed
+                if (trustedPublicKey != null && fingerprint != null) {
+                    String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(trustedPublicKey));
+                    if (!fingerprint.equalsIgnoreCase(oldFingerprint)) {
+                        // fingerprint has changed since last time
+                        changedKey = true;
+                    }
+                }
+
+                if (changedKey || unknownKey) {
+                    showKeyWarning();
+                }
+            }
+
+        }
     }
 
     @Override
