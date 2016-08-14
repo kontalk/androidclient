@@ -56,6 +56,7 @@ import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.Syncer;
+import org.kontalk.ui.prefs.HelpPreference;
 import org.kontalk.ui.prefs.PreferencesActivity;
 import org.kontalk.ui.view.ContactPickerListener;
 import org.kontalk.util.MessageUtils;
@@ -467,6 +468,10 @@ public class ConversationsActivity extends MainActivity
                 launchDonate();
                 return true;
 
+            case R.id.menu_help:
+                launchHelp();
+                return true;
+
             case R.id.menu_settings: {
                 PreferencesActivity.start(this);
                 return true;
@@ -538,6 +543,10 @@ public class ConversationsActivity extends MainActivity
     private void launchMyKey() {
         Intent i = new Intent(this, MyKeyActivity.class);
         startActivity(i);
+    }
+
+    private void launchHelp() {
+        HelpPreference.openHelp(this);
     }
 
 }

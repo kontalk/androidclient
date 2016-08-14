@@ -28,6 +28,7 @@
     <item android:id="@+id/menu_status" android:title="@string/menu_status" android:icon="@drawable/ic_menu_status"/>
     <item android:id="@+id/menu_delete_all" android:title="@string/menu_delete_all" android:icon="@drawable/ic_menu_delete"/>
     <item android:id="@+id/menu_mykey" android:title="@string/mykey_activity_title" android:icon="@drawable/ic_menu_key"/>
+    <item android:id="@+id/menu_help" android:title="@string/pref_help" android:icon="@drawable/ic_menu_help"/>
     <item android:id="@+id/menu_donate" android:title="@string/pref_donate" android:icon="@drawable/ic_menu_donate"/>
     <item android:id="@+id/menu_settings" android:title="@string/menu_settings" android:icon="@drawable/ic_menu_preferences"/>
 </menu>

@@ -59,10 +59,14 @@ public class HelpPreference extends Preference {
         setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                SystemUtils.openURL(getContext(), getContext().getString(R.string.help_url));
+                openHelp(getContext());
                 return true;
             }
         });
+    }
+
+    public static void openHelp(Context context) {
+        SystemUtils.openURL(context, context.getString(R.string.help_url));
     }
 
 }
