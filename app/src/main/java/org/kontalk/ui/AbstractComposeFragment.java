@@ -1618,6 +1618,16 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         }
     }
 
+    protected boolean isWarningVisible(WarningType type) {
+        Snackbar bar = SnackbarManager.getCurrentSnackbar();
+        if (bar != null) {
+            WarningType oldType = (WarningType) bar.getTag();
+            if (oldType != null && oldType == type)
+                return true;
+        }
+        return false;
+    }
+
     protected void hideWarning() {
         SnackbarManager.dismiss();
     }
