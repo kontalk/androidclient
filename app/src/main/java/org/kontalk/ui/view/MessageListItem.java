@@ -20,19 +20,21 @@ package org.kontalk.ui.view;
 
 import java.util.regex.Pattern;
 
-import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.afollestad.materialdialogs.simplelist.MaterialSimpleListAdapter;
+import com.afollestad.materialdialogs.simplelist.MaterialSimpleListItem;
 
+import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.style.URLSpan;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewStub;
-import android.widget.ArrayAdapter;
 import android.widget.Checkable;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -287,68 +289,77 @@ public class MessageListItem extends RelativeLayout implements Checkable {
         }
         else {
             // complex stuff (media)
-            ArrayAdapter<URLSpan> adapter =
-                new ArrayAdapter<URLSpan>(getContext(), android.R.layout.select_dialog_item, spans) {
+            URLSpanAdapterCallback click = new URLSpanAdapterCallback(textContent);
+            final MaterialSimpleListAdapter adapter = new MaterialSimpleListAdapter(click);
+            for (URLSpan span : spans) {
+                MaterialSimpleListItem.Builder builder = new MaterialSimpleListItem.Builder(getContext())
+                    .tag(span);
+                try {
+                    String url = span.getURL();
+                    Uri uri = Uri.parse(url);
+
+                    final String telPrefix = "tel:";
+                    if (url.startsWith(telPrefix)) {
+                        // TODO handle country code
+                        url = url.substring(telPrefix.length());
+                    }
+
+                    builder.content(url);
+
+                    Drawable d = getContext().getPackageManager().getActivityIcon(
+                        new Intent(Intent.ACTION_VIEW, uri));
+                    if (d != null) {
+                        builder.icon(d).iconPadding(10);
+                    }
+
+                }
+                catch (android.content.pm.PackageManager.NameNotFoundException ex) {
+                    // it's ok if we're unable to set the drawable for this view - the user
+                    // can still use it
+                }
+
+                adapter.add(builder.build());
+            }
+
+            Dialog dialog = new MaterialDialog.Builder(getContext())
+                .title(R.string.chooser_select_link)
+                .cancelable(true)
+                .adapter(adapter, null)
+                .negativeText(android.R.string.cancel)
+                .onNegative(new MaterialDialog.SingleButtonCallback() {
                     @Override
-                    public View getView(int position, View convertView, ViewGroup parent) {
-                        View v = super.getView(position, convertView, parent);
-                        Context context = getContext();
-                        try {
-                            URLSpan span = getItem(position);
-                            String url = span.getURL();
-                            Uri uri = Uri.parse(url);
-                            TextView tv = (TextView) v;
-                            Drawable d = context.getPackageManager().getActivityIcon(
-                                new Intent(Intent.ACTION_VIEW, uri));
-                            if (d != null) {
-                                d.setBounds(0, 0, d.getIntrinsicHeight(), d.getIntrinsicHeight());
-                                tv.setCompoundDrawablePadding(10);
-                                tv.setCompoundDrawables(d, null, null, null);
-                            }
-                            final String telPrefix = "tel:";
-                            if (url.startsWith(telPrefix)) {
-                                // TODO handle country code
-                                url = url.substring(telPrefix.length());
-                            }
-                            tv.setText(url);
-                        } catch (android.content.pm.PackageManager.NameNotFoundException ex) {
-                            // it's ok if we're unable to set the drawable for this view - the user
-                            // can still use it
-                        }
-                        return v;
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
                     }
-                };
+                })
+                .build();
 
-            // TODO switch to MaterialDialog
-            AlertDialogWrapper.Builder b = new AlertDialogWrapper.Builder(getContext());
-
-            final TextContentView textView = textContent;
-            DialogInterface.OnClickListener click = new DialogInterface.OnClickListener() {
-                @Override
-                public final void onClick(DialogInterface dialog, int which) {
-                    if (which >= 0) {
-                        spans[which].onClick(textView);
-                    }
-                    dialog.dismiss();
-                }
-            };
-
-            b.setTitle(R.string.chooser_select_link);
-            b.setCancelable(true);
-            b.setAdapter(adapter, click);
-
-            b.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                @Override
-                public final void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            });
-
-            b.show();
+            click.setDialog(dialog);
+            dialog.show();
         }
     }
 
     public CompositeMessage getMessage() {
         return mMessage;
+    }
+
+    private static final class URLSpanAdapterCallback implements MaterialSimpleListAdapter.Callback {
+        private TextView mParent;
+        private Dialog mDialog;
+
+        private URLSpanAdapterCallback(TextView parent) {
+            mParent = parent;
+        }
+
+        @Override
+        public void onMaterialListItemSelected(int index, MaterialSimpleListItem item) {
+            if (item != null && item.getTag() != null)
+                ((URLSpan) item.getTag()).onClick(mParent);
+            mDialog.dismiss();
+        }
+
+        public void setDialog(Dialog dialog) {
+            mDialog = dialog;
+        }
     }
 }
