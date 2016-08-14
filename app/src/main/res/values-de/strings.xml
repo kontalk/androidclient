@@ -19,7 +19,7 @@
   <string name="app_name">Kontalk</string>
   <string name="app_description">Gemeinschaftlich betriebenes Instant Messaging Netzwerk</string>
   <string name="service_name">Nachrichtenzentrale</string>
-  <string name="authenticator_name">Beglaubigungsdienst</string>
+  <string name="authenticator_name">Legitimierungsdienst</string>
   <string name="sync_service_name">Synchronisiere Kontakte</string>
   <string name="download_service">Downloadservice</string>
   <string name="yes">Ja</string>
@@ -40,10 +40,10 @@
   <string name="number_validation_intro2">Falls Sie auf diesem Gerät keine Anrufe oder SMS empfangen können, geben Sie eine Ihnen gehörende Tel.Nr. an: Wir werden diese Nummer dann mit diesem Gerät hier verbinden.</string>
   <string name="code_validation_intro">Sie sollten in Kürze eine SMS oder einen Anruf von dieser Nummer erhalten:</string>
   <string name="code_validation_intro2">Fügen Sie unten bitte den Code ein, den Sie erhalten bzw. gehört haben.</string>
-  <string name="code_validation_intro_manual">Bitte fügen Sie den Verifikationscode ein, den Sie bekommen haben. Beachten Sie bitte, dass ein Verfikationscode nur einmal verwendet werden kann.</string>
+  <string name="code_validation_intro_manual">Bitte fügen Sie den Überprüfungs-Code ein, den Sie bekommen haben. Beachten Sie bitte, dass ein Überprüfungs-Code nur einmal verwendet werden kann.</string>
   <string name="hint_validation_name">Ihr Name</string>
   <string name="hint_validation_number">Ihre Nummer</string>
-  <string name="hint_validation_code">Verfikationscode</string>
+  <string name="hint_validation_code">Überprüfungs-Code</string>
   <string name="warn_invalid_number">Bitte eine gültige Tel.Nr. eingeben.</string>
   <string name="msg_validating_phone">Registrierung anfordern…</string>
   <string name="msg_initializing">Anmeldung am Kontalk-Netzwerk…</string>
@@ -139,10 +139,10 @@
   <string name="pref_title_vibrate">Bei Benachrichtigungen vibrieren</string>
   <string name="confirm_delete_message">Nachricht löschen</string>
   <string name="confirm_will_delete_message">Die Nachricht wird gelöscht.</string>
-  <string name="err_authentication_failed">Verifizierungscode wurde abgelehnt. Beglaubigung fehlgeschlagen.</string>
+  <string name="err_authentication_failed">Überprüfungs-Code wurde abgelehnt. Legitimierung fehlgeschlagen.</string>
   <string name="err_validation_failed">Überprüfung der Tel.Nr. fehlgeschlagen.</string>
   <string name="err_validation_retry_later">Zu viele Versuche. Bitte probieren Sie es in ein paar Minuten erneut.</string>
-  <string name="msg_validation_canceled">Verifizierung abgebrochen. Möglicherweise bekommen Sie trotzdem eine SMS.</string>
+  <string name="msg_validation_canceled">Überprüfung abgebrochen. Möglicherweise bekommen Sie trotzdem eine SMS.</string>
   <string name="err_validation_error">Bei der Verifizierung ist ein Fehler aufgetreten. Bitte versuchen Sie es später noch einmal.</string>
   <string name="err_validation_network_error">Server nicht erreichbar. Bitte versuchen Sie es später noch einmal.</string>
   <string name="err_validation_server_not_supported">Der ausgewählte Server unterstützt keine Registrierung. Bitte wählen Sie in den Einstellungen einen anderen Server aus.</string>
@@ -151,7 +151,7 @@
   <string name="msg_draft_saved">Nachricht als Entwurf gespeichert.</string>
   <string name="send_mime_not_supported">Dieser Dateityp wird nicht unterstützt.</string>
   <string name="button_validate">Registrierung</string>
-  <string name="button_validation_register">Verifizieren</string>
+  <string name="button_validation_register">überprüfen</string>
   <string name="notify_ticker_download_completed">Herunterladen abgeschlossen</string>
   <string name="notify_title_download_completed">Herunterladen abgeschlossen</string>
   <string name="notify_text_download_completed">Anhang vollständig heruntergeladen</string>
@@ -328,11 +328,11 @@
   <string name="warn_no_personal_key">Laden des persönlichen Schlüssels nicht möglich. Verschlüsselung deaktivieren um die Nachricht dennoch zu senden.</string>
   <string name="warn_no_public_key">Öffentlicher Schlüssel unbekannt. Kontaktliste aktualisieren oder Verschlüsselung deaktivieren um die Nachricht dennoch zu senden.</string>
   <string name="warn_encryption_failed">Verschlüsselung nicht möglich. Verschlüsselung deaktivieren um die Nachricht dennoch zu senden.</string>
-  <string name="warn_not_subscribed">Es ist nicht möglich, die Nachricht zu senden. Der Benutzer hat Ihre Einladung noch nicht akzeptiert.</string>
+  <string name="warn_not_subscribed">Es ist nicht möglich, die Nachricht zu senden. Der Benutzer hat Ihre Einladung noch nicht angenommen.</string>
   <string name="pref_sync_sim_contacts">Kontakte von SIM-Karte synchronisieren</string>
   <string name="pref_title_off_sync_sim_contacts">SIM-Kartenkontakte bei der Suche nach registrierten Nutzern nicht mit einbeziehen</string>
   <string name="pref_title_on_sync_sim_contacts">Auch SIM-Kartenkontakte bei der Suche nach registrierten Nutzern mit einbeziehen</string>
-  <string name="pref_sync_invisible_contacts">Unsichtbare Kontakte einbeziehen</string>
+  <string name="pref_sync_invisible_contacts">Ausgeblendete Kontakte einbeziehen</string>
   <string name="pref_title_off_sync_invisible_contacts">Kontakte mit einbeziehen die nicht in der Kontakte-App angezeigt werden. Möglichkeit für einen DAVDroid-Workaround</string>
   <string name="pref_title_on_sync_invisible_contacts">Kontakte, die nicht in der Kontakte App angezeigt werden, werden in Kontalk eingeschlossen.</string>
   <string name="pref_accept_any_certificate">Jedes SSL-Zertifikat akzeptieren</string>
@@ -344,8 +344,8 @@
   <string name="msg_block_user_warning">Sie haben vor diesen Nutzer zu blockieren. Danach wird Ihnen dieser Nutzer keine Nachrichten mehr senden können bis Sie ihn/sie wieder freigeben. Dieser Nutzer wird Ihren Status oder letzte bekannte Anwesenheit nicht sehen können und auch Sie werden seinen Status nicht sehen. Es wird für Sie auch nicht möglich sein Nachrichten an ihn/sie zu senden.</string>
   <string name="msg_unblock_user_warning">Sie haben vor diesen Nutzer freizugeben. Das bedeutet, er/sie kann Ihnen Nachrichten senden und Ihren Status bzw. letzte bekannte Anwesenheit sehen.</string>
   <string name="notification_text_more">Antippen um mehr zu erfahren</string>
-  <string name="title_auth_error">Verifizierungsfehler</string>
-  <string name="msg_auth_error">Das letzte Mal als versucht wurde einen Kontalk-Server zu kontaktieren ist die Authentifizierung fehlgeschlagen. Es könnte ein vorübergehender Serverfehler sein. Am wahrscheinlichsten ist es aber, dass Ihr persönlicher Schlüssel abgelehnt wurde. Wir empfehlen, Ihren Kontalk-Account in den Android-System-Einstellungen zu löschen und sich neu im System zu registrieren (Dabei gehen leider Ihre gesamten Kontalk-Nachrichten verloren).</string>
+  <string name="title_auth_error">Legitimierungs-Fehler</string>
+  <string name="msg_auth_error">Das letzte Mal als versucht wurde einen Kontalk-Server zu kontaktieren ist die Legitimierung fehlgeschlagen. Es könnte ein vorübergehender Serverfehler sein. Am wahrscheinlichsten ist es aber, dass Ihr persönlicher Schlüssel abgelehnt wurde. Wir empfehlen, Ihren Kontalk-Account in den Android-System-Einstellungen zu löschen und sich neu im System zu registrieren (Dabei gehen leider Ihre gesamten Kontalk-Nachrichten verloren).</string>
   <string name="warn_invite_no_app">Keine App verfügbar um Nutzer einzuladen.</string>
   <string name="pref_text_enter">Entertaste</string>
   <string name="pref_title_text_enter">Wählen Sie die Funktion der Entertaste</string>
@@ -382,18 +382,18 @@
 
     <string name="warning_older_version">Ihr Freund verwendet eine ältere Kontalk-Version. Es könnte sein, dass manche Funktionen nicht richtig arbeiten.</string>
     <string name="pref_help">Hilfe</string>
-    <string name="error_delete_thread">Es ist nicht möglich das Gespräch zu löschen.</string>
+    <string name="error_delete_thread">Es ist nicht möglich den Chat zu löschen.</string>
     <string name="error_delete_message">Es ist nicht möglich die Nachricht zu löschen.</string>
     <string name="err_validation_nonetwork">Es ist keine Internetverbindung verfügbar. Kontalk benötigt aber eine aktive Internetverbindung, um zu funktionieren.</string>
     <string name="title_nonetwork">Keine Internetverbindung</string>
     <string name="err_import_keypair_uid_mismatch">Der importierte Schlüssel gehört nicht zu der von Ihnen angegebenen Nummer.</string>
     <string name="err_audio_record_noaudio">Es wurde kein Audio aufgenommen.</string>
     <string name="err_custom_background">Beim setzen des Hintergrundes ist ein Fehler aufgetreten. Bitte versuchen Sie ein anderes Bild.</string>
-    <string name="hint_ptt">Um Aufzunehmen das Mikrofon gedrückt halten.</string>
+    <string name="hint_ptt">Um Aufzunehmen das Mikrofonicon gedrückt halten.</string>
     <string name="msg_importing_key">Importiere persönlichen Schlüssel…</string>
     <string name="button_validation_fallback">Keinen Anruf erhalten?</string>
     <string name="msg_fallback">Wir werden einen anderen Weg probieren, um Ihre Tel.Nr. zu überprüfen.</string>
-    <string name="code_validation_intro_missed_call">Sie sollten in Kürze einen verpassten Anruf von folgender Nummer erhalten. <b>Bitte nehmen Sie den Anruf NICHT an.</b></string>
+    <string name="code_validation_intro_missed_call">Sie sollten in Kürze einen verpassten Anruf von folgender Nummer vorfinden. <b>Bitte nehmen Sie den Anruf NICHT an.</b></string>
     <string name="code_validation_intro2_missed_call">Bitte fügen Sie die letzten %d Ziffern der Nummer ein, von der Sie angerufen wurden.</string>
     <string name="title_fallback">Haben Sie Probleme?</string>
     <string name="menu_manual_verification">Code bereits vorhanden?</string>
@@ -426,7 +426,7 @@
     <string name="err_keypair_export_other">Persönlicher Schlüssel konnte nicht exportiert werden.</string>
 
     <string name="pref_title_custom_background">Wählen Sie einen Hintergrund mit untenstehender Option</string>
-    <string name="pref_title_sync_sim_contacts">SIM Kontakte mit einbeziehen um nach registrierten Nutzern zu suchen</string>
+    <string name="pref_title_sync_sim_contacts">SIM-Kontakte mit einbeziehen um nach registrierten Nutzern zu suchen</string>
 
     <string name="pref_title_sync_invisible_contacts">Im Adressbuch ausgeblendete Kontakte einbeziehen. Aktivieren wenn DAVDroid verwendet wird</string>
 
@@ -506,9 +506,9 @@
     <string name="title_identity">"Identität "</string>
     <string name="title_identity_self">Identität (das sind Sie!)</string>
 
-    <string name="status_label">Status:</string>
-    <string name="trust_unknown">Nicht bestätigt</string>
+    <string name="status_label">"Status: "</string>
+    <string name="trust_unknown">Nicht überprüft</string>
     <string name="trust_ignored">Ignoriert</string>
-    <string name="trust_verified">Bestätigt</string>
+    <string name="trust_verified">überprüft</string>
 
     </resources>
