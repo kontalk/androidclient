@@ -69,6 +69,7 @@ import android.os.Handler;
 import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.view.ActionMode;
@@ -1063,13 +1064,16 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     private AudioFragment getAudioFragment() {
         AudioFragment fragment = findAudioFragment();
         if (fragment == null) {
-            fragment = new AudioFragment();
-            FragmentManager fm = getActivity().getSupportFragmentManager();
-            fm.beginTransaction()
-                .add(fragment, "audio")
-                .commit();
-            // commit immediately please
-            fm.executePendingTransactions();
+            FragmentActivity parent = getActivity();
+            if (parent != null) {
+                fragment = new AudioFragment();
+                FragmentManager fm = parent.getSupportFragmentManager();
+                fm.beginTransaction()
+                    .add(fragment, "audio")
+                    .commit();
+                // commit immediately please
+                fm.executePendingTransactions();
+            }
         }
 
         return fragment;
