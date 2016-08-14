@@ -33,7 +33,7 @@ import android.text.InputType;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.folderselector.FolderChooserDialog;
 
@@ -102,10 +102,10 @@ public class MaintenanceFragment extends RootPreferenceFragment {
                         }
 
                         public void onInvalidPassphrase() {
-                            new AlertDialogWrapper.Builder(getActivity())
-                                    .setMessage(R.string.err_password_invalid)
-                                    .setPositiveButton(android.R.string.ok, null)
-                                    .show();
+                            new MaterialDialog.Builder(getActivity())
+                                .content(R.string.err_password_invalid)
+                                .positiveText(android.R.string.ok)
+                                .show();
                         }
                     };
                     askCurrentPassphrase(action);
@@ -125,15 +125,17 @@ public class MaintenanceFragment extends RootPreferenceFragment {
         regenKeyPair.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                new AlertDialogWrapper.Builder(getActivity())
-                        .setTitle(R.string.pref_regenerate_keypair)
-                        .setMessage(R.string.pref_regenerate_keypair_confirm)
-                        .setNegativeButton(android.R.string.cancel, null)
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
+                new MaterialDialog.Builder(getActivity())
+                        .title(R.string.pref_regenerate_keypair)
+                        .content(R.string.pref_regenerate_keypair_confirm)
+                        .negativeText(android.R.string.cancel)
+                        .positiveText(android.R.string.ok)
+                        .onPositive(new MaterialDialog.SingleButtonCallback() {
+                            @Override
+                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                                 Context ctx = getActivity();
                                 Toast.makeText(ctx, R.string.msg_generating_keypair,
-                                        Toast.LENGTH_LONG).show();
+                                    Toast.LENGTH_LONG).show();
 
                                 MessageCenterService.regenerateKeyPair(ctx.getApplicationContext());
                             }
@@ -192,10 +194,10 @@ public class MaintenanceFragment extends RootPreferenceFragment {
                         }
 
                         public void onInvalidPassphrase() {
-                            new AlertDialogWrapper.Builder(getActivity())
-                                    .setMessage(R.string.err_password_invalid)
-                                    .setPositiveButton(android.R.string.ok, null)
-                                    .show();
+                            new MaterialDialog.Builder(getActivity())
+                                .content(R.string.err_password_invalid)
+                                .positiveText(android.R.string.ok)
+                                .show();
                         }
                     };
 
@@ -211,18 +213,21 @@ public class MaintenanceFragment extends RootPreferenceFragment {
         deleteAccount.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                new AlertDialogWrapper.Builder(getActivity())
-                        .setTitle(R.string.pref_delete_account)
-                        .setMessage(R.string.msg_delete_account)
-                        .setNegativeButton(android.R.string.cancel, null)
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
+                new MaterialDialog.Builder(getActivity())
+                        .title(R.string.pref_delete_account)
+                        .content(R.string.msg_delete_account)
+                        .negativeText(android.R.string.cancel)
+                        .positiveText(android.R.string.ok)
+                        .positiveColorRes(R.color.button_danger)
+                        .onPositive(new MaterialDialog.SingleButtonCallback() {
+                            @Override
+                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                                 // progress dialog
                                 final Dialog progress = new LockedDialog
-                                        .Builder(getActivity())
-                                        .content(R.string.msg_delete_account_progress)
-                                        .progress(true, 0)
-                                        .show();
+                                    .Builder(getActivity())
+                                    .content(R.string.msg_delete_account_progress)
+                                    .progress(true, 0)
+                                    .show();
 
                                 // stop the message center first
                                 Context ctx = getActivity();

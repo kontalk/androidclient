@@ -18,12 +18,9 @@
 
 package org.kontalk.ui;
 
-import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -225,27 +222,28 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     }
 
     private void error(int message) {
-        new AlertDialogWrapper.Builder(this)
-            .setMessage(message)
-            .setNeutralButton(android.R.string.ok, null)
+        new MaterialDialog.Builder(this)
+            .content(message)
+            .positiveText(android.R.string.ok)
             .show();
     }
 
     public void doFallback(View view) {
-        new AlertDialog.Builder(this)
-            .setTitle(R.string.title_fallback)
-            .setMessage(R.string.msg_fallback)
-            .setIcon(android.R.drawable.ic_dialog_info)
-            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+        new MaterialDialog.Builder(this)
+            .title(R.string.title_fallback)
+            .content(R.string.msg_fallback)
+            .icon(getResources().getDrawable(android.R.drawable.ic_dialog_info))
+            .positiveText(android.R.string.ok)
+            .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
-                public void onClick(DialogInterface dialog, int which) {
+                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                     Intent i = new Intent();
                     i.putExtra("force", mForce);
                     setResult(NumberValidation.RESULT_FALLBACK, i);
                     finish();
                 }
             })
-            .setNegativeButton(android.R.string.cancel, null)
+            .negativeText(android.R.string.cancel)
             .show();
     }
 

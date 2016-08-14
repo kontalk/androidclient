@@ -28,7 +28,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.MaterialDialog;
 
 import org.jivesoftware.smack.util.StringUtils;
 import org.spongycastle.openpgp.PGPException;
@@ -284,10 +284,11 @@ public final class MessageUtils {
     public static void showMessageDetails(Context context, CompositeMessage msg, String decodedPeer) {
         CharSequence messageDetails = MessageUtils.getMessageDetails(
             context, msg, decodedPeer);
-        new AlertDialogWrapper.Builder(context)
-            .setTitle(R.string.title_message_details)
-            .setMessage(messageDetails)
-            .setCancelable(true).show();
+        new MaterialDialog.Builder(context)
+            .title(R.string.title_message_details)
+            .content(messageDetails)
+            .cancelable(true)
+            .show();
     }
 
     private static CharSequence getMessageDetails(Context context, CompositeMessage msg, String decodedPeer) {

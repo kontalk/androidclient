@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipInputStream;
 
-import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.folderselector.FileChooserDialog;
@@ -514,9 +513,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     private void error(int message) {
-        new AlertDialogWrapper.Builder(this)
-            .setMessage(message)
-            .setPositiveButton(android.R.string.ok, null)
+        new MaterialDialog.Builder(this)
+            .content(message)
+            .positiveText(android.R.string.ok)
             .show();
     }
 

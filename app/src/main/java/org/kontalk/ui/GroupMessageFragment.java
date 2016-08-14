@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import org.jivesoftware.smack.packet.Presence;
@@ -30,7 +30,6 @@ import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDiskIOException;
 import android.net.Uri;
 import android.os.Bundle;
@@ -159,19 +158,20 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     }
 
     private void leaveGroup() {
-        new AlertDialogWrapper.Builder(getActivity())
-            .setMessage(R.string.confirm_will_leave_group)
-            .setPositiveButton(android.R.string.ok,
-            new DialogInterface.OnClickListener() {
+        new MaterialDialog.Builder(getActivity())
+            .content(R.string.confirm_will_leave_group)
+            .positiveText(android.R.string.ok)
+            .positiveColorRes(R.color.button_danger)
+            .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
-                public void onClick(DialogInterface dialog, int which) {
+                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                     // leave group
                     mConversation.leaveGroup();
                     // reload conversation
                     ((ComposeMessageParent) getActivity()).loadConversation(getThreadId());
                 }
             })
-            .setNegativeButton(android.R.string.cancel, null)
+            .negativeText(android.R.string.cancel)
             .show();
     }
 
