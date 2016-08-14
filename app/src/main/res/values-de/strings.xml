@@ -511,6 +511,6 @@
     <string name="trust_ignored">Ignoriert</string>
     <string name="trust_verified">überprüft</string>
 
-    <string name="warning_public_key_group_unverified">Einige Gruppenmitglieder wurden nicht überprüft.</string>
+    <string name="warning_public_key_group_unverified">Die Identität einiger Gruppenmitglieder wurde nicht überprüft.</string>
 
     </resources>
