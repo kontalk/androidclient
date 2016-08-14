@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import org.jivesoftware.smack.util.StringUtils;
@@ -32,7 +32,6 @@ import android.app.Activity;
 import android.app.SearchManager;
 import android.content.ContentUris;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -437,15 +436,18 @@ public class ConversationsActivity extends MainActivity
                 final boolean currentMode = Preferences.getOfflineMode(ctx);
                 if (!currentMode && !Preferences.getOfflineModeUsed(ctx)) {
                     // show offline mode warning
-                    new AlertDialogWrapper.Builder(ctx)
-                        .setMessage(R.string.message_offline_mode_warning)
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
+                    new MaterialDialog.Builder(ctx)
+                        .content(R.string.message_offline_mode_warning)
+                        .positiveText(android.R.string.ok)
+                        .onPositive(new MaterialDialog.SingleButtonCallback() {
+                            @Override
+                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                                 Preferences.setOfflineModeUsed(ctx);
                                 switchOfflineMode();
+
                             }
                         })
-                        .setNegativeButton(android.R.string.cancel, null)
+                        .negativeText(android.R.string.cancel)
                         .show();
                 }
                 else {
@@ -512,16 +514,19 @@ public class ConversationsActivity extends MainActivity
     }
 
     private void deleteAll() {
-        AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(this);
-        builder.setMessage(R.string.confirm_will_delete_all);
-        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                Conversation.deleteAll(ConversationsActivity.this);
-                MessagingNotification.updateMessagesNotification(getApplicationContext(), false);
-            }
-        });
-        builder.setNegativeButton(android.R.string.cancel, null);
-        builder.create().show();
+        new MaterialDialog.Builder(this)
+            .content(R.string.confirm_will_delete_all)
+            .positiveText(android.R.string.ok)
+            .positiveColorRes(R.color.button_danger)
+            .onPositive(new MaterialDialog.SingleButtonCallback() {
+                @Override
+                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                    Conversation.deleteAll(ConversationsActivity.this);
+                    MessagingNotification.updateMessagesNotification(getApplicationContext(), false);
+                }
+            })
+            .negativeText(android.R.string.cancel)
+            .show();
     }
 
     private void launchDonate() {

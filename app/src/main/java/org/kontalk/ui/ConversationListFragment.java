@@ -18,17 +18,18 @@
 
 package org.kontalk.ui;
 
-import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.akalipetis.fragment.ActionModeListFragment;
 import com.akalipetis.fragment.MultiChoiceModeListener;
 
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.view.ActionMode;
 import android.util.Log;
 import android.util.SparseBooleanArray;
@@ -242,21 +243,22 @@ public class ConversationListFragment extends ActionModeListFragment
     }
 
     private void deleteSelectedThreads(final SparseBooleanArray checked) {
-        new AlertDialogWrapper
-            .Builder(getActivity())
-            .setMessage(R.string.confirm_will_delete_threads)
-            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+        new MaterialDialog.Builder(getActivity())
+            .content(R.string.confirm_will_delete_threads)
+            .positiveText(android.R.string.ok)
+            .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
-                public void onClick(DialogInterface dialog, int which) {
+                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                     Context ctx = getActivity();
                     for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
                         if (checked.get(i))
                             Conversation.deleteFromCursor(ctx, (Cursor) mListAdapter.getItem(i), true);
                     }
                     mListAdapter.notifyDataSetChanged();
+
                 }
             })
-            .setNegativeButton(android.R.string.cancel, null)
+            .negativeText(android.R.string.cancel)
             .show();
     }
 

@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.akalipetis.fragment.ActionModeListFragment;
@@ -49,7 +48,6 @@ import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ContentUris;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -69,6 +67,7 @@ import android.os.Handler;
 import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.view.ActionMode;
@@ -554,12 +553,13 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     }
 
     private void deleteSelectedMessages(final SparseBooleanArray checked) {
-        new AlertDialogWrapper
-            .Builder(getActivity())
-            .setMessage(R.string.confirm_will_delete_messages)
-            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+        new MaterialDialog.Builder(getActivity())
+            .content(R.string.confirm_will_delete_messages)
+            .positiveText(android.R.string.ok)
+            .positiveColorRes(R.color.button_danger)
+            .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
-                public void onClick(DialogInterface dialog, int which) {
+                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                     Context ctx = getActivity();
                     for (int i = 0, c = getListView().getCount()+getListView().getHeaderViewsCount(); i < c; ++i) {
                         if (checked.get(i)) {
@@ -572,7 +572,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                     mListAdapter.notifyDataSetChanged();
                 }
             })
-            .setNegativeButton(android.R.string.cancel, null)
+            .negativeText(android.R.string.cancel)
             .show();
     }
 
@@ -812,29 +812,33 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                     CharSequence message = MessageUtils
                         .getFileInfoMessage(getActivity(), msg, getDecodedPeer(msg));
 
-                    AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(getActivity())
-                        .setTitle(R.string.title_file_info)
-                        .setMessage(message)
-                        .setNegativeButton(android.R.string.cancel, null)
-                        .setCancelable(true);
+                    MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
+                        .title(R.string.title_file_info)
+                        .content(message)
+                        .negativeText(android.R.string.cancel)
+                        .cancelable(true);
 
                     if (!DownloadService.isQueued(attachment.getFetchUrl())) {
-                        DialogInterface.OnClickListener startDL = new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
+                        MaterialDialog.SingleButtonCallback startDL = new MaterialDialog.SingleButtonCallback() {
+                            @Override
+                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                                 // start file download
                                 startDownload(msg);
                             }
                         };
-                        builder.setPositiveButton(R.string.download, startDL);
+                        builder.positiveText(R.string.download)
+                            .onPositive(startDL);
                     }
                     else {
-                        DialogInterface.OnClickListener stopDL = new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
+                        MaterialDialog.SingleButtonCallback stopDL = new MaterialDialog.SingleButtonCallback() {
+                            @Override
+                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                                 // cancel file download
                                 stopDownload(msg);
                             }
                         };
-                        builder.setPositiveButton(R.string.download_cancel, stopDL);
+                        builder.positiveText(R.string.download_cancel)
+                            .onPositive(stopDL);
                     }
 
                     builder.show();
@@ -1063,13 +1067,16 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     private AudioFragment getAudioFragment() {
         AudioFragment fragment = findAudioFragment();
         if (fragment == null) {
-            fragment = new AudioFragment();
-            FragmentManager fm = getActivity().getSupportFragmentManager();
-            fm.beginTransaction()
-                .add(fragment, "audio")
-                .commit();
-            // commit immediately please
-            fm.executePendingTransactions();
+            FragmentActivity parent = getActivity();
+            if (parent != null) {
+                fragment = new AudioFragment();
+                FragmentManager fm = parent.getSupportFragmentManager();
+                fm.beginTransaction()
+                    .add(fragment, "audio")
+                    .commit();
+                // commit immediately please
+                fm.executePendingTransactions();
+            }
         }
 
         return fragment;
@@ -1612,6 +1619,16 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             mLocalBroadcastManager.unregisterReceiver(mPresenceReceiver);
             mPresenceReceiver = null;
         }
+    }
+
+    protected boolean isWarningVisible(WarningType type) {
+        Snackbar bar = SnackbarManager.getCurrentSnackbar();
+        if (bar != null) {
+            WarningType oldType = (WarningType) bar.getTag();
+            if (oldType != null && oldType == type)
+                return true;
+        }
+        return false;
     }
 
     protected void hideWarning() {

@@ -20,7 +20,6 @@ package org.kontalk.ui;
 
 import java.io.IOException;
 
-import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
@@ -171,10 +170,10 @@ public abstract class MainActivity extends ToolbarActivity {
             .negativeText(android.R.string.cancel)
             .cancelListener(new DialogInterface.OnCancelListener() {
                 public void onCancel(DialogInterface dialog) {
-                    new AlertDialogWrapper.Builder(MainActivity.this)
-                        .setTitle(R.string.title_no_personal_key)
-                        .setMessage(R.string.msg_no_personal_key)
-                        .setPositiveButton(android.R.string.ok, null)
+                    new MaterialDialog.Builder(MainActivity.this)
+                        .title(R.string.title_no_personal_key)
+                        .content(R.string.msg_no_personal_key)
+                        .positiveText(android.R.string.ok)
                         .show();
                 }
             })
@@ -217,11 +216,11 @@ public abstract class MainActivity extends ToolbarActivity {
     protected Dialog onCreateDialog(int id, Bundle args) {
         if (id == DIALOG_AUTH_ERROR_WARNING) {
 
-            return new AlertDialogWrapper.Builder(this)
-                .setTitle(R.string.title_auth_error)
-                .setMessage(R.string.msg_auth_error)
-                .setPositiveButton(android.R.string.ok, null)
-                .create();
+            return new MaterialDialog.Builder(this)
+                .title(R.string.title_auth_error)
+                .content(R.string.msg_auth_error)
+                .positiveText(android.R.string.ok)
+                .build();
 
         }
 

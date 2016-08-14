@@ -319,6 +319,7 @@ public class MessageListItem extends RelativeLayout implements Checkable {
                     }
                 };
 
+            // TODO switch to MaterialDialog
             AlertDialogWrapper.Builder b = new AlertDialogWrapper.Builder(getContext());
 
             final TextContentView textView = textContent;

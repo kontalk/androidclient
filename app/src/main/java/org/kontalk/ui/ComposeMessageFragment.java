@@ -21,7 +21,6 @@ package org.kontalk.ui;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
@@ -38,7 +37,6 @@ import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -302,28 +300,25 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             Contact contact = mConversation.getContact();
             if (!(mUserPhone != null && contact != null) || !contact.isRegistered()) {
                 // ask user to send invitation
-                DialogInterface.OnClickListener noListener = new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        // FIXME is this specific to sms app?
-                        Intent i = new Intent(Intent.ACTION_SENDTO,
-                            Uri.parse("smsto:" + mUserPhone));
-                        i.putExtra("sms_body",
-                            getString(R.string.text_invite_message));
-                        startActivity(i);
-                        getActivity().finish();
-                    }
-                };
-
-                AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(getActivity());
-                builder.
-                    setTitle(R.string.title_user_not_found)
-                    .setMessage(R.string.message_user_not_found)
+                new MaterialDialog.Builder(getActivity())
+                    .title(R.string.title_user_not_found)
+                    .content(R.string.message_user_not_found)
                     // nothing happens if user chooses to contact the user anyway
-                    .setPositiveButton(R.string.yes_user_not_found, null)
-                    .setNegativeButton(R.string.no_user_not_found, noListener)
+                    .positiveText(R.string.yes_user_not_found)
+                    .negativeText(R.string.no_user_not_found)
+                    .onNegative(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            // FIXME is this specific to sms app?
+                            Intent i = new Intent(Intent.ACTION_SENDTO,
+                                Uri.parse("smsto:" + mUserPhone));
+                            i.putExtra("sms_body",
+                                getString(R.string.text_invite_message));
+                            startActivity(i);
+                            getActivity().finish();
+                        }
+                    })
                     .show();
-
             }
         }
     }
@@ -811,36 +806,37 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         text.append(fingerprint);
         text.setSpan(MessageUtils.STYLE_BOLD, start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        // TODO dismiss AlertDialogWrapper and tint buttons (and add ignore button for ignored trust level)
-        AlertDialogWrapper.Builder builder = new AlertDialogWrapper
+        MaterialDialog.Builder builder = new MaterialDialog
             .Builder(getActivity())
-            .setMessage(text);
+            .content(text);
 
         if (informationOnly) {
-            builder.setTitle(titleId);
+            builder.title(titleId);
         }
         else {
-            DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    // hide warning bar
-                    hideWarning();
+            builder.title(titleId)
+                .positiveText(R.string.button_accept)
+                .positiveColorRes(R.color.button_success)
+                .negativeText(R.string.button_block)
+                .negativeColorRes(R.color.button_danger)
+                .onAny(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        // hide warning bar
+                        hideWarning();
 
-                    switch (which) {
-                        case DialogInterface.BUTTON_POSITIVE:
-                            // trust new key
-                            trustKeyChange();
-                            break;
-                        case DialogInterface.BUTTON_NEGATIVE:
-                            // block user immediately
-                            setPrivacy(PRIVACY_BLOCK);
-                            break;
+                        switch (which) {
+                            case POSITIVE:
+                                // trust new key
+                                trustKeyChange();
+                                break;
+                            case NEGATIVE:
+                                // block user immediately
+                                setPrivacy(PRIVACY_BLOCK);
+                                break;
+                        }
                     }
-                }
-            };
-            builder.setTitle(titleId)
-                .setPositiveButton(R.string.button_accept, listener)
-                .setNegativeButton(R.string.button_block, listener);
+                });
         }
 
         builder.show();
@@ -859,34 +855,36 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             showWarning(context.getText(textId), new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            switch (which) {
-                                case DialogInterface.BUTTON_POSITIVE:
-                                    // hide warning bar
-                                    hideWarning();
-                                    // trust new key
-                                    trustKeyChange();
-                                    break;
-                                case DialogInterface.BUTTON_NEUTRAL:
-                                    showIdentityDialog(false, dialogTitleId);
-                                    break;
-                                case DialogInterface.BUTTON_NEGATIVE:
-                                    // hide warning bar
-                                    hideWarning();
-                                    // block user immediately
-                                    setPrivacy(PRIVACY_BLOCK);
-                                    break;
+                    new MaterialDialog.Builder(getActivity())
+                        .title(dialogTitleId)
+                        .content(dialogMessageId)
+                        .positiveText(R.string.button_accept)
+                        .positiveColorRes(R.color.button_success)
+                        .neutralText(R.string.button_identity)
+                        .negativeText(R.string.button_block)
+                        .negativeColorRes(R.color.button_danger)
+                        .onAny(new MaterialDialog.SingleButtonCallback() {
+                            @Override
+                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                switch (which) {
+                                    case POSITIVE:
+                                        // hide warning bar
+                                        hideWarning();
+                                        // trust new key
+                                        trustKeyChange();
+                                        break;
+                                    case NEUTRAL:
+                                        showIdentityDialog(false, dialogTitleId);
+                                        break;
+                                    case NEGATIVE:
+                                        // hide warning bar
+                                        hideWarning();
+                                        // block user immediately
+                                        setPrivacy(PRIVACY_BLOCK);
+                                        break;
+                                }
                             }
-                        }
-                    };
-                    new AlertDialogWrapper.Builder(getActivity())
-                        .setTitle(dialogTitleId)
-                        .setMessage(dialogMessageId)
-                        .setPositiveButton(R.string.button_accept, listener)
-                        .setNeutralButton(R.string.button_identity, listener)
-                        .setNegativeButton(R.string.button_block, listener)
+                        })
                         .show();
                 }
             }, WarningType.FATAL);
