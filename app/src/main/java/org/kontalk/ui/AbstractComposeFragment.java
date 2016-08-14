@@ -1044,8 +1044,16 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     /** Starts activity for a vCard attachment from a contact. */
     private void selectContactAttachment() {
-        Intent i = new Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
-        startActivityForResult(i, SELECT_ATTACHMENT_CONTACT);
+        try {
+            Intent i = new Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
+            startActivityForResult(i, SELECT_ATTACHMENT_CONTACT);
+        }
+        catch (ActivityNotFoundException e) {
+            // no contacts app found (crap device eh?)
+            Toast.makeText(getActivity(),
+                R.string.err_no_contacts_app,
+                Toast.LENGTH_LONG).show();
+        }
     }
 
     private void selectAudioAttachment() {
