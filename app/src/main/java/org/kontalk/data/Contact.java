@@ -325,6 +325,18 @@ public class Contact {
         return null;
     }
 
+    public String getTrustedFingerprint() {
+        try {
+            if (mTrustedKeyRing != null)
+                return mTrustedKeyRing.getFingerprint();
+        }
+        catch (Exception e) {
+            // ignored for now
+            Log.w(TAG, "unable to load public keyring", e);
+        }
+        return null;
+    }
+
     public int getTrustedLevel() {
         return mTrustedLevel;
     }
