@@ -507,4 +507,11 @@
     <string name="title_identity">Identita</string>
     <string name="title_identity_self">Identita (toto jste vy!)</string>
 
+    <string name="warning_public_key_group_unverified">Identita některých členů skupiny nebyla ověřena.</string>
+
+    <string name="status_label">"Status: "</string>
+    <string name="trust_unknown">Neověřený</string>
+    <string name="trust_ignored">Ignorovaný</string>
+    <string name="trust_verified">Ověřený</string>
+
     </resources>
