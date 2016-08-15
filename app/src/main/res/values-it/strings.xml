@@ -500,4 +500,20 @@
     <string name="group_command_text_part_self">Hai lasciato il gruppo</string>
     <string name="chooser_error_no_app">Nessuna applicazione trovata per aprire il file.</string>
 
+    <string name="button_ignore">Ignora</string>
+    <string name="title_identity">Identità</string>
+    <string name="title_identity_self">Identità (sei tu!)</string>
+
+    <string name="warning_public_key_group_unverified">L\'identità di alcuni membri non è stata verificata.</string>
+
+    <string name="group_info_ignore_all">Ignora tutti</string>
+    <string name="title_ignore_all_identities">Ignora tutte le identità?</string>
+    <string name="msg_ignore_all_identities">Tutte le identità non verificate saranno ignorate.</string>
+    <string name="text_group_command_fallback">Questo è un messaggio di chat di gruppo. Stai usando una vecchia versione di Kontalk oppure il tuo client non supporta il protocollo della chat di gruppo. Aggiorna all\'ultima versione!</string>
+
+    <string name="status_label">"Stato: "</string>
+    <string name="trust_unknown">Non verificato</string>
+    <string name="trust_ignored">Ignorato</string>
+    <string name="trust_verified">Verificato</string>
+
     </resources>
