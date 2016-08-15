@@ -42,6 +42,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import org.kontalk.BuildConfig;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.KontalkGroupManager;
@@ -294,10 +295,11 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
     @Override
     protected void onPresence(String jid, Presence.Type type, boolean removed, Presence.Mode mode, String fingerprint) {
-        // TODO
-        Log.v(TAG, "group member presence from " + jid + " (type=" + type + ", fingerprint=" + fingerprint + ")");
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "group member presence from " + jid + " (type=" + type + ", fingerprint=" + fingerprint + ")");
+        }
 
-        // TODO handle null type - meaning no subscription (warn user)
+        // handle null type - meaning no subscription (warn user)
         if (type == null) {
             // some users are missing subscription - disable sending
             // FIXME a toast isn't the right way to warn about this (discussion going on in #179)

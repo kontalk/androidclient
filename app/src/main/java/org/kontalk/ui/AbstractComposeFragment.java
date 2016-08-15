@@ -1525,17 +1525,22 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         updateUI();
     }
 
+    /** Called when a presence is received. */
     protected abstract void onPresence(String jid, Presence.Type type,
         boolean removed, Presence.Mode mode, String fingerprint);
 
     protected abstract void onConnected();
 
+    /** Called when the roster has been loaded (ACTION_ROSTER). */
     protected abstract void onRosterLoaded();
 
+    /** Called when the contact starts typing. */
     protected abstract void onStartTyping(String jid);
 
+    /** Called when the contact stops typing. */
     protected abstract void onStopTyping(String jid);
 
+    /** Should return true if the contact is a user ID in the current context. */
     protected abstract boolean isUserId(String jid);
 
     private void subscribePresence() {
