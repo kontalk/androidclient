@@ -59,6 +59,12 @@
         android:text="@string/group_info_members"
         style="?android:attr/listSeparatorTextViewStyle" />
 
+    <Button android:id="@+id/btn_ignore_all"
+        android:text="@string/group_info_ignore_all"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
     <ListView android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

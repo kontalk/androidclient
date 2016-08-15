@@ -78,6 +78,7 @@ public class GroupInfoFragment extends ActionModeListFragment
     private TextView mTitle;
     private Button mSetSubject;
     private Button mLeave;
+    private Button mIgnoreAll;
     private MenuItem mRemoveMenu;
     private MenuItem mComposeMenu;
 
@@ -108,12 +109,18 @@ public class GroupInfoFragment extends ActionModeListFragment
         mLeave.setEnabled(isMember);
 
         // load members
+        boolean showIgnoreAll = false;
         // TODO sort by display name
         String[] members = getGroupMembers();
         mMembersAdapter.clear();
         for (String jid : members) {
-            mMembersAdapter.add(jid);
+            Contact c = Contact.findByUserId(getContext(), jid);
+            if (c.getTrustedLevel() == MyUsers.Keys.TRUST_UNKNOWN)
+                showIgnoreAll = true;
+            mMembersAdapter.add(c);
         }
+
+        mIgnoreAll.setVisibility(showIgnoreAll ? View.VISIBLE : View.GONE);
 
         mMembersAdapter.notifyDataSetChanged();
         updateUI();
@@ -192,6 +199,26 @@ public class GroupInfoFragment extends ActionModeListFragment
                             reload();
                         }
                     })
+                    .show();
+            }
+        });
+        mIgnoreAll = (Button) view.findViewById(R.id.btn_ignore_all);
+        mIgnoreAll.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new MaterialDialog.Builder(getContext())
+                    .title(R.string.title_ignore_all_identities)
+                    .content(R.string.msg_ignore_all_identities)
+                    .positiveText(android.R.string.ok)
+                    .positiveColorRes(R.color.button_danger)
+                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            mMembersAdapter.ignoreAll();
+                            reload();
+                        }
+                    })
+                    .negativeText(android.R.string.cancel)
                     .show();
             }
         });
@@ -458,7 +485,7 @@ public class GroupInfoFragment extends ActionModeListFragment
 
     private static final class GroupMembersAdapter extends BaseAdapter {
         private final Context mContext;
-        private List<String> mMembers;
+        private final List<Contact> mMembers;
 
         private GroupMembersAdapter(Context context) {
             mContext = context;
@@ -469,8 +496,8 @@ public class GroupInfoFragment extends ActionModeListFragment
             mMembers.clear();
         }
 
-        public void add(String jid) {
-            mMembers.add(jid);
+        public void add(Contact contact) {
+            mMembers.add(contact);
         }
 
         @Override
@@ -507,9 +534,20 @@ public class GroupInfoFragment extends ActionModeListFragment
 
         private void bindView(View v, int position) {
             ContactsListItem view = (ContactsListItem) v;
-            String jid = (String) getItem(position);
-            Contact contact = Contact.findByUserId(mContext, jid);
+            Contact contact = (Contact) getItem(position);
             view.bind(mContext, contact);
+        }
+
+        public void ignoreAll() {
+            synchronized (mMembers) {
+                for (Contact c : mMembers) {
+                    if (c.getTrustedLevel() == MyUsers.Keys.TRUST_UNKNOWN) {
+                        String fingerprint = c.getFingerprint();
+                        Keyring.setTrustLevel(mContext, c.getJID(), fingerprint, MyUsers.Keys.TRUST_IGNORED);
+                        Contact.invalidate(c.getJID());
+                    }
+                }
+            }
         }
 
     }
