@@ -512,4 +512,6 @@
 
     <string name="warning_public_key_group_unverified">De identiteit van sommige groepsleden is niet geverifieerd.</string>
 
+    <string name="group_info_ignore_all">Negeer alle</string>
+    <string name="title_ignore_all_identities">Negeer alle identiteiten?</string>
     </resources>
