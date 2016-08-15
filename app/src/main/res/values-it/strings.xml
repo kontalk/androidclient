@@ -72,7 +72,7 @@
   <string name="title_message_options">Opzioni messaggio</string>
   <string name="menu_message_details">Dettagli</string>
   <string name="title_message_details">Dettagli messaggio</string>
-  <string name="message_type_label">Type:\u0020</string>
+  <string name="message_type_label">"Tipo: "</string>
   <string name="text_message">Messaggio di testo</string>
   <string name="image_message">Immagine</string>
   <string name="audio_message">Messaggio vocale</string>
