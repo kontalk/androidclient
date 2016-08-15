@@ -89,13 +89,18 @@ public class NotificationFragment extends RootPreferenceFragment {
                         res.getColor(R.color.yellow_light), res.getColor(R.color.red_light),
                 };
 
-                new ColorChooserDialog.Builder((PreferencesActivity) getActivity(),
+                try {
+                    new ColorChooserDialog.Builder((PreferencesActivity) getActivity(),
                         R.string.pref_notification_led_color)
                         .customColors(ledColors, null)
                         .preselect(Preferences.getNotificationLEDColor(getContext()))
                         .allowUserColorInput(false)
                         .dynamicButtonColor(false)
                         .show();
+                }
+                catch (IllegalStateException e) {
+                    // fragment is being destroyed - ignore
+                }
                 return true;
             }
         });
