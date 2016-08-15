@@ -502,6 +502,8 @@
     <string name="msg_ignore_all_identities">All unverified identities will be marked as ignored.</string>
     <string name="learn_more">Learn more</string>
 
+    <string name="text_group_command_fallback">This is a group chat message. You\'re using an old version of Kontalk or your client doesn\'t support the group chat protocol. Please upgrade to the latest version!</string>
+
     <string name="title_huawei_protected_apps">Huawei Protected Apps</string>
     <string name="msg_huawei_protected_apps">Kontalk requires to be enabled in Protected Apps to function properly.</string>
     <string name="btn_huawei_protected_apps">Protected Apps</string>

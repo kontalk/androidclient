@@ -26,6 +26,7 @@ import org.jivesoftware.smack.sm.StreamManagementException;
 import android.net.Uri;
 
 import org.kontalk.Log;
+import org.kontalk.R;
 import org.kontalk.client.GroupExtension;
 import org.kontalk.client.KontalkGroupManager;
 import org.kontalk.client.XMPPTCPConnection;
@@ -81,6 +82,12 @@ public class KontalkGroupController implements GroupController<Message> {
         }
         else if (command instanceof InfoCommand) {
             group.groupInfo(packet);
+        }
+
+        // add a fallback body for clients not supporting our protocol
+        if (!(command instanceof InfoCommand) && ((Message) packet).getBody() == null) {
+            ((Message) packet).setBody(mInstance.getResources()
+                .getString(R.string.text_group_command_fallback));
         }
 
         return (Message) packet;
