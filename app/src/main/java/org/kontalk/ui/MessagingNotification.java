@@ -209,7 +209,7 @@ public class MessagingNotification {
         final String paused = sPaused;
         if (paused != null) {
             query += " AND " + CommonColumns.PEER + " <> ? AND " +
-                Groups.GROUP_JID + " <> ?";
+                "(" + Groups.GROUP_JID + " IS NULL OR " + Groups.GROUP_JID + " <> ?)";
             args = new String[] { paused, paused };
         }
 
