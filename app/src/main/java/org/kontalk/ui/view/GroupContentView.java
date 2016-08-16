@@ -62,7 +62,7 @@ public class GroupContentView extends TextView
         if (component.isCreateCommand()) {
             text = new StringBuilder();
             ((StringBuilder) text).append(getResources().getString(R.string.group_command_create));
-            for (String member : component.getExistingMembers()) {
+            for (String member : component.getCreateMembers()) {
                 // TODO use something more "colorful"
                 ((StringBuilder) text).append("\n");
 

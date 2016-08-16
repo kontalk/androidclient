@@ -115,7 +115,7 @@ public class GroupCommandComponent extends MessageComponent<GroupExtension> {
         for (int i = 0; i < members.size(); i++) {
             GroupExtension.Member user = members.get(i);
             // exclude own JID from the list
-            if (user.operation == operation && !user.jid.equalsIgnoreCase(mOwnJid))
+            if (user.operation == operation)
                 output.add(user.jid);
         }
         return output.toArray(new String[output.size()]);
