@@ -70,14 +70,14 @@ public class HTPPFileUploadConnection implements UploadConnection {
     }
 
     @Override
-    public String upload(Uri uri, long length, String mime, boolean encrypt, String to, ProgressListener listener) throws IOException {
+    public String upload(Uri uri, long length, String mime, boolean encrypt, String[] to, ProgressListener listener) throws IOException {
         InputStream inMessage = null;
         try {
             inMessage = mContext.getContentResolver().openInputStream(uri);
 
             // http request!
             boolean acceptAnyCertificate = Preferences.getAcceptAnyCertificate(mContext);
-            currentRequest = prepareMessage(length, mime, true, acceptAnyCertificate);
+            currentRequest = prepareMessage(length, mime, acceptAnyCertificate);
 
             // execute!
             ProgressInputStreamEntity entity = new ProgressInputStreamEntity(inMessage, this, listener);
@@ -111,7 +111,7 @@ public class HTPPFileUploadConnection implements UploadConnection {
         return ie;
     }
 
-    private void setupClient(HttpsURLConnection conn, long length, String mime, boolean encrypted, boolean acceptAnyCertificate)
+    private void setupClient(HttpsURLConnection conn, long length, String mime, boolean acceptAnyCertificate)
         throws CertificateException, UnrecoverableKeyException,
         NoSuchAlgorithmException, KeyStoreException,
         KeyManagementException, NoSuchProviderException,
@@ -135,13 +135,13 @@ public class HTPPFileUploadConnection implements UploadConnection {
     }
 
     /** A message posting method. */
-    private HttpsURLConnection prepareMessage(long length, String mime, boolean encrypted, boolean acceptAnyCertificate)
+    private HttpsURLConnection prepareMessage(long length, String mime, boolean acceptAnyCertificate)
             throws IOException {
 
         // create uri
         HttpsURLConnection conn = (HttpsURLConnection) new URL(mUrl).openConnection();
         try {
-            setupClient(conn, length, mime, encrypted, acceptAnyCertificate);
+            setupClient(conn, length, mime, acceptAnyCertificate);
         }
         catch (Exception e) {
             throw new IOException("error setting up SSL connection", e);
