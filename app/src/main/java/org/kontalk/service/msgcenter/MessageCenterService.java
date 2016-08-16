@@ -2104,7 +2104,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         boolean retrying = data.getBoolean("org.kontalk.message.retrying");
 
-        String groupJid = data.getString("org.kontalk.message.group.jid");
+        final String groupJid = data.getString("org.kontalk.message.group.jid");
         String to;
         // used for verifying isPaused()
         String convJid;
@@ -2171,7 +2171,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     // encrypt the file if necessary
                     if (encrypt) {
                         InputStream in = getContentResolver().openInputStream(preMediaUri);
-                        File encrypted = MessageUtils.encryptFile(this, in, to);
+                        File encrypted = MessageUtils.encryptFile(this, in, toGroup);
                         fileLength = encrypted.length();
                         preMediaUri = Uri.fromFile(encrypted);
                     }
@@ -2197,6 +2197,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 // media message - start upload service
                 final String uploadTo = to;
+                final String[] uploadGroupTo = toGroup;
                 uploadService.getPostUrl(filename, fileLength, mime, new IUploadService.UrlCallback() {
                     @Override
                     public void callback(String putUrl, String getUrl) {
@@ -2214,7 +2215,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         i.putExtra(UploadService.EXTRA_PREVIEW_PATH, previewPath);
                         // delete original (actually it's the encrypted temp file) if we already encrypted it
                         i.putExtra(UploadService.EXTRA_DELETE_ORIGINAL, encrypt);
-                        i.putExtra(UploadService.EXTRA_USER, uploadTo);
+                        i.putExtra(UploadService.EXTRA_USER, groupJid != null ? uploadGroupTo : uploadTo);
+                        if (groupJid != null)
+                            i.putExtra(UploadService.EXTRA_GROUP, groupJid);
                         startService(i);
                     }
                 });
@@ -2790,7 +2793,26 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
-    // TODO group version
+    public static void sendGroupUploadedMedia(final Context context, String groupJid, String[] to,
+        String mime, Uri localUri, long length, String previewPath, String fetchUrl,
+        boolean encrypt, long msgId, String packetId) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_MESSAGE);
+        i.putExtra("org.kontalk.message.msgId", msgId);
+        i.putExtra("org.kontalk.message.packetId", packetId);
+        i.putExtra("org.kontalk.message.mime", mime);
+        i.putExtra("org.kontalk.message.group.jid", groupJid);
+        i.putExtra("org.kontalk.message.to", to);
+        i.putExtra("org.kontalk.message.preview.uri", localUri.toString());
+        i.putExtra("org.kontalk.message.length", length);
+        i.putExtra("org.kontalk.message.preview.path", previewPath);
+        i.putExtra("org.kontalk.message.body", fetchUrl);
+        i.putExtra("org.kontalk.message.fetch.url", fetchUrl);
+        i.putExtra("org.kontalk.message.encrypt", encrypt);
+        i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
+        context.startService(i);
+    }
+
     public static void sendUploadedMedia(final Context context, String to,
             String mime, Uri localUri, long length, String previewPath, String fetchUrl,
             boolean encrypt, long msgId, String packetId) {

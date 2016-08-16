@@ -62,7 +62,7 @@ public class UploadService extends IntentService implements ProgressListener {
     private static final String TAG = MessageCenterService.TAG;
 
     /** A map to avoid duplicate uploads. */
-    private static final Map<String, Long> queue = new LinkedHashMap<String, Long>();
+    private static final Map<String, Long> queue = new LinkedHashMap<>();
 
     public static final String ACTION_UPLOAD = "org.kontalk.action.UPLOAD";
     public static final String ACTION_UPLOAD_ABORT = "org.kontalk.action.UPLOAD_ABORT";
@@ -75,8 +75,10 @@ public class UploadService extends IntentService implements ProgressListener {
     public static final String EXTRA_POST_URL = "org.kontalk.upload.POST_URL";
     /** URL to fetch from. Use with ACTION_UPLOAD. */
     public static final String EXTRA_GET_URL = "org.kontalk.upload.GET_URL";
-    /** User to send to. */
+    /** User(s) to send to. */
     public static final String EXTRA_USER = "org.kontalk.upload.USER";
+    /** Group JID. */
+    public static final String EXTRA_GROUP = "org.kontalk.upload.GROUP";
     /** Media MIME type. */
     public static final String EXTRA_MIME = "org.kontalk.upload.MIME";
     /** Preview file path. */
@@ -152,8 +154,16 @@ public class UploadService extends IntentService implements ProgressListener {
         String url = intent.getStringExtra(EXTRA_POST_URL);
         // url to fetch from (will be requested to the connection if null)
         String fetchUrl = intent.getStringExtra(EXTRA_GET_URL);
-        // user to send message to
-        String to = intent.getStringExtra(EXTRA_USER);
+        // group JID
+        String groupJid = intent.getStringExtra(EXTRA_GROUP);
+        // user(s) to send message to
+        String[] to;
+        if (groupJid != null) {
+            to = intent.getStringArrayExtra(EXTRA_USER);
+        }
+        else {
+            to = new String[] { intent.getStringExtra(EXTRA_USER) };
+        }
         // media mime type
         String mime = intent.getStringExtra(EXTRA_MIME);
         // preview file path
@@ -192,9 +202,14 @@ public class UploadService extends IntentService implements ProgressListener {
             MessagesProvider.uploaded(this, databaseId, mediaUrl);
 
             // send message with fetch url to server
-            // TODO group version
-            MessageCenterService.sendUploadedMedia(this, to, mime, file, length,
-                previewPath, mediaUrl, encrypt, databaseId, msgId);
+            if (groupJid != null) {
+                MessageCenterService.sendGroupUploadedMedia(this, groupJid, to,
+                    mime, file, length, previewPath, mediaUrl, encrypt, databaseId, msgId);
+            }
+            else {
+                MessageCenterService.sendUploadedMedia(this, to[0], mime, file, length,
+                    previewPath, mediaUrl, encrypt, databaseId, msgId);
+            }
 
             // end operations
             completed();

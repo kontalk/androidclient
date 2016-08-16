@@ -48,6 +48,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.KontalkGroupManager;
 import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
+import org.kontalk.data.Conversation;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Groups;
@@ -237,12 +238,20 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     }
 
     /**
-     * Since this is a group chat, it can be only opened from within the app.
-     * No ACTION_VIEW_USERID intent ever will be delivered for this.
+     * Used only during activity restore.
      */
     @Override
     protected void handleActionViewConversation(Uri uri, Bundle args) {
-        throw new AssertionError("This shouldn't be called ever!");
+        mGroupJID = uri.getPathSegments().get(1);
+        mConversation = Conversation.loadFromUserId(getActivity(), mGroupJID);
+        // unlikely, but better safe than sorry
+        if (mConversation == null) {
+            Log.i(TAG, "conversation for " + mGroupJID + " not found - exiting");
+            getActivity().finish();
+        }
+
+        setThreadId(mConversation.getThreadId());
+        mUserName = mGroupJID;
     }
 
     @Override

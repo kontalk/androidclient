@@ -551,11 +551,11 @@ public final class MessageUtils {
         return StringUtils.randomString(30);
     }
 
-    public static File encryptFile(Context context, InputStream in, String user)
+    public static File encryptFile(Context context, InputStream in, String[] users)
             throws GeneralSecurityException, IOException, PGPException {
         PersonalKey key = Kontalk.get(context).getPersonalKey();
         EndpointServer server = Preferences.getEndpointServer(context);
-        Coder coder = Keyring.getEncryptCoder(context, server, key, new String[] { user });
+        Coder coder = Keyring.getEncryptCoder(context, server, key, users);
         // create a temporary file to store encrypted data
         File temp = File.createTempFile("media", null, context.getCacheDir());
         FileOutputStream out = new FileOutputStream(temp);

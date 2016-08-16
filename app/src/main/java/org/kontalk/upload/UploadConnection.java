@@ -33,7 +33,7 @@ public interface UploadConnection {
 
     public void abort();
 
-    public String upload(Uri uri, long length, String mime, boolean encrypt, String to, ProgressListener listener)
+    public String upload(Uri uri, long length, String mime, boolean encrypt, String[] to, ProgressListener listener)
         throws IOException;
 
 }

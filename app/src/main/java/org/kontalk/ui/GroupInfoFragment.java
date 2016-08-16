@@ -306,7 +306,7 @@ public class GroupInfoFragment extends ActionModeListFragment
         List<String> users = new LinkedList<>();
         for (int i = 0, c = mMembersAdapter.getCount(); i < c; ++i) {
             if (checked.get(i))
-                users.add((String) mMembersAdapter.getItem(i));
+                users.add(((Contact) mMembersAdapter.getItem(i)).getJID());
         }
         // TODO create group with users
     }

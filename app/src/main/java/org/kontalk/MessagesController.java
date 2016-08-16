@@ -191,7 +191,7 @@ public class MessagesController {
 
             // group creation
             if (group.isCreateCommand()) {
-                added = group.getExistingMembers();
+                added = group.getCreateMembers();
             }
 
             // add/remove users
