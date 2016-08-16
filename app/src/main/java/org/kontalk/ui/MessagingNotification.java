@@ -213,7 +213,6 @@ public class MessagingNotification {
             args = new String[] { paused, paused };
         }
 
-        // TODO we need the group subject to correctly notify group messages (e.g. alice @ team: hey buddy!)
         Cursor c = res.query(uri, proj, query, args, order);
 
         // this shouldn't happen, but who knows...
@@ -260,6 +259,8 @@ public class MessagingNotification {
                 }
 
                 String textContent;
+
+                // FIXME does not handle group commands correctly
 
                 boolean encrypted = c.getInt(4) != 0;
                 if (encrypted) {
