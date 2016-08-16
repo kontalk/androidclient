@@ -509,4 +509,11 @@
     <string name="trust_ignored">Ignorado</string>
     <string name="trust_verified">Verificado</string>
 
+    <string name="warning_public_key_group_unverified">La identidad de algunos miembros del grupo no ha sido verificada.</string>
+
+    <string name="group_info_ignore_all">Ignorar todo</string>
+    <string name="title_ignore_all_identities">¿Ignorar todas las identidades?</string>
+    <string name="msg_ignore_all_identities">Todas las identidades no verificadas se marcarán como ignoradas.</string>
+    <string name="text_group_command_fallback">Este es un chat de grupo. Estás usando una versión vieja de Kontalk o tu cliente no soporta el protocolo de chat grupal. ¡Por favor actualiza a la última versión!</string>
+
     </resources>
