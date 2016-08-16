@@ -514,4 +514,9 @@
     <string name="trust_ignored">Ignorovaný</string>
     <string name="trust_verified">Ověřený</string>
 
+    <string name="group_info_ignore_all">Ignorovat vše</string>
+    <string name="title_ignore_all_identities">Ignorovat všechny identity?</string>
+    <string name="msg_ignore_all_identities">Všechny neověřené identity budou označeny jako ignorované.</string>
+    <string name="text_group_command_fallback">Toto je zpráva skupinové konverzace. Používáte starou verzi Kontalku nebo váš klient nepodporuje protokol skupinové konverzace. Upradujte prosím na aktuální verzi!</string>
+
     </resources>
