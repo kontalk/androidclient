@@ -513,4 +513,9 @@
 
     <string name="warning_public_key_group_unverified">Die Identität einiger Gruppenmitglieder wurde nicht überprüft.</string>
 
+    <string name="group_info_ignore_all">Alle ignorieren</string>
+    <string name="title_ignore_all_identities">Alle Identitäten ignorieren?</string>
+    <string name="msg_ignore_all_identities">Alle ungeprüften Identitäten werden als ignoriert gekennzeichnet.</string>
+    <string name="text_group_command_fallback">Das ist eine Gruppenchat-Nachricht. Sie verwenden eine alte Kontalk-Version, oder Ihr Client unterstützt das Gruppenchat-Protokoll nicht. Aktualisieren Sie bitte auf die letzte Version!</string>
+
     </resources>
