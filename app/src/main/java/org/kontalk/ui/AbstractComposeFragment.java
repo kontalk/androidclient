@@ -1361,8 +1361,10 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         out.putInt("mediaPlayerStatus", mMediaPlayerStatus);
     }
 
+    /** Handles ACTION_VIEW intents. */
     protected abstract void handleActionView(Uri uri);
 
+    /** Handles ACTION_VIEW_USERID intents: providing the user ID/JID. */
     protected abstract void handleActionViewConversation(Uri uri, Bundle args);
 
     private void processArguments(Bundle savedInstanceState) {
