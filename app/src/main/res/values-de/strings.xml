@@ -518,4 +518,11 @@
     <string name="msg_ignore_all_identities">Alle ungeprüften Identitäten werden als ignoriert markiert.</string>
     <string name="text_group_command_fallback">Das ist eine Gruppenchat-Nachricht. Sie verwenden eine alte Kontalk-Version, oder Ihr Client unterstützt das Gruppenchat-Protokoll nicht. Aktualisieren Sie bitte auf die letzte Version!</string>
 
+    <plurals name="notification_more">
+	<item quantity="one">+1 mehr</item>
+	<item quantity="other">+%d mehr</item>
+</plurals>
+
+    <string name="notification_group_title">%1$s @ %2$s</string>
+
     </resources>
