@@ -516,4 +516,11 @@
     <string name="trust_ignored">Ignorato</string>
     <string name="trust_verified">Verificato</string>
 
+    <string name="notification_group_title">%1$s @ %2$s</string>
+
+    <plurals name="notification_more">
+	<item quantity="one">+ un altro</item>
+	<item quantity="other">+ altri %d</item>
+</plurals>
+
     </resources>
