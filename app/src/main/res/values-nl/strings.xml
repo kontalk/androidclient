@@ -515,4 +515,13 @@
     <string name="group_info_ignore_all">Negeer alle</string>
     <string name="title_ignore_all_identities">Negeer alle identiteiten?</string>
     <string name="msg_ignore_all_identities">Alle niet geverifieerde identiteiten zullen als genegeerd gemarkeerd worden.</string>
+    <string name="text_group_command_fallback">Dit is een bericht van een groepsgesprek. Je gebruikt een oude versie van Kontalk of deze client ondersteund het protocol voor groepsgesprekken niet. Update a.u.b. naar de nieuwste versie!</string>
+
+    <string name="notification_group_title">%1$s @ %2$s</string>
+
+    <plurals name="notification_more">
+	<item quantity="one">+1 meer</item>
+	<item quantity="other">+%d meer</item>
+</plurals>
+
     </resources>
