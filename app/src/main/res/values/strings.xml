@@ -518,7 +518,6 @@
 
     <!-- "one" is not used actually, but we keep the translation system quiet this way -->
     <plurals name="unread_messages">
-        <item quantity="one">1 unread message</item>
         <item quantity="other">%d unread messages</item>
     </plurals>
 
