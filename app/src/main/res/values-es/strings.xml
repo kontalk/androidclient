@@ -445,7 +445,7 @@
     <string name="msg_public_key_unknown_warning">¡Por favor verifique con el usuario que su huella digital coincide con la mostrada en el diálogo <b>identidad</b>, de lo contrario la comunicación podría estar comprometida!</string>
 
     <string name="pref_media_autodownload_threshold">Límite de descarga automática</string>
-    <string name="pref_title_media_autodownload_threshold">Archivos más pequeños que este tamaño se descargarán siempre automáticamente</string>
+    <string name="pref_title_media_autodownload_threshold">Los archivos inferiores a este tamaño se descargan siempre automáticamente</string>
     <string name="pref_msg_media_autodownload_threshold">Introduce un valor en KB. Establecer a 0 para no descargar nunca automáticamente.</string>
 
     <string name="pref_media_autodownload">Descargar automáticamente</string>
@@ -498,7 +498,7 @@
     <string name="group_command_text_part_self">Dejaste este grupo</string>
     <string name="chooser_error_no_audioplayer_app">No hay aplicación de audio disponible.</string>
 
-    <string name="chooser_error_no_app">No hay aplicación disponible para abrir el archivo.</string>
+    <string name="chooser_error_no_app">No hay niguna aplicación apropiada para abrir el archivo.</string>
 
     <string name="button_ignore">Ignorar</string>
     <string name="title_identity">Identidad</string>
