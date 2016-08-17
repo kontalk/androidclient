@@ -496,4 +496,8 @@
     <string name="confirm_will_leave_group">Vostè no serà capaç d\'entrar en aquest grup de nou després de sortir.</string>
 
     <string name="group_command_text_part_self">Vas deixar aquest grup</string>
+    <string name="chooser_error_no_app">No hi ha cap aplicació adient per a obrir l\'arxiu.</string>
+
+    <string name="button_ignore">Ignorar</string>
+    <string name="title_identity">Identitat</string>
     </resources>
