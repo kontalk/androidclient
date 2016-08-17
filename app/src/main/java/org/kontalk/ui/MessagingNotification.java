@@ -391,7 +391,7 @@ public class MessagingNotification {
 
                 // text
                 text = (unread > 1) ?
-                    context.getString(R.string.unread_messages, unread)
+                    context.getResources().getQuantityString(R.plurals.unread_messages, unread, unread)
                     : content;
 
                 PendingIntent callPendingIntent = null;
@@ -770,7 +770,7 @@ public class MessagingNotification {
         /** Returns the text that should be used as the notification text. */
         public String getText() {
             return (unreadCount > 1) ?
-                    mContext.getString(R.string.unread_messages, unreadCount)
+                    mContext.getResources().getQuantityString(R.plurals.unread_messages, unreadCount, unreadCount)
                     : conversation.content;
         }
 
