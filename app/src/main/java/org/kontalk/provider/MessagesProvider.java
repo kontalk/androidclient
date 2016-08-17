@@ -1339,7 +1339,7 @@ public class MessagesProvider extends ContentProvider {
                 String where = Messages.THREAD_ID + " = " + threadId;
                 String[] args = null;
                 if (keepGroup) {
-                    where += " AND " + Messages.BODY_MIME + " <> ?";
+                    where += " AND (" + Messages.BODY_MIME + " <> ? OR " + Messages.BODY_MIME + " IS NULL)";
                     args = new String[] { GroupCommandComponent.MIME_TYPE };
                 }
                 num += db.delete(TABLE_MESSAGES, where, args);
