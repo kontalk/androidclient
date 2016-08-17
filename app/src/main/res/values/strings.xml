@@ -517,7 +517,8 @@
     <string name="notification_group_title">%1$s @ %2$s</string>
 
     <plurals name="unread_messages">
-        <!-- not used for "one" -->
+        <!-- "one" is not used actually, but we keep the translation system quiet this way -->
+        <item quantity="one">1 unread message</item>
         <item quantity="other">%d unread messages</item>
     </plurals>
 
