@@ -52,6 +52,7 @@ import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
@@ -84,6 +85,7 @@ public class MessagingNotification {
     {
         Messages.THREAD_ID,
         CommonColumns.PEER,
+        Messages.BODY_MIME,
         Messages.BODY_CONTENT,
         Messages.ATTACHMENT_MIME,
         CommonColumns.ENCRYPTED,
@@ -241,10 +243,11 @@ public class MessagingNotification {
                 // thread_id for PendingIntent
                 id = c.getLong(0);
                 peer = c.getString(1);
-                byte[] content = c.getBlob(2);
-                String attMime = c.getString(3);
-                String groupJid = c.getString(5);
-                String groupSubject = c.getString(6);
+                String mime = c.getString(2);
+                byte[] content = c.getBlob(3);
+                String attMime = c.getString(4);
+                String groupJid = c.getString(6);
+                String groupSubject = c.getString(7);
 
                 // store conversation id for intents
                 conversationIds.add(ContentUris.withAppendedId(Threads.CONTENT_URI, id));
@@ -260,9 +263,7 @@ public class MessagingNotification {
 
                 String textContent;
 
-                // FIXME does not handle group commands correctly
-
-                boolean encrypted = c.getInt(4) != 0;
+                boolean encrypted = c.getInt(5) != 0;
                 if (encrypted) {
                     textContent = context.getString(R.string.text_encrypted);
                 }
@@ -271,6 +272,15 @@ public class MessagingNotification {
                 }
                 else {
                     textContent = content != null ? new String(content) : "";
+                    if (GroupCommandComponent.supportsMimeType(mime)) {
+                        try {
+                            textContent = GroupCommandComponent.getTextContent(context, textContent, true);
+                        }
+                        catch (UnsupportedOperationException e) {
+                            // TODO using another string
+                            textContent = context.getString(R.string.peer_unknown);
+                        }
+                    }
                 }
 
                 ((StringBuilder) b.allContent).append(textContent);
@@ -288,7 +298,7 @@ public class MessagingNotification {
                 style = new InboxStyle();
 
                 // ticker: "X unread messages"
-                ticker = context.getString(R.string.unread_messages, unread);
+                ticker = context.getResources().getQuantityString(R.plurals.unread_messages, unread, unread);
 
                 // title
                 title = ticker;
@@ -336,11 +346,14 @@ public class MessagingNotification {
                     text = "(unknown users)";
 
                 String summary;
-                if (count > 5)
-                    // TODO i18n
-                    summary = "+" + (convs.size() - count) + " more";
-                else
+                if (count > 5) {
+                    int moreCount = convs.size() - count;
+                    summary = context.getResources()
+                        .getQuantityString(R.plurals.notification_more, moreCount, moreCount);
+                }
+                else {
                     summary = account.name;
+                }
 
                 ((InboxStyle) style).setSummaryText(summary);
             }
@@ -361,8 +374,9 @@ public class MessagingNotification {
                     context.getString(R.string.peer_unknown);
 
                 if (conv.groupJid != null) {
-                    name += " @ " + (TextUtils.isEmpty(conv.groupSubject) ?
-                        context.getString(R.string.group_untitled) : conv.groupSubject);
+                    name = context.getResources().getString(R.string.notification_group_title,
+                        name, (TextUtils.isEmpty(conv.groupSubject) ?
+                            context.getString(R.string.group_untitled) : conv.groupSubject));
                 }
 
                 SpannableStringBuilder buf = new SpannableStringBuilder();
@@ -439,25 +453,32 @@ public class MessagingNotification {
         }
 
         else {
-            // TODO support for group messages
-
             // loop all threads and accumulate them
             MessageAccumulator accumulator = new MessageAccumulator(context);
             while (c.moveToNext()) {
                 long threadId = c.getLong(0);
+                String mime = c.getString(2);
                 String content = c.getString(3);
                 boolean encrypted = c.getInt(4) != 0;
 
-                if (encrypted)
+                if (encrypted) {
                     content = context.getString(R.string.text_encrypted);
-                else if (content == null)
-                    content = CompositeMessage.getSampleTextContent(c.getString(2));
+                }
+                else if (content == null) {
+                    content = CompositeMessage.getSampleTextContent(mime);
+                }
+                else if (GroupCommandComponent.supportsMimeType(mime)) {
+                    content = GroupCommandComponent.getTextContent(context, content, true);
+                }
 
                 accumulator.accumulate(
                     threadId,
                     c.getString(1),
                     content,
-                    c.getInt(5)
+                    c.getInt(5),
+                    // group data
+                    c.getString(6),
+                    c.getString(7)
                 );
                 conversationIds.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
             }
@@ -658,6 +679,8 @@ public class MessagingNotification {
             public long id;
             public String peer;
             public String content;
+            public String groupJid;
+            public String groupSubject;
         }
 
         private ConversationStub conversation;
@@ -671,7 +694,7 @@ public class MessagingNotification {
         }
 
         /** Adds a conversation thread to the accumulator. */
-        public void accumulate(long id, String peer, String content, int unread) {
+        public void accumulate(long id, String peer, String content, int unread, String groupJid, String groupSubject) {
             // check old accumulated conversation
             if (conversation != null) {
                 if (!conversation.peer.equalsIgnoreCase(peer))
@@ -686,6 +709,8 @@ public class MessagingNotification {
             conversation.id = id;
             conversation.peer = peer;
             conversation.content = content;
+            conversation.groupJid = groupJid;
+            conversation.groupSubject = groupSubject;
 
             unreadCount += unread;
         }
@@ -705,6 +730,13 @@ public class MessagingNotification {
                 mContext.getString(R.string.peer_unknown);
                 // debug mode -- conversation.peer;
 
+            // append group subject to contact name if any
+            if (conversation.groupJid != null) {
+                peer = mContext.getResources().getString(R.string.notification_group_title,
+                    peer, (TextUtils.isEmpty(conversation.groupSubject) ?
+                        mContext.getString(R.string.group_untitled) : conversation.groupSubject));
+            }
+
             SpannableStringBuilder buf = new SpannableStringBuilder();
             buf.append(peer).append(':').append(' ');
             buf.setSpan(new StyleSpan(Typeface.BOLD), 0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -720,9 +752,18 @@ public class MessagingNotification {
             }
             else {
                 cacheContact();
-                return (mContact != null) ? mContact.getName() :
+                String peer = (mContact != null) ? mContact.getName() :
                     mContext.getString(R.string.peer_unknown);
                     // debug mode -- conversation.peer;
+
+                // append group subject to contact name if any
+                if (conversation.groupJid != null) {
+                    peer = mContext.getResources().getString(R.string.notification_group_title,
+                        peer, (TextUtils.isEmpty(conversation.groupSubject) ?
+                            mContext.getString(R.string.group_untitled) : conversation.groupSubject));
+                }
+
+                return peer;
             }
         }
 

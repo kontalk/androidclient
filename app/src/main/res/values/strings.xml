@@ -73,7 +73,6 @@
     <string name="confirm_will_delete_thread">The entire chat will be deleted.</string>
     <string name="confirm_will_delete_threads">The selected chats will be deleted.</string>
     <string name="new_messages">New messages</string>
-    <string name="unread_messages">%d unread messages</string>
     <string name="only_one_account_supported">Only one Kontalk account is supported.</string>
     <string name="hint_enter_text">Enter your text here</string>
     <string name="hint_type_to_compose">Type to compose</string>
@@ -513,6 +512,19 @@
     <string name="trust_unknown">Not verified</string>
     <string name="trust_ignored">Ignored</string>
     <string name="trust_verified">Verified</string>
+
+    <!-- contact name, group subject -->
+    <string name="notification_group_title">%1$s @ %2$s</string>
+
+    <plurals name="unread_messages">
+        <!-- not used for "one" -->
+        <item quantity="other">%d unread messages</item>
+    </plurals>
+
+    <plurals name="notification_more">
+        <item quantity="one">+1 more</item>
+        <item quantity="other">+%d more</item>
+    </plurals>
 
     <plurals name="context_selected">
         <item quantity="one">1 selected</item>
