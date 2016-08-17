@@ -493,7 +493,7 @@
 
     <string name="group_command_text_create">O grupo foi criado</string>
     <string name="group_command_text_subject">O título do grupo foi alterado</string>
-    <string name="group_command_text_part">Alguém saiu do grupo</string>
+    <string name="group_command_text_part">Alguém saiu deste grupo</string>
     <string name="group_command_text_add_remove">Alguém foi adicionado ou removido</string>
 
     <string name="groupinfo_activity_title">Informações do grupo</string>
@@ -509,4 +509,30 @@
 </plurals>
 
 
-</resources>
+<string name="chooser_error_no_app">Não existe nenhum aplicativo disponível para abrir esse arquivo.</string>
+
+    <string name="button_ignore">Ignorar</string>
+    <string name="title_identity">Identidade</string>
+    <string name="title_identity_self">Identidade (esse é você!)</string>
+
+    <string name="warning_public_key_group_unverified">A identidade de alguns membros do grupo não foi verificada.</string>
+
+    <string name="group_command_text_part_self">Você saiu deste grupo</string>
+    <string name="group_info_ignore_all">Ignorar tudo</string>
+    <string name="title_ignore_all_identities">Ignorar todas as identidades?</string>
+    <string name="msg_ignore_all_identities">Todas as identidades não verificadas serão marcadas como ignoradas.</string>
+    <string name="text_group_command_fallback">Essa é uma mensagem de conversa em grupo. Você está usando uma versão antiga do Kontalk ou o seu cliente não suporta o protocolo de conversa em grupo. Por favor, atualize para a última versão!</string>
+
+    <string name="status_label">"Status: "</string>
+    <string name="trust_unknown">Não verificado</string>
+    <string name="trust_ignored">Ignorado</string>
+    <string name="trust_verified">Verificado</string>
+
+    <string name="notification_group_title">%1$s @ %2$s</string>
+
+    <plurals name="notification_more">
+	<item quantity="one">mais 1</item>
+	<item quantity="other">mais %d</item>
+</plurals>
+
+    </resources>
