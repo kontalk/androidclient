@@ -524,4 +524,8 @@
 	<item quantity="other">+%d meer</item>
 </plurals>
 
+    <string name="menu_create_group">Maak groep</string>
+    <string name="action_compose">Nieuw gesprek</string>
+    <string name="action_compose_group">Nieuwe groep</string>
+
     </resources>
