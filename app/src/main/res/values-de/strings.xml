@@ -525,4 +525,8 @@
 
     <string name="notification_group_title">%1$s @ %2$s</string>
 
+    <string name="menu_create_group">Gruppe erstellen</string>
+    <string name="action_compose">Neue Konversation</string>
+    <string name="action_compose_group">Neue Gruppe</string>
+
     </resources>
