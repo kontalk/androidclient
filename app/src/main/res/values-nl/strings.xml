@@ -172,7 +172,7 @@
   <string name="menu_refresh">Vernieuwen</string>
   <string name="menu_invite">Gebruikers uitnodigen</string>
   <string name="title_error">Fout</string>
-  <string name="msg_do_refresh">Sleep naar beneden om de contactenlijst te vernieuwen.</string>
+  <string name="msg_do_refresh">Gebruik Menu &gt; Verversen om de contactenlijst te verversen.</string>
   <string name="msg_sync_progress">Contacten vernieuwen…</string>
   <string name="err_sync_failed">Kan contacten niet vernieuwen. Probeer het later opnieuw.</string>
   <string name="err_sync_nonetwork">Netwerk niet beschikbaar. Probeer het later opnieuw.</string>
