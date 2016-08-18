@@ -172,7 +172,7 @@
   <string name="menu_refresh">Aktualisieren</string>
   <string name="menu_invite">Nutzer einladen</string>
   <string name="title_error">Fehler</string>
-  <string name="msg_do_refresh">Nach unten ziehen, um die Kontaktliste zu aktualisieren.</string>
+  <string name="msg_do_refresh">\"Menü &gt; Aktualisieren\" benutzen um die Kontaktliste zu aktualisieren.</string>
   <string name="msg_sync_progress">Aktualisiere Kontaktliste…</string>
   <string name="err_sync_failed">Das Aktualisieren der Kontaktliste ist fehlgeschlagen. Bitte versuchen Sie es später noch einmal.</string>
   <string name="err_sync_nonetwork">Das Netzwerk ist nicht erreichbar. Bitte versuchen Sie es später noch einmal.</string>
