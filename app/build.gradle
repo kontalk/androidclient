@@ -139,6 +139,7 @@ dependencies {
     }
     compile 'com.github.castorflex.smoothprogressbar:library:1.1.0'
     compile 'com.nispok:snackbar:2.11.0'
+    compile 'com.github.daniele-athome:FloatingActionButton:-SNAPSHOT'
     compile 'de.hdodenhof:circleimageview:2.0.0'
     compile 'com.github.vlivanov:ListViewVariants:f606578467'
 

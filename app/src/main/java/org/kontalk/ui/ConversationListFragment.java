@@ -22,6 +22,7 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.akalipetis.fragment.ActionModeListFragment;
 import com.akalipetis.fragment.MultiChoiceModeListener;
+import com.github.clans.fab.FloatingActionMenu;
 
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
@@ -62,7 +63,7 @@ public class ConversationListFragment extends ActionModeListFragment
     private ConversationListAdapter mListAdapter;
     private boolean mDualPane;
 
-    private View mAction;
+    private FloatingActionMenu mAction;
     private boolean mActionVisible;
 
     private int mCheckedItemCount;
@@ -84,14 +85,22 @@ public class ConversationListFragment extends ActionModeListFragment
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mAction = view.findViewById(R.id.action);
-        mAction.setOnClickListener(new View.OnClickListener() {
+        mAction = (FloatingActionMenu) view.findViewById(R.id.action);
+        mAction.setClosedOnTouchOutside(true);
+        mActionVisible = true;
+
+        view.findViewById(R.id.action_compose).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                chooseContact();
+            public void onClick(View view) {
+                chooseContact(false);
             }
         });
-        mActionVisible = true;
+        view.findViewById(R.id.action_compose_group).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                chooseContact(true);
+            }
+        });
 
         getListView().setOnScrollListener(new AbsListViewScrollDetector() {
             @Override
@@ -196,6 +205,15 @@ public class ConversationListFragment extends ActionModeListFragment
         return isActionModeActive() || super.onOptionsItemSelected(item);
     }
 
+    public boolean isActionMenuOpen() {
+        return mAction != null && mAction.isOpened();
+    }
+
+    public void closeActionMenu() {
+        if (isActionMenuOpen())
+            mAction.close(true);
+    }
+
     public boolean isActionModeActive() {
         return mCheckedItemCount > 0;
     }
@@ -262,10 +280,10 @@ public class ConversationListFragment extends ActionModeListFragment
             .show();
     }
 
-    public void chooseContact() {
+    public void chooseContact(boolean multiselect) {
         ConversationsActivity parent = getParentActivity();
         if (parent != null)
-            parent.showContactPicker();
+            parent.showContactPicker(multiselect);
     }
 
     public ConversationsActivity getParentActivity() {
@@ -298,6 +316,8 @@ public class ConversationListFragment extends ActionModeListFragment
         super.onStop();
         Contact.unregisterContactChangeListener(this);
         mListAdapter.changeCursor(null);
+        if (isActionMenuOpen())
+            mAction.close(false);
     }
 
     @Override

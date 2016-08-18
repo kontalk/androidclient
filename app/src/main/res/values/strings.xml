@@ -28,6 +28,7 @@
     <string name="no">No</string>
     <string name="send">Send</string>
     <string name="menu_compose">Compose</string>
+    <string name="menu_create_group">Create group</string>
     <string name="menu_delete_all">Delete chats</string>
     <string name="menu_search">Search</string>
     <string name="mykey_activity_title">My personal key</string>
@@ -513,10 +514,13 @@
     <string name="trust_ignored">Ignored</string>
     <string name="trust_verified">Verified</string>
 
+    <string name="action_compose">New conversation</string>
+    <string name="action_compose_group">New group</string>
+
     <!-- contact name, group subject -->
     <string name="notification_group_title">%1$s @ %2$s</string>
 
-    <!-- "one" is not used actually, but we keep the translation system quiet this way -->
+    <!-- "one" is not actually used -->
     <plurals name="unread_messages">
         <item quantity="other">%d unread messages</item>
     </plurals>
