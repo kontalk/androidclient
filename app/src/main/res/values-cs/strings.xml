@@ -519,4 +519,16 @@
     <string name="msg_ignore_all_identities">Všechny neověřené identity budou označeny jako ignorované.</string>
     <string name="text_group_command_fallback">Toto je zpráva skupinové konverzace. Používáte starou verzi Kontalku nebo váš klient nepodporuje protokol skupinové konverzace. Upradujte prosím na aktuální verzi!</string>
 
+    <string name="menu_create_group">Vytvořit skupinu</string>
+    <string name="action_compose">Nová konverzace</string>
+    <string name="action_compose_group">Nová skupina</string>
+
+    <string name="notification_group_title">%1$s @ %2$s</string>
+
+    <plurals name="notification_more">
+	<item quantity="one">+1 více</item>
+	<item quantity="few">+%d více</item>
+	<item quantity="other">+%d více</item>
+</plurals>
+
     </resources>
