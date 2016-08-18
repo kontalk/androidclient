@@ -41,6 +41,8 @@ public class ContactsListActivity extends ToolbarActivity
 
     public static final String TAG = ContactsListActivity.class.getSimpleName();
 
+    public static final String MODE_MULTI_SELECT = "org.kontalk.contacts.MULTI_SELECT";
+
     private ContactsListFragment mFragment;
 
     @Override
@@ -51,8 +53,21 @@ public class ContactsListActivity extends ToolbarActivity
 
         setupToolbar(true);
 
-        mFragment = (ContactsListFragment) getSupportFragmentManager()
+        boolean multiselect = getIntent().getBooleanExtra(MODE_MULTI_SELECT, false);
+        if (multiselect)
+            // FIXME using another string
+            setTitle(R.string.action_compose_group);
+
+        if (savedInstanceState == null) {
+            mFragment = ContactsListFragment.newInstance(multiselect);
+            getSupportFragmentManager().beginTransaction()
+                .add(R.id.fragment_contacts_list, mFragment)
+                .commitAllowingStateLoss();
+        }
+        else {
+            mFragment = (ContactsListFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_contacts_list);
+        }
 
         if (!getIntent().getBooleanExtra("picker", false))
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);

@@ -24,9 +24,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import com.akalipetis.fragment.ActionModeListFragment;
-import com.akalipetis.fragment.MultiChoiceModeListener;
-
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -37,9 +35,9 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
+import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.view.ActionMode;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -65,10 +63,10 @@ import org.kontalk.util.SystemUtils;
 
 
 /** Contacts list selection fragment. */
-public class ContactsListFragment extends ActionModeListFragment implements
+public class ContactsListFragment extends ListFragment implements
         ContactsListAdapter.OnContentChangedListener,
         SwipeRefreshLayout.OnRefreshListener,
-        ContactsSyncer, MultiChoiceModeListener {
+        ContactsSyncer {
 
     private Cursor mCursor;
     private ContactsListAdapter mListAdapter;
@@ -81,7 +79,7 @@ public class ContactsListFragment extends ActionModeListFragment implements
 
     private MenuItem mSyncButton;
 
-    private int mCheckedItemCount;
+    private boolean mMultiselect;
 
     private final RunnableBroadcastReceiver.ActionRunnable mPostSyncAction =
             new RunnableBroadcastReceiver.ActionRunnable() {
@@ -96,10 +94,30 @@ public class ContactsListFragment extends ActionModeListFragment implements
         }
     };
 
+    public static ContactsListFragment newInstance(boolean multiselect) {
+        ContactsListFragment f = new ContactsListFragment();
+        Bundle args = new Bundle();
+        args.putBoolean("multiselect", multiselect);
+        f.setArguments(args);
+        return f;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        if (savedInstanceState == null) {
+            mMultiselect = getArguments().getBoolean("multiselect", false);
+        }
+        else {
+            mMultiselect = savedInstanceState.getBoolean("multiselect", false);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("multiselect", mMultiselect);
     }
 
     @Override
@@ -107,6 +125,8 @@ public class ContactsListFragment extends ActionModeListFragment implements
         return inflater.inflate(R.layout.contacts_list, container, false);
     }
 
+    // lint bug: for setChoiceMode which is actually available in API level 9
+    @SuppressLint("NewApi")
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -117,6 +137,7 @@ public class ContactsListFragment extends ActionModeListFragment implements
             .inflate(R.layout.pinned_header_listview_side_header, list, false);
         list.setPinnedHeaderView(pinnedHeaderView);
         list.setEmptyView(view.findViewById(android.R.id.empty));
+        list.setChoiceMode(mMultiselect ? ListView.CHOICE_MODE_MULTIPLE : ListView.CHOICE_MODE_NONE);
 
         mRefresher = (SwipeRefreshLayout) view.findViewById(R.id.refresher);
         mRefresher.setOnRefreshListener(this);
@@ -149,7 +170,6 @@ public class ContactsListFragment extends ActionModeListFragment implements
 
         mListAdapter.setOnContentChangedListener(this);
         setListAdapter(mListAdapter);
-        setMultiChoiceModeListener(this);
 
         mHandler = new Handler();
         mBroadcastManager = LocalBroadcastManager.getInstance(parent);
@@ -201,17 +221,24 @@ public class ContactsListFragment extends ActionModeListFragment implements
 
         Context ctx = getActivity();
         if (ctx != null)
-            mSyncButton.setVisible(!SyncAdapter.isActive(getActivity()));
+            mSyncButton.setVisible(!SyncAdapter.isActive(getActivity()) && !mMultiselect);
+
+        // multiselect mode needs the confirm action
+        menu.findItem(R.id.menu_compose).setVisible(mMultiselect);
+        menu.findItem(R.id.menu_invite).setVisible(!mMultiselect);
 
         super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (isActionModeActive())
-            return true;
-
         switch (item.getItemId()) {
+            case R.id.menu_compose:
+                // using clone because listview returns its original copy
+                openSelectedContacts(SystemUtils
+                    .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
+                return true;
+
             case R.id.menu_refresh:
                 startSync(true);
                 return true;
@@ -224,54 +251,8 @@ public class ContactsListFragment extends ActionModeListFragment implements
         return super.onOptionsItemSelected(item);
     }
 
-    public boolean isActionModeActive() {
-        return mCheckedItemCount > 0;
-    }
-
-    @Override
-    public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
-        if (checked)
-            mCheckedItemCount++;
-        else
-            mCheckedItemCount--;
-        mode.setTitle(getResources()
-            .getQuantityString(R.plurals.context_selected,
-                mCheckedItemCount, mCheckedItemCount));
-    }
-
-    @Override
-    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-        if (item.getItemId() == R.id.menu_compose) {
-            // using clone because listview returns its original copy
-            openSelectedContacts(SystemUtils
-                .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
-            mode.finish();
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-        MenuInflater inflater = mode.getMenuInflater();
-        inflater.inflate(R.menu.contacts_list_ctx, menu);
-        return true;
-    }
-
-    @Override
-    public void onDestroyActionMode(ActionMode mode) {
-        mCheckedItemCount = 0;
-        getListView().clearChoices();
-        mListAdapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-        return false;
-    }
-
     private void openSelectedContacts(SparseBooleanArray checked) {
-        List<Contact> selected = new ArrayList<>();
+        List<Contact> selected = new ArrayList<>(checked.size());
         for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
             if (checked.get(i)) {
                 Cursor cursor = (Cursor) mListAdapter.getItem(i);
@@ -290,15 +271,11 @@ public class ContactsListFragment extends ActionModeListFragment implements
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        int choiceMode = l.getChoiceMode();
-        if (choiceMode == ListView.CHOICE_MODE_NONE || choiceMode == ListView.CHOICE_MODE_SINGLE) {
+        if (!mMultiselect) {
             ContactPickerListener parent = (ContactPickerListener) getActivity();
             if (parent != null) {
                 parent.onContactSelected(this, ((ContactsListItem) v).getContact());
             }
-        }
-        else {
-            super.onListItemClick(l, v, position, id);
         }
     }
 
@@ -318,7 +295,7 @@ public class ContactsListFragment extends ActionModeListFragment implements
     public void setSyncing(boolean syncing) {
         mRefresher.setRefreshing(syncing);
         if (mSyncButton != null)
-            mSyncButton.setVisible(!syncing);
+            mSyncButton.setVisible(!syncing && !mMultiselect);
     }
 
     @Override

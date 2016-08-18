@@ -166,10 +166,15 @@ public class ConversationsActivity extends MainActivity
 
     @Override
     public void onBackPressed() {
+        if (mFragment != null && mFragment.isActionMenuOpen()) {
+            mFragment.closeActionMenu();
+            return;
+        }
         ComposeMessageFragment f = (ComposeMessageFragment) getSupportFragmentManager()
             .findFragmentById(R.id.fragment_compose_message);
-        if (f == null || !f.tryHideEmojiDrawer())
+        if (f == null || !f.tryHideEmojiDrawer()) {
             super.onBackPressed();
+        }
     }
 
     @Override
@@ -308,10 +313,11 @@ public class ConversationsActivity extends MainActivity
         // TODO handle multiple contacts
     }
 
-    public void showContactPicker() {
+    public void showContactPicker(boolean multiselect) {
         // TODO one day it will be like this
         // Intent i = new Intent(Intent.ACTION_PICK, Users.CONTENT_URI);
         Intent i = new Intent(this, ContactsListActivity.class);
+        i.putExtra(ContactsListActivity.MODE_MULTI_SELECT, multiselect);
         startActivityForResult(i, REQUEST_CONTACT_PICKER);
     }
 

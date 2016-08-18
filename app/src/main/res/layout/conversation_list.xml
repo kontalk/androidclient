@@ -18,7 +18,8 @@
 
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="fill_parent"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="fill_parent"
     android:layout_height="fill_parent">
 
     <ListView android:id="@android:id/list"
@@ -46,19 +47,46 @@
         android:text="@string/text_conversations_empty"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
-    <android.support.design.widget.FloatingActionButton
-        android:contentDescription="@string/menu_compose"
+    <com.github.clans.fab.FloatingActionMenu
         android:id="@+id/action"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        android:src="@drawable/ic_create_white"
-        android:layout_gravity="bottom|right|end"
-        android:layout_marginBottom="@dimen/action_button_margin"
-        android:layout_marginRight="@dimen/action_button_margin"
-        android:layout_marginEnd="@dimen/action_button_margin"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="bottom|end"
+        android:paddingBottom="@dimen/action_button_margin"
+        android:paddingRight="@dimen/action_button_margin"
+        android:paddingEnd="@dimen/action_button_margin"
+        app:menu_colorNormal="?colorAccent"
+        app:menu_colorPressed="?colorPrimary"
+        app:menu_icon="@drawable/ic_create_white"
+        app:menu_fab_size="normal"
+        app:menu_labels_singleLine="true"
+        app:menu_labels_ellipsize="end"
+        app:menu_labels_position="left"
+        app:menu_backgroundColor="#ccffffff"
         app:elevation="6dp"
         app:pressedTranslationZ="12dp"
-        app:fabSize="normal"/>
+        tools:ignore="RtlSymmetry">
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/action_compose_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_menu_group"
+            app:fab_colorNormal="?colorAccent"
+            app:fab_colorPressed="?colorPrimary"
+            app:fab_label="@string/action_compose_group"
+            app:fab_size="mini"/>
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/action_compose"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_menu_chat"
+            app:fab_colorNormal="?colorAccent"
+            app:fab_colorPressed="?colorPrimary"
+            app:fab_label="@string/action_compose"
+            app:fab_size="mini"/>
+
+    </com.github.clans.fab.FloatingActionMenu>
 
 </FrameLayout>
