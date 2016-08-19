@@ -237,6 +237,7 @@ public class MessagingNotification {
         if (supportsBigNotifications()) {
             Map<String, NotificationConversation> convs = new HashMap<>();
 
+            String convKey = null;
             String peer = null;
             long id = 0;
             while (c.moveToNext()) {
@@ -252,10 +253,11 @@ public class MessagingNotification {
                 // store conversation id for intents
                 conversationIds.add(ContentUris.withAppendedId(Threads.CONTENT_URI, id));
 
-                NotificationConversation b = convs.get(peer);
+                convKey = groupJid != null ? groupJid : peer;
+                NotificationConversation b = convs.get(convKey);
                 if (b == null) {
-                    b = new NotificationConversation(new StringBuilder(), null, groupJid, groupSubject);
-                    convs.put(peer, b);
+                    b = new NotificationConversation(peer, new StringBuilder(), null, groupJid, groupSubject);
+                    convs.put(convKey, b);
                 }
                 else {
                     ((StringBuilder) b.allContent).append('\n');
@@ -310,7 +312,7 @@ public class MessagingNotification {
                     NotificationConversation conv = convs.get(user);
                     count++;
 
-                    Contact contact = Contact.findByUserId(context, user);
+                    Contact contact = Contact.findByUserId(context, conv.peer);
                     String name = (contact != null) ? contact.getName() :
                         context.getString(R.string.peer_unknown);
 
@@ -359,7 +361,7 @@ public class MessagingNotification {
             }
             // one conversation, use BigTextStyle
             else {
-                NotificationConversation conv = convs.get(peer);
+                NotificationConversation conv = convs.get(convKey);
                 String content = conv.allContent.toString();
                 CharSequence last = conv.lastContent;
 
@@ -572,13 +574,15 @@ public class MessagingNotification {
     }
 
     private static final class NotificationConversation {
+        private final String peer;
         private final CharSequence allContent;
         private final String groupJid;
         private final String groupSubject;
 
         private CharSequence lastContent;
 
-        public NotificationConversation(CharSequence allContent, CharSequence lastContent, String groupJid, String groupSubject) {
+        public NotificationConversation(String peer, CharSequence allContent, CharSequence lastContent, String groupJid, String groupSubject) {
+            this.peer = peer;
             this.allContent = allContent;
             this.lastContent = lastContent;
             this.groupJid = groupJid;
