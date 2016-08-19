@@ -161,7 +161,8 @@ public class Keyring {
         if (c.moveToFirst()) {
             byte[] keydata = c.getBlob(0);
             int trustStatus = c.getInt(1);
-            data = new TrustedPublicKeyData(keydata, trustStatus);
+            if (keydata != null)
+                data = new TrustedPublicKeyData(keydata, trustStatus);
         }
 
         c.close();
