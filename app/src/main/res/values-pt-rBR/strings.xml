@@ -535,4 +535,8 @@
 	<item quantity="other">mais %d</item>
 </plurals>
 
+    <string name="menu_create_group">Criar grupo</string>
+    <string name="action_compose">Nova conversa</string>
+    <string name="action_compose_group">Novo grupo</string>
+
     </resources>
