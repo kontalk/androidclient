@@ -262,10 +262,7 @@ public class ContactsListFragment extends ListFragment implements
         }
         ContactPickerListener parent = (ContactPickerListener) getActivity();
         if (parent != null) {
-            if (selected.size() == 1)
-                parent.onContactSelected(this, selected.get(0));
-            else
-                parent.onContactsSelected(this, selected);
+            parent.onContactsSelected(this, selected);
         }
     }
 
