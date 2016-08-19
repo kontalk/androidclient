@@ -30,6 +30,7 @@ import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.app.Activity;
+import android.content.Context;
 import android.database.sqlite.SQLiteDiskIOException;
 import android.net.Uri;
 import android.os.Bundle;
@@ -199,11 +200,12 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     }
 
     private void requestPresence() {
-        if (mConversation != null) {
+        Context context;
+        if (mConversation != null && (context = getContext()) != null) {
             String[] users = mConversation.getGroupPeers();
             if (users != null) {
                 for (String user : users) {
-                    MessageCenterService.requestPresence(getContext(), user);
+                    MessageCenterService.requestPresence(context, user);
                 }
             }
         }
@@ -304,6 +306,10 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
     @Override
     protected void onPresence(String jid, Presence.Type type, boolean removed, Presence.Mode mode, String fingerprint) {
+        Context context = getContext();
+        if (context == null)
+            return;
+
         if (BuildConfig.DEBUG) {
             Log.d(TAG, "group member presence from " + jid + " (type=" + type + ", fingerprint=" + fingerprint + ")");
         }
@@ -312,7 +318,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         if (type == null) {
             // some users are missing subscription - disable sending
             // FIXME a toast isn't the right way to warn about this (discussion going on in #179)
-            Toast.makeText(getContext(),
+            Toast.makeText(context,
                 "You can't chat with some of the group members because you haven't been authorized yet. Open a private chat with unknown users first.",
                 Toast.LENGTH_LONG).show();
             mComposer.setSendEnabled(false);
@@ -321,7 +327,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         else if (type == Presence.Type.available || type == Presence.Type.unavailable) {
             String bareJid = XmppStringUtils.parseBareJid(jid);
 
-            Contact contact = Contact.findByUserId(getContext(), bareJid);
+            Contact contact = Contact.findByUserId(context, bareJid);
             if (contact != null) {
                 // if this is null, we are accepting the key for the first time
                 PGPPublicKeyRing trustedPublicKey = contact.getTrustedPublicKeyRing();
