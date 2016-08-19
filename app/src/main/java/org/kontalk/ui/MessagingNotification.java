@@ -397,6 +397,18 @@ public class MessagingNotification {
                 PendingIntent callPendingIntent = null;
 
                 if (contact != null) {
+                    Uri personUri = contact.getUri();
+                    if (personUri == null && contact.getNumber() != null) {
+                        // no contact uri available, try phone number lookup
+                        try {
+                            personUri = Uri.parse("tel:" + contact.getNumber());
+                        }
+                        catch (Exception ignored) {
+                        }
+                    }
+                    if (personUri != null)
+                        builder.addPerson(personUri.toString());
+
                     // avatar
                     Drawable avatar = contact.getAvatar(context);
                     if (avatar != null)
@@ -429,6 +441,7 @@ public class MessagingNotification {
             builder.setNumber(unread);
             builder.setSmallIcon(R.drawable.ic_stat_notify);
 
+            builder.setVisibility(NotificationCompat.VISIBILITY_PRIVATE);
             builder.setTicker(ticker);
             builder.setContentTitle(title);
             builder.setContentText(text);
