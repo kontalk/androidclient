@@ -333,6 +333,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.number_validation_menu, menu);
+        menu.findItem(R.id.menu_manual_verification).setVisible(BuildConfig.DEBUG);
         return true;
     }
 

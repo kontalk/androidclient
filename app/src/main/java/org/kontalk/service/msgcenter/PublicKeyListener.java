@@ -27,10 +27,14 @@ import android.util.Log;
 
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.PublicKeyPublish;
+import org.kontalk.crypto.PGP;
+import org.kontalk.crypto.PGPUserID;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.X509Bridge;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.Keyring;
+import org.kontalk.provider.MyUsers;
+import org.kontalk.provider.UsersProvider;
 import org.kontalk.sync.SyncAdapter;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_PUBLICKEY;
@@ -59,9 +63,10 @@ class PublicKeyListener extends MessageCenterPacketListener {
 
             if (_publicKey != null) {
                 String from = XmppStringUtils.parseBareJid(p.getFrom());
+                boolean selfJid = Authenticator.isSelfJID(getContext(), from);
 
                 // is this our key?
-                if (Authenticator.isSelfJID(getContext(), from)) {
+                if (selfJid) {
                     byte[] bridgeCertData;
                     try {
                         PersonalKey key = getApplication().getPersonalKey();
@@ -115,7 +120,13 @@ class PublicKeyListener extends MessageCenterPacketListener {
                     else {
                         try {
                             Log.v("pubkey", "Updating key for " + from);
-                            Keyring.setKey(getContext(), from, _publicKey);
+                            Keyring.setKey(getContext(), from, _publicKey,
+                                selfJid ? MyUsers.Keys.TRUST_VERIFIED : -1);
+
+                            // update display name with uid (if empty)
+                            PGPUserID keyUid = PGP.parseUserId(_publicKey, getConnection().getServiceName());
+                            if (keyUid != null && keyUid.getName() != null)
+                                UsersProvider.updateDisplayNameIfEmpty(getContext(), from, keyUid.getName());
 
                             // invalidate cache for this user
                             Contact.invalidate(from);
