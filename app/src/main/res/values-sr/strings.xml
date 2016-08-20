@@ -172,7 +172,7 @@
   <string name="menu_refresh">Освежи</string>
   <string name="menu_invite">Позови кориснике</string>
   <string name="title_error">Грешка</string>
-  <string name="msg_do_refresh">Повуците доле за ажурирање списка корисника.</string>
+  <string name="msg_do_refresh">Користите Мени &gt; Освежи за ажурирање контаката.</string>
   <string name="msg_sync_progress">Освежавам списак контаката…</string>
   <string name="err_sync_failed">Не могу да освежим списак контаката. Покушајте касније.</string>
   <string name="err_sync_nonetwork">Мрежа није доступна. Покушајте касније.</string>
@@ -511,4 +511,17 @@
     <string name="title_identity_self">Идентитет (ово сте ви!)</string>
 
     <string name="status_label">"Стање: "</string>
+    <string name="menu_create_group">Направи групу</string>
+    <string name="text_group_command_fallback">Ово је порука групног ћаскања. Ви или користите старо издање Контака или ваш клијент не подржава протокол групног ћаскања. Надоградите на најновије издање!</string>
+
+    <string name="action_compose">Нова преписка</string>
+    <string name="action_compose_group">Нова група</string>
+
+    <string name="notification_group_title">%1$s @ %2$s</string>
+
+    <plurals name="notification_more">
+	<item quantity="one">+још једна</item>
+	<item quantity="other">+још %d</item>
+</plurals>
+
     </resources>
