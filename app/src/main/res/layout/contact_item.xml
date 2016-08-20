@@ -41,6 +41,8 @@
             android:layout_alignWithParentIfMissing="true"
             android:layout_toRightOf="@id/avatar"
             android:layout_toEndOf="@id/avatar"
+            android:layout_toStartOf="@+id/trust_status"
+            android:layout_toLeftOf="@+id/trust_status"
             android:ellipsize="marquee"
             android:singleLine="true" />
 

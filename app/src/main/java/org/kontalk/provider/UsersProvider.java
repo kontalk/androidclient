@@ -52,7 +52,6 @@ import android.util.Log;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
-import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.crypto.PersonalKey;
@@ -293,7 +292,11 @@ public class UsersProvider extends ContentProvider {
 
             for (int i = 0; i < count; i++) {
                 cursor.moveToNext();
-                String label = mLocaleUtils.getLabel(cursor.getString(Contact.COLUMN_DISPLAY_NAME));
+                String source = cursor.getString(Contact.COLUMN_DISPLAY_NAME);
+                // use phone number if we don't have a display name
+                if (source == null)
+                    source = cursor.getString(Contact.COLUMN_NUMBER);
+                String label = mLocaleUtils.getLabel(source);
                 Counter counter = groups.get(label);
                 if (counter == null) {
                     counter = new Counter(1);
@@ -541,8 +544,10 @@ public class UsersProvider extends ContentProvider {
             // insert new record
             insertValues.put(Users.JID, selectionArgs[0]);
             insertValues.put(Users.NUMBER, selectionArgs[0]);
+            /*
             if (!values.containsKey(Users.DISPLAY_NAME))
-                insertValues.put(Users.DISPLAY_NAME, getContext().getString(R.string.peer_unknown));
+                insertValues.put(Users.DISPLAY_NAME, selectionArgs[0]);
+             */
             insertValues.put(Users.REGISTERED, true);
 
             db.insert(offline ? TABLE_USERS_OFFLINE : TABLE_USERS, null, insertValues);
@@ -1060,6 +1065,7 @@ public class UsersProvider extends ContentProvider {
             .appendPath(jid).build(), values, null, null);
     }
 
+    // FIXME what is this doing here? Using Messages Uri
     public static int setRequestStatus(Context context, String jid, int status) {
         ContentValues values = new ContentValues(1);
         values.put(MyMessages.Threads.REQUEST_STATUS, status);
@@ -1067,6 +1073,14 @@ public class UsersProvider extends ContentProvider {
         // FIXME this won't work on new threads
         return context.getContentResolver().update(MyMessages.Threads.Requests.CONTENT_URI,
             values, MyMessages.CommonColumns.PEER + "=?",
+            new String[] { jid });
+    }
+
+    public static int updateDisplayNameIfEmpty(Context context, String jid, String displayName) {
+        ContentValues values = new ContentValues(1);
+        values.put(Users.DISPLAY_NAME, displayName);
+        return context.getContentResolver().update(Users.CONTENT_URI,
+            values, Users.JID + " = ? AND (" + Users.DISPLAY_NAME + " IS NULL OR LENGTH(" + Users.DISPLAY_NAME + ") = 0)",
             new String[] { jid });
     }
 

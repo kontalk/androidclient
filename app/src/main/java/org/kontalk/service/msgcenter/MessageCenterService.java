@@ -1924,7 +1924,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private boolean isAuthorized(String jid) {
         RosterEntry entry = getRosterEntry(jid);
-        return (isRosterEntrySubscribed(entry) || Authenticator.isSelfJID(this, jid));
+        return entry != null && isAuthorized(entry);
+    }
+
+    private boolean isAuthorized(RosterEntry entry) {
+        return (isRosterEntrySubscribed(entry) || Authenticator.isSelfJID(this, entry.getUser()));
     }
 
     private boolean isRosterEntrySubscribed(RosterEntry entry) {
