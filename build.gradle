@@ -22,7 +22,7 @@ allprojects {
     ext {
         smackVersion = project(':client-common-java').smackVersion
         spongyCastleVersion = '1.54.0.0'
-        appcompatVersion = '24.1.1'
+        appcompatVersion = '24.2.0'
         googlePlayServicesVersion = '9.4.0'
     }
 }

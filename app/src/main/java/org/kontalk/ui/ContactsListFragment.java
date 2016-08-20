@@ -45,7 +45,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -65,7 +64,6 @@ import org.kontalk.util.SystemUtils;
 /** Contacts list selection fragment. */
 public class ContactsListFragment extends ListFragment implements
         ContactsListAdapter.OnContentChangedListener,
-        SwipeRefreshLayout.OnRefreshListener,
         ContactsSyncer {
 
     private Cursor mCursor;
@@ -140,22 +138,7 @@ public class ContactsListFragment extends ListFragment implements
         list.setChoiceMode(mMultiselect ? ListView.CHOICE_MODE_MULTIPLE : ListView.CHOICE_MODE_NONE);
 
         mRefresher = (SwipeRefreshLayout) view.findViewById(R.id.refresher);
-        mRefresher.setOnRefreshListener(this);
-
-        // http://nlopez.io/swiperefreshlayout-with-listview-done-right/
-        list.setOnScrollListener(new AbsListView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-            }
-
-            @Override
-            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                ((PinnedHeaderListView) view).configureHeaderView(firstVisibleItem);
-                int topRowVerticalPosition = (view.getChildCount() == 0) ?
-                            0 : view.getChildAt(0).getTop();
-                mRefresher.setEnabled(firstVisibleItem == 0 && topRowVerticalPosition >= 0);
-            }
-        });
+        mRefresher.setEnabled(false);
     }
 
     @Override
@@ -177,13 +160,7 @@ public class ContactsListFragment extends ListFragment implements
         // retain current sync state to hide the refresh button and start indeterminate progress
         registerSyncReceiver();
         if (SyncAdapter.isActive(parent)) {
-            // workaround for https://code.google.com/p/android/issues/detail?id=77712
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    setSyncing(true);
-                }
-            });
+            setSyncing(true);
         }
     }
 
@@ -293,11 +270,6 @@ public class ContactsListFragment extends ListFragment implements
         mRefresher.setRefreshing(syncing);
         if (mSyncButton != null)
             mSyncButton.setVisible(!syncing && !mMultiselect);
-    }
-
-    @Override
-    public void onRefresh() {
-        startSync(true);
     }
 
     private void registerSyncReceiver() {
