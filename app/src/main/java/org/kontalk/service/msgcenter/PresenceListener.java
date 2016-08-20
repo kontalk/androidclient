@@ -280,15 +280,24 @@ class PresenceListener extends MessageCenterPacketListener {
                 // request the new key if fingerprint changed
                 String newFingerprint = PublicKeyPresence.getFingerprint(p);
                 if (newFingerprint != null) {
+                    boolean requestKey = false;
                     String jid = XmppStringUtils.parseBareJid(p.getFrom());
                     PGPPublicKeyRing pubRing = Keyring.getPublicKey(getContext(),
                         jid, MyUsers.Keys.TRUST_UNKNOWN);
                     if (pubRing != null) {
                         String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(pubRing));
                         if (!newFingerprint.equalsIgnoreCase(oldFingerprint)) {
-                            MessageCenterService.requestPublicKey(getContext(), jid);
+                            // key has changed, request new one
+                            requestKey = true;
                         }
                     }
+                    else {
+                        // no key available, request one
+                        requestKey = true;
+                    }
+
+                    if (requestKey)
+                        MessageCenterService.requestPublicKey(getContext(), jid);
                 }
 
                 Intent i = createIntent(getContext(), p, getRosterEntry(p.getFrom()));
