@@ -361,7 +361,8 @@ public class GroupInfoFragment extends ActionModeListFragment
         }
         else {
             // FIXME using another string
-            fingerprint = uid = getString(R.string.peer_unknown);
+            fingerprint = getString(R.string.peer_unknown);
+            uid = null;
             dialogFingerprint = null;
         }
 
@@ -373,8 +374,8 @@ public class GroupInfoFragment extends ActionModeListFragment
                 .append(c.getNumber());
         }
         else {
-            int start = text.length() - 1;
-            text.append(uid);
+            int start = text.length();
+            text.append(uid != null ? uid : c.getJID());
             text.setSpan(SystemUtils.getTypefaceSpan(Typeface.BOLD), start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
 
@@ -382,7 +383,7 @@ public class GroupInfoFragment extends ActionModeListFragment
             .append(getString(R.string.text_invitation2))
             .append('\n');
 
-        int start = text.length() - 1;
+        int start = text.length();
         text.append(fingerprint);
         text.setSpan(SystemUtils.getTypefaceSpan(Typeface.BOLD), start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 

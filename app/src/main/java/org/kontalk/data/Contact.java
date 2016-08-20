@@ -436,7 +436,7 @@ public class Contact {
     /** Invalidates cached data for the given contact. Does not delete contact information. */
     public static void invalidateData(String userId) {
         Contact c = cache.get(XmppStringUtils.parseBareJid(userId));
-        if (c != null)
+        if (c != null && c.getId() > 0)
             c.clear();
         // invalidate contact state
         clearState(userId);
@@ -513,7 +513,11 @@ public class Contact {
     }
 
     public static Contact findByUserId(Context context, String userId, String numberHint) {
-        return cache.get(context, userId, numberHint);
+        Contact c = cache.get(context, userId, numberHint);
+        // build dummy contact if not found
+        if (c == null)
+            c = new Contact(-1, null, userId, numberHint, userId, false);
+        return c;
     }
 
     private static Contact _findByUserId(Context context, String userId) {
