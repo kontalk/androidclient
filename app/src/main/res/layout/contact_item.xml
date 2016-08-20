@@ -53,6 +53,8 @@
             android:layout_below="@android:id/text1"
             android:layout_toRightOf="@id/avatar"
             android:layout_toEndOf="@id/avatar"
+            android:layout_toStartOf="@+id/trust_status"
+            android:layout_toLeftOf="@+id/trust_status"
             android:maxLines="2"
             android:ellipsize="end"/>
 
