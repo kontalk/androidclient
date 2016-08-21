@@ -19,6 +19,7 @@
 package org.kontalk.ui.view;
 
 import android.content.Context;
+import android.support.v4.widget.TextViewCompat;
 import android.text.Layout;
 import android.text.SpannableStringBuilder;
 import android.text.style.BackgroundColorSpan;
@@ -26,6 +27,7 @@ import android.text.util.Linkify;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import org.kontalk.R;
 import org.kontalk.message.TextComponent;
@@ -89,13 +91,12 @@ public class TextContentView extends EmojiconTextView
         mHighlightColorSpan = new BackgroundColorSpan(color);
     }
 
-    /*
+    /**
      * Hack for fixing extra space took by the TextView.
      * I still have to understand why this works and plain getHeight() doesn't.
      * http://stackoverflow.com/questions/7439748/why-is-wrap-content-in-multiple-line-textview-filling-parent
      * https://github.com/qklabs/qksms/blob/master/QKSMS/src/main/java/com/moez/QKSMS/ui/view/QKTextView.java
      */
-
     void enableMeasureHack(boolean enabled) {
         mMeasureHack = enabled;
     }
@@ -138,19 +139,9 @@ public class TextContentView extends EmojiconTextView
     @Override
     public void bind(long databaseId, TextComponent component, Pattern highlight) {
         mComponent = component;
-        Context context = getContext();
 
         SpannableStringBuilder formattedMessage = formatMessage(highlight);
-        String size = Preferences.getFontSize(context);
-        int sizeId;
-        if (size.equals("small"))
-            sizeId = android.R.style.TextAppearance_Small;
-        else if (size.equals("large"))
-            sizeId = android.R.style.TextAppearance_Large;
-        else
-            sizeId = android.R.style.TextAppearance;
-        setTextAppearance(context, sizeId);
-        //setEmojiconSize((int) getTextSize());
+        setTextStyle(this);
 
         // linkify!
         if (formattedMessage.length() < MAX_AFFORDABLE_SIZE)
@@ -253,6 +244,20 @@ public class TextContentView extends EmojiconTextView
         view.mEncryptionPlaceholder = encryptionPlaceholder;
 
         return view;
+    }
+
+    public static void setTextStyle(TextView textView) {
+        Context context = textView.getContext();
+        String size = Preferences.getFontSize(context);
+        int sizeId;
+        if (size.equals("small"))
+            sizeId = android.R.style.TextAppearance_Small;
+        else if (size.equals("large"))
+            sizeId = android.R.style.TextAppearance_Large;
+        else
+            sizeId = android.R.style.TextAppearance;
+        TextViewCompat.setTextAppearance(textView, sizeId);
+        //setEmojiconSize((int) getTextSize());
     }
 
 }

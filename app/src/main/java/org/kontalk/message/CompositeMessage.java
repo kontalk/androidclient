@@ -116,6 +116,7 @@ public class CompositeMessage {
     public static final int COLUMN_GROUP_MEMBERSHIP = 23;
 
     public static final String MSG_ID = "org.kontalk.message.id";
+    public static final String MSG_SERVER_ID = "org.kontalk.message.serverId";
     public static final String MSG_SENDER = "org.kontalk.message.sender";
     public static final String MSG_MIME = "org.kontalk.message.mime";
     public static final String MSG_CONTENT = "org.kontalk.message.content";
@@ -123,6 +124,7 @@ public class CompositeMessage {
     public static final String MSG_GROUP = "org.kontalk.message.group";
     public static final String MSG_TIMESTAMP = "org.kontalk.message.timestamp";
     public static final String MSG_ENCRYPTED = "org.kontalk.message.encrypted";
+    public static final String MSG_COMPRESS = "org.kontalk.message.compress";
 
     private static final int SUFFIX_LENGTH = "Component".length();
 

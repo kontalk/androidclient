@@ -139,6 +139,15 @@ public class MessagesProviderUtils {
             values, null, null);
     }
 
+    public static int updateMedia(Context context, long id, String previewFile, Uri localUri, long length) {
+        ContentValues values = new ContentValues(3);
+        values.put(Messages.ATTACHMENT_PREVIEW_PATH, previewFile);
+        values.put(Messages.ATTACHMENT_LOCAL_URI, localUri.toString());
+        values.put(Messages.ATTACHMENT_LENGTH, length);
+        return context.getContentResolver().update(ContentUris
+            .withAppendedId(Messages.CONTENT_URI, id), values, null, null);
+    }
+
     public static int deleteMessage(Context context, long id) {
         return context.getContentResolver().delete(ContentUris
             .withAppendedId(Messages.CONTENT_URI, id), null, null);

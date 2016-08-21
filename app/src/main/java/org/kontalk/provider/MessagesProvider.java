@@ -1555,14 +1555,14 @@ public class MessagesProvider extends ContentProvider {
         return context.getContentResolver().update(uri, values, Messages.DIRECTION + "=" + direction, null);
     }
 
-    public static int changeMessageStatus(Context context, long id, int direction, int status) {
-        return changeMessageStatus(context, id, direction, status, -1, -1);
+    public static int changeMessageStatus(Context context, long id, int status) {
+        return changeMessageStatus(context, id, status, -1, -1);
     }
 
-    public static int changeMessageStatus(Context context, long id, int direction, int status, long timestamp, long statusChanged) {
+    public static int changeMessageStatus(Context context, long id, int status, long timestamp, long statusChanged) {
         ContentValues values = prepareChangeMessageStatus(status, timestamp, statusChanged);
         Uri uri = ContentUris.withAppendedId(Messages.CONTENT_URI, id);
-        return context.getContentResolver().update(uri, values, Messages.DIRECTION + "=" + direction, null);
+        return context.getContentResolver().update(uri, values, null, null);
     }
 
     /*
