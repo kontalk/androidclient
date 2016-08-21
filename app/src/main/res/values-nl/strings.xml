@@ -528,4 +528,6 @@
     <string name="action_compose">Nieuw gesprek</string>
     <string name="action_compose_group">Nieuwe groep</string>
 
+    <string name="group_info_menu_remove">Verwijder</string>
+
     </resources>
