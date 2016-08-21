@@ -387,6 +387,8 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
     @Override
     protected void onPresence(String jid, Presence.Type type, boolean removed, Presence.Mode mode, String fingerprint) {
         final Context context = getContext();
+        if (context == null)
+            return;
 
         if (type == null) {
             // no roster entry found, request subscription
