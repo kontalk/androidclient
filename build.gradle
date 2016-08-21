@@ -20,9 +20,18 @@ allprojects {
 
     evaluationDependsOn ":client-common-java"
     ext {
+        appVersionCode = 203
+        appVersionName = "4.0.0-alpha4"
+        targetSdkVersion = 22
+        compileSdkVersion = 24
+        buildToolsVersion = '24.0.1'
         smackVersion = project(':client-common-java').smackVersion
         spongyCastleVersion = '1.54.0.0'
         appcompatVersion = '24.2.0'
         googlePlayServicesVersion = '9.4.0'
     }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
 }
