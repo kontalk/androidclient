@@ -529,4 +529,6 @@
     <string name="action_compose">Neuer Chat</string>
     <string name="action_compose_group">Neue Gruppe</string>
 
+    <string name="group_info_menu_remove">Entfernen</string>
+
     </resources>
