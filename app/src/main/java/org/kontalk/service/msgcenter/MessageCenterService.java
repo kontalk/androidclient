@@ -171,6 +171,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_PUSH_REGISTERED = "org.kontalk.push.REGISTERED";
     public static final String ACTION_IDLE = "org.kontalk.action.IDLE";
     public static final String ACTION_PING = "org.kontalk.action.PING";
+    public static final String ACTION_MEDIA_READY = "org.kontalk.action.MEDIA_READY";
 
     /** Request the roster. */
     public static final String ACTION_ROSTER = "org.kontalk.action.ROSTER";
@@ -938,6 +939,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     doConnect = handleVersion(intent);
                     break;
 
+                case ACTION_MEDIA_READY:
+                    doConnect = handleMediaReady(intent);
+
                 default:
                     // no command means normal service start, connect if not connected
                     doConnect = true;
@@ -1326,6 +1330,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return false;
     }
 
+    @CommandHandler(name = ACTION_MEDIA_READY)
+    private boolean handleMediaReady(Intent intent) {
+        long msgId = intent.getLongExtra("org.kontalk.message.msgId", 0);
+        if (msgId > 0)
+            sendReadyMedia(msgId);
+        return true;
+    }
+
     /** Creates a connection to server if needed. */
     private synchronized void createConnection() {
         if (mConnection == null && mHelper == null) {
@@ -1646,6 +1658,33 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return p;
     }
 
+    private void sendReadyMedia(long databaseId) {
+        Cursor c = getContentResolver().query(ContentUris
+            .withAppendedId(Messages.CONTENT_URI, databaseId),
+            new String[] {
+                Messages._ID,
+                Messages.MESSAGE_ID,
+                Messages.PEER,
+                Messages.BODY_CONTENT,
+                Messages.BODY_MIME,
+                Messages.SECURITY_FLAGS,
+                Messages.ATTACHMENT_MIME,
+                Messages.ATTACHMENT_LOCAL_URI,
+                Messages.ATTACHMENT_FETCH_URL,
+                Messages.ATTACHMENT_PREVIEW_PATH,
+                Messages.ATTACHMENT_LENGTH,
+                Messages.ATTACHMENT_COMPRESS,
+                // TODO Messages.ATTACHMENT_SECURITY_FLAGS,
+                Groups.GROUP_JID,
+                Groups.SUBJECT,
+            },
+            null, null, null);
+
+        sendMessages(c, false);
+
+        c.close();
+    }
+
     void resendPendingMessages(boolean retrying, boolean forcePending) {
         resendPendingMessages(retrying, forcePending, null);
     }
@@ -1701,7 +1740,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         Cursor c = getContentResolver().query(Messages.CONTENT_URI,
-            new String[]{
+            new String[] {
                 Messages._ID,
                 Messages.MESSAGE_ID,
                 Messages.PEER,
@@ -1721,6 +1760,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             filter.toString(), filterArgs,
             Messages._ID);
 
+        sendMessages(c, retrying);
+
+        c.close();
+    }
+
+    private void sendMessages(Cursor c, boolean retrying) {
         while (c.moveToNext()) {
             long id = c.getLong(0);
             String msgId = c.getString(1);
@@ -1834,8 +1879,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             Log.v(TAG, "resending pending message " + id);
             sendMessage(b);
         }
-
-        c.close();
     }
 
     void resendPendingReceipts() {
@@ -2835,6 +2878,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.fetch.url", fetchUrl);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
+        context.startService(i);
+    }
+
+    public static void sendMedia(final Context context, long msgId) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_MEDIA_READY);
+        i.putExtra("org.kontalk.message.msgId", msgId);
         context.startService(i);
     }
 

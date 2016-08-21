@@ -18,7 +18,6 @@
 
 package org.kontalk;
 
-import java.io.File;
 import java.io.IOException;
 
 import android.content.ContentUris;
@@ -43,10 +42,10 @@ import org.kontalk.provider.MessagesProviderUtils;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.DownloadService;
+import org.kontalk.service.MediaService;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.group.KontalkGroupController;
 import org.kontalk.ui.MessagingNotification;
-import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 
@@ -94,8 +93,6 @@ public class MessagesController {
     public Uri sendBinaryMessage(Conversation conv, Uri uri, String mime, boolean media,
         Class<? extends MessageComponent<?>> klass) throws IOException {
         String msgId = MessageCenterService.messageId();
-        File previewFile = null;
-        long length;
 
         boolean encrypted = Preferences.getEncryptionEnabled(mContext);
         int compress = 0;
@@ -103,47 +100,14 @@ public class MessagesController {
             compress = Preferences.getImageCompression(mContext);
         }
 
-        // generate thumbnail
-        // FIXME this is blocking!!!!
-        if (media && klass == ImageComponent.class) {
-            // FIXME hard-coded to ImageComponent
-            String filename = ImageComponent.buildMediaFilename(msgId, MediaStorage.THUMBNAIL_MIME_NETWORK);
-            previewFile = MediaStorage.cacheThumbnail(mContext, uri, filename, true);
-        }
-
-        if (compress > 0) {
-            File compressed = MediaStorage.resizeImage(mContext, uri, compress);
-            length = compressed.length();
-            // use the compressed image from now on
-            uri = Uri.fromFile(compressed);
-        }
-        else {
-            File copy = MediaStorage.copyOutgoingMedia(mContext, uri);
-            length = copy.length();
-            uri = Uri.fromFile(copy);
-        }
-
         // save to database
         String userId = conv.isGroupChat() ? conv.getGroupJid() : conv.getRecipient();
         Uri newMsg = MessagesProviderUtils.newOutgoingMessage(mContext, msgId,
-            userId, mime, uri, length, compress, previewFile, encrypted);
+            userId, mime, uri, 0, compress, null, encrypted);
 
         if (newMsg != null) {
-            String previewPath = (previewFile != null) ? previewFile.getAbsolutePath() : null;
-
-            // send message!
-            if (conv.isGroupChat()) {
-                MessageCenterService.sendGroupBinaryMessage(mContext,
-                    conv.getGroupJid(), conv.getGroupPeers(), mime,
-                    uri, length, previewPath, encrypted, compress,
-                    ContentUris.parseId(newMsg), msgId);
-            }
-            else {
-                MessageCenterService.sendBinaryMessage(mContext, userId, mime,
-                    uri, length, previewPath, encrypted, compress,
-                    ContentUris.parseId(newMsg), msgId);
-            }
-
+            // prepare message and send (thumbnail, compression -> send)
+            MediaService.prepareMessage(mContext, msgId, ContentUris.parseId(newMsg), uri, mime, compress);
             return newMsg;
         }
         else {
