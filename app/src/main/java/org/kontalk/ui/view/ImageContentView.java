@@ -23,9 +23,12 @@ import android.graphics.Bitmap;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import org.kontalk.R;
+import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.ImageComponent;
 
 import java.util.regex.Pattern;
@@ -35,10 +38,12 @@ import java.util.regex.Pattern;
  * Message component for {@link ImageComponent}.
  * @author Daniele Ricci
  */
-public class ImageContentView extends ImageView
+public class ImageContentView extends FrameLayout
         implements MessageContentView<ImageComponent> {
 
     private ImageComponent mComponent;
+    private ImageView mContent;
+    private TextView mPlaceholder;
 
     public ImageContentView(Context context) {
         super(context);
@@ -53,18 +58,29 @@ public class ImageContentView extends ImageView
     }
 
     @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+        mContent = (ImageView) findViewById(R.id.content);
+        mPlaceholder = (TextView) findViewById(R.id.placeholder);
+    }
+
+    @Override
     public void bind(long messageId, ImageComponent component, Pattern highlight) {
         mComponent = component;
 
-        // prepend some text for the ImageSpan
-        //String placeholder = CompositeMessage.getSampleTextContent(component.getContent().getMime());
-
         Bitmap bitmap = mComponent.getBitmap();
-        if (bitmap != null)
-            setImageBitmap(bitmap);
-
-        // TODO else: maybe some placeholder like Image: image/jpeg
-
+        if (bitmap != null) {
+            mContent.setImageBitmap(bitmap);
+            mPlaceholder.setVisibility(GONE);
+            mContent.setVisibility(VISIBLE);
+        }
+        else {
+            String placeholder = CompositeMessage.getSampleTextContent(component.getContent().getMime());
+            mPlaceholder.setText(placeholder);
+            TextContentView.setTextStyle(mPlaceholder);
+            mContent.setVisibility(GONE);
+            mPlaceholder.setVisibility(VISIBLE);
+        }
     }
 
     @Override
@@ -85,7 +101,7 @@ public class ImageContentView extends ImageView
 
     private void clear() {
         mComponent = null;
-        setImageBitmap(null);
+        mContent.setImageBitmap(null);
     }
 
     public static ImageContentView create(LayoutInflater inflater, ViewGroup parent) {
