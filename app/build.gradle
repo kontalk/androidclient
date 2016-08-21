@@ -29,14 +29,14 @@ task checkstyle(type: Checkstyle){
 }
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion '24.0.1'
+    compileSdkVersion project.compileSdkVersion
+    buildToolsVersion project.buildToolsVersion
 
     defaultConfig {
         applicationId "org.kontalk"
-        versionCode 202
-        versionName "4.0.0-alpha3"
-        targetSdkVersion 22
+        versionCode project.appVersionCode
+        versionName project.appVersionName
+        targetSdkVersion project.targetSdkVersion
         minSdkVersion 9
         resConfigs "en", "de", "fr", "it", "es", "ca", "cs", "el", "fa", "gl", "ja", "nl", "pt", "pt-rBR", "ru", "sr", "zh-rCN", "ar", "hi"
         resValue "string", "application_id", applicationId

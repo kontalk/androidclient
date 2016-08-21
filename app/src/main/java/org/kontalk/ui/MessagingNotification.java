@@ -27,7 +27,6 @@ import org.jxmpp.util.XmppStringUtils;
 
 import android.accounts.Account;
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -42,6 +41,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationCompat.BigTextStyle;
 import android.support.v4.app.NotificationCompat.InboxStyle;
 import android.support.v4.app.NotificationCompat.Style;
+import android.support.v4.app.NotificationManagerCompat;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -188,8 +188,7 @@ public class MessagingNotification {
         */
 
         ContentResolver res = context.getContentResolver();
-        NotificationManager nm = (NotificationManager) context
-            .getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManagerCompat nm = NotificationManagerCompat.from(context);
 
         String query = MESSAGES_UNREAD_SELECTION;
         String[] args = null;
@@ -633,9 +632,7 @@ public class MessagingNotification {
         setFeatures(context, builder);
 
         // fire it up!
-        NotificationManager nm = (NotificationManager) context
-                .getSystemService(Context.NOTIFICATION_SERVICE);
-
+        NotificationManagerCompat nm = NotificationManagerCompat.from(context);
         nm.notify(NOTIFICATION_ID_INVITATION, builder.build());
 
         // this is for clearChatInvitation()
@@ -645,9 +642,7 @@ public class MessagingNotification {
     /** Cancel a chat invitation notification. */
     public static void clearChatInvitation(Context context, String userId) {
         if (userId.equalsIgnoreCase(sLastInvitation)) {
-            NotificationManager nm = (NotificationManager) context
-                    .getSystemService(Context.NOTIFICATION_SERVICE);
-
+            NotificationManagerCompat nm = NotificationManagerCompat.from(context);
             nm.cancel(NOTIFICATION_ID_INVITATION);
         }
     }
@@ -673,16 +668,12 @@ public class MessagingNotification {
         setDefaults(context, builder);
 
         // fire it up!
-        NotificationManager nm = (NotificationManager) context
-                .getSystemService(Context.NOTIFICATION_SERVICE);
-
+        NotificationManagerCompat nm = NotificationManagerCompat.from(context);
         nm.notify(NOTIFICATION_ID_AUTH_ERROR, builder.build());
     }
 
     public static void clearAuthenticationError(Context context) {
-        NotificationManager nm = (NotificationManager) context
-                .getSystemService(Context.NOTIFICATION_SERVICE);
-
+        NotificationManagerCompat nm = NotificationManagerCompat.from(context);
         nm.cancel(NOTIFICATION_ID_AUTH_ERROR);
     }
 
