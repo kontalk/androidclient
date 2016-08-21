@@ -187,19 +187,7 @@ public class GroupInfoFragment extends ActionModeListFragment
         mLeave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new MaterialDialog.Builder(getContext())
-                    .content(R.string.confirm_will_leave_group)
-                    .positiveText(android.R.string.ok)
-                    .negativeText(android.R.string.cancel)
-                    .onPositive(new MaterialDialog.SingleButtonCallback() {
-                        @Override
-                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                            // leave group
-                            mConversation.leaveGroup();
-                            reload();
-                        }
-                    })
-                    .show();
+                confirmLeave();
             }
         });
         mIgnoreAll = (Button) view.findViewById(R.id.btn_ignore_all);
@@ -293,13 +281,27 @@ public class GroupInfoFragment extends ActionModeListFragment
     }
 
     private void removeSelectedUsers(final SparseBooleanArray checked) {
+        boolean removingSelf = false;
         List<String> users = new LinkedList<>();
         for (int i = 0, c = mMembersAdapter.getCount(); i < c; ++i) {
-            if (checked.get(i))
-                users.add(((Contact) mMembersAdapter.getItem(i)).getJID());
+            if (checked.get(i)) {
+                Contact contact = (Contact) mMembersAdapter.getItem(i);
+                if (Authenticator.isSelfJID(getContext(), contact.getJID())) {
+                    removingSelf = true;
+                }
+                else {
+                    users.add(contact.getJID());
+                }
+            }
         }
-        mConversation.removeUsers(users.toArray(new String[users.size()]));
-        reload();
+
+        if (users.size() > 0) {
+            mConversation.removeUsers(users.toArray(new String[users.size()]));
+            reload();
+        }
+
+        if (removingSelf)
+            confirmLeave();
     }
 
     private void composeSelectedUsers(final SparseBooleanArray checked) {
@@ -461,6 +463,22 @@ public class GroupInfoFragment extends ActionModeListFragment
         Keyring.setTrustLevel(getContext(), jid, fingerprint, trustLevel);
         Contact.invalidate(jid);
         reload();
+    }
+
+    private void confirmLeave() {
+        new MaterialDialog.Builder(getContext())
+            .content(R.string.confirm_will_leave_group)
+            .positiveText(android.R.string.ok)
+            .negativeText(android.R.string.cancel)
+            .onPositive(new MaterialDialog.SingleButtonCallback() {
+                @Override
+                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                    // leave group
+                    mConversation.leaveGroup();
+                    reload();
+                }
+            })
+            .show();
     }
 
     private void reload() {

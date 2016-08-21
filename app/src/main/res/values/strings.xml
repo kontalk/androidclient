@@ -514,7 +514,7 @@
     <string name="trust_ignored">Ignored</string>
     <string name="trust_verified">Verified</string>
 
-    <string name="action_compose">New conversation</string>
+    <string name="action_compose">New chat</string>
     <string name="action_compose_group">New group</string>
 
     <!-- contact name, group subject -->
