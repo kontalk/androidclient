@@ -172,7 +172,7 @@
   <string name="menu_refresh">Aktualizovat</string>
   <string name="menu_invite">Pozvat uživatele</string>
   <string name="title_error">Chyba</string>
-  <string name="msg_do_refresh">Pro aktualizaci seznamu kontaktů potáhněte dolů.</string>
+  <string name="msg_do_refresh">Pro aktualizaci seznamu kontaktů klikněte na Menu &gt; Aktualizovat.</string>
   <string name="msg_sync_progress">Aktualizuji seznam kontaktů…</string>
   <string name="err_sync_failed">Nepodařilo se aktualizovat seznam kontaktů. Zkuste to prosím později.</string>
   <string name="err_sync_nonetwork">Síť není dostupná. Zkuste to prosím později.</string>
