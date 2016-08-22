@@ -531,4 +531,6 @@
 	<item quantity="other">+%d více</item>
 </plurals>
 
+    <string name="group_info_menu_remove">Odebrat</string>
+
     </resources>
