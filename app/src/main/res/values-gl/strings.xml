@@ -164,7 +164,7 @@
   <string name="menu_refresh">Recargar</string>
   <string name="menu_invite">Convidar usuarios</string>
   <string name="title_error">Erro</string>
-  <string name="msg_do_refresh">Usa o botón de abaixo para actualizar a lista de contactos.</string>
+  <string name="msg_do_refresh">Usa o botón de Menú para actualizar a lista de contactos.</string>
   <string name="msg_sync_progress">Recargando a lista de contactos…</string>
   <string name="err_sync_failed">Non foi posible recargar a lista de contactos. Por favor, téntao máis tarde.</string>
   <string name="err_sync_nonetwork">Rede non dispoñible. Por favor, téntao máis tarde.</string>
@@ -483,7 +483,7 @@
 
     <string name="group_command_text_create">Grupo creado</string>
     <string name="group_command_text_subject">O nome do grupo cambiou</string>
-    <string name="group_command_text_part">Alguén deixou o grupo</string>
+    <string name="group_command_text_part">Alguén deixou ese grupo</string>
 
     <plurals name="group_people">
 	<item quantity="one">1 persoa</item>
@@ -502,5 +502,35 @@
     <string name="group_info_leave">Saír do grupo</string>
     <string name="group_info_members">Os membros do grupo</string>
     <string name="confirm_will_leave_group">Non será capaz de entrar neste grupo de novo despois de saír.</string>
+
+    <string name="menu_create_group">Crear grupo</string>
+    <string name="chooser_error_no_app">Non hai ningunha aplicación axeitada dispoñible para abrir o ficheiro.</string>
+
+    <string name="button_ignore">Ignorar</string>
+    <string name="title_identity">Identidade</string>
+    <string name="title_identity_self">Identidade (¡isto é vostede!)</string>
+
+    <string name="warning_public_key_group_unverified">As identidades dalgúns dos membros do grupo non foron verificadas.</string>
+
+    <string name="group_command_text_part_self">Saíu deste grupo</string>
+    <string name="group_info_ignore_all">Ignorar todo</string>
+    <string name="title_ignore_all_identities">¿Ignorar todas as identidades?</string>
+    <string name="msg_ignore_all_identities">Todas as identidades non verificadas marcaranse como ignoradas.</string>
+    <string name="text_group_command_fallback">Esta é unha mensaxe de chat en grupo. Está a usar unha versión antiga do Kontakt ou o seu cliente non soporta o protocolo de chat en grupo. Por favor actualíceo para a versión máis recente!</string>
+
+    <string name="status_label">"Estado:_ "</string>
+    <string name="trust_unknown">Non verificado</string>
+    <string name="trust_ignored">Ignorado</string>
+    <string name="trust_verified">Verificado</string>
+
+    <string name="action_compose">Nova conversa</string>
+    <string name="action_compose_group">Novo grupo</string>
+
+    <string name="notification_group_title">%1$s @ %2$s</string>
+
+    <plurals name="notification_more">
+	<item quantity="one">+1 máis</item>
+	<item quantity="other">+%d máis</item>
+</plurals>
 
     </resources>
