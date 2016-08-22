@@ -172,7 +172,7 @@
   <string name="menu_refresh">Actualitza</string>
   <string name="menu_invite">Convida usuaris</string>
   <string name="title_error">Error</string>
-  <string name="msg_do_refresh">Estireu per a actualitzar la llista de contactes.</string>
+  <string name="msg_do_refresh">Utilitzeu el Menú per actualitzar la llista de contactes.</string>
   <string name="msg_sync_progress">S\'està actualitzant la llista de contactes…</string>
   <string name="err_sync_failed">No ha estat possible actualitzar la llista de contactes. Per favor, torneu a intentar-ho més tard.</string>
   <string name="err_sync_nonetwork">La xarxa no està disponible. Per favor, intenteu-ho més tard.</string>
@@ -500,4 +500,29 @@
 
     <string name="button_ignore">Ignorar</string>
     <string name="title_identity">Identitat</string>
+    <string name="menu_create_group">Crear un grup</string>
+    <string name="title_identity_self">Identitat (això és vostè!)</string>
+
+    <string name="warning_public_key_group_unverified">L\'Identitat d\'alguns membres del grup no han estat verificades.</string>
+
+    <string name="group_info_ignore_all">Ignorar tot</string>
+    <string name="title_ignore_all_identities">Ignorar totes les identitats?</string>
+    <string name="msg_ignore_all_identities">Totes les identitats no verificades s\'han de marcar com ignorades.</string>
+    <string name="text_group_command_fallback">Aquest és un missatge de xat de grup. Estàs utilitzant una versió antiga de Kontakt o el seu client no suporta el protocol de xat de grup. Si us plau, actualitzeu a l\'última versió!</string>
+
+    <string name="status_label">"Estat: "</string>
+    <string name="trust_unknown">No verificat</string>
+    <string name="trust_ignored">Ignorat</string>
+    <string name="trust_verified">Verificat</string>
+
+    <string name="action_compose">Nou xat</string>
+    <string name="action_compose_group">Nou grup</string>
+
+    <string name="notification_group_title">%1$s @ %2$s</string>
+
+    <plurals name="notification_more">
+	<item quantity="one">+1 més</item>
+	<item quantity="other">+%d més</item>
+</plurals>
+
     </resources>
