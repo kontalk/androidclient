@@ -527,4 +527,6 @@
     <string name="action_compose">Nueva conversación</string>
     <string name="action_compose_group">Nuevo grupo</string>
 
+    <string name="group_info_menu_remove">Eliminar</string>
+
     </resources>
