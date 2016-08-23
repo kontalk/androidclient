@@ -514,14 +514,25 @@
     <string name="menu_create_group">Направи групу</string>
     <string name="text_group_command_fallback">Ово је порука групног ћаскања. Ви или користите старо издање Контака или ваш клијент не подржава протокол групног ћаскања. Надоградите на најновије издање!</string>
 
-    <string name="action_compose">Нова преписка</string>
+    <string name="action_compose">Ново ћаскање</string>
     <string name="action_compose_group">Нова група</string>
 
     <string name="notification_group_title">%1$s @ %2$s</string>
 
     <plurals name="notification_more">
 	<item quantity="one">+још једна</item>
-	<item quantity="other">+још %d</item>
+	<item quantity="few">+још %d</item>
+	<item quantity="many">+још %d</item>
+	<item quantity="other"/>
 </plurals>
+
+    <string name="title_ignore_all_identities">Игнорисати све идентитете?</string>
+    <string name="group_info_ignore_all">Игнориши све</string>
+    <string name="msg_ignore_all_identities">Сви непроверени идентитети ће бити игнорисани.</string>
+    <string name="trust_unknown">Непроверен</string>
+    <string name="trust_ignored">Игнорисан</string>
+    <string name="trust_verified">Проверен</string>
+
+    <string name="warning_public_key_group_unverified">Идентитет неких чланова групе није проверен.</string>
 
     </resources>
