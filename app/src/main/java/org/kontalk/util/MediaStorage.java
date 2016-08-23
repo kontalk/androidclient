@@ -154,15 +154,19 @@ public abstract class MediaStorage {
 
         Bitmap thumbnail = ThumbnailUtils
             .extractThumbnail(bitmap, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT);
-        bitmap.recycle();
+        if (thumbnail != bitmap)
+            bitmap.recycle();
 
         thumbnail = bitmapOrientation(context, media, thumbnail);
+        Bitmap rotatedThumbnail = bitmapOrientation(context, media, thumbnail);
+        if (rotatedThumbnail != thumbnail)
+            thumbnail.recycle();
 
         // write down to file
-        thumbnail.compress(forNetwork ? Bitmap.CompressFormat.JPEG :
+        rotatedThumbnail.compress(forNetwork ? Bitmap.CompressFormat.JPEG :
             Bitmap.CompressFormat.PNG,
             forNetwork ? THUMBNAIL_MIME_COMPRESSION : 0, fout);
-        thumbnail.recycle();
+        rotatedThumbnail.recycle();
     }
 
     /**
@@ -225,16 +229,13 @@ public abstract class MediaStorage {
         }
     }
 
-    public static Bitmap bitmapOrientation(Context context, Uri media, Bitmap bitmap) {
+    /** Apply a rotation matrix respecting the image orientation. */
+    private static Bitmap bitmapOrientation(Context context, Uri media, Bitmap bitmap) {
         // check if we have to (and can) rotate the thumbnail
         try {
             Matrix m = getRotation(context, media);
             if (m != null) {
-                Bitmap rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
-                // createBitmap might return the input bitmap which we don't want to recycle
-                if (rotated != bitmap)
-                    bitmap.recycle();
-                bitmap = rotated;
+                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
             }
         }
         catch (Exception e) {
@@ -532,7 +533,9 @@ public abstract class MediaStorage {
         }
 
         // check for rotation data
-        scaledBitmap = bitmapOrientation(context, uri, scaledBitmap);
+        Bitmap rotatedScaledBitmap = bitmapOrientation(context, uri, scaledBitmap);
+        if (rotatedScaledBitmap != scaledBitmap)
+            scaledBitmap.recycle();
 
         final File compressedFile = getOutgoingPictureFile();
 
@@ -540,7 +543,7 @@ public abstract class MediaStorage {
 
         try {
             stream = new FileOutputStream(compressedFile);
-            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream);
+            rotatedScaledBitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream);
 
             return compressedFile;
         }
@@ -552,7 +555,7 @@ public abstract class MediaStorage {
                 // ignored
             }
 
-            scaledBitmap.recycle();
+            rotatedScaledBitmap.recycle();
         }
     }
 
