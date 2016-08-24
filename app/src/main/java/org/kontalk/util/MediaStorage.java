@@ -230,7 +230,7 @@ public abstract class MediaStorage {
     }
 
     /** Apply a rotation matrix respecting the image orientation. */
-    private static Bitmap bitmapOrientation(Context context, Uri media, Bitmap bitmap) {
+    static Bitmap bitmapOrientation(Context context, Uri media, Bitmap bitmap) {
         // check if we have to (and can) rotate the thumbnail
         try {
             Matrix m = getRotation(context, media);
