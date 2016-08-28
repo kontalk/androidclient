@@ -525,4 +525,6 @@
 	<item quantity="other">+%d més</item>
 </plurals>
 
+    <string name="group_info_menu_remove">Elimina</string>
+
     </resources>
