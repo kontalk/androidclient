@@ -530,13 +530,17 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 error(R.string.msg_no_name);
                 return false;
             }
+        }
 
+        String phoneInput = mPhone.getText().toString();
+        // if the user entered a phone number use it even when importing for backward compatibility
+        if (!importing || !phoneInput.isEmpty()){
             PhoneNumberUtil util = PhoneNumberUtil.getInstance();
             CountryCode cc = (CountryCode) mCountryCode.getSelectedItem();
             if (!BuildConfig.DEBUG) {
                 PhoneNumber phone;
                 try {
-                    phone = util.parse(mPhone.getText().toString(), cc.regionCode);
+                    phone = util.parse(phoneInput, cc.regionCode);
                     // autoselect correct country if user entered country code too
                     if (phone.hasCountryCode()) {
                         CountryCode ccLookup = new CountryCode();
@@ -756,6 +760,11 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 if (!TextUtils.isEmpty(phoneNumber)) {
                     mPhoneNumber = phoneNumber;
                 }
+            }
+
+            if (mPhoneNumber == null) {
+                Toast.makeText(this, R.string.warn_invalid_number, Toast.LENGTH_SHORT).show();
+                return;
             }
 
             // check that uid matches phone number
