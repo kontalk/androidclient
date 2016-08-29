@@ -317,7 +317,7 @@ public class ContactsListFragment extends ListFragment implements
                         .setPackage(packageName)
                         .setComponent(new ComponentName(
                             packageName, resolveInfo.activityInfo.name))
-                        .putExtra("org.kontalk.invite.label", resolveInfo.loadLabel(ctx.getPackageManager()));
+                        .putExtra("org.kontalk.invite.label", resolveInfo.activityInfo.loadLabel(ctx.getPackageManager()));
 
                     targets.add(targetShareIntent);
                 }
@@ -344,9 +344,9 @@ public class ContactsListFragment extends ListFragment implements
         }
     }
 
-    public static class DisplayNameComparator implements
+    static class DisplayNameComparator implements
         Comparator<Intent> {
-        public DisplayNameComparator() {
+        DisplayNameComparator() {
             mCollator.setStrength(Collator.PRIMARY);
         }
 
