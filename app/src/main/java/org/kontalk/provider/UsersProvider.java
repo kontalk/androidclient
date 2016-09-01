@@ -27,6 +27,7 @@ import com.android.providers.contacts.ContactLocaleUtils;
 import com.android.providers.contacts.FastScrollingIndexCache;
 
 import android.annotation.TargetApi;
+import android.annotation.SuppressLint;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -329,6 +330,7 @@ public class UsersProvider extends ContentProvider {
      * to a cursor as extras.  It first checks {@link FastScrollingIndexCache} to see if we
      * already have a cached result.
      */
+    @SuppressLint("NewApi")
     private void bundleFastScrollingIndexExtras(UsersCursor cursor, Uri queryUri,
         final SQLiteDatabase db, SQLiteQueryBuilder qb, String selection,
         String[] selectionArgs, String sortOrder, String countExpression) {

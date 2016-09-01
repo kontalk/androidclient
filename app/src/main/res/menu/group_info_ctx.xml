@@ -20,7 +20,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <!-- actions -->
-    <item android:id="@+id/menu_remove" android:title="Remove" android:icon="@drawable/ic_menu_delete" app:showAsAction="always"/>
+    <item android:id="@+id/menu_remove" android:title="@string/group_info_menu_remove" android:icon="@drawable/ic_menu_delete" app:showAsAction="always"/>
     <item android:id="@+id/menu_compose" android:title="@string/menu_compose" android:icon="@drawable/ic_create_white" app:showAsAction="never"/>
 
 </menu>

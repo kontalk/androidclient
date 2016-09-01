@@ -497,6 +497,7 @@
     <string name="group_info_members">Group members</string>
     <string name="group_info_ignore_all">Ignore all</string>
     <string name="confirm_will_leave_group">You won\'t be able to enter this group again after you leave.</string>
+    <string name="group_info_menu_remove">Remove</string>
 
     <string name="title_ignore_all_identities">Ignore all identities?</string>
     <string name="msg_ignore_all_identities">All unverified identities will be marked as ignored.</string>
