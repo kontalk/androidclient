@@ -531,4 +531,5 @@
 
     <string name="group_info_menu_remove">Entfernen</string>
 
+    <string name="group_command_text_part_kicked">Sie wurden aus dieser Gruppe entfernt</string>
     </resources>
