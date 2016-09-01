@@ -535,4 +535,5 @@
     <plurals name="unread_messages">
         <item quantity="other">%d mensaxes non lidas</item>
     </plurals>
-</resources>
+<string name="delete_thread_messages">Eliminar o historial da conversa</string>
+    </resources>
