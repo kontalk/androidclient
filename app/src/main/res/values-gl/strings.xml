@@ -336,7 +336,7 @@
     <string name="pref_wakeup_time_label_3h">3 horas</string>
 
     <string name="pref_change_passphrase">Cambiar a persoal clave de contrasinal</string>
-    <string name="msg_import_keypair">Kontalk importará as súas claves de % s na súa memoria externa. Asegúrese de que o ficheiro existe e que é un ficheiro válido de claves exportadas.</string>
+    <string name="msg_import_keypair">Kontalk importará as súas claves de %s na súa memoria externa. Asegúrese de que o ficheiro existe e que é un ficheiro válido de claves exportadas.</string>
     <string name="msg_import_keypair_complete">Rematou a importación da súa clave persoal.</string>
     <string name="err_import_keypair_failed">Rematou a importación da súa clave persoal.</string>
     <string name="err_import_keypair_uid_mismatch">A clave importada non coincide co número de teléfono que inseriu.</string>
