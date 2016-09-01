@@ -533,4 +533,5 @@
 
     <string name="group_info_menu_remove">Odebrat</string>
 
+    <string name="group_command_text_part_kicked">Byl(a) jste odebrán(a) z této skupiny</string>
     </resources>
