@@ -165,7 +165,7 @@
   <string name="menu_refresh">Atualizar</string>
   <string name="menu_invite">Convidar pessoas</string>
   <string name="title_error">Erro</string>
-  <string name="msg_do_refresh">Puxe para baixo para atualizar a lista de contatos.</string>
+  <string name="msg_do_refresh">Use Menu &gt; Atualizar para atualizar a lista de contatos.</string>
   <string name="msg_sync_progress">Atualizando a lista de contatos…</string>
   <string name="err_sync_failed">Não foi possível atualizar a lista de contatos. Por favor, tente novamente mais tarde.</string>
   <string name="err_sync_nonetwork">Rede não disponível. Por favor, tente novamente mais tarde.</string>
@@ -538,5 +538,7 @@
     <string name="menu_create_group">Criar grupo</string>
     <string name="action_compose">Nova conversa</string>
     <string name="action_compose_group">Novo grupo</string>
+
+    <string name="group_info_menu_remove">Remover</string>
 
     </resources>
