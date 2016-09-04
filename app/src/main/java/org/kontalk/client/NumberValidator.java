@@ -47,6 +47,7 @@ import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.spongycastle.openpgp.PGPException;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -74,27 +75,30 @@ import org.kontalk.util.MessageUtils;
  * @version 1.0
  */
 public class NumberValidator implements Runnable, ConnectionHelperListener {
-    private static final String TAG = NumberValidator.class.getSimpleName();
+    @SuppressWarnings("WeakerAccess")
+    static final String TAG = NumberValidator.class.getSimpleName();
 
     /** Initialization */
-    public static final int STEP_INIT = 0;
+    private static final int STEP_INIT = 0;
     /** Validation step (sending phone number and waiting for SMS) */
-    public static final int STEP_VALIDATION = 1;
+    private static final int STEP_VALIDATION = 1;
     /** Requesting authentication token */
-    public static final int STEP_AUTH_TOKEN = 2;
+    private static final int STEP_AUTH_TOKEN = 2;
     /** Login test for imported key */
-    public static final int STEP_LOGIN_TEST = 3;
+    private static final int STEP_LOGIN_TEST = 3;
 
     public static final int ERROR_THROTTLING = 1;
     public static final int ERROR_USER_EXISTS = 2;
 
-    private final EndpointServer.EndpointServerProvider mServerProvider;
+    @SuppressWarnings("WeakerAccess")
+    final EndpointServer.EndpointServerProvider mServerProvider;
     private final String mName;
     private final String mPhone;
     private boolean mForce;
     private boolean mFallback;
     private PersonalKey mKey;
-    private PGPKeyPairRing mKeyRing;
+    @SuppressWarnings("WeakerAccess")
+    PGPKeyPairRing mKeyRing;
     private X509Certificate mBridgeCert;
     private String mPassphrase;
     private final Object mKeyLock = new Object();
@@ -102,15 +106,19 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private byte[] mImportedPrivateKey;
     private byte[] mImportedPublicKey;
 
-    private final XMPPConnectionHelper mConnector;
-    private NumberValidatorListener mListener;
-    private volatile int mStep;
+    @SuppressWarnings("WeakerAccess")
+    final XMPPConnectionHelper mConnector;
+    @SuppressWarnings("WeakerAccess")
+    NumberValidatorListener mListener;
+    @SuppressWarnings("WeakerAccess")
+    volatile int mStep;
     private CharSequence mValidationCode;
 
     private Thread mThread;
 
     private HandlerThread mServiceHandler;
-    private Handler mInternalHandler;
+    @SuppressWarnings("WeakerAccess")
+    Handler mInternalHandler;
 
     public NumberValidator(Context context, EndpointServer.EndpointServerProvider serverProvider,
         String name, String phone, PersonalKey key, String passphrase) {
@@ -572,24 +580,24 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         mListener = listener;
     }
 
-    public abstract interface NumberValidatorListener {
+    public interface NumberValidatorListener {
         /** Called if an exception get thrown. */
-        public void onError(NumberValidator v, Throwable e);
+        void onError(NumberValidator v, Throwable e);
 
         /** Called if the server doesn't support registration/auth tokens. */
-        public void onServerCheckFailed(NumberValidator v);
+        void onServerCheckFailed(NumberValidator v);
 
         /** Called on confirmation that the validation SMS is being sent. */
-        public void onValidationRequested(NumberValidator v, String sender);
+        void onValidationRequested(NumberValidator v, String sender);
 
         /** Called if phone number validation failed. */
-        public void onValidationFailed(NumberValidator v, int reason);
+        void onValidationFailed(NumberValidator v, int reason);
 
         /** Called on receiving of authentication token. */
-        public void onAuthTokenReceived(NumberValidator v, byte[] privateKey, byte[] publicKey);
+        void onAuthTokenReceived(NumberValidator v, byte[] privateKey, byte[] publicKey);
 
         /** Called if validation code has not been verified. */
-        public void onAuthTokenFailed(NumberValidator v, int reason);
+        void onAuthTokenFailed(NumberValidator v, int reason);
     }
 
     /**
@@ -637,6 +645,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     }
 
     /** Returns the (parsed) number stored in this device SIM card. */
+    @SuppressLint("HardwareIds")
     public static PhoneNumber getMyNumber(Context context) {
         try {
             final TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);

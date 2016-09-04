@@ -133,26 +133,26 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private Button mValidateButton;
     private MaterialDialog mProgress;
     private CharSequence mProgressMessage;
-    private NumberValidator mValidator;
-    private Handler mHandler;
+    NumberValidator mValidator;
+    Handler mHandler;
 
     private String mPhoneNumber;
     private String mName;
 
-    private PersonalKey mKey;
+    PersonalKey mKey;
     private String mPassphrase;
     private byte[] mImportedPublicKey;
     private byte[] mImportedPrivateKey;
-    private Map<String, Keyring.TrustedFingerprint> mTrustedKeys;
+    Map<String, Keyring.TrustedFingerprint> mTrustedKeys;
     private boolean mForce;
 
     private LocalBroadcastManager lbm;
 
     /** Will be true when resuming for a fallback registration. */
     private boolean mClearState;
-    private boolean mFromInternal;
+    boolean mFromInternal;
     /** Runnable for delaying initial manual sync starter. */
-    private Runnable mSyncStart;
+    Runnable mSyncStart;
     private boolean mSyncing;
 
     private KeyGeneratorReceiver mKeyReceiver;
@@ -165,6 +165,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         /** @deprecated Use saved instance state. */
         @Deprecated
         boolean syncing;
+
+        RetainData() {
+        }
     }
 
     /**
@@ -195,7 +198,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             // ignored
         }
 
-        return new HashSet<String>();
+        return new HashSet<>();
     }
 
     @Override
@@ -471,7 +474,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         }
     }
 
-    private void keepScreenOn(boolean active) {
+    void keepScreenOn(boolean active) {
         if (active)
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         else
@@ -486,7 +489,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     /** Sync country code with text entered by the user, if possible. */
-    private void syncCountryCodeSelector() {
+    void syncCountryCodeSelector() {
         try {
             PhoneNumberUtil util = PhoneNumberUtil.getInstance();
             CountryCode cc = (CountryCode) mCountryCode.getSelectedItem();
@@ -521,7 +524,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     private boolean checkInput(boolean importing) {
-        String phoneStr = null;
+        String phoneStr;
 
         // check name first
         if (!importing) {
@@ -590,7 +593,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         return true;
     }
 
-    private void startValidation(boolean force, boolean fallback) {
+    void startValidation(boolean force, boolean fallback) {
         mForce = force;
         enableControls(false);
 
@@ -734,7 +737,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         }
     }
 
-    private void startImport(ZipInputStream zip, String passphrase) {
+    void startImport(ZipInputStream zip, String passphrase) {
         PersonalKeyImporter importer = null;
         String manualServer = Preferences.getServerURI(this);
 
@@ -917,7 +920,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         }
     }
 
-    private void delayedSync() {
+    void delayedSync() {
         mSyncing = true;
         mSyncStart = new Runnable() {
             public void run() {
@@ -1081,7 +1084,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         proceedManual(sender);
     }
 
-    private void userExistsWarning() {
+    void userExistsWarning() {
         MaterialDialog.Builder builder = new MaterialDialog.Builder(this)
             .content(R.string.err_validation_user_exists)
             .positiveText(android.R.string.ok)
@@ -1119,7 +1122,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         });
     }
 
-    private void startValidationCode(int requestCode, String sender) {
+    void startValidationCode(int requestCode, String sender) {
         startValidationCode(requestCode, sender, null, true);
     }
 
@@ -1166,9 +1169,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         private final String serverUri;
         private final Map<String, Keyring.TrustedFingerprint> trustedKeys;
 
-        public AccountRemovalCallback(NumberValidation activity, Account account,
-                String passphrase, byte[] privateKeyData, byte[] publicKeyData,
-                byte[] bridgeCertData, String name, String serverUri, Map<String, Keyring.TrustedFingerprint> trustedKeys) {
+        AccountRemovalCallback(NumberValidation activity, Account account,
+            String passphrase, byte[] privateKeyData, byte[] publicKeyData,
+            byte[] bridgeCertData, String name, String serverUri, Map<String, Keyring.TrustedFingerprint> trustedKeys) {
             this.a = new WeakReference<>(activity);
             this.account = account;
             this.passphrase = passphrase;
