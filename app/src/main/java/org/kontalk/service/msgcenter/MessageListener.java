@@ -235,6 +235,9 @@ class MessageListener extends MessageCenterPacketListener {
                         Coder.SECURITY_CLEARTEXT
                     );
 
+                    // ack request might not be encrypted
+                    boolean needAck = m.hasExtension(DeliveryReceiptRequest.ELEMENT, DeliveryReceipt.NAMESPACE);
+
                     ExtensionElement _encrypted = m.getExtension(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE);
 
                     if (_encrypted != null && _encrypted instanceof E2EEncryption) {
@@ -256,6 +259,11 @@ class MessageListener extends MessageCenterPacketListener {
                                     innerStanza.setFrom(m.getFrom());
                                     innerStanza.setType(m.getType());
                                     m = innerStanza;
+
+                                    if (!needAck) {
+                                        // try the decrypted message
+                                        needAck = m.hasExtension(DeliveryReceiptRequest.ELEMENT, DeliveryReceipt.NAMESPACE);
+                                    }
                                 }
                             }
 
@@ -389,7 +397,6 @@ class MessageListener extends MessageCenterPacketListener {
                         return;
                     }
 
-                    boolean needAck = m.hasExtension(DeliveryReceiptRequest.ELEMENT, DeliveryReceipt.NAMESPACE);
                     msg.setStatus(needAck ? Messages.STATUS_INCOMING : Messages.STATUS_CONFIRMED);
 
                     Uri msgUri = incoming(msg);

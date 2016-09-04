@@ -46,8 +46,6 @@ public class MediaService extends IntentService {
 
     private static final String ACTION_PREPARE_MESSAGE = "org.kontalk.action.PREPARE_MESSAGE";
 
-    private static final String EXTRA_RESEND = "org.kontalk.message.resend";
-
     public MediaService() {
         super(MediaService.class.getSimpleName());
     }
