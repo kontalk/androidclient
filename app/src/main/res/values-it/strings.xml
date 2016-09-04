@@ -529,4 +529,5 @@
     <string name="action_compose">Nuova chat</string>
     <string name="action_compose_group">Nuovo gruppo</string>
 
+    <string name="group_command_text_part_kicked">Sei stato rimosso dal gruppo</string>
     </resources>
