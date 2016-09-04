@@ -289,7 +289,7 @@ public class ContactsListFragment extends ListFragment implements
         final Context context = getContext();
         if (context != null) {
             mCursor = Contact.queryContacts(context);
-            //mListAdapter.changeCursor(mCursor);
+            mListAdapter.changeCursor(mCursor);
         }
     }
 
