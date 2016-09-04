@@ -172,7 +172,7 @@
   <string name="menu_refresh">Aggiorna</string>
   <string name="menu_invite">Invita utenti</string>
   <string name="title_error">Errore</string>
-  <string name="msg_do_refresh">Tira verso il basso per aggiornare la lista contatti.</string>
+  <string name="msg_do_refresh">Usa Menu &gt; Aggiorna per aggiornare la lista contatti.</string>
   <string name="msg_sync_progress">Aggiornamento lista contatti in corso…</string>
   <string name="err_sync_failed">Impossibile aggiornare la lista contatti. Riprova più tardi.</string>
   <string name="err_sync_nonetwork">Rete non disponibile. Riprova più tardi.</string>
@@ -522,5 +522,11 @@
 	<item quantity="one">+ un altro</item>
 	<item quantity="other">+ altri %d</item>
 </plurals>
+
+    <string name="menu_create_group">Crea gruppo</string>
+    <string name="group_info_menu_remove">Rimuovi</string>
+
+    <string name="action_compose">Nuova chat</string>
+    <string name="action_compose_group">Nuovo gruppo</string>
 
     </resources>
