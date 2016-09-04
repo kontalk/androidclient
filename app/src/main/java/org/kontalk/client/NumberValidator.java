@@ -201,6 +201,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
     @Override
     public void run() {
+        // aborted
+        if (mServiceHandler == null)
+            return;
+
         try {
             // begin!
             if (mStep == STEP_INIT) {
