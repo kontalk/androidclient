@@ -107,7 +107,7 @@ public class MessagesController {
 
         if (newMsg != null) {
             // prepare message and send (thumbnail, compression -> send)
-            MediaService.prepareMessage(mContext, msgId, ContentUris.parseId(newMsg), uri, mime, compress);
+            MediaService.prepareMessage(mContext, msgId, ContentUris.parseId(newMsg), uri, mime, media, compress);
             return newMsg;
         }
         else {

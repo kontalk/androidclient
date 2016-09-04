@@ -2023,7 +2023,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     @Override
     public void onRecordingSuccessful(File file) {
         if (file != null)
-            sendBinaryMessage(Uri.fromFile(file), AudioDialog.DEFAULT_MIME, true, AudioComponent.class);
+            sendBinaryMessage(Uri.fromFile(file), AudioDialog.DEFAULT_MIME, false, AudioComponent.class);
     }
 
     @Override

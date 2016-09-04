@@ -69,6 +69,7 @@ public class MediaService extends IntentService {
         String msgId = args.getString(CompositeMessage.MSG_SERVER_ID);
         long databaseId = args.getLong(CompositeMessage.MSG_ID);
         String mime = args.getString(CompositeMessage.MSG_MIME);
+        boolean media = args.getBoolean("org.kontalk.message.media", false);
 
         try {
             File previewFile = null;
@@ -90,10 +91,13 @@ public class MediaService extends IntentService {
                 // use the compressed image from now on
                 uri = Uri.fromFile(compressed);
             }
-            else {
+            else if (media) {
                 File copy = MediaStorage.copyOutgoingMedia(this, uri);
                 length = copy.length();
                 uri = Uri.fromFile(copy);
+            }
+            else {
+                length = MediaStorage.getLength(this, uri);
             }
 
             MessagesProviderUtils.updateMedia(this, databaseId,
@@ -108,12 +112,13 @@ public class MediaService extends IntentService {
         }
     }
 
-    public static void prepareMessage(Context context, String msgId, long databaseId, Uri uri, String mime, int compress) {
+    public static void prepareMessage(Context context, String msgId, long databaseId, Uri uri, String mime, boolean media, int compress) {
         Intent i = new Intent(context, MediaService.class);
         i.setAction(MediaService.ACTION_PREPARE_MESSAGE);
         i.putExtra(CompositeMessage.MSG_SERVER_ID, msgId);
         i.putExtra(CompositeMessage.MSG_ID, databaseId);
         i.putExtra(CompositeMessage.MSG_MIME, mime);
+        i.putExtra("org.kontalk.message.media", media);
         i.putExtra(CompositeMessage.MSG_COMPRESS, compress);
         i.setData(uri);
         context.startService(i);

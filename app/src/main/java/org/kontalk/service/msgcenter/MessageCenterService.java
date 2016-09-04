@@ -941,6 +941,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 case ACTION_MEDIA_READY:
                     doConnect = handleMediaReady(intent);
+                    break;
 
                 default:
                     // no command means normal service start, connect if not connected
@@ -2260,7 +2261,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         i.putExtra(UploadService.EXTRA_MESSAGE_ID, id);
                         i.putExtra(UploadService.EXTRA_MIME, mime);
                         // this will be used only for out of band data
-                        i.putExtra(UploadService.EXTRA_ENCRYPT, true);
+                        i.putExtra(UploadService.EXTRA_ENCRYPT, encrypt);
                         i.putExtra(UploadService.EXTRA_PREVIEW_PATH, previewPath);
                         // delete original (actually it's the encrypted temp file) if we already encrypted it
                         i.putExtra(UploadService.EXTRA_DELETE_ORIGINAL, encrypt);
