@@ -31,6 +31,7 @@
             style="?android:attr/listViewStyle"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:cacheColorHint="@android:color/transparent"
             android:drawSelectorOnTop="false"
             android:transcriptMode="disabled"
             android:divider="@null"

@@ -149,7 +149,9 @@ public class ContactsListFragment extends ListFragment implements
 
         mListAdapter = new ContactsListAdapter(parent, getListView());
         mListAdapter.setPinnedHeader(parent);
-        ((PinnedHeaderListView) getListView()).setEnableHeaderTransparencyChanges(true);
+        PinnedHeaderListView list = (PinnedHeaderListView) getListView();
+        list.setEnableHeaderTransparencyChanges(false);
+        list.setOnScrollListener(mListAdapter);
 
         mListAdapter.setOnContentChangedListener(this);
         setListAdapter(mListAdapter);
