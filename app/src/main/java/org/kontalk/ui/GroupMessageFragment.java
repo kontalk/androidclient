@@ -177,7 +177,8 @@ public class GroupMessageFragment extends AbstractComposeFragment {
                     // leave group
                     mConversation.leaveGroup();
                     // reload conversation
-                    ((ComposeMessageParent) getActivity()).loadConversation(getThreadId());
+                    if (isVisible())
+                        startQuery(false);
                 }
             })
             .negativeText(android.R.string.cancel)

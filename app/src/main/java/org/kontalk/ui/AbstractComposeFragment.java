@@ -1136,7 +1136,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         return args != null && args.getLong(ComposeMessage.EXTRA_MESSAGE, -1) >= 0;
     }
 
-    private synchronized void startQuery(boolean progress) {
+    protected synchronized void startQuery(boolean progress) {
         if (progress)
             getActivity().setProgressBarIndeterminateVisibility(true);
 
