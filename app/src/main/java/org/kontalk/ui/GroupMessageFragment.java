@@ -70,6 +70,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     private MenuItem mInviteGroupMenu;
     private MenuItem mSetGroupSubjectMenu;
     private MenuItem mLeaveGroupMenu;
+    private MenuItem mAttachMenu;
 
     @Override
     public boolean sendInactive() {
@@ -97,6 +98,10 @@ public class GroupMessageFragment extends AbstractComposeFragment {
             visible = mConversation.getGroupMembership() == Groups.MEMBERSHIP_MEMBER;
             mLeaveGroupMenu.setVisible(visible);
             mLeaveGroupMenu.setEnabled(visible);
+            mAttachMenu.setVisible(visible);
+            mAttachMenu.setEnabled(visible);
+            if (!visible)
+                tryHideAttachmentView();
         }
     }
 
@@ -106,6 +111,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         mInviteGroupMenu = menu.findItem(R.id.invite_group);
         mSetGroupSubjectMenu = menu.findItem(R.id.group_subject);
         mLeaveGroupMenu = menu.findItem(R.id.leave_group);
+        mAttachMenu = menu.findItem(R.id.menu_attachment);
     }
 
     @Override
