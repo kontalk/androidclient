@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2016 Kontalk Devteam <devteam@kontalk.org>
 
@@ -429,7 +429,7 @@
 	<item quantity="one">Выбрано: 1</item>
 	<item quantity="few">Выбрано: %d</item>
 	<item quantity="many">Выбрано: %d</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
 
 <string name="mark_read">Прочитано</string>
@@ -443,4 +443,5 @@
     <string name="warning_public_key_changed">Личный ключ пользователя неожиданно изменился!</string>
     <string name="button_load_next_page">Загрузить больше сообщений</string>
 
+    <string name="menu_create_group">Создать группу</string>
     </resources>
