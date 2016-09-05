@@ -297,4 +297,18 @@ public class MessagesProviderUtils {
             values, null, null);
     }
 
+    /** Returns the current known membership of a user in a group. */
+    public static boolean isGroupMember(Context context, String groupJid, String jid) {
+        Cursor c = null;
+        try {
+            c = context.getContentResolver().query(Groups.getMembersUri(groupJid),
+                new String[] { Groups.PENDING },  Groups.PEER + "=?", new String[] { jid }, null);
+            return c.moveToNext() && c.getInt(0) == 0;
+        }
+        finally {
+            if (c != null)
+                c.close();
+        }
+    }
+
 }

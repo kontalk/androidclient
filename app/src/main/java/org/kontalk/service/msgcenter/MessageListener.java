@@ -130,9 +130,10 @@ class MessageListener extends MessageCenterPacketListener {
         return ext.getType() == GroupExtension.Type.CREATE ||
             // is the owner adding me to the group?
             isAddingMe(ext) ||
+            // check that the sender has valid membership
+            (isValidMember(ext, packet.getFrom()) &&
             // all other commands require the group to be present in our database
-            MessagesProviderUtils.isGroupExisting(getContext(), ext.getJID());
-        // TODO we should also check if the sender is actually in the group
+            MessagesProviderUtils.isGroupExisting(getContext(), ext.getJID()));
     }
 
     /** Returns true if the given group command is the owner adding me to the group. */
@@ -146,6 +147,11 @@ class MessageListener extends MessageCenterPacketListener {
             }
         }
         return false;
+    }
+
+    private boolean isValidMember(GroupExtension ext, String from) {
+        return MessagesProviderUtils.isGroupMember(getContext(),
+            ext.getJID(), XmppStringUtils.parseBareJid(from));
     }
 
     @Override
