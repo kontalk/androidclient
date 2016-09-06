@@ -172,7 +172,7 @@
   <string name="menu_refresh">Обновить</string>
   <string name="menu_invite">Пригласить пользователей</string>
   <string name="title_error">Ошибка</string>
-  <string name="msg_do_refresh">Потяните вниз чтобы обновить список контактов.</string>
+  <string name="msg_do_refresh">Потяните меню со списком контактов вниз, чтобы обновить его.</string>
   <string name="msg_sync_progress">Обновление списка контактов…</string>
   <string name="err_sync_failed">Невозможно обновить список контактов. Пожалуйста, повторите позднее.</string>
   <string name="err_sync_nonetwork">Сеть недоступна. Пожалуйста, повторите позднее.</string>
@@ -444,4 +444,85 @@
     <string name="button_load_next_page">Загрузить больше сообщений</string>
 
     <string name="menu_create_group">Создать группу</string>
-    </resources>
+    <string name="confirm_cancel_registration">Если Вы вернётесь назад, Вам придётся провести регистрацию с нуля. Если Вам нужно переключиться на другую программу, просто нажмите кнопку с домиком.</string>
+    <string name="text_search_results_empty">Ни одного сообщения не найдено.</string>
+    <string name="title_fallback">Имеете проблемы?</string>
+    <string name="msg_fallback">Мы попробуем другой путь, чтобы подтвердить Ваш номер телефона.</string>
+    <string name="menu_invite_group">Добавить пользователей</string>
+    <string name="menu_set_group_subject">Задать название группы</string>
+    <string name="menu_leave_group">Покинуть группу</string>
+    <string name="chooser_error_no_camera_app">Не найдено приложение камеры.</string>
+    <string name="chooser_error_no_gallery_app">Не найдено приложение галереи.</string>
+    <string name="chooser_error_no_app">Нет подходящего приложения, чтобы открыть этот файл.</string>
+
+    <string name="chooser_error_no_browser">Не найден браузер, чтобы открыть эту ссылку.</string>
+    <string name="button_ignore">Игнорировать</string>
+    <string name="text_invitation_info">(приглашение к беседе)</string>
+    <string name="title_identity">Опознание</string>
+    <string name="title_identity_self">Опознание (это Вы!)</string>
+
+    <string name="warning_button_details">ДЕТАЛИ</string>
+    <string name="title_public_key_changed_warning">Персональный ключ изменён</string>
+    <string name="msg_public_key_changed_warning">Пожалуйста подтвердите, что это пользователь, который переустановил Контолк или создал новый ключ для себя специально, иначе дальнейшая связь с этим контактом может быть прочитана хакерами!</string>
+    <string name="warning_public_key_unknown">Персональный ключ пользователя является недоверенным!</string>
+    <string name="title_public_key_unknown_warning">Недоверенный персональный ключ</string>
+    <string name="msg_public_key_unknown_warning">Пожалуйста подтвердите, что это пользователь, отпечаток которого соответствует тому, что отражено в его диалоге <b>Личность</b>, иначе беседа с пользователем может быть прочитана хакерами!</string>
+    <string name="warning_public_key_group_unverified">Личности некоторых участников группы не были подтверждены.</string>
+
+    <string name="group_untitled">Группа без названия</string>
+    <string name="title_group_subject">Название группы</string>
+    <string name="group_command_create">Группа создана:</string>
+    <string name="group_command_self_parted">Вы покинули группу.</string>
+    <string name="group_command_user_parted">%s покинул группу.</string>
+    <string name="group_command_subject">Название группы установлено как: %s</string>
+
+    <string name="group_command_text_create">Группа создана</string>
+    <string name="group_command_text_subject">Название группы изменено</string>
+    <string name="group_command_text_part">Кто-то покинул эту группу</string>
+    <string name="group_command_text_part_self">Вы покинули эту группу</string>
+    <string name="group_command_text_add_remove">Кто-то был добавлен или удалён</string>
+
+    <string name="groupinfo_activity_title">Информация о группе</string>
+
+    <string name="group_info_set_title">Изменить название</string>
+    <string name="group_info_leave">Покинуть группу</string>
+    <string name="group_info_members">Участники группы</string>
+    <string name="group_info_ignore_all">Игнорировать всех</string>
+    <string name="confirm_will_leave_group">Вы не сможете войти в эту группу снова после того, как Вы покинете её.</string>
+    <string name="group_info_menu_remove">Удалить</string>
+
+    <string name="title_ignore_all_identities">Проигнорировать все личности?</string>
+    <string name="msg_ignore_all_identities">Все не подтвеждённые личности попадут в Ваш список игнорирования.</string>
+    <string name="learn_more">Узнать больше</string>
+
+    <string name="text_group_command_fallback">Это групповое сообщение беседы. Вы используете старую версию Контолка или Ваш клиент не поддерживает протокол групповой беседы. Пожалуйста обновитесь до последней версии!</string>
+
+    <string name="title_huawei_protected_apps">Приложения, Защищённые Huawei</string>
+    <string name="msg_huawei_protected_apps">Контолк требует, чтобы он был включён в список Защищённых Приложений, чтобы функционировать правильно.</string>
+    <string name="btn_huawei_protected_apps">Защищённые Приложения</string>
+    <string name="check_do_not_show_again">Не показывать снова</string>
+
+    <string name="status_label">"Статус: "</string>
+    <string name="trust_unknown">Не подтверждён</string>
+    <string name="trust_ignored">В списке игнорирования</string>
+    <string name="trust_verified">Подтвеждён</string>
+
+    <string name="action_compose">Новый чат</string>
+    <string name="action_compose_group">Новая группа</string>
+
+    <string name="notification_group_title">%1$s @ %2$s</string>
+
+    <plurals name="notification_more">
+	<item quantity="one">+ 1 ещё</item>
+	<item quantity="few">+%d несколько ещё</item>
+	<item quantity="many">+%d ещё</item>
+	<item quantity="other"/>
+</plurals>
+
+    <plurals name="group_people">
+	<item quantity="one">1 человек</item>
+	<item quantity="other">%d несколько человек</item>
+</plurals>
+
+
+</resources>
