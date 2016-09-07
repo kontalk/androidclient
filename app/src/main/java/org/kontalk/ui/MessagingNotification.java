@@ -112,6 +112,9 @@ public class MessagingNotification {
     /** Pending delayed notification update flag. */
     private static volatile boolean sPending;
 
+    /** Temporary disable all notifications flag */
+    private static volatile boolean sDisabled;
+
     /** Peer to NOT be notified for new messages. */
     private static volatile String sPaused;
 
@@ -136,6 +139,16 @@ public class MessagingNotification {
         return sPaused != null && sPaused.equalsIgnoreCase(XmppStringUtils.parseBareJid(jid));
     }
 
+    /** Enables all notifications. */
+    public static void enable() {
+        sDisabled = false;
+    }
+
+    /** Temporarly disable all notifications. */
+    public static void disable() {
+        sDisabled = true;
+    }
+
     private static boolean supportsBigNotifications() {
         return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN;
     }
@@ -143,7 +156,7 @@ public class MessagingNotification {
     /** Starts messages notification updates in another thread. */
     public static void delayedUpdateMessagesNotification(final Context context, final boolean isNew) {
         // notifications are disabled
-        if (!Preferences.getNotificationsEnabled(context))
+        if (!Preferences.getNotificationsEnabled(context) || sDisabled)
             return;
 
         if (!sPending) {
@@ -165,7 +178,7 @@ public class MessagingNotification {
      */
     public static void updateMessagesNotification(Context context, boolean isNew) {
         // notifications are disabled
-        if (!Preferences.getNotificationsEnabled(context))
+        if (!Preferences.getNotificationsEnabled(context) || sDisabled)
             return;
         // no default account. WTF?!?
         Account account = Authenticator.getDefaultAccount(context);

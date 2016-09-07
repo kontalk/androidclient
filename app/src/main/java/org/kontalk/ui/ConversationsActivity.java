@@ -202,6 +202,9 @@ public class ConversationsActivity extends MainActivity
         else {
             // hold message center
             MessageCenterService.hold(this, true);
+            // since we have the conversation list open, we're going to disable notifications
+            // no need to notify the user twice
+            MessagingNotification.disable();
         }
 
         updateOffline();
@@ -212,6 +215,8 @@ public class ConversationsActivity extends MainActivity
         super.onPause();
         // release message center
         MessageCenterService.release(this);
+        // enable notifications again
+        MessagingNotification.enable();
     }
 
     @Override
