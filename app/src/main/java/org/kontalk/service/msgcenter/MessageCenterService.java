@@ -2357,7 +2357,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             // message server id
             String serverId = isMessage ? data.getString("org.kontalk.message.ack") : null;
-            boolean ackRequest = isMessage && !data.getBoolean("org.kontalk.message.standalone", false);
+            boolean ackRequest = isMessage && !data.getBoolean("org.kontalk.message.standalone", false) && !isGroupMsg;
 
             if (isMessage) {
                 org.jivesoftware.smack.packet.Message msg = (org.jivesoftware.smack.packet.Message) m;
@@ -2479,7 +2479,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     catch (Exception ignored) {
                     }
 
-                    // standalone message: no receipt
+                    // standalone: no receipt
                     if (ackRequest)
                         DeliveryReceiptRequest.addTo((org.jivesoftware.smack.packet.Message) m);
                 }
