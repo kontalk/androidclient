@@ -34,6 +34,7 @@ import org.kontalk.provider.MyMessages;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.GroupCommandAckListener;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.util.SystemUtils;
 
 
 public class KontalkGroupController implements GroupController<Message> {
@@ -74,7 +75,20 @@ public class KontalkGroupController implements GroupController<Message> {
         }
         else if (command instanceof AddRemoveMembersCommand) {
             KontalkAddRemoveMembersCommand addRemove = (KontalkAddRemoveMembersCommand) command;
-            group.addRemoveMembers(addRemove.getSubject(), addRemove.getMembers(),
+            String[] added = addRemove.getAddedMembers();
+            String[] members = addRemove.getMembers();
+            String[] filteredMembers = members;
+            if (added != null) {
+                // remove added users from members list
+                filteredMembers = new String[members.length - added.length];
+                int fi = 0;
+                for (String member : members) {
+                    if (!SystemUtils.contains(added, member)) {
+                        filteredMembers[fi++] = member;
+                    }
+                }
+            }
+            group.addRemoveMembers(addRemove.getSubject(), filteredMembers,
                 addRemove.getAddedMembers(), addRemove.getRemovedMembers(), packet);
         }
         else if (command instanceof PartCommand) {
