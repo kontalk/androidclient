@@ -167,9 +167,13 @@ public class MessagesController {
             if (added != null) {
                 ContentValues membersValues = new ContentValues();
                 for (String member : added) {
-                    // do not add ourselves
-                    if (Authenticator.isSelfJID(mContext, member))
+                    // do not add ourselves...
+                    if (Authenticator.isSelfJID(mContext, member)) {
+                        // ...but mark our membership
+                        MessagesProviderUtils.setGroupMembership(mContext,
+                            group.getContent().getJID(), MyMessages.Groups.MEMBERSHIP_MEMBER);
                         continue;
+                    }
 
                     // add member to group
                     membersValues.put(MyMessages.Groups.PEER, member);
