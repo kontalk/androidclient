@@ -419,9 +419,9 @@ public class Conversation {
             .addGroupMembers(mContext, getThreadId(), mGroupJid, members, msgId, encrypted);
         // TODO check for null
 
-        // send add group member command now
+        // send add group member command now (reload members)
         MessageCenterService.addGroupMembers(mContext, mGroupJid,
-            mGroupSubject, getGroupPeers(), members, encrypted,
+            mGroupSubject, getGroupPeers(true), members, encrypted,
             ContentUris.parseId(cmdMsg), msgId);
     }
 
