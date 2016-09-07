@@ -281,16 +281,34 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
         String status;
         boolean sendEnabled;
-        if (mConversation.getGroupMembership() != Groups.MEMBERSHIP_PARTED) {
-            // +1 because we are not included in the members list
-            int count = mConversation.getGroupPeers().length + 1;
-            status = getResources()
-                .getQuantityString(R.plurals.group_people, count, count);
-            sendEnabled = count > 1;
-        }
-        else {
-            status = getString(R.string.group_command_text_part_self);
-            sendEnabled = false;
+        int membership = mConversation.getGroupMembership();
+        switch (membership) {
+            case Groups.MEMBERSHIP_PARTED:
+                status = getString(R.string.group_command_text_part_self);
+                sendEnabled = false;
+                break;
+            case Groups.MEMBERSHIP_KICKED:
+                status = getString(R.string.group_command_text_part_kicked);
+                sendEnabled = false;
+                break;
+            case Groups.MEMBERSHIP_OBSERVER: {
+                int count = mConversation.getGroupPeers().length;
+                status = getResources()
+                    .getQuantityString(R.plurals.group_people, count, count);
+                sendEnabled = count > 1;
+                break;
+            }
+            case Groups.MEMBERSHIP_MEMBER: {
+                // +1 because we are not included in the members list
+                int count = mConversation.getGroupPeers().length + 1;
+                status = getResources()
+                    .getQuantityString(R.plurals.group_people, count, count);
+                sendEnabled = count > 1;
+                break;
+            }
+            default:
+                // shouldn't happen
+                throw new RuntimeException("Unknown membership status: " + membership);
         }
 
         // disable sending if necessary

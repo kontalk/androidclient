@@ -182,6 +182,14 @@ public class MessagesController {
                 // remove members from group
                 MessagesProviderUtils.removeGroupMembers(mContext, group.getContent().getJID(),
                     removed, false);
+                // set our membership to parted if we were removed from the group
+                for (String removedJid : removed) {
+                    if (Authenticator.isSelfJID(mContext, removedJid)) {
+                        MessagesProviderUtils.setGroupMembership(mContext,
+                            group.getContent().getJID(), MyMessages.Groups.MEMBERSHIP_KICKED);
+                        break;
+                    }
+                }
             }
 
             // set subject

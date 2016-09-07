@@ -200,6 +200,8 @@ public final class MyMessages {
         public static final int MEMBERSHIP_MEMBER = 1;
         /** You are an observer. */
         public static final int MEMBERSHIP_OBSERVER = 2;
+        /** You were removed from the group. */
+        public static final int MEMBERSHIP_KICKED = 3;
 
         public static final Uri CONTENT_URI = Uri.parse("content://"
             + MessagesProvider.AUTHORITY + "/groups");
