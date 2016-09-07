@@ -34,6 +34,7 @@ import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.group.GroupControllerFactory;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.SystemUtils;
 
 
 /**
@@ -419,9 +420,10 @@ public class Conversation {
             .addGroupMembers(mContext, getThreadId(), mGroupJid, members, msgId, encrypted);
         // TODO check for null
 
-        // send add group member command now (reload members)
+        // send add group member command now
+        String[] allMembers = SystemUtils.concatenate(getGroupPeers(), members);
         MessageCenterService.addGroupMembers(mContext, mGroupJid,
-            mGroupSubject, getGroupPeers(true), members, encrypted,
+            mGroupSubject, allMembers, members, encrypted,
             ContentUris.parseId(cmdMsg), msgId);
     }
 

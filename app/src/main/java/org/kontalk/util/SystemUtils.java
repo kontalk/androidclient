@@ -317,6 +317,14 @@ public final class SystemUtils {
         return c;
     }
 
+    public static <T> boolean contains(final T[] array, final T v) {
+        for (final T e : array)
+            if (e == v || v != null && v.equals(e))
+                return true;
+
+        return false;
+    }
+
     /** Instead of importing the whole commons-io :) */
     public static long copy(final InputStream input, final OutputStream output) throws IOException {
         byte[] buffer = new byte[4096];
