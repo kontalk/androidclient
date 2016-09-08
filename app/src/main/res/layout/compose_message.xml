@@ -45,6 +45,7 @@
             style="?android:attr/listViewWhiteStyle"
             android:background="@android:color/transparent"
             android:cacheColorHint="@android:color/transparent"
+            android:listSelector="?attr/selectableItemBackground"
             android:divider="@null"
             android:dividerHeight="0.0sp"
             android:layout_width="fill_parent"
