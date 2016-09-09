@@ -490,7 +490,7 @@
 
     <string name="groupinfo_activity_title">Gruppeninfo</string>
 
-    <string name="group_info_set_title">Titel ändern</string>
+    <string name="group_info_set_title">Gruppenname ändern</string>
     <string name="group_info_leave">Gruppe verlassen</string>
     <string name="group_info_members">Gruppenmitglieder</string>
 
