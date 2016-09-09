@@ -247,6 +247,7 @@
     <string name="pref_fontsize_label_medium">Medium</string>
     <string name="pref_fontsize_label_large">Large</string>
     <string name="pref_balloon_label_hangout">Hangout</string>
+    <string name="pref_balloon_label_silence">Silence</string>
     <string name="pref_balloon_label_classic">Classic</string>
     <string name="pref_balloon_label_classic_old">Classic (old)</string>
     <string name="pref_balloon_label_iphone">iPhone</string>

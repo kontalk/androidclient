@@ -53,6 +53,21 @@ public class MessageListItemThemeFactory {
                 return new AvatarMessageTheme(layoutId, drawableId);
             }
         });
+        mThemes.put("silence", new FactoryCreator() {
+            @Override
+            public MessageListItemTheme create(int direction) {
+                int layoutId, drawableId;
+                if (direction == Messages.DIRECTION_IN) {
+                    layoutId = R.layout.balloon_avatar_in;
+                    drawableId = R.drawable.balloon_silence_incoming;
+                }
+                else {
+                    layoutId = R.layout.balloon_avatar_out;
+                    drawableId = R.drawable.balloon_silence_outgoing;
+                }
+                return new AvatarMessageTheme(layoutId, drawableId);
+            }
+        });
         mThemes.put("classic", new FactoryCreator() {
             @Override
             public MessageListItemTheme create(int direction) {
