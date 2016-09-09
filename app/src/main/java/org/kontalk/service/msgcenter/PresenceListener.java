@@ -357,7 +357,8 @@ class PresenceListener extends MessageCenterPacketListener {
         return i;
     }
 
-    private int updateUsersDatabase(Presence p) {
+    @SuppressWarnings("WeakerAccess")
+    int updateUsersDatabase(Presence p) {
         String jid = XmppStringUtils.parseBareJid(p.getFrom());
 
         ContentValues values = new ContentValues(4);
