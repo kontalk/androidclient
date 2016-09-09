@@ -535,4 +535,10 @@
 
     <string name="warning_public_key_group_unverified">Идентитет неких чланова групе није проверен.</string>
 
+    <string name="title_passphrase_request">Лозинка личног кључа</string>
+    <string name="err_invalid_passphrase">Погрешна лозинка. Поново покрените апликацију да бисте покушали нову.</string>
+
+    <string name="group_command_text_part_kicked">Уклоњени сте из ове групе</string>
+    <string name="group_info_menu_remove">Уклони</string>
+
     </resources>
