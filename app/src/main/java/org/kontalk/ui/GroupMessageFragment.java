@@ -423,8 +423,10 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     }
 
     public void viewGroupInfo() {
-        // TODO tablet support
-        GroupInfoActivity.start(getContext(), getThreadId());
+        int membership = mConversation != null ? mConversation.getGroupMembership() : Groups.MEMBERSHIP_PARTED;
+        if (membership == Groups.MEMBERSHIP_MEMBER || membership == Groups.MEMBERSHIP_OBSERVER)
+            // TODO tablet support
+            GroupInfoActivity.start(getContext(), getThreadId());
     }
 
 }
