@@ -143,7 +143,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     private static final int MESSAGE_PAGE_QUERY_TOKEN = 8723;
 
     /** How many messages to load per page. */
-    private static final int MESSAGE_PAGE_SIZE = 1000;
+    private static final int MESSAGE_PAGE_SIZE = 100;
 
     private static final int SELECT_ATTACHMENT_OPENABLE = Activity.RESULT_FIRST_USER + 1;
     private static final int SELECT_ATTACHMENT_CONTACT = Activity.RESULT_FIRST_USER + 2;
@@ -174,7 +174,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     protected ComposerBar mComposer;
 
-    private MessageListQueryHandler mQueryHandler;
+    MessageListQueryHandler mQueryHandler;
     MessageListAdapter mListAdapter;
     /** Header view for the list view: "previous messages" button. */
     private View mHeaderView;
@@ -268,7 +268,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 startMessagesQuery(mQueryHandler.getLastId());
             }
         });
-        list.addHeaderView(mHeaderView);
+        list.addHeaderView(mHeaderView, null, false);
 
         // set custom background (if any)
         ImageView background = (ImageView) getView().findViewById(R.id.background);
@@ -1150,7 +1150,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             threadId, isSearching() ? 0 : MESSAGE_PAGE_SIZE, 0);
     }
 
-    private void startMessagesQuery(long lastId) {
+    void startMessagesQuery(long lastId) {
         CompositeMessage.startQuery(mQueryHandler, MESSAGE_PAGE_QUERY_TOKEN,
             threadId, isSearching() ? 0 : MESSAGE_PAGE_SIZE, lastId);
     }
@@ -1940,7 +1940,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         mHeaderView.setVisibility(View.GONE);
     }
 
-    private void enableHeaderView(boolean enabled) {
+    void enableHeaderView(boolean enabled) {
         mNextPageButton.setEnabled(enabled);
     }
 
