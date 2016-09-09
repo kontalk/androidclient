@@ -278,6 +278,8 @@
     <string name="err_import_keypair_uid_mismatch">Imported key doesn\'t match the phone number you entered.</string>
     <string name="err_import_keypair_read">Unable to read personal key from external storage.</string>
     <string name="title_passphrase">Password</string>
+    <string name="title_passphrase_request">Personal key password</string>
+    <string name="err_invalid_passphrase">Wrong password. Restart the app to try another one.</string>
 
     <string name="msg_status_sending">Sending</string>
     <string name="msg_status_sent">Sent</string>

@@ -62,7 +62,7 @@ public class MaintenanceFragment extends RootPreferenceFragment {
     private static final int REQUEST_CREATE_KEYPACK = Activity.RESULT_FIRST_USER + 3;
 
     // this is used after when exiting to SAF for exporting
-    private String mPassphrase;
+    String mPassphrase;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -259,17 +259,17 @@ public class MaintenanceFragment extends RootPreferenceFragment {
                 .setTitle(R.string.pref_maintenance);
     }
 
-    private interface OnPassphraseChangedListener {
+    interface OnPassphraseChangedListener {
         void onPassphraseChanged(String passphrase);
     }
 
-    private interface OnPassphraseRequestListener {
+    interface OnPassphraseRequestListener {
         void onValidPassphrase(String passphrase);
 
         void onInvalidPassphrase();
     }
 
-    private void askCurrentPassphrase(final OnPassphraseRequestListener action) {
+    void askCurrentPassphrase(final OnPassphraseRequestListener action) {
         new MaterialDialog.Builder(getActivity())
                 .title(R.string.title_passphrase)
                 .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
@@ -293,11 +293,11 @@ public class MaintenanceFragment extends RootPreferenceFragment {
                 .show();
     }
 
-    private void askNewPassphrase() {
+    void askNewPassphrase() {
         askNewPassphrase(null);
     }
 
-    private void askNewPassphrase(final OnPassphraseChangedListener action) {
+    void askNewPassphrase(final OnPassphraseChangedListener action) {
         new PasswordInputDialog.Builder(getActivity())
                 .setMinLength(PersonalKey.MIN_PASSPHRASE_LENGTH)
                 .title(R.string.pref_change_passphrase)
