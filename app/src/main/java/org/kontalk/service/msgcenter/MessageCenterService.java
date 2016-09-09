@@ -1180,13 +1180,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
             }
             else {
+                // FIXME isn't this somewhat the same as createPresence?
                 String show = intent.getStringExtra(EXTRA_SHOW);
                 Presence p = new Presence(type != null ? Presence.Type.valueOf(type) : Presence.Type.available);
                 p.setStanzaId(id);
                 p.setTo(to);
                 if (intent.hasExtra(EXTRA_PRIORITY))
                     p.setPriority(intent.getIntExtra(EXTRA_PRIORITY, 0));
-                p.setStatus(intent.getStringExtra(EXTRA_STATUS));
+                String status = intent.getStringExtra(EXTRA_STATUS);
+                if (!TextUtils.isEmpty(status))
+                    p.setStatus(status);
                 if (show != null)
                     p.setMode(Presence.Mode.valueOf(show));
 
@@ -1648,7 +1651,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private Presence createPresence(Presence.Mode mode) {
         String status = Preferences.getStatusMessage(this);
         Presence p = new Presence(Presence.Type.available);
-        if (status != null)
+        if (!TextUtils.isEmpty(status))
             p.setStatus(status);
         if (mode != null)
             p.setMode(mode);
