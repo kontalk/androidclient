@@ -531,4 +531,7 @@
     <string name="group_info_menu_remove">Verwijder</string>
 
     <string name="group_command_text_part_kicked">Je bent van deze groep verwijderd</string>
+    <string name="title_passphrase_request">Wachtwoord voor persoonlijke sleutel</string>
+    <string name="err_invalid_passphrase">Verkeerd wachtwoord. Herstart de app om een ander wachtwoord te proberen.</string>
+
     </resources>
