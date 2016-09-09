@@ -143,7 +143,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     private static final int MESSAGE_PAGE_QUERY_TOKEN = 8723;
 
     /** How many messages to load per page. */
-    private static final int MESSAGE_PAGE_SIZE = 100;
+    private static final int MESSAGE_PAGE_SIZE = 1000;
 
     private static final int SELECT_ATTACHMENT_OPENABLE = Activity.RESULT_FIRST_USER + 1;
     private static final int SELECT_ATTACHMENT_CONTACT = Activity.RESULT_FIRST_USER + 2;
