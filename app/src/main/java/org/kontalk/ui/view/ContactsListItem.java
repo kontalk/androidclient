@@ -32,6 +32,8 @@ import android.widget.TextView;
 
 public class ContactsListItem extends AvatarListItem implements Checkable {
 
+    private static final int[] CHECKED_STATE_SET = { android.R.attr.state_checked };
+
     private Contact mContact;
     private TextView mText1;
     private TextView mText2;
@@ -63,6 +65,8 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
 
     public final void bind(Context context, final Contact contact) {
         mContact = contact;
+
+        setChecked(false);
 
         loadAvatar(contact);
 
@@ -131,16 +135,19 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
 
     @Override
     public void setChecked(boolean checked) {
-        mChecked = checked;
+        if (checked != mChecked) {
+            mChecked = checked;
+            refreshDrawableState();
+        }
+    }
 
-        int backgroundId;
-
-        if (mChecked)
-            backgroundId = R.drawable.list_selected_holo_light;
-        else
-            backgroundId = 0;
-
-        setBackgroundResource(backgroundId);
+    @Override
+    protected int[] onCreateDrawableState(int extraSpace) {
+        final int[] drawableState = super.onCreateDrawableState(extraSpace + 1);
+        if (isChecked()) {
+            mergeDrawableStates(drawableState, CHECKED_STATE_SET);
+        }
+        return drawableState;
     }
 
     @Override

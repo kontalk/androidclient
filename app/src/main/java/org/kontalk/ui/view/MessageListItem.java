@@ -107,8 +107,7 @@ public class MessageListItem extends RelativeLayout implements Checkable {
 
         mMessage = msg;
 
-        // FIXME this might not work
-        mChecked = false;
+        setChecked(false);
 
         long msgTs = MessageUtils.getMessageTimestamp(mMessage);
         if (MessageUtils.isSameDate(msgTs, previous)) {
@@ -258,19 +257,6 @@ public class MessageListItem extends RelativeLayout implements Checkable {
             mChecked = checked;
             refreshDrawableState();
         }
-
-        /*
-        mChecked = checked;
-
-        int backgroundId;
-
-        if (mChecked)
-            backgroundId = R.drawable.list_selected_holo_light;
-        else
-            backgroundId = 0;
-
-        setBackgroundResource(backgroundId);
-        */
     }
 
     @Override

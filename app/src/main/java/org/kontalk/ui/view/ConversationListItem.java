@@ -44,6 +44,7 @@ import android.widget.TextView;
 
 public class ConversationListItem extends AvatarListItem implements Checkable {
 
+    private static final int[] CHECKED_STATE_SET = { android.R.attr.state_checked };
     private static final StyleSpan STYLE_BOLD = new StyleSpan(Typeface.BOLD);
     private static final StyleSpan STYLE_ITALIC = new StyleSpan(Typeface.ITALIC);
 
@@ -90,8 +91,8 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
 
     public final void bind(Context context, final Conversation conv) {
         mConversation = conv;
-        // FIXME this might not work
-        mChecked = false;
+
+        setChecked(false);
 
         String recipient = null;
 
@@ -245,16 +246,19 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
 
     @Override
     public void setChecked(boolean checked) {
-        mChecked = checked;
+        if (checked != mChecked) {
+            mChecked = checked;
+            refreshDrawableState();
+        }
+    }
 
-        int backgroundId;
-
-        if (mChecked)
-            backgroundId = R.drawable.list_selected_holo_light;
-        else
-            backgroundId = 0;
-
-        setBackgroundResource(backgroundId);
+    @Override
+    protected int[] onCreateDrawableState(int extraSpace) {
+        final int[] drawableState = super.onCreateDrawableState(extraSpace + 1);
+        if (isChecked()) {
+            mergeDrawableStates(drawableState, CHECKED_STATE_SET);
+        }
+        return drawableState;
     }
 
     @Override

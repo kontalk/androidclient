@@ -175,7 +175,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     protected ComposerBar mComposer;
 
     private MessageListQueryHandler mQueryHandler;
-    private MessageListAdapter mListAdapter;
+    MessageListAdapter mListAdapter;
     /** Header view for the list view: "previous messages" button. */
     private View mHeaderView;
     private View mNextPageButton;
