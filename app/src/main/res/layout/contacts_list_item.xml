@@ -19,6 +19,7 @@
 <org.kontalk.ui.view.ContactsListItem xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
+    android:background="@drawable/list_item_background"
     android:minHeight="@dimen/avatar_list_item_height"
     android:paddingRight="?attr/listPreferredItemPaddingRight"
     android:paddingEnd="?attr/listPreferredItemPaddingRight">
