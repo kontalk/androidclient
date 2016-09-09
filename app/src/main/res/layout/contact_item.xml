@@ -21,6 +21,7 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:minHeight="@dimen/avatar_list_item_height"
+    android:background="@drawable/list_item_background"
     android:paddingRight="?attr/listPreferredItemPaddingRight"
     android:paddingEnd="?attr/listPreferredItemPaddingRight">
 

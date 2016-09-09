@@ -180,6 +180,11 @@ public class MessagesController {
                     mContext.getContentResolver().insert(MyMessages.Groups
                         .getMembersUri(group.getContent().getJID()), membersValues);
                 }
+
+                // add owner as member (since the owner is adding us)
+                membersValues.put(MyMessages.Groups.PEER, group.getContent().getOwner());
+                mContext.getContentResolver().insert(MyMessages.Groups
+                    .getMembersUri(group.getContent().getJID()), membersValues);
             }
 
             if (removed != null) {
