@@ -40,11 +40,13 @@ import android.widget.CompoundButton;
 import android.widget.Toast;
 
 import org.kontalk.BuildConfig;
+import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.authenticator.LegacyAuthentication;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.SyncAdapter;
+import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
@@ -56,15 +58,17 @@ import org.kontalk.util.SystemUtils;
  */
 public abstract class MainActivity extends ToolbarActivity {
 
-    private Dialog mUpgradeProgress;
-    private BroadcastReceiver mUpgradeReceiver;
+    Dialog mUpgradeProgress;
+    BroadcastReceiver mUpgradeReceiver;
 
     private static final int DIALOG_AUTH_ERROR_WARNING = 1;
+    private static final int DIALOG_AUTH_REQUEST_PASSWORD = 2;
 
     private static final String ACTION_AUTH_ERROR_WARNING = "org.kontalk.AUTH_ERROR_WARN";
+    private static final String ACTION_AUTH_REQUEST_PASSWORD = "org.kontalk.AUTH_REQUEST_PASSWORD";
 
     protected boolean afterOnCreate() {
-        return !xmppUpgrade() && !handleIntent(getIntent()) && ifHuaweiAlert();
+        return !xmppUpgrade() && !handleIntent(getIntent()) && !checkPassword() && ifHuaweiAlert();
     }
 
     // http://stackoverflow.com/a/35220476/1045199
@@ -103,7 +107,7 @@ public abstract class MainActivity extends ToolbarActivity {
         return false;
     }
 
-    private void startHuaweiProtectedApps() {
+    void startHuaweiProtectedApps() {
         try {
             String cmd = "am start -n com.huawei.systemmanager/.optimize.process.ProtectActivity";
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
@@ -113,6 +117,29 @@ public abstract class MainActivity extends ToolbarActivity {
         }
         catch (IOException ignored) {
         }
+    }
+
+    boolean isPasswordValid() {
+        try {
+            Kontalk.get(MainActivity.this).getPersonalKey();
+            return true;
+        }
+        catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean checkPassword() {
+        if (Kontalk.get(this).getCachedPassphrase() == null || !isPasswordValid()) {
+            askForPassword();
+            return true;
+        }
+
+        return false;
+    }
+
+    private void askForPassword() {
+        showDialog(DIALOG_AUTH_REQUEST_PASSWORD);
     }
 
     /** Big upgrade: asymmetric key encryption (for XMPP). */
@@ -180,7 +207,7 @@ public abstract class MainActivity extends ToolbarActivity {
             .show();
     }
 
-    private void proceedXmppUpgrade(String name) {
+    void proceedXmppUpgrade(String name) {
         // start progress dialog
         mUpgradeProgress = new LockedDialog.Builder(this)
             .progress(true, 0)
@@ -214,13 +241,44 @@ public abstract class MainActivity extends ToolbarActivity {
 
     @Override
     protected Dialog onCreateDialog(int id, Bundle args) {
-        if (id == DIALOG_AUTH_ERROR_WARNING) {
+        switch (id) {
+            case DIALOG_AUTH_ERROR_WARNING:
+                return new MaterialDialog.Builder(this)
+                    .title(R.string.title_auth_error)
+                    .content(R.string.msg_auth_error)
+                    .positiveText(android.R.string.ok)
+                    .build();
 
-            return new MaterialDialog.Builder(this)
-                .title(R.string.title_auth_error)
-                .content(R.string.msg_auth_error)
-                .positiveText(android.R.string.ok)
-                .build();
+            case DIALOG_AUTH_REQUEST_PASSWORD:
+                return new MaterialDialog.Builder(this)
+                    .title(R.string.title_passphrase_request)
+                    .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
+                    .input(0, 0, true, new MaterialDialog.InputCallback() {
+                        @Override
+                        public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+                            String passphrase = input.toString();
+                            // user-entered passphrase is hashed
+                            String hashed = MessageUtils.sha1(passphrase);
+                            Authenticator.setPassphrase(MainActivity.this, hashed, true);
+                            Kontalk.get(MainActivity.this).invalidatePersonalKey();
+                            if (isPasswordValid()) {
+                                MessageCenterService.start(MainActivity.this);
+                            }
+                            else {
+                                Toast.makeText(MainActivity.this, R.string.err_invalid_passphrase,
+                                    Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    })
+                    .onNegative(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            finish();
+                        }
+                    })
+                    .negativeText(android.R.string.cancel)
+                    .positiveText(android.R.string.ok)
+                    .build();
 
         }
 
@@ -235,6 +293,10 @@ public abstract class MainActivity extends ToolbarActivity {
                 showDialog(DIALOG_AUTH_ERROR_WARNING);
                 return true;
             }
+            else if (ACTION_AUTH_REQUEST_PASSWORD.equals(action)) {
+                showDialog(DIALOG_AUTH_REQUEST_PASSWORD);
+                return true;
+            }
         }
 
         return false;
@@ -243,6 +305,12 @@ public abstract class MainActivity extends ToolbarActivity {
     public static Intent authenticationErrorWarning(Context context) {
         Intent i = new Intent(context.getApplicationContext(), MainActivity.class);
         i.setAction(ACTION_AUTH_ERROR_WARNING);
+        return i;
+    }
+
+    public static Intent passwordRequest(Context context) {
+        Intent i = new Intent(context.getApplicationContext(), MainActivity.class);
+        i.setAction(ACTION_AUTH_REQUEST_PASSWORD);
         return i;
     }
 
