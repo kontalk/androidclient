@@ -530,4 +530,7 @@
     <string name="group_info_menu_remove">Eliminar</string>
 
     <string name="group_command_text_part_kicked">Usted ha sido eliminado de este grupo</string>
+    <string name="err_invalid_passphrase">Contraseña incorrecta. Reinicia la aplicación para volver a intentarlo.</string>
+
+    <string name="title_passphrase_request">Contraseña de la clave de cifrado personal</string>
     </resources>
