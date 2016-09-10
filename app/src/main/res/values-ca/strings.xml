@@ -528,4 +528,7 @@
     <string name="group_info_menu_remove">Elimina</string>
 
     <string name="group_command_text_part_kicked">Vosté ha estat eliminat d\'aquest grup</string>
+    <string name="title_passphrase_request">Contrasenya de la clau de xifrat personal</string>
+    <string name="err_invalid_passphrase">Contrasenya incorrecta. Reinicia l\'aplicació i torna-ho a provar.</string>
+
     </resources>
