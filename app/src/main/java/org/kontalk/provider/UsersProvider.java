@@ -552,8 +552,14 @@ public class UsersProvider extends ContentProvider {
              */
             insertValues.put(Users.REGISTERED, true);
 
-            db.insert(offline ? TABLE_USERS_OFFLINE : TABLE_USERS, null, insertValues);
-            return 1;
+            try {
+                db.insert(offline ? TABLE_USERS_OFFLINE : TABLE_USERS, null, insertValues);
+                return 1;
+            }
+            catch (SQLiteConstraintException e) {
+                // nothing was updated but the row exists
+                return 0;
+            }
         }
 
         return rc;
