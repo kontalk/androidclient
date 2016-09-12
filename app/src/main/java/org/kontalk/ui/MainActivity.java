@@ -130,6 +130,9 @@ public abstract class MainActivity extends ToolbarActivity {
     }
 
     private boolean checkPassword() {
+        if (Authenticator.getDefaultAccount(this) == null)
+            return false;
+
         if (Kontalk.get(this).getCachedPassphrase() == null || !isPasswordValid()) {
             askForPassword();
             return true;
@@ -303,13 +306,13 @@ public abstract class MainActivity extends ToolbarActivity {
     }
 
     public static Intent authenticationErrorWarning(Context context) {
-        Intent i = new Intent(context.getApplicationContext(), MainActivity.class);
+        Intent i = new Intent(context.getApplicationContext(), ConversationsActivity.class);
         i.setAction(ACTION_AUTH_ERROR_WARNING);
         return i;
     }
 
     public static Intent passwordRequest(Context context) {
-        Intent i = new Intent(context.getApplicationContext(), MainActivity.class);
+        Intent i = new Intent(context.getApplicationContext(), ConversationsActivity.class);
         i.setAction(ACTION_AUTH_REQUEST_PASSWORD);
         return i;
     }
