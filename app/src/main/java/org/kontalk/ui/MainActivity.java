@@ -130,6 +130,9 @@ public abstract class MainActivity extends ToolbarActivity {
     }
 
     private boolean checkPassword() {
+        if (Authenticator.getDefaultAccount(this) == null)
+            return false;
+
         if (Kontalk.get(this).getCachedPassphrase() == null || !isPasswordValid()) {
             askForPassword();
             return true;
