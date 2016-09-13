@@ -465,16 +465,16 @@
 
     <string name="chooser_error_no_browser">Geen browser beschikbaar om deze link mee te openen.</string>
     <string name="menu_invite_group">Gebruikers toevoegen</string>
-    <string name="menu_set_group_subject">Stel groepstitel in</string>
+    <string name="menu_set_group_subject">Stel groepsonderwerp in</string>
     <string name="menu_leave_group">Verlaat groep</string>
     <string name="group_untitled">Groep zonder titel</string>
-    <string name="title_group_subject">Groepstitel</string>
+    <string name="title_group_subject">Groepsonderwerp</string>
     <string name="group_command_create">Groep aangemaakt:</string>
     <string name="group_command_user_parted">%s heeft de groep verlaten.</string>
-    <string name="group_command_subject">Groepstitel is nu: %s</string>
+    <string name="group_command_subject">Groepsonderwerp is nu: %s</string>
 
     <string name="group_command_text_create">Groep aangemaakt</string>
-    <string name="group_command_text_subject">Groepstitel aangepast</string>
+    <string name="group_command_text_subject">Groepsonderwerp aangepast</string>
     <string name="group_command_text_part">Iemand heeft deze groep verlaten</string>
 
     <plurals name="group_people">
@@ -489,7 +489,7 @@
 
     <string name="groupinfo_activity_title">Groepsinformatie</string>
 
-    <string name="group_info_set_title">Verander titel</string>
+    <string name="group_info_set_title">Verander onderwerp</string>
     <string name="group_info_leave">Verlaat groep</string>
     <string name="group_info_members">Groepsleden</string>
 
@@ -536,7 +536,7 @@
 
     <plurals name="unread_messages_group">
 	<item quantity="one">%1$d berichten @ %2$s</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
 
     </resources>
