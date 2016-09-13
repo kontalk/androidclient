@@ -211,7 +211,7 @@
     <string name="menu_attachment">Attach</string>
     <string name="menu_smileys">Smileys</string>
     <string name="menu_invite_group">Add users</string>
-    <string name="menu_set_group_subject">Set group title</string>
+    <string name="menu_set_group_subject">Set group subject</string>
     <string name="menu_leave_group">Leave group</string>
     <string name="menu_block_user">Block</string>
     <string name="menu_unblock_user">Unblock</string>
@@ -480,14 +480,14 @@
     <string name="button_load_next_page">Load more messages</string>
 
     <string name="group_untitled">Untitled group</string>
-    <string name="title_group_subject">Group title</string>
+    <string name="title_group_subject">Group subject</string>
     <string name="group_command_create">Group created:</string>
     <string name="group_command_self_parted">You left the group.</string>
     <string name="group_command_user_parted">%s left the group.</string>
-    <string name="group_command_subject">Group title set to: %s</string>
+    <string name="group_command_subject">Group subject set to: %s</string>
 
     <string name="group_command_text_create">Group created</string>
-    <string name="group_command_text_subject">Group title changed</string>
+    <string name="group_command_text_subject">Group subject changed</string>
     <string name="group_command_text_part">Someone left this group</string>
     <string name="group_command_text_part_self">You left this group</string>
     <string name="group_command_text_part_kicked">You were removed from this group</string>
@@ -495,7 +495,7 @@
 
     <string name="groupinfo_activity_title">Group info</string>
 
-    <string name="group_info_set_title">Change title</string>
+    <string name="group_info_set_title">Change subject</string>
     <string name="group_info_leave">Leave group</string>
     <string name="group_info_members">Group members</string>
     <string name="group_info_ignore_all">Ignore all</string>
