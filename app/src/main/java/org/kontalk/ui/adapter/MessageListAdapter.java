@@ -74,13 +74,17 @@ public class MessageListAdapter extends CursorAdapter {
         MessageListItem headerView = (MessageListItem) view;
         CompositeMessage msg = CompositeMessage.fromCursor(context, cursor);
 
-        long previous = -1;
+        long previousTimestamp = -1;
+        int previousDirection = -1;
+        String previousPeer = null;
         if (cursor.moveToPrevious()) {
-            previous = MessageUtils.getMessageTimestamp(cursor);
+            previousTimestamp = MessageUtils.getMessageTimestamp(cursor);
+            previousPeer = MessageUtils.getMessagePeer(cursor);
+            previousDirection = MessageUtils.getMessageDirection(cursor);
             cursor.moveToNext();
         }
 
-        headerView.bind(context, msg, mHighlight, previous, mAudioPlayerControl);
+        headerView.bind(context, msg, mHighlight, previousTimestamp, previousDirection, previousPeer, mAudioPlayerControl);
     }
 
     private boolean isEvent(Cursor cursor) {

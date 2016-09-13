@@ -70,23 +70,23 @@ public class SimpleMessageTheme extends BaseMessageTheme {
     }
 
     @Override
-    public void setIncoming(Contact contact) {
+    public void setIncoming(Contact contact, boolean sameMessageBlock) {
         if (mBalloonView != null) {
             mBalloonView.setBackgroundResource(mIncomingDrawableId);
         }
         mParentView.setGravity(Gravity.LEFT);
 
-        super.setIncoming(contact);
+        super.setIncoming(contact, sameMessageBlock);
     }
 
     @Override
-    public void setOutgoing(Contact contact, int status) {
+    public void setOutgoing(Contact contact, int status, boolean sameMessageBlock) {
         if (mBalloonView != null) {
             mBalloonView.setBackgroundResource(mOutgoingDrawableId);
         }
         mParentView.setGravity(Gravity.RIGHT);
 
-        super.setOutgoing(contact, status);
+        super.setOutgoing(contact, status, sameMessageBlock);
     }
 
 }

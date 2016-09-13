@@ -41,16 +41,7 @@ public class MessageListItemThemeFactory {
         mThemes.put("hangout", new FactoryCreator() {
             @Override
             public MessageListItemTheme create(int direction) {
-                int layoutId, drawableId;
-                if (direction == Messages.DIRECTION_IN) {
-                    layoutId = R.layout.balloon_avatar_in;
-                    drawableId = R.drawable.balloon_hangout_incoming;
-                }
-                else {
-                    layoutId = R.layout.balloon_avatar_out;
-                    drawableId = R.drawable.balloon_hangout_outgoing;
-                }
-                return new AvatarMessageTheme(layoutId, drawableId);
+                return new HangoutMessageTheme(direction);
             }
         });
         mThemes.put("classic", new FactoryCreator() {

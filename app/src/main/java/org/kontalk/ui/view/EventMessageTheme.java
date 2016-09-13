@@ -101,11 +101,11 @@ public class EventMessageTheme implements MessageListItemTheme {
     }
 
     @Override
-    public void setIncoming(Contact contact) {
+    public void setIncoming(Contact contact, boolean sameMessageBlock) {
     }
 
     @Override
-    public void setOutgoing(Contact contact, int status) {
+    public void setOutgoing(Contact contact, int status, boolean sameMessageBlock) {
     }
 
     @Override

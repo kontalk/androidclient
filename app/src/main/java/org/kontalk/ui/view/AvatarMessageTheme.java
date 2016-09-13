@@ -40,16 +40,19 @@ public class AvatarMessageTheme extends BaseMessageTheme implements Contact.Cont
     private static Drawable sDefaultContactImage;
 
     private final int mDrawableId;
+    /** If true, handles collapsed message blocks (hides adjacent avatars). */
+    private final boolean mMessageBlocks;
 
-    private LinearLayout mBalloonView;
+    protected LinearLayout mBalloonView;
 
-    private CircleContactBadge mAvatar;
+    protected CircleContactBadge mAvatar;
 
     private Handler mHandler;
 
-    public AvatarMessageTheme(int layoutId, int drawableId) {
+    public AvatarMessageTheme(int layoutId, int drawableId, boolean messageBlocks) {
         super(layoutId);
         mDrawableId = drawableId;
+        mMessageBlocks = messageBlocks;
     }
 
     @Override
@@ -82,52 +85,66 @@ public class AvatarMessageTheme extends BaseMessageTheme implements Contact.Cont
         }
     }
 
-    private void setView() {
+    protected void setView(boolean sameMessageBlock) {
         if (mBalloonView != null) {
             mBalloonView.setBackgroundResource(mDrawableId);
         }
     }
 
     @Override
-    public void setIncoming(Contact contact) {
-        setView();
+    public void setIncoming(Contact contact, boolean sameMessageBlock) {
+        setView(sameMessageBlock);
 
         if (mAvatar != null) {
-            mAvatar.setImageDrawable(sDefaultContactImage);
-            if (contact != null) {
-                // we mark this with the contact's hash code for the async avatar
-                mAvatar.setTag(contact.hashCode());
-                mAvatar.assignContactUri(contact.getUri());
-                contact.getAvatarAsync(mContext, this);
+            if (mMessageBlocks && sameMessageBlock) {
+                mAvatar.setVisibility(View.INVISIBLE);
+                mAvatar.setImageDrawable(null);
             }
             else {
-                mAvatar.setTag(null);
-                mAvatar.assignContactUri(null);
+                mAvatar.setImageDrawable(sDefaultContactImage);
+                if (contact != null) {
+                    // we mark this with the contact's hash code for the async avatar
+                    mAvatar.setTag(contact.hashCode());
+                    mAvatar.assignContactUri(contact.getUri());
+                    contact.getAvatarAsync(mContext, this);
+                }
+                else {
+                    mAvatar.setTag(null);
+                    mAvatar.assignContactUri(null);
+                }
+                mAvatar.setVisibility(View.VISIBLE);
             }
         }
 
-        super.setIncoming(contact);
+        super.setIncoming(contact, sameMessageBlock);
     }
 
     @Override
-    public void setOutgoing(Contact contact, int status) {
-        setView();
+    public void setOutgoing(Contact contact, int status, boolean sameMessageBlock) {
+        setView(sameMessageBlock);
 
         if (mAvatar != null) {
-            Drawable avatar;
-            Bitmap profile = SystemUtils.getProfilePhoto(mContext);
-            if (profile != null) {
-                avatar = new BitmapDrawable(mContext.getResources(), profile);
+            if (mMessageBlocks && sameMessageBlock) {
+                mAvatar.setVisibility(View.INVISIBLE);
+                mAvatar.setImageDrawable(null);
             }
             else {
-                avatar = sDefaultContactImage;
-            }
+                Drawable avatar;
+                Bitmap profile = SystemUtils.getProfilePhoto(mContext);
+                if (profile != null) {
+                    avatar = new BitmapDrawable(mContext.getResources(), profile);
+                }
+                else {
+                    avatar = sDefaultContactImage;
+                }
 
-            mAvatar.setImageDrawable(avatar);
-            mAvatar.assignContactUri(SystemUtils.getProfileUri(mContext));
+                mAvatar.setImageDrawable(avatar);
+                mAvatar.assignContactUri(SystemUtils.getProfileUri(mContext));
+                mAvatar.setVisibility(View.VISIBLE);
+            }
         }
 
-        super.setOutgoing(contact, status);
+        super.setOutgoing(contact, status, sameMessageBlock);
     }
 
     @Override
@@ -146,7 +163,7 @@ public class AvatarMessageTheme extends BaseMessageTheme implements Contact.Cont
         }
     }
 
-    private void updateAvatar(Contact contact, Drawable avatar) {
+    void updateAvatar(Contact contact, Drawable avatar) {
         try {
             // be sure the contact is still the same
             // this is an insane workaround against race conditions

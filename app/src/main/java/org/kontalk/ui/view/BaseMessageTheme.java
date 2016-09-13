@@ -119,14 +119,14 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
     }
 
     @Override
-    public void setIncoming(Contact contact) {
+    public void setIncoming(Contact contact, boolean sameMessageBlock) {
         // no status icon for incoming messages
         mStatusIcon.setImageDrawable(null);
         mStatusIcon.setVisibility(View.GONE);
     }
 
     @Override
-    public void setOutgoing(Contact contact, int status) {
+    public void setOutgoing(Contact contact, int status, boolean sameMessageBlock) {
         int resId = 0;
         int statusId = 0;
 
