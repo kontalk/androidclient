@@ -537,7 +537,8 @@
 
     <plurals name="unread_messages_group">
 	<item quantity="one">%1$d Nachrichten @ %2$s</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
 
+    <string name="pref_balloon_label_silence">Silence</string>
     </resources>
