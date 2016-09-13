@@ -466,16 +466,16 @@
     <string name="check_do_not_show_again">Příště nezobrazovat</string>
 
     <string name="menu_invite_group">Přidat uživatele</string>
-    <string name="menu_set_group_subject">Nastavit název skupiny</string>
+    <string name="menu_set_group_subject">Nastavit předmět skupiny</string>
     <string name="menu_leave_group">Opustit skupinu</string>
     <string name="group_untitled">Skupina bez názvu</string>
-    <string name="title_group_subject">Název skupiny</string>
+    <string name="title_group_subject">Předmět skupiny</string>
     <string name="group_command_create">Skupina vytvořena:</string>
     <string name="group_command_user_parted">%s opustil skupinu.</string>
-    <string name="group_command_subject">Název skupiny nastaven na: %s</string>
+    <string name="group_command_subject">Předmět skupiny nastaven na: %s</string>
 
     <string name="group_command_text_create">Skupina byla vytvořena</string>
-    <string name="group_command_text_subject">Název skupiny byl změněn</string>
+    <string name="group_command_text_subject">Předmět skupiny byl změněn</string>
     <string name="group_command_text_part">Někdo opustil tuto skupinu</string>
 
     <plurals name="group_people">
@@ -491,7 +491,7 @@
 
     <string name="groupinfo_activity_title">Info o skupině</string>
 
-    <string name="group_info_set_title">Změnit název</string>
+    <string name="group_info_set_title">Změnit předmět</string>
     <string name="group_info_leave">Opustit skupinu</string>
     <string name="group_info_members">Členové skupiny</string>
 
@@ -534,4 +534,12 @@
     <string name="group_info_menu_remove">Odebrat</string>
 
     <string name="group_command_text_part_kicked">Byl(a) jste odebrán(a) z této skupiny</string>
+    <string name="title_passphrase_request">Heslo osobního klíče</string>
+    <string name="err_invalid_passphrase">Nesprávné heslo. Restartujte aplikaci, abyste mohli vyzkoušet jiné.</string>
+
+    <plurals name="unread_messages_group">
+	<item quantity="one">%1$d zpráv @ %2$s</item>
+	<item quantity="other"></item>
+</plurals>
+
     </resources>
