@@ -18,8 +18,8 @@
 
 package org.kontalk.ui;
 
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -110,7 +110,8 @@ public class MessagingNotification {
         CommonColumns.DIRECTION + " = " + Messages.DIRECTION_IN;
 
     /** Pending delayed notification update flag. */
-    private static volatile boolean sPending;
+    @SuppressWarnings("WeakerAccess")
+    static volatile boolean sPending;
 
     /** Temporary disable all notifications flag */
     private static volatile boolean sDisabled;
@@ -155,10 +156,6 @@ public class MessagingNotification {
 
     /** Starts messages notification updates in another thread. */
     public static void delayedUpdateMessagesNotification(final Context context, final boolean isNew) {
-        // notifications are disabled
-        if (!Preferences.getNotificationsEnabled(context) || sDisabled)
-            return;
-
         if (!sPending) {
             sPending = true;
             new Thread(new Runnable() {
@@ -177,9 +174,6 @@ public class MessagingNotification {
      * @param isNew if true a new message has come (starts notification alerts)
      */
     public static void updateMessagesNotification(Context context, boolean isNew) {
-        // notifications are disabled
-        if (!Preferences.getNotificationsEnabled(context) || sDisabled)
-            return;
         // no default account. WTF?!?
         Account account = Authenticator.getDefaultAccount(context);
         if (account == null)
@@ -243,227 +237,43 @@ public class MessagingNotification {
             return;
         }
 
+        // notifications are disabled
+        if (!Preferences.getNotificationsEnabled(context) || sDisabled)
+            return;
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context.getApplicationContext());
         Set<Uri> conversationIds = new HashSet<>(unread);
 
         if (supportsBigNotifications()) {
-            Map<String, NotificationConversation> convs = new HashMap<>();
+            NotificationGenerator ngen = new NotificationGenerator(context, builder);
 
-            String convKey = null;
-            String peer = null;
             long id = 0;
             while (c.moveToNext()) {
                 // thread_id for PendingIntent
                 id = c.getLong(0);
-                peer = c.getString(1);
+                String peer = c.getString(1);
                 String mime = c.getString(2);
                 byte[] content = c.getBlob(3);
                 String attMime = c.getString(4);
+                boolean encrypted = c.getInt(5) != 0;
                 String groupJid = c.getString(6);
                 String groupSubject = c.getString(7);
 
                 // store conversation id for intents
                 conversationIds.add(ContentUris.withAppendedId(Threads.CONTENT_URI, id));
 
-                convKey = groupJid != null ? groupJid : peer;
-                NotificationConversation b = convs.get(convKey);
-                if (b == null) {
-                    b = new NotificationConversation(peer, new StringBuilder(), null, groupJid, groupSubject);
-                    convs.put(convKey, b);
-                }
-                else {
-                    ((StringBuilder) b.allContent).append('\n');
-                }
-
-                String textContent;
-
-                boolean encrypted = c.getInt(5) != 0;
-                if (encrypted) {
-                    textContent = context.getString(R.string.text_encrypted);
-                }
-                else if (content == null && attMime != null) {
-                    textContent = CompositeMessage.getSampleTextContent(attMime);
-                }
-                else {
-                    textContent = content != null ? new String(content) : "";
-                    if (GroupCommandComponent.supportsMimeType(mime)) {
-                        try {
-                            textContent = GroupCommandComponent.getTextContent(context, textContent, true);
-                        }
-                        catch (UnsupportedOperationException e) {
-                            // TODO using another string
-                            textContent = context.getString(R.string.peer_unknown);
-                        }
-                    }
-                }
-
-                ((StringBuilder) b.allContent).append(textContent);
-                b.lastContent = textContent;
+                ngen.addMessage(peer, mime, content, attMime, encrypted, groupJid, groupSubject);
             }
             c.close();
 
-            /* -- FIXME FIXME VERY UGLY CODE FIXME FIXME -- */
+            int convCount = ngen.build(account, unread, conversationIds.iterator().next());
 
-            Style style;
-            CharSequence title, text, ticker;
-
-            // more than one conversation - use InboxStyle
-            if (convs.size() > 1) {
-                style = new InboxStyle();
-
-                // ticker: "X unread messages"
-                ticker = context.getResources().getQuantityString(R.plurals.unread_messages, unread, unread);
-
-                // title
-                title = ticker;
-
-                // text: comma separated names (TODO RTL?)
-                StringBuilder btext = new StringBuilder();
-                int count = 0;
-                for (String user : convs.keySet()) {
-                    NotificationConversation conv = convs.get(user);
-                    count++;
-
-                    Contact contact = Contact.findByUserId(context, conv.peer);
-                    String name = (contact != null) ? contact.getName() :
-                        context.getString(R.string.peer_unknown);
-
-                    if (conv.groupJid != null) {
-                        name += " @ " + (TextUtils.isEmpty(conv.groupSubject) ?
-                            context.getString(R.string.group_untitled) : conv.groupSubject);
-                    }
-
-                    if (contact != null) {
-                        if (btext.length() > 0)
-                            btext.append(", ");
-                        btext.append(name);
-                    }
-
-                    // inbox line
-                    if (count < 5) {
-                        SpannableStringBuilder buf = new SpannableStringBuilder();
-                        buf.append(name).append(' ');
-                        buf.setSpan(new ForegroundColorSpan(context.getResources()
-                                .getColor(R.color.notification_name_color)),
-                            0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        // take just the last message
-                        buf.append(conv.lastContent);
-
-                        ((InboxStyle) style).addLine(buf);
-                    }
-                }
-
-                if (btext.length() > 0)
-                    text = btext.toString();
-                else
-                    // TODO i18n
-                    text = "(unknown users)";
-
-                String summary;
-                if (count > 5) {
-                    int moreCount = convs.size() - count;
-                    summary = context.getResources()
-                        .getQuantityString(R.plurals.notification_more, moreCount, moreCount);
-                }
-                else {
-                    summary = account.name;
-                }
-
-                ((InboxStyle) style).setSummaryText(summary);
-            }
-            // one conversation, use BigTextStyle
-            else {
-                NotificationConversation conv = convs.get(convKey);
-                String content = conv.allContent.toString();
-                CharSequence last = conv.lastContent;
-
-                // big text content
-                style = new BigTextStyle();
-                ((BigTextStyle) style).bigText(content);
-                ((BigTextStyle) style).setSummaryText(account.name);
-
-                // ticker
-                Contact contact = Contact.findByUserId(context, peer);
-                String name = (contact != null) ? contact.getName() :
-                    context.getString(R.string.peer_unknown);
-
-                if (conv.groupJid != null) {
-                    name = context.getResources().getString(R.string.notification_group_title,
-                        name, (TextUtils.isEmpty(conv.groupSubject) ?
-                            context.getString(R.string.group_untitled) : conv.groupSubject));
-                }
-
-                SpannableStringBuilder buf = new SpannableStringBuilder();
-                buf.append(name).append(':').append(' ');
-                buf.setSpan(new StyleSpan(Typeface.BOLD), 0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                buf.append(last);
-
-                ticker = buf;
-
-                // title
-                title = name;
-
-                // text
-                text = (unread > 1) ?
-                    context.getResources().getQuantityString(R.plurals.unread_messages, unread, unread)
-                    : content;
-
-                PendingIntent callPendingIntent = null;
-
-                if (contact != null) {
-                    Uri personUri = contact.getUri();
-                    if (personUri == null && contact.getNumber() != null) {
-                        // no contact uri available, try phone number lookup
-                        try {
-                            personUri = Uri.parse("tel:" + contact.getNumber());
-                        }
-                        catch (Exception ignored) {
-                        }
-                    }
-                    if (personUri != null)
-                        builder.addPerson(personUri.toString());
-
-                    // avatar
-                    Drawable avatar = contact.getAvatar(context);
-                    if (avatar != null)
-                        builder.setLargeIcon(MessageUtils.drawableToBitmap(avatar));
-
-                    if (supportsBigNotifications()) {
-                        // phone number for call intent
-                        String phoneNumber = contact.getNumber();
-                        if (phoneNumber != null) {
-                            Intent callIntent = new Intent(Intent.ACTION_CALL,
-                                Uri.parse("tel:" + phoneNumber));
-                            callPendingIntent = PendingIntent.getActivity(context, 0, callIntent, 0);
-                        }
-                    }
-                }
-
-                if (supportsBigNotifications()) {
-                    // mark as read pending intent
-                    Uri threadUri = conversationIds.iterator().next();
-                    Intent markReadIntent = new Intent(ACTION_NOTIFICATION_MARK_READ,
-                        threadUri, context, NotificationActionReceiver.class);
-                    PendingIntent readPendingIntent = PendingIntent.getBroadcast(context, 0,
-                        markReadIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                    builder.addAction(R.drawable.ic_menu_check, context.getString(R.string.mark_read), readPendingIntent);
-                    builder.addAction(R.drawable.ic_menu_call, context.getString(R.string.call), callPendingIntent);
-                }
-            }
-
-            builder.setNumber(unread);
             builder.setSmallIcon(R.drawable.ic_stat_notify);
-
             builder.setVisibility(NotificationCompat.VISIBILITY_PRIVATE);
-            builder.setTicker(ticker);
-            builder.setContentTitle(title);
-            builder.setContentText(text);
-            builder.setStyle(style);
 
             Intent ni;
             // more than one unread conversation - open conversations list
-            if (convs.size() > 1) {
+            if (convCount > 1) {
                 ni = new Intent(context, ConversationsActivity.class);
                 ni.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_SINGLE_TOP
@@ -586,14 +396,14 @@ public class MessagingNotification {
     }
 
     private static final class NotificationConversation {
-        private final String peer;
-        private final CharSequence allContent;
-        private final String groupJid;
-        private final String groupSubject;
+        final String peer;
+        final CharSequence allContent;
+        final String groupJid;
+        final String groupSubject;
 
-        private CharSequence lastContent;
+        CharSequence lastContent;
 
-        public NotificationConversation(String peer, CharSequence allContent, CharSequence lastContent, String groupJid, String groupSubject) {
+        NotificationConversation(String peer, CharSequence allContent, CharSequence lastContent, String groupJid, String groupSubject) {
             this.peer = peer;
             this.allContent = allContent;
             this.lastContent = lastContent;
@@ -691,12 +501,254 @@ public class MessagingNotification {
     }
 
     /**
+     * Takes messages to be notified and fills a notification builder.
+     * Used only for big notifications (JB+).
+     */
+    private static final class NotificationGenerator {
+        private final Context mContext;
+        private final NotificationCompat.Builder mBuilder;
+        private final Map<String, NotificationConversation> mConversations;
+
+        NotificationGenerator(Context context, NotificationCompat.Builder builder) {
+            mContext = context;
+            mBuilder = builder;
+            mConversations = new LinkedHashMap<>();
+        }
+
+        void addMessage(String peer, String mime, byte[] content, String attMime, boolean encrypted, String groupJid, String groupSubject) {
+            String key = conversationKey(peer, groupJid);
+            NotificationConversation conv = mConversations.get(key);
+            if (conv == null) {
+                conv = new NotificationConversation(peer, new StringBuilder(), null, groupJid, groupSubject);
+                mConversations.put(key, conv);
+            }
+            else {
+                ((StringBuilder) conv.allContent).append('\n');
+            }
+
+            String textContent;
+
+            if (encrypted) {
+                textContent = mContext.getString(R.string.text_encrypted);
+            }
+            else if (content == null && attMime != null) {
+                textContent = CompositeMessage.getSampleTextContent(attMime);
+            }
+            else {
+                textContent = content != null ? new String(content) : "";
+                if (GroupCommandComponent.supportsMimeType(mime)) {
+                    try {
+                        textContent = GroupCommandComponent.getTextContent(mContext, textContent, true);
+                    }
+                    catch (UnsupportedOperationException e) {
+                        // TODO using another string
+                        textContent = mContext.getString(R.string.peer_unknown);
+                    }
+                }
+            }
+
+            ((StringBuilder) conv.allContent).append(textContent);
+            conv.lastContent = textContent;
+        }
+
+        private String conversationKey(String peer, String groupJid) {
+            return groupJid != null ? (peer + ":" + groupJid) : peer;
+        }
+
+        private int size() {
+            if (mConversations.size() == 1)
+                return 1;
+
+            // manual count is needed because we need to group chat groups (ehm)
+            Set<String> keys = new HashSet<>();
+            for (String key : mConversations.keySet()) {
+                String[] parsed = key.split(":", 2);
+                keys.add(parsed.length > 1 ? parsed[1] : parsed[0]);
+            }
+            return keys.size();
+        }
+
+        /**
+         * Called when everything is set. This will fill the builder.
+         * @return the number of conversations (i.e. threads) involved
+         */
+        int build(Account account, int unread, Uri firstThreadUri) {
+            int convCount = size();
+            Style style;
+            CharSequence title, text, ticker;
+
+            // more than one conversation - use InboxStyle
+            if (mConversations.size() > 1) {
+                // we are handling a notification for a single group
+                boolean singleGroup = convCount == 1;
+
+                style = new InboxStyle();
+
+                if (!singleGroup) {
+                    // ticker: "X unread messages"
+                    ticker = mContext.getResources().getQuantityString(R.plurals.unread_messages, unread, unread);
+                }
+                else {
+                    // ticker: "X messages @ group"
+                    NotificationConversation conv = mConversations.values().iterator().next();
+                    String groupSubject = conv.groupSubject;
+                    ticker = mContext.getResources().getQuantityString(R.plurals.unread_messages_group, unread, unread, groupSubject);
+                }
+
+                // title
+                title = ticker;
+
+                // text: comma separated names (TODO RTL?)
+                StringBuilder btext = new StringBuilder();
+                int count = 0;
+                for (String convId : mConversations.keySet()) {
+                    NotificationConversation conv = mConversations.get(convId);
+                    count++;
+
+                    Contact contact = Contact.findByUserId(mContext, conv.peer);
+                    String name = (contact != null) ? contact.getName() :
+                        mContext.getString(R.string.peer_unknown);
+
+                    if (conv.groupJid != null) {
+                        if (!singleGroup) {
+                            name = mContext.getResources().getString(R.string.notification_group_title,
+                                name, (TextUtils.isEmpty(conv.groupSubject) ?
+                                    mContext.getString(R.string.group_untitled) : conv.groupSubject));
+                        }
+                    }
+
+                    if (contact != null) {
+                        if (btext.length() > 0)
+                            btext.append(", ");
+                        btext.append(name);
+                    }
+
+                    // inbox line
+                    if (count < 5) {
+                        SpannableStringBuilder buf = new SpannableStringBuilder();
+                        buf.append(name).append(' ');
+                        buf.setSpan(new ForegroundColorSpan(mContext.getResources()
+                                .getColor(R.color.notification_name_color)),
+                            0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        // take just the last message
+                        buf.append(conv.lastContent);
+
+                        ((InboxStyle) style).addLine(buf);
+                    }
+                }
+
+                if (btext.length() > 0)
+                    text = btext.toString();
+                else
+                    // TODO i18n
+                    text = "(unknown users)";
+
+                String summary;
+                int moreCount = mConversations.size() - count;
+                if (moreCount > 0) {
+                    summary = mContext.getResources()
+                        .getQuantityString(R.plurals.notification_more, moreCount, moreCount);
+                }
+                else {
+                    summary = account.name;
+                }
+
+                ((InboxStyle) style).setSummaryText(summary);
+            }
+            // one conversation, use BigTextStyle
+            else {
+                NotificationConversation conv = mConversations.values().iterator().next();
+                String content = conv.allContent.toString();
+                CharSequence last = conv.lastContent;
+
+                // big text content
+                style = new BigTextStyle();
+                ((BigTextStyle) style).bigText(content);
+                ((BigTextStyle) style).setSummaryText(account.name);
+
+                // ticker
+                Contact contact = Contact.findByUserId(mContext, conv.peer);
+                String name = (contact != null) ? contact.getName() :
+                    mContext.getString(R.string.peer_unknown);
+
+                if (conv.groupJid != null) {
+                    name = mContext.getResources().getString(R.string.notification_group_title,
+                        name, (TextUtils.isEmpty(conv.groupSubject) ?
+                            mContext.getString(R.string.group_untitled) : conv.groupSubject));
+                }
+
+                SpannableStringBuilder buf = new SpannableStringBuilder();
+                buf.append(name).append(':').append(' ');
+                buf.setSpan(new StyleSpan(Typeface.BOLD), 0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                buf.append(last);
+
+                ticker = buf;
+
+                // title
+                title = name;
+
+                // text
+                text = (unread > 1) ?
+                    mContext.getResources().getQuantityString(R.plurals.unread_messages, unread, unread)
+                    : content;
+
+                PendingIntent callPendingIntent = null;
+
+                if (contact != null) {
+                    Uri personUri = contact.getUri();
+                    if (personUri == null && contact.getNumber() != null) {
+                        // no contact uri available, try phone number lookup
+                        try {
+                            personUri = Uri.parse("tel:" + contact.getNumber());
+                        }
+                        catch (Exception ignored) {
+                        }
+                    }
+                    if (personUri != null)
+                        mBuilder.addPerson(personUri.toString());
+
+                    // avatar
+                    Drawable avatar = contact.getAvatar(mContext);
+                    if (avatar != null)
+                        mBuilder.setLargeIcon(MessageUtils.drawableToBitmap(avatar));
+
+                    // phone number for call intent
+                    String phoneNumber = contact.getNumber();
+                    if (phoneNumber != null) {
+                        Intent callIntent = new Intent(Intent.ACTION_CALL,
+                            Uri.parse("tel:" + phoneNumber));
+                        callPendingIntent = PendingIntent.getActivity(mContext, 0, callIntent, 0);
+                    }
+                }
+
+                // mark as read pending intent
+                // TODO this should also be used for messages from a single group
+                Intent markReadIntent = new Intent(ACTION_NOTIFICATION_MARK_READ,
+                    firstThreadUri, mContext, NotificationActionReceiver.class);
+                PendingIntent readPendingIntent = PendingIntent.getBroadcast(mContext, 0,
+                    markReadIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                mBuilder.addAction(R.drawable.ic_menu_check, mContext.getString(R.string.mark_read), readPendingIntent);
+                mBuilder.addAction(R.drawable.ic_menu_call, mContext.getString(R.string.call), callPendingIntent);
+            }
+
+            mBuilder.setTicker(ticker);
+            mBuilder.setContentTitle(title);
+            mBuilder.setContentText(text);
+            mBuilder.setStyle(style);
+            mBuilder.setNumber(unread);
+
+            return convCount;
+        }
+    }
+
+    /**
      * This class accumulates all incoming unread threads and returns
      * well-formed data to be used in a {@link Notification}.
-     * @author Daniele Ricci
+     * Used only for legacy notifications (pre-JB).
      */
     private static final class MessageAccumulator {
-        private final class ConversationStub {
+        final class ConversationStub {
             public long id;
             public String peer;
             public String content;
@@ -706,7 +758,7 @@ public class MessagingNotification {
 
         private ConversationStub conversation;
         private int convCount;
-        private int unreadCount;
+        int unreadCount;
         private Context mContext;
         private Contact mContact;
 
