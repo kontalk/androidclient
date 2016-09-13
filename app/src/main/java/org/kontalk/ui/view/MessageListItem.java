@@ -102,7 +102,7 @@ public class MessageListItem extends RelativeLayout implements Checkable {
     }
 
     public final void bind(Context context, final CompositeMessage msg,
-       final Pattern highlight, long previous,
+       final Pattern highlight, long previousTimestamp, int previousDirection, String previousPeer,
        Object... args) {
 
         mMessage = msg;
@@ -110,7 +110,7 @@ public class MessageListItem extends RelativeLayout implements Checkable {
         setChecked(false);
 
         long msgTs = MessageUtils.getMessageTimestamp(mMessage);
-        if (MessageUtils.isSameDate(msgTs, previous)) {
+        if (MessageUtils.isSameDate(msgTs, previousTimestamp)) {
             mDateHeader.setVisibility(View.GONE);
         }
         else {
@@ -118,11 +118,15 @@ public class MessageListItem extends RelativeLayout implements Checkable {
             mDateHeader.setVisibility(View.VISIBLE);
         }
 
+        int msgDirection = mMessage.getDirection();
+        String msgPeer = MessageUtils.getMessagePeer(mMessage);
+        boolean sameMessageBlock = (msgDirection == previousDirection && msgPeer.equals(previousPeer));
+
         mBalloonTheme.setSecurityFlags(mMessage.getSecurityFlags());
 
         if (mMessage.getSender() != null) {
             Contact contact = Contact.findByUserId(context, msg.getSender(true));
-            mBalloonTheme.setIncoming(contact);
+            mBalloonTheme.setIncoming(contact, sameMessageBlock);
 
             if (contact != null)
                 mPeer = contact.getNumber();
@@ -133,7 +137,7 @@ public class MessageListItem extends RelativeLayout implements Checkable {
             Contact contact = null;
             if (!msg.hasComponent(GroupComponent.class))
                 contact = Contact.findByUserId(context, msg.getRecipients().get(0));
-            mBalloonTheme.setOutgoing(contact, mMessage.getStatus());
+            mBalloonTheme.setOutgoing(contact, mMessage.getStatus(), sameMessageBlock);
             if (contact != null)
                 mPeer = contact.getNumber();
             if (mPeer == null)

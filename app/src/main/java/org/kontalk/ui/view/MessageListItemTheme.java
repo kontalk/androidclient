@@ -47,9 +47,9 @@ public interface MessageListItemTheme {
 
     void setSecurityFlags(int securityFlags);
 
-    void setIncoming(Contact contact);
+    void setIncoming(Contact contact, boolean sameMessageBlock);
 
-    void setOutgoing(Contact contact, int status);
+    void setOutgoing(Contact contact, int status, boolean sameMessageBlock);
 
     void setTimestamp(CharSequence timestamp);
 

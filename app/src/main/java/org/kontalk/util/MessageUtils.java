@@ -182,6 +182,19 @@ public final class MessageUtils {
         return serverTime > 0 ? serverTime : c.getLong(CompositeMessage.COLUMN_TIMESTAMP);
     }
 
+    public static String getMessagePeer(CompositeMessage msg) {
+        return msg.getDirection() == Messages.DIRECTION_IN ?
+            msg.getSender(true) : msg.getRecipients().get(0);
+    }
+
+    public static String getMessagePeer(Cursor c) {
+        return c.getString(CompositeMessage.COLUMN_PEER);
+    }
+
+    public static int getMessageDirection(Cursor c) {
+        return c.getInt(CompositeMessage.COLUMN_DIRECTION);
+    }
+
     public static String bytesToHex(byte[] data) {
         StringBuilder buf = new StringBuilder();
         for (int i = 0; i < data.length; i++) {

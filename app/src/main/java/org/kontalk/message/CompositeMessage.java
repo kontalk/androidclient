@@ -290,7 +290,7 @@ public class CompositeMessage {
         mTimestamp = c.getLong(COLUMN_TIMESTAMP);
         mStatusChanged = c.getLong(COLUMN_STATUS_CHANGED);
         mStatus = c.getInt(COLUMN_STATUS);
-        mRecipients = new ArrayList<String>();
+        mRecipients = new ArrayList<>();
         mEncrypted = (c.getShort(COLUMN_ENCRYPTED) > 0);
         mSecurityFlags = c.getInt(COLUMN_SECURITY);
         mServerTimestamp = c.getLong(COLUMN_SERVER_TIMESTAMP);
