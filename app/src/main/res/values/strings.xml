@@ -529,6 +529,11 @@
         <item quantity="other">%d unread messages</item>
     </plurals>
 
+    <!-- "one" is not actually used -->
+    <plurals name="unread_messages_group">
+        <item quantity="other">%1$d messages @ %2$s</item>
+    </plurals>
+
     <plurals name="notification_more">
         <item quantity="one">+1 more</item>
         <item quantity="other">+%d more</item>

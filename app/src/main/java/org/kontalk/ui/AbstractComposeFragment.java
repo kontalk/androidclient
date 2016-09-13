@@ -1550,6 +1550,10 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         if (mPresenceReceiver == null) {
             mPresenceReceiver = new BroadcastReceiver() {
                 public void onReceive(Context context, Intent intent) {
+                    // activity is terminating
+                    if (getContext() == null)
+                        return;
+
                     String action = intent.getAction();
 
                     if (MessageCenterService.ACTION_PRESENCE.equals(action)) {
