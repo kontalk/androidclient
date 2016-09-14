@@ -468,16 +468,16 @@
 
     <string name="chooser_error_no_browser">Нема прегледача за отварање везе.</string>
     <string name="menu_invite_group">Додај кориснике</string>
-    <string name="menu_set_group_subject">Постави назив групе</string>
+    <string name="menu_set_group_subject">Постави предмет групе</string>
     <string name="menu_leave_group">Напусти групу</string>
     <string name="group_untitled">Група</string>
-    <string name="title_group_subject">Назив групе</string>
+    <string name="title_group_subject">Предмет групе</string>
     <string name="group_command_create">Група направљена:</string>
     <string name="group_command_user_parted">%s напусти групу.</string>
-    <string name="group_command_subject">Назив групе промењен у: %s</string>
+    <string name="group_command_subject">Предмет групе промењен у: %s</string>
 
     <string name="group_command_text_create">Група направљена</string>
-    <string name="group_command_text_subject">Назив групе измењен</string>
+    <string name="group_command_text_subject">Предмет групе измењен</string>
     <string name="group_command_text_part">Неко је напустио ову групу</string>
 
     <plurals name="group_people">
@@ -494,7 +494,7 @@
 
     <string name="groupinfo_activity_title">Подаци о групи</string>
 
-    <string name="group_info_set_title">Измени назив</string>
+    <string name="group_info_set_title">Измени предмет</string>
     <string name="group_info_leave">Напусти групу</string>
     <string name="group_info_members">Чланови групе</string>
 
@@ -540,5 +540,10 @@
 
     <string name="group_command_text_part_kicked">Уклоњени сте из ове групе</string>
     <string name="group_info_menu_remove">Уклони</string>
+
+    <plurals name="unread_messages_group">
+	<item quantity="one">%1$d порука у %2$s</item>
+	<item quantity="other"></item>
+</plurals>
 
     </resources>
