@@ -89,20 +89,18 @@ import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK
 public class ComposeMessageFragment extends AbstractComposeFragment {
     private static final String TAG = ComposeMessage.TAG;
 
-    private ViewGroup mInvitationBar;
+    ViewGroup mInvitationBar;
     private MenuItem mViewContactMenu;
     private MenuItem mCallMenu;
     private MenuItem mBlockMenu;
     private MenuItem mUnblockMenu;
 
     /** The user we are talking to. */
-    private String mUserJID;
+    String mUserJID;
     private String mUserPhone;
 
-    private String mLastActivityRequestId;
-    private String mVersionRequestId;
-
-    private BroadcastReceiver mPrivacyListener;
+    String mLastActivityRequestId;
+    String mVersionRequestId;
 
     private boolean mIsTyping;
 
@@ -146,6 +144,14 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         }
 
         return false;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mLocalBroadcastManager != null && mBroadcastReceiver != null) {
+            mLocalBroadcastManager.unregisterReceiver(mBroadcastReceiver);
+        }
     }
 
     public void viewContact() {
@@ -309,13 +315,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                     .onNegative(new MaterialDialog.SingleButtonCallback() {
                         @Override
                         public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                            // FIXME is this specific to sms app?
-                            Intent i = new Intent(Intent.ACTION_SENDTO,
-                                Uri.parse("smsto:" + mUserPhone));
-                            i.putExtra("sms_body",
-                                getString(R.string.text_invite_message));
-                            startActivity(i);
-                            getActivity().finish();
+                            sendInvitation();
                         }
                     })
                     .show();
@@ -508,7 +508,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
     }
 
     /** Sends a subscription request for the current peer. */
-    private void requestPresence() {
+    void requestPresence() {
         // do not request presence for domain JIDs
         if (!XMPPUtils.isDomainJID(mUserJID)) {
             Context context = getContext();
@@ -520,6 +520,16 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                 }
             }
         }
+    }
+
+    void sendInvitation() {
+        // FIXME is this specific to sms app?
+        Intent i = new Intent(Intent.ACTION_SENDTO,
+            Uri.parse("smsto:" + mUserPhone));
+        i.putExtra("sms_body",
+            getString(R.string.text_invite_message));
+        startActivity(i);
+        getActivity().finish();
     }
 
     /** Called when the {@link Conversation} object has been created. */
@@ -565,6 +575,41 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                             }
                         }
                     }
+
+                    else if (MessageCenterService.ACTION_BLOCKED.equals(intent.getAction())) {
+                        String from = XmppStringUtils.parseBareJid(intent
+                            .getStringExtra(MessageCenterService.EXTRA_FROM));
+
+                        if (mUserJID.equals(from)) {
+                            // reload contact
+                            reloadContact();
+                            // this will update block/unblock menu items
+                            updateUI();
+                            Toast.makeText(getActivity(),
+                                R.string.msg_user_blocked,
+                                Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    else if (MessageCenterService.ACTION_UNBLOCKED.equals(intent.getAction())) {
+                        String from = XmppStringUtils.parseBareJid(intent
+                            .getStringExtra(MessageCenterService.EXTRA_FROM));
+
+                        if (mUserJID.equals(from)) {
+                            // reload contact
+                            reloadContact();
+                            // this will update block/unblock menu items
+                            updateUI();
+                            // hide any block warning
+                            // a new warning will be issued for the key if needed
+                            hideWarning();
+                            // request presence subscription when unblocking
+                            requestPresence();
+                            Toast.makeText(getActivity(),
+                                R.string.msg_user_unblocked,
+                                Toast.LENGTH_LONG).show();
+                        }
+                    }
                 }
             };
 
@@ -572,6 +617,8 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             IntentFilter filter = new IntentFilter();
             filter.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
             filter.addAction(MessageCenterService.ACTION_VERSION);
+            filter.addAction(MessageCenterService.ACTION_BLOCKED);
+            filter.addAction(MessageCenterService.ACTION_UNBLOCKED);
             mLocalBroadcastManager.registerReceiver(mBroadcastReceiver, filter);
         }
 
@@ -619,7 +666,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             mInvitationBar.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
-    private void setPrivacy(int action) {
+    void setPrivacy(int action) {
         int status;
 
         switch (action) {
@@ -653,47 +700,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             // reload contact
             invalidateContact();
         }
-        // setup broadcast receiver for block/unblock reply
-        else if (action == PRIVACY_REJECT || action == PRIVACY_BLOCK || action == PRIVACY_UNBLOCK) {
-            if (mPrivacyListener == null) {
-                mPrivacyListener = new BroadcastReceiver() {
-                    public void onReceive(Context context, Intent intent) {
-                        String from = XmppStringUtils.parseBareJid(intent
-                            .getStringExtra(MessageCenterService.EXTRA_FROM));
-
-                        if (mUserJID.equals(from)) {
-                            // reload contact
-                            reloadContact();
-                            // this will update block/unblock menu items
-                            updateUI();
-                            // request presence subscription if unblocking
-                            if (MessageCenterService.ACTION_UNBLOCKED.equals(intent.getAction())) {
-                                Toast.makeText(getActivity(),
-                                        R.string.msg_user_unblocked,
-                                        Toast.LENGTH_LONG).show();
-
-                                // hide any block warning
-                                // a new warning will be issued for the key if needed
-                                hideWarning();
-                                requestPresence();
-                            }
-                            else {
-                                Toast.makeText(getActivity(),
-                                    R.string.msg_user_blocked,
-                                    Toast.LENGTH_LONG).show();
-                            }
-
-                            // we don't need this receiver anymore
-                            mLocalBroadcastManager.unregisterReceiver(this);
-                        }
-                    }
-                };
-            }
-
-            IntentFilter filter = new IntentFilter(MessageCenterService.ACTION_BLOCKED);
-            filter.addAction(MessageCenterService.ACTION_UNBLOCKED);
-            mLocalBroadcastManager.registerReceiver(mPrivacyListener, filter);
-        }
 
         // send command to message center
         MessageCenterService.replySubscription(ctx, mUserJID, action);
@@ -704,7 +710,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         reloadContact();
     }
 
-    private void reloadContact() {
+    void reloadContact() {
         if (mConversation != null) {
             // this will trigger contact reload
             mConversation.setRecipient(mUserJID);
@@ -768,7 +774,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             .show();
     }
 
-    private void showIdentityDialog(boolean informationOnly, int titleId) {
+    void showIdentityDialog(boolean informationOnly, int titleId) {
         String fingerprint;
         String uid;
 
@@ -844,7 +850,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         builder.show();
     }
 
-    private void trustKeyChange() {
+    void trustKeyChange() {
         // mark current key as trusted
         Keyring.setTrustLevel(getActivity(), mUserJID, getContact().getFingerprint(), MyUsers.Keys.TRUST_VERIFIED);
         // reload contact
@@ -903,7 +909,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             R.string.title_public_key_changed_warning, R.string.msg_public_key_changed_warning);
     }
 
-    private void setVersionInfo(Context context, String version) {
+    void setVersionInfo(Context context, String version) {
         if (SystemUtils.isOlderVersion(context, version)) {
             showWarning(context.getText(R.string.warning_older_version), null, WarningType.WARNING);
         }
@@ -913,7 +919,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         setCurrentStatusText(MessageUtils.formatRelativeTimeSpan(context, stamp));
     }
 
-    private void setLastSeenSeconds(Context context, long seconds) {
+    void setLastSeenSeconds(Context context, long seconds) {
         CharSequence statusText = null;
         if (seconds == 0) {
             // it's improbable, but whatever...
