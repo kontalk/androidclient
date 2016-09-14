@@ -36,4 +36,7 @@
     <dimen name="msg_status_size">16dp</dimen>
 
     <dimen name="action_button_margin">16dp</dimen>
+
+    <dimen name="avatar_chat_margin_start">12dp</dimen>
+    <dimen name="avatar_chat_size">48dp</dimen>
 </resources>
