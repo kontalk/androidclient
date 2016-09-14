@@ -375,7 +375,7 @@
     <string name="pref_help">Ayuda</string>
     <string name="err_no_contact">Contacto no encontrado.</string>
 
-    <string name="warning_older_version">Tu compañer@ usa una versión antigua de Kontalk. Algunas cosas podrían no funcionar.</string>
+    <string name="warning_older_version">Este contacto usa una versión antigua de Kontalk. Quizás no están disponibles algunas funcionalidades.</string>
     <string name="warning_user_blocked">Has bloqueado a este usuario.</string>
 
     <string name="about_credits_devteam"><b>Kontalk ha sido posible gracias a:</b></string>
@@ -471,7 +471,7 @@
     <string name="title_group_subject">Asunto del grupo</string>
     <string name="group_command_create">Grupo creado:</string>
     <string name="group_command_user_parted">%s dejó el grupo.</string>
-    <string name="group_command_subject">Asunto del grupo asignado por: %s</string>
+    <string name="group_command_subject">Asunto del grupo establecido como: %s</string>
 
     <string name="group_command_text_create">Grupo creado</string>
     <string name="group_command_text_subject">El asunto del grupo cambió</string>
@@ -490,7 +490,7 @@
     <string name="group_command_self_parted">Usted dejó el grupo.</string>
     <string name="groupinfo_activity_title">Información del Grupo</string>
 
-    <string name="group_info_set_title">Cambiar asunto</string>
+    <string name="group_info_set_title">Cambiar el asunto</string>
     <string name="group_info_leave">Salir del grupo</string>
     <string name="group_info_members">Miembros del grupo</string>
     <string name="confirm_will_leave_group">Usted no será capaz de volver a entrar a este grupo luego de salir.</string>
@@ -532,7 +532,7 @@
     <string name="group_command_text_part_kicked">Has sido eliminado de este grupo</string>
     <string name="err_invalid_passphrase">Contraseña incorrecta. Reinicia la aplicación para volver a intentarlo.</string>
 
-    <string name="title_passphrase_request">Contraseña de clave personal</string>
+    <string name="title_passphrase_request">Contraseña de la clave de cifrado personal</string>
     <string name="pref_balloon_label_silence">Silencio</string>
     <plurals name="unread_messages_group">
 	<item quantity="one">%1$d mensajes @ %2$s</item>
