@@ -32,7 +32,7 @@ public class HangoutMessageTheme extends AvatarMessageTheme {
 
     public HangoutMessageTheme(int direction) {
         super(direction == MyMessages.Messages.DIRECTION_IN ?
-            R.layout.balloon_avatar_in : R.layout.balloon_avatar_out,
+            R.layout.balloon_avatar_in_top : R.layout.balloon_avatar_out,
             direction == MyMessages.Messages.DIRECTION_IN ?
                 R.drawable.balloon_hangout_incoming :
                 R.drawable.balloon_hangout_outgoing, true);
