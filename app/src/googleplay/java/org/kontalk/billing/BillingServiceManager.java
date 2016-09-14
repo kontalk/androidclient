@@ -20,6 +20,8 @@ package org.kontalk.billing;
 
 import android.content.Context;
 
+import org.kontalk.BuildConfig;
+
 
 /**
  * Billing service singleton container.
@@ -43,7 +45,7 @@ public class BillingServiceManager {
 
     /** Returns true if the billing action should be visible in the UI. */
     public static boolean isEnabled() {
-        return true;
+        return !BuildConfig.DEBUG;
     }
 
     public static String getResponseDesc(int code) {
