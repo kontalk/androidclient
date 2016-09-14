@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><!-- Kontalk Android client
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kontalk Android client
      Copyright (C) 2016 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
@@ -74,6 +75,22 @@
 
     <style name="TextAppearance.GroupInfo.Title" parent="android:TextAppearance.Medium">
         <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="AvatarListItemBadgeStyle">
+        <item name="android:layout_marginLeft">@dimen/avatar_chat_margin_start</item>
+        <item name="android:layout_height">@dimen/avatar_chat_size</item>
+        <item name="android:layout_width">@dimen/avatar_chat_size</item>
+    </style>
+
+    <style name="AvatarListItemBadgeStyle.Top" parent="AvatarListItemBadgeStyle">
+        <item name="android:layout_gravity">top</item>
+        <item name="android:layout_marginTop">4dp</item>
+    </style>
+
+    <style name="AvatarListItemBadgeStyle.Bottom" parent="AvatarListItemBadgeStyle">
+        <item name="android:layout_gravity">bottom</item>
+        <item name="android:layout_marginBottom">4dp</item>
     </style>
 
 </resources>

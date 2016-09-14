@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.kontalk.R;
+import org.kontalk.provider.MyMessages;
 
 
 /**
@@ -47,15 +48,15 @@ public class MessageListItemThemeFactory {
             @Override
             public MessageListItemTheme create(int direction) {
                 int layoutId, drawableId;
-                if (direction == Messages.DIRECTION_IN) {
-                    layoutId = R.layout.balloon_avatar_in;
+                if (direction == MyMessages.Messages.DIRECTION_IN) {
+                    layoutId = R.layout.balloon_avatar_in_bottom;
                     drawableId = R.drawable.balloon_silence_incoming;
                 }
                 else {
                     layoutId = R.layout.balloon_avatar_out;
                     drawableId = R.drawable.balloon_silence_outgoing;
                 }
-                return new AvatarMessageTheme(layoutId, drawableId);
+                return new AvatarMessageTheme(layoutId, drawableId, false);
             }
         });
         mThemes.put("classic", new FactoryCreator() {
