@@ -375,7 +375,7 @@
     <string name="pref_help">Ayuda</string>
     <string name="err_no_contact">Contacto no encontrado.</string>
 
-    <string name="warning_older_version">Tu compañer@ está usando una versión antigua de Kontalk. Algunas funciones podrían no estar operativas.</string>
+    <string name="warning_older_version">Tu compañer@ usa una versión antigua de Kontalk. Algunas cosas podrían no funcionar.</string>
     <string name="warning_user_blocked">Has bloqueado a este usuario.</string>
 
     <string name="about_credits_devteam"><b>Kontalk ha sido posible gracias a:</b></string>
