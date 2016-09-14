@@ -474,7 +474,7 @@
     <string name="title_group_subject">Предмет групе</string>
     <string name="group_command_create">Група направљена:</string>
     <string name="group_command_user_parted">%s напусти групу.</string>
-    <string name="group_command_subject">Предмет групе промењен у: %s</string>
+    <string name="group_command_subject">Предмет групе измењен у: %s</string>
 
     <string name="group_command_text_create">Група направљена</string>
     <string name="group_command_text_subject">Предмет групе измењен</string>
@@ -543,7 +543,7 @@
 
     <plurals name="unread_messages_group">
 	<item quantity="one">%1$d порука у %2$s</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
 
     </resources>
