@@ -530,4 +530,13 @@
     <string name="action_compose_group">Nuovo gruppo</string>
 
     <string name="group_command_text_part_kicked">Sei stato rimosso dal gruppo</string>
+    <string name="pref_balloon_label_silence">Silence</string>
+    <string name="title_passphrase_request">Password chiave personale</string>
+    <string name="err_invalid_passphrase">Password errata. Riavvia l\'app per provarne un\'altra.</string>
+
+    <plurals name="unread_messages_group">
+	<item quantity="one">%1$d messaggi @ %2$s</item>
+	<item quantity="other"></item>
+</plurals>
+
     </resources>
