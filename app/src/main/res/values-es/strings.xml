@@ -465,16 +465,16 @@
 
     <string name="chooser_error_no_browser">No hay ningún navegador disponible para abrir el enlace.</string>
     <string name="menu_invite_group">Añadir usuarios</string>
-    <string name="menu_set_group_subject">Asignar asunto al grupo</string>
+    <string name="menu_set_group_subject">Establecer el nombre del grupo</string>
     <string name="menu_leave_group">Salir del grupo</string>
     <string name="group_untitled">Grupo sin nombre</string>
-    <string name="title_group_subject">Asunto del grupo</string>
+    <string name="title_group_subject">Nombre del grupo</string>
     <string name="group_command_create">Grupo creado:</string>
     <string name="group_command_user_parted">%s dejó el grupo.</string>
-    <string name="group_command_subject">Asunto del grupo establecido como: %s</string>
+    <string name="group_command_subject">Nombre del grupo establecido como: %s</string>
 
     <string name="group_command_text_create">Grupo creado</string>
-    <string name="group_command_text_subject">El asunto del grupo cambió</string>
+    <string name="group_command_text_subject">El nombre del grupo ha cambiado</string>
     <string name="group_command_text_part">Alguien dejó este grupo</string>
 
     <plurals name="group_people">
@@ -490,7 +490,7 @@
     <string name="group_command_self_parted">Usted dejó el grupo.</string>
     <string name="groupinfo_activity_title">Información del Grupo</string>
 
-    <string name="group_info_set_title">Cambiar el asunto</string>
+    <string name="group_info_set_title">Cambiar el nom del grupo</string>
     <string name="group_info_leave">Salir del grupo</string>
     <string name="group_info_members">Miembros del grupo</string>
     <string name="confirm_will_leave_group">Usted no será capaz de volver a entrar a este grupo luego de salir.</string>
