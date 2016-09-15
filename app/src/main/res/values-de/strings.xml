@@ -533,7 +533,7 @@
 
     <string name="group_command_text_part_kicked">Sie wurden aus dieser Gruppe entfernt</string>
     <string name="title_passphrase_request">Passwort für persönlichen Schlüssel</string>
-    <string name="err_invalid_passphrase">"Falsches Passwort. Starten Sie die App  erneut und probieren Sie ein anderes."</string>
+    <string name="err_invalid_passphrase">Falsches Passwort. Starten Sie die App erneut und probieren Sie ein anderes.</string>
 
     <plurals name="unread_messages_group">
 	<item quantity="one">%1$d Nachrichten @ %2$s</item>
