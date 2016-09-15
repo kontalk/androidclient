@@ -70,9 +70,11 @@
     <string name="view_contact">View contact</string>
     <string name="view_conversation">View chat</string>
     <string name="delete_thread">Delete chat</string>
+    <string name="delete_thread_messages">Delete chat history</string>
     <string name="confirm_delete_thread">Delete chat</string>
     <string name="confirm_will_delete_thread">The entire chat will be deleted.</string>
     <string name="confirm_will_delete_threads">The selected chats will be deleted.</string>
+    <string name="delete_threads_leave_groups">Also leave groups</string>
     <string name="new_messages">New messages</string>
     <string name="only_one_account_supported">Only one Kontalk account is supported.</string>
     <string name="hint_enter_text">Enter your text here</string>
@@ -501,6 +503,7 @@
     <string name="group_info_members">Group members</string>
     <string name="group_info_ignore_all">Ignore all</string>
     <string name="confirm_will_leave_group">You won\'t be able to enter this group again after you leave.</string>
+    <string name="leave_group_delete_messages">Also delete chat history</string>
     <string name="group_info_menu_remove">Remove</string>
 
     <string name="title_ignore_all_identities">Ignore all identities?</string>

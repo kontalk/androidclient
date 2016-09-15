@@ -175,12 +175,20 @@ public class GroupMessageFragment extends AbstractComposeFragment {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                     // leave group
-                    mConversation.leaveGroup();
-                    // reload conversation
-                    if (isVisible())
-                        startQuery(false);
+                    if (dialog.isPromptCheckBoxChecked()) {
+                        mConversation.delete(true);
+                        // manually close the conversation
+                        closeConversation();
+                    }
+                    else {
+                        mConversation.leaveGroup();
+                        // reload conversation
+                        if (isVisible())
+                            startQuery(false);
+                    }
                 }
             })
+            .checkBoxPromptRes(R.string.leave_group_delete_messages, false, null)
             .negativeText(android.R.string.cancel)
             .show();
     }

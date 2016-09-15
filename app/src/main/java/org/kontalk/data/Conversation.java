@@ -169,6 +169,10 @@ public class Conversation {
         return cursor.getLong(COLUMN_ID);
     }
 
+    public static boolean isGroup(Cursor cursor, int requiredMembership) {
+        return cursor.getString(COLUMN_GROUP_JID) != null && cursor.getInt(COLUMN_GROUP_MEMBERSHIP) == requiredMembership;
+    }
+
     public static void deleteFromCursor(Context context, Cursor cursor, boolean leaveGroup) {
         String groupJid = cursor.getString(COLUMN_GROUP_JID);
         String[] groupPeers = null;
@@ -180,11 +184,11 @@ public class Conversation {
         deleteInternal(context, cursor.getLong(COLUMN_ID), groupJid, groupPeers, groupType, leaveGroup);
     }
 
-    public static void deleteAll(Context context) {
+    public static void deleteAll(Context context, boolean leaveGroups) {
         Cursor c = context.getContentResolver().query(Threads.CONTENT_URI,
             ALL_THREADS_PROJECTION, null, null, null);
         while (c.moveToNext()) {
-            deleteFromCursor(context, c, false);
+            deleteFromCursor(context, c, leaveGroups);
         }
         c.close();
     }

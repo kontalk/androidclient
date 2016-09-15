@@ -47,6 +47,8 @@ import android.widget.ListView;
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
+import org.kontalk.message.CompositeMessage;
+import org.kontalk.provider.MyMessages;
 import org.kontalk.ui.adapter.ConversationListAdapter;
 import org.kontalk.ui.view.AbsListViewScrollDetector;
 import org.kontalk.ui.view.ConversationListItem;
@@ -55,12 +57,12 @@ import org.kontalk.util.SystemUtils;
 
 public class ConversationListFragment extends ActionModeListFragment
         implements Contact.ContactChangeListener, MultiChoiceModeListener {
-    private static final String TAG = ConversationsActivity.TAG;
+    static final String TAG = ConversationsActivity.TAG;
 
     private static final int THREAD_LIST_QUERY_TOKEN = 8720;
 
     private ThreadListQueryHandler mQueryHandler;
-    private ConversationListAdapter mListAdapter;
+    ConversationListAdapter mListAdapter;
     private boolean mDualPane;
 
     private FloatingActionMenu mAction;
@@ -261,23 +263,41 @@ public class ConversationListFragment extends ActionModeListFragment
     }
 
     private void deleteSelectedThreads(final SparseBooleanArray checked) {
-        new MaterialDialog.Builder(getActivity())
+        boolean addGroupCheckbox = false;
+        for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
+            if (checked.get(i) && Conversation.isGroup((Cursor) mListAdapter.getItem(i), MyMessages.Groups.MEMBERSHIP_MEMBER)) {
+                addGroupCheckbox = true;
+                break;
+            }
+        }
+
+        final boolean hasGroupCheckbox = addGroupCheckbox;
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
             .content(R.string.confirm_will_delete_threads)
             .positiveText(android.R.string.ok)
+            .positiveColorRes(R.color.button_danger)
             .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                     Context ctx = getActivity();
                     for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
-                        if (checked.get(i))
-                            Conversation.deleteFromCursor(ctx, (Cursor) mListAdapter.getItem(i), true);
+                        if (checked.get(i)) {
+                            Cursor cursor = (Cursor) mListAdapter.getItem(i);
+                            boolean hasLeftGroup = Conversation.isGroup(cursor, MyMessages.Groups.MEMBERSHIP_PARTED) ||
+                                Conversation.isGroup(cursor, MyMessages.Groups.MEMBERSHIP_KICKED);
+                            Conversation.deleteFromCursor(ctx, cursor,
+                                hasGroupCheckbox ? dialog.isPromptCheckBoxChecked() : hasLeftGroup);
+                        }
                     }
                     mListAdapter.notifyDataSetChanged();
-
                 }
             })
-            .negativeText(android.R.string.cancel)
-            .show();
+            .negativeText(android.R.string.cancel);
+
+        if (addGroupCheckbox)
+            builder.checkBoxPromptRes(R.string.delete_threads_leave_groups, false, null);
+
+        builder.show();
     }
 
     public void chooseContact(boolean multiselect) {

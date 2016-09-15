@@ -537,10 +537,11 @@ public class ConversationsActivity extends MainActivity
             .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                    Conversation.deleteAll(ConversationsActivity.this);
+                    Conversation.deleteAll(ConversationsActivity.this, dialog.isPromptCheckBoxChecked());
                     MessagingNotification.updateMessagesNotification(getApplicationContext(), false);
                 }
             })
+            .checkBoxPromptRes(R.string.delete_threads_leave_groups, false, null)
             .negativeText(android.R.string.cancel)
             .show();
     }
