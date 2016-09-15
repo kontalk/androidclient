@@ -479,26 +479,26 @@
     <string name="check_do_not_show_again">Não exibir novamente</string>
 
     <string name="menu_invite_group">Adicionar usuários</string>
-    <string name="menu_set_group_subject">Definir o título do grupo</string>
+    <string name="menu_set_group_subject">Definir o assunto do grupo</string>
     <string name="menu_leave_group">Sair do grupo</string>
     <string name="chooser_error_no_browser">Não existe nenhum navegador disponível para abrir o link.</string>
     <string name="text_invitation_info">(convite para conversar)</string>
 
     <string name="group_untitled">Grupo sem título</string>
-    <string name="title_group_subject">Título do grupo</string>
+    <string name="title_group_subject">Assunto do grupo</string>
     <string name="group_command_create">Grupo criado:</string>
     <string name="group_command_self_parted">Você saiu do grupo.</string>
     <string name="group_command_user_parted">%s saiu do grupo.</string>
-    <string name="group_command_subject">O título do grupo foi definido como: %s</string>
+    <string name="group_command_subject">O assunto do grupo foi definido como: %s</string>
 
     <string name="group_command_text_create">O grupo foi criado</string>
-    <string name="group_command_text_subject">O título do grupo foi alterado</string>
+    <string name="group_command_text_subject">O assunto do grupo foi alterado</string>
     <string name="group_command_text_part">Alguém saiu deste grupo</string>
     <string name="group_command_text_add_remove">Alguém foi adicionado ou removido</string>
 
     <string name="groupinfo_activity_title">Informações do grupo</string>
 
-    <string name="group_info_set_title">Alterar o título</string>
+    <string name="group_info_set_title">Alterar o assunto</string>
     <string name="group_info_leave">Sair do grupo</string>
     <string name="group_info_members">Membros do grupo</string>
     <string name="confirm_will_leave_group">Você não conseguirá retornar a esse grupo depois que sair dele.</string>
@@ -540,5 +540,15 @@
     <string name="action_compose_group">Novo grupo</string>
 
     <string name="group_info_menu_remove">Remover</string>
+
+    <string name="pref_balloon_label_silence">Silence</string>
+    <string name="title_passphrase_request">Senha da chave pessoal</string>
+    <string name="err_invalid_passphrase">Senha errada. Reinicie a aplicação para tentar outra.</string>
+
+    <string name="group_command_text_part_kicked">Você foi removido desse grupo</string>
+    <plurals name="unread_messages_group">
+	<item quantity="one">%1$d mensagens @ %2$s</item>
+	<item quantity="other"></item>
+</plurals>
 
     </resources>
