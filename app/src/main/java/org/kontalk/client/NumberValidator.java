@@ -26,6 +26,8 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -188,6 +190,17 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
             }
         }
         return count;
+    }
+
+    /** Handles special numbers not handled by libphonenumber. */
+    public static boolean isSpecialNumber(PhoneNumber number) {
+        if (number.getCountryCode() == 31) {
+            // handle special M2M numbers: 11 digits starting with 097[0-8]
+            final Pattern regex = Pattern.compile("^97[0-8][0-9]{8}$");
+            Matcher m = regex.matcher(String.valueOf(number.getNationalNumber()));
+            return m.matches();
+        }
+        return false;
     }
 
     public synchronized void start() {

@@ -555,9 +555,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                             cc = (CountryCode) mCountryCode.getItemAtPosition(position);
                         }
                     }
-                    if (!util.isValidNumberForRegion(phone, cc.regionCode)) {
+                    if (!util.isValidNumberForRegion(phone, cc.regionCode) && !NumberValidator.isSpecialNumber(phone))
                         throw new NumberParseException(ErrorType.INVALID_COUNTRY_CODE, "invalid number for region " + cc.regionCode);
-                    }
                 }
                 catch (NumberParseException e1) {
                     error(R.string.msg_invalid_number);
