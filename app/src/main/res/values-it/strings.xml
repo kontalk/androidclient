@@ -536,7 +536,10 @@
 
     <plurals name="unread_messages_group">
 	<item quantity="one">%1$d messaggi @ %2$s</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
 
+    <string name="delete_thread_messages">Elimina messaggi</string>
+    <string name="delete_threads_leave_groups">Abbandona i gruppi</string>
+    <string name="leave_group_delete_messages">Elimina anche i messaggi</string>
     </resources>
