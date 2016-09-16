@@ -49,9 +49,10 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_alignWithParentIfMissing="true"
+            android:layout_toEndOf="@id/avatar"
             android:layout_toRightOf="@id/avatar"
             android:ellipsize="marquee"
-            android:singleLine="true" />
+            android:maxLines="1"/>
 
         <TextView
             android:id="@android:id/text2"
@@ -61,6 +62,7 @@
             android:layout_alignWithParentIfMissing="true"
             android:paddingBottom="16dp"
             android:layout_below="@android:id/text1"
+            android:layout_toEndOf="@id/avatar"
             android:layout_toRightOf="@id/avatar"
             android:maxLines="2"
             android:ellipsize="end"/>

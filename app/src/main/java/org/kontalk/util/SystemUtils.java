@@ -37,6 +37,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -46,11 +47,13 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.ContactsContract;
+import android.support.annotation.AttrRes;
 import android.support.annotation.ColorRes;
 import android.text.style.CharacterStyle;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.SparseBooleanArray;
+import android.util.TypedValue;
 import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
@@ -390,6 +393,13 @@ public final class SystemUtils {
 
     public static CharacterStyle getTypefaceSpan(int typeface) {
         return new StyleSpan(typeface);
+    }
+
+    public static int getThemedResource(Context context, @AttrRes int attrResId) {
+        TypedValue value = new TypedValue();
+        if (!context.getTheme().resolveAttribute(attrResId, value, true))
+            throw new Resources.NotFoundException();
+        return value.resourceId;
     }
 
 }

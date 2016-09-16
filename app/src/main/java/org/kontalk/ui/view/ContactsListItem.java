@@ -21,6 +21,7 @@ package org.kontalk.ui.view;
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers;
+import org.kontalk.util.SystemUtils;
 
 import android.content.Context;
 import android.text.TextUtils;
@@ -82,7 +83,8 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
             mText2.setTextColor(getResources().getColor(R.color.grayed_out));
         }
         else {
-            mText2.setTextColor(getResources().getColor(android.R.color.secondary_text_light));
+            mText2.setTextColor(getResources().getColor(SystemUtils
+                .getThemedResource(getContext(), android.R.attr.textColorSecondary)));
         }
         mText2.setText(text2);
 
