@@ -236,14 +236,14 @@ public class ConversationsActivity extends MainActivity
         }
     }
 
-    private void startGroupChat(List<Uri> threads) {
+    private void startGroupChat(List<Uri> users) {
         String selfJid = Authenticator.getSelfJID(this);
         String groupId = StringUtils.randomString(20);
         String groupJid = KontalkGroupCommands.createGroupJid(groupId, selfJid);
 
         // ensure no duplicates
         Set<String> usersList = new HashSet<>();
-        for (Uri uri : threads) {
+        for (Uri uri : users) {
             String member = uri.getLastPathSegment();
             // exclude ourselves
             if (!member.equalsIgnoreCase(selfJid))
@@ -365,7 +365,7 @@ public class ConversationsActivity extends MainActivity
         }
     }
 
-    private void openConversation(Uri threadUri) {
+    void openConversation(Uri threadUri) {
         if (isDualPane()) {
             // TODO position
             //mFragment.getListView().setItemChecked(position, true);

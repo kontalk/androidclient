@@ -262,6 +262,11 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                 threadId);
             setThreadId(threadId);
         }
+        else if (mUserJID == null) {
+            Toast.makeText(getActivity(), R.string.err_no_contact,
+                Toast.LENGTH_LONG).show();
+            closeConversation();
+        }
         else {
             mConversation = Conversation.createNew(getActivity());
             mConversation.setRecipient(mUserJID);
@@ -302,7 +307,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
     @Override
     protected void onArgumentsProcessed() {
         // non existant thread - check for not synced contact
-        if (getThreadId() <= 0 && mConversation != null) {
+        if (getThreadId() <= 0 && mConversation != null && mUserJID != null) {
             Contact contact = mConversation.getContact();
             if (!(mUserPhone != null && contact != null) || !contact.isRegistered()) {
                 // ask user to send invitation
