@@ -1304,19 +1304,33 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             if (resultCode == Activity.RESULT_OK) {
                 Uri uri = data.getData();
                 if (uri != null) {
+                    Uri vcardUri = null;
+
                     // get lookup key
-                    final Cursor c = getActivity().getContentResolver()
+                    final Cursor c = getContext().getContentResolver()
                         .query(uri, new String[] { Contacts.LOOKUP_KEY }, null, null, null);
                     if (c != null) {
                         try {
-                            c.moveToFirst();
-                            String lookupKey = c.getString(0);
-                            Uri vcardUri = Uri.withAppendedPath(Contacts.CONTENT_VCARD_URI, lookupKey);
-                            sendBinaryMessage(vcardUri, VCardComponent.MIME_TYPE, false, VCardComponent.class);
+                            if (c.moveToFirst()) {
+                                String lookupKey = c.getString(0);
+                                vcardUri = Uri.withAppendedPath(Contacts.CONTENT_VCARD_URI, lookupKey);
+                            }
+                        }
+                        catch (Exception e) {
+                            Log.w(TAG, "unable to lookup selected contact. Did you grant me the permission?", e);
+                            ReportingManager.logException(e);
                         }
                         finally {
                             c.close();
                         }
+                    }
+
+                    if (vcardUri != null) {
+                        sendBinaryMessage(vcardUri, VCardComponent.MIME_TYPE, false, VCardComponent.class);
+                    }
+                    else {
+                        Toast.makeText(getContext(), R.string.err_no_contact,
+                            Toast.LENGTH_LONG).show();
                     }
                 }
             }
