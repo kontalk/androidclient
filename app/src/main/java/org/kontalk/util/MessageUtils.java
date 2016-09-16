@@ -55,6 +55,7 @@ import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.PersonalKey;
+import org.kontalk.data.Contact;
 import org.kontalk.message.AttachmentComponent;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
@@ -294,9 +295,9 @@ public final class MessageUtils {
         return details.toString();
     }
 
-    public static void showMessageDetails(Context context, CompositeMessage msg, String decodedPeer) {
+    public static void showMessageDetails(Context context, CompositeMessage msg, String decodedPeer, String decodedName) {
         CharSequence messageDetails = MessageUtils.getMessageDetails(
-            context, msg, decodedPeer);
+            context, msg, decodedPeer, decodedName);
         new MaterialDialog.Builder(context)
             .title(R.string.title_message_details)
             .content(messageDetails)
@@ -304,7 +305,7 @@ public final class MessageUtils {
             .show();
     }
 
-    private static CharSequence getMessageDetails(Context context, CompositeMessage msg, String decodedPeer) {
+    private static CharSequence getMessageDetails(Context context, CompositeMessage msg, String decodedPeer, String decodedName) {
         SpannableStringBuilder details = new SpannableStringBuilder();
         Resources res = context.getResources();
         int direction = msg.getDirection();
@@ -335,7 +336,10 @@ public final class MessageUtils {
             else
                 details.append(res.getString(R.string.from_label));
 
-            details.append(decodedPeer);
+            String displayName = (decodedName != null) ?
+                decodedName + "\n<" + decodedPeer + ">" :
+                decodedPeer;
+            details.append(displayName);
         }
 
         // Encrypted

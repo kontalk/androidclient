@@ -63,7 +63,7 @@ import org.kontalk.util.Preferences;
  * @author Daniele Ricci
  */
 public class Contact {
-    private final static String TAG = Contact.class.getSimpleName();
+    final static String TAG = Contact.class.getSimpleName();
 
     private final static String[] ALL_CONTACTS_PROJECTION = {
         Users._ID,
@@ -185,7 +185,7 @@ public class Contact {
         /** Version information. Not coming from the database. */
         private String mVersion;
 
-        private ContactState(String jid) {
+        ContactState(String jid) {
             mJID = jid;
         }
 
@@ -263,7 +263,7 @@ public class Contact {
         sStates.remove(jid);
     }
 
-    private Contact(long contactId, String lookupKey, String name, String number, String jid, boolean blocked) {
+    Contact(long contactId, String lookupKey, String name, String number, String jid, boolean blocked) {
         mContactId = contactId;
         mLookupKey = lookupKey;
         mName = name;
@@ -520,7 +520,7 @@ public class Contact {
         return c;
     }
 
-    private static Contact _findByUserId(Context context, String userId) {
+    static Contact _findByUserId(Context context, String userId) {
         ContentResolver cres = context.getContentResolver();
         Cursor c = cres.query(Uri.withAppendedPath(Users.CONTENT_URI, userId),
             new String[] {
@@ -597,7 +597,8 @@ public class Contact {
                 try {
                     avatarDataStream.close();
                 }
-                catch (IOException e) {}
+                catch (IOException ignored) {
+                }
             }
         }
 

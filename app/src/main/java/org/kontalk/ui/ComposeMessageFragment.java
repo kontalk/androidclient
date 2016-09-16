@@ -1026,4 +1026,10 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         return mUserPhone != null ? mUserPhone : mUserJID;
     }
 
+    @Override
+    protected String getDecodedName(CompositeMessage msg) {
+        Contact c = getContact();
+        return (c != null) ? c.getName() : null;
+    }
+
 }

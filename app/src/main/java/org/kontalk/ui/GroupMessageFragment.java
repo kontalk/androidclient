@@ -237,6 +237,17 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     }
 
     @Override
+    protected String getDecodedName(CompositeMessage msg) {
+        if (msg.getDirection() == MyMessages.Messages.DIRECTION_IN) {
+            String userId = msg.getSender();
+            Contact c = Contact.findByUserId(getContext(), userId);
+            if (c != null)
+                return c.getName();
+        }
+        return null;
+    }
+
+    @Override
     protected void loadConversationMetadata(Uri uri) {
         super.loadConversationMetadata(uri);
         if (mConversation != null) {
