@@ -59,6 +59,7 @@ public class MessageListItem extends RelativeLayout implements Checkable {
     private CompositeMessage mMessage;
     // for message details
     private String mPeer;
+    private String mDisplayName;
 
     private MessageListItemTheme mBalloonTheme;
 
@@ -128,8 +129,10 @@ public class MessageListItem extends RelativeLayout implements Checkable {
             Contact contact = Contact.findByUserId(context, msg.getSender(true));
             mBalloonTheme.setIncoming(contact, sameMessageBlock);
 
-            if (contact != null)
+            if (contact != null) {
                 mPeer = contact.getNumber();
+                mDisplayName = contact.getName();
+            }
             if (mPeer == null)
                 mPeer = msg.getSender(true);
         }
@@ -138,8 +141,10 @@ public class MessageListItem extends RelativeLayout implements Checkable {
             if (!msg.hasComponent(GroupComponent.class))
                 contact = Contact.findByUserId(context, msg.getRecipients().get(0));
             mBalloonTheme.setOutgoing(contact, mMessage.getStatus(), sameMessageBlock);
-            if (contact != null)
+            if (contact != null) {
                 mPeer = contact.getNumber();
+                mDisplayName = contact.getName();
+            }
             if (mPeer == null)
                 mPeer = msg.getRecipients().get(0);
         }
@@ -289,7 +294,7 @@ public class MessageListItem extends RelativeLayout implements Checkable {
 
         if (spans.length == 0) {
             // show the message details dialog
-            MessageUtils.showMessageDetails(getContext(), mMessage, mPeer);
+            MessageUtils.showMessageDetails(getContext(), mMessage, mPeer, mDisplayName);
         }
         else if (spans.length == 1) {
             // show link opener
@@ -355,7 +360,7 @@ public class MessageListItem extends RelativeLayout implements Checkable {
         private TextView mParent;
         private Dialog mDialog;
 
-        private URLSpanAdapterCallback(TextView parent) {
+        URLSpanAdapterCallback(TextView parent) {
             mParent = parent;
         }
 

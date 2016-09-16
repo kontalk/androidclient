@@ -1167,11 +1167,14 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     }
 
     private void showMessageDetails(CompositeMessage msg) {
-        MessageUtils.showMessageDetails(getActivity(), msg, getDecodedPeer(msg));
+        MessageUtils.showMessageDetails(getActivity(), msg, getDecodedPeer(msg), getDecodedName(msg));
     }
 
     /** Returns the phone number of the message sender, if available. */
     protected abstract String getDecodedPeer(CompositeMessage msg);
+
+    /** Returns the display name of the message sender, if available. */
+    protected abstract String getDecodedName(CompositeMessage msg);
 
     private void shareMessage(CompositeMessage msg) {
         Intent i = null;
