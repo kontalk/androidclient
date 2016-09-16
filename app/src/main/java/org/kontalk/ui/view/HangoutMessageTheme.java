@@ -45,8 +45,7 @@ public class HangoutMessageTheme extends AvatarMessageTheme {
             if (mBalloonView != null) {
                 int drawable = mDirection == MyMessages.Messages.DIRECTION_IN ?
                     R.drawable.balloon_hangout_block_incoming :
-                    // TODO block balloon
-                    R.drawable.balloon_hangout_outgoing;
+                    R.drawable.balloon_hangout_block_outgoing;
                 mBalloonView.setBackgroundResource(drawable);
             }
         }
