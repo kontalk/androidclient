@@ -55,7 +55,6 @@ import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.PersonalKey;
-import org.kontalk.data.Contact;
 import org.kontalk.message.AttachmentComponent;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
