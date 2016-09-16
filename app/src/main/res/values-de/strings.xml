@@ -482,7 +482,7 @@
 </plurals>
 
 
-<string name="group_command_subject">Gruppe benannt in: %s</string>
+<string name="group_command_subject">Gruppe umbenannt in: %s</string>
 
     <string name="text_invitation_info">(Chateinladung)</string>
 
