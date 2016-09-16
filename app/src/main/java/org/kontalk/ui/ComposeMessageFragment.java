@@ -585,7 +585,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                             reloadContact();
                             // this will update block/unblock menu items
                             updateUI();
-                            Toast.makeText(getActivity(),
+                            Toast.makeText(context,
                                 R.string.msg_user_blocked,
                                 Toast.LENGTH_LONG).show();
                         }
@@ -605,7 +605,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                             hideWarning();
                             // request presence subscription when unblocking
                             requestPresence();
-                            Toast.makeText(getActivity(),
+                            Toast.makeText(context,
                                 R.string.msg_user_unblocked,
                                 Toast.LENGTH_LONG).show();
                         }
