@@ -80,7 +80,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     /** The SEND intent. */
     private Intent sendIntent;
 
-    private AbstractComposeFragment mFragment;
+    AbstractComposeFragment mFragment;
 
     /**
      * True if the window has lost focus the last time

@@ -36,7 +36,6 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.view.ActionMode;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -80,7 +79,6 @@ public class GroupInfoFragment extends ActionModeListFragment
     private Button mLeave;
     private Button mIgnoreAll;
     private MenuItem mRemoveMenu;
-    private MenuItem mComposeMenu;
 
     private GroupMembersAdapter mMembersAdapter;
 
@@ -131,9 +129,6 @@ public class GroupInfoFragment extends ActionModeListFragment
             String selfJid = Authenticator.getSelfJID(getContext());
             boolean isOwner = KontalkGroup.checkOwnership(mConversation.getGroupJid(), selfJid);
             mRemoveMenu.setVisible(isOwner);
-            MenuItemCompat.setShowAsAction(mRemoveMenu, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
-            MenuItemCompat.setShowAsAction(mComposeMenu, isOwner ?
-                MenuItemCompat.SHOW_AS_ACTION_IF_ROOM : MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
         }
     }
 
@@ -248,12 +243,6 @@ public class GroupInfoFragment extends ActionModeListFragment
                     .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
                 mode.finish();
                 return true;
-            case R.id.menu_compose:
-                // using clone because listview returns its original copy
-                composeSelectedUsers(SystemUtils
-                    .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
-                mode.finish();
-                return true;
         }
         return false;
     }
@@ -263,7 +252,6 @@ public class GroupInfoFragment extends ActionModeListFragment
         MenuInflater inflater = mode.getMenuInflater();
         inflater.inflate(R.menu.group_info_ctx, menu);
         mRemoveMenu = menu.findItem(R.id.menu_remove);
-        mComposeMenu = menu.findItem(R.id.menu_compose);
         updateUI();
         return true;
     }
@@ -302,15 +290,6 @@ public class GroupInfoFragment extends ActionModeListFragment
 
         if (removingSelf)
             confirmLeave();
-    }
-
-    private void composeSelectedUsers(final SparseBooleanArray checked) {
-        List<String> users = new LinkedList<>();
-        for (int i = 0, c = mMembersAdapter.getCount(); i < c; ++i) {
-            if (checked.get(i))
-                users.add(((Contact) mMembersAdapter.getItem(i)).getJID());
-        }
-        // TODO create group with users
     }
 
     @Override
