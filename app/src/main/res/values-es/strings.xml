@@ -489,7 +489,7 @@
     <string name="group_command_self_parted">Usted dejó el grupo.</string>
     <string name="groupinfo_activity_title">Información del Grupo</string>
 
-    <string name="group_info_set_title">Cambiar el nom del grupo</string>
+    <string name="group_info_set_title">Cambiar nombre del grupo</string>
     <string name="group_info_leave">Salir del grupo</string>
     <string name="group_info_members">Miembros del grupo</string>
     <string name="confirm_will_leave_group">Usted no será capaz de volver a entrar a este grupo luego de salir.</string>
