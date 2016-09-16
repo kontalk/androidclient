@@ -325,25 +325,27 @@ public class ContactsListFragment extends ListFragment implements
                 }
             }
 
-            // initial intents are added before of the main intent, so we remove the last one here
-            Intent chooser = Intent.createChooser(targets.remove(targets.size() - 1), getString(R.string.menu_invite));
-            Collections.sort(targets, new DisplayNameComparator());
-            // remove custom extras
-            for (Intent intent : targets)
-                intent.removeExtra("org.kontalk.invite.label");
+            if (targets.size() > 0) {
+                // initial intents are added before the main intent, so we remove the last one here
+                Intent chooser = Intent.createChooser(targets.remove(targets.size() - 1), getString(R.string.menu_invite));
+                if (targets.size() > 0) {
+                    Collections.sort(targets, new DisplayNameComparator());
+                    // remove custom extras
+                    for (Intent intent : targets)
+                        intent.removeExtra("org.kontalk.invite.label");
 
-            Parcelable[] extraIntents = new Parcelable[targets.size()];
-            targets.toArray(extraIntents);
-            chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
+                    Parcelable[] extraIntents = targets.toArray(new Parcelable[targets.size()]);
+                    chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
+                }
 
-            startActivity(chooser);
+                startActivity(chooser);
+                return;
+            }
         }
 
-        else {
-            // no activity to handle invitation
-            Toast.makeText(ctx, R.string.warn_invite_no_app,
-                Toast.LENGTH_SHORT).show();
-        }
+        // no activity to handle invitation
+        Toast.makeText(ctx, R.string.warn_invite_no_app,
+            Toast.LENGTH_SHORT).show();
     }
 
     static class DisplayNameComparator implements
