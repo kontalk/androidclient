@@ -20,7 +20,11 @@ package org.kontalk.ui.view;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -30,7 +34,14 @@ import android.widget.TextView;
 import org.kontalk.R;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.ImageComponent;
+import org.kontalk.ui.ComposeMessage;
+import org.kontalk.util.MediaStorage;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.util.regex.Pattern;
 
 
@@ -40,6 +51,7 @@ import java.util.regex.Pattern;
  */
 public class ImageContentView extends FrameLayout
         implements MessageContentView<ImageComponent> {
+    static final String TAG = ComposeMessage.TAG;
 
     private ImageComponent mComponent;
     private ImageView mContent;
@@ -68,19 +80,81 @@ public class ImageContentView extends FrameLayout
     public void bind(long messageId, ImageComponent component, Pattern highlight) {
         mComponent = component;
 
-        Bitmap bitmap = mComponent.getBitmap();
+        Bitmap bitmap = getBitmap();
+        showBitmap(bitmap);
+    }
+
+    void showBitmap(Bitmap bitmap) {
         if (bitmap != null) {
             mContent.setImageBitmap(bitmap);
             mPlaceholder.setVisibility(GONE);
             mContent.setVisibility(VISIBLE);
         }
         else {
-            String placeholder = CompositeMessage.getSampleTextContent(component.getContent().getMime());
+            String placeholder = CompositeMessage.getSampleTextContent(mComponent.getContent().getMime());
             mPlaceholder.setText(placeholder);
             TextContentView.setTextStyle(mPlaceholder);
             mContent.setVisibility(GONE);
             mPlaceholder.setVisibility(VISIBLE);
         }
+    }
+
+    private BitmapFactory.Options bitmapOptions() {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
+        return options;
+    }
+
+    Bitmap loadPreview(File previewFile) throws IOException {
+        InputStream in = new FileInputStream(previewFile);
+        BitmapFactory.Options options = bitmapOptions();
+        Bitmap bitmap = BitmapFactory.decodeStream(in, null, options);
+        in.close();
+        return bitmap;
+    }
+
+    private Bitmap getBitmap() {
+        /*
+         * local_uri is used for referencing the original media.
+         * preview_uri is used to load the media thumbnail.
+         * If preview_uri is null or cannot be found, a thumbnail is
+         * generated on the fly from local_uri - if possible.
+         */
+
+        File previewFile = mComponent.getPreviewFile();
+        Uri localUri = mComponent.getLocalUri();
+        try {
+            // preview path
+            if (previewFile != null) {
+                // load from file - we know it's a file uri
+                return loadPreview(previewFile);
+            }
+        }
+        catch (Exception e) {
+            Log.w(TAG, "unable to load thumbnail, generating one");
+
+            /*
+             * unable to load preview - generate thumbnail
+             * Of course a thumbnail can be generated only if the image has
+             * already been downloaded.
+             */
+            if (localUri != null) {
+                new GenerateThumbnailTask(getContext(), localUri, previewFile, new ThumbnailListener() {
+                    @Override
+                    public void onThumbnailGenerated(File previewFile) {
+                        try {
+                            Bitmap bitmap = loadPreview(previewFile);
+                            showBitmap(bitmap);
+                        }
+                        catch (IOException e) {
+                            // since at this point anything can happen, just ignore any errors
+                            Log.w(TAG, "unable to load generated thumbnail", e);
+                        }
+                    }
+                }).execute();
+            }
+        }
+        return null;
     }
 
     @Override
@@ -107,6 +181,46 @@ public class ImageContentView extends FrameLayout
     public static ImageContentView create(LayoutInflater inflater, ViewGroup parent) {
         return (ImageContentView) inflater.inflate(R.layout.message_content_image,
             parent, false);
+    }
+
+    interface ThumbnailListener {
+        void onThumbnailGenerated(File previewFile);
+    }
+
+    final static class GenerateThumbnailTask extends AsyncTask<Void, Void, Boolean> {
+        private final Uri mLocalUri;
+        private final File mPreviewFile;
+        private final WeakReference<Context> mContext;
+        private final ThumbnailListener mListener;
+
+        GenerateThumbnailTask(Context context, Uri localUri, File previewFile, ThumbnailListener listener) {
+            mContext = new WeakReference<>(context);
+            mLocalUri = localUri;
+            mPreviewFile = previewFile;
+            mListener = listener;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            Context context = mContext.get();
+            if (context != null) {
+                try {
+                    MediaStorage.cacheThumbnail(context, mLocalUri, mPreviewFile, false);
+                    return true;
+                }
+                catch (IOException e) {
+                    Log.e(TAG, "unable to generate thumbnail", e);
+                }
+            }
+            return false;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            if (result != null && result) {
+                mListener.onThumbnailGenerated(mPreviewFile);
+            }
+        }
     }
 
 }
