@@ -63,7 +63,7 @@
   <string name="confirm_delete_thread">Elimina chat</string>
   <string name="confirm_will_delete_thread">L\'intera chat sarà cancellata.</string>
   <string name="new_messages">Nuovi messaggi</string>
-  <string name="unread_messages">%d messaggi non letti</string>
+  <string name="unread_messages"></string>
   <string name="only_one_account_supported">Puoi usare un solo account Kontalk.</string>
   <string name="hint_enter_text">Inserisci il testo qui</string>
   <string name="hint_type_to_compose">Digita il testo qui</string>
