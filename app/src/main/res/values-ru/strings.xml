@@ -63,7 +63,6 @@
   <string name="confirm_delete_thread">Удалить беседу</string>
   <string name="confirm_will_delete_thread">Вся беседа будет удалена.</string>
   <string name="new_messages">Новые сообщения</string>
-  <string name="unread_messages">%d непрочитанных сообщений</string>
   <string name="only_one_account_supported">Поддерживается только один аккаунт Kontalk.</string>
   <string name="hint_enter_text">Введите текст сообщения</string>
   <string name="hint_type_to_compose">Печатайте текст</string>
@@ -517,12 +516,14 @@
 	<item quantity="few">+%d несколько ещё</item>
 	<item quantity="many">+%d ещё</item>
 	<item quantity="other"/>
-</plurals>
+    </plurals>
 
     <plurals name="group_people">
 	<item quantity="one">1 человек</item>
 	<item quantity="other">%d несколько человек</item>
-</plurals>
+    </plurals>
 
-
+    <plurals name="unread_messages">
+        <item quantity="other">%d непрочитанных сообщений</item>
+    </plurals>
 </resources>

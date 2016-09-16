@@ -63,7 +63,6 @@
   <string name="confirm_delete_thread">Elimina chat</string>
   <string name="confirm_will_delete_thread">L\'intera chat sarà cancellata.</string>
   <string name="new_messages">Nuovi messaggi</string>
-  <string name="unread_messages">%d messaggi non letti</string>
   <string name="only_one_account_supported">Puoi usare un solo account Kontalk.</string>
   <string name="hint_enter_text">Inserisci il testo qui</string>
   <string name="hint_type_to_compose">Digita il testo qui</string>
@@ -534,10 +533,13 @@
     <string name="title_passphrase_request">Password chiave personale</string>
     <string name="err_invalid_passphrase">Password errata. Riavvia l\'app per provarne un\'altra.</string>
 
+    <plurals name="unread_messages">
+        <item quantity="other">%d messaggi non letti</item>
+    </plurals>
+
     <plurals name="unread_messages_group">
-	<item quantity="one">%1$d messaggi @ %2$s</item>
-	<item quantity="other"/>
-</plurals>
+	<item quantity="other">%1$d messaggi @ %2$s</item>
+    </plurals>
 
     <string name="delete_thread_messages">Elimina messaggi</string>
     <string name="delete_threads_leave_groups">Abbandona i gruppi</string>

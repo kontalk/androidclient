@@ -59,7 +59,6 @@
   <string name="confirm_delete_thread">Apagar tópico</string>
   <string name="confirm_will_delete_thread">O tópico inteiro será apagado.</string>
   <string name="new_messages">Novas mensagens</string>
-  <string name="unread_messages">%d mensagens não lidas</string>
   <string name="only_one_account_supported">Somente uma conta Kontalk é suportada.</string>
   <string name="send">Enviar</string>
   <string name="hint_enter_text">Insira o seu texto aqui</string>
@@ -259,4 +258,7 @@
   <string name="title_invitation">Convite de conversa</string>
   <string name="button_accept">Aceitar</string>
   <string name="button_block">Bloquear</string>
+  <plurals name="unread_messages">
+    <item quantity="other">%d mensagens não lidas</item>
+  </plurals>
 </resources>

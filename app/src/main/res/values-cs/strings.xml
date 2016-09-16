@@ -63,7 +63,6 @@
   <string name="confirm_delete_thread">Smazat konverzaci</string>
   <string name="confirm_will_delete_thread">Celá konverzace bude smazána.</string>
   <string name="new_messages">Nové zprávy</string>
-  <string name="unread_messages">%d nepřečtených zpráv</string>
   <string name="only_one_account_supported">Je podporován pouze jeden Kontalk účet.</string>
   <string name="hint_enter_text">Sem zadejte svůj text</string>
   <string name="hint_type_to_compose">Zde začněte psát</string>
@@ -537,13 +536,15 @@
     <string name="title_passphrase_request">Heslo osobního klíče</string>
     <string name="err_invalid_passphrase">Nesprávné heslo. Restartujte aplikaci, abyste mohli vyzkoušet jiné.</string>
 
+    <plurals name="unread_messages">
+	<item quantity="other">%d nepřečtených zpráv</item>
+    </plurals>
     <plurals name="unread_messages_group">
-	<item quantity="one">%1$d zpráv @ %2$s</item>
-	<item quantity="other"/>
-</plurals>
+	<item quantity="other">%1$d zpráv @ %2$s</item>
+    </plurals>
 
     <string name="delete_thread_messages">Smazat historii konverzace</string>
     <string name="delete_threads_leave_groups">Také opustit skupiny</string>
     <string name="pref_balloon_label_silence">Potichu</string>
     <string name="leave_group_delete_messages">Také smazat historii konverzace</string>
-    </resources>
+</resources>

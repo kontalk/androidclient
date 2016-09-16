@@ -58,7 +58,6 @@
   <string name="confirm_delete_thread">Eliminar a conversa</string>
   <string name="confirm_will_delete_thread">Toda a conversa será eliminada.</string>
   <string name="new_messages">Novas mensaxes</string>
-  <string name="unread_messages">%d mensaxes non lidas</string>
   <string name="only_one_account_supported">Só é admitida unha conta Kontalk.</string>
   <string name="hint_enter_text">Insire o teu texto aquí</string>
   <string name="hint_type_to_compose">Teclea para escribir</string>
@@ -531,6 +530,9 @@
     <plurals name="notification_more">
 	<item quantity="one">+1 máis</item>
 	<item quantity="other">+%d máis</item>
-</plurals>
+    </plurals>
 
-    </resources>
+    <plurals name="unread_messages">
+        <item quantity="other">%d mensaxes non lidas</item>
+    </plurals>
+</resources>

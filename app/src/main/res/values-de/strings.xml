@@ -63,7 +63,6 @@
   <string name="confirm_delete_thread">Chat löschen</string>
   <string name="confirm_will_delete_thread">Der gesamte Chat wird gelöscht.</string>
   <string name="new_messages">Neue Nachrichten</string>
-  <string name="unread_messages">%d ungelesene Nachrichten</string>
   <string name="only_one_account_supported">Es wird nur ein Kontalk-Account unterstützt.</string>
   <string name="hint_enter_text">Geben Sie hier Ihren Text ein</string>
   <string name="hint_type_to_compose">Zum Verfassen antippen</string>
@@ -535,13 +534,15 @@
     <string name="title_passphrase_request">Passwort für persönlichen Schlüssel</string>
     <string name="err_invalid_passphrase">Falsches Passwort. Starten Sie die App erneut und probieren Sie ein anderes.</string>
 
+    <plurals name="unread_messages">
+	<item quantity="other">%d ungelesene Nachrichten</item>
+    </plurals>
     <plurals name="unread_messages_group">
-	<item quantity="one">%1$d Nachrichten @ %2$s</item>
-	<item quantity="other"/>
-</plurals>
+	<item quantity="other">%1$d Nachrichten @ %2$s</item>
+    </plurals>
 
     <string name="pref_balloon_label_silence">Silence</string>
     <string name="delete_thread_messages">Chatverlauf löschen</string>
     <string name="delete_threads_leave_groups">Gruppen auch verlassen</string>
     <string name="leave_group_delete_messages">Auch den Chatverlauf löschen</string>
-    </resources>
+</resources>

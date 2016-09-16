@@ -66,7 +66,6 @@
     <string name="confirm_delete_thread">حذف گپ</string>
     <string name="confirm_will_delete_thread">سراسر گپ حذف خواهد شد.</string>
     <string name="new_messages">پیام‌های تازه</string>
-    <string name="unread_messages">%Id پیام خوانده نشده</string>
     <string name="only_one_account_supported">تنها یک حساب کانتاک پشتیبانی می‌شود.</string>
     <string name="hint_enter_text">متنتان را این‌جا وارد کنید</string>
     <string name="hint_type_to_compose">برای ایجاد،‌ بنویسید</string>
@@ -376,4 +375,7 @@
     <string name="msg_iab_thankyou">ممنون!</string>
     <string name="msg_iab_thankyou_warning">چیزی اشتباه شد، ولی اعانه پرداخت شد. ممنون!</string>
 
-    </resources>
+    <plurals name="unread_messages">
+        <item quantity="other">%d پیام خوانده نشده</item>
+    </plurals>
+</resources>

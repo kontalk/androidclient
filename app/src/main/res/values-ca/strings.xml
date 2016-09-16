@@ -63,7 +63,6 @@
   <string name="confirm_delete_thread">Elimina la conversa</string>
   <string name="confirm_will_delete_thread">S\'eliminarà tota la conversa.</string>
   <string name="new_messages">Missatges nous</string>
-  <string name="unread_messages">%d missatges sense llegir</string>
   <string name="only_one_account_supported">Només s\'admet un compte de Kontalk.</string>
   <string name="hint_enter_text">Escriviu ací</string>
   <string name="hint_type_to_compose">Utilitzeu el teclat per escriure</string>
@@ -532,12 +531,14 @@
     <string name="err_invalid_passphrase">Contrasenya incorrecta. Reinicia l\'aplicació i torna-ho a provar.</string>
 
     <string name="pref_balloon_label_silence">Silenci</string>
+    <plurals name="unread_messages">
+	<item quantity="other">%d missatges sense llegir</item>
+    </plurals>
     <plurals name="unread_messages_group">
-	<item quantity="one">%1$d missatges @ %2$s</item>
-	<item quantity="other"/>
-</plurals>
+	<item quantity="other">%1$d missatges @ %2$s</item>
+    </plurals>
 
     <string name="delete_thread_messages">Elimina l\'historial de xat</string>
     <string name="delete_threads_leave_groups">També deixo els grups</string>
     <string name="leave_group_delete_messages">També s\'elimina l\'historial de xat</string>
-    </resources>
+</resources>

@@ -63,7 +63,6 @@
   <string name="confirm_delete_thread">Gesprek verwijderen</string>
   <string name="confirm_will_delete_thread">Het hele gesprek zal verwijderd worden.</string>
   <string name="new_messages">Nieuwe berichten</string>
-  <string name="unread_messages">%d ongelezen berichten</string>
   <string name="only_one_account_supported">Je kunt slechts één Kontalk-account gebruiken.</string>
   <string name="hint_enter_text">Typ je tekst hier</string>
   <string name="hint_type_to_compose">Typ je bericht hier</string>
@@ -534,10 +533,14 @@
     <string name="title_passphrase_request">Wachtwoord voor persoonlijke sleutel</string>
     <string name="err_invalid_passphrase">Verkeerd wachtwoord. Herstart de app om een ander wachtwoord te proberen.</string>
 
+    <plurals name="unread_messages">
+        <item quantity="other">%d ongelezen berichten</item>
+    </plurals>
+
     <plurals name="unread_messages_group">
 	<item quantity="one">%1$d berichten @ %2$s</item>
 	<item quantity="other"/>
-</plurals>
+    </plurals>
 
     <string name="pref_balloon_label_silence">Silence</string>
     <string name="delete_thread_messages">Verwijder chatgeschiedenis</string>

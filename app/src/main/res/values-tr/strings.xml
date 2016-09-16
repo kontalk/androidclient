@@ -70,7 +70,6 @@
     <string name="confirm_will_delete_thread">Bütün konuşma silinmiş olacak.</string>
     <string name="confirm_will_delete_threads">Seçilmiş konuşmalar silinmiş olacak.</string>
     <string name="new_messages">Yeni mesajlar</string>
-    <string name="unread_messages">%d okunmamış mesaj</string>
     <string name="only_one_account_supported">Sadece bir Kontalk hesabı desteklenir.</string>
     <string name="hint_enter_text">Yazınızı buraya girin</string>
     <string name="hint_type_to_compose">Yazmak için klavye kullanın</string>
@@ -111,4 +110,7 @@
     <string name="title_public_key_unknown_warning">Güvenilmez kişisel anahtar</string>
     <string name="warning_user_blocked">Kullanıcı sizin tarafınızdan engellendi.</string>
 
-    </resources>
+    <plurals name="unread_messages">
+        <item quantity="other">%d okunmamış mesaj</item>
+    </plurals>
+</resources>

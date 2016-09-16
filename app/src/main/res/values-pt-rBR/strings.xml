@@ -58,7 +58,6 @@
   <string name="confirm_delete_thread">Apagar a conversa</string>
   <string name="confirm_will_delete_thread">A conversa inteira será apagada.</string>
   <string name="new_messages">Novas mensagens</string>
-  <string name="unread_messages">%d mensagens não lidas</string>
   <string name="only_one_account_supported">Somente uma conta Kontalk é suportada.</string>
   <string name="send">Enviar</string>
   <string name="hint_enter_text">Digite o seu texto aqui</string>
@@ -546,9 +545,13 @@
     <string name="err_invalid_passphrase">Senha errada. Reinicie a aplicação para tentar outra.</string>
 
     <string name="group_command_text_part_kicked">Você foi removido desse grupo</string>
+
+    <plurals name="unread_messages">
+        <item quantity="other">%d mensagens não lidas</item>
+    </plurals>
+
     <plurals name="unread_messages_group">
 	<item quantity="one">%1$d mensagens @ %2$s</item>
 	<item quantity="other"></item>
-</plurals>
-
-    </resources>
+    </plurals>
+</resources>

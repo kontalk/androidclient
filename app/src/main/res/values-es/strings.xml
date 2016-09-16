@@ -63,7 +63,6 @@
   <string name="confirm_delete_thread">Eliminar conversación</string>
   <string name="confirm_will_delete_thread">La conversación entera será borrada.</string>
   <string name="new_messages">Mensajes nuevos</string>
-  <string name="unread_messages">%d mensajes no leídos</string>
   <string name="only_one_account_supported">Sólo se admite una cuenta de Kontalk.</string>
   <string name="hint_enter_text">Escriba aquí su texto</string>
   <string name="hint_type_to_compose">Teclee para escribir</string>
@@ -534,12 +533,14 @@
 
     <string name="title_passphrase_request">Contraseña de la clave de cifrado personal</string>
     <string name="pref_balloon_label_silence">Silencio</string>
+    <plurals name="unread_messages">
+	<item quantity="other">%d mensajes no leídos</item>
+    </plurals>
     <plurals name="unread_messages_group">
-	<item quantity="one">%1$d mensajes @ %2$s</item>
-	<item quantity="other"/>
-</plurals>
+	<item quantity="other">%1$d mensajes @ %2$s</item>
+    </plurals>
 
     <string name="delete_thread_messages">Eliminar el historial de chat</string>
     <string name="delete_threads_leave_groups">Dejar también los grupos</string>
     <string name="leave_group_delete_messages">Eliminar también el historial del chat</string>
-    </resources>
+</resources>

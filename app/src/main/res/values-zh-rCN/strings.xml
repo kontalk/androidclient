@@ -70,7 +70,6 @@
     <string name="confirm_will_delete_thread">整个聊天记录将被清空。</string>
     <string name="confirm_will_delete_threads">选择的聊天记录将被删除。</string>
     <string name="new_messages">新消息</string>
-    <string name="unread_messages">%d条未读消息</string>
     <string name="only_one_account_supported">仅支持一个Kontalk账户。</string>
     <string name="hint_enter_text">这里输入你的消息</string>
     <string name="hint_type_to_compose">输入以撰写</string>
@@ -520,10 +519,12 @@
     <string name="btn_huawei_protected_apps">被保护的APP</string>
     <string name="check_do_not_show_again">不再显示</string>
 
+    <plurals name="unread_messages">
+        <item quantity="other">%d条未读消息</item>
+    </plurals>
+
     <plurals name="group_people">
 	<item quantity="one">1个人</item>
 	<item quantity="other"/>
-</plurals>
-
-
+    </plurals>
 </resources>

@@ -72,7 +72,6 @@
     <string name="confirm_will_delete_thread">سيتم الغاء كل المحادثة.</string>
     <string name="confirm_will_delete_threads">سيتم الغاء المحادثات المختارة .</string>
     <string name="new_messages">رسالة جديدة</string>
-    <string name="unread_messages">%d رسائل غير مقروءه</string>
     <string name="only_one_account_supported">سيتم أعتماد حساب كونتلك واحد فقط .</string>
     <string name="hint_enter_text">أدخل النص هنا</string>
     <string name="hint_type_to_compose">أطبع لبدء رسالة جديدة</string>
@@ -459,7 +458,11 @@
     <plurals name="context_selected">
 	<item quantity="one">لم يتم أختيار أي شئ</item>
 	<item quantity="other">أختيار خيار واحد</item>
-</plurals>
+    </plurals>
 
-<string name="text_search_results_empty">لم يتم العثور على اية رسائل</string>
-    </resources>
+    <plurals name="unread_messages">
+        <item quantity="other">%d رسائل غير مقروءه</item>
+    </plurals>
+
+    <string name="text_search_results_empty">لم يتم العثور على اية رسائل</string>
+</resources>

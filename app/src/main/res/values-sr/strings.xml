@@ -63,7 +63,6 @@
   <string name="confirm_delete_thread">Обриши преписку</string>
   <string name="confirm_will_delete_thread">Читава преписка ће бити обрисана.</string>
   <string name="new_messages">Нове поруке</string>
-  <string name="unread_messages">%d непрочитаних порука</string>
   <string name="only_one_account_supported">Само један Контак налог је подржан.</string>
   <string name="hint_enter_text">Овде унесите текст</string>
   <string name="hint_type_to_compose">Куцајте поруку</string>
@@ -541,10 +540,13 @@
     <string name="group_command_text_part_kicked">Уклоњени сте из ове групе</string>
     <string name="group_info_menu_remove">Уклони</string>
 
+    <plurals name="unread_messages">
+	<item quantity="other">%d непрочитаних порука</item>
+    </plurals>
+
     <plurals name="unread_messages_group">
-	<item quantity="one">%1$d порука у %2$s</item>
-	<item quantity="other"/>
-</plurals>
+	<item quantity="other">%1$d порука у %2$s</item>
+    </plurals>
 
     <string name="pref_balloon_label_silence">Сајленс</string>
     </resources>

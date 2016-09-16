@@ -63,7 +63,6 @@
   <string name="confirm_delete_thread">Διαγραφή συζήτησης</string>
   <string name="confirm_will_delete_thread">Θα διαγραφεί όλη η συζήτηση.</string>
   <string name="new_messages">Νέο μήνυμα</string>
-  <string name="unread_messages">%d νέα μηνύματα</string>
   <string name="only_one_account_supported">Υποστηρίζεται μόνο ένας λογαριασμός Kontalk.</string>
   <string name="hint_enter_text">Εισάγεται το κείμενο εδώ</string>
   <string name="hint_type_to_compose">γράψτε εδώ για απάντηση</string>
@@ -496,4 +495,8 @@
     <string name="group_info_members">Μέλη ομάδας</string>
     <string name="confirm_will_leave_group">Δεν θα μπορείτε να εισέλθετε ξανά σε αυτήν την ομάδα μετά την αποχώρησή σας.</string>
 
-    </resources>
+    <plurals name="unread_messages">
+        <item quantity="other">%d νέα μηνύματα</item>
+    </plurals>
+
+</resources>
