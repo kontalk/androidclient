@@ -541,4 +541,7 @@
 </plurals>
 
     <string name="pref_balloon_label_silence">Silence</string>
+    <string name="delete_thread_messages">Chatverlauf löschen</string>
+    <string name="delete_threads_leave_groups">Gruppen auch verlassen</string>
+    <string name="leave_group_delete_messages">Auch den Chatverlauf löschen</string>
     </resources>
