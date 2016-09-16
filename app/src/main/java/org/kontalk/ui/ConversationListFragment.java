@@ -47,7 +47,6 @@ import android.widget.ListView;
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
-import org.kontalk.message.CompositeMessage;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.ui.adapter.ConversationListAdapter;
 import org.kontalk.ui.view.AbsListViewScrollDetector;
