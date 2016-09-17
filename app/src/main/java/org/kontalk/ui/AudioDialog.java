@@ -34,6 +34,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
+import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -60,7 +61,7 @@ import com.nineoldandroids.animation.ValueAnimator.AnimatorUpdateListener;
  * @author Daniele Ricci
  */
 public class AudioDialog extends AlertDialog {
-    private static final String TAG = ComposeMessage.TAG;
+    static final String TAG = ComposeMessage.TAG;
 
     private static final String STATE_PREFIX = "AudioDialog_";
 
@@ -79,26 +80,26 @@ public class AudioDialog extends AlertDialog {
     private static final int MAX_PROGRESS = 100;
 
     private CircularSeekBar mProgressBar;
-    private ObjectAnimator mProgressBarAnimator;
-    private ImageView mImageButton;
-    private TextView mTimeTxt;
+    ObjectAnimator mProgressBarAnimator;
+    ImageView mImageButton;
+    TextView mTimeTxt;
     private TextView mHintTxt;
 
     /** Flag indicating that we are stopping due to activity lifecycle. */
     private boolean mSaved;
 
-    private File mFile;
+    File mFile;
 
     /** The current status. */
-    private int mStatus;
+    int mStatus;
 
     /** Holds the status while dragging the circular progress bar. */
-    private int mCheckSeek;
+    int mCheckSeek;
 
-    private float mTimeCircle;
-    private int mPlayerSeekTo;
-    private AudioDialogListener mListener;
-    private AudioFragment mData;
+    float mTimeCircle;
+    int mPlayerSeekTo;
+    AudioDialogListener mListener;
+    AudioFragment mData;
 
     public AudioDialog(Context context, AudioFragment data, AudioDialogListener result) {
         super(context);
@@ -161,6 +162,7 @@ public class AudioDialog extends AlertDialog {
 
     private void init() {
         LayoutInflater inflater = LayoutInflater.from(getContext());
+        @SuppressLint("InflateParams")
         View v = inflater.inflate(R.layout.audio_dialog, null);
         setView(v);
         mData.getPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -318,7 +320,7 @@ public class AudioDialog extends AlertDialog {
     }
 
     private void setViewsColor(int resId) {
-        int color = getContext().getResources().getColor(resId);
+        int color = ResourcesCompat.getColor(getContext().getResources(), resId, getContext().getTheme());
         mProgressBar.setCircleProgressColor(color);
         mProgressBar.setPointerColor(color);
         mProgressBar.setPointerBorderColor(color);
@@ -329,7 +331,7 @@ public class AudioDialog extends AlertDialog {
      * Begins recording audio.
      * @throws IOException if writing to storage failed
      */
-    private void startRecord() throws IOException {
+    void startRecord() throws IOException {
         mFile = MediaStorage.getOutgoingAudioFile();
         setupViewForRecording(0);
 
@@ -364,7 +366,7 @@ public class AudioDialog extends AlertDialog {
         }
     }
 
-    private void stopRecord() {
+    void stopRecord() {
         try {
             // stop recorder
             mData.stopRecording();
@@ -382,7 +384,7 @@ public class AudioDialog extends AlertDialog {
         mStatus = STATUS_STOPPED;
     }
 
-    private void playAudio() {
+    void playAudio() {
         mProgressBar.setClickable(true);
         try {
             MediaPlayer player = mData.getPlayer();
@@ -408,11 +410,12 @@ public class AudioDialog extends AlertDialog {
     private void setupForPlaying() {
         mHintTxt.setVisibility(View.GONE);
         mTimeTxt.setVisibility(View.VISIBLE);
-        mTimeTxt.setTextColor(getContext().getResources().getColor(R.color.audio_pbar_play));
+        int color = ResourcesCompat.getColor(getContext().getResources(), R.color.audio_pbar_play, getContext().getTheme());
+        mTimeTxt.setTextColor(color);
         mTimeCircle = MAX_PROGRESS / (float) mData.getPlayer().getDuration();
     }
 
-    private void pauseAudio() {
+    void pauseAudio() {
         pauseAudio(false);
     }
 
@@ -424,7 +427,7 @@ public class AudioDialog extends AlertDialog {
             mStatus = STATUS_PAUSED;
     }
 
-    private void resumeAudio() {
+    void resumeAudio() {
         mImageButton.setImageResource(R.drawable.pause);
         if (mStatus == STATUS_PAUSED || mStatus == STATUS_ENDED)
             mProgressBarAnimator.start();

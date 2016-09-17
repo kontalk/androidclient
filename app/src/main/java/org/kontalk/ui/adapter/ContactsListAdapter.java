@@ -23,6 +23,7 @@ import com.android.contacts.common.list.ContactsSectionIndexer;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.content.res.ResourcesCompat;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -68,10 +69,10 @@ public class ContactsListAdapter extends SearchablePinnedHeaderCursorListViewAda
         final TypedValue typedValue = new TypedValue();
 
         context.getTheme().resolveAttribute(android.R.attr.colorBackground, typedValue, true);
-        int pinnedHeaderBackgroundColor = context.getResources().getColor(typedValue.resourceId);
+        int pinnedHeaderBackgroundColor = ResourcesCompat.getColor(context.getResources(), typedValue.resourceId, context.getTheme());
         setPinnedHeaderBackgroundColor(pinnedHeaderBackgroundColor);
 
-        int textColor = context.getResources().getColor(R.color.pinned_header_text);
+        int textColor = ResourcesCompat.getColor(context.getResources(), R.color.pinned_header_text, context.getTheme());
         setPinnedHeaderTextColor(textColor);
     }
 

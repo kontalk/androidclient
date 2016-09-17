@@ -49,6 +49,7 @@ import android.os.Build;
 import android.provider.ContactsContract;
 import android.support.annotation.AttrRes;
 import android.support.annotation.ColorRes;
+import android.support.v4.content.res.ResourcesCompat;
 import android.text.style.CharacterStyle;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
@@ -104,6 +105,7 @@ public final class SystemUtils {
             BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE);
     }
 
+    @SuppressWarnings("deprecation")
     public static Point getDisplaySize(Context context) {
         Point displaySize = null;
         WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
@@ -388,7 +390,7 @@ public final class SystemUtils {
     }
 
     public static CharacterStyle getColoredSpan(Context context, @ColorRes int colorResId) {
-        return new ForegroundColorSpan(context.getResources().getColor(colorResId));
+        return new ForegroundColorSpan(ResourcesCompat.getColor(context.getResources(), colorResId, context.getTheme()));
     }
 
     public static CharacterStyle getTypefaceSpan(int typeface) {
