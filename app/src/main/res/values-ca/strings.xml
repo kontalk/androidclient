@@ -33,7 +33,7 @@
   <string name="menu_offline">Activa el mode fora de línia</string>
   <string name="menu_online">Activa el mode en línia</string>
   <string name="menu_import_key">Importa la clau</string>
-  <string name="pref_network_settings">Parámetres de la xarxa</string>
+  <string name="pref_network_settings">Paràmetres de la xarxa</string>
   <string name="pref_network_uri">Adreça del servidor (manual)</string>
   <string name="pref_title_network_uri">Això desactivarà la gestió automàtica de la llista de servidors</string>
   <string name="number_validation_intro1">Per favor, introduïu el nom, trieu el codi del país i escriviu el número de mòbil. A la següent pantalla hi haurà més instruccions.</string>
@@ -275,7 +275,7 @@
   <string name="going_online">S\'està canviant a \'en línia\'.</string>
   <string name="pref_other">Altres</string>
   <string name="pref_donate">Feu una donació</string>
-  <string name="pref_about">Quant</string>
+  <string name="pref_about">Quant a</string>
   <string name="title_about">Quant a</string>
   <string name="title_donation">Feu una donació</string>
   <string name="title_credits">Crèdits</string>
@@ -463,12 +463,12 @@
     <string name="check_do_not_show_again">No mostrar de nou</string>
 
     <string name="chooser_error_no_browser">No hi ha cap navegador disponible per obrir l\'enllaç.</string>
-    <string name="menu_invite_group">Afegir usuaris</string>
+    <string name="menu_invite_group">Afegeix usuaris</string>
     <string name="menu_set_group_subject">Posa el nom del grup</string>
     <string name="menu_leave_group">Deixa el grup</string>
     <string name="group_untitled">Grup sense nom</string>
     <string name="title_group_subject">Nom del grup</string>
-    <string name="group_command_create">El grup el va crear:</string>
+    <string name="group_command_create">Grup creat:</string>
     <string name="group_command_user_parted">%s va deixar el grup.</string>
     <string name="group_command_subject">Nom de grup posat com a: %s</string>
 
@@ -484,7 +484,7 @@
 
 <string name="text_invitation_info">(invitació de xat)</string>
 
-    <string name="group_command_text_add_remove">S\'afegeix o s\'elimina a algú</string>
+    <string name="group_command_text_add_remove">Algú ha estat afegit o eliminat</string>
 
     <string name="group_command_self_parted">Vostè va deixar el grup.</string>
     <string name="groupinfo_activity_title">Informació del grup</string>
@@ -539,6 +539,6 @@
     </plurals>
 
     <string name="delete_thread_messages">Elimina l\'historial de xat</string>
-    <string name="delete_threads_leave_groups">També deixo els grups</string>
+    <string name="delete_threads_leave_groups">També deixo de ser membre dels grups</string>
     <string name="leave_group_delete_messages">També s\'elimina l\'historial de xat</string>
 </resources>
