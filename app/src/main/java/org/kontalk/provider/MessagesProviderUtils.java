@@ -311,4 +311,10 @@ public class MessagesProviderUtils {
         }
     }
 
+    public static String[] parseThreadContent(String content) {
+        String[] parsed = content.split(";", 2);
+        return parsed.length < 2 ?
+            new String[] { null, content } : parsed;
+    }
+
 }

@@ -24,6 +24,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.GroupCommandComponent;
+import org.kontalk.provider.MessagesProviderUtils;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.util.MessageUtils;
@@ -95,6 +96,8 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
 
         setChecked(false);
 
+        Contact contact;
+        // used for the conversation subject: either group subject or contact name
         String recipient = null;
 
         if (mConversation.isGroupChat()) {
@@ -105,7 +108,7 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
             loadAvatar(null);
         }
         else {
-            Contact contact = mConversation.getContact();
+            contact = mConversation.getContact();
 
             if (contact != null) {
                 recipient = contact.getName();
@@ -142,51 +145,12 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
         mFromView.setText(from);
         mDateView.setText(MessageUtils.formatTimeStampString(context, conv.getDate()));
 
-        CharSequence text;
-
-        // last message or draft??
-        if (conv.getRequestStatus() == Threads.REQUEST_WAITING) {
-            text = new SpannableString(context.getString(R.string.text_invitation_info));
-            ((Spannable) text).setSpan(STYLE_ITALIC, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-        }
-        else {
-            String source = (draft != null) ? draft : conv.getSubject();
-
-            if (source != null) {
-                if (GroupCommandComponent.supportsMimeType(conv.getMime())) {
-                    boolean incoming = conv.getStatus() == Messages.STATUS_INCOMING ||
-                        conv.getStatus() == Messages.STATUS_CONFIRMED;
-                    text = new SpannableString(GroupCommandComponent.getTextContent(getContext(), conv.getSubject(), incoming));
-                    ((Spannable) text).setSpan(STYLE_ITALIC, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-                }
-                else {
-                    text = source;
-                }
-            }
-
-            else if (conv.isEncrypted()) {
-                text = context.getString(R.string.text_encrypted);
-            }
-
-            else {
-                // determine from mime type
-                text = CompositeMessage.getSampleTextContent(conv.getMime());
-            }
-        }
-
-        if (conv.getUnreadCount() > 0) {
-            text = new SpannableString(text);
-            ((Spannable) text).setSpan(STYLE_BOLD, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-        }
-
-        mSubjectView.setText(text);
-
         // error indicator
         int resId = -1;
         int statusId = -1;
         switch (conv.getStatus()) {
             case Messages.STATUS_SENDING:
-            // use pending icon even for errors
+                // use pending icon even for errors
             case Messages.STATUS_ERROR:
             case Messages.STATUS_PENDING:
                 resId = R.drawable.ic_msg_pending;
@@ -212,7 +176,8 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
         }
 
         // no matching resource or draft - hide status icon
-        if (resId < 0 || mConversation.getDraft() != null) {
+        boolean incoming = resId < 0 || mConversation.getDraft() != null;
+        if (incoming) {
             mErrorIndicator.setVisibility(GONE);
 
             int unread = mConversation.getUnreadCount();
@@ -230,6 +195,65 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
             mErrorIndicator.setImageResource(resId);
             mErrorIndicator.setContentDescription(getResources().getString(statusId));
         }
+
+        CharSequence text;
+
+        // last message or draft??
+        if (conv.getRequestStatus() == Threads.REQUEST_WAITING) {
+            text = new SpannableString(context.getString(R.string.text_invitation_info));
+            ((Spannable) text).setSpan(STYLE_ITALIC, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+        }
+        else {
+            String source = (draft != null) ? draft : conv.getSubject();
+
+            if (source != null) {
+                if (GroupCommandComponent.supportsMimeType(conv.getMime())) {
+                    text = new SpannableString(GroupCommandComponent.getTextContent(getContext(), conv.getSubject(), incoming));
+                    ((Spannable) text).setSpan(STYLE_ITALIC, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                }
+                else {
+                    if (incoming && conv.isGroupChat()) {
+                        // content is in a special format
+                        String[] parsed = MessagesProviderUtils.parseThreadContent(source);
+                        contact = parsed[0] != null ? Contact.findByUserId(context, parsed[0]) : null;
+                        source = parsed[1];
+
+                        String displayName;
+                        if (contact != null) {
+                            displayName = contact.getName();
+                        }
+                        else if (BuildConfig.DEBUG) {
+                            displayName = conv.getRecipient();
+                        }
+                        else {
+                            displayName = context.getString(R.string.peer_unknown);
+                        }
+
+                        text = new SpannableString(displayName + ": " + source);
+                        ((Spannable) text).setSpan(STYLE_ITALIC, 0, displayName.length()+1, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                    }
+                    else {
+                        text = source;
+                    }
+                }
+            }
+
+            else if (conv.isEncrypted()) {
+                text = context.getString(R.string.text_encrypted);
+            }
+
+            else {
+                // determine from mime type
+                text = CompositeMessage.getSampleTextContent(conv.getMime());
+            }
+        }
+
+        if (conv.getUnreadCount() > 0) {
+            text = new SpannableString(text);
+            ((Spannable) text).setSpan(STYLE_BOLD, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+        }
+
+        mSubjectView.setText(text);
     }
 
     public final void unbind() {
