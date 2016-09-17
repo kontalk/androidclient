@@ -110,18 +110,21 @@ public class MessageListItem extends RelativeLayout implements Checkable {
 
         setChecked(false);
 
+        boolean sameMessageBlock = false;
         long msgTs = MessageUtils.getMessageTimestamp(mMessage);
-        if (MessageUtils.isSameDate(msgTs, previousTimestamp)) {
+        boolean sameDate = MessageUtils.isSameDate(msgTs, previousTimestamp);
+        if (sameDate) {
             mDateHeader.setVisibility(View.GONE);
+            // same day, check if it's also same direction and user
+            // some themes will use this information to group messages together
+            int msgDirection = mMessage.getDirection();
+            String msgPeer = MessageUtils.getMessagePeer(mMessage);
+            sameMessageBlock = (msgDirection == previousDirection && msgPeer.equals(previousPeer));
         }
         else {
             mDateHeader.setText(MessageUtils.formatDateString(context, msgTs));
             mDateHeader.setVisibility(View.VISIBLE);
         }
-
-        int msgDirection = mMessage.getDirection();
-        String msgPeer = MessageUtils.getMessagePeer(mMessage);
-        boolean sameMessageBlock = (msgDirection == previousDirection && msgPeer.equals(previousPeer));
 
         mBalloonTheme.setSecurityFlags(mMessage.getSecurityFlags());
 
