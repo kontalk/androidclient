@@ -484,7 +484,7 @@
 
 <string name="text_invitation_info">(invitación de chat)</string>
 
-    <string name="group_command_text_add_remove">Se añade o se elimina a alguien</string>
+    <string name="group_command_text_add_remove">Se añadió o se eliminó a alguien</string>
 
     <string name="group_command_self_parted">Usted dejó el grupo.</string>
     <string name="groupinfo_activity_title">Información del Grupo</string>
@@ -541,6 +541,6 @@
     </plurals>
 
     <string name="delete_thread_messages">Eliminar el historial de chat</string>
-    <string name="delete_threads_leave_groups">Dejar también los grupos</string>
+    <string name="delete_threads_leave_groups">Dejar también ser miembro de los grupos</string>
     <string name="leave_group_delete_messages">Eliminar también el historial del chat</string>
 </resources>
