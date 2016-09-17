@@ -265,6 +265,11 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
     }
 
     @Override
+    protected boolean isGroupChat() {
+        return mConversation != null && mConversation.isGroupChat();
+    }
+
+    @Override
     public boolean isChecked() {
         return mChecked;
     }

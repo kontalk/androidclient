@@ -135,6 +135,11 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
     }
 
     @Override
+    protected boolean isGroupChat() {
+        return false;
+    }
+
+    @Override
     public boolean isChecked() {
         return mChecked;
     }

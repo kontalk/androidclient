@@ -22,6 +22,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.support.v4.content.res.ResourcesCompat;
 import android.view.View;
 import android.view.ViewStub;
 import android.widget.LinearLayout;
@@ -66,8 +67,8 @@ public class AvatarMessageTheme extends BaseMessageTheme implements Contact.Cont
         mHandler = new Handler();
 
         if (sDefaultContactImage == null) {
-            sDefaultContactImage = mContext.getResources()
-                .getDrawable(R.drawable.ic_contact_picture);
+            sDefaultContactImage = ResourcesCompat
+                .getDrawable(mContext.getResources(), R.drawable.ic_default_contact, mContext.getTheme());
         }
 
         return view;

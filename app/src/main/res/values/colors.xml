@@ -59,6 +59,7 @@
     <color name="green_light">#99CC00</color>
     <color name="yellow_light">#FFBB33</color>
     <color name="red_light">#FF4444</color>
-    <!-- pure white -->
+
+    <color name="bg_default_contact">#bbbbbb</color>
 
 </resources>
