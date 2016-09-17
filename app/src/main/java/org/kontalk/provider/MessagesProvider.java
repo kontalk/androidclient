@@ -734,7 +734,7 @@ public class MessagesProvider extends ContentProvider {
     }
 
     /** Used to determine content and mime type for a thread. */
-    private void setThreadContent(byte[] bodyContent, String bodyMime, String attachmentMime, ContentValues values) {
+    private void setThreadContent(byte[] bodyContent, String bodyMime, String attachmentMime, String peer, ContentValues values) {
         String mime;
         String content;
 
@@ -756,6 +756,10 @@ public class MessagesProvider extends ContentProvider {
                 mime = null;
                 content = null;
             }
+        }
+
+        if (peer != null) {
+            content = peer + ";" + content;
         }
 
         values.put(Threads.CONTENT, content);
@@ -818,10 +822,13 @@ public class MessagesProvider extends ContentProvider {
             // unread column will be calculated by the trigger
 
             // thread content has a special behaviour
+            int direction = initialValues.getAsInteger(Messages.DIRECTION);
             setThreadContent(
                 initialValues.getAsByteArray(Messages.BODY_CONTENT),
                 initialValues.getAsString(Messages.BODY_MIME),
                 initialValues.getAsString(Messages.ATTACHMENT_MIME),
+                direction == Messages.DIRECTION_IN && groupJid != null ?
+                    initialValues.getAsString(CommonColumns.PEER) : null,
                 values);
         }
 
@@ -1369,7 +1376,7 @@ public class MessagesProvider extends ContentProvider {
 
     /** Updates metadata of a given thread. */
     private int updateThreadInfo(SQLiteDatabase db, long threadId, @Nullable List<Uri> notifications) {
-        Cursor c = db.query(TABLE_MESSAGES, new String[] {
+        Cursor c = db.query(TABLE_MESSAGES_GROUPS, new String[] {
                 Messages.MESSAGE_ID,
                 Messages.DIRECTION,
                 Messages.STATUS,
@@ -1378,6 +1385,8 @@ public class MessagesProvider extends ContentProvider {
                 Messages.ATTACHMENT_MIME,
                 Messages.TIMESTAMP,
                 Messages.SERVER_TIMESTAMP,
+                Messages.PEER,
+                Groups.GROUP_JID,
             }, Messages.THREAD_ID + " = ?", new String[] { String.valueOf(threadId) },
             null, null, Messages.INVERTED_SORT_ORDER, "1");
 
@@ -1385,11 +1394,14 @@ public class MessagesProvider extends ContentProvider {
         if (c != null) {
             ContentValues v = new ContentValues();
             if (c.moveToFirst()) {
+                int direction = c.getInt(1);
                 v.put(Threads.MESSAGE_ID, c.getString(0));
-                v.put(Threads.DIRECTION, c.getInt(1));
+                v.put(Threads.DIRECTION, direction);
                 v.put(Threads.STATUS, c.getInt(2));
 
-                setThreadContent(c.getBlob(3), c.getString(4), c.getString(5), v);
+                String groupJid = c.getString(9);
+                String peer = (groupJid != null && direction == Messages.DIRECTION_IN) ? c.getString(8) : null;
+                setThreadContent(c.getBlob(3), c.getString(4), c.getString(5), peer, v);
 
                 // use server timestamp if present
                 long ts = c.getLong(7);
@@ -1401,7 +1413,7 @@ public class MessagesProvider extends ContentProvider {
                 v.put(Threads.DIRECTION, Messages.DIRECTION_OUT);
                 v.put(Threads.TIMESTAMP, System.currentTimeMillis());
                 v.putNull(Threads.STATUS);
-                setThreadContent(new byte[0], TextComponent.MIME_TYPE, null, v);
+                setThreadContent(new byte[0], TextComponent.MIME_TYPE, null, null, v);
             }
             rc = db.update(TABLE_THREADS, v, Threads._ID + "=" + threadId, null);
             if (rc > 0 && notifications != null) {
