@@ -16,7 +16,8 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<org.kontalk.ui.view.ContactsListItem xmlns:android="http://schemas.android.com/apk/res/android"
+<org.kontalk.ui.view.ContactsListItem
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/list_item_background"
@@ -36,7 +37,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="@dimen/avatar_list_item_height"
-        android:layout_toRightOf="@+id/header_container">
+        android:layout_toRightOf="@+id/header_container"
+        android:layout_toEndOf="@+id/header_container">
 
         <org.kontalk.ui.view.CircleContactBadge
             android:id="@+id/avatar"
