@@ -30,6 +30,7 @@ import org.kontalk.util.MessageUtils;
 
 import android.content.Context;
 import android.graphics.Typeface;
+import android.support.v4.content.res.ResourcesCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -134,8 +135,8 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
             from.append(" ");
             from.append(context.getResources().getString(R.string.has_draft));
             from.setSpan(new ForegroundColorSpan(
-                    context.getResources().getColor(R.color.text_color_draft)),
-                    lastpos, from.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                ResourcesCompat.getColor(context.getResources(), R.color.text_color_draft, context.getTheme())),
+                lastpos, from.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
         }
 
         mFromView.setText(from);
