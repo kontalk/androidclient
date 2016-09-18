@@ -34,7 +34,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
-import android.support.v4.content.res.ResourcesCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -320,7 +320,7 @@ public class AudioDialog extends AlertDialog {
     }
 
     private void setViewsColor(int resId) {
-        int color = ResourcesCompat.getColor(getContext().getResources(), resId, getContext().getTheme());
+        int color = ContextCompat.getColor(getContext(), resId);
         mProgressBar.setCircleProgressColor(color);
         mProgressBar.setPointerColor(color);
         mProgressBar.setPointerBorderColor(color);
@@ -410,7 +410,7 @@ public class AudioDialog extends AlertDialog {
     private void setupForPlaying() {
         mHintTxt.setVisibility(View.GONE);
         mTimeTxt.setVisibility(View.VISIBLE);
-        int color = ResourcesCompat.getColor(getContext().getResources(), R.color.audio_pbar_play, getContext().getTheme());
+        int color = ContextCompat.getColor(getContext(), R.color.audio_pbar_play);
         mTimeTxt.setTextColor(color);
         mTimeCircle = MAX_PROGRESS / (float) mData.getPlayer().getDuration();
     }

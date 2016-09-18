@@ -18,20 +18,9 @@
 
 package org.kontalk.ui.view;
 
-import org.kontalk.BuildConfig;
-import org.kontalk.R;
-import org.kontalk.data.Contact;
-import org.kontalk.data.Conversation;
-import org.kontalk.message.CompositeMessage;
-import org.kontalk.message.GroupCommandComponent;
-import org.kontalk.provider.MessagesProviderUtils;
-import org.kontalk.provider.MyMessages.Messages;
-import org.kontalk.provider.MyMessages.Threads;
-import org.kontalk.util.MessageUtils;
-
 import android.content.Context;
 import android.graphics.Typeface;
-import android.support.v4.content.res.ResourcesCompat;
+import android.support.v4.content.ContextCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -42,6 +31,17 @@ import android.util.AttributeSet;
 import android.widget.Checkable;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import org.kontalk.BuildConfig;
+import org.kontalk.R;
+import org.kontalk.data.Contact;
+import org.kontalk.data.Conversation;
+import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.GroupCommandComponent;
+import org.kontalk.provider.MessagesProviderUtils;
+import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.util.MessageUtils;
 
 
 public class ConversationListItem extends AvatarListItem implements Checkable {
@@ -138,7 +138,7 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
             from.append(" ");
             from.append(context.getResources().getString(R.string.has_draft));
             from.setSpan(new ForegroundColorSpan(
-                ResourcesCompat.getColor(context.getResources(), R.color.text_color_draft, context.getTheme())),
+                ContextCompat.getColor(context, R.color.text_color_draft)),
                 lastpos, from.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
         }
 

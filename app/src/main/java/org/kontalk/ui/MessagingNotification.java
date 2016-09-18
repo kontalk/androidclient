@@ -42,7 +42,7 @@ import android.support.v4.app.NotificationCompat.BigTextStyle;
 import android.support.v4.app.NotificationCompat.InboxStyle;
 import android.support.v4.app.NotificationCompat.Style;
 import android.support.v4.app.NotificationManagerCompat;
-import android.support.v4.content.res.ResourcesCompat;
+import android.support.v4.content.ContextCompat;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -393,7 +393,7 @@ public class MessagingNotification {
     private static void setFeatures(Context context, NotificationCompat.Builder builder) {
         builder.setPriority(NotificationCompat.PRIORITY_HIGH);
         builder.setCategory(NotificationCompat.CATEGORY_MESSAGE);
-        builder.setColor(ResourcesCompat.getColor(context.getResources(), R.color.app_accent, context.getTheme()));
+        builder.setColor(ContextCompat.getColor(context, R.color.app_accent));
     }
 
     private static final class NotificationConversation {
@@ -619,6 +619,19 @@ public class MessagingNotification {
                     }
 
                     if (contact != null) {
+                        // add person to notification
+                        Uri personUri = contact.getUri();
+                        if (personUri == null && contact.getNumber() != null) {
+                            // no contact uri available, try phone number lookup
+                            try {
+                                personUri = Uri.parse("tel:" + contact.getNumber());
+                            }
+                            catch (Exception ignored) {
+                            }
+                        }
+                        if (personUri != null)
+                            mBuilder.addPerson(personUri.toString());
+
                         if (btext.length() > 0)
                             btext.append(", ");
                         btext.append(name);

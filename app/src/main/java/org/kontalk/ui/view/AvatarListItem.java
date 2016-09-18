@@ -25,7 +25,7 @@ import org.kontalk.data.Contact.ContactCallback;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
-import android.support.v4.content.res.ResourcesCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.widget.RelativeLayout;
 
@@ -60,17 +60,15 @@ public abstract class AvatarListItem extends RelativeLayout implements ContactCa
 
     private Drawable getDefaultContactImage() {
         if (sDefaultContactImage == null)
-            sDefaultContactImage = ResourcesCompat
-                .getDrawable(getContext().getResources(),
-                    R.drawable.ic_default_contact, getContext().getTheme());
+            sDefaultContactImage = ContextCompat
+                .getDrawable(getContext(), R.drawable.ic_default_contact);
         return sDefaultContactImage;
     }
 
     private Drawable getDefaultGroupImage() {
         if (sDefaultGroupImage == null)
-            sDefaultGroupImage = ResourcesCompat
-                .getDrawable(getContext().getResources(),
-                    R.drawable.ic_default_group, getContext().getTheme());
+            sDefaultGroupImage = ContextCompat
+                .getDrawable(getContext(), R.drawable.ic_default_group);
         return sDefaultGroupImage;
     }
 

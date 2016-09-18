@@ -22,17 +22,18 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 
 import com.afollestad.materialdialogs.color.ColorChooserDialog;
 
 import org.kontalk.R;
+import org.kontalk.ui.ToolbarActivity;
 import org.kontalk.util.Preferences;
 
 
@@ -82,15 +83,18 @@ public class NotificationFragment extends RootPreferenceFragment {
         notificationLed.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                Resources res = getResources();
+                Context context = getContext();
                 int[] ledColors = new int[]{
-                        res.getColor(android.R.color.white), res.getColor(R.color.blue_light),
-                        res.getColor(R.color.purple_light), res.getColor(R.color.green_light),
-                        res.getColor(R.color.yellow_light), res.getColor(R.color.red_light),
+                    ContextCompat.getColor(context, android.R.color.white),
+                    ContextCompat.getColor(context, R.color.blue_light),
+                    ContextCompat.getColor(context, R.color.purple_light),
+                    ContextCompat.getColor(context, R.color.green_light),
+                    ContextCompat.getColor(context, R.color.yellow_light),
+                    ContextCompat.getColor(context, R.color.red_light),
                 };
 
                 try {
-                    new ColorChooserDialog.Builder((PreferencesActivity) getActivity(),
+                    new ColorChooserDialog.Builder((BasePreferencesActivity) getActivity(),
                         R.string.pref_notification_led_color)
                         .customColors(ledColors, null)
                         .preselect(Preferences.getNotificationLEDColor(getContext()))
@@ -109,9 +113,9 @@ public class NotificationFragment extends RootPreferenceFragment {
     @Override
     public void onResume() {
         super.onResume();
-
-        ((PreferencesActivity) getActivity()).getSupportActionBar()
-                .setTitle(R.string.pref_notification_settings);
+        ((ToolbarActivity) getActivity())
+            .getSupportActionBar()
+            .setTitle(R.string.pref_notification_settings);
     }
 
     @Override
