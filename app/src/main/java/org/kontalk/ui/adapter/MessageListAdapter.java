@@ -87,6 +87,11 @@ public class MessageListAdapter extends CursorAdapter {
         headerView.bind(context, msg, mHighlight, previousTimestamp, previousDirection, previousPeer, mAudioPlayerControl);
     }
 
+    @Override
+    public boolean isEnabled(int position) {
+        return !isEvent((Cursor) getItem(position));
+    }
+
     private boolean isEvent(Cursor cursor) {
         String mime = cursor.getString(CompositeMessage.COLUMN_BODY_MIME);
         return (GroupCommandComponent.supportsMimeType(mime));
