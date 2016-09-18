@@ -69,8 +69,8 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.view.ActionMode;
 import android.text.ClipboardManager;
 import android.text.TextUtils;
@@ -1719,8 +1719,8 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         }
 
         bar.setTag(type);
-        bar.color(ResourcesCompat.getColor(context.getResources(), colorId, context.getTheme()))
-            .textColor(ResourcesCompat.getColor(context.getResources(), textColorId, context.getTheme()));
+        bar.color(ContextCompat.getColor(context, colorId))
+            .textColor(ContextCompat.getColor(context, textColorId));
 
         if (listener != null) {
             SnackbarManager.show(bar);

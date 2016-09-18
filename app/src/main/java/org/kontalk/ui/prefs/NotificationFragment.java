@@ -27,6 +27,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 
 import com.afollestad.materialdialogs.color.ColorChooserDialog;
@@ -34,7 +35,6 @@ import com.afollestad.materialdialogs.color.ColorChooserDialog;
 import org.kontalk.R;
 import org.kontalk.ui.ToolbarActivity;
 import org.kontalk.util.Preferences;
-import org.kontalk.util.SystemUtils;
 
 
 /**
@@ -85,12 +85,12 @@ public class NotificationFragment extends RootPreferenceFragment {
             public boolean onPreferenceClick(Preference preference) {
                 Context context = getContext();
                 int[] ledColors = new int[]{
-                    SystemUtils.getColor(context, android.R.color.white),
-                    SystemUtils.getColor(context, R.color.blue_light),
-                    SystemUtils.getColor(context, R.color.purple_light),
-                    SystemUtils.getColor(context, R.color.green_light),
-                    SystemUtils.getColor(context, R.color.yellow_light),
-                    SystemUtils.getColor(context, R.color.red_light),
+                    ContextCompat.getColor(context, android.R.color.white),
+                    ContextCompat.getColor(context, R.color.blue_light),
+                    ContextCompat.getColor(context, R.color.purple_light),
+                    ContextCompat.getColor(context, R.color.green_light),
+                    ContextCompat.getColor(context, R.color.yellow_light),
+                    ContextCompat.getColor(context, R.color.red_light),
                 };
 
                 try {

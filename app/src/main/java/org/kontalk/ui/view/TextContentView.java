@@ -19,7 +19,7 @@
 package org.kontalk.ui.view;
 
 import android.content.Context;
-import android.support.v4.content.res.ResourcesCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.TextViewCompat;
 import android.text.Layout;
 import android.text.SpannableStringBuilder;
@@ -88,7 +88,7 @@ public class TextContentView extends EmojiconTextView
     }
 
     private void init(Context context) {
-        int color = ResourcesCompat.getColor(context.getResources(), R.color.highlight_color, context.getTheme());
+        int color = ContextCompat.getColor(context, R.color.highlight_color);
         mHighlightColorSpan = new BackgroundColorSpan(color);
     }
 

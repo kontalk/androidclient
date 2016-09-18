@@ -24,7 +24,7 @@ import org.kontalk.provider.MyUsers;
 import org.kontalk.util.SystemUtils;
 
 import android.content.Context;
-import android.support.v4.content.res.ResourcesCompat;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.widget.Checkable;
@@ -81,13 +81,11 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
         String text2 = contact.getStatus();
         if (text2 == null) {
             text2 = contact.getNumber();
-            mText2.setTextColor(ResourcesCompat.getColor(context.getResources(),
-                R.color.grayed_out, context.getTheme()));
+            mText2.setTextColor(ContextCompat.getColor(context, R.color.grayed_out));
         }
         else {
-            int color = ResourcesCompat.getColor(context.getResources(),
-                SystemUtils.getThemedResource(getContext(), android.R.attr.textColorSecondary),
-                context.getTheme());
+            int color = ContextCompat.getColor(context,
+                SystemUtils.getThemedResource(getContext(), android.R.attr.textColorSecondary));
             mText2.setTextColor(color);
         }
         mText2.setText(text2);
