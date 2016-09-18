@@ -397,6 +397,10 @@ public final class SystemUtils {
         return new StyleSpan(typeface);
     }
 
+    public static int getColor(Context context, @ColorRes int id) {
+        return ResourcesCompat.getColor(context.getResources(), id, context.getTheme());
+    }
+
     public static int getThemedResource(Context context, @AttrRes int attrResId) {
         TypedValue value = new TypedValue();
         if (!context.getTheme().resolveAttribute(attrResId, value, true))
