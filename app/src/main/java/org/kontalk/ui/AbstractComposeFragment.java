@@ -392,70 +392,66 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         if (singleItem) {
             CompositeMessage msg = getCheckedItem();
 
-            // group command can't be deleted
+            // group command can't be deleted or have details
             if (msg.hasComponent(GroupCommandComponent.class)) {
                 deleteMenu.setVisible(false);
             }
-
-            // message waiting for user review or not delivered
-            if (msg.getStatus() == Messages.STATUS_PENDING || msg.getStatus() == Messages.STATUS_NOTDELIVERED) {
-                retryMenu.setVisible(true);
-            }
-
-            // some commands can be used only on unencrypted messages
-            if (!msg.isEncrypted()) {
-                AttachmentComponent attachment = msg.getComponent(AttachmentComponent.class);
-                TextComponent text = msg.getComponent(TextComponent.class);
-
-                // sharing media messages has no purpose if media file hasn't been
-                // retrieved yet
-                if (text != null || attachment == null || attachment.getLocalUri() != null)
-                    shareMenu.setVisible(true);
-
-                // non-empty text: copy text to clipboard
-                if (text != null && !TextUtils.isEmpty(text.getContent()))
-                    copyTextMenu.setVisible(true);
-
-                if (attachment != null) {
-
-                    // message has a local uri - add open file entry
-                    if (attachment.getLocalUri() != null) {
-                        int resId;
-                        if (attachment instanceof ImageComponent)
-                            resId = R.string.view_image;
-                        else if (attachment instanceof  AudioComponent)
-                            resId = R.string.open_audio;
-                        else
-                            resId = R.string.open_file;
-
-                        openMenu.setTitle(resId);
-                        openMenu.setVisible(true);
-                    }
-
-                    // message has a fetch url - add download control entry
-                    if (msg.getDirection() == Messages.DIRECTION_IN && attachment.getFetchUrl() != null) {
-                        if (!DownloadService.isQueued(attachment.getFetchUrl())) {
-                            int string;
-                            // already fetched
-                            if (attachment.getLocalUri() != null)
-                                string = R.string.download_again;
-                            else
-                                string = R.string.download_file;
-
-                            dlMenu.setTitle(string);
-                            dlMenu.setVisible(true);
-                        }
-                        else {
-                            cancelDlMenu.setVisible(true);
-                        }
-                    }
-
-
+            else {
+                // message waiting for user review or not delivered
+                if (msg.getStatus() == Messages.STATUS_PENDING || msg.getStatus() == Messages.STATUS_NOTDELIVERED) {
+                    retryMenu.setVisible(true);
                 }
 
-            }
+                // some commands can be used only on unencrypted messages
+                if (!msg.isEncrypted()) {
+                    AttachmentComponent attachment = msg.getComponent(AttachmentComponent.class);
+                    TextComponent text = msg.getComponent(TextComponent.class);
 
-            detailsMenu.setVisible(true);
+                    // sharing media messages has no purpose if media file hasn't been
+                    // retrieved yet
+                    if (text != null || attachment == null || attachment.getLocalUri() != null)
+                        shareMenu.setVisible(true);
+
+                    // non-empty text: copy text to clipboard
+                    if (text != null && !TextUtils.isEmpty(text.getContent()))
+                        copyTextMenu.setVisible(true);
+
+                    if (attachment != null) {
+
+                        // message has a local uri - add open file entry
+                        if (attachment.getLocalUri() != null) {
+                            int resId;
+                            if (attachment instanceof ImageComponent)
+                                resId = R.string.view_image;
+                            else if (attachment instanceof AudioComponent)
+                                resId = R.string.open_audio;
+                            else
+                                resId = R.string.open_file;
+
+                            openMenu.setTitle(resId);
+                            openMenu.setVisible(true);
+                        }
+
+                        // message has a fetch url - add download control entry
+                        if (msg.getDirection() == Messages.DIRECTION_IN && attachment.getFetchUrl() != null) {
+                            if (!DownloadService.isQueued(attachment.getFetchUrl())) {
+                                int string;
+                                // already fetched
+                                if (attachment.getLocalUri() != null)
+                                    string = R.string.download_again;
+                                else
+                                    string = R.string.download_file;
+
+                                dlMenu.setTitle(string);
+                                dlMenu.setVisible(true);
+                            }
+                            else {
+                                cancelDlMenu.setVisible(true);
+                            }
+                        }
+                    }
+                }
+            }
         }
         return true;
     }
