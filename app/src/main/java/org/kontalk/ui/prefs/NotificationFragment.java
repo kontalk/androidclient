@@ -33,6 +33,7 @@ import android.text.TextUtils;
 import com.afollestad.materialdialogs.color.ColorChooserDialog;
 
 import org.kontalk.R;
+import org.kontalk.ui.ToolbarActivity;
 import org.kontalk.util.Preferences;
 
 
@@ -90,7 +91,7 @@ public class NotificationFragment extends RootPreferenceFragment {
                 };
 
                 try {
-                    new ColorChooserDialog.Builder((PreferencesActivity) getActivity(),
+                    new ColorChooserDialog.Builder((BasePreferencesActivity) getActivity(),
                         R.string.pref_notification_led_color)
                         .customColors(ledColors, null)
                         .preselect(Preferences.getNotificationLEDColor(getContext()))
@@ -109,9 +110,9 @@ public class NotificationFragment extends RootPreferenceFragment {
     @Override
     public void onResume() {
         super.onResume();
-
-        ((PreferencesActivity) getActivity()).getSupportActionBar()
-                .setTitle(R.string.pref_notification_settings);
+        ((ToolbarActivity) getActivity())
+            .getSupportActionBar()
+            .setTitle(R.string.pref_notification_settings);
     }
 
     @Override

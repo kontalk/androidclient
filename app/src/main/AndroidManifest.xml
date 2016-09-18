@@ -183,6 +183,13 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".ui.prefs.NotificationPreferencesActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.NOTIFICATION_PREFERENCES" />
+            </intent-filter>
+        </activity>
+
         <activity android:name=".ui.NumberValidation"/>
 
         <activity android:name=".ui.CodeValidation"/>
