@@ -619,6 +619,19 @@ public class MessagingNotification {
                     }
 
                     if (contact != null) {
+                        // add person to notification
+                        Uri personUri = contact.getUri();
+                        if (personUri == null && contact.getNumber() != null) {
+                            // no contact uri available, try phone number lookup
+                            try {
+                                personUri = Uri.parse("tel:" + contact.getNumber());
+                            }
+                            catch (Exception ignored) {
+                            }
+                        }
+                        if (personUri != null)
+                            mBuilder.addPerson(personUri.toString());
+
                         if (btext.length() > 0)
                             btext.append(", ");
                         btext.append(name);
