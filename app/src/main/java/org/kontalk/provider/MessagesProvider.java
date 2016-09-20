@@ -759,7 +759,10 @@ public class MessagesProvider extends ContentProvider {
         }
 
         if (peer != null) {
-            content = peer + ";" + content;
+            String newContent = peer + ";";
+            if (content != null)
+                newContent += content;
+            content = newContent;
         }
 
         values.put(Threads.CONTENT, content);
