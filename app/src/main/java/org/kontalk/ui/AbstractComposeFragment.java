@@ -451,6 +451,8 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                         }
                     }
                 }
+
+                detailsMenu.setVisible(true);
             }
         }
         return true;
