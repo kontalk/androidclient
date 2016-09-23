@@ -24,7 +24,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -40,6 +39,7 @@ import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.PushServiceManager;
 import org.kontalk.util.Preferences;
 
+
 /**
  * Network settings fragment.
  */
@@ -53,22 +53,6 @@ public class NetworkFragment extends RootPreferenceFragment {
 
         // Load the preferences from an XML resource
         addPreferencesFromResource(R.xml.preferences_network);
-
-        // push notifications checkbox
-        final Preference pushNotifications = findPreference("pref_push_notifications");
-        pushNotifications.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                Context ctx = getActivity();
-                CheckBoxPreference pref = (CheckBoxPreference) preference;
-                if (pref.isChecked())
-                    MessageCenterService.enablePushNotifications(ctx.getApplicationContext());
-                else
-                    MessageCenterService.disablePushNotifications(ctx.getApplicationContext());
-
-                return true;
-            }
-        });
 
         // manual server address is handled in Application context
         // we just handle validation here
@@ -190,20 +174,29 @@ public class NetworkFragment extends RootPreferenceFragment {
     @Override
     public void onResume() {
         super.onResume();
-
         ((PreferencesActivity) getActivity()).getSupportActionBar()
                 .setTitle(R.string.pref_network_settings);
+
+        boolean pushNotificationsEnabled = Preferences.getPushNotificationsEnabled(getContext()) &&
+            PushServiceManager.getInstance(getContext()).isServiceAvailable();
+        final Preference pushNotifications = findPreference("pref_push_notifications_parent");
+        pushNotifications.setSummary(pushNotificationsEnabled ? R.string.pref_on : R.string.pref_off);
     }
 
     @Override
     protected void setupPreferences() {
-        // disable push notifications if GCM is not available on the device
-        if (!PushServiceManager.getInstance(getActivity()).isServiceAvailable()) {
-            final CheckBoxPreference push = (CheckBoxPreference) findPreference("pref_push_notifications");
-            push.setEnabled(false);
-            push.setChecked(false);
-            push.setSummary(R.string.pref_title_disabled_push_notifications);
-        }
+        setupPreferences("pref_push_notifications_parent", R.xml.preferences_network_push);
+    }
+
+    private void setupPreferences(String pref, final int xml) {
+        final Preference preference = findPreference(pref);
+        preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                invokeCallback(xml);
+                return true;
+            }
+        });
     }
 
     private void cancelServerlistUpdater() {

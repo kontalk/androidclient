@@ -63,7 +63,6 @@ public final class PreferencesFragment extends RootPreferenceFragment {
     @Override
     public void onResume() {
         super.onResume();
-
         ((PreferencesActivity) getActivity()).getSupportActionBar()
                 .setTitle(R.string.menu_settings);
     }
