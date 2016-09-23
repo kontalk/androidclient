@@ -531,7 +531,7 @@
     <string name="group_command_text_part_kicked">Has sido eliminado de este grupo</string>
     <string name="err_invalid_passphrase">Contraseña incorrecta. Reinicia la aplicación para volver a intentarlo.</string>
 
-    <string name="title_passphrase_request">Contraseña de la clave de cifrado personal</string>
+    <string name="title_passphrase_request">Contraseña de la clave personal</string>
     <string name="pref_balloon_label_silence">Silencio</string>
     <plurals name="unread_messages">
 	<item quantity="other">%d mensajes no leídos</item>
