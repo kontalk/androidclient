@@ -229,6 +229,11 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
                             displayName = context.getString(R.string.peer_unknown);
                         }
 
+                        if (source == null) {
+                            // determine from mime type
+                            source = CompositeMessage.getSampleTextContent(conv.getMime());
+                        }
+
                         text = new SpannableString(displayName + ": " + source);
                         ((Spannable) text).setSpan(STYLE_ITALIC, 0, displayName.length()+1, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
                     }

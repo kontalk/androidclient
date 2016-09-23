@@ -313,8 +313,14 @@ public class MessagesProviderUtils {
 
     public static String[] parseThreadContent(String content) {
         String[] parsed = content.split(";", 2);
-        return parsed.length < 2 ?
-            new String[] { null, content } : parsed;
+        if (parsed.length < 2) {
+            return new String[] { null, content };
+        }
+
+        if (parsed[1].length() == 0)
+            parsed[1] = null;
+
+        return parsed;
     }
 
 }
