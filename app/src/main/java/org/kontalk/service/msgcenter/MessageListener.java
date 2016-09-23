@@ -354,6 +354,8 @@ class MessageListener extends MessageCenterPacketListener {
                             }
                             catch (IOException e) {
                                 Log.w(MessageCenterService.TAG, "error storing thumbnail", e);
+                                // we are going to need a filename anyway
+                                previewFile = MediaStorage.getInternalMediaFile(getContext(), filename);
                             }
                         }
 

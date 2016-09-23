@@ -92,9 +92,13 @@ public abstract class MediaStorage {
             .equals(Environment.MEDIA_MOUNTED);
     }
 
+    public static File getInternalMediaFile(Context context, String filename) {
+        return new File(context.getCacheDir(), filename);
+    }
+
     /** Writes a media to the internal cache. */
     public static File writeInternalMedia(Context context, String filename, byte[] contents) throws IOException {
-        File file = new File(context.getCacheDir(), filename);
+        File file = getInternalMediaFile(context, filename);
         FileOutputStream fout = new FileOutputStream(file);
         fout.write(contents);
         fout.close();
