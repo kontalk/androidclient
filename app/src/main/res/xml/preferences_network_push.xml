@@ -18,20 +18,11 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <Preference android:key="pref_update_server_list"
-        android:title="@string/pref_update_server_list"
+    <org.kontalk.ui.prefs.PushNotificationsPreference
+        android:key="pref_push_notifications"
+        android:defaultValue="@bool/pref_default_push_notifications"
         android:layout="@layout/md_preference_custom"/>
-    <com.afollestad.materialdialogs.prefs.MaterialEditTextPreference
-        android:key="pref_network_uri"
-        android:dialogTitle="@string/pref_network_uri"
-        android:positiveButtonText="@android:string/ok"
-        android:negativeButtonText="@android:string/cancel"
-        android:title="@string/pref_network_uri"
-        android:summary="@string/pref_title_network_uri"
-        android:singleLine="true" android:inputType="textUri"/>
-    <Preference android:key="pref_push_notifications_parent"
-        android:title="@string/pref_push_notifications"
-        android:persistent="false"
-        android:layout="@layout/md_preference_custom"/>
+
+    <!-- TODO text preference -->
 
 </PreferenceScreen>

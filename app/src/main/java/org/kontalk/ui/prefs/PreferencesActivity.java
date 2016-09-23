@@ -99,6 +99,9 @@ public final class PreferencesActivity extends BasePreferencesActivity
             case R.xml.preferences_network:
                 fragment = new NetworkFragment();
                 break;
+            case R.xml.preferences_network_push:
+                fragment = new NetworkPushFragment();
+                break;
             case R.xml.preferences_messaging:
                 fragment = new MessagingFragment();
                 break;
