@@ -22,7 +22,9 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 import android.preference.CheckBoxPreference;
+import android.support.v7.widget.SwitchCompat;
 import android.util.AttributeSet;
+import android.view.View;
 
 import org.kontalk.R;
 import org.kontalk.service.msgcenter.PushServiceManager;
@@ -32,7 +34,7 @@ import org.kontalk.service.msgcenter.PushServiceManager;
  * Preference for push notifications.
  * @author Daniele Ricci
  */
-public class PushNotificationsPreference extends CheckBoxPreference {
+public class PushNotificationsPreference extends CheckBoxPreference implements View.OnClickListener {
 
     public PushNotificationsPreference(Context context) {
         super(context);
@@ -56,11 +58,27 @@ public class PushNotificationsPreference extends CheckBoxPreference {
     }
 
     private void init() {
+        setWidgetLayoutResource(R.layout.preference_switch_layout);
+
         // disable and uncheck preference
         if (!PushServiceManager.getInstance(getContext()).isServiceAvailable()) {
             setEnabled(false);
             setChecked(false);
         }
+    }
+
+    @Override
+    protected void onBindView(View view) {
+        super.onBindView(view);
+        SwitchCompat checkbox = (SwitchCompat) view.findViewById(android.R.id.checkbox);
+        checkbox.setOnClickListener(this);
+    }
+
+    public void onClick(@SuppressWarnings("UnusedParameters") View view) {
+        super.onClick();
+        OnPreferenceClickListener listener = super.getOnPreferenceClickListener();
+        if (listener != null)
+            listener.onPreferenceClick(this);
     }
 
     @Override
