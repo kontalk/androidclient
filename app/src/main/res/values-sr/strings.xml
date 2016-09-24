@@ -549,4 +549,10 @@
     </plurals>
 
     <string name="pref_balloon_label_silence">Сајленс</string>
+    <string name="delete_thread_messages">Обриши историјат ћаскања</string>
+    <string name="delete_threads_leave_groups">Такође напусти групе</string>
+    <string name="pref_on">Укљ</string>
+    <string name="pref_off">Иск</string>
+
+    <string name="leave_group_delete_messages">Такође обриши историјат ћаскања</string>
     </resources>
