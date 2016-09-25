@@ -541,7 +541,7 @@
     <string name="delete_thread_messages">Elimina l\'historial de xat</string>
     <string name="delete_threads_leave_groups">També deixo de ser membre dels grups</string>
     <string name="leave_group_delete_messages">També s\'elimina l\'historial de xat</string>
-<string name="pref_off">Apagat</string>
+<string name="pref_off">Deshabilitat</string>
 
-    <string name="pref_on">Encès</string>
+    <string name="pref_on">Activat</string>
     </resources>
