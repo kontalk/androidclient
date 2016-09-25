@@ -284,7 +284,7 @@
   <string name="social_googleplus">Google Plus</string>
   <string name="social_facebook">Facebook</string>
   <string name="social_identica">Identi.ca</string>
-  <string name="donate_text">Kontalk hat laufende Ausgaben (z.B.Server). Jede kleine Spende hilft, den Fortbestand dieses Dienstes zu sichern.</string>
+  <string name="donate_text">Kontalk hat laufende Ausgaben. Jede kleine Spende hilft, den Fortbestand dieses Dienstes zu sichern.</string>
   <string name="title_bitcoin_dialog">Bitcoin</string>
   <string name="text_bitcoin_dialog">Bitcoinadresse:\n%s</string>
   <string name="donate_wallet">Google Play</string>
