@@ -549,4 +549,5 @@
     <string name="pref_on">Aan</string>
     <string name="pref_off">Uit</string>
 
+    <string name="about_credits_contrib"><b>Bijdragers</b></string>
     </resources>
