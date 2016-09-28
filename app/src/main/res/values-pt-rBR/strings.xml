@@ -552,6 +552,12 @@
 
     <plurals name="unread_messages_group">
 	<item quantity="one">%1$d mensagens @ %2$s</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
     </plurals>
-</resources>
+<string name="delete_thread_messages">Apagar o histórico da conversa</string>
+    <string name="delete_threads_leave_groups">Também sair dos grupos</string>
+    <string name="pref_on">Ativar</string>
+    <string name="pref_off">Desativar</string>
+
+    <string name="leave_group_delete_messages">Também apagar o histórico da conversa</string>
+    </resources>
