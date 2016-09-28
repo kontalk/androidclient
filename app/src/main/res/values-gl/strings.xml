@@ -533,8 +533,9 @@
     </plurals>
 
     <plurals name="unread_messages">
-        <item quantity="other">%d mensaxes non lidas</item>
-    </plurals>
+	<item quantity="one">%d mensaxes non lidas</item>
+	<item quantity="other"></item>
+</plurals>
 <string name="delete_thread_messages">Eliminar o historial da conversa</string>
     <string name="delete_threads_leave_groups">Tamén deixar os grupos</string>
     <string name="pref_balloon_label_silence">Silencio</string>
