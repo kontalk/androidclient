@@ -472,16 +472,16 @@
 
     <string name="chooser_error_no_browser">Non hai ningún navegador disponible para abrir a ligazón.</string>
     <string name="menu_invite_group">Engadir usuarios</string>
-    <string name="menu_set_group_subject">Poñer o nome do grupo</string>
+    <string name="menu_set_group_subject">Poñer o tema do grupo</string>
     <string name="menu_leave_group">Abandoar o grupo</string>
     <string name="group_untitled">Grupo sen nome</string>
-    <string name="title_group_subject">Nome do grupo</string>
+    <string name="title_group_subject">Tema do grupo</string>
     <string name="group_command_create">Grupo creado por:</string>
     <string name="group_command_user_parted">%s marchou do grupo.</string>
-    <string name="group_command_subject">O nome do grupo o puso: %s</string>
+    <string name="group_command_subject">O tema do grupo o puso: %s</string>
 
     <string name="group_command_text_create">Grupo creado</string>
-    <string name="group_command_text_subject">O nome do grupo cambiou</string>
+    <string name="group_command_text_subject">O tema do grupo cambiou</string>
     <string name="group_command_text_part">Alguén deixou ese grupo</string>
 
     <plurals name="group_people">
@@ -497,7 +497,7 @@
     <string name="group_command_self_parted">Deixou o grupo.</string>
     <string name="groupinfo_activity_title">Información do grupo</string>
 
-    <string name="group_info_set_title">Cambio do título</string>
+    <string name="group_info_set_title">Cambio do tema</string>
     <string name="group_info_leave">Saír do grupo</string>
     <string name="group_info_members">Os membros do grupo</string>
     <string name="confirm_will_leave_group">Non será capaz de entrar neste grupo de novo despois de saír.</string>
@@ -537,4 +537,20 @@
     </plurals>
 <string name="delete_thread_messages">Eliminar o historial da conversa</string>
     <string name="delete_threads_leave_groups">Tamén deixar os grupos</string>
+    <string name="pref_balloon_label_silence">Silencio</string>
+    <string name="title_passphrase_request">Contraseña clave persoal</string>
+    <string name="err_invalid_passphrase">Contrasinal incorrecto. Reinicie a aplicación para probar outro.</string>
+
+    <string name="pref_on">Acendido</string>
+    <string name="pref_off">Apagado</string>
+
+    <string name="group_command_text_part_kicked">Eliminouse deste grupo</string>
+    <string name="leave_group_delete_messages">Tamén eliminar o historial da conversa</string>
+    <string name="group_info_menu_remove">Quitar</string>
+
+    <plurals name="unread_messages_group">
+	<item quantity="one">%1$d mensaxes @ %2$s</item>
+	<item quantity="other"/>
+</plurals>
+
     </resources>
