@@ -548,4 +548,5 @@
 <string name="pref_on">Ein</string>
     <string name="pref_off">Aus</string>
 
+    <string name="about_credits_contrib"><b>Mitwirkende</b></string>
     </resources>
