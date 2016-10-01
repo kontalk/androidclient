@@ -23,6 +23,12 @@
       "email": "@relan"
     }
   ],
+  "contributors": [
+    {
+      "name": "Andrew Nayenko",
+      "email": "@relan"
+    }
+  ],
   "translators": [
     {
       "name": "Andre Landwehr",
@@ -85,12 +91,12 @@
       "email": "iamsylvie@openmailbox.org"
     },
     {
-      "name": "Viktor Filinkov",
-      "email": "bruteforce@sigil.tk"
-    },
-    {
       "name": "Sebastian Pipping",
       "email": "sebastian@pipping.org"
+    },
+    {
+      "name": "Viktor Filinkov",
+      "email": "bruteforce@sigil.tk"
     }
   ]
 }

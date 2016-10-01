@@ -480,6 +480,7 @@
 
     <string name="about_credits_devteam"><b>Kontalk is brought to you by:</b></string>
     <string name="about_credits_gfx"><b>Graphics/Icons</b></string>
+    <string name="about_credits_contrib"><b>Contributors</b></string>
     <string name="about_credits_translators"><b>Translators</b></string>
 
     <string name="pref_show_blocked_users">Show blocked users</string>
