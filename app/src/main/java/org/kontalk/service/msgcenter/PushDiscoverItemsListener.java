@@ -57,8 +57,9 @@ class PushDiscoverItemsListener extends MessageCenterPacketListener {
 
                     // begin a registration cycle if senderId is different
                     if (oldSender != null && !oldSender.equals(senderId)) {
-                        PushServiceManager.getInstance(getContext())
-                            .unregister(getPushListener());
+                        IPushService service = PushServiceManager.getInstance(getContext());
+                        if (service != null)
+                            service.unregister(getPushListener());
                         // unregister will see this as an attempt to register again
                         startPushRegistrationCycle();
                     }

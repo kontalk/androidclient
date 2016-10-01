@@ -195,7 +195,7 @@ public class Kontalk extends Application {
                         setServicesEnabled(Kontalk.this, false);
                         // unregister from push notifications
                         IPushService pushMgr = PushServiceManager.getInstance(Kontalk.this);
-                        if (pushMgr.isServiceAvailable())
+                        if (pushMgr != null && pushMgr.isServiceAvailable())
                             pushMgr.unregister(PushServiceManager.getDefaultListener());
                         // delete all messages
                         MessagesProvider.deleteDatabase(Kontalk.this);

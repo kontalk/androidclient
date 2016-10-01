@@ -24,7 +24,9 @@ import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 
 import org.kontalk.R;
+import org.kontalk.service.msgcenter.IPushService;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.PushServiceManager;
 
 
 /**
@@ -64,12 +66,15 @@ public class NetworkPushFragment extends RootPreferenceFragment {
 
     @Override
     protected void setupPreferences() {
-        /* TODO
-        // disable push notifications if GCM is not available on the device
-        if (!PushServiceManager.getInstance(getActivity()).isServiceAvailable()) {
-            // TODO for the TextView -- push.setSummary(R.string.pref_title_disabled_push_notifications);
+        final Preference description = findPreference("pref_push_notifications_title");
+
+        IPushService service = PushServiceManager.getInstance(getContext());
+        if (service == null) {
+            description.setTitle(R.string.pref_push_notifications_title_disabled);
         }
-        */
+        else if (!service.isServiceAvailable()) {
+            description.setTitle(R.string.pref_push_notifications_title_unavailable);
+        }
     }
 
 }

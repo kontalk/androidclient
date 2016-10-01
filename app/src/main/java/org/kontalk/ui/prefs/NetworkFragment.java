@@ -36,7 +36,6 @@ import org.kontalk.client.ServerList;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.msgcenter.MessageCenterService;
-import org.kontalk.service.msgcenter.PushServiceManager;
 import org.kontalk.util.Preferences;
 
 
@@ -45,7 +44,7 @@ import org.kontalk.util.Preferences;
  */
 public class NetworkFragment extends RootPreferenceFragment {
 
-    private ServerListUpdater mServerlistUpdater;
+    ServerListUpdater mServerlistUpdater;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -177,10 +176,8 @@ public class NetworkFragment extends RootPreferenceFragment {
         ((PreferencesActivity) getActivity()).getSupportActionBar()
                 .setTitle(R.string.pref_network_settings);
 
-        boolean pushNotificationsEnabled = Preferences.getPushNotificationsEnabled(getContext()) &&
-            PushServiceManager.getInstance(getContext()).isServiceAvailable();
         final Preference pushNotifications = findPreference("pref_push_notifications_parent");
-        pushNotifications.setSummary(pushNotificationsEnabled ? R.string.pref_on : R.string.pref_off);
+        PushNotificationsPreference.setState(pushNotifications);
     }
 
     @Override
@@ -199,7 +196,7 @@ public class NetworkFragment extends RootPreferenceFragment {
         });
     }
 
-    private void cancelServerlistUpdater() {
+    void cancelServerlistUpdater() {
         if (mServerlistUpdater != null) {
             mServerlistUpdater.cancel();
             mServerlistUpdater = null;
