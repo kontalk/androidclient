@@ -12,6 +12,7 @@ task checkstyle(type: Checkstyle){
     exclude 'main/java/org/kontalk/util/ThumbnailUtils.java',
         'main/java/org/kontalk/crypto/PRNGFixes.java',
         'main/java/org/kontalk/ui/AccountAuthenticatorActionBarActivity.java',
+        'main/java/org/kontalk/ui/prefs/TextMessagePreference.java',
         'main/java/org/kontalk/billing/*.java',
         '*/java/org/kontalk/billing/GoogleBillingService.java',
         '*/java/org/kontalk/billing/Inventory.java',

@@ -22,12 +22,15 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 import android.preference.CheckBoxPreference;
+import android.preference.Preference;
 import android.support.v7.widget.SwitchCompat;
 import android.util.AttributeSet;
 import android.view.View;
 
 import org.kontalk.R;
+import org.kontalk.service.msgcenter.IPushService;
 import org.kontalk.service.msgcenter.PushServiceManager;
+import org.kontalk.util.Preferences;
 
 
 /**
@@ -61,7 +64,8 @@ public class PushNotificationsPreference extends CheckBoxPreference implements V
         setWidgetLayoutResource(R.layout.preference_switch_layout);
 
         // disable and uncheck preference
-        if (!PushServiceManager.getInstance(getContext()).isServiceAvailable()) {
+        IPushService service = PushServiceManager.getInstance(getContext());
+        if (service == null || !service.isServiceAvailable()) {
             setEnabled(false);
             setChecked(false);
         }
@@ -85,6 +89,17 @@ public class PushNotificationsPreference extends CheckBoxPreference implements V
     public void setChecked(boolean checked) {
         super.setChecked(checked);
         setTitle(isChecked() ? R.string.pref_on : R.string.pref_off);
+    }
+
+    public static void setState(Preference parent) {
+        boolean enabled = Preferences.getPushNotificationsEnabled(parent.getContext());
+        IPushService service = PushServiceManager.getInstance(parent.getContext());
+        if (service == null) {
+            parent.setSummary(R.string.pref_push_notifications_disabled);
+        }
+        else if (service.isServiceAvailable()) {
+            parent.setSummary(enabled ? R.string.pref_on : R.string.pref_off);
+        }
     }
 
 }

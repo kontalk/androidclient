@@ -19,6 +19,8 @@
 package org.kontalk.service.msgcenter;
 
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Interface for a push client service.
  * @author Daniele Ricci
@@ -29,9 +31,7 @@ public interface IPushService {
      * Default lifespan (7 days) of the {@link #isRegisteredOnServer()}
      * flag until it is considered expired.
      */
-    // NOTE: cannot use TimeUnit.DAYS because it's not available on API Level 8
-    public static final long DEFAULT_ON_SERVER_LIFESPAN_MS =
-            1000 * 3600 * 24 * 7;
+    public static final long DEFAULT_ON_SERVER_LIFESPAN_MS = TimeUnit.DAYS.toMillis(7);
 
     /** Begin the registration process to the push service. */
     public void register(IPushListener listener, String senderId);
@@ -42,7 +42,7 @@ public interface IPushService {
     /** Retry last (un)registration attempt. */
     public void retry();
 
-        /** Returns true if the device is registered with the push service. */
+    /** Returns true if the device is registered with the push service. */
     public boolean isRegistered();
 
     /** Returns true if the push service is available on the device. */

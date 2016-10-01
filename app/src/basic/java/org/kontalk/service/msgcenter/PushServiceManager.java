@@ -19,6 +19,7 @@
 package org.kontalk.service.msgcenter;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 
 /**
@@ -27,13 +28,10 @@ import android.content.Context;
  */
 public class PushServiceManager {
 
-    private static IPushService sInstance;
-
+    /** No push service compiled in, return null. */
+    @Nullable
     public static IPushService getInstance(Context context) {
-        if (sInstance == null)
-            sInstance = new DummyPushService(context);
-
-        return sInstance;
+        return null;
     }
 
     public static IPushListener getDefaultListener() {

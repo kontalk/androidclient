@@ -21,6 +21,7 @@ package org.kontalk.service.gcm;
 import java.util.Random;
 
 import org.kontalk.Kontalk;
+import org.kontalk.service.msgcenter.IPushService;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.PushServiceManager;
 import org.kontalk.util.Preferences;
@@ -70,7 +71,9 @@ public class GcmIntentService extends IntentService {
                 return;
             }
 
-            PushServiceManager.getInstance(this).retry();
+            IPushService service = PushServiceManager.getInstance(this);
+            if (service != null)
+                service.retry();
         }
 
         else {

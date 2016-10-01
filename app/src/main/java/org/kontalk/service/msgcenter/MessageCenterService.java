@@ -1352,7 +1352,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             // reset push notification variable
             mPushNotifications = Preferences.getPushNotificationsEnabled(this) &&
-                mPushService.isServiceAvailable();
+                mPushService != null && mPushService.isServiceAvailable();
             // reset waiting messages
             mWaitingReceipt.clear();
 
@@ -3010,7 +3010,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     void pushRegister() {
         if (sPushSenderId != null) {
-            if (mPushService.isServiceAvailable()) {
+            if (mPushService != null && mPushService.isServiceAvailable()) {
                 // senderId will be given by serverinfo if any
                 mPushRegistrationId = mPushService.getRegistrationId();
                 if (TextUtils.isEmpty(mPushRegistrationId))
@@ -3024,12 +3024,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void pushUnregister() {
-        if (mPushService.isRegistered())
-            // start unregistration
-            mPushService.unregister(sPushListener);
-        else
-            // force unregistration
-            setPushRegistrationId(null);
+        if (mPushService != null) {
+            if (mPushService.isRegistered())
+                // start unregistration
+                mPushService.unregister(sPushListener);
+            else
+                // force unregistration
+                setPushRegistrationId(null);
+        }
     }
 
     private void setPushRegistrationId(String regId) {
