@@ -550,4 +550,10 @@
     <string name="pref_off">Uit</string>
 
     <string name="about_credits_contrib"><b>Bijdragers</b></string>
+    <string name="pref_push_notifications_disabled">Uitgeschakeld</string>
+    <string name="pref_push_notifications_title_default">Push notificaties kunnen batterij besparen. Het heeft geen effect op de snelheid waarop berichten afgeleverd worden.
+
+Indien uitgeschakeld kan het netwerkgedrag van Kontalk in netwerkinstellingen ingesteld worden.</string>
+    <string name="pref_push_notifications_title_disabled">Ondersteuning voor push notificaties zit niet in deze versie.</string>
+    <string name="pref_push_notifications_title_unavailable">Push notificaties zijn niet ondersteund op dit apparaat.</string>
     </resources>
