@@ -94,7 +94,7 @@
   <string name="pref_idle_time">Verbindung trennen wenn ungenutzt</string>
   <string name="pref_title_idle_time">Wartezeit bis Verbindungsabbruch bei Inaktivität</string>
   <string name="pref_wakeup_time">Verbindung zum Server wiederherstellen</string>
-  <string name="pref_title_wakeup_time">Wartezeit bis die Verbindung zum Server wieder hergestellt werden soll. Funktioniert nur wenn \"Push\"-Benachrichtigungen nicht verfügbar sind</string>
+  <string name="pref_title_wakeup_time">Wartezeit bis die Verbindung zum Server wieder hergestellt werden soll. Funktioniert nur wenn Push-Benachrichtigungen nicht verfügbar sind</string>
   <string name="pref_maintenance">Wartung</string>
   <string name="pref_regenerate_keypair">Persönlichen Schlüssel neu erzeugen</string>
   <string name="pref_title_regenerate_keypair">Antippen wenn ihr persönlicher Schlüssel kompromittiert wurde</string>
@@ -549,4 +549,10 @@
     <string name="pref_off">Aus</string>
 
     <string name="about_credits_contrib"><b>Mitwirkende</b></string>
+    <string name="pref_push_notifications_disabled">Deaktiviert</string>
+    <string name="pref_push_notifications_title_default">Push-Benachrichtigungen sind eine Serverunterstützte Technologie, um Batterie zu sparen. Es betrifft die Echtzeitübergabe von Nachrichten nicht.
+
+Wenn sie deaktiviert sind kann das Kontalk Verbindungsverhalten in den Netzwerkeinstellungen fein abgestimmt werden.</string>
+    <string name="pref_push_notifications_title_disabled">Push-Benachrichtigungsunterstützung wurde in diese Version nicht eingeschlossen.</string>
+    <string name="pref_push_notifications_title_unavailable">Push-Benachrichtigungen werden von diesem Gerät nicht unterstützt.</string>
     </resources>
