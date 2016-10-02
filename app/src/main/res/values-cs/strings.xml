@@ -550,4 +550,11 @@
 <string name="pref_on">Zapnuto</string>
     <string name="pref_off">Vypnuto</string>
 
+    <string name="pref_push_notifications_disabled">Vypnuto</string>
+    <string name="pref_push_notifications_title_default">Push notifikace jsou technologie k prodloužení výdrže baterie. Neovlivňuje doručování zpráv v reálném čase.
+
+Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obrazovce nastavení sítě.</string>
+    <string name="pref_push_notifications_title_disabled">Podpora push notifikací nebyla do této verze zahrnuta.</string>
+    <string name="pref_push_notifications_title_unavailable">Push notifikace nejsou na tomto zařízení podporovány.</string>
+    <string name="about_credits_contrib"><b>Přispěvatelé</b></string>
     </resources>
