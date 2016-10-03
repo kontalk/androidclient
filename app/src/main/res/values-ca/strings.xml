@@ -378,7 +378,7 @@
     <string name="warning_user_blocked">Has bloquejat aquest usuari.</string>
 
     <string name="about_credits_devteam"><b>Kontalk ha arribat a tu gràcies a:</b></string>
-    <string name="about_credits_gfx"><b>Gràfics/Iconografia</b></string>
+    <string name="about_credits_gfx"><b>Gràfics/Icones</b></string>
     <string name="about_credits_translators"><b>Traductors</b></string>
 
 <string name="error_delete_thread">No es pot eliminar la conversa.</string>
@@ -544,4 +544,10 @@
 <string name="pref_off">Activa</string>
 
     <string name="pref_on">Desactiva</string>
+    <string name="pref_push_notifications_disabled">Deshabilitat</string>
+    <string name="pref_push_notifications_title_default">Les notificacions push són una tecnologia d\'ajuda del servidor que permet estalviar bateria. No afecta al lliurament en temps real dels missatges.
+Quan estan desactivades, el comportament de connexió de Kontalk es pot ajustar a la pantalla de configuració de xarxa.</string>
+    <string name="pref_push_notifications_title_disabled">El suport a les notificacions push no està inclòs en aquesta versió.</string>
+    <string name="pref_push_notifications_title_unavailable">Les notificacions push no són compatibles amb aquest dispositiu.</string>
+    <string name="about_credits_contrib"><b>Col·laboradors</b></string>
     </resources>
