@@ -378,7 +378,7 @@
     <string name="warning_user_blocked">Has bloqueado a este usuario.</string>
 
     <string name="about_credits_devteam"><b>Kontalk ha sido posible gracias a:</b></string>
-    <string name="about_credits_gfx"><b>Gráficos/Iconografía</b></string>
+    <string name="about_credits_gfx"><b>Gráficos/Iconos</b></string>
     <string name="about_credits_translators"><b>Traductores</b></string>
 
 <string name="error_delete_thread">No es posible eliminar la conversación.</string>
@@ -546,4 +546,10 @@
 <string name="pref_on">Activar</string>
     <string name="pref_off">Desactivar</string>
 
+    <string name="pref_push_notifications_disabled">Deshabilitado</string>
+    <string name="pref_push_notifications_title_default">Las notificaciones push son una tecnología de ayuda del servidor que permite ahorrar batería. No afecta a la entrega en tiempo real de los mensajes.
+Cuando están desactivadas, el comportamiento de conexión de Kontalk se puede ajustar en la pantalla de configuración de red.</string>
+    <string name="pref_push_notifications_title_disabled">El soporte a las notificaciones push no está incluido en esta versión.</string>
+    <string name="pref_push_notifications_title_unavailable">Las notificaciones push no son compatibles con este dispositivo.</string>
+    <string name="about_credits_contrib"><b>Colaboradores</b></string>
     </resources>
