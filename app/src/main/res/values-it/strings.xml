@@ -227,9 +227,9 @@
   <string name="pref_text_enter_label_newline">A capo</string>
   <string name="pref_text_enter_label_newline_send">Invia</string>
   <string name="pref_image_resize_label_original">Originale</string>
-  <string name="pref_image_resize_label_small">Piccola (0.3MP)</string>
-  <string name="pref_image_resize_label_medium">Media (0.5MP)</string>
-  <string name="pref_image_resize_label_large">Grande (0.8MP)</string>
+  <string name="pref_image_resize_label_small">Piccola (0.4MP)</string>
+  <string name="pref_image_resize_label_medium">Media (1.0MP)</string>
+  <string name="pref_image_resize_label_large">Grande (2.0MP)</string>
   <string name="pref_idle_time_label_never">Mai</string>
   <string name="pref_idle_time_label_5m">5 minuti</string>
   <string name="pref_idle_time_label_15m">15 minuti</string>
@@ -547,4 +547,11 @@
     <string name="pref_on">On</string>
     <string name="pref_off">Off</string>
 
+    <string name="pref_push_notifications_disabled">Disabilitate</string>
+    <string name="pref_push_notifications_title_default">Le notifiche push sono una tecnologia assistita dal server per risparmiare batteria. Non influenza in alcun modo la consegna in tempo reale dei messaggi.
+
+Se disattivate, il comportamento delle connessioni di Kontalk può essere configurato nella schermata impostazioni di rete.</string>
+    <string name="pref_push_notifications_title_disabled">Il supporto per le notifiche push non è stato incluso in questa versione.</string>
+    <string name="pref_push_notifications_title_unavailable">Le notifiche push non sono supportate su questo dispositivo.</string>
+    <string name="about_credits_contrib"><b>Contributori</b></string>
     </resources>
