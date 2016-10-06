@@ -260,9 +260,9 @@
     <string name="pref_text_enter_label_newline">Enter</string>
     <string name="pref_text_enter_label_newline_send">Send</string>
     <string name="pref_image_resize_label_original">Original</string>
-    <string name="pref_image_resize_label_small">Small (0.3MP)</string>
-    <string name="pref_image_resize_label_medium">Medium (0.5MP)</string>
-    <string name="pref_image_resize_label_large">Large (0.8MP)</string>
+    <string name="pref_image_resize_label_small">Small (0.4MP)</string>
+    <string name="pref_image_resize_label_medium">Medium (1.0MP)</string>
+    <string name="pref_image_resize_label_large">Large (2.0MP)</string>
     <string name="pref_idle_time_label_never">Never</string>
     <string name="pref_idle_time_label_5m">5 minutes</string>
     <string name="pref_idle_time_label_15m">15 minutes</string>
