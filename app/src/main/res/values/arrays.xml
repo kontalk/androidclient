@@ -73,8 +73,8 @@
     <string-array name="image_resize_values" translatable="false">
         <item>0</item>
         <item>640</item>
-        <item>800</item>
         <item>1024</item>
+        <item>1920</item>
     </string-array>
 
     <string-array name="image_resize_labels">

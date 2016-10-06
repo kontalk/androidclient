@@ -39,7 +39,7 @@
     <string name="pref_default_text_enter">default</string>
 
     <!-- media settings defaults -->
-    <integer name="pref_default_image_resize">1024</integer>
+    <integer name="pref_default_image_resize">1920</integer>
     <string name="pref_default_media_autodownload">wifi</string>
     <integer name="pref_default_media_autodownload_threshold">100</integer>
 
