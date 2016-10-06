@@ -227,9 +227,9 @@
   <string name="pref_text_enter_label_newline">нови ред</string>
   <string name="pref_text_enter_label_newline_send">пошаљи</string>
   <string name="pref_image_resize_label_original">оригинална</string>
-  <string name="pref_image_resize_label_small">мала (0.3 MP)</string>
-  <string name="pref_image_resize_label_medium">средња (0.5 MP)</string>
-  <string name="pref_image_resize_label_large">велика (0.8 MP)</string>
+  <string name="pref_image_resize_label_small">мала (0,4 MP)</string>
+  <string name="pref_image_resize_label_medium">средња (1,0 MP)</string>
+  <string name="pref_image_resize_label_large">велика (2,0 MP)</string>
   <string name="pref_idle_time_label_never">никад</string>
   <string name="pref_idle_time_label_5m">5 минута</string>
   <string name="pref_idle_time_label_15m">15 минута</string>
@@ -555,4 +555,8 @@
     <string name="pref_off">Иск</string>
 
     <string name="leave_group_delete_messages">Такође обриши историјат ћаскања</string>
+    <string name="pref_push_notifications_disabled">Искључена</string>
+    <string name="pref_push_notifications_title_disabled">Подршка за push обавештења није уграђена у ово издање.</string>
+    <string name="pref_push_notifications_title_unavailable">Push обавештења нису подржана на овом уређају.</string>
+    <string name="about_credits_contrib"><b>Доприносиоци</b></string>
     </resources>
