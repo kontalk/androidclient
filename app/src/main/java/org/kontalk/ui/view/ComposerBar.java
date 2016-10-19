@@ -180,6 +180,8 @@ public class ComposerBar extends RelativeLayout implements
         mTextEntry.setInputType(inputTypeFlags);
 
         mTextEntry.addTextChangedListener(new TextWatcher() {
+            private boolean mWasEdited = false;
+
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
@@ -201,6 +203,10 @@ public class ComposerBar extends RelativeLayout implements
 
                 if (mListener != null)
                     mListener.textChanged(s);
+
+                // covert ascii to emojis
+                s = smileyConvert(s);
+
             }
         });
         mTextEntry.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -793,6 +799,26 @@ public class ComposerBar extends RelativeLayout implements
             .getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(mTextEntry.getWindowToken(),
             InputMethodManager.HIDE_IMPLICIT_ONLY);
+    }
+
+    private Editable smileyConvert(Editable input){
+        if (input.toString().contains(":)")) {
+            return input.replace(input.toString().indexOf(":)"),input.toString().indexOf(":)")+2,"\uD83D\uDE42");
+        }
+        else if (input.toString().contains(":-)")) {
+            return input.replace(input.toString().indexOf(":-)"),input.toString().indexOf(":-)")+3,"\uD83D\uDE42");
+        }
+        else if (input.toString().contains(":(")) {
+            return input.replace(input.toString().indexOf(":("),input.toString().indexOf(":(")+2,"\uD83D\uDE41");
+        }
+        else if (input.toString().contains(":-(")) {
+            return input.replace(input.toString().indexOf(":-("),input.toString().indexOf(":-(")+3,"\uD83D\uDE41");
+        }
+        else if (input.toString().contains(":'(")) {
+            return input.replace(input.toString().indexOf(":'("),input.toString().indexOf(":'(")+3,"\uD83D\uDE22");
+        }
+
+        return null;
     }
 
     public void resetCompose() {
