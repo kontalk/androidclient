@@ -180,8 +180,6 @@ public class ComposerBar extends RelativeLayout implements
         mTextEntry.setInputType(inputTypeFlags);
 
         mTextEntry.addTextChangedListener(new TextWatcher() {
-            private boolean mWasEdited = false;
-
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
