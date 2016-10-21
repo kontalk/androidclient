@@ -202,8 +202,10 @@ public class ComposerBar extends RelativeLayout implements
                 if (mListener != null)
                     mListener.textChanged(s);
 
-                // covert ascii to emojis
-                s = smileyConvert(s);
+                // covert ascii to emojis if preference set
+                if (Preferences.getEmojiConverter(mContext)) {
+                    s = smileyConvert(s);
+                }
 
             }
         });
@@ -800,23 +802,32 @@ public class ComposerBar extends RelativeLayout implements
     }
 
     private Editable smileyConvert(Editable input){
-        if (input.toString().contains(":)")) {
-            return input.replace(input.toString().indexOf(":)"),input.toString().indexOf(":)")+2,"\uD83D\uDE42");
+        if (containSmiley(input, ":)")) {
+            return convert(input,":)", "\uD83D\uDE42");
         }
-        else if (input.toString().contains(":-)")) {
-            return input.replace(input.toString().indexOf(":-)"),input.toString().indexOf(":-)")+3,"\uD83D\uDE42");
+        else if (containSmiley(input, ":-)")) {
+            return convert(input,":-)", "\uD83D\uDE42");
         }
-        else if (input.toString().contains(":(")) {
-            return input.replace(input.toString().indexOf(":("),input.toString().indexOf(":(")+2,"\uD83D\uDE41");
+        else if (containSmiley(input, ":(")) {
+            return convert(input,":(", "\uD83D\uDE41");
         }
-        else if (input.toString().contains(":-(")) {
-            return input.replace(input.toString().indexOf(":-("),input.toString().indexOf(":-(")+3,"\uD83D\uDE41");
+        else if (containSmiley(input, ":-(")) {
+            return convert(input,":-(", "\uD83D\uDE41");
         }
-        else if (input.toString().contains(":'(")) {
-            return input.replace(input.toString().indexOf(":'("),input.toString().indexOf(":'(")+3,"\uD83D\uDE22");
+        else if (containSmiley(input, ":'(")) {
+            return convert(input,":'(", "\uD83D\uDE22");
         }
 
-        return null;
+        else return input;
+    }
+
+    private boolean containSmiley(Editable text, String pattern){
+        return text.toString().contains(pattern);
+    }
+
+    private Editable convert(Editable text, String in, String out){
+        int position = text.toString().indexOf(in);
+        return text.replace(position, position + in.length(), out);
     }
 
     public void resetCompose() {
