@@ -118,7 +118,8 @@ public class PersonalKeyExporter implements PersonalKeyPack {
         if (trustedKeys != null) {
             // export trusted keys
             Properties prop = new Properties();
-            prop.putAll(trustedKeys);
+            for (Map.Entry<String, Keyring.TrustedFingerprint> tk : trustedKeys.entrySet())
+                prop.put(tk.getKey(), tk.getValue().toString());
             zip.putNextEntry(new ZipEntry(TRUSTED_KEYS_FILENAME));
             prop.store(zip, null);
             zip.closeEntry();

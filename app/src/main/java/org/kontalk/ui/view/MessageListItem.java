@@ -25,7 +25,6 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.simplelist.MaterialSimpleListAdapter;
 import com.afollestad.materialdialogs.simplelist.MaterialSimpleListItem;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
@@ -337,7 +336,7 @@ public class MessageListItem extends RelativeLayout implements Checkable {
                 adapter.add(builder.build());
             }
 
-            Dialog dialog = new MaterialDialog.Builder(getContext())
+            new MaterialDialog.Builder(getContext())
                 .title(R.string.chooser_select_link)
                 .cancelable(true)
                 .adapter(adapter, null)
@@ -348,10 +347,7 @@ public class MessageListItem extends RelativeLayout implements Checkable {
                         dialog.dismiss();
                     }
                 })
-                .build();
-
-            click.setDialog(dialog);
-            dialog.show();
+                .show();
         }
     }
 
@@ -361,21 +357,16 @@ public class MessageListItem extends RelativeLayout implements Checkable {
 
     private static final class URLSpanAdapterCallback implements MaterialSimpleListAdapter.Callback {
         private TextView mParent;
-        private Dialog mDialog;
 
         URLSpanAdapterCallback(TextView parent) {
             mParent = parent;
         }
 
         @Override
-        public void onMaterialListItemSelected(int index, MaterialSimpleListItem item) {
+        public void onMaterialListItemSelected(MaterialDialog dialog, int index, MaterialSimpleListItem item) {
             if (item != null && item.getTag() != null)
                 ((URLSpan) item.getTag()).onClick(mParent);
-            mDialog.dismiss();
-        }
-
-        public void setDialog(Dialog dialog) {
-            mDialog = dialog;
+            dialog.dismiss();
         }
     }
 }
