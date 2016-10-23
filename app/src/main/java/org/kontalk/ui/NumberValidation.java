@@ -221,7 +221,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         mValidateButton = (Button) findViewById(R.id.button_validate);
 
         // populate country codes
-        final CountryCodesAdapter ccList = new CountryCodesAdapter(this, R.layout.country_item, R.layout.country_dropdown_item);
+        final CountryCodesAdapter ccList = new CountryCodesAdapter(this,
+                android.R.layout.simple_list_item_1,
+                android.R.layout.simple_spinner_dropdown_item);
         PhoneNumberUtil util = PhoneNumberUtil.getInstance();
         Set<String> ccSet = getSupportedRegions(util);
         for (String cc : ccSet)
