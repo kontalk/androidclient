@@ -200,7 +200,7 @@ public class Keyring {
 
         Map<String, TrustedFingerprint> list = new HashMap<>(c.getCount());
         while (c.moveToNext()) {
-            list.put(c.getString(0), new TrustedFingerprint(c.getString(1), c.getInt(3)));
+            list.put(c.getString(0), new TrustedFingerprint(c.getString(1), c.getInt(2)));
         }
 
         c.close();
@@ -211,7 +211,7 @@ public class Keyring {
         public final String fingerprint;
         public final int trustLevel;
 
-        private TrustedFingerprint(String fingerprint, int trustLevel) {
+        TrustedFingerprint(String fingerprint, int trustLevel) {
             this.fingerprint = fingerprint;
             this.trustLevel = trustLevel;
         }
