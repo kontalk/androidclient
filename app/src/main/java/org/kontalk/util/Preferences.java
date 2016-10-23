@@ -300,7 +300,8 @@ public final class Preferences {
     }
 
     public static boolean getEmojiConverter(Context context){
-        return getBoolean(context, "pref_emoji_converter", false);
+        return getBoolean(context, "pref_emoji_converter",
+                context.getResources().getBoolean(R.bool.pref_default_emoji_converter));
     }
 
     public static String getStatusMessage(Context context) {
