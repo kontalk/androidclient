@@ -227,9 +227,9 @@
   <string name="pref_text_enter_label_newline">Retorn</string>
   <string name="pref_text_enter_label_newline_send">Envia</string>
   <string name="pref_image_resize_label_original">Original</string>
-  <string name="pref_image_resize_label_small">Petit (0.3MP)</string>
-  <string name="pref_image_resize_label_medium">Mitjà (0.5MP)</string>
-  <string name="pref_image_resize_label_large">Gran (0.8MP)</string>
+  <string name="pref_image_resize_label_small">Petita (0.4MP)</string>
+  <string name="pref_image_resize_label_medium">Mitjà (1.0MP)</string>
+  <string name="pref_image_resize_label_large">Gran (2.0MP)</string>
   <string name="pref_idle_time_label_never">Mai</string>
   <string name="pref_idle_time_label_5m">5 minuts</string>
   <string name="pref_idle_time_label_15m">15 minuts</string>
