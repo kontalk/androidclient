@@ -94,7 +94,7 @@
   <string name="pref_idle_time">Verbreek de verbinding wanneer je inactief bent</string>
   <string name="pref_title_idle_time">Hoe lang te wachten met het verbreken van de verbinding bij inactiviteit</string>
   <string name="pref_wakeup_time">Opnieuw met server verbinden</string>
-  <string name="pref_title_wakeup_time">Hoe lang te wachten met opnieuw verbinden met de server na inactiviteit. Alleen van toepassing als pushmeldingen uitgeschakeld zijn</string>
+  <string name="pref_title_wakeup_time">Hoe lang te wachten met opnieuw verbinden met de server na inactiviteit. Alleen van toepassing als pushmeldingen uitgeschakeld zijn of de netwerkkwaliteit heel slecht is</string>
   <string name="pref_maintenance">Beheer</string>
   <string name="pref_regenerate_keypair">Creëer opnieuw een persoonlijk sleutelpaar</string>
   <string name="pref_title_regenerate_keypair">Gebruik dit als je persoonlijke sleutelpaar gecompromitteerd is</string>
