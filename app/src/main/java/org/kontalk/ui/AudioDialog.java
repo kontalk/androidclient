@@ -335,13 +335,13 @@ public class AudioDialog extends AlertDialog {
         mFile = MediaStorage.getOutgoingAudioFile();
         setupViewForRecording(0);
 
-        MediaRecorder recorder = mData.getRecorder();
-        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        recorder.setOutputFile(mFile.getAbsolutePath());
-        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
         try {
-            // Start recording
+            MediaRecorder recorder = mData.getRecorder();
+            recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+            recorder.setOutputFile(mFile.getAbsolutePath());
+            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+            // start recording
             mData.startRecording();
             mStatus = STATUS_RECORDING;
         }

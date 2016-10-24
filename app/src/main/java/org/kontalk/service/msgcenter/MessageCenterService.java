@@ -1718,7 +1718,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             .append(" AND ")
             .append(Messages.STATUS)
             .append("<>")
-            .append(Messages.STATUS_NOTDELIVERED);
+            .append(Messages.STATUS_NOTDELIVERED)
+            .append(" AND ")
+            .append(Messages.STATUS)
+            .append("<>")
+            .append(Messages.STATUS_QUEUED);
+
 
         // filter out pending messages
         if (!forcePending) filter
