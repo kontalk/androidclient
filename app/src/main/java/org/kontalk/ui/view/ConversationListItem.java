@@ -153,6 +153,7 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
                 // use pending icon even for errors
             case Messages.STATUS_ERROR:
             case Messages.STATUS_PENDING:
+            case Messages.STATUS_QUEUED:
                 resId = R.drawable.ic_msg_pending;
                 statusId = R.string.msg_status_sending;
                 break;

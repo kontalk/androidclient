@@ -67,6 +67,8 @@ public final class MyMessages {
         public static final int STATUS_NOTDELIVERED = 7;
         /** Pending user review (e.g. unencryptable message). */
         public static final int STATUS_PENDING = 8;
+        /** Outgoing message, queued for processing (e.g. compression). */
+        public static final int STATUS_QUEUED = 9;
 
         /**
          * Builds a message {@link Uri}.
