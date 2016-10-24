@@ -136,6 +136,7 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
                 // use pending icon even for errors
             case MyMessages.Messages.STATUS_ERROR:
             case MyMessages.Messages.STATUS_PENDING:
+            case MyMessages.Messages.STATUS_QUEUED:
                 resId = R.drawable.ic_msg_pending;
                 statusId = R.string.msg_status_sending;
                 break;

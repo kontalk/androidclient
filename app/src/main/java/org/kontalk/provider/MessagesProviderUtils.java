@@ -99,7 +99,7 @@ public class MessagesProviderUtils {
         values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
         values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
         values.put(Messages.TIMESTAMP, System.currentTimeMillis());
-        values.put(Messages.STATUS, Messages.STATUS_SENDING);
+        values.put(Messages.STATUS, Messages.STATUS_QUEUED);
 
         if (previewFile != null)
             values.put(Messages.ATTACHMENT_PREVIEW_PATH, previewFile.getAbsolutePath());
@@ -139,11 +139,16 @@ public class MessagesProviderUtils {
             values, null, null);
     }
 
+    /**
+     * Fills a media message with preview file and local uri, for use e.g.
+     * after compressing. Also updates the message status to SENDING.
+     */
     public static int updateMedia(Context context, long id, String previewFile, Uri localUri, long length) {
         ContentValues values = new ContentValues(3);
         values.put(Messages.ATTACHMENT_PREVIEW_PATH, previewFile);
         values.put(Messages.ATTACHMENT_LOCAL_URI, localUri.toString());
         values.put(Messages.ATTACHMENT_LENGTH, length);
+        values.put(Messages.STATUS, Messages.STATUS_SENDING);
         return context.getContentResolver().update(ContentUris
             .withAppendedId(Messages.CONTENT_URI, id), values, null, null);
     }
