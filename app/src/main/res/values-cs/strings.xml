@@ -557,4 +557,7 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="pref_push_notifications_title_disabled">Podpora push notifikací nebyla do této verze zahrnuta.</string>
     <string name="pref_push_notifications_title_unavailable">Push notifikace nejsou na tomto zařízení podporovány.</string>
     <string name="about_credits_contrib"><b>Přispěvatelé</b></string>
+    <string name="pref_emoji_converter">Konvertovat smajlíky na emoji</string>
+    <string name="pref_title_emoji_converter">Automaticky konvertovat některé textové smajlíky na emoji</string>
+
     </resources>
