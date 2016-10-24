@@ -556,4 +556,7 @@
 Indien uitgeschakeld kan het netwerkgedrag van Kontalk in netwerkinstellingen ingesteld worden.</string>
     <string name="pref_push_notifications_title_disabled">Ondersteuning voor pushmeldingen zit niet in deze versie.</string>
     <string name="pref_push_notifications_title_unavailable">Pushmeldingen worden niet ondersteund op dit apparaat.</string>
+    <string name="pref_emoji_converter">Zet smileys om naar emojis</string>
+    <string name="pref_title_emoji_converter">Zet sommige tekst smileys automatisch om naar emojis</string>
+
     </resources>
