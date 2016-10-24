@@ -209,8 +209,11 @@ public class ComposerBar extends RelativeLayout implements
                     mListener.textChanged(s);
 
                 // covert ascii to emojis if preference set
-                if (Preferences.getEmojiConverter(mContext)) {
+                boolean editing =false;
+                if (!editing && Preferences.getEmojiConverter(mContext)) {
+                    editing = true;
                     s = smileyConvert(s);
+                    editing = false;
                 }
             }
         });
