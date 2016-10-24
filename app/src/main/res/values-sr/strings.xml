@@ -559,4 +559,7 @@
     <string name="pref_push_notifications_title_disabled">Подршка за push обавештења није уграђена у ово издање.</string>
     <string name="pref_push_notifications_title_unavailable">Push обавештења нису подржана на овом уређају.</string>
     <string name="about_credits_contrib"><b>Доприносиоци</b></string>
+    <string name="pref_emoji_converter">Претварај смешке у емоџије</string>
+    <string name="pref_title_emoji_converter">Аутоматско претварање неких текстуалних емотикона у емоџије</string>
+
     </resources>
