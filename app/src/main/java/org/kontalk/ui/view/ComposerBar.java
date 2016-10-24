@@ -201,6 +201,15 @@ public class ComposerBar extends RelativeLayout implements
 
                 if (mListener != null)
                     mListener.textChanged(s);
+
+                // convert ascii to emojis if preference set
+                /* FIXME doesn't work yet because of issues with Emojicon
+                if (Preferences.getEmojiConverter(mContext)) {
+                    mTextEntry.removeTextChangedListener(this);
+                    MessageUtils.convertSmileys(s);
+                    mTextEntry.addTextChangedListener(this);
+                }
+                */
             }
         });
         mTextEntry.setOnEditorActionListener(new TextView.OnEditorActionListener() {

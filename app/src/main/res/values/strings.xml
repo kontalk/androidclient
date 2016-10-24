@@ -244,6 +244,8 @@
     <string name="serverlist_update_nodata">No available server list found.</string>
     <string name="serverlist_update_nonetwork">Network not available. Please retry later.</string>
     <string name="serverlist_update_offline">Offline mode is enabled.</string>
+    <string name="pref_emoji_converter">Convert smileys to emojis</string>
+    <string name="pref_title_emoji_converter">Automatically convert some text smileys to emojis</string>
 
     <string name="pref_vibrate_label_always">Always</string>
     <string name="pref_vibrate_label_silent">Only when silent</string>

@@ -299,6 +299,11 @@ public final class Preferences {
         return sBalloonTheme;
     }
 
+    public static boolean getEmojiConverter(Context context){
+        return getBoolean(context, "pref_emoji_converter",
+                context.getResources().getBoolean(R.bool.pref_default_emoji_converter));
+    }
+
     public static String getStatusMessage(Context context) {
         return getString(context, "pref_status_message", null);
     }
