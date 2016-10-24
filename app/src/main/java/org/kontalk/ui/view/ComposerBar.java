@@ -20,6 +20,8 @@ package org.kontalk.ui.view;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.view.ViewHelper;
@@ -129,6 +131,9 @@ public class ComposerBar extends RelativeLayout implements
     private int mMoveOffset;
     private int mMoveOffset2;
 
+    // for ascii to emoji converter
+    private Map<String, String> emojiMap = new HashMap<String, String>();
+
     public ComposerBar(Context context) {
         super(context);
         init(context);
@@ -153,6 +158,7 @@ public class ComposerBar extends RelativeLayout implements
     private void init(Context context) {
         mContext = context;
         mHandler = new Handler();
+        fillEmojiMap();
     }
 
     @Override
@@ -206,7 +212,6 @@ public class ComposerBar extends RelativeLayout implements
                 if (Preferences.getEmojiConverter(mContext)) {
                     s = smileyConvert(s);
                 }
-
             }
         });
         mTextEntry.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -802,32 +807,26 @@ public class ComposerBar extends RelativeLayout implements
     }
 
     private Editable smileyConvert(Editable input){
-        if (containSmiley(input, ":)")) {
-            return convert(input,":)", "\uD83D\uDE42");
+        for (String key:emojiMap.keySet()) {
+            input = convert(input, key, emojiMap.get(key));
         }
-        else if (containSmiley(input, ":-)")) {
-            return convert(input,":-)", "\uD83D\uDE42");
-        }
-        else if (containSmiley(input, ":(")) {
-            return convert(input,":(", "\uD83D\uDE41");
-        }
-        else if (containSmiley(input, ":-(")) {
-            return convert(input,":-(", "\uD83D\uDE41");
-        }
-        else if (containSmiley(input, ":'(")) {
-            return convert(input,":'(", "\uD83D\uDE22");
-        }
-
-        else return input;
-    }
-
-    private boolean containSmiley(Editable text, String pattern){
-        return text.toString().contains(pattern);
+        return input;
     }
 
     private Editable convert(Editable text, String in, String out){
         int position = text.toString().indexOf(in);
-        return text.replace(position, position + in.length(), out);
+        if(position>-1){
+            return text.replace(position, position + in.length(), out);
+        }
+        else return text;
+    }
+
+    private void fillEmojiMap(){
+        emojiMap.put(":)","\uD83D\uDE42");
+        emojiMap.put(":-)","\uD83D\uDE42");
+        emojiMap.put(":(","\uD83D\uDE41");
+        emojiMap.put(":-(","\uD83D\uDE41");
+        emojiMap.put(":'(","\uD83D\uDE22");
     }
 
     public void resetCompose() {
