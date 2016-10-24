@@ -25,7 +25,9 @@ import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -43,6 +45,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.format.DateUtils;
@@ -77,6 +80,16 @@ public final class MessageUtils {
     private static final ForegroundColorSpan STYLE_RED = new ForegroundColorSpan(Color.RED);
     @Deprecated
     private static final ForegroundColorSpan STYLE_GREEN = new ForegroundColorSpan(Color.rgb(0, 0xAA, 0));
+
+    /** For ascii to emoji converter. */
+    private static Map<String, String> sEmojiConverterMap = new HashMap<>();
+    static {
+        sEmojiConverterMap.put(":)", "\uD83D\uDE42");
+        sEmojiConverterMap.put(":-)", "\uD83D\uDE42");
+        sEmojiConverterMap.put(":(", "\uD83D\uDE41");
+        sEmojiConverterMap.put(":-(", "\uD83D\uDE41");
+        sEmojiConverterMap.put(":'(", "\uD83D\uDE22");
+    }
 
     public static final int MILLISECONDS_IN_DAY = 86400000;
 
@@ -692,6 +705,19 @@ public final class MessageUtils {
             text = nulBody;
         }
         return text;
+    }
+
+    public static void convertSmileys(Editable input) {
+        for (String key : sEmojiConverterMap.keySet()) {
+            replaceEditable(input, key, sEmojiConverterMap.get(key));
+        }
+    }
+
+    private static void replaceEditable(Editable text, String in, String out) {
+        int position = text.toString().indexOf(in);
+        if (position >= 0) {
+            text.replace(position, position + in.length(), out);
+        }
     }
 
 }
