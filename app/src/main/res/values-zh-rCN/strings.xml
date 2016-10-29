@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2016 Kontalk Devteam <devteam@kontalk.org>
 
@@ -188,7 +188,7 @@
     <string name="menu_refresh">刷新</string>
     <string name="menu_invite">邀请用户</string>
     <string name="title_error">错误</string>
-    <string name="msg_do_refresh">下拉更新联系人列表。</string>
+    <string name="msg_do_refresh">使用菜单 &gt; 刷新来更新联系人列表。</string>
     <string name="msg_sync_progress">正在刷新联系人列表……</string>
     <string name="err_sync_failed">无法刷新联系人列表。请稍后重试。</string>
     <string name="err_sync_nonetwork">没有有效网络。请稍后重试。</string>
@@ -247,9 +247,9 @@
     <string name="pref_text_enter_label_newline">换行</string>
     <string name="pref_text_enter_label_newline_send">发送</string>
     <string name="pref_image_resize_label_original">原始</string>
-    <string name="pref_image_resize_label_small">小（300万像素）</string>
-    <string name="pref_image_resize_label_medium">中（500万像素）</string>
-    <string name="pref_image_resize_label_large">大（800万像素）</string>
+    <string name="pref_image_resize_label_small">小（400万像素）</string>
+    <string name="pref_image_resize_label_medium">中（1000万像素）</string>
+    <string name="pref_image_resize_label_large">大（2000万像素）</string>
     <string name="pref_idle_time_label_never">永不</string>
     <string name="pref_idle_time_label_5m">5分钟</string>
     <string name="pref_idle_time_label_15m">15分钟</string>
@@ -441,7 +441,7 @@
     <string name="warning_user_blocked">你禁止了该用户。</string>
 
     <string name="about_credits_devteam"><b>为你创造Kontalk的人：</b></string>
-    <string name="about_credits_gfx"><b>美工</b></string>
+    <string name="about_credits_gfx"><b>图像/图标</b></string>
     <string name="about_credits_translators"><b>译者</b></string>
 
     <plurals name="context_selected">
@@ -496,20 +496,20 @@
     <string name="chooser_error_no_gallery_app">没有图库应用。</string>
 
     <string name="menu_invite_group">添加用户</string>
-    <string name="menu_set_group_subject">设置群组名称</string>
+    <string name="menu_set_group_subject">设置群组主题</string>
     <string name="menu_leave_group">离开群组</string>
     <string name="chooser_error_no_browser">无法使用浏览器打开链接。</string>
     <string name="text_invitation_info">（聊天申请）</string>
 
     <string name="group_untitled">未命名群组</string>
-    <string name="title_group_subject">群组名称</string>
+    <string name="title_group_subject">群组主题</string>
     <string name="group_command_create">群组创建于：</string>
     <string name="group_command_user_parted">%s 离开了群组。</string>
-    <string name="group_command_subject">群组名称设置为：%s</string>
+    <string name="group_command_subject">群组主题设置为：%s</string>
 
     <string name="group_command_text_create">创建了群组</string>
-    <string name="group_command_text_subject">群组名称已修改</string>
-    <string name="group_command_text_part">某人离开了群组</string>
+    <string name="group_command_text_subject">群组主题已修改</string>
+    <string name="group_command_text_part">有人离开了该群组</string>
     <string name="group_command_text_add_remove">某人被添加或删除</string>
 
     <string name="learn_more">了解更多</string>
@@ -527,4 +527,68 @@
 	<item quantity="one">1个人</item>
 	<item quantity="other"/>
     </plurals>
-</resources>
+<string name="menu_create_group">创建群组</string>
+    <string name="delete_thread_messages">删除聊天历史</string>
+    <string name="delete_threads_leave_groups">同时离开群组</string>
+    <string name="pref_push_notifications_disabled">已禁用</string>
+    <string name="pref_push_notifications_title_default">推送是服务器端辅助的帮助节约电量的技术。它不会影响实时的消息传送。
+
+当被禁用后，Kontalk的连接行为可以在网络设置页面精确调整。</string>
+    <string name="pref_push_notifications_title_disabled">推送支持并没有包含在此版本。</string>
+    <string name="pref_push_notifications_title_unavailable">推送并不能在该设备受支持。</string>
+    <string name="pref_emoji_converter">将笑容符转换成绘文字</string>
+    <string name="pref_title_emoji_converter">自动将一些文本笑容符转换成绘文字</string>
+
+    <string name="pref_balloon_label_silence">静音</string>
+    <string name="title_passphrase_request">个人密匙密码</string>
+    <string name="err_invalid_passphrase">错误的密码。重启APP后再试一次。</string>
+
+    <string name="chooser_error_no_app">没有合适的已关联APP打开该文件。</string>
+
+    <string name="button_ignore">忽略</string>
+    <string name="title_identity">验证</string>
+    <string name="title_identity_self">验证（这是你！）</string>
+
+    <string name="pref_on">开启</string>
+    <string name="pref_off">关闭</string>
+
+    <string name="warning_public_key_group_unverified">一些群组成员的验证信息还未被查阅。</string>
+
+    <string name="about_credits_contrib"><b>贡献者</b></string>
+    <string name="group_command_self_parted">你离开了群组。</string>
+    <string name="group_command_text_part_self">你离开了该群组</string>
+    <string name="group_command_text_part_kicked">你从该群组中被赶了出来</string>
+    <string name="groupinfo_activity_title">群组详情</string>
+
+    <string name="group_info_set_title">更改主题</string>
+    <string name="group_info_leave">离开群组</string>
+    <string name="group_info_members">群组成员</string>
+    <string name="group_info_ignore_all">忽略所有</string>
+    <string name="confirm_will_leave_group">离开后你将无法重新进入该群组。</string>
+    <string name="leave_group_delete_messages">同时删除聊天历史</string>
+    <string name="group_info_menu_remove">移除</string>
+
+    <string name="title_ignore_all_identities">忽略所有的身份验证？</string>
+    <string name="msg_ignore_all_identities">所有未验证的身份将被标记为忽略。</string>
+    <string name="text_group_command_fallback">一条来自群组聊天的消息。你正在使用旧版本的Kontalk或者你的客户端不支持当前群组聊天的协议。请升级到最新版本！</string>
+
+    <string name="status_label">"状态： "</string>
+    <string name="trust_unknown">未验证</string>
+    <string name="trust_ignored">已忽略</string>
+    <string name="trust_verified">已验证</string>
+
+    <string name="action_compose">新的聊天</string>
+    <string name="action_compose_group">新的群组</string>
+
+    <string name="notification_group_title">%1$s @ %2$s</string>
+
+    <plurals name="unread_messages_group">
+	<item quantity="other">%1$d 个消息 @ %2$s</item>
+</plurals>
+
+    <plurals name="notification_more">
+	<item quantity="one">加1</item>
+	<item quantity="other"></item>
+</plurals>
+
+    </resources>
