@@ -555,4 +555,7 @@
 Wenn sie deaktiviert sind kann das Kontalk Verbindungsverhalten in den Netzwerkeinstellungen fein abgestimmt werden.</string>
     <string name="pref_push_notifications_title_disabled">Push-Benachrichtigungsunterstützung wurde in diese Version nicht eingeschlossen.</string>
     <string name="pref_push_notifications_title_unavailable">Push-Benachrichtigungen werden von diesem Gerät nicht unterstützt.</string>
+    <string name="pref_emoji_converter">Textsmilies in Grafiken umwandeln</string>
+    <string name="pref_title_emoji_converter">Einige Textsmiley automatisch in Grafiken umwandeln</string>
+
     </resources>
