@@ -94,7 +94,7 @@
   <string name="pref_idle_time">Искључење при неупослености</string>
   <string name="pref_title_idle_time">Колико чекати на искључење због неактивности</string>
   <string name="pref_wakeup_time">Поновно повезивање</string>
-  <string name="pref_title_wakeup_time">Колико чекати до поновног повезивања са сервером. Ради само ако push обавештења нису доступна</string>
+  <string name="pref_title_wakeup_time">Интервал до поновног повезивања са сервером. Коришћено само ако push обавештења нису доступна или је квалитет везе веома лош</string>
   <string name="pref_maintenance">Одржавање</string>
   <string name="pref_regenerate_keypair">Поново направи лични кључ</string>
   <string name="pref_title_regenerate_keypair">Користите ово ако је лични кључ компромитован</string>
