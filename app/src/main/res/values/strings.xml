@@ -107,7 +107,7 @@
     <string name="pref_idle_time">Disconnect when idle</string>
     <string name="pref_title_idle_time">How long to wait before disconnecting for inactivity</string>
     <string name="pref_wakeup_time">Reconnect to server</string>
-    <string name="pref_title_wakeup_time">How long to wait before reconnecting to the server after an inactivity period. Works only if push notifications are not available</string>
+    <string name="pref_title_wakeup_time">How long to wait before reconnecting to the server after an inactivity period. Used only if push notifications are not available or network quality is very bad</string>
     <string name="pref_maintenance">Maintenance</string>
     <string name="pref_regenerate_keypair">Regenerate personal key</string>
     <string name="pref_title_regenerate_keypair">Use this in case your personal key has been compromised</string>
