@@ -1408,6 +1408,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     @Override
     public void aborted(Exception e) {
+        if (e != null) {
+            // we are being called from the connection helper because of
+            // connection errors. Set up a wake up timer to try again
+            setWakeupAlarm();
+        }
         // unrecoverable error - exit
         stopSelf();
     }
