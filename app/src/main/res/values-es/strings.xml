@@ -94,7 +94,7 @@
   <string name="pref_idle_time">Desconectar estando inactivo</string>
   <string name="pref_title_idle_time">Tiempo de espera antes de desconectar por inactividad</string>
   <string name="pref_wakeup_time">Volver a conectar al servidor</string>
-  <string name="pref_title_wakeup_time">Tiempo de espera antes de volver a conectarse al servidor después de un periodo de inactividad. Sólo funciona si las notificaciones \"push\" no están disponibles</string>
+  <string name="pref_title_wakeup_time">Tiempo de espera antes de volver a conectarse al servidor después de un periodo de inactividad. Sólo funciona si las notificaciones \"push\" no están disponibles o la calidad de la red es muy mala.</string>
   <string name="pref_maintenance">Mantenimiento</string>
   <string name="pref_regenerate_keypair">Volver a generar la clave personal</string>
   <string name="pref_title_regenerate_keypair">Use esto en caso de que su clave personal haya sido comprometida</string>
@@ -552,4 +552,7 @@ Cuando están desactivadas, el comportamiento de conexión de Kontalk se puede a
     <string name="pref_push_notifications_title_disabled">El soporte a las notificaciones push no está incluido en esta versión.</string>
     <string name="pref_push_notifications_title_unavailable">Las notificaciones push no son compatibles con este dispositivo.</string>
     <string name="about_credits_contrib"><b>Colaboradores</b></string>
+    <string name="pref_emoji_converter">Convertir sonrisas a emojis</string>
+    <string name="pref_title_emoji_converter">Convertir automáticamente sonrisas en texto a emojis</string>
+
     </resources>
