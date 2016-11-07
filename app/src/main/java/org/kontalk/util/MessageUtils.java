@@ -83,6 +83,7 @@ public final class MessageUtils {
 
     /** For ascii to emoji converter. */
     private static Map<String, String> sEmojiConverterMap = new HashMap<>();
+
     static {
         sEmojiConverterMap.put(":)", "\uD83D\uDE42");
         sEmojiConverterMap.put(":-)", "\uD83D\uDE42");
