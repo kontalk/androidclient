@@ -101,6 +101,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
 
     String mLastActivityRequestId;
     String mVersionRequestId;
+    String mKeyRequestId;
 
     private boolean mIsTyping;
 
@@ -369,6 +370,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         // reset any pending request
         mLastActivityRequestId = null;
         mVersionRequestId = null;
+        mKeyRequestId = null;
     }
 
     @Override
@@ -436,6 +438,11 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                         // fingerprint has changed since last time
                         changedKey = true;
                     }
+                }
+                // user has no key or it couldn't be found
+                // request it
+                else if (trustedPublicKey == null && fingerprint == null) {
+                    requestPublicKey(jid);
                 }
 
                 if (changedKey) {
@@ -546,6 +553,13 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         if (mBroadcastReceiver == null) {
             mBroadcastReceiver = new BroadcastReceiver() {
                 public void onReceive(Context context, Intent intent) {
+                    String from = XmppStringUtils.parseBareJid(intent
+                        .getStringExtra(MessageCenterService.EXTRA_FROM));
+                    if (!mUserJID.equals(from)) {
+                        // not for us
+                        return;
+                    }
+
                     String action = intent.getAction();
 
                     if (MessageCenterService.ACTION_LAST_ACTIVITY.equals(action)) {
@@ -573,55 +587,57 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                                 String version = intent.getStringExtra(MessageCenterService.EXTRA_VERSION_NUMBER);
                                 if (version != null) {
                                     // cache the version
-                                    String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                                    Contact.setVersion(from, version);
+                                    String fullFrom = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                                    Contact.setVersion(fullFrom, version);
                                     setVersionInfo(context, version);
                                 }
                             }
                         }
                     }
 
-                    else if (MessageCenterService.ACTION_BLOCKED.equals(intent.getAction())) {
-                        String from = XmppStringUtils.parseBareJid(intent
-                            .getStringExtra(MessageCenterService.EXTRA_FROM));
-
-                        if (mUserJID.equals(from)) {
+                    else if (MessageCenterService.ACTION_PUBLICKEY.equals(action)) {
+                        String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
+                        if (id != null && id.equals(mKeyRequestId)) {
+                            mKeyRequestId = null;
                             // reload contact
-                            reloadContact();
-                            // this will update block/unblock menu items
-                            updateUI();
-                            Toast.makeText(context,
-                                R.string.msg_user_blocked,
-                                Toast.LENGTH_LONG).show();
+                            invalidateContact();
+                            // request presence again
+                            requestPresence();
                         }
                     }
 
-                    else if (MessageCenterService.ACTION_UNBLOCKED.equals(intent.getAction())) {
-                        String from = XmppStringUtils.parseBareJid(intent
-                            .getStringExtra(MessageCenterService.EXTRA_FROM));
+                    else if (MessageCenterService.ACTION_BLOCKED.equals(intent.getAction())) {
+                        // reload contact
+                        reloadContact();
+                        // this will update block/unblock menu items
+                        updateUI();
+                        Toast.makeText(context,
+                            R.string.msg_user_blocked,
+                            Toast.LENGTH_LONG).show();
+                    }
 
-                        if (mUserJID.equals(from)) {
-                            // reload contact
-                            reloadContact();
-                            // this will update block/unblock menu items
-                            updateUI();
-                            // hide any block warning
-                            // a new warning will be issued for the key if needed
-                            hideWarning();
-                            // request presence subscription when unblocking
-                            requestPresence();
-                            Toast.makeText(context,
-                                R.string.msg_user_unblocked,
-                                Toast.LENGTH_LONG).show();
-                        }
+                    else if (MessageCenterService.ACTION_UNBLOCKED.equals(intent.getAction())) {
+                        // reload contact
+                        reloadContact();
+                        // this will update block/unblock menu items
+                        updateUI();
+                        // hide any block warning
+                        // a new warning will be issued for the key if needed
+                        hideWarning();
+                        // request presence subscription when unblocking
+                        requestPresence();
+                        Toast.makeText(context,
+                            R.string.msg_user_unblocked,
+                            Toast.LENGTH_LONG).show();
                     }
                 }
             };
 
-            // listen for for some stuff we need
+            // listen for some stuff we need
             IntentFilter filter = new IntentFilter();
             filter.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
             filter.addAction(MessageCenterService.ACTION_VERSION);
+            filter.addAction(MessageCenterService.ACTION_PUBLICKEY);
             filter.addAction(MessageCenterService.ACTION_BLOCKED);
             filter.addAction(MessageCenterService.ACTION_UNBLOCKED);
             mLocalBroadcastManager.registerReceiver(mBroadcastReceiver, filter);
@@ -958,6 +974,14 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         if (context != null) {
             mVersionRequestId = StringUtils.randomString(6);
             MessageCenterService.requestVersionInfo(context, jid, mVersionRequestId);
+        }
+    }
+
+    private void requestPublicKey(String jid) {
+        Context context = getActivity();
+        if (context != null) {
+            mKeyRequestId = StringUtils.randomString(6);
+            MessageCenterService.requestPublicKey(context, jid, mKeyRequestId);
         }
     }
 
