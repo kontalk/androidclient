@@ -2177,7 +2177,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (isGroupMsg) {
             toGroup = data.getStringArray("org.kontalk.message.to");
             // TODO this should be discovered first
-            to = mConnection.getServiceName();
+            to = XmppStringUtils.completeJidFrom("multicast", mConnection.getServiceName());
             convJid = groupJid;
         }
         else {
