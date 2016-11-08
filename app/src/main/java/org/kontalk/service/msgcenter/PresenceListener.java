@@ -372,14 +372,14 @@ class PresenceListener extends MessageCenterPacketListener {
             values.putNull(Users.STATUS);
 
         // delay
-        long timestamp = 0;
+        long timestamp;
         DelayInformation delay = p.getExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE);
         if (delay != null) {
             // delay from presence (rare)
             timestamp = delay.getStamp().getTime();
         }
-        else if (p.isAvailable()) {
-            // logged in now
+        else {
+            // logged in/out now
             timestamp = System.currentTimeMillis();
         }
 

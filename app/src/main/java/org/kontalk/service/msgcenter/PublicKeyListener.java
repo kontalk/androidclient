@@ -91,20 +91,19 @@ class PublicKeyListener extends MessageCenterPacketListener {
                 }
 
                 String id = p.getStanzaId();
-                // we are syncing and this is a response for the Syncer
-                if (SyncAdapter.getIQPacketId().equals(id) && SyncAdapter.isActive(getContext())) {
-                    // sync currently active, broadcast the key
-                    Intent i = new Intent(ACTION_PUBLICKEY);
-                    i.putExtra(EXTRA_PACKET_ID, p.getStanzaId());
 
-                    i.putExtra(EXTRA_FROM, p.getFrom());
-                    i.putExtra(EXTRA_TO, p.getTo());
-                    i.putExtra(EXTRA_PUBLIC_KEY, _publicKey);
+                // broadcast key update
+                Intent i = new Intent(ACTION_PUBLICKEY);
+                i.putExtra(EXTRA_PACKET_ID, id);
+                i.putExtra(EXTRA_FROM, p.getFrom());
+                i.putExtra(EXTRA_TO, p.getTo());
+                i.putExtra(EXTRA_PUBLIC_KEY, _publicKey);
+                sendBroadcast(i);
 
-                    sendBroadcast(i);
-                }
+                // if we are not syncing and this is not a response for the Syncer
+                // save the key immediately
+                if (!SyncAdapter.getIQPacketId().equals(id) || !SyncAdapter.isActive(getContext())) {
 
-                else {
                     // updating server key
                     if (XmppStringUtils.parseDomain(from).equals(from)) {
                         Log.v("pubkey", "Updating server key for " + from);
