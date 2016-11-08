@@ -990,7 +990,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
 
         if (mUserJID != null) {
             // clear chat invitation (if any)
-            // TODO use jid here
             MessagingNotification.clearChatInvitation(getActivity(), mUserJID);
         }
     }
