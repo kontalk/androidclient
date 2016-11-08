@@ -475,15 +475,6 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     }
 
     @Override
-    protected void onRestoreInstanceState(Bundle state) {
-        super.onRestoreInstanceState(state);
-        Bundle args = processIntent(state);
-        if (args != null) {
-            mFragment.setMyArguments(args);
-        }
-    }
-
-    @Override
     protected void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
         if (mFragment != null)
