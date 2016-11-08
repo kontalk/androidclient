@@ -436,7 +436,7 @@ public class Contact {
     /** Invalidates cached data for the given contact. Does not delete contact information. */
     public static void invalidateData(String userId) {
         Contact c = cache.get(XmppStringUtils.parseBareJid(userId));
-        if (c != null && c.getId() > 0)
+        if (c != null)
             c.clear();
         // invalidate contact state
         clearState(userId);

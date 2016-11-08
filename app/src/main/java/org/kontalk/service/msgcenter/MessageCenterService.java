@@ -2973,9 +2973,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static void requestPublicKey(final Context context, String to) {
+        requestPublicKey(context, to, null);
+    }
+
+    public static void requestPublicKey(final Context context, String to, String id) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_PUBLICKEY);
         i.putExtra(EXTRA_TO, to);
+        i.putExtra(EXTRA_PACKET_ID, id);
         context.startService(i);
     }
 
