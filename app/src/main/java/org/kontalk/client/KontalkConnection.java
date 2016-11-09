@@ -31,6 +31,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.SASLAuthentication;
 import org.jivesoftware.smack.XMPPException;
@@ -42,6 +43,7 @@ import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
 
 import org.kontalk.BuildConfig;
@@ -115,9 +117,10 @@ public class KontalkConnection extends XMPPTCPConnection {
         return builder.build();
     }
 
+    @SuppressLint("AllowAllHostnameVerifier")
     private static void setupSSL(XMPPTCPConnectionConfiguration.Builder builder,
-        boolean direct, PrivateKey privateKey, X509Certificate bridgeCert,
-        boolean acceptAnyCertificate, KeyStore trustStore) {
+                                 boolean direct, PrivateKey privateKey, X509Certificate bridgeCert,
+                                 boolean acceptAnyCertificate, KeyStore trustStore) {
         try {
             SSLContext ctx = SSLContext.getInstance("TLS");
 
@@ -152,17 +155,20 @@ public class KontalkConnection extends XMPPTCPConnection {
                             return null;
                         }
 
+                        @SuppressLint("TrustAllX509TrustManager")
                         @Override
                         public void checkServerTrusted(X509Certificate[] chain, String authType)
                             throws CertificateException {
                         }
 
+                        @SuppressLint("TrustAllX509TrustManager")
                         @Override
                         public void checkClientTrusted(X509Certificate[] chain, String authType)
                             throws CertificateException {
                         }
                     }
                 };
+                builder.setHostnameVerifier(new AllowAllHostnameVerifier());
             }
 
             else {
