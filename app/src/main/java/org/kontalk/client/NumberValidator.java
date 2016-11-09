@@ -92,6 +92,9 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     public static final int ERROR_THROTTLING = 1;
     public static final int ERROR_USER_EXISTS = 2;
 
+    // from Kontalk server code
+    private static final String DEFAULT_CHALLENGE = "callerid";
+
     @SuppressWarnings("WeakerAccess")
     final EndpointServer.EndpointServerProvider mServerProvider;
     private final String mName;
@@ -562,6 +565,14 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
             fallback.setType(FormField.Type.bool);
             fallback.addValue(String.valueOf(mFallback));
             form.addField(fallback);
+        }
+        else {
+            // not falling back, ask for our preferred challenge
+            FormField challenge = new FormField("challenge");
+            challenge.setLabel("Challenge type");
+            challenge.setType(FormField.Type.text_single);
+            challenge.addValue(DEFAULT_CHALLENGE);
+            form.addField(challenge);
         }
 
         iq.addExtension(form.getDataFormToSend());
