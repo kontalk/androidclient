@@ -86,6 +86,12 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
      * True if the window has lost focus the last time
      * {@link #onWindowFocusChanged} was called. */
     private boolean mLostFocus;
+    /**
+     * This is set to true in {@link #onResume} and to false in {@link #onPause}.
+     * It is checked in {@link #onWindowFocusChanged} to ensure that the activity is indeed
+     * visible before granting focus capabilities.
+     */
+    private boolean mResumed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -483,10 +489,22 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        mResumed = true;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mResumed = false;
+    }
+
+    @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
 
-        if (hasFocus) {
+        if (hasFocus && mResumed) {
             if (mLostFocus) {
                 mFragment.onFocus(true);
                 mLostFocus = false;
