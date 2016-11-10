@@ -400,9 +400,20 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
             @Override
             public void run() {
                 keepScreenOn(false);
-                Toast.makeText(CodeValidation.this,
-                        R.string.err_authentication_failed,
-                        Toast.LENGTH_LONG).show();
+                int resId;
+                String challenge = getIntent().getStringExtra("challenge");
+                if (NumberValidator.CHALLENGE_CALLER_ID.equals(challenge)) {
+                    // we are verifying through user-initiated missed call
+                    // notify the user that the verification didn't succeed
+                    resId = R.string.err_authentication_failed_callerid;
+                }
+                else {
+                    // we are verifying through PIN-based challenge
+                    // notify the user that the challenge code wasn't accepted
+                    resId = R.string.err_authentication_failed;
+                }
+
+                Toast.makeText(CodeValidation.this, resId, Toast.LENGTH_LONG).show();
                 abort(false);
             }
         });
