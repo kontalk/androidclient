@@ -125,13 +125,14 @@ dependencies {
     compile "com.madgag.spongycastle:pkix:$spongyCastleVersion"
     compile "com.madgag.spongycastle:pg:$spongyCastleVersion"
     compile 'info.guardianproject.netcipher:netcipher:1.2.1'
-    compile 'com.googlecode.libphonenumber:libphonenumber:7.7.2'
+    compile 'com.googlecode.libphonenumber:libphonenumber:7.7.4'
     compile 'com.nineoldandroids:library:2.4.0'
-    compile 'com.google.zxing:core:3.2.1'
+    compile 'com.google.zxing:core:3.3.0'
     compile 'com.segment.backo:backo:1.0.0'
     compile "org.igniterealtime.smack:smack-experimental:$smackVersion"
     compile "org.igniterealtime.smack:smack-android:$smackVersion"
     compile 'com.github.machinarius:preferencefragment:0.1.1'
+    // MaterialDialogs stopped supporting API < 13 from version 0.9.1.0
     compile 'com.afollestad.material-dialogs:core:0.9.0.2'
     compile 'com.afollestad.material-dialogs:commons:0.9.0.2'
     compile 'com.github.castorflex.smoothprogressbar:library:1.1.0'
@@ -144,7 +145,7 @@ dependencies {
 
     googleplayCompile "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
     googleplayCompile "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"
-    googleplayCompile('com.crashlytics.sdk.android:crashlytics:2.6.4@aar') {
+    googleplayCompile('com.crashlytics.sdk.android:crashlytics:2.6.5@aar') {
         transitive = true;
     }
 

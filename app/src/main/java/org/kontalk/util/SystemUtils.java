@@ -362,6 +362,17 @@ public final class SystemUtils {
         }
     }
 
+    public static void dial(Context context, CharSequence phone) {
+        try {
+            context.startActivity(new Intent(Intent.ACTION_DIAL,
+                Uri.parse("tel:" + phone)));
+        }
+        catch (ActivityNotFoundException e) {
+            Toast.makeText(context, R.string.chooser_error_no_dialer,
+                Toast.LENGTH_LONG).show();
+        }
+    }
+
     public static boolean isCallable(Context context, Intent intent) {
         List<ResolveInfo> list = context.getPackageManager().queryIntentActivities(intent,
             PackageManager.MATCH_DEFAULT_ONLY);
