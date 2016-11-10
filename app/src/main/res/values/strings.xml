@@ -161,7 +161,7 @@
     <string name="confirm_will_delete_messages">The selected messages will be deleted.</string>
     <string name="title_user_exists">User exists</string>
     <string name="err_authentication_failed">Verification code refused. Authentication failed.</string>
-    <string name="err_authentication_failed_callerid">Verification wasn't successful. Try to call the number again and wait a little longer.</string>
+    <string name="err_authentication_failed_callerid">Verification wasn\'t successful. Try to call the number again and wait a little longer.</string>
     <string name="err_validation_failed">Phone number verification failed.</string>
     <string name="err_validation_retry_later">Too many attempts. Please wait a few minutes and try again.</string>
     <string name="msg_validation_canceled">Verification canceled. You might receive a SMS anyway.</string>
