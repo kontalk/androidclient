@@ -566,7 +566,7 @@ public final class Preferences {
     public static boolean saveRegistrationProgress(Context context, String name,
         String phoneNumber, PersonalKey key, String passphrase,
         byte[] importedPublicKey, byte[] importedPrivateKey, String serverUri,
-        String sender, boolean force, Map<String, Keyring.TrustedFingerprint> trustedKeys) {
+        String sender, String challenge, boolean force, Map<String, Keyring.TrustedFingerprint> trustedKeys) {
 
         ByteArrayOutputStream trustedKeysOut = null;
         if (trustedKeys != null) {
@@ -594,6 +594,7 @@ public final class Preferences {
             .putString("registration_passphrase", passphrase)
             .putString("registration_server", serverUri)
             .putString("registration_sender", sender)
+            .putString("registration_challenge", challenge)
             .putBoolean("registration_force", force)
             .putString("registration_trustedkeys", trustedKeysOut != null ?
                 Base64.encodeToString(trustedKeysOut.toByteArray(), Base64.NO_WRAP) : null)
@@ -621,6 +622,7 @@ public final class Preferences {
                 p.importedPrivateKey = Base64.decode(importedPrivateKey, Base64.NO_WRAP);
 
             p.sender = getString(context, "registration_sender", null);
+            p.challenge = getString(context, "registration_challenge", null);
             p.force = getBoolean(context, "registration_force", false);
 
             String trustedKeys = getString(context, "registration_trustedkeys", null);
@@ -651,6 +653,8 @@ public final class Preferences {
             .remove("registration_importedprivatekey")
             .remove("registration_passphrase")
             .remove("registration_server")
+            .remove("registration_sender")
+            .remove("registration_challenge")
             .remove("registration_force")
             .remove("registration_trustedkeys")
             .commit();
@@ -665,6 +669,7 @@ public final class Preferences {
         public byte[] importedPrivateKey;
         public EndpointServer server;
         public String sender;
+        public String challenge;
         public boolean force;
         public Map<String, String> trustedKeys;
     }

@@ -93,7 +93,14 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     public static final int ERROR_USER_EXISTS = 2;
 
     // from Kontalk server code
-    private static final String DEFAULT_CHALLENGE = "callerid";
+    /** Challenge the user with a verification PIN sent through a SMS or a told through a phone call. */
+    public static final String CHALLENGE_PIN = "pin";
+    /** Challenge the user with a missed call from a random number and making the user guess the digits. */
+    public static final String CHALLENGE_MISSED_CALL = "missedcall";
+    /** Challenge the user with the caller ID presented in a user-initiated call to a given phone number. */
+    public static final String CHALLENGE_CALLER_ID = "callerid";
+    // default requested challenge
+    private static final String DEFAULT_CHALLENGE = CHALLENGE_CALLER_ID;
 
     @SuppressWarnings("WeakerAccess")
     final EndpointServer.EndpointServerProvider mServerProvider;
@@ -285,16 +292,24 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                             DataForm response = iq.getExtension("x", "jabber:x:data");
                             if (response != null) {
                                 // ok! message will be sent
+                                String smsFrom = null, challenge = null;
                                 List<FormField> iter = response.getFields();
                                 for (FormField field : iter) {
-                                    if (field.getVariable().equals("from")) {
-                                        String smsFrom = field.getValues().get(0);
-                                        Log.d(TAG, "using sender id: " + smsFrom);
-                                        mListener.onValidationRequested(NumberValidator.this, smsFrom);
-
-                                        // prevent error handling
-                                        return;
+                                    String fieldName = field.getVariable();
+                                    if ("from".equals(fieldName)) {
+                                        smsFrom = field.getValues().get(0);
                                     }
+                                    else if ("challenge".equals(fieldName)) {
+                                        challenge = field.getValues().get(0);
+                                    }
+                                }
+
+                                if (smsFrom != null) {
+                                    Log.d(TAG, "using sender id: " + smsFrom + ", challenge: " + challenge);
+                                    mListener.onValidationRequested(NumberValidator.this, smsFrom, challenge);
+
+                                    // prevent error handling
+                                    return;
                                 }
                             }
                         }
@@ -612,7 +627,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         void onServerCheckFailed(NumberValidator v);
 
         /** Called on confirmation that the validation SMS is being sent. */
-        void onValidationRequested(NumberValidator v, String sender);
+        void onValidationRequested(NumberValidator v, String sender, String challenge);
 
         /** Called if phone number validation failed. */
         void onValidationFailed(NumberValidator v, int reason);

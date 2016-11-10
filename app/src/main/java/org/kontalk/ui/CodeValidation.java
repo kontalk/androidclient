@@ -43,6 +43,7 @@ import org.kontalk.crypto.PersonalKey;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.SystemUtils;
 
 import java.net.SocketException;
 import java.util.HashMap;
@@ -111,21 +112,57 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 .setText(R.string.code_validation_intro_manual);
         }
         else {
+            String challenge = getIntent().getStringExtra("challenge");
             String sender = getIntent().getStringExtra("sender");
-            ((TextView) findViewById(R.id.code_validation_sender))
-                .setText(sender);
+
+            final TextView senderText = (TextView) findViewById(R.id.code_validation_sender);
+            final Button senderCall = (Button) findViewById(R.id.code_validation_call);
 
             CharSequence textId1, textId2;
-            if (NumberValidator.isMissedCall(sender)) {
+            if (NumberValidator.isMissedCall(sender) || NumberValidator.CHALLENGE_MISSED_CALL.equals(challenge)) {
+                // reverse missed call
                 textId1 = getText(R.string.code_validation_intro_missed_call);
                 textId2 = getString(R.string.code_validation_intro2_missed_call,
                     NumberValidator.getChallengeLength(sender));
-                findViewById(R.id.fallback_button).setVisibility(View.VISIBLE);
+                mFallbackButton.setText(R.string.button_validation_fallback);
+                mFallbackButton.setVisibility(View.VISIBLE);
+                // show sender label and hide call button
+                senderText.setText(sender);
+                senderText.setVisibility(View.VISIBLE);
+                senderCall.setVisibility(View.GONE);
+                mCode.setVisibility(View.VISIBLE);
+            }
+            else if (NumberValidator.CHALLENGE_CALLER_ID.equals(challenge)) {
+                // user-initiated missed call
+                textId1 = getText(R.string.code_validation_intro_callerid);
+                textId2 = getText(R.string.code_validation_intro2_callerid);
+                mFallbackButton.setText(R.string.button_validation_fallback_callerid);
+                mFallbackButton.setVisibility(View.VISIBLE);
+                // show call button and hide sender label
+                senderCall.setText(sender);
+                senderCall.setVisibility(View.VISIBLE);
+                senderText.setVisibility(View.GONE);
+                mCode.setVisibility(View.GONE);
             }
             else {
+                // PIN code
                 textId1 = getText(R.string.code_validation_intro);
                 textId2 = getText(R.string.code_validation_intro2);
-                findViewById(R.id.fallback_button).setVisibility(View.GONE);
+                mFallbackButton.setVisibility(View.GONE);
+                // show sender label and hide call button
+                senderText.setText(sender);
+                senderText.setVisibility(View.VISIBLE);
+                senderCall.setVisibility(View.GONE);
+                mCode.setVisibility(View.VISIBLE);
+            }
+
+            if (senderCall.getVisibility() == View.VISIBLE) {
+                senderCall.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        SystemUtils.dial(CodeValidation.this, senderCall.getText());
+                    }
+                });
             }
 
             ((TextView) findViewById(R.id.code_validation_intro)).setText(textId1);
@@ -324,7 +361,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
-    public void onValidationRequested(NumberValidator v, String sender) {
+    public void onValidationRequested(NumberValidator v, String sender, String challenge) {
         // not used.
     }
 
