@@ -559,4 +559,8 @@ Indien uitgeschakeld kan het netwerkgedrag van Kontalk in netwerkinstellingen in
     <string name="pref_emoji_converter">Zet smileys om naar emojis</string>
     <string name="pref_title_emoji_converter">Zet sommige tekst smileys automatisch om naar emojis</string>
 
+    <string name="code_validation_intro_callerid">Druk op de onderstaande knop om dit nummer te bellen. Let op dat <b>het gesprek gestart moet worden vanaf het telefoonnummer dat je aan het registreren bent</b>. Je kan ophangen na één keer over te laten gaan, niemand zal op nemen.</string>
+    <string name="code_validation_intro2_callerid">Nadat je het gesprek beëindigd hebt, kom terug naar dat scherm en druk op onderstaande verifiëren knop.</string>
+    <string name="button_validation_fallback_callerid">Probeer een andere methode</string>
+    <string name="chooser_error_no_dialer">Geen app om mee te bellen of geen telefoonondersteuning beschikbaar op dit apparaat.</string>
     </resources>
