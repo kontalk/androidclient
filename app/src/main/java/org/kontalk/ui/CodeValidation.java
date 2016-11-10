@@ -24,6 +24,7 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -65,16 +66,19 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     private String mName;
     private String mPhone;
     private String mPassphrase;
-    private boolean mForce;
+    boolean mForce;
     private EndpointServer.EndpointServerProvider mServerProvider;
 
     private byte[] mImportedPrivateKey;
     private byte[] mImportedPublicKey;
-    private Map<String, String> mTrustedKeys;
+    Map<String, String> mTrustedKeys;
 
     private static final class RetainData {
         NumberValidator validator;
         Map<String, String> trustedKeys;
+
+        RetainData() {
+        }
     }
 
     @Override
@@ -251,7 +255,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
             abort(true);
     }
 
-    private void keepScreenOn(boolean active) {
+    void keepScreenOn(boolean active) {
         if (active)
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         else
@@ -269,7 +273,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         new MaterialDialog.Builder(this)
             .title(R.string.title_fallback)
             .content(R.string.msg_fallback)
-            .icon(getResources().getDrawable(android.R.drawable.ic_dialog_info))
+            .icon(ContextCompat.getDrawable(this, android.R.drawable.ic_dialog_info))
             .positiveText(android.R.string.ok)
             .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
@@ -318,7 +322,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         keepScreenOn(true);
     }
 
-    private void abort(boolean ending) {
+    void abort(boolean ending) {
         if (!ending) {
             mProgress.setVisibility(View.GONE);
             enableControls(true);
@@ -396,9 +400,20 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
             @Override
             public void run() {
                 keepScreenOn(false);
-                Toast.makeText(CodeValidation.this,
-                        R.string.err_authentication_failed,
-                        Toast.LENGTH_LONG).show();
+                int resId;
+                String challenge = getIntent().getStringExtra("challenge");
+                if (NumberValidator.CHALLENGE_CALLER_ID.equals(challenge)) {
+                    // we are verifying through user-initiated missed call
+                    // notify the user that the verification didn't succeed
+                    resId = R.string.err_authentication_failed_callerid;
+                }
+                else {
+                    // we are verifying through PIN-based challenge
+                    // notify the user that the challenge code wasn't accepted
+                    resId = R.string.err_authentication_failed;
+                }
+
+                Toast.makeText(CodeValidation.this, resId, Toast.LENGTH_LONG).show();
                 abort(false);
             }
         });
