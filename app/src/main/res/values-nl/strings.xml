@@ -563,4 +563,5 @@ Indien uitgeschakeld kan het netwerkgedrag van Kontalk in netwerkinstellingen in
     <string name="code_validation_intro2_callerid">Nadat je het gesprek beëindigd hebt, kom terug naar dat scherm en druk op onderstaande verifiëren knop.</string>
     <string name="button_validation_fallback_callerid">Probeer een andere methode</string>
     <string name="chooser_error_no_dialer">Geen app om mee te bellen of geen telefoonondersteuning beschikbaar op dit apparaat.</string>
+    <string name="err_authentication_failed_callerid">Verificatie is mislukt. Probeer het nummer opnieuw te bellen en wacht iets langer.</string>
     </resources>
