@@ -378,4 +378,8 @@
     <plurals name="unread_messages">
         <item quantity="other">%d پیام خوانده نشده</item>
     </plurals>
-</resources>
+<string name="menu_create_group">ساخت گروه</string>
+    <string name="delete_thread_messages">حذف تاریخچه ی گپ</string>
+    <string name="delete_threads_leave_groups">همچنین از گروه ها خارج شو</string>
+    <string name="pref_push_notifications_disabled">غیرفعال</string>
+    </resources>

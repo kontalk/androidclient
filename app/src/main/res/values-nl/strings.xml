@@ -94,7 +94,7 @@
   <string name="pref_idle_time">Verbreek de verbinding wanneer je inactief bent</string>
   <string name="pref_title_idle_time">Hoe lang te wachten met het verbreken van de verbinding bij inactiviteit</string>
   <string name="pref_wakeup_time">Opnieuw met server verbinden</string>
-  <string name="pref_title_wakeup_time">Hoe lang te wachten met opnieuw verbinden met de server na inactiviteit. Alleen van toepassing als pushmeldingen uitgeschakeld zijn</string>
+  <string name="pref_title_wakeup_time">Hoe lang te wachten met opnieuw verbinden met de server na inactiviteit. Alleen van toepassing als pushmeldingen uitgeschakeld zijn of de netwerkkwaliteit heel slecht is</string>
   <string name="pref_maintenance">Beheer</string>
   <string name="pref_regenerate_keypair">Creëer opnieuw een persoonlijk sleutelpaar</string>
   <string name="pref_title_regenerate_keypair">Gebruik dit als je persoonlijke sleutelpaar gecompromitteerd is</string>
@@ -556,4 +556,11 @@
 Indien uitgeschakeld kan het netwerkgedrag van Kontalk in netwerkinstellingen ingesteld worden.</string>
     <string name="pref_push_notifications_title_disabled">Ondersteuning voor pushmeldingen zit niet in deze versie.</string>
     <string name="pref_push_notifications_title_unavailable">Pushmeldingen worden niet ondersteund op dit apparaat.</string>
+    <string name="pref_emoji_converter">Zet smileys om naar emojis</string>
+    <string name="pref_title_emoji_converter">Zet sommige tekst smileys automatisch om naar emojis</string>
+
+    <string name="code_validation_intro_callerid">Druk op de onderstaande knop om dit nummer te bellen. Let op dat <b>het gesprek gestart moet worden vanaf het telefoonnummer dat je aan het registreren bent</b>. Je kan ophangen na één keer over te laten gaan, niemand zal op nemen.</string>
+    <string name="code_validation_intro2_callerid">Nadat je het gesprek beëindigd hebt, kom terug naar dat scherm en druk op onderstaande verifiëren knop.</string>
+    <string name="button_validation_fallback_callerid">Probeer een andere methode</string>
+    <string name="chooser_error_no_dialer">Geen app om mee te bellen of geen telefoonondersteuning beschikbaar op dit apparaat.</string>
     </resources>

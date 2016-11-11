@@ -94,7 +94,7 @@
   <string name="pref_idle_time">Искључење при неупослености</string>
   <string name="pref_title_idle_time">Колико чекати на искључење због неактивности</string>
   <string name="pref_wakeup_time">Поновно повезивање</string>
-  <string name="pref_title_wakeup_time">Колико чекати до поновног повезивања са сервером. Ради само ако push обавештења нису доступна</string>
+  <string name="pref_title_wakeup_time">Интервал до поновног повезивања са сервером. Коришћено само ако push обавештења нису доступна или је квалитет везе веома лош</string>
   <string name="pref_maintenance">Одржавање</string>
   <string name="pref_regenerate_keypair">Поново направи лични кључ</string>
   <string name="pref_title_regenerate_keypair">Користите ово ако је лични кључ компромитован</string>
@@ -559,4 +559,7 @@
     <string name="pref_push_notifications_title_disabled">Подршка за push обавештења није уграђена у ово издање.</string>
     <string name="pref_push_notifications_title_unavailable">Push обавештења нису подржана на овом уређају.</string>
     <string name="about_credits_contrib"><b>Доприносиоци</b></string>
+    <string name="pref_emoji_converter">Претварај смешке у емоџије</string>
+    <string name="pref_title_emoji_converter">Аутоматско претварање неких текстуалних емотикона у емоџије</string>
+
     </resources>
