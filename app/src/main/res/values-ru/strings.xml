@@ -520,8 +520,10 @@
 
     <plurals name="group_people">
 	<item quantity="one">1 человек</item>
-	<item quantity="other">%d несколько человек</item>
-    </plurals>
+	<item quantity="few"></item>
+	<item quantity="many">%d несколько человек</item>
+	<item quantity="other"></item>
+</plurals>
 
     <plurals name="unread_messages">
         <item quantity="other">%d непрочитанных сообщений</item>
