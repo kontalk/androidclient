@@ -88,6 +88,7 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
             testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg', 'proguard-test.cfg'
+            ext.enableCrashlytics = false
         }
     }
 
@@ -102,6 +103,7 @@ android {
 
     productFlavors {
         basic {
+            ext.enableCrashlytics = false
         }
         googleplay {
         }
