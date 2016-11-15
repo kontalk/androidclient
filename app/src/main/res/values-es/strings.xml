@@ -555,4 +555,11 @@ Cuando están desactivadas, el comportamiento de conexión de Kontalk se puede a
     <string name="pref_emoji_converter">Convertir sonrisas a emojis</string>
     <string name="pref_title_emoji_converter">Convertir automáticamente sonrisas en texto a emojis</string>
 
+    <string name="code_validation_intro2_callerid">Luego de cerrar la llamada, vuelve aquí y presiona el botón de verificar más abajo.</string>
+    <string name="err_authentication_failed_callerid">La verificación no fue correcta. Intenta llamar al número de nuevo y esperar un poco más.</string>
+    <string name="button_validation_fallback_callerid">Intenta otra forma</string>
+    <string name="chooser_error_no_dialer">No hay aplicación de llamada o no hay telefonía disponible en este dispositivo.</string>
+    <string name="pref_reporting">Enviar estadísticas anónimas de uso</string>
+    <string name="pref_title_reporting">Incluir informe de fallos</string>
+
     </resources>
