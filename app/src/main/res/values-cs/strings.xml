@@ -568,4 +568,5 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="pref_reporting">Odesílat anonymní statistiky o používání</string>
     <string name="pref_title_reporting">Včetně reportů o pádech</string>
 
+    <string name="button_refuse">Odmítnout</string>
     </resources>
