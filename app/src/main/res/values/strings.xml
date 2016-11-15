@@ -388,6 +388,7 @@
     <string name="text_invitation1">Request by:</string>
     <string name="text_invitation2">Fingerprint:</string>
     <string name="button_accept">Accept</string>
+    <string name="button_refuse">Refuse</string>
     <string name="button_block">Block</string>
     <string name="button_ignore">Ignore</string>
     <string name="button_identity">Identity</string>

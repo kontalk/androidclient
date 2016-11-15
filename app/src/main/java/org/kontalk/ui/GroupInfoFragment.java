@@ -80,9 +80,9 @@ public class GroupInfoFragment extends ActionModeListFragment
     private Button mIgnoreAll;
     private MenuItem mRemoveMenu;
 
-    private GroupMembersAdapter mMembersAdapter;
+    GroupMembersAdapter mMembersAdapter;
 
-    private Conversation mConversation;
+    Conversation mConversation;
 
     private int mCheckedItemCount;
 
@@ -209,7 +209,7 @@ public class GroupInfoFragment extends ActionModeListFragment
         return view;
     }
 
-    private void setGroupSubject(String subject) {
+    void setGroupSubject(String subject) {
         mConversation.setGroupSubject(subject);
         reload();
     }
@@ -421,9 +421,8 @@ public class GroupInfoFragment extends ActionModeListFragment
                             trustKey(jid, dialogFingerprint, MyUsers.Keys.TRUST_IGNORED);
                             break;
                         case NEGATIVE:
-                            // block user immediately
+                            // untrust the key
                             trustKey(jid, dialogFingerprint, MyUsers.Keys.TRUST_UNKNOWN);
-                            // TODO setPrivacy(PRIVACY_BLOCK);
                             break;
                     }
                 }
@@ -431,20 +430,20 @@ public class GroupInfoFragment extends ActionModeListFragment
             .positiveText(R.string.button_accept)
             .positiveColorRes(R.color.button_success)
             .neutralText(R.string.button_ignore)
-            .negativeText(R.string.button_block)
+            .negativeText(R.string.button_refuse)
             .negativeColorRes(R.color.button_danger);
         }
 
         builder.show();
     }
 
-    private void trustKey(String jid, String fingerprint, int trustLevel) {
+    void trustKey(String jid, String fingerprint, int trustLevel) {
         Keyring.setTrustLevel(getContext(), jid, fingerprint, trustLevel);
         Contact.invalidate(jid);
         reload();
     }
 
-    private void confirmLeave() {
+    void confirmLeave() {
         new MaterialDialog.Builder(getContext())
             .content(R.string.confirm_will_leave_group)
             .positiveText(android.R.string.ok)
@@ -460,7 +459,7 @@ public class GroupInfoFragment extends ActionModeListFragment
             .show();
     }
 
-    private void reload() {
+    void reload() {
         // reload conversation data
         Bundle data = getArguments();
         long threadId = data.getLong("conversation");
@@ -485,7 +484,7 @@ public class GroupInfoFragment extends ActionModeListFragment
         private final Context mContext;
         private final List<Contact> mMembers;
 
-        private GroupMembersAdapter(Context context) {
+        GroupMembersAdapter(Context context) {
             mContext = context;
             mMembers = new LinkedList<>();
         }
