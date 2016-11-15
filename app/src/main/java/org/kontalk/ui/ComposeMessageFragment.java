@@ -718,10 +718,10 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             // trust the key
             Keyring.setTrustLevel(ctx, mUserJID, getContact().getFingerprint(),
                 MyUsers.Keys.TRUST_VERIFIED);
-            // reload contact
-            invalidateContact();
         }
 
+        // reload contact
+        invalidateContact();
         // send command to message center
         MessageCenterService.replySubscription(ctx, mUserJID, action);
     }
