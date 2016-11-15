@@ -560,7 +560,7 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="pref_emoji_converter">Konvertovat smajlíky na emoji</string>
     <string name="pref_title_emoji_converter">Automaticky konvertovat některé textové smajlíky na emoji</string>
 
-    <string name="code_validation_intro_callerid">Pro započetí volání na toto číslo klikněte na tlačítko níže. <b>Hovor musí být proveden z telefonního čísla, které registrujete</b>. Po prvním zazvoněním můžete zavěsit, na druhé straně to nikdo nezvedne.</string>
+    <string name="code_validation_intro_callerid">Klikněte na tlačítko níže a prozvoňte toto telefonní číslo.<b>Hovor musí být proveden z telefonního čísla, které registrujete</b>. Hovor je zdarma pokud zavěsíte hned po prvním zazvonění. To nám bude stačit.</string>
     <string name="code_validation_intro2_callerid">Po dokončení hovoru se vraťte sem a klikněte na tlačítko Ověřit níže.</string>
     <string name="err_authentication_failed_callerid">Ověření bylo neúspěšné. Zkuste zavolat ještě jednou a nechejte vyzvánět o trochu déle.</string>
     <string name="button_validation_fallback_callerid">Zkuste to jiným způsobem</string>
