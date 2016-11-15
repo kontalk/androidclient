@@ -558,4 +558,11 @@ Wenn sie deaktiviert sind kann das Kontalk Verbindungsverhalten in den Netzwerke
     <string name="pref_emoji_converter">Smileys in Grafiken umwandeln</string>
     <string name="pref_title_emoji_converter">Einige Textsmiley automatisch in Grafiken umwandeln</string>
 
+    <string name="code_validation_intro2_callerid">Nach beenden des Anrufes gehen Sie hierher zurück und tippen den \"Überprüfen\" Schalter an.</string>
+    <string name="err_authentication_failed_callerid">Die Überprüfung war erfolglos. Versuchen Sie die Nummer nochmals anzurufen und ein Wenig länger zu warten.</string>
+    <string name="button_validation_fallback_callerid">Einen anderen Weg probieren</string>
+    <string name="chooser_error_no_dialer">Keine Wählapp oder keine Telefonfunktion auf diesem Gerät verfügbar.</string>
+    <string name="pref_reporting">Anonyme Nutzungsstatistik senden</string>
+    <string name="pref_title_reporting">Beinhaltet Absturzberichte</string>
+
     </resources>
