@@ -605,11 +605,13 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         type.addValue("http://kontalk.org/protocol/register#code");
         form.addField(type);
 
-        FormField code = new FormField("code");
-        code.setLabel("Validation code");
-        code.setType(FormField.Type.text_single);
-        code.addValue(mValidationCode.toString());
-        form.addField(code);
+        if (mValidationCode != null) {
+            FormField code = new FormField("code");
+            code.setLabel("Validation code");
+            code.setType(FormField.Type.text_single);
+            code.addValue(mValidationCode.toString());
+            form.addField(code);
+        }
 
         iq.addExtension(form.getDataFormToSend());
         return iq;

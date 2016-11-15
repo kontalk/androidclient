@@ -1089,6 +1089,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         MaterialDialog.Builder builder = new MaterialDialog.Builder(this)
             .content(R.string.err_validation_user_exists)
             .positiveText(android.R.string.ok)
+            .positiveColorRes(R.color.button_danger)
             .negativeText(android.R.string.cancel)
             .neutralText(R.string.learn_more)
             .onAny(new MaterialDialog.SingleButtonCallback() {
