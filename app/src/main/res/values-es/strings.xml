@@ -562,4 +562,5 @@ Cuando están desactivadas, el comportamiento de conexión de Kontalk se puede a
     <string name="pref_reporting">Enviar estadísticas anónimas de uso</string>
     <string name="pref_title_reporting">Incluir informe de fallos</string>
 
+    <string name="button_refuse">Rechazar</string>
     </resources>
