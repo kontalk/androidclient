@@ -46,7 +46,7 @@
     <string name="code_validation_intro2">Please insert the code you receive or hear below.</string>
     <string name="code_validation_intro_missed_call">You should receive a missed call from this number briefly. <b>PLEASE DO NOT ANSWER THE CALL.</b></string>
     <string name="code_validation_intro2_missed_call">Please insert the last %d digits of the number you will be called by.</string>
-    <string name="code_validation_intro_callerid">Tap the button below to initiate a call to this phone number. Please note that <b>the call must be initiated from the phone number you are registering</b>. You can hung up at the first ring, no one will answer on the other side.</string>
+    <string name="code_validation_intro_callerid">Tap the button below and give a missed call to that phone number. Please note that <b>the call must be initiated from the phone number you are registering</b>. The call is free of charge if you hang up as soon as you hear the first ring. It will be enough for us.</string>
     <string name="code_validation_intro2_callerid">After closing the call, come back here and tap the verify button below.</string>
     <string name="code_validation_intro_manual">Please insert the verification code you received. Please note that a verification code can be used only once.</string>
     <string name="hint_validation_name">Your name</string>
