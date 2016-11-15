@@ -33,16 +33,28 @@ import org.kontalk.BuildConfig;
  */
 public class ReportingManager {
 
+    private static boolean sEnabled;
+
     private ReportingManager() {
     }
 
     public static void register(Context context) {
-        if (!BuildConfig.DEBUG)
+        if (!BuildConfig.DEBUG && !sEnabled) {
             Fabric.with(context, new Crashlytics());
+            sEnabled = true;
+        }
+    }
+
+    public static void unregister(Context context) {
+        if (sEnabled) {
+            // HACK to unregister Fabric crash handler
+            Thread.setDefaultUncaughtExceptionHandler(null);
+            sEnabled = false;
+        }
     }
 
     public static void logException(Throwable exception) {
-        if (!BuildConfig.DEBUG)
+        if (!BuildConfig.DEBUG && sEnabled)
             Crashlytics.logException(exception);
     }
 

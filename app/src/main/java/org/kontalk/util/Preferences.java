@@ -531,6 +531,11 @@ public final class Preferences {
             .commit();
     }
 
+    public static boolean isReportingEnabled(Context context) {
+        return getBoolean(context, "pref_reporting", context
+            .getResources().getBoolean(R.bool.pref_default_reporting));
+    }
+
     public static long getPingAlarmInterval(Context context, long defaultValue) {
         String networkType = SystemUtils.getCurrentNetworkName(context);
         return (networkType != null) ?

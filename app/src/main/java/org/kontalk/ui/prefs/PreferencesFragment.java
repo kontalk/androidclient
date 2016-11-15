@@ -26,6 +26,7 @@ import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.view.MenuItem;
 
+import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.ui.ConversationsActivity;
@@ -58,6 +59,13 @@ public final class PreferencesFragment extends RootPreferenceFragment {
         }
 
         addPreferencesFromResource(R.xml.preferences);
+
+        // remove reporting preference in debug builds
+        if (BuildConfig.DEBUG) {
+            Preference prefReporting = findPreference("pref_reporting");
+            if (prefReporting != null)
+                getPreferenceScreen().removePreference(prefReporting);
+        }
     }
 
     @Override

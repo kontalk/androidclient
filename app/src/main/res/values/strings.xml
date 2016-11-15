@@ -539,6 +539,9 @@
     <string name="action_compose">New chat</string>
     <string name="action_compose_group">New group</string>
 
+    <string name="pref_reporting">Send anonymous usage statistics</string>
+    <string name="pref_title_reporting">Including crash reports</string>
+
     <!-- contact name, group subject -->
     <string name="notification_group_title">%1$s @ %2$s</string>
 
