@@ -108,8 +108,16 @@ public class Kontalk extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        // init preferences
+        // This must be done before registering the reporting manager
+        // because we need access to the reporting opt-in preference.
+        // However this call will not be reported if it crashes
+        Preferences.init(this);
+
         // register reporting manager
-        ReportingManager.register(this);
+        if (Preferences.isReportingEnabled(this))
+            ReportingManager.register(this);
 
         // register security provider
         SecureConnectionManager.init(this);
@@ -120,9 +128,6 @@ public class Kontalk extends Application {
             ReportingManager.logException(e);
             Log.w(TAG, "Unable to install PRNG fix - ignoring", e);
         }
-
-        // init preferences
-        Preferences.init(this);
 
         // init contacts
         Contact.init(this, new Handler());
@@ -143,7 +148,7 @@ public class Kontalk extends Application {
                 if ("pref_network_uri".equals(key)) {
                     // temporary measure for users coming from old betas
                     // this is triggered because manual server address is cleared
-                    if (Authenticator.getDefaultServer(getApplicationContext()) != null) {
+                    if (Authenticator.getDefaultServer(Kontalk.this) != null) {
                         // just restart the message center for now
                         Log.w(TAG, "network address changed");
                         MessageCenterService.restart(Kontalk.this);
@@ -157,7 +162,17 @@ public class Kontalk extends Application {
 
                 // changing remove prefix
                 else if ("pref_remove_prefix".equals(key)) {
-                    SyncAdapter.requestSync(getApplicationContext(), true);
+                    SyncAdapter.requestSync(Kontalk.this, true);
+                }
+
+                // reporting opt-in
+                else if ("pref_reporting".equals(key)) {
+                    if (Preferences.isReportingEnabled(Kontalk.this)) {
+                        ReportingManager.register(Kontalk.this);
+                    }
+                    else {
+                        ReportingManager.unregister(Kontalk.this);
+                    }
                 }
             }
         };

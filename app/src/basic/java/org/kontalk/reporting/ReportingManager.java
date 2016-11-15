@@ -33,6 +33,9 @@ public class ReportingManager {
     public static void register(Context context) {
     }
 
+    public static void unregister(Context context) {
+    }
+
     public static void logException(Throwable exception) {
     }
 
