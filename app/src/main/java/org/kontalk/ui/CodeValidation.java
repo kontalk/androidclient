@@ -289,10 +289,14 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     }
 
     public void validateCode(View view) {
-        String code = mCode.getText().toString().trim();
-        if (code.length() == 0) {
-            error(R.string.msg_invalid_code);
-            return;
+        String code = null;
+        String challenge = getIntent().getStringExtra("challenge");
+        if (!NumberValidator.CHALLENGE_CALLER_ID.equals(challenge)) {
+            code = mCode.getText().toString().trim();
+            if (code.length() == 0) {
+                error(R.string.msg_invalid_code);
+                return;
+            }
         }
 
         startProgress();
