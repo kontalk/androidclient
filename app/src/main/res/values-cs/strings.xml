@@ -565,4 +565,7 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="err_authentication_failed_callerid">Ověření bylo neúspěšné. Zkuste zavolat ještě jednou a nechejte vyzvánět o trochu déle.</string>
     <string name="button_validation_fallback_callerid">Zkuste to jiným způsobem</string>
     <string name="chooser_error_no_dialer">Není dostupná žádná aplikace pro volání nebo toto zařízení nepodporuje volání.</string>
+    <string name="pref_reporting">Odesílat anonymní statistiky o používání</string>
+    <string name="pref_title_reporting">Včetně reportů o pádech</string>
+
     </resources>
