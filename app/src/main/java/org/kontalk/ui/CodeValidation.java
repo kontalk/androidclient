@@ -59,6 +59,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     private EditText mCode;
     private Button mButton;
     private Button mFallbackButton;
+    private Button mCallButton;
     private ProgressBar mProgress;
 
     private NumberValidator mValidator;
@@ -92,6 +93,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         mCode = (EditText) findViewById(R.id.validation_code);
         mButton = (Button) findViewById(R.id.send_button);
         mFallbackButton = (Button) findViewById(R.id.fallback_button);
+        mCallButton = (Button) findViewById(R.id.code_validation_call);
         mProgress = (ProgressBar) findViewById(R.id.progressbar);
 
         // configuration change??
@@ -120,7 +122,6 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
             String sender = getIntent().getStringExtra("sender");
 
             final TextView senderText = (TextView) findViewById(R.id.code_validation_sender);
-            final Button senderCall = (Button) findViewById(R.id.code_validation_call);
 
             CharSequence textId1, textId2;
             if (NumberValidator.isMissedCall(sender) || NumberValidator.CHALLENGE_MISSED_CALL.equals(challenge)) {
@@ -133,7 +134,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 // show sender label and hide call button
                 senderText.setText(sender);
                 senderText.setVisibility(View.VISIBLE);
-                senderCall.setVisibility(View.GONE);
+                mCallButton.setVisibility(View.GONE);
                 mCode.setVisibility(View.VISIBLE);
             }
             else if (NumberValidator.CHALLENGE_CALLER_ID.equals(challenge)) {
@@ -143,8 +144,8 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 mFallbackButton.setText(R.string.button_validation_fallback_callerid);
                 mFallbackButton.setVisibility(View.VISIBLE);
                 // show call button and hide sender label
-                senderCall.setText(sender);
-                senderCall.setVisibility(View.VISIBLE);
+                mCallButton.setText(sender);
+                mCallButton.setVisibility(View.VISIBLE);
                 senderText.setVisibility(View.GONE);
                 mCode.setVisibility(View.GONE);
             }
@@ -156,15 +157,15 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 // show sender label and hide call button
                 senderText.setText(sender);
                 senderText.setVisibility(View.VISIBLE);
-                senderCall.setVisibility(View.GONE);
+                mCallButton.setVisibility(View.GONE);
                 mCode.setVisibility(View.VISIBLE);
             }
 
-            if (senderCall.getVisibility() == View.VISIBLE) {
-                senderCall.setOnClickListener(new View.OnClickListener() {
+            if (mCallButton.getVisibility() == View.VISIBLE) {
+                mCallButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        SystemUtils.dial(CodeValidation.this, senderCall.getText());
+                        SystemUtils.dial(CodeValidation.this, mCallButton.getText());
                     }
                 });
             }
@@ -317,6 +318,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     private void enableControls(boolean enabled) {
         mButton.setEnabled(enabled);
         mFallbackButton.setEnabled(enabled);
+        mCallButton.setEnabled(enabled);
         mCode.setEnabled(enabled);
     }
 
@@ -328,7 +330,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
 
     void abort(boolean ending) {
         if (!ending) {
-            mProgress.setVisibility(View.GONE);
+            mProgress.setVisibility(View.INVISIBLE);
             enableControls(true);
         }
         else {
