@@ -566,4 +566,5 @@ Se disattivate, il comportamento delle connessioni di Kontalk può essere config
     <string name="pref_reporting">Invia statistiche anonime</string>
     <string name="pref_title_reporting">Include le segnalazioni dei crash</string>
 
+    <string name="menu_group_info">Info gruppo</string>
     </resources>
