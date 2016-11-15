@@ -554,7 +554,7 @@ Se disattivate, il comportamento delle connessioni di Kontalk può essere config
     <string name="pref_push_notifications_title_disabled">Il supporto per le notifiche push non è stato incluso in questa versione.</string>
     <string name="pref_push_notifications_title_unavailable">Le notifiche push non sono supportate su questo dispositivo.</string>
     <string name="about_credits_contrib"><b>Contributori</b></string>
-    <string name="code_validation_intro_callerid">Tocca il pulsante sotto per fare una chiamata a questo numero di telefono. <b>La chiamata deve essere fatta dal numero di telefono con il quale ti stai registrando</b>. Puoi attaccare al primo squillo, nessuno risponderà.</string>
+    <string name="code_validation_intro_callerid">Tocca il pulsante sotto e fai uno squillo a questo numero di telefono. <b>La chiamata deve essere fatta dal numero di telefono con il quale ti stai registrando</b>. La chiamata è gratuita se attacchi appena senti il primo squillo. Sarà sufficiente per noi.</string>
     <string name="code_validation_intro2_callerid">Dopo aver chiuso la chiamata, torna qui e tocca il pulsante verifica sotto.</string>
     <string name="err_authentication_failed_callerid">La verifica non è riuscita. Prova di nuovo a chiamare il numero e aspettare un altro po\'.</string>
     <string name="button_validation_fallback_callerid">Prova un altro modo</string>
@@ -562,4 +562,8 @@ Se disattivate, il comportamento delle connessioni di Kontalk può essere config
     <string name="pref_title_emoji_converter">Converti automaticamente alcune smiley testuali in emoji</string>
 
     <string name="chooser_error_no_dialer">Nessuna app telefonica trovata oppure non hai funzioni di telefonia su questo dispositivo.</string>
+    <string name="button_refuse">Rifiuta</string>
+    <string name="pref_reporting">Invia statistiche anonime</string>
+    <string name="pref_title_reporting">Include le segnalazioni dei crash</string>
+
     </resources>
