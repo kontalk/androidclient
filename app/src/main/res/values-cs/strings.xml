@@ -569,4 +569,5 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="pref_title_reporting">Včetně reportů o pádech</string>
 
     <string name="button_refuse">Odmítnout</string>
+    <string name="menu_group_info">Nastavení skupiny</string>
     </resources>
