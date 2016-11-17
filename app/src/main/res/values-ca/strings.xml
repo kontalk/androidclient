@@ -94,7 +94,7 @@
   <string name="pref_idle_time">Desconnecta si no hi ha activitat</string>
   <string name="pref_title_idle_time">Temps d\'espera abans de desconnectar per inactivitat</string>
   <string name="pref_wakeup_time">Torna a connectar amb el servidor</string>
-  <string name="pref_title_wakeup_time">Temps d\'espera abans de tornar a connectar amb el servidor després d\'un període d\'inactivitat. Utilitzar només si les notificacions push no estan disponibles o qualitat de la xarxa és molt dolent.</string>
+  <string name="pref_title_wakeup_time">Temps d\'espera abans de tornar a connectar amb el servidor després d\'un període d\'inactivitat. Utilitzar només si les notificacions \"push\" no estan disponibles o qualitat de la xarxa és molt dolent.</string>
   <string name="pref_maintenance">Manteniment</string>
   <string name="pref_regenerate_keypair">Torna a generar la clau personal</string>
   <string name="pref_title_regenerate_keypair">Useu açò  en cas que la vostra clau personal s\'hagi vist compromesa</string>
