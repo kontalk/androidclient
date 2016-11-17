@@ -88,7 +88,7 @@
   <string name="pref_idle_time">Desconectar ao permanecer inactivo</string>
   <string name="pref_title_idle_time">Tempo de espera antes de desconectar por inactividade</string>
   <string name="pref_wakeup_time">Reconectar ao servidor</string>
-  <string name="pref_title_wakeup_time">Tempo de espera antes de reconectar co servidor, despois dun período de inactividade. Funciona só se as notificacións push non están dispoñibles</string>
+  <string name="pref_title_wakeup_time">Tempo de espera antes de reconectar co servidor, despois dun período de inactividade. Úseo só se as notificacións \"push\" non están dispoñibles ou a calidade da rede é moi mala</string>
   <string name="pref_maintenance">Mantemento</string>
   <string name="pref_regenerate_keypair">Rexenerar a clave persoal</string>
   <string name="pref_title_regenerate_keypair">Utilice isto se a súa clave persoal foi comprometida</string>
@@ -534,7 +534,7 @@
 
     <plurals name="unread_messages">
 	<item quantity="one">%d mensaxes non lidas</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
 <string name="delete_thread_messages">Eliminar o historial da conversa</string>
     <string name="delete_threads_leave_groups">Tamén deixar os grupos</string>
@@ -554,4 +554,13 @@
 	<item quantity="other"/>
 </plurals>
 
+    <string name="code_validation_intro_callerid">Preme o botón de abaixo e faga unha chamada perdida a ese número de teléfono.Teña en conta que &lt;b&gt; 1 a chamada debe facerse desde o número de teléfono que se está a registrar &lt;/ b&gt; 2. A chamada é de balde si colga cando escoite o primeiro timbre. Será suficiente para nós.<b>the call must be initiated from the phone number you are registering</b>. The call is free of charge if you hang up as soon as you hear the first ring. It will be enough for us.</string>
+    <string name="code_validation_intro2_callerid">Tras colgar a chamada, volva eiquí e delle a continuación ó botón de comprobar.</string>
+    <string name="pref_push_notifications_disabled">Desactivado</string>
+    <string name="pref_push_notifications_title_default">As notificacións \"push\" son unha tecnoloxía asistida por servidor para aforrar batería. Non afecta a entrega en tempo real de mensaxes
+Cando están desactivadas, o comportamento de conexión Kontalk se pode axustar na pantalla de configuración de rede.</string>
+    <string name="pref_push_notifications_title_disabled">O soporte notificacións \"push\" non foi incluído nesta versión.</string>
+    <string name="pref_push_notifications_title_unavailable">As notificacións \"push\" non son compatibles co dispositivo.</string>
+    <string name="err_authentication_failed_callerid">A comprobación non foi exitosa. Probe chamar ao número de novo e esperar un pouco máis.</string>
+    <string name="button_validation_fallback_callerid">Probe doutra maneira.</string>
     </resources>
