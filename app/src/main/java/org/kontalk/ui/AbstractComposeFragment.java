@@ -82,14 +82,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import io.codetail.animation.SupportAnimator;
-import io.codetail.animation.ViewAnimationUtils;
 
 import org.kontalk.Kontalk;
 import org.kontalk.R;
@@ -113,6 +109,7 @@ import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.adapter.MessageListAdapter;
+import org.kontalk.ui.view.AttachmentRevealFrameLayout;
 import org.kontalk.ui.view.AudioContentView;
 import org.kontalk.ui.view.AudioContentViewControl;
 import org.kontalk.ui.view.AudioPlayerControl;
@@ -169,9 +166,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     }
 
     /* Attachment chooser stuff. */
-    private SupportAnimator mAttachAnimator;
-    private View mAttachmentCard;
-    private View mAttachmentContainer;
+    private AttachmentRevealFrameLayout mAttachmentContainer;
 
     protected ComposerBar mComposer;
 
@@ -579,13 +574,12 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     {
         View view = getView();
 
-        mAttachmentContainer = view.findViewById(R.id.attachment_container);
-        mAttachmentCard = view.findViewById(R.id.circular_card);
+        mAttachmentContainer = (AttachmentRevealFrameLayout) view.findViewById(R.id.attachment_container);
 
         View.OnClickListener hideAttachmentListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                toggleAttachmentView();
+                hideAttachmentView();
             }
         };
         view.findViewById(R.id.attachment_overlay).setOnClickListener(hideAttachmentListener);
@@ -595,7 +589,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             @Override
             public void onClick(View v) {
                 selectPhotoAttachment();
-                toggleAttachmentView();
+                hideAttachmentView();
             }
         });
 
@@ -603,7 +597,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             @Override
             public void onClick(View v) {
                 selectGalleryAttachment();
-                toggleAttachmentView();
+                hideAttachmentView();
             }
         });
 
@@ -618,7 +612,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             @Override
             public void onClick(View v) {
                 selectAudioAttachment();
-                toggleAttachmentView();
+                hideAttachmentView();
             }
         });
 
@@ -633,7 +627,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             @Override
             public void onClick(View v) {
                 selectContactAttachment();
-                toggleAttachmentView();
+                hideAttachmentView();
             }
         });
 
@@ -906,65 +900,29 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     boolean tryHideAttachmentView() {
         if (isAttachmentViewVisible()) {
-            setupAttachmentViewCloseAnimation();
-            startAttachmentViewAnimation();
+            mAttachmentContainer.hide();
             return true;
         }
         return false;
     }
 
-    private void setupAttachmentViewCloseAnimation() {
-        if (mAttachAnimator != null && !mAttachAnimator.isRunning()) {
-            // reverse the animation
-            mAttachAnimator = mAttachAnimator.reverse();
-            mAttachAnimator.addListener(new SupportAnimator.AnimatorListener() {
-                public void onAnimationCancel() {
-                }
-
-                public void onAnimationEnd() {
-                    mAttachmentContainer.setVisibility(View.INVISIBLE);
-                    mAttachAnimator = null;
-                }
-
-                public void onAnimationRepeat() {
-                }
-
-                public void onAnimationStart() {
-                }
-            });
-        }
-    }
-
     private boolean isAttachmentViewVisible() {
-        return mAttachmentContainer.getVisibility() != View.INVISIBLE || mAttachAnimator != null;
+        return mAttachmentContainer.getVisibility() == View.VISIBLE &&
+            !mAttachmentContainer.isClosing();
     }
 
-    private void startAttachmentViewAnimation() {
-        mAttachAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
-        mAttachAnimator.setDuration(250);
-        mAttachAnimator.start();
+    void hideAttachmentView() {
+        mAttachmentContainer.hide();
     }
 
     /** Show or hide the attachment selector. */
-    public void toggleAttachmentView() {
-        if (isAttachmentViewVisible()) {
-            setupAttachmentViewCloseAnimation();
-        }
-        else {
-            mComposer.forceHideKeyboard();
-            mAttachmentContainer.setVisibility(View.VISIBLE);
-
-            int right = mAttachmentCard.getRight();
-            int top = mAttachmentCard.getTop();
-            float f = (float) Math.sqrt(Math.pow(mAttachmentCard.getWidth(), 2D) + Math.pow(mAttachmentCard.getHeight(), 2D));
-            mAttachAnimator = ViewAnimationUtils.createCircularReveal(mAttachmentCard, right, top, 0, f);
-        }
-
-        startAttachmentViewAnimation();
+    private void toggleAttachmentView() {
+        mComposer.forceHideKeyboard();
+        mAttachmentContainer.toggle();
     }
 
     /** Starts an activity for shooting a picture. */
-    private void selectPhotoAttachment() {
+    void selectPhotoAttachment() {
         try {
             // check if camera is available
             final PackageManager packageManager = getActivity().getPackageManager();
@@ -997,7 +955,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     /** Starts an activity for picture attachment selection. */
     @TargetApi(Build.VERSION_CODES.KITKAT)
-    private void selectGalleryAttachment() {
+    void selectGalleryAttachment() {
         boolean useSAF = MediaStorage.isStorageAccessFrameworkAvailable();
         Intent pictureIntent = createGalleryIntent(useSAF);
 
@@ -1042,7 +1000,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     }
 
     /** Starts activity for a vCard attachment from a contact. */
-    private void selectContactAttachment() {
+    void selectContactAttachment() {
         try {
             Intent i = new Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
             startActivityForResult(i, SELECT_ATTACHMENT_CONTACT);
@@ -1055,7 +1013,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         }
     }
 
-    private void selectAudioAttachment() {
+    void selectAudioAttachment() {
         // create audio fragment if needed
         AudioFragment audio = getAudioFragment();
         // stop everything

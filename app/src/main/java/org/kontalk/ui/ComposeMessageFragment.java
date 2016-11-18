@@ -131,10 +131,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                 viewContact();
                 return true;
 
-            case R.id.menu_attachment:
-                toggleAttachmentView();
-                return true;
-
             case R.id.block_user:
                 blockUser();
                 return true;
