@@ -343,7 +343,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Server push sender id. This is static so the {@link IPushListener} can see it. */
     static String sPushSenderId;
     /** Push registration id. */
-    private String mPushRegistrationId;
+    String mPushRegistrationId;
     /** Flag marking a currently ongoing push registration cycle (unregister/register) */
     boolean mPushRegistrationCycle;
 
@@ -358,7 +358,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Cached last used server. */
     EndpointServer mServer;
     /** The connection helper instance. */
-    private XMPPConnectionHelper mHelper;
+    XMPPConnectionHelper mHelper;
     /** The connection instance. */
     KontalkConnection mConnection;
     /** My username (account name). */
@@ -404,9 +404,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         private final static int INACTIVE_TIME = 30000;
 
         /** A reference to the message center. */
-        private WeakReference<MessageCenterService> s;
+        WeakReference<MessageCenterService> s;
         /** Reference counter. */
-        private int mRefCount;
+        int mRefCount;
 
         public IdleConnectionHandler(MessageCenterService service, int refCount, Looper looper) {
             super(looper);
@@ -547,7 +547,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         /** Aborts any idle message because we are using the service or quitting. */
-        private void abortIdle() {
+        void abortIdle() {
             Looper.myQueue().removeIdleHandler(IdleConnectionHandler.this);
             removeMessages(MSG_IDLE);
             removeMessages(MSG_INACTIVE);
@@ -556,11 +556,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 service.cancelIdleAlarm();
         }
 
-        public void queueInactiveIfNeeded() {
+        public void forceInactiveIfNeeded() {
             post(new Runnable() {
                 public void run() {
-                    if (mRefCount <= 0 && !hasMessages(MSG_INACTIVE)) {
-                        queueInactive();
+                    MessageCenterService service = s.get();
+                    if (service != null && mRefCount <= 0 && !service.isInactive()) {
+                        forceInactive();
                     }
                 }
             });
@@ -574,7 +575,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
         }
 
-        private void queueInactive() {
+        void queueInactive() {
             // send inactive state message only if connected
             MessageCenterService service = s.get();
             if (service != null && service.isConnected()) {
@@ -1523,8 +1524,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // we can now release any pending push notification
         Preferences.setLastPushNotification(this, -1);
 
-        // queue inactive message if needed
-        mIdleHandler.queueInactiveIfNeeded();
+        // force inactive state if needed
+        mIdleHandler.forceInactiveIfNeeded();
 
         // update alarm manager
         AndroidAdaptiveServerPingManager
@@ -1582,7 +1583,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         sendPacket(items);
     }
 
-    private synchronized void active(boolean available) {
+    synchronized void active(boolean available) {
         final XMPPConnection connection = mConnection;
         if (connection != null) {
             cancelIdleAlarm();
@@ -1606,7 +1607,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
-    private synchronized void inactive() {
+    synchronized void inactive() {
         final XMPPConnection connection = mConnection;
         if (connection != null) {
             if (!mInactive) {
@@ -1628,11 +1629,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
-    private boolean isInactive() {
+    boolean isInactive() {
         return mInactive;
     }
 
-    private boolean fastReply() {
+    boolean fastReply() {
         if (!isConnected()) return false;
 
         try {
@@ -1644,7 +1645,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
-    private long getLastReceivedStanza() {
+    long getLastReceivedStanza() {
         return mConnection != null ? mConnection.getLastStanzaReceived() : 0;
     }
 
@@ -3101,7 +3102,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return sPushSenderId;
     }
 
-    private void setWakeupAlarm() {
+    void setWakeupAlarm() {
         long delay = Preferences.getWakeupTimeMillis(this,
             MIN_WAKEUP_TIME);
 
@@ -3127,7 +3128,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
-    private void cancelIdleAlarm() {
+    void cancelIdleAlarm() {
         ensureIdleAlarm();
         mAlarmManager.cancel(mIdleIntent);
     }
