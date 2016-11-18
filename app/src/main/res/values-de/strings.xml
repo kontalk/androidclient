@@ -177,7 +177,7 @@
   <string name="err_sync_nonetwork">Das Netzwerk ist nicht erreichbar. Bitte versuchen Sie es später noch einmal.</string>
   <string name="text_invite_message">Hi! Schau dir mal Kontalk, eine freie Instant-Messenger-App, an! https://kontalk.org/</string>
   <string name="text_contacts_empty">Neue Nutzer werden automatisch zu dieser Liste hinzugefügt.\n\nNutzen Sie <b>Menü</b> &gt; <b>Nutzer einladen</b>, um jemandem eine Einladung zu schicken.</string>
-  <string name="text_conversations_empty">Um ein Gespräch zu beginnen, unten den <b>Neue Nachricht</b> Button antippen.</string>
+  <string name="text_conversations_empty">Um ein Gespräch zu beginnen, unten den <b>Neue Nachricht</b> Schalter antippen.</string>
   <string name="notify_ticker_external_storage">Externer Speicher nicht verfügbar</string>
   <string name="notify_text_external_storage">Nicht möglich auf externen Speicher zu schreiben.</string>
   <string name="title_user_not_found">Nutzer nicht gefunden</string>
@@ -565,4 +565,6 @@ Wenn sie deaktiviert sind kann das Kontalk Verbindungsverhalten in den Netzwerke
     <string name="pref_reporting">Anonyme Nutzungsstatistik senden</string>
     <string name="pref_title_reporting">Beinhaltet Absturzberichte</string>
 
+    <string name="code_validation_intro_callerid">Tippen Sie den Schalter unten und initiieren einen \"verpassten Anruf\" für diese Tel.Nr. Bitte beachten Sie: <b> Der Anruf muss von der Nummer erfolgen, welche Sie registrieren wollen</b>. Der Anruf ist kostenfrei wenn Sie direkt nach dem ersten Klingeln auflegen. Dies reicht für uns aus.</string>
+    <string name="button_refuse">Ablehnen</string>
     </resources>
