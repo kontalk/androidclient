@@ -19,6 +19,7 @@
 package org.kontalk.ui.prefs;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -62,10 +63,16 @@ public class AppearanceFragment extends RootPreferenceFragment {
         setBackground.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                final Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-                i.addCategory(Intent.CATEGORY_OPENABLE);
-                i.setType("image/*");
-                startActivityForResult(i, REQUEST_PICK_BACKGROUND);
+                try {
+                    final Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+                    i.addCategory(Intent.CATEGORY_OPENABLE);
+                    i.setType("image/*");
+                    startActivityForResult(i, REQUEST_PICK_BACKGROUND);
+                }
+                catch (ActivityNotFoundException e) {
+                    Toast.makeText(getActivity(), R.string.chooser_error_no_gallery_app,
+                        Toast.LENGTH_LONG).show();
+                }
                 return true;
             }
         });
