@@ -55,6 +55,7 @@ import org.kontalk.crypto.PGPLazyPublicKeyRingLoader;
 import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MyUsers.Keys;
 import org.kontalk.provider.MyUsers.Users;
+import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 
 
@@ -390,14 +391,8 @@ public class Contact {
 
     public synchronized Drawable getAvatar(Context context) {
         if (mAvatar == null) {
-            if (mAvatarData == null) {
-                Uri uri = getUri();
-                if (uri != null)
-                    mAvatarData = loadAvatarData(context, uri);
-            }
-
-            if (mAvatarData != null) {
-                Bitmap b = BitmapFactory.decodeByteArray(mAvatarData, 0, mAvatarData.length);
+            Bitmap b = loadAvatarBitmap(context);
+            if (b != null) {
                 mAvatar = new BitmapDrawable(context.getResources(), b);
             }
         }
@@ -406,6 +401,35 @@ public class Contact {
             mAvatar = generateRandomAvatar(context, this);
 
         return mAvatar;
+    }
+
+    private synchronized Bitmap loadAvatarBitmap(Context context) {
+        if (mAvatarData == null) {
+            Uri uri = getUri();
+            if (uri != null)
+                mAvatarData = loadAvatarData(context, uri);
+        }
+
+        if (mAvatarData != null)
+            return BitmapFactory.decodeByteArray(mAvatarData, 0, mAvatarData.length);
+
+        return null;
+    }
+
+    /**
+     * Public version of {@link #loadAvatarBitmap} which includes the random
+     * avatar generation.
+     * @return a newly-allocated {@link Bitmap}
+     */
+    public synchronized Bitmap getAvatarBitmap(Context context) {
+        Bitmap avatar = loadAvatarBitmap(context);
+        if (avatar == null) {
+            Drawable d = generateRandomAvatar(context, this);
+            if (d != null) {
+                avatar = MessageUtils.drawableToBitmap(d);
+            }
+        }
+        return avatar;
     }
 
     private void clear() {
