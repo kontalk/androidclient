@@ -550,8 +550,8 @@ Quan estan desactivades, el comportament de connexió de Kontalk es pot ajustar 
     <string name="pref_push_notifications_title_disabled">El suport a les notificacions push no està inclòs en aquesta versió.</string>
     <string name="pref_push_notifications_title_unavailable">Les notificacions push no són compatibles amb aquest dispositiu.</string>
     <string name="about_credits_contrib"><b>Col·laboradors</b></string>
-    <string name="code_validation_intro_callerid">Toqui el botó d\'a baix i faci una trucada perduda a aquest número de telèfon. Tingui en compte que <b>1 la trucada ha de fer-se des del número de telèfon que s\'està registrant </b> 2. La trucada és gratuïta si penja quan escolta el primer timbre. Serà suficient per a nosaltres.</string>
-    <string name="code_validation_intro2_callerid">Després de tancar la trucada, torni aquí i premi el botó de verificació a continuació.</string>
+    <string name="code_validation_intro_callerid">Toqui el botó d\'abaix i faci una trucada perduda a aquest número de telèfon. Tingui en compte que <b>1 la trucada ha de fer-se des del número de telèfon que s\'està registrant </b> 2. La trucada és gratuïta si penja quan escolta el primer timbre. Serà suficient per a nosaltres.</string>
+    <string name="code_validation_intro2_callerid">Un cop finalitzi la trucada, torni aquí i premi el botó de verificació de sota.</string>
     <string name="err_authentication_failed_callerid">La verificació no s\'ha realitzat correctament. Intenti trucar al número altra vegada i esperar una mica més.</string>
     <string name="button_validation_fallback_callerid">Intenta-ho d’una altra manera</string>
     <string name="pref_emoji_converter">Convertir els smileys en emojis</string>
