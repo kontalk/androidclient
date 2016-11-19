@@ -33,6 +33,7 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
@@ -325,9 +326,9 @@ public class MessagingNotification {
             builder.setTicker(accumulator.getTicker());
             Contact contact = accumulator.getContact();
             if (contact != null) {
-                Drawable avatar = contact.getAvatar(context);
+                Bitmap avatar = contact.getAvatarBitmap(context);
                 if (avatar != null)
-                    builder.setLargeIcon(MessageUtils.drawableToBitmap(avatar));
+                    builder.setLargeIcon(avatar);
             }
             builder.setNumber(accumulator.unreadCount);
             builder.setSmallIcon(R.drawable.ic_stat_notify);
