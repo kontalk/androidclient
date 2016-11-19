@@ -1071,8 +1071,8 @@ public class UsersProvider extends ContentProvider {
     public static void setBlockStatus(Context context, String jid, boolean blocked) {
         ContentValues values = new ContentValues(1);
         values.put(Users.BLOCKED, blocked);
-        context.getContentResolver().update(Users.CONTENT_URI.buildUpon()
-            .appendPath(jid).build(), values, null, null);
+        context.getContentResolver().update(Users.CONTENT_URI,
+            values, Users.JID + "=?", new String[] { jid });
     }
 
     // FIXME what is this doing here? Using Messages Uri
