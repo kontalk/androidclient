@@ -40,7 +40,7 @@
   <string name="number_validation_intro2">Si no puede recibir SMS en este dispositivo, inserte un número que posea: asociaremos ese número a este dispositivo.</string>
   <string name="code_validation_intro">Debería recibir un SMS o llamada desde este número en breve:</string>
   <string name="code_validation_intro2">Por favor introduzca abajo el código que reciba o escuche.</string>
-  <string name="code_validation_intro_manual">Por favor inserte el código de verificación que ha recibido. Por favor, tenga en cuenta que el código de verificación sólo puede usarse una vez.</string>
+  <string name="code_validation_intro_manual">Por favor inserte el código de verificación que ha recibido. Por favor, tenga en cuenta que un código de verificación sólo puede usarse una vez.</string>
   <string name="hint_validation_name">Su nombre</string>
   <string name="hint_validation_number">Su número</string>
   <string name="hint_validation_code">Código de verificación</string>
@@ -555,13 +555,13 @@ Cuando están desactivadas, el comportamiento de conexión de Kontalk se puede a
     <string name="pref_emoji_converter">Convertir sonrisas a emojis</string>
     <string name="pref_title_emoji_converter">Convertir automáticamente sonrisas en texto a emojis</string>
 
-    <string name="code_validation_intro2_callerid">Luego de cerrar la llamada, vuelve aquí y presiona el botón de verificar más abajo.</string>
-    <string name="err_authentication_failed_callerid">La verificación no fue correcta. Intenta llamar al número de nuevo y esperar un poco más.</string>
-    <string name="button_validation_fallback_callerid">Intenta otra forma</string>
+    <string name="code_validation_intro2_callerid">Al finalizar la llamada, vuelva aquí y presione el botón de verificación de abajo.</string>
+    <string name="err_authentication_failed_callerid">La verificación no fue correcta. Intente llamar al número de nuevo y espere un poco más.</string>
+    <string name="button_validation_fallback_callerid">Inténtelo de otra forma</string>
     <string name="chooser_error_no_dialer">No hay aplicación de llamada o no hay telefonía disponible en este dispositivo.</string>
     <string name="pref_reporting">Enviar estadísticas anónimas de uso</string>
     <string name="pref_title_reporting">Incluir informe de fallos</string>
 
     <string name="button_refuse">Rechazar</string>
-    <string name="code_validation_intro_callerid">Toque el botón de abajo y haga una llamada perdida a ese número de teléfono.Tenga en cuenta que <b> 1la llamada debe hacerse desde el número de teléfono que se está registrando</b> 2.La llamada es gratuita si cuelga en cuanto escucha el primer timbre. Será suficiente para nosotros.</string>
+    <string name="code_validation_intro_callerid">Toque el botón de abajo y haga una llamada perdida a ese número de teléfono.Tenga en cuenta que <b>1 la llamada debe hacerse desde el número de teléfono que se está registrando </b>2. La llamada es gratuita si cuelga en cuanto escuche el primer timbre. Será suficiente para nosotros.</string>
     </resources>
