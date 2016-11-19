@@ -443,7 +443,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
 
                 if (changedKey) {
                     // warn user that public key is changed
-                    showKeyChangedWarning();
+                    showKeyChangedWarning(fingerprint);
                 }
                 else if (unknownKey) {
                     // warn user that public key is unknown
@@ -853,7 +853,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                         switch (which) {
                             case POSITIVE:
                                 // trust new key
-                                trustKeyChange();
+                                trustKeyChange(null);
                                 break;
                             case NEGATIVE:
                                 // block user immediately
@@ -867,14 +867,16 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         builder.show();
     }
 
-    void trustKeyChange() {
+    void trustKeyChange(String fingerprint) {
         // mark current key as trusted
-        Keyring.setTrustLevel(getActivity(), mUserJID, getContact().getFingerprint(), MyUsers.Keys.TRUST_VERIFIED);
+        if (fingerprint == null)
+            fingerprint = getContact().getFingerprint();
+        Keyring.setTrustLevel(getActivity(), mUserJID, fingerprint, MyUsers.Keys.TRUST_VERIFIED);
         // reload contact
         invalidateContact();
     }
 
-    private void showKeyWarning(int textId, final int dialogTitleId, final int dialogMessageId) {
+    private void showKeyWarning(int textId, final int dialogTitleId, final int dialogMessageId, final Object... data) {
         Activity context = getActivity();
         if (context != null) {
             showWarning(context.getText(textId), new View.OnClickListener() {
@@ -896,7 +898,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                                         // hide warning bar
                                         hideWarning();
                                         // trust new key
-                                        trustKeyChange();
+                                        trustKeyChange((String) data[0]);
                                         break;
                                     case NEUTRAL:
                                         showIdentityDialog(false, dialogTitleId);
@@ -921,9 +923,10 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             R.string.title_public_key_unknown_warning, R.string.msg_public_key_unknown_warning);
     }
 
-    private void showKeyChangedWarning() {
+    private void showKeyChangedWarning(String newFingerprint) {
         showKeyWarning(R.string.warning_public_key_changed,
-            R.string.title_public_key_changed_warning, R.string.msg_public_key_changed_warning);
+            R.string.title_public_key_changed_warning, R.string.msg_public_key_changed_warning,
+            newFingerprint);
     }
 
     void setVersionInfo(Context context, String version) {

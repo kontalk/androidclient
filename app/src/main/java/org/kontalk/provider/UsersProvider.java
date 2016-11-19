@@ -978,7 +978,9 @@ public class UsersProvider extends ContentProvider {
         }
         catch (SQLiteConstraintException e) {
             // we got a duplicated key, update the requested values
-            rows = db.update(TABLE_KEYS, values, Keys.JID + "=?", new String[]{jid});
+            rows = db.update(TABLE_KEYS, values,
+                Keys.JID + "=? AND " + Keys.FINGERPRINT + "=?",
+                new String[] { jid, fingerprint });
         }
 
         if (rows >= 0)
