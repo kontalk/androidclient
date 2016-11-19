@@ -56,6 +56,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGP;
@@ -712,8 +713,9 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         // accept invitation
         if (action == PRIVACY_ACCEPT) {
             // trust the key
-            Keyring.setTrustLevel(ctx, mUserJID, getContact().getFingerprint(),
-                MyUsers.Keys.TRUST_VERIFIED);
+            Kontalk.getMessagesController(getContext())
+                .setTrustLevelAndRetryMessages(ctx, mUserJID,
+                    getContact().getFingerprint(), MyUsers.Keys.TRUST_VERIFIED);
         }
 
         // reload contact
@@ -871,7 +873,8 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         // mark current key as trusted
         if (fingerprint == null)
             fingerprint = getContact().getFingerprint();
-        Keyring.setTrustLevel(getActivity(), mUserJID, fingerprint, MyUsers.Keys.TRUST_VERIFIED);
+        Kontalk.getMessagesController(getContext())
+            .setTrustLevelAndRetryMessages(getContext(), mUserJID, fingerprint, MyUsers.Keys.TRUST_VERIFIED);
         // reload contact
         invalidateContact();
     }

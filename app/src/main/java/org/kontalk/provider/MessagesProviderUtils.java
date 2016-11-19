@@ -34,6 +34,7 @@ import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.msgcenter.group.KontalkGroupController;
+import org.kontalk.util.Preferences;
 
 
 /**
@@ -163,6 +164,26 @@ public class MessagesProviderUtils {
         return (c.delete(ContentUris.withAppendedId(Threads.Conversations.CONTENT_URI, id)
             .buildUpon().appendQueryParameter(Messages.KEEP_GROUP, String.valueOf(keepGroup))
             .build(), null, null) > 0);
+    }
+
+    /** Marks the given message as SENDING, regardless of its current status. */
+    public static int retryMessage(Context context, Uri uri) {
+        boolean encrypted = Preferences.getEncryptionEnabled(context);
+        ContentValues values = new ContentValues(2);
+        values.put(Messages.STATUS, Messages.STATUS_SENDING);
+        values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+        return context.getContentResolver().update(uri, values, null, null);
+    }
+
+    /** Marks all pending messages to the given recipient as SENDING. */
+    public static int retryMessagesTo(Context context, String to) {
+        boolean encrypted = Preferences.getEncryptionEnabled(context);
+        ContentValues values = new ContentValues(2);
+        values.put(Messages.STATUS, Messages.STATUS_SENDING);
+        values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+        return context.getContentResolver().update(Messages.CONTENT_URI, values,
+            Messages.PEER + "=? AND " + Messages.STATUS + "=" + Messages.STATUS_PENDING,
+            new String[] { to });
     }
 
     /** Inserts an empty thread (that is, with no messages). */

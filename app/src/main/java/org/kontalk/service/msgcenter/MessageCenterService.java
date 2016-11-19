@@ -929,7 +929,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     break;
 
                 case ACTION_RETRY:
-                    doConnect = handleRetry(intent);
+                    doConnect = handleRetry();
                     break;
 
                 case ACTION_BLOCKLIST:
@@ -1300,18 +1300,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_RETRY)
-    private boolean handleRetry(Intent intent) {
-        Uri msgUri = intent.getParcelableExtra(EXTRA_MESSAGE);
-
-        boolean encrypted = Preferences.getEncryptionEnabled(this);
-
-        ContentValues values = new ContentValues(2);
-        values.put(Messages.STATUS, Messages.STATUS_SENDING);
-        values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-        getContentResolver().update(msgUri, values, null, null);
-
-        // FIXME shouldn't we resend just the above message?
-
+    private boolean handleRetry() {
+        // TODO we should retry only the requested message(s)
         // already connected: resend pending messages
         if (isConnected())
             resendPendingMessages(false, false);
@@ -2900,6 +2890,24 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MEDIA_READY);
         i.putExtra("org.kontalk.message.msgId", msgId);
+        context.startService(i);
+    }
+
+    public static void retryMessage(final Context context, Uri uri) {
+        MessagesProviderUtils.retryMessage(context, uri);
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_RETRY);
+        // TODO not implemented yet
+        i.putExtra(MessageCenterService.EXTRA_MESSAGE, uri);
+        context.startService(i);
+    }
+
+    public static void retryMessagesTo(final Context context, String to) {
+        MessagesProviderUtils.retryMessagesTo(context, to);
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_RETRY);
+        // TODO not implemented yet
+        i.putExtra(MessageCenterService.EXTRA_TO, to);
         context.startService(i);
     }
 

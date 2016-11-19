@@ -1077,11 +1077,8 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     protected abstract void addUsers(String[] members);
 
     private void retryMessage(CompositeMessage msg) {
-        Intent i = new Intent(getActivity(), MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_RETRY);
-        i.putExtra(MessageCenterService.EXTRA_MESSAGE, ContentUris.withAppendedId
+        MessageCenterService.retryMessage(getContext(), ContentUris.withAppendedId
                 (Messages.CONTENT_URI, msg.getDatabaseId()));
-        getActivity().startService(i);
     }
 
     private void scrollToPosition(int position) {

@@ -53,6 +53,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.KontalkGroupManager.KontalkGroup;
@@ -63,6 +64,7 @@ import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MessagesProviderUtils;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyUsers;
+import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.view.ContactsListItem;
 import org.kontalk.util.SystemUtils;
 
@@ -96,6 +98,7 @@ public class GroupInfoFragment extends ActionModeListFragment
 
     private void loadConversation(long threadId) {
         mConversation = Conversation.loadFromId(getContext(), threadId);
+        mMembersAdapter.setGroupJid(mConversation.getGroupJid());
         String subject = mConversation.getGroupSubject();
         mTitle.setText(TextUtils.isEmpty(subject) ?
             getString(R.string.group_untitled) : subject);
@@ -149,7 +152,7 @@ public class GroupInfoFragment extends ActionModeListFragment
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mMembersAdapter = new GroupMembersAdapter(getContext());
+        mMembersAdapter = new GroupMembersAdapter(getContext(), null);
         setListAdapter(mMembersAdapter);
         setMultiChoiceModeListener(this);
     }
@@ -438,7 +441,8 @@ public class GroupInfoFragment extends ActionModeListFragment
     }
 
     void trustKey(String jid, String fingerprint, int trustLevel) {
-        Keyring.setTrustLevel(getContext(), jid, fingerprint, trustLevel);
+        Kontalk.getMessagesController(getContext())
+            .setTrustLevelAndRetryMessages(getContext(), jid, fingerprint, trustLevel);
         Contact.invalidate(jid);
         reload();
     }
@@ -483,10 +487,16 @@ public class GroupInfoFragment extends ActionModeListFragment
     private static final class GroupMembersAdapter extends BaseAdapter {
         private final Context mContext;
         private final List<Contact> mMembers;
+        private String mGroupJid;
 
-        GroupMembersAdapter(Context context) {
+        GroupMembersAdapter(Context context, String groupJid) {
             mContext = context;
             mMembers = new LinkedList<>();
+            mGroupJid = groupJid;
+        }
+
+        public void setGroupJid(String groupJid) {
+            mGroupJid = groupJid;
         }
 
         public void clear() {
@@ -544,6 +554,7 @@ public class GroupInfoFragment extends ActionModeListFragment
                         Contact.invalidate(c.getJID());
                     }
                 }
+                MessageCenterService.retryMessagesTo(mContext, mGroupJid);
             }
         }
 

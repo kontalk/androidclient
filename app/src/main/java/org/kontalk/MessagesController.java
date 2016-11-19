@@ -38,8 +38,10 @@ import org.kontalk.message.GroupComponent;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.message.MessageComponent;
 import org.kontalk.message.VCardComponent;
+import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MessagesProviderUtils;
 import org.kontalk.provider.MyMessages;
+import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.MediaService;
@@ -113,6 +115,20 @@ public class MessagesController {
         else {
             throw new SQLiteDiskIOException();
         }
+    }
+
+    /**
+     * Set the trust level for the given key and, if the trust level is high
+     * enough, send pending messages to the given user.
+     * @return true if the trust level is high enough to retry messages
+     */
+    public boolean setTrustLevelAndRetryMessages(Context context, String jid, String fingerprint, int trustLevel) {
+        Keyring.setTrustLevel(context, jid, fingerprint, trustLevel);
+        if (trustLevel >= MyUsers.Keys.TRUST_IGNORED) {
+            MessageCenterService.retryMessagesTo(context, jid);
+            return true;
+        }
+        return false;
     }
 
     /** Process an incoming message. */
