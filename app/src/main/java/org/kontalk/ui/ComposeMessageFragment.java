@@ -448,7 +448,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                 }
                 else if (unknownKey) {
                     // warn user that public key is unknown
-                    showKeyUnknownWarning();
+                    showKeyUnknownWarning(fingerprint);
                 }
             }
 
@@ -921,9 +921,10 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         }
     }
 
-    private void showKeyUnknownWarning() {
+    private void showKeyUnknownWarning(String fingerprint) {
         showKeyWarning(R.string.warning_public_key_unknown,
-            R.string.title_public_key_unknown_warning, R.string.msg_public_key_unknown_warning);
+            R.string.title_public_key_unknown_warning, R.string.msg_public_key_unknown_warning,
+            fingerprint);
     }
 
     private void showKeyChangedWarning(String newFingerprint) {
