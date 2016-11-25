@@ -101,8 +101,8 @@ public class MessageListItem extends RelativeLayout implements Checkable {
         mBalloonTheme.inflate(stub);
     }
 
-    public final void bind(Context context, final CompositeMessage msg,
-       final Pattern highlight, long previousTimestamp, int previousDirection, String previousPeer,
+    public final void bind(Context context, final CompositeMessage msg, final Pattern highlight,
+        int itemType, int previousItemType, long previousTimestamp, String previousPeer,
        Object... args) {
 
         mMessage = msg;
@@ -116,9 +116,8 @@ public class MessageListItem extends RelativeLayout implements Checkable {
             mDateHeader.setVisibility(View.GONE);
             // same day, check if it's also same direction and user
             // some themes will use this information to group messages together
-            int msgDirection = mMessage.getDirection();
             String msgPeer = MessageUtils.getMessagePeer(mMessage);
-            sameMessageBlock = (msgDirection == previousDirection && msgPeer.equals(previousPeer));
+            sameMessageBlock = (itemType == previousItemType && msgPeer.equals(previousPeer));
         }
         else {
             mDateHeader.setText(MessageUtils.formatDateString(context, msgTs));
