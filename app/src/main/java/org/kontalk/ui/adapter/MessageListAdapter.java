@@ -75,16 +75,17 @@ public class MessageListAdapter extends CursorAdapter {
         CompositeMessage msg = CompositeMessage.fromCursor(context, cursor);
 
         long previousTimestamp = -1;
-        int previousDirection = -1;
+        int previousItemType = -1;
         String previousPeer = null;
         if (cursor.moveToPrevious()) {
             previousTimestamp = MessageUtils.getMessageTimestamp(cursor);
             previousPeer = MessageUtils.getMessagePeer(cursor);
-            previousDirection = MessageUtils.getMessageDirection(cursor);
-            cursor.moveToNext();
+            previousItemType = getItemViewType(cursor);
         }
+        cursor.moveToNext();
 
-        headerView.bind(context, msg, mHighlight, previousTimestamp, previousDirection, previousPeer, mAudioPlayerControl);
+        headerView.bind(context, msg, mHighlight, getItemViewType(cursor),
+            previousItemType, previousTimestamp, previousPeer, mAudioPlayerControl);
     }
 
     @Override
@@ -97,14 +98,18 @@ public class MessageListAdapter extends CursorAdapter {
         return (GroupCommandComponent.supportsMimeType(mime));
     }
 
+    private int getItemViewType(Cursor cursor) {
+        int type = cursor.getInt(CompositeMessage.COLUMN_DIRECTION);
+        // MyMessages.DIRECTION_* OR-ed with 2 for group events
+        if (isEvent(cursor))
+            type |= 2;
+        return type;
+    }
+
     @Override
     public int getItemViewType(int position) {
         Cursor c = (Cursor) getItem(position);
-        int type = c.getInt(CompositeMessage.COLUMN_DIRECTION);
-        // MyMessages.DIRECTION_* OR-ed with 2 for group events
-        if (isEvent(c))
-            type |= 2;
-        return type;
+        return getItemViewType(c);
     }
 
     @Override
