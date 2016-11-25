@@ -177,8 +177,8 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
         }
 
         // no matching resource or draft - hide status icon
-        boolean incoming = resId < 0 || mConversation.getDraft() != null;
-        if (incoming) {
+        boolean incoming = resId < 0;
+        if (incoming || draft != null) {
             mErrorIndicator.setVisibility(GONE);
 
             int unread = mConversation.getUnreadCount();
@@ -205,14 +205,14 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
             ((Spannable) text).setSpan(STYLE_ITALIC, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
         }
         else {
-            String source = (draft != null) ? draft : conv.getSubject();
+            String subject = conv.getSubject();
+            String source = (draft != null) ? draft : subject;
 
             if (source != null) {
-                if (GroupCommandComponent.supportsMimeType(conv.getMime())) {
-                    String subject = conv.getSubject();
+                if (GroupCommandComponent.supportsMimeType(conv.getMime()) && draft == null) {
                     if (incoming) {
                         // content is in a special format
-                        String[] parsed = MessagesProviderUtils.parseThreadContent(source);
+                        String[] parsed = MessagesProviderUtils.parseThreadContent(subject);
                         subject = parsed[1];
                     }
                     text = new SpannableString(GroupCommandComponent.getTextContent(getContext(), subject, incoming));
@@ -221,7 +221,7 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
                 else {
                     if (incoming && conv.isGroupChat()) {
                         // content is in a special format
-                        String[] parsed = MessagesProviderUtils.parseThreadContent(source);
+                        String[] parsed = MessagesProviderUtils.parseThreadContent(subject);
                         contact = parsed[0] != null ? Contact.findByUserId(context, parsed[0]) : null;
                         source = parsed[1];
 
