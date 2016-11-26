@@ -208,6 +208,10 @@
         <activity android:name=".ui.GroupInfoActivity"
             android:label="@string/groupinfo_activity_title"/>
 
+        <activity android:name=".ui.GroupInfoDialog"
+            android:theme="@style/Theme.Light.Dialog"
+            android:label="@string/groupinfo_activity_title"/>
+
         <!--
         <activity android:name=".ui.QuickReplyActivity"
             android:windowSoftInputMode="stateAlwaysVisible|adjustPan"

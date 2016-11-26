@@ -44,6 +44,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import org.kontalk.BuildConfig;
+import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.KontalkGroupManager;
@@ -211,7 +212,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
             .show();
     }
 
-    private void setGroupSubject(String subject) {
+    void setGroupSubject(String subject) {
         mConversation.setGroupSubject(subject);
         // reload conversation
         ((ComposeMessageParent) getActivity()).loadConversation(getThreadId());
@@ -446,9 +447,14 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
     public void viewGroupInfo() {
         int membership = mConversation != null ? mConversation.getGroupMembership() : Groups.MEMBERSHIP_PARTED;
-        if (membership == Groups.MEMBERSHIP_MEMBER || membership == Groups.MEMBERSHIP_OBSERVER)
-            // TODO tablet support
-            GroupInfoActivity.start(getContext(), getThreadId());
+        if (membership == Groups.MEMBERSHIP_MEMBER || membership == Groups.MEMBERSHIP_OBSERVER) {
+            if (Kontalk.hasTwoPanesUI(getContext())) {
+                GroupInfoDialog.start(getContext(), getThreadId());
+            }
+            else {
+                GroupInfoActivity.start(getContext(), getThreadId());
+            }
+        }
     }
 
 }
