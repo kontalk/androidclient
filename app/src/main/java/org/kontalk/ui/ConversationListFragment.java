@@ -64,8 +64,8 @@ public class ConversationListFragment extends ActionModeListFragment
     ConversationListAdapter mListAdapter;
     private boolean mDualPane;
 
-    private FloatingActionMenu mAction;
-    private boolean mActionVisible;
+    FloatingActionMenu mAction;
+    boolean mActionVisible;
 
     private int mCheckedItemCount;
 

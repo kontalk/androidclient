@@ -56,6 +56,7 @@ import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.Syncer;
+import org.kontalk.ui.adapter.ConversationListAdapter;
 import org.kontalk.ui.prefs.HelpPreference;
 import org.kontalk.ui.prefs.PreferencesActivity;
 import org.kontalk.ui.view.ContactPickerListener;
@@ -388,9 +389,6 @@ public class ConversationsActivity extends MainActivity
 
     void openConversation(Uri threadUri) {
         if (isDualPane()) {
-            // TODO position
-            //mFragment.getListView().setItemChecked(position, true);
-
             // load conversation
             String userId = threadUri.getLastPathSegment();
             Conversation conv = Conversation.loadFromUserId(this, userId);
@@ -470,7 +468,6 @@ public class ConversationsActivity extends MainActivity
                             public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                                 Preferences.setOfflineModeUsed(ctx);
                                 switchOfflineMode();
-
                             }
                         })
                         .negativeText(android.R.string.cancel)
@@ -517,6 +514,15 @@ public class ConversationsActivity extends MainActivity
             mSearchMenu.setEnabled(visible).setVisible(visible);
             mDeleteAllMenu.setEnabled(visible).setVisible(visible);
         }
+
+        // for tablet interface
+        // select the current conversation item
+        AbstractComposeFragment f = getCurrentConversation();
+        if (f != null) {
+            int position = ((ConversationListAdapter) mFragment.getListAdapter())
+                .getItemPosition(f.getUserId());
+            mFragment.getListView().setItemChecked(position, true);
+        }
     }
 
     /** Updates offline mode menu. */
@@ -534,7 +540,7 @@ public class ConversationsActivity extends MainActivity
         }
     }
 
-    private void switchOfflineMode() {
+    void switchOfflineMode() {
         boolean currentMode = Preferences.getOfflineMode(this);
         Preferences.switchOfflineMode(this);
         updateOffline();
