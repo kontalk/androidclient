@@ -18,12 +18,6 @@
 
 package org.kontalk.ui.adapter;
 
-import org.kontalk.R;
-import org.kontalk.data.Conversation;
-import org.kontalk.ui.ConversationsActivity;
-import org.kontalk.ui.view.ConversationListItem;
-import org.kontalk.ui.view.MessageListItem;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
@@ -33,6 +27,11 @@ import android.view.ViewGroup;
 import android.widget.AbsListView.RecyclerListener;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
+
+import org.kontalk.R;
+import org.kontalk.data.Conversation;
+import org.kontalk.ui.ConversationsActivity;
+import org.kontalk.ui.view.ConversationListItem;
 
 
 public class ConversationListAdapter extends CursorAdapter {
@@ -47,7 +46,7 @@ public class ConversationListAdapter extends CursorAdapter {
 
         list.setRecyclerListener(new RecyclerListener() {
             public void onMovedToScrapHeap(View view) {
-                if (view instanceof MessageListItem) {
+                if (view instanceof ConversationListItem) {
                     ((ConversationListItem) view).unbind();
                 }
             }
@@ -87,4 +86,18 @@ public class ConversationListAdapter extends CursorAdapter {
             mOnContentChangedListener.onContentChanged(this);
         }
     }
+
+    /** Search for an item and return its position. */
+    public int getItemPosition(String peer) {
+        Cursor cursor = getCursor();
+        if (cursor != null) {
+            cursor.moveToPosition(-1);
+            while (cursor.moveToNext()) {
+                if (peer.equals(Conversation.getPeer(cursor)))
+                    return cursor.getPosition();
+            }
+        }
+        return -1;
+    }
+
 }

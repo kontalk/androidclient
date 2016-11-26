@@ -77,9 +77,11 @@ public class Conversation {
     private static final int COLUMN_GROUP_TYPE = 13;
     private static final int COLUMN_GROUP_MEMBERSHIP = 14;
 
-    private final Context mContext;
+    @SuppressWarnings("WeakerAccess")
+    final Context mContext;
 
-    private long mThreadId;
+    @SuppressWarnings("WeakerAccess")
+    long mThreadId;
     private Contact mContact;
 
     // for group chats it will be the group JID
@@ -167,6 +169,10 @@ public class Conversation {
 
     public static long getMessageId(Cursor cursor) {
         return cursor.getLong(COLUMN_ID);
+    }
+
+    public static String getPeer(Cursor cursor) {
+        return cursor.getString(COLUMN_PEER);
     }
 
     public static boolean isGroup(Cursor cursor, int requiredMembership) {
@@ -484,7 +490,6 @@ public class Conversation {
                 @Override
                 public void run() {
                     MessagesProvider.markThreadAsRead(mContext, mThreadId);
-
                     MessagingNotification.updateMessagesNotification(mContext.getApplicationContext(), false);
                 }
             }).start();
