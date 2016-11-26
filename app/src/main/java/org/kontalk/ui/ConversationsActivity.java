@@ -48,7 +48,6 @@ import android.widget.Toast;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.KontalkGroupCommands;
 import org.kontalk.provider.MessagesProvider;
@@ -59,7 +58,6 @@ import org.kontalk.sync.Syncer;
 import org.kontalk.ui.adapter.ConversationListAdapter;
 import org.kontalk.ui.prefs.HelpPreference;
 import org.kontalk.ui.prefs.PreferencesActivity;
-import org.kontalk.ui.view.ContactPickerListener;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.XMPPUtils;
@@ -74,7 +72,7 @@ import org.kontalk.util.XMPPUtils;
  * @author Daniele Ricci
  */
 public class ConversationsActivity extends MainActivity
-        implements ContactPickerListener, ComposeMessageParent {
+        implements ComposeMessageParent {
     public static final String TAG = ConversationsActivity.class.getSimpleName();
 
     /** An intent extra for storing an ACTION_SEND intent from {@link ComposeMessage}. */
@@ -252,6 +250,9 @@ public class ConversationsActivity extends MainActivity
                 }
             }
         }
+        else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     private AbstractComposeFragment getCurrentConversation() {
@@ -328,19 +329,6 @@ public class ConversationsActivity extends MainActivity
         return findViewById(R.id.fragment_compose_message) != null;
     }
 
-    @Override
-    public void onContactSelected(ContactsListFragment fragment, Contact contact) {
-        // open by user hash
-        openConversation(Threads.getUri(contact.getJID()));
-    }
-
-    /** Called when a contact has been selected from a {@link ContactsListFragment}. */
-    @Override
-    public void onContactsSelected(ContactsListFragment fragment, List<Contact> contacts) {
-        // open by user hash
-        // TODO handle multiple contacts
-    }
-
     public void showContactPicker(boolean multiselect) {
         // TODO one day it will be like this
         // Intent i = new Intent(Intent.ACTION_PICK, Users.CONTENT_URI);
@@ -359,9 +347,10 @@ public class ConversationsActivity extends MainActivity
         // nothing
     }
 
+    /** For tablets. */
     @Override
     public void loadConversation(long threadId) {
-        // TODO for tablets!
+        openConversation(threadId);
     }
 
     public void openConversation(Conversation conv, int position) {
@@ -373,7 +362,7 @@ public class ConversationsActivity extends MainActivity
 
             // check if we are replacing the same fragment
             if (f == null || !f.getConversation().getRecipient().equals(conv.getRecipient())) {
-                f = ComposeMessageFragment.fromConversation(this, conv);
+                f = AbstractComposeFragment.fromConversation(this, conv);
                 // Execute a transaction, replacing any existing fragment
                 // with this one inside the frame.
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -418,6 +407,33 @@ public class ConversationsActivity extends MainActivity
             else
                 Toast.makeText(this, R.string.contact_not_registered, Toast.LENGTH_LONG)
                     .show();
+        }
+    }
+
+    private void openConversation(long threadId) {
+        if (isDualPane()) {
+            // load conversation
+            Conversation conv = Conversation.loadFromId(this, threadId);
+            if (conv == null)
+                return;
+
+            // get the old fragment
+            AbstractComposeFragment f = getCurrentConversation();
+
+            // check if we are replacing the same fragment
+            if (f == null || !f.getConversation().getRecipient().equals(conv.getRecipient())) {
+                f = AbstractComposeFragment.fromConversation(this, conv);
+
+                // Execute a transaction, replacing any existing fragment
+                // with this one inside the frame.
+                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                ft.replace(R.id.fragment_compose_message, f);
+                ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                ft.commitAllowingStateLoss();
+            }
+        }
+        else {
+            startActivity(ComposeMessage.fromConversation(this, threadId));
         }
     }
 
