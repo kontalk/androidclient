@@ -71,11 +71,13 @@ import org.kontalk.util.XMPPUtils;
  * browser side view.
  *
  * @author Daniele Ricci
- * @version 1.0
  */
 public class ConversationsActivity extends MainActivity
         implements ContactPickerListener, ComposeMessageParent {
     public static final String TAG = ConversationsActivity.class.getSimpleName();
+
+    /** An intent extra for storing an ACTION_SEND intent from {@link ComposeMessage}. */
+    public static final String EXTRA_SEND_INTENT = "org.kontalk.SEND_INTENT";
 
     private ConversationListFragment mFragment;
 
@@ -142,6 +144,11 @@ public class ConversationsActivity extends MainActivity
         }
     }
 
+    private void processSendIntent(Intent sendIntent) {
+        AbstractComposeFragment f = getCurrentConversation();
+        SendIntentReceiver.processSendIntent(this, sendIntent, f);
+    }
+
     @Override
     public boolean onSearchRequested() {
         ConversationListFragment fragment = getListFragment();
@@ -170,8 +177,7 @@ public class ConversationsActivity extends MainActivity
             mFragment.closeActionMenu();
             return;
         }
-        ComposeMessageFragment f = (ComposeMessageFragment) getSupportFragmentManager()
-            .findFragmentById(R.id.fragment_compose_message);
+        AbstractComposeFragment f = getCurrentConversation();
         if (f == null || !f.tryHideEmojiDrawer()) {
             super.onBackPressed();
         }
@@ -205,6 +211,17 @@ public class ConversationsActivity extends MainActivity
             // since we have the conversation list open, we're going to disable notifications
             // no need to notify the user twice
             MessagingNotification.disable();
+
+            Intent intent = getIntent();
+            if (intent != null) {
+                Intent sendIntent = getIntent().getParcelableExtra(EXTRA_SEND_INTENT);
+                if (sendIntent != null) {
+                    // handle the share intent sent from ComposeMessage
+                    processSendIntent(sendIntent);
+                    // clear the intent
+                    intent.removeExtra(EXTRA_SEND_INTENT);
+                }
+            }
         }
 
         updateOffline();
@@ -234,6 +251,11 @@ public class ConversationsActivity extends MainActivity
                 }
             }
         }
+    }
+
+    private AbstractComposeFragment getCurrentConversation() {
+        return (AbstractComposeFragment) getSupportFragmentManager()
+            .findFragmentById(R.id.fragment_compose_message);
     }
 
     private void startGroupChat(List<Uri> users) {
@@ -346,8 +368,7 @@ public class ConversationsActivity extends MainActivity
             mFragment.getListView().setItemChecked(position, true);
 
             // get the old fragment
-            AbstractComposeFragment f = (AbstractComposeFragment) getSupportFragmentManager()
-                    .findFragmentById(R.id.fragment_compose_message);
+            AbstractComposeFragment f = getCurrentConversation();
 
             // check if we are replacing the same fragment
             if (f == null || !f.getConversation().getRecipient().equals(conv.getRecipient())) {
@@ -375,8 +396,7 @@ public class ConversationsActivity extends MainActivity
             Conversation conv = Conversation.loadFromUserId(this, userId);
 
             // get the old fragment
-            AbstractComposeFragment f = (AbstractComposeFragment) getSupportFragmentManager()
-                    .findFragmentById(R.id.fragment_compose_message);
+            AbstractComposeFragment f = getCurrentConversation();
 
             // check if we are replacing the same fragment
             if (f == null || conv == null || !f.getConversation().getRecipient().equals(conv.getRecipient())) {
