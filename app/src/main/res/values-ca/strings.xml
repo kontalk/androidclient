@@ -562,5 +562,5 @@ Quan estan desactivades, el comportament de connexió de Kontalk es pot ajustar 
     <string name="pref_reporting">Envia estadístiques d\'ús anònimes</string>
     <string name="pref_title_reporting">Incloent els informes d\'error</string>
 
-    <string name="menu_group_info">Configuració del grup</string>
+    <string name="menu_group_info">Informació del grup</string>
     </resources>
