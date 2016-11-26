@@ -18,22 +18,7 @@
 
 package org.kontalk.ui;
 
-import java.util.ArrayList;
 import java.util.regex.Pattern;
-
-import org.kontalk.Kontalk;
-import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.NumberValidator;
-import org.kontalk.data.Conversation;
-import org.kontalk.message.ImageComponent;
-import org.kontalk.message.TextComponent;
-import org.kontalk.message.VCardComponent;
-import org.kontalk.provider.MyMessages.Threads;
-import org.kontalk.provider.MyMessages.Threads.Conversations;
-import org.kontalk.util.MediaStorage;
-import org.kontalk.util.MessageUtils;
-import org.kontalk.util.XMPPUtils;
 
 import android.content.ContentUris;
 import android.content.Context;
@@ -52,11 +37,21 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import org.kontalk.Kontalk;
+import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
+import org.kontalk.client.NumberValidator;
+import org.kontalk.data.Conversation;
+import org.kontalk.message.TextComponent;
+import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.provider.MyMessages.Threads.Conversations;
+import org.kontalk.util.MessageUtils;
+import org.kontalk.util.XMPPUtils;
+
 
 /**
  * Conversation writing activity.
  * @author Daniele Ricci
- * @version 1.0
  */
 public class ComposeMessage extends ToolbarActivity implements ComposeMessageParent {
     public static final String TAG = ComposeMessage.class.getSimpleName();
@@ -341,11 +336,22 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
                     String userId = threadUri.getLastPathSegment();
                     Intent i = fromUserId(this, userId);
                     if (i != null) {
-                        onNewIntent(i);
+                        if (Kontalk.hasTwoPanesUI(this)) {
+                            // we need to go back to the main activity
+                            Intent startIntent = new Intent(getApplicationContext(), ConversationsActivity.class);
+                            startIntent.setAction(ACTION_VIEW_USERID);
+                            startIntent.setData(threadUri);
+                            startIntent.putExtra(ConversationsActivity.EXTRA_SEND_INTENT, sendIntent);
+                            startActivity(startIntent);
+                            finish();
+                        }
+                        else {
+                            onNewIntent(i);
 
-                        // process SEND intent if necessary
-                        if (sendIntent != null)
-                            processSendIntent();
+                            // process SEND intent if necessary
+                            if (sendIntent != null)
+                                processSendIntent();
+                        }
                     }
                     else {
                         Toast.makeText(this, R.string.contact_not_registered, Toast.LENGTH_LONG)
@@ -412,65 +418,8 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
         startActivityForResult(i, REQUEST_CONTACT_PICKER);
     }
 
-    private void sendMedia(Uri uri) {
-        Log.d(TAG, "looking up mime type for uri " + uri);
-        String mime = MediaStorage.getType(this, uri);
-        Log.d(TAG, "using detected mime type " + mime);
-
-        if (ImageComponent.supportsMimeType(mime)) {
-            // send image immediately
-            mFragment.sendBinaryMessage(uri, mime, true, ImageComponent.class);
-        }
-
-        else if (VCardComponent.supportsMimeType(mime)) {
-            mFragment.sendBinaryMessage(uri, mime, true, VCardComponent.class);
-        }
-
-        else {
-            // notify to user
-            Log.w(TAG, "mime " + mime + " not supported");
-            Toast.makeText(this, R.string.send_mime_not_supported, Toast.LENGTH_LONG)
-                .show();
-        }
-    }
-
     private void processSendIntent() {
-        String mime = sendIntent.getType();
-        boolean multi = Intent.ACTION_SEND_MULTIPLE.equals(sendIntent.getAction());
-
-        if (multi) {
-            // multiple texts: take only the first one
-            // FIXME this will not allow text file attachments
-            if (TextComponent.supportsMimeType(mime)) {
-                ArrayList<CharSequence> texts = sendIntent.getCharSequenceArrayListExtra(Intent.EXTRA_TEXT);
-                if (texts != null && texts.size() > 0)
-                    mFragment.setTextEntry(texts.get(0));
-            }
-
-            else {
-                ArrayList<Uri> uris = sendIntent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-                if (uris != null) {
-                    for (Uri uri : uris) {
-                        sendMedia(uri);
-                    }
-                }
-            }
-        }
-
-        else {
-            // FIXME this will not allow text file attachments
-            CharSequence text = sendIntent.getCharSequenceExtra(Intent.EXTRA_TEXT);
-            if (text != null || TextComponent.supportsMimeType(mime)) {
-                mFragment.setTextEntry(text);
-            }
-
-            else {
-                Uri uri = sendIntent.getParcelableExtra(Intent.EXTRA_STREAM);
-                if (uri != null)
-                    sendMedia(uri);
-            }
-        }
-
+        SendIntentReceiver.processSendIntent(this, sendIntent, mFragment);
         sendIntent = null;
     }
 
