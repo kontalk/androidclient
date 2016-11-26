@@ -170,7 +170,7 @@ public class ConversationsActivity extends MainActivity
             mFragment.closeActionMenu();
             return;
         }
-        ComposeMessageFragment f = (ComposeMessageFragment) getSupportFragmentManager()
+        AbstractComposeFragment f = (AbstractComposeFragment) getSupportFragmentManager()
             .findFragmentById(R.id.fragment_compose_message);
         if (f == null || !f.tryHideEmojiDrawer()) {
             super.onBackPressed();
