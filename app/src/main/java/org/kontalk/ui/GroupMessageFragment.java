@@ -120,6 +120,9 @@ public class GroupMessageFragment extends AbstractComposeFragment {
             return true;
 
         switch (item.getItemId()) {
+            case R.id.group_info:
+                viewGroupInfo();
+                return true;
             case R.id.group_subject:
                 changeGroupSubject();
                 return true;

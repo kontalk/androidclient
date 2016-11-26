@@ -23,6 +23,7 @@
     <item android:icon="@drawable/ic_menu_attach" android:title="@string/menu_attachment" android:id="@+id/menu_attachment" app:showAsAction="always"/>
 
     <!-- menu -->
+    <item android:icon="@drawable/ic_menu_info_details" android:title="@string/menu_group_info" android:id="@+id/group_info"/>
     <item android:icon="@drawable/ic_menu_chat" android:title="@string/menu_set_group_subject" android:id="@+id/group_subject"/>
     <item android:icon="@drawable/ic_menu_delete" android:title="@string/delete_thread_messages" android:id="@+id/delete_thread"/>
     <item android:icon="@drawable/ic_menu_exit" android:title="@string/menu_leave_group" android:id="@+id/leave_group"/>

@@ -427,12 +427,6 @@ public class ConversationsActivity extends MainActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.conversation_list_menu, menu);
 
-        // compose message
-        /*
-        MenuItem item = menu.findItem(R.id.menu_compose);
-        MenuItemCompat.setShowAsAction(item, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
-        */
-
         // search
         mSearchMenu = menu.findItem(R.id.menu_search);
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(mSearchMenu);
