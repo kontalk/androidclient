@@ -21,10 +21,8 @@ Stable versions are available through Google Play Store and F-Droid:
 
 Developers and users can discuss about Kontalk through:
 
+* Forum: https://forum.kontalk.org/
 * IRC: [Freenode #kontalk](irc://chat.freenode.net/kontalk)
-* Google groups (mailing list, no Google account needed):  
-  kontalk-devel@googlegroups.com ([for development and translation discussions](https://groups.google.com/d/forum/kontalk-devel))  
-  kontalk-users@googlegroups.com ([for everything else](https://groups.google.com/d/forum/kontalk-users))
 
 
 ### Contribute
