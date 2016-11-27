@@ -565,4 +565,5 @@ Cuando están desactivadas, el comportamiento de conexión de Kontalk se puede a
     <string name="button_refuse">Rechazar</string>
     <string name="code_validation_intro_callerid">Toque el botón de abajo y haga una llamada perdida a ese número de teléfono.Tenga en cuenta que <b>1 la llamada debe hacerse desde el número de teléfono que se está registrando </b>2. La llamada es gratuita si cuelga en cuanto escuche el primer timbre. Será suficiente para nosotros.</string>
     <string name="menu_group_info">Información del grupo</string>
+    <string name="button_private_chat">Chat privado</string>
     </resources>
