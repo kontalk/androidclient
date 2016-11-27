@@ -567,5 +567,5 @@ Wenn sie deaktiviert sind kann das Kontalk Verbindungsverhalten in den Netzwerke
 
     <string name="code_validation_intro_callerid">Tippen Sie den Schalter unten und initiieren einen \"verpassten Anruf\" für diese Tel.Nr. Bitte beachten Sie: <b> Der Anruf muss von der Nummer erfolgen, welche Sie registrieren wollen</b>. Der Anruf ist kostenfrei wenn Sie direkt nach dem ersten Klingeln auflegen. Dies reicht für uns aus.</string>
     <string name="button_refuse">Ablehnen</string>
-    <string name="menu_group_info">Gruppeninformation</string>
+    <string name="menu_group_info">Gruppeninfo</string>
     </resources>
