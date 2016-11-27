@@ -259,10 +259,9 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
                 Uri uri = intent.getData();
 
                 // two-panes UI: start conversation list
-                if (Kontalk.hasTwoPanesUI(this) && Intent.ACTION_VIEW.equals(action)) {
-                    Intent startIntent = new Intent(getApplicationContext(), ConversationsActivity.class);
-                    startIntent.setAction(Intent.ACTION_VIEW);
-                    startIntent.setData(uri);
+                if (Kontalk.hasTwoPanesUI(this)) {
+                    Intent startIntent = new Intent(action, uri,
+                        getApplicationContext(), ConversationsActivity.class);
                     startActivity(startIntent);
                     // no need to go further
                     finish();
