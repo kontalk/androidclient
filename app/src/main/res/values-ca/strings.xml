@@ -563,4 +563,5 @@ Quan estan desactivades, el comportament de connexió de Kontalk es pot ajustar 
     <string name="pref_title_reporting">Incloent els informes d\'error</string>
 
     <string name="menu_group_info">Informació del grup</string>
+    <string name="button_private_chat">Xat privat</string>
     </resources>
