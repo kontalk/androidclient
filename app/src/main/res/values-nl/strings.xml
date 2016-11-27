@@ -569,4 +569,5 @@ Indien uitgeschakeld kan het netwerkgedrag van Kontalk in netwerkinstellingen in
 
     <string name="button_refuse">Weiger</string>
     <string name="menu_group_info">Groepsinfo</string>
+    <string name="button_private_chat">Privégesprek</string>
     </resources>
