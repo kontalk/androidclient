@@ -20,6 +20,7 @@ package org.kontalk.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.app.Fragment;
 
 
 /**
@@ -28,10 +29,10 @@ import android.content.Intent;
  */
 public class GroupInfoDialog extends GroupInfoActivity {
 
-    public static void start(Context context, long threadId) {
+    public static void start(Context context, Fragment parent, long threadId, int requestCode) {
         Intent intent = new Intent(context, GroupInfoDialog.class);
         intent.putExtra("conversation", threadId);
-        context.startActivity(intent);
+        parent.startActivityForResult(intent, requestCode);
     }
 
 }

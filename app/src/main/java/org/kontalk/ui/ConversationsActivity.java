@@ -140,6 +140,14 @@ public class ConversationsActivity extends MainActivity
                 if (uri != null)
                     openConversation(uri);
             }
+            else if (ComposeMessage.ACTION_VIEW_CONVERSATION.equals(action)) {
+                Uri uri = intent.getData();
+                if (uri != null) {
+                    long threadId = ContentUris.parseId(uri);
+                    if (threadId >= 0)
+                        openConversation(threadId);
+                }
+            }
         }
     }
 
@@ -351,6 +359,12 @@ public class ConversationsActivity extends MainActivity
     @Override
     public void loadConversation(long threadId) {
         openConversation(threadId);
+    }
+
+    /** For tablets. */
+    @Override
+    public void loadConversation(Uri threadUri) {
+        openConversation(threadUri);
     }
 
     public void openConversation(Conversation conv, int position) {

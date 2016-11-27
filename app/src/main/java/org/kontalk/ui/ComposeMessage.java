@@ -145,6 +145,11 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
         loadConversation();
     }
 
+    @Override
+    public void loadConversation(Uri threadUri) {
+        onNewIntent(fromThreadUri(this, threadUri));
+    }
+
     public void loadConversation() {
         // build chat fragment
         AbstractComposeFragment f = getComposeFragment(null);
@@ -254,10 +259,9 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
                 Uri uri = intent.getData();
 
                 // two-panes UI: start conversation list
-                if (Kontalk.hasTwoPanesUI(this) && Intent.ACTION_VIEW.equals(action)) {
-                    Intent startIntent = new Intent(getApplicationContext(), ConversationsActivity.class);
-                    startIntent.setAction(Intent.ACTION_VIEW);
-                    startIntent.setData(uri);
+                if (Kontalk.hasTwoPanesUI(this)) {
+                    Intent startIntent = new Intent(action, uri,
+                        getApplicationContext(), ConversationsActivity.class);
                     startActivity(startIntent);
                     // no need to go further
                     finish();
@@ -377,6 +381,20 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
             Intent ni = new Intent(context, ComposeMessage.class);
             ni.setAction(ComposeMessage.ACTION_VIEW_USERID);
             ni.setData(Threads.getUri(userId));
+            return ni;
+        }
+
+        return fromConversation(context, conv);
+    }
+
+    public static Intent fromThreadUri(Context context, Uri threadUri) {
+        String userId = threadUri.getLastPathSegment();
+        Conversation conv = Conversation.loadFromUserId(context, userId);
+        // not found - create new
+        if (conv == null) {
+            Intent ni = new Intent(context, ComposeMessage.class);
+            ni.setAction(ComposeMessage.ACTION_VIEW_USERID);
+            ni.setData(threadUri);
             return ni;
         }
 

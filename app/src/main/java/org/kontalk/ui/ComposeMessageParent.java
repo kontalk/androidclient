@@ -19,12 +19,14 @@
 package org.kontalk.ui;
 
 
+import android.net.Uri;
+
 /**
  * Interface implemented by activities that can be parent of
  * {@link ComposeMessageFragment}.
  * @author Daniele Ricci
  */
-public interface ComposeMessageParent {
+interface ComposeMessageParent {
 
     /** Sets title and subtitle. Pass null to any of them to skip. */
     void setTitle(CharSequence title, CharSequence subtitle);
@@ -34,4 +36,7 @@ public interface ComposeMessageParent {
 
     /** Loads the given conversation, replacing the fragment as needed. */
     void loadConversation(long threadId);
+
+    /** Loads the given conversation, replacing the fragment as needed. */
+    void loadConversation(Uri threadUri);
 }
