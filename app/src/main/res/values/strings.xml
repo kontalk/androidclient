@@ -393,6 +393,7 @@
     <string name="button_block">Block</string>
     <string name="button_ignore">Ignore</string>
     <string name="button_identity">Identity</string>
+    <string name="button_private_chat">Private chat</string>
     <string name="text_invitation_info">(chat invitation)</string>
     <string name="title_identity">Identity</string>
     <string name="title_identity_self">Identity (this is you!)</string>

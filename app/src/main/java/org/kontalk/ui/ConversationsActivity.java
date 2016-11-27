@@ -353,6 +353,11 @@ public class ConversationsActivity extends MainActivity
         openConversation(threadId);
     }
 
+    @Override
+    public void loadConversation(Uri threadUri) {
+        openConversation(threadUri);
+    }
+
     public void openConversation(Conversation conv, int position) {
         if (isDualPane()) {
             mFragment.getListView().setItemChecked(position, true);

@@ -31,6 +31,7 @@ import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDiskIOException;
 import android.net.Uri;
 import android.os.Bundle;
@@ -64,6 +65,8 @@ import org.kontalk.util.XMPPUtils;
  */
 public class GroupMessageFragment extends AbstractComposeFragment {
     private static final String TAG = ComposeMessage.TAG;
+
+    private static final int REQUEST_PRIVATE_CHAT = Activity.RESULT_FIRST_USER + 1;
 
     /** The virtual or real group JID. */
     private String mGroupJID;
@@ -449,12 +452,24 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         int membership = mConversation != null ? mConversation.getGroupMembership() : Groups.MEMBERSHIP_PARTED;
         if (membership == Groups.MEMBERSHIP_MEMBER || membership == Groups.MEMBERSHIP_OBSERVER) {
             if (Kontalk.hasTwoPanesUI(getContext())) {
-                GroupInfoDialog.start(getContext(), getThreadId());
+                GroupInfoDialog.start(getContext(), this, getThreadId(), REQUEST_PRIVATE_CHAT);
             }
             else {
-                GroupInfoActivity.start(getContext(), getThreadId());
+                GroupInfoActivity.start(getContext(), this, getThreadId(), REQUEST_PRIVATE_CHAT);
             }
         }
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_PRIVATE_CHAT) {
+            if (resultCode == Activity.RESULT_OK) {
+                ((ComposeMessageParent) getActivity())
+                    .loadConversation(data.getData());
+            }
+        }
+        else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
 }

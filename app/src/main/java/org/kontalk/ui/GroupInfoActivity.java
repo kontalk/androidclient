@@ -62,10 +62,10 @@ public class GroupInfoActivity extends ToolbarActivity implements GroupInfoFragm
         return super.onOptionsItemSelected(item);
     }
 
-    public static void start(Context context, long threadId) {
+    public static void start(Context context, Fragment parent, long threadId, int requestCode) {
         Intent intent = new Intent(context, GroupInfoActivity.class);
         intent.putExtra("conversation", threadId);
-        context.startActivity(intent);
+        parent.startActivityForResult(intent, requestCode);
     }
 
     @Override

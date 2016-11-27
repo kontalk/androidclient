@@ -145,6 +145,11 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
         loadConversation();
     }
 
+    @Override
+    public void loadConversation(Uri threadUri) {
+        onNewIntent(fromThreadUri(this, threadUri));
+    }
+
     public void loadConversation() {
         // build chat fragment
         AbstractComposeFragment f = getComposeFragment(null);
@@ -377,6 +382,20 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
             Intent ni = new Intent(context, ComposeMessage.class);
             ni.setAction(ComposeMessage.ACTION_VIEW_USERID);
             ni.setData(Threads.getUri(userId));
+            return ni;
+        }
+
+        return fromConversation(context, conv);
+    }
+
+    public static Intent fromThreadUri(Context context, Uri threadUri) {
+        String userId = threadUri.getLastPathSegment();
+        Conversation conv = Conversation.loadFromUserId(context, userId);
+        // not found - create new
+        if (conv == null) {
+            Intent ni = new Intent(context, ComposeMessage.class);
+            ni.setAction(ComposeMessage.ACTION_VIEW_USERID);
+            ni.setData(threadUri);
             return ni;
         }
 

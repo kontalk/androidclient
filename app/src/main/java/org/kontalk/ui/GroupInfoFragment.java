@@ -32,6 +32,7 @@ import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -62,6 +63,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MessagesProviderUtils;
+import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyUsers;
 import org.kontalk.service.msgcenter.MessageCenterService;
@@ -436,8 +438,25 @@ public class GroupInfoFragment extends ActionModeListFragment
             .negativeText(R.string.button_refuse)
             .negativeColorRes(R.color.button_danger);
         }
+        else {
+            builder.onPositive(new MaterialDialog.SingleButtonCallback() {
+                @Override
+                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                    openChat(jid);
+                }
+            })
+            .positiveText(R.string.button_private_chat);
+        }
 
         builder.show();
+    }
+
+    void openChat(String jid) {
+        Intent i = new Intent();
+        i.setData(MyMessages.Threads.getUri(jid));
+        Activity parent = getActivity();
+        parent.setResult(Activity.RESULT_OK, i);
+        parent.finish();
     }
 
     void trustKey(String jid, String fingerprint, int trustLevel) {
