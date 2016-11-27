@@ -320,9 +320,9 @@
     <string name="pref_text_enter_label_newline">Introducir</string>
     <string name="pref_text_enter_label_newline_send">Enviar</string>
     <string name="pref_image_resize_label_original">Orixinal</string>
-    <string name="pref_image_resize_label_small">Pequeno (0.3MP)</string>
-    <string name="pref_image_resize_label_medium">Mediano (0.5MP)</string>
-    <string name="pref_image_resize_label_large">Grande (0.8MP)</string>
+    <string name="pref_image_resize_label_small">Pequeno (0.4MP)</string>
+    <string name="pref_image_resize_label_medium">Mediano (1.0MP)</string>
+    <string name="pref_image_resize_label_large">Grande (2.0MP)</string>
     <string name="pref_idle_time_label_never">Nunca</string>
     <string name="pref_idle_time_label_5m">5 minutos</string>
     <string name="pref_idle_time_label_15m">15 minutos</string>
@@ -563,4 +563,14 @@ Cando están desactivadas, o comportamento de conexión Kontalk se pode axustar 
     <string name="pref_push_notifications_title_unavailable">As notificacións \"push\" non son compatibles co dispositivo.</string>
     <string name="err_authentication_failed_callerid">A comprobación non foi exitosa. Probe chamar ao número de novo e esperar un pouco máis.</string>
     <string name="button_validation_fallback_callerid">Probe doutra maneira.</string>
+    <string name="menu_group_info">Información do grupo</string>
+    <string name="pref_emoji_converter">Convertir os \"smileys\" en \"emojis\"</string>
+    <string name="pref_title_emoji_converter">Converter automaticamente algúns dos \"smileys\" de texto en emoticons</string>
+
+    <string name="chooser_error_no_dialer">"Non hai ningunha aplicación de marcación dispoñible ou non hai servicio de telefonía  neste dispositivo."</string>
+    <string name="button_refuse">Rexeitar</string>
+    <string name="about_credits_contrib"><b> 1Contribuíntes</b> 2</string>
+    <string name="pref_reporting">Enviar estatísticas de uso anónimas</string>
+    <string name="pref_title_reporting">Incluíndo informes de erros</string>
+
     </resources>
