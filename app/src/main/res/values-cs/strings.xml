@@ -571,4 +571,5 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="button_refuse">Odmítnout</string>
     <string name="menu_group_info">Info o skupině</string>
     <string name="button_private_chat">Soukromá konverzace</string>
+    <string name="group_info_owner_member">Vlastník</string>
     </resources>
