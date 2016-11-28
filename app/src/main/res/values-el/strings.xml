@@ -557,7 +557,7 @@
     <string name="pref_reporting">Αποστολή ανώνυμων στατιστικών χρήσης</string>
     <string name="pref_title_reporting">Συμπεριλαμβανομένου αναφορών σφαλμάτων</string>
 
-    <string name="notification_group_title">%1$s @ %2$s</string>
+    <string name="notification_group_title">%1$ @ %2$</string>
 
     <plurals name="unread_messages_group">
 	<item quantity="one">%1$ μηνύματα @ %2$s</item>
