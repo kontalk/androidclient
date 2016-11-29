@@ -899,8 +899,12 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     }
 
     boolean tryHideAttachmentView() {
+        return tryHideAttachmentView(false);
+    }
+
+    boolean tryHideAttachmentView(boolean instant) {
         if (isAttachmentViewVisible()) {
-            mAttachmentContainer.hide();
+            mAttachmentContainer.hide(instant);
             return true;
         }
         return false;
@@ -1787,6 +1791,9 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
         // notify composer bar
         mComposer.onPause();
+
+        // hide attachment view
+        tryHideAttachmentView(true);
 
         // hide emoji drawer
         tryHideEmojiDrawer();
