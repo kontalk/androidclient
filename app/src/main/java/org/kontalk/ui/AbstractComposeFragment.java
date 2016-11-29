@@ -1087,7 +1087,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     private void retryMessage(CompositeMessage msg) {
         MessageCenterService.retryMessage(getContext(), ContentUris.withAppendedId
-                (Messages.CONTENT_URI, msg.getDatabaseId()));
+                (Messages.CONTENT_URI, msg.getDatabaseId()), mConversation.isEncryptionEnabled());
     }
 
     void scrollToPosition(int position) {

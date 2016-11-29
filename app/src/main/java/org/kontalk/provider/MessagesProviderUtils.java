@@ -34,6 +34,7 @@ import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.msgcenter.group.KontalkGroupController;
+import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 
 
@@ -175,8 +176,7 @@ public class MessagesProviderUtils {
     }
 
     /** Marks the given message as SENDING, regardless of its current status. */
-    public static int retryMessage(Context context, Uri uri) {
-        boolean encrypted = Preferences.getEncryptionEnabled(context);
+    public static int retryMessage(Context context, Uri uri, boolean encrypted) {
         ContentValues values = new ContentValues(2);
         values.put(Messages.STATUS, Messages.STATUS_SENDING);
         values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
@@ -185,13 +185,30 @@ public class MessagesProviderUtils {
 
     /** Marks all pending messages to the given recipient as SENDING. */
     public static int retryMessagesTo(Context context, String to) {
-        boolean encrypted = Preferences.getEncryptionEnabled(context);
-        ContentValues values = new ContentValues(2);
-        values.put(Messages.STATUS, Messages.STATUS_SENDING);
-        values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-        return context.getContentResolver().update(Messages.CONTENT_URI, values,
-            Messages.PEER + "=? AND " + Messages.STATUS + "=" + Messages.STATUS_PENDING,
-            new String[] { to });
+        Cursor c = context.getContentResolver().query(Messages.CONTENT_URI,
+                new String[] { Messages._ID },
+                Messages.PEER + "=? AND " + Messages.STATUS + "=" + Messages.STATUS_PENDING,
+                new String[] { to },
+                Messages._ID);
+
+        while (c.moveToNext()) {
+            long msgID = c.getLong(0);
+            Uri msgURI = ContentUris.withAppendedId(Messages.CONTENT_URI, msgID);
+            long threadID = getThreadByMessage(context, msgURI);
+            if (threadID == Messages.NO_THREAD)
+                continue;
+            Uri threadURI = ContentUris.withAppendedId(Threads.CONTENT_URI, threadID);
+            Cursor cThread = context.getContentResolver().query(threadURI,
+                    new String[] { Threads.ENCRYPTION }, null, null,
+                    null);
+            if (cThread.moveToFirst()) {
+                boolean encrypted = MessageUtils.sendEncrypted(context, cThread.getInt(0) != 0);
+                retryMessage(context, msgURI, encrypted);
+            }
+            cThread.close();
+        }
+        c.close();
+        return c.getCount();
     }
 
     /** Marks all pending messages as SENDING. */

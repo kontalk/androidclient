@@ -308,6 +308,7 @@ public class ConversationsActivity extends MainActivity
                         groupJid, title, users, "");
 
                     // store create group command to outbox
+                    // NOTE: group chats can currently only be created with chat encryption enabled
                     boolean encrypted = Preferences.getEncryptionEnabled(ctx);
                     String msgId = MessageCenterService.messageId();
                     Uri cmdMsg = KontalkGroupCommands.createGroup(ctx,

@@ -2962,8 +2962,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
-    public static void retryMessage(final Context context, Uri uri) {
-        MessagesProviderUtils.retryMessage(context, uri);
+    public static void retryMessage(final Context context, Uri uri, boolean chatEncryptionEnabled) {
+        boolean encrypted = Preferences.getEncryptionEnabled(context) && chatEncryptionEnabled;
+        MessagesProviderUtils.retryMessage(context, uri, encrypted);
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_RETRY);
         // TODO not implemented yet
