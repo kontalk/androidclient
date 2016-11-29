@@ -17,7 +17,7 @@ Android version: (please also specify custom ROM name if applicable)
 
 Device model:
 
-### Other
+### Logs
 
 If you have a system log related to the issue please send it via email at
 devteam (at) kontalk.org. Please do not attach it or publish it anywhere because
@@ -30,3 +30,7 @@ adb logcat -d | grep `adb shell ps | grep org.kontalk | cut -c10-15` >kontalk-lo
 ```
 
 and send us the text file.
+
+### Other
+
+If there is a relevant forum discussion, please link to it here.
