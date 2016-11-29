@@ -42,10 +42,7 @@ import org.kontalk.R;
 public class AttachmentRevealFrameLayout extends RevealFrameLayout {
 
     private View mContent;
-
-    private SupportAnimator mShowAnimator;
-    boolean mFullyVisible;
-    SupportAnimator mHideAnimator;
+    private SupportAnimator mHideAnimator;
 
     public AttachmentRevealFrameLayout(Context context) {
         super(context);
@@ -63,35 +60,26 @@ public class AttachmentRevealFrameLayout extends RevealFrameLayout {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        // mAttachmentContainer = this
         mContent = findViewById(R.id.circular_card);
     }
 
     public void show() {
-        if (mHideAnimator != null && mHideAnimator.isRunning()) {
-            mHideAnimator.cancel();
-            mHideAnimator = null;
-        }
-
-        // if show animation ended (meaning content is fully visible) this is a no-op
-        if (mFullyVisible) {
-            return;
-        }
+        // stop all animations!
+        mContent.clearAnimation();
 
         setVisibility(VISIBLE);
         int right = mContent.getRight();
         int top = mContent.getTop();
         float f = (float) Math.sqrt(Math.pow(mContent.getWidth(), 2D) + Math.pow(mContent.getHeight(), 2D));
-        mShowAnimator = ViewAnimationUtils.createCircularReveal(mContent, right, top, 0, f);
-        setAnimatorParams(mShowAnimator);
-        mShowAnimator.addListener(new SupportAnimator.AnimatorListener() {
+        SupportAnimator showAnimator = ViewAnimationUtils.createCircularReveal(mContent, right, top, 0, f);
+        setAnimatorParams(showAnimator);
+        showAnimator.addListener(new SupportAnimator.AnimatorListener() {
             @Override
             public void onAnimationStart() {
             }
 
             @Override
             public void onAnimationEnd() {
-                mFullyVisible = true;
             }
 
             @Override
@@ -104,7 +92,7 @@ public class AttachmentRevealFrameLayout extends RevealFrameLayout {
         });
 
         // create hide animation now
-        mHideAnimator = mShowAnimator.reverse();
+        mHideAnimator = showAnimator.reverse();
         setAnimatorParams(mHideAnimator);
         mHideAnimator.addListener(new SupportAnimator.AnimatorListener() {
             @Override
@@ -113,9 +101,7 @@ public class AttachmentRevealFrameLayout extends RevealFrameLayout {
 
             @Override
             public void onAnimationEnd() {
-                setVisibility(INVISIBLE);
-                mFullyVisible = false;
-                mHideAnimator = null;
+                hideNow();
             }
 
             @Override
@@ -127,19 +113,21 @@ public class AttachmentRevealFrameLayout extends RevealFrameLayout {
             }
         });
 
-        mShowAnimator.start();
+        showAnimator.start();
     }
 
     public void hide() {
-        mFullyVisible = false;
+        hide(false);
+    }
 
+    public void hide(boolean instant) {
         // cancel show animation (if any)
-        if (mShowAnimator != null && mShowAnimator.isRunning()) {
-            mShowAnimator.cancel();
-            mShowAnimator = null;
-        }
+        mContent.clearAnimation();
 
-        if (mHideAnimator != null && !mHideAnimator.isRunning()) {
+        if (instant) {
+            hideNow();
+        }
+        else if (mHideAnimator != null && !mHideAnimator.isRunning()) {
             mHideAnimator.start();
         }
     }
@@ -155,6 +143,11 @@ public class AttachmentRevealFrameLayout extends RevealFrameLayout {
 
     public boolean isClosing() {
         return mHideAnimator != null && mHideAnimator.isRunning();
+    }
+
+    void hideNow() {
+        setVisibility(INVISIBLE);
+        mHideAnimator = null;
     }
 
     private void setAnimatorParams(SupportAnimator anim) {
