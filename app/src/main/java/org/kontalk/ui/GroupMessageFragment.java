@@ -56,6 +56,7 @@ import org.kontalk.message.CompositeMessage;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.util.Preferences;
 import org.kontalk.util.XMPPUtils;
 
 
@@ -376,6 +377,10 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         }
 
         else if (type == Presence.Type.available || type == Presence.Type.unavailable) {
+            // no encryption - pointless to verify keys
+            if (!Preferences.getEncryptionEnabled(context))
+                return;
+
             String bareJid = XmppStringUtils.parseBareJid(jid);
 
             Contact contact = Contact.findByUserId(context, bareJid);
@@ -399,7 +404,6 @@ public class GroupMessageFragment extends AbstractComposeFragment {
                     showKeyWarning();
                 }
             }
-
         }
     }
 
