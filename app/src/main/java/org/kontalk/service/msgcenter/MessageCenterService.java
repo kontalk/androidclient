@@ -121,7 +121,6 @@ import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.Keyring;
-import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MessagesProviderUtils;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Groups;
