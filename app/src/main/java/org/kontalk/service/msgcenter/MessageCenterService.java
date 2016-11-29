@@ -2297,6 +2297,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 group = GroupControllerFactory
                     .createController(KontalkGroupController.GROUP_TYPE, mConnection, this);
 
+                // check if we can send messages even with some members with no subscriptipn
+                if (!group.canSendWithNoSubscription()) {
+                    for (String jid : toGroup) {
+                        if (!isAuthorized(jid)) {
+                            Log.i(TAG, "not subscribed to " + jid + ", not sending group message");
+                            return;
+                        }
+                    }
+                }
+
                 int groupCommandId = data.getInt("org.kontalk.message.group.command", 0);
                 switch (groupCommandId) {
                     case GROUP_COMMAND_PART:
@@ -2463,7 +2473,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             // post-process for group delivery
-            if (isGroupMsg && groupCommand != null) {
+            if (isGroupMsg) {
                 m = group.afterEncryption(groupCommand, m, originalStanza);
             }
 
@@ -2477,8 +2487,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     try {
                         chatState = ChatState.valueOf(data.getString("org.kontalk.message.chatState"));
                         // add chat state if message is not a received receipt
-                        if (chatState != null)
-                            m.addExtension(new ChatStateExtension(chatState));
+                        m.addExtension(new ChatStateExtension(chatState));
                     }
                     catch (Exception ignored) {
                     }

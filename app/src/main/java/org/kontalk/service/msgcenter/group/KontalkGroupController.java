@@ -186,4 +186,9 @@ public class KontalkGroupController implements GroupController<Message> {
         return false;
     }
 
+    @Override
+    public boolean canSendWithNoSubscription() {
+        return false;
+    }
+
 }
