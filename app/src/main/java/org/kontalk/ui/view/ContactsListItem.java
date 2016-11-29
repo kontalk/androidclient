@@ -92,18 +92,25 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
 
         if (mTrustStatus != null) {
             int resId;
-            switch (contact.getTrustedLevel()) {
-                case MyUsers.Keys.TRUST_UNKNOWN:
-                    resId = R.drawable.ic_trust_unknown;
-                    break;
-                case MyUsers.Keys.TRUST_IGNORED:
-                    resId = R.drawable.ic_trust_ignored;
-                    break;
-                case MyUsers.Keys.TRUST_VERIFIED:
-                    resId = R.drawable.ic_trust_verified;
-                    break;
-                default:
-                    resId = -1;
+
+            if (contact.isKeyChanged()) {
+                // the key has changed and was not trusted yet
+                resId = R.drawable.ic_trust_unknown;
+            }
+            else {
+                switch (contact.getTrustedLevel()) {
+                    case MyUsers.Keys.TRUST_UNKNOWN:
+                        resId = R.drawable.ic_trust_unknown;
+                        break;
+                    case MyUsers.Keys.TRUST_IGNORED:
+                        resId = R.drawable.ic_trust_ignored;
+                        break;
+                    case MyUsers.Keys.TRUST_VERIFIED:
+                        resId = R.drawable.ic_trust_verified;
+                        break;
+                    default:
+                        resId = -1;
+                }
             }
 
             if (resId > 0) {

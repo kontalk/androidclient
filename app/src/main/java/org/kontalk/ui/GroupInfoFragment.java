@@ -118,7 +118,7 @@ public class GroupInfoFragment extends ActionModeListFragment
         mMembersAdapter.clear();
         for (String jid : members) {
             Contact c = Contact.findByUserId(getContext(), jid);
-            if (c.getTrustedLevel() == MyUsers.Keys.TRUST_UNKNOWN)
+            if (c.isKeyChanged() || c.getTrustedLevel() == MyUsers.Keys.TRUST_UNKNOWN)
                 showIgnoreAll = true;
             mMembersAdapter.add(c);
         }
@@ -373,9 +373,18 @@ public class GroupInfoFragment extends ActionModeListFragment
         text.append(fingerprint);
         text.setSpan(SystemUtils.getTypefaceSpan(Typeface.BOLD), start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
+        int trustedLevel;
+        if (c.isKeyChanged()) {
+            // the key has changed and was not trusted yet
+            trustedLevel = MyUsers.Keys.TRUST_UNKNOWN;
+        }
+        else {
+            trustedLevel = c.getTrustedLevel();
+        }
+
         int trustStringId;
         CharacterStyle[] trustSpans;
-        switch (c.getTrustedLevel()) {
+        switch (trustedLevel) {
             case MyUsers.Keys.TRUST_IGNORED:
                 trustStringId = R.string.trust_ignored;
                 trustSpans = new CharacterStyle[] {
@@ -567,7 +576,7 @@ public class GroupInfoFragment extends ActionModeListFragment
         public void ignoreAll() {
             synchronized (mMembers) {
                 for (Contact c : mMembers) {
-                    if (c.getTrustedLevel() == MyUsers.Keys.TRUST_UNKNOWN) {
+                    if (c.isKeyChanged() || c.getTrustedLevel() == MyUsers.Keys.TRUST_UNKNOWN) {
                         String fingerprint = c.getFingerprint();
                         Keyring.setTrustLevel(mContext, c.getJID(), fingerprint, MyUsers.Keys.TRUST_IGNORED);
                         Contact.invalidate(c.getJID());

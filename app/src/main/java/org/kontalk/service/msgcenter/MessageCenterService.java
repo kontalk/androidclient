@@ -121,6 +121,7 @@ import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.Keyring;
+import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MessagesProviderUtils;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Groups;
@@ -1542,7 +1543,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         mWakeLock.release();
     }
 
-    private void broadcast(String action) {
+    void broadcast(String action) {
         broadcast(action, null, null);
     }
 
@@ -1738,10 +1739,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         if (to != null) {
             filter
-                .append(" AND ")
+                .append(" AND (")
                 .append(Messages.PEER)
-                .append("=?");
-            filterArgs = new String[] { to };
+                .append("=? OR EXISTS (SELECT 1 FROM group_members WHERE ")
+                .append(Groups.GROUP_JID)
+                .append("=")
+                .append(Messages.PEER)
+                .append(" AND ")
+                .append(Groups.PEER)
+                .append("=?))");
+            filterArgs = new String[] { to, to };
         }
 
         Cursor c = getContentResolver().query(Messages.CONTENT_URI,
@@ -1916,7 +1923,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         c.close();
     }
 
-    private void sendPendingSubscriptionReplies() {
+    void sendPendingSubscriptionReplies() {
         Cursor c = getContentResolver().query(Threads.CONTENT_URI,
                 new String[] {
                     Threads.PEER,
@@ -2297,6 +2304,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 group = GroupControllerFactory
                     .createController(KontalkGroupController.GROUP_TYPE, mConnection, this);
 
+                // check if we can send messages even with some members with no subscriptipn
+                if (!group.canSendWithNoSubscription()) {
+                    for (String jid : toGroup) {
+                        if (!isAuthorized(jid)) {
+                            Log.i(TAG, "not subscribed to " + jid + ", not sending group message");
+                            return;
+                        }
+                    }
+                }
+
                 int groupCommandId = data.getInt("org.kontalk.message.group.command", 0);
                 switch (groupCommandId) {
                     case GROUP_COMMAND_PART:
@@ -2463,7 +2480,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             // post-process for group delivery
-            if (isGroupMsg && groupCommand != null) {
+            if (isGroupMsg) {
                 m = group.afterEncryption(groupCommand, m, originalStanza);
             }
 
@@ -2477,8 +2494,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     try {
                         chatState = ChatState.valueOf(data.getString("org.kontalk.message.chatState"));
                         // add chat state if message is not a received receipt
-                        if (chatState != null)
-                            m.addExtension(new ChatStateExtension(chatState));
+                        m.addExtension(new ChatStateExtension(chatState));
                     }
                     catch (Exception ignored) {
                     }
@@ -2908,6 +2924,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.setAction(MessageCenterService.ACTION_RETRY);
         // TODO not implemented yet
         i.putExtra(MessageCenterService.EXTRA_TO, to);
+        context.startService(i);
+    }
+
+    public static void retryAllMessages(final Context context) {
+        MessagesProviderUtils.retryAllMessages(context);
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_RETRY);
         context.startService(i);
     }
 

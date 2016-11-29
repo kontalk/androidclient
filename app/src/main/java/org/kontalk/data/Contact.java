@@ -346,6 +346,18 @@ public class Contact {
         return mFingerprint;
     }
 
+    /** Returns true if the key is unknown, i.e. no key was trusted yet. */
+    public boolean isKeyUnknown() {
+        return mTrustedKeyRing == null;
+    }
+
+    /** Returns true if the key has changed and not approved yet. */
+    public boolean isKeyChanged() {
+        String trustedFingerprint = getTrustedFingerprint();
+        return (trustedFingerprint == null || mFingerprint == null) ||
+            !mFingerprint.equals(trustedFingerprint);
+    }
+
     public long getLastSeen() {
         return mLastSeen;
     }

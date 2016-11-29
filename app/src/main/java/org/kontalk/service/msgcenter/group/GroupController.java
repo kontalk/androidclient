@@ -54,4 +54,10 @@ public interface GroupController<T extends Stanza> {
     /** Returns true if this group controller should allow sending a command to an empty group. */
     boolean canSendCommandsWithEmptyGroup();
 
+    /**
+     * Returns true if this group controller should allow sending messages to
+     * the group even if not all users have allowed subscription.
+     */
+    boolean canSendWithNoSubscription();
+
 }

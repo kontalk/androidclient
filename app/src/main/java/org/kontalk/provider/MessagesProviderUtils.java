@@ -186,6 +186,17 @@ public class MessagesProviderUtils {
             new String[] { to });
     }
 
+    /** Marks all pending messages as SENDING. */
+    public static int retryAllMessages(Context context) {
+        boolean encrypted = Preferences.getEncryptionEnabled(context);
+        ContentValues values = new ContentValues(2);
+        values.put(Messages.STATUS, Messages.STATUS_SENDING);
+        values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+        return context.getContentResolver().update(Messages.CONTENT_URI, values,
+            Messages.STATUS + "=" + Messages.STATUS_PENDING,
+            null);
+    }
+
     /** Inserts an empty thread (that is, with no messages). */
     public static long insertEmptyThread(Context context, String peer, String draft) {
         ContentValues msgValues = new ContentValues(9);
