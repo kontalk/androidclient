@@ -180,6 +180,8 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     private View mNextPageButton;
     private TextView mStatusText;
     private MenuItem mDeleteThreadMenu;
+    private MenuItem mEnableEncryptionMenu;
+    private MenuItem mDisableEncryptionMenu;
 
     /** The thread id. */
     long threadId = -1;
@@ -760,6 +762,8 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         onInflateOptionsMenu(menu, inflater);
         mDeleteThreadMenu = menu.findItem(R.id.delete_thread);
+        mEnableEncryptionMenu = menu.findItem(R.id.enable_encryption);
+        mDisableEncryptionMenu = menu.findItem(R.id.disable_encryption);
         updateUI();
     }
 
@@ -782,9 +786,55 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             case R.id.invite_group:
                 addUsers();
                 return true;
+
+            case R.id.enable_encryption:
+                enableEncryption();
+                return true;
+
+            case R.id.disable_encryption:
+                disableEncryption();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void enableEncryption() {
+        new MaterialDialog.Builder(getActivity())
+                .title(R.string.title_enable_encryption)
+                .content(R.string.msg_enable_encryption)
+                .positiveText(R.string.menu_enable_encryption)
+                .negativeText(android.R.string.cancel)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
+                        setEncryption(true);
+                        updateUI();
+                    }
+                })
+                .show();
+    }
+
+    private void disableEncryption() {
+        new MaterialDialog.Builder(getActivity())
+                .title(R.string.title_disable_encryption)
+                .content(R.string.msg_disable_encryption)
+                .positiveText(R.string.menu_disable_encryption)
+                .positiveColorRes(R.color.button_danger)
+                .negativeText(android.R.string.cancel)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
+                        setEncryption(false);
+                        updateUI();
+                    }
+                })
+                .show();
+    }
+
+    private void setEncryption(boolean encryption) {
+        if (mConversation != null)
+            mConversation.setEncryption(encryption);
     }
 
     @Override
@@ -1922,6 +1972,19 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
         if (mDeleteThreadMenu != null) {
             mDeleteThreadMenu.setEnabled(threadEnabled);
+        }
+
+        if (mEnableEncryptionMenu != null && mDisableEncryptionMenu != null) {
+            Context context = getActivity();
+            if (mConversation != null && Preferences.getEncryptionEnabled(context)) {
+                boolean encryption = mConversation.isEncryptionEnabled();
+                mEnableEncryptionMenu.setVisible(!encryption).setEnabled(!encryption);
+                mDisableEncryptionMenu.setVisible(encryption).setEnabled(encryption);
+            }
+            else {
+                mEnableEncryptionMenu.setVisible(false).setEnabled(false);
+                mDisableEncryptionMenu.setVisible(false).setEnabled(false);
+            }
         }
     }
 
