@@ -21,4 +21,12 @@ Device model:
 
 If you have a system log related to the issue please send it via email at
 devteam (at) kontalk.org. Please do not attach it or publish it anywhere because
-it may contain sensitive information.
+it may contain sensitive information. If you have root access, you can use Catlog
+(available on both Google Play and F-Droid) to produce it. Alternatively, if you
+have the Android SDK installed on your computer, connect your device and execute:
+
+```
+adb logcat -d | grep `adb shell ps | grep org.kontalk | cut -c10-15` >kontalk-log.txt
+```
+
+and send us the text file.
