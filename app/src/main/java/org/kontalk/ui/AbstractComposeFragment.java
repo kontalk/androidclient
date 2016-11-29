@@ -143,10 +143,13 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     /** How many messages to load per page. */
     private static final int MESSAGE_PAGE_SIZE = 1000;
 
-    private static final int SELECT_ATTACHMENT_OPENABLE = Activity.RESULT_FIRST_USER + 1;
-    private static final int SELECT_ATTACHMENT_CONTACT = Activity.RESULT_FIRST_USER + 2;
-    private static final int SELECT_ATTACHMENT_PHOTO = Activity.RESULT_FIRST_USER + 3;
-    private static final int REQUEST_INVITE_USERS = Activity.RESULT_FIRST_USER + 4;
+    private static final int SELECT_ATTACHMENT_OPENABLE = 1;
+    private static final int SELECT_ATTACHMENT_CONTACT = 2;
+    private static final int SELECT_ATTACHMENT_PHOTO = 3;
+    private static final int REQUEST_INVITE_USERS = 4;
+
+    // use this as base for request codes for child classes
+    protected static final int REQUEST_FIRST_CHILD = 100;
 
     protected enum WarningType {
         SUCCESS(0),    // not implemented

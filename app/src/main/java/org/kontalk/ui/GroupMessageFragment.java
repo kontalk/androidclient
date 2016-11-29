@@ -66,7 +66,7 @@ import org.kontalk.util.XMPPUtils;
 public class GroupMessageFragment extends AbstractComposeFragment {
     private static final String TAG = ComposeMessage.TAG;
 
-    private static final int REQUEST_PRIVATE_CHAT = Activity.RESULT_FIRST_USER + 1;
+    private static final int REQUEST_PRIVATE_CHAT = REQUEST_FIRST_CHILD + 1;
 
     /** The virtual or real group JID. */
     private String mGroupJID;
