@@ -136,21 +136,23 @@ public class KontalkGroupCommands {
     /** Returns true if the create group command for the given thread has been sent. */
     public static boolean isGroupCreatedSent(Context context, long threadId) {
         Cursor c = context.getContentResolver().query(MyMessages.Messages.CONTENT_URI,
-            new String[] { MyMessages.Messages.STATUS },
+            new String[] { MyMessages.Messages._ID },
             MyMessages.Messages.THREAD_ID + "=" + threadId + " AND " +
-                MyMessages.Messages.DIRECTION + "=" + MyMessages.Messages.DIRECTION_OUT + " AND " +
                 MyMessages.Messages.BODY_MIME + "=? AND " +
-                MyMessages.Messages.BODY_CONTENT + " LIKE ?",
+                MyMessages.Messages.BODY_CONTENT + " LIKE ? AND " +
+                MyMessages.Messages.STATUS + " IN (" +
+                    MyMessages.Messages.STATUS_SENT + ", " + MyMessages.Messages.STATUS_RECEIVED + "," +
+                    MyMessages.Messages.STATUS_INCOMING + ", " + MyMessages.Messages.STATUS_CONFIRMED + ")",
             new String[] {
                 GroupCommandComponent.MIME_TYPE,
                 GroupCommandComponent.COMMAND_CREATE + ":%"
             },
             null);
-        if (c.moveToNext()) {
-            int status = c.getInt(0);
-            return status == MyMessages.Messages.STATUS_SENT || status == MyMessages.Messages.STATUS_RECEIVED;
+        try {
+            return c.moveToNext();
         }
-        c.close();
-        return false;
+        finally {
+            c.close();
+        }
     }
 }
