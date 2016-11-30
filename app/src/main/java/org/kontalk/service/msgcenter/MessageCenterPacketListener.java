@@ -132,17 +132,28 @@ abstract class MessageCenterPacketListener implements StanzaListener {
             instance.addUploadService(service, priority);
     }
 
-    protected void resendPendingMessages(boolean retrying, boolean forcePending) {
-        MessageCenterService instance = mInstance.get();
-        if (instance != null)
-            instance.resendPendingMessages(retrying, forcePending);
+    protected void resendPendingMessages(final boolean retrying, final boolean forcePending) {
+        final MessageCenterService instance = mInstance.get();
+        if (instance != null) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    instance.resendPendingMessages(retrying, forcePending);
+                }
+            });
+        }
     }
 
-    protected void resendPending(boolean retrying, boolean forcePending, String to) {
-        MessageCenterService instance = mInstance.get();
+    protected void resendPending(final boolean retrying, final boolean forcePending, final String to) {
+        final MessageCenterService instance = mInstance.get();
         if (instance != null) {
-            instance.resendPendingMessages(retrying, forcePending, to);
-            instance.resendPendingReceipts();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    instance.resendPendingMessages(retrying, forcePending, to);
+                    instance.resendPendingReceipts();
+                }
+            });
         }
     }
 

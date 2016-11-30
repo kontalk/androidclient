@@ -31,8 +31,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.zip.ZipInputStream;
@@ -1663,6 +1665,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             .withAppendedId(Messages.CONTENT_URI, databaseId),
             new String[] {
                 Messages._ID,
+                Messages.THREAD_ID,
                 Messages.MESSAGE_ID,
                 Messages.PEER,
                 Messages.BODY_CONTENT,
@@ -1753,6 +1756,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Cursor c = getContentResolver().query(Messages.CONTENT_URI,
             new String[] {
                 Messages._ID,
+                Messages.THREAD_ID,
                 Messages.MESSAGE_ID,
                 Messages.PEER,
                 Messages.BODY_CONTENT,
@@ -1777,27 +1781,47 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void sendMessages(Cursor c, boolean retrying) {
+        // this set will cache thread IDs within this cursor with
+        // pending group commands (i.e. just processed group commands)
+        // This will be looked up when sending consecutive message in the group
+        // and stop them
+        Set<Long> pendingGroupCommandThreads = new HashSet<>();
+
         while (c.moveToNext()) {
             long id = c.getLong(0);
-            String msgId = c.getString(1);
-            String peer = c.getString(2);
-            byte[] textContent = c.getBlob(3);
-            String bodyMime = c.getString(4);
-            int securityFlags = c.getInt(5);
-            String attMime = c.getString(6);
-            String attFileUri = c.getString(7);
-            String attFetchUrl = c.getString(8);
-            String attPreviewPath = c.getString(9);
-            long attLength = c.getLong(10);
-            int compress = c.getInt(11);
-            // TODO int attSecurityFlags = c.getInt(12);
+            long threadId = c.getLong(1);
+            String msgId = c.getString(2);
+            String peer = c.getString(3);
+            byte[] textContent = c.getBlob(4);
+            String bodyMime = c.getString(5);
+            int securityFlags = c.getInt(6);
+            String attMime = c.getString(7);
+            String attFileUri = c.getString(8);
+            String attFetchUrl = c.getString(9);
+            String attPreviewPath = c.getString(10);
+            long attLength = c.getLong(11);
+            int compress = c.getInt(12);
+            // TODO int attSecurityFlags = c.getInt(13);
 
-            String groupJid = c.getString(12); // 13
-            String groupSubject = c.getString(13); // 14
+            String groupJid = c.getString(13); // 14
+            String groupSubject = c.getString(14); // 15
 
-            // orphan group command waiting to be sent
-            if (groupJid == null && GroupCommandComponent.supportsMimeType(bodyMime)) {
-                groupJid = peer;
+            if (pendingGroupCommandThreads.contains(threadId)) {
+                Log.v(TAG, "group message for pending group command - delaying");
+                continue;
+            }
+
+            final boolean isGroupCommand = GroupCommandComponent.supportsMimeType(bodyMime);
+            if (isGroupCommand) {
+                if (groupJid == null) {
+                    // orphan group command waiting to be sent
+                    groupJid = peer;
+                }
+                else {
+                    // cache the thread -- it will block future messages until
+                    // this command is received by the server
+                    pendingGroupCommandThreads.add(threadId);
+                }
             }
 
             String[] groupMembers = null;
@@ -1838,9 +1862,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // TODO shouldn't we pass security flags directly here??
             b.putBoolean("org.kontalk.message.encrypt", securityFlags != Coder.SECURITY_CLEARTEXT);
 
-            if (GroupCommandComponent.MIME_TYPE.equals(bodyMime)) {
+            if (isGroupCommand) {
                 int cmd = 0;
-                byte[] _command = c.getBlob(3);
+                byte[] _command = c.getBlob(4);
                 String command = new String(_command);
 
                 String[] createMembers;

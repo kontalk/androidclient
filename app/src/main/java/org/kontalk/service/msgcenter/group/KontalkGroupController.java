@@ -136,7 +136,7 @@ public class KontalkGroupController implements GroupController<Message> {
                 ReportingManager.logException(e);
             }
         }
-        else if (command instanceof AddRemoveMembersCommand) {
+        else if (command instanceof CreateGroupCommand || command instanceof AddRemoveMembersCommand) {
             try {
                 String id = packet.getStanzaId();
 

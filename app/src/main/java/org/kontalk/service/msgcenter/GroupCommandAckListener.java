@@ -78,6 +78,10 @@ public class GroupCommandAckListener extends MessageCenterPacketListener {
                             .build(), null, null);
                     }
                 }
+            case CREATE:
+                // resend pending stuff -- this will continue the delivery of
+                // group messages that were waiting for this group command
+                resendPending(false, false, null);
                 break;
             case PART:
                 if (mCommandMessage != null) {
