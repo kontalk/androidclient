@@ -68,7 +68,7 @@ public abstract class MainActivity extends ToolbarActivity {
     private static final String ACTION_AUTH_REQUEST_PASSWORD = "org.kontalk.AUTH_REQUEST_PASSWORD";
 
     protected boolean afterOnCreate() {
-        return !xmppUpgrade() && !handleIntent(getIntent()) && !checkPassword() && ifHuaweiAlert();
+        return !xmppUpgrade() && !checkPassword() && ifHuaweiAlert();
     }
 
     // http://stackoverflow.com/a/35220476/1045199
@@ -288,7 +288,7 @@ public abstract class MainActivity extends ToolbarActivity {
         return super.onCreateDialog(id, args);
     }
 
-    private boolean handleIntent(Intent intent) {
+    protected boolean handleIntent(Intent intent) {
         if (intent != null) {
             String action = intent.getAction();
 

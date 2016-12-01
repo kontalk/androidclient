@@ -112,7 +112,10 @@ public class ConversationsActivity extends MainActivity
         fragment.startQuery();
     }
 
-    private void handleIntent(Intent intent) {
+    protected boolean handleIntent(Intent intent) {
+        if (!super.handleIntent(intent))
+            return false;
+
         if (intent != null) {
             String action = intent.getAction();
 
@@ -149,6 +152,8 @@ public class ConversationsActivity extends MainActivity
                 }
             }
         }
+
+        return true;
     }
 
     private void processSendIntent(Intent sendIntent) {
