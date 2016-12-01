@@ -26,6 +26,7 @@ import android.view.MenuItem;
 
 import org.kontalk.R;
 import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.service.msgcenter.MessageCenterService;
 
 
 /**
@@ -49,6 +50,20 @@ public class GroupInfoActivity extends ToolbarActivity implements GroupInfoFragm
                 .replace(R.id.fragment, f)
                 .commit();
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // release message center
+        MessageCenterService.release(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // hold message center
+        MessageCenterService.hold(this, true);
     }
 
     @Override
