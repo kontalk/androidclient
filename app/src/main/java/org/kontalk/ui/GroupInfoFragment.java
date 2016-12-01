@@ -83,6 +83,7 @@ public class GroupInfoFragment extends ActionModeListFragment
     private Button mLeave;
     private Button mIgnoreAll;
     private MenuItem mRemoveMenu;
+    private MenuItem mChatMenu;
 
     GroupMembersAdapter mMembersAdapter;
 
@@ -237,6 +238,7 @@ public class GroupInfoFragment extends ActionModeListFragment
         mode.setTitle(getResources()
             .getQuantityString(R.plurals.context_selected,
                 mCheckedItemCount, mCheckedItemCount));
+        mode.invalidate();
     }
 
     @Override
@@ -248,6 +250,10 @@ public class GroupInfoFragment extends ActionModeListFragment
                     .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
                 mode.finish();
                 return true;
+            case R.id.menu_chat:
+                Contact c = getCheckedItem();
+                openChat(c.getJID());
+                return true;
         }
         return false;
     }
@@ -257,6 +263,7 @@ public class GroupInfoFragment extends ActionModeListFragment
         MenuInflater inflater = mode.getMenuInflater();
         inflater.inflate(R.menu.group_info_ctx, menu);
         mRemoveMenu = menu.findItem(R.id.menu_remove);
+        mChatMenu = menu.findItem(R.id.menu_chat);
         updateUI();
         return true;
     }
@@ -270,7 +277,20 @@ public class GroupInfoFragment extends ActionModeListFragment
 
     @Override
     public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-        return false;
+        mChatMenu.setVisible(mCheckedItemCount == 1);
+        return true;
+    }
+
+    private Contact getCheckedItem() {
+        if (mCheckedItemCount != 1)
+            throw new IllegalStateException("checked items count must be exactly 1");
+
+        return (Contact) getListView().getItemAtPosition(getCheckedItemPosition());
+    }
+
+    private int getCheckedItemPosition() {
+        SparseBooleanArray checked = getListView().getCheckedItemPositions();
+        return checked.keyAt(checked.indexOfValue(true));
     }
 
     private void removeSelectedUsers(final SparseBooleanArray checked) {
