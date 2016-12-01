@@ -20,7 +20,7 @@ allprojects {
 
     evaluationDependsOn ":client-common-java"
     ext {
-        appVersionCode = 211
+        appVersionCode = 212
         appVersionName = "4.0.0-beta1"
         targetSdkVersion = 22
         compileSdkVersion = 25
