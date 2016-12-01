@@ -1188,7 +1188,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 String[] mimes = null;
 
                 // returning from camera
-                if (data == null) {
+                if (requestCode == SELECT_ATTACHMENT_PHOTO) {
                     if (mCurrentPhoto != null) {
                         Uri uri = Uri.fromFile(mCurrentPhoto);
                         // notify media scanner
@@ -1221,8 +1221,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                     }
 
                     // SAF available, request persistable permissions
-                    if (MediaStorage.isStorageAccessFrameworkAvailable() &&
-                            requestCode == SELECT_ATTACHMENT_OPENABLE) {
+                    if (MediaStorage.isStorageAccessFrameworkAvailable()) {
                         for (Uri uri : uris) {
                             if (uri != null && !"file".equals(uri.getScheme())) {
                                 MediaStorage.requestPersistablePermissions(getActivity(), uri);
