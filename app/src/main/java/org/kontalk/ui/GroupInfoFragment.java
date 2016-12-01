@@ -328,28 +328,28 @@ public class GroupInfoFragment extends ActionModeListFragment
         final String jid = c.getJID();
         final String dialogFingerprint;
         final String fingerprint;
+        final boolean selfJid = Authenticator.isSelfJID(getContext(), jid);
         int titleResId = R.string.title_identity;
         String uid;
 
-        PGPPublicKeyRing publicKey = Keyring.getPublicKey(getActivity(), jid, MyUsers.Keys.TRUST_UNKNOWN);
+        PGPPublicKeyRing publicKey = Keyring.getPublicKey(getContext(), jid, MyUsers.Keys.TRUST_UNKNOWN);
         if (publicKey != null) {
             PGPPublicKey pk = PGP.getMasterKey(publicKey);
             String rawFingerprint = PGP.getFingerprint(pk);
             fingerprint = PGP.formatFingerprint(rawFingerprint);
 
             uid = PGP.getUserId(pk, XmppStringUtils.parseDomain(jid));
-
-            if (Authenticator.isSelfJID(getContext(), jid)) {
-                rawFingerprint = null;
-                titleResId = R.string.title_identity_self;
-            }
-            dialogFingerprint = rawFingerprint;
+            dialogFingerprint = selfJid ? null : rawFingerprint;
         }
         else {
             // FIXME using another string
             fingerprint = getString(R.string.peer_unknown);
             uid = null;
             dialogFingerprint = null;
+        }
+
+        if (Authenticator.isSelfJID(getContext(), jid)) {
+            titleResId = R.string.title_identity_self;
         }
 
         SpannableStringBuilder text = new SpannableStringBuilder();
@@ -447,7 +447,7 @@ public class GroupInfoFragment extends ActionModeListFragment
             .negativeText(R.string.button_refuse)
             .negativeColorRes(R.color.button_danger);
         }
-        else {
+        else if (!selfJid) {
             builder.onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
