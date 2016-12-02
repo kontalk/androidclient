@@ -792,7 +792,7 @@ public class UsersProvider extends ContentProvider {
                         ownNumber, jid, ownName,
                         null, null,
                         true);
-                    insertOrUpdateKey(jid, fingerprint, publicKeyData);
+                    insertOrUpdateKey(jid, fingerprint, publicKeyData, false);
                     count++;
                 }
                 catch (IllegalArgumentException iae) {
@@ -910,7 +910,8 @@ public class UsersProvider extends ContentProvider {
                         fingerprint = values.getAsString(Keys.FINGERPRINT);
                     }
 
-                    return insertOrUpdateKey(jid, fingerprint, values);
+                    return insertOrUpdateKey(jid, fingerprint, values,
+                        Boolean.parseBoolean(uri.getQueryParameter(Keys.INSERT_ONLY)));
 
                 default:
                     throw new IllegalArgumentException("Unknown URI " + uri);
@@ -948,21 +949,21 @@ public class UsersProvider extends ContentProvider {
         return null;
     }
 
-    private Uri insertOrUpdateKey(String jid, String fingerprint, byte[] keyData) {
+    private Uri insertOrUpdateKey(String jid, String fingerprint, byte[] keyData, boolean insertOnly) {
         if (jid == null || fingerprint == null)
             throw new IllegalArgumentException("either JID or fingerprint not provided");
 
         ContentValues values = new ContentValues(1);
         values.put(Keys.PUBLIC_KEY, keyData);
-        return insertOrUpdateKey(jid, fingerprint, values);
+        return insertOrUpdateKey(jid, fingerprint, values, insertOnly);
     }
 
-    private Uri insertOrUpdateKey(String jid, String fingerprint, ContentValues values) {
+    private Uri insertOrUpdateKey(String jid, String fingerprint, ContentValues values, boolean insertOnly) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         if (jid == null || fingerprint == null)
             throw new IllegalArgumentException("either JID or fingerprint not provided");
 
-        int rows;
+        int rows = 0;
 
         try {
             // try to insert the key with the provided values
@@ -977,10 +978,12 @@ public class UsersProvider extends ContentProvider {
             rows = 1;
         }
         catch (SQLiteConstraintException e) {
-            // we got a duplicated key, update the requested values
-            rows = db.update(TABLE_KEYS, values,
-                Keys.JID + "=? AND " + Keys.FINGERPRINT + "=?",
-                new String[] { jid, fingerprint });
+            if (!insertOnly) {
+                // we got a duplicated key, update the requested values
+                rows = db.update(TABLE_KEYS, values,
+                    Keys.JID + "=? AND " + Keys.FINGERPRINT + "=?",
+                    new String[]{ jid, fingerprint });
+            }
         }
 
         if (rows >= 0)
