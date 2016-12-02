@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2016 Kontalk Devteam <devteam@kontalk.org>
 
@@ -94,7 +94,7 @@
   <string name="pref_idle_time">アイドル時に切断</string>
   <string name="pref_title_idle_time">非アクティブ時に切断するまで待機する時間</string>
   <string name="pref_wakeup_time">サーバーに再接続</string>
-  <string name="pref_title_wakeup_time">非アクティブの期間後、サーバに再接続する前に待機する時間。プッシュ通知が利用できない場合にのみ機能します</string>
+  <string name="pref_title_wakeup_time">非アクティブの期間後、サーバに再接続する前に待機する時間。プッシュ通知が利用できないか、ネットワーク品質が非常に悪い場合にのみ使用します</string>
   <string name="pref_maintenance">メンテナンス</string>
   <string name="pref_regenerate_keypair">秘密鍵を再生成</string>
   <string name="pref_title_regenerate_keypair">あなたの秘密鍵が侵害されている場合に使用します</string>
@@ -171,7 +171,7 @@
   <string name="menu_refresh">更新</string>
   <string name="menu_invite">ユーザーを招待</string>
   <string name="title_error">エラー</string>
-  <string name="msg_do_refresh">連絡先リストを更新するには、プルダウンしてください。</string>
+  <string name="msg_do_refresh">メニュー &gt; 更新 を使用して、連絡先リストを更新してください。</string>
   <string name="msg_sync_progress">連絡先リストを更新中…</string>
   <string name="err_sync_failed">連絡先リストを更新することができません。後で再度実行してください。</string>
   <string name="err_sync_nonetwork">ネットワークが使用できません。後で再度実行してください。</string>
@@ -228,9 +228,9 @@ http://kontalk.org/</string>
   <string name="pref_text_enter_label_newline">Enter</string>
   <string name="pref_text_enter_label_newline_send">送信</string>
   <string name="pref_image_resize_label_original">オリジナル</string>
-  <string name="pref_image_resize_label_small">小 (0.3MP)</string>
-  <string name="pref_image_resize_label_medium">中 (0.5MP)</string>
-  <string name="pref_image_resize_label_large">大 (0.8MP)</string>
+  <string name="pref_image_resize_label_small">小 (0.4MP)</string>
+  <string name="pref_image_resize_label_medium">中 (1.0MP)</string>
+  <string name="pref_image_resize_label_large">大 (2.0MP)</string>
   <string name="pref_idle_time_label_never">なし</string>
   <string name="pref_idle_time_label_5m">5 分</string>
   <string name="pref_idle_time_label_15m">15 分</string>
@@ -372,10 +372,10 @@ http://kontalk.org/</string>
   <string name="msg_public_key_warning">このユーザーのパーソナルキーが変更されました。このユーザーに Kontalk を再インストールしたか、あるいは意図的に鍵を再生成したかを確認してください。そうしないと通信が危険にさらされる可能性があります!</string>
 <string name="title_user_exists">ユーザーが存在します</string>
     <string name="err_validation_user_exists"><b>使用している番号はすでにKontalkに登録されています。</b>別のデバイスで登録している場合、この方法では Kontalk から遮断されます。デバイス間でアカウントをコピーする方法については、ドキュメントを参照してください。とにかく続行するには OK を選択します。</string>
-    <string name="warning_user_blocked">ユーザーはあなたがブロックしました。</string>
+    <string name="warning_user_blocked">あなたがこのユーザーをブロックしました。</string>
 
     <string name="about_credits_devteam"><b>Kontalk の提供:</b></string>
-    <string name="about_credits_gfx"><b>グラフィックス/アイコンデザイン</b></string>
+    <string name="about_credits_gfx"><b>グラフィックス/アイコン</b></string>
     <string name="about_credits_translators"><b>翻訳者</b></string>
 
 <string name="pref_help">ヘルプ</string>
@@ -446,5 +446,121 @@ http://kontalk.org/</string>
     <plurals name="unread_messages">
         <item quantity="other">%d の未読メッセージ</item>
     </plurals>
+
+<string name="menu_create_group">グループを作成</string>
+    <string name="code_validation_intro_callerid">下のボタンをタップして、その電話番号に不在着信してください。 <b>登録している電話番号から通話を開始する必要があります</b>。 最初の呼び出し音が聞こえてすぐに電話を切ると、通話は無料です。 私たちにとってそれで十分です。</string>
+    <string name="code_validation_intro2_callerid">通話を終了したら、ここに戻り、下の確認ボタンをタップします。</string>
+    <string name="delete_thread_messages">チャット履歴を削除</string>
+    <string name="delete_threads_leave_groups">グループも離れる</string>
+    <string name="pref_push_notifications_disabled">無効</string>
+    <string name="pref_push_notifications_title_default">プッシュ通知は、バッテリーを節約するためのサーバ支援技術です。 メッセージのリアルタイム配信には影響しません。
+
+無効にしたときは、ネットワーク設定画面で Kontalk の接続動作を微調整できます。</string>
+    <string name="pref_push_notifications_title_disabled">プッシュ通知のサポートは、このバージョンには含まれていませんでした。</string>
+    <string name="pref_push_notifications_title_unavailable">プッシュ通知はこのデバイスではサポートされていません。</string>
+    <string name="text_search_results_empty">メッセージが見つかりません。</string>
+    <string name="err_authentication_failed_callerid">確認は成功しませんでした。 その番号にもう一度電話をかけて、少し長く待ってください。</string>
+    <string name="button_validation_fallback_callerid">別の方法を試す</string>
+    <string name="menu_invite_group">ユーザーを追加</string>
+    <string name="menu_group_info">グループ情報</string>
+    <string name="menu_set_group_subject">グループ見出しを設定</string>
+    <string name="menu_leave_group">グループを離れる</string>
+    <string name="pref_emoji_converter">スマイリーを絵文字に変換</string>
+    <string name="pref_title_emoji_converter">自動的に一部のテキストスマイリーを絵文字に変換</string>
+
+    <string name="pref_balloon_label_silence">サイレンス</string>
+    <string name="title_passphrase_request">秘密鍵のパスワード</string>
+    <string name="err_invalid_passphrase">パスワードが間違っています。 アプリを再起動して別のを試してください。</string>
+
+    <string name="chooser_error_no_gallery_app">ギャラリーアプリはありません。</string>
+    <string name="chooser_error_no_app">ファイルを開くのに適したアプリがありません。</string>
+
+    <string name="chooser_error_no_dialer">このデバイスに通話可能な電話アプリも、電話機能もありません。</string>
+    <string name="chooser_error_no_browser">リンクを開くためのブラウザがありません。</string>
+    <string name="button_refuse">拒否</string>
+    <string name="button_ignore">無視</string>
+    <string name="button_private_chat">プライベートチャット</string>
+    <string name="text_invitation_info">(チャットの招待状)</string>
+    <string name="title_identity">ID</string>
+    <string name="title_identity_self">ID (あなたの!)</string>
+
+    <string name="pref_media_autodownload_threshold">自動ダウンロードのしきい値</string>
+    <string name="pref_title_media_autodownload_threshold">このサイズより小さいファイルは常に自動的にダウンロードされます</string>
+    <string name="pref_msg_media_autodownload_threshold">KB 単位で値を入力してください。 自動的にダウンロードされないようにするには 0 に設定します。</string>
+
+    <string name="pref_media_autodownload">自動的にダウンロード</string>
+    <string name="pref_media_autodownload_label_never">しない</string>
+    <string name="pref_media_autodownload_label_wifi">Wi-Fi 時のみ</string>
+    <string name="pref_media_autodownload_label_always">常に</string>
+
+    <string name="pref_on">オン</string>
+    <string name="pref_off">オフ</string>
+
+    <string name="warning_public_key_group_unverified">一部のグループメンバーの ID が検証されていません。</string>
+
+    <string name="about_credits_contrib"><b>貢献者</b></string>
+    <string name="group_untitled">無題のグループ</string>
+    <string name="title_group_subject">グループ見出し</string>
+    <string name="group_command_create">グループを作成:</string>
+    <string name="group_command_self_parted">あなたはグループを離れました。</string>
+    <string name="group_command_user_parted">%s がグループを離れました。</string>
+    <string name="group_command_subject">グループの見出しを設定しました: %s</string>
+
+    <string name="group_command_text_create">グループを作成しました</string>
+    <string name="group_command_text_subject">グループ見出しを変更しました</string>
+    <string name="group_command_text_part">誰かがこのグループを離れました</string>
+    <string name="group_command_text_part_self">あなたはこのグループを離れました</string>
+    <string name="group_command_text_part_kicked">あなたはこのグループから削除されました</string>
+    <string name="group_command_text_add_remove">誰かが追加または削除されました</string>
+
+    <string name="groupinfo_activity_title">グループ情報</string>
+
+    <string name="group_info_set_title">見出しを変更</string>
+    <string name="group_info_leave">グループを離れる</string>
+    <string name="group_info_members">グループメンバー</string>
+    <string name="group_info_ignore_all">すべて無視</string>
+    <string name="confirm_will_leave_group">グループを離れた後、再びこのグループに入ることはできません。</string>
+    <string name="leave_group_delete_messages">チャット履歴も削除</string>
+    <string name="group_info_menu_remove">削除</string>
+
+    <string name="title_ignore_all_identities">すべての ID を無視しますか?</string>
+    <string name="msg_ignore_all_identities">すべての未確認の ID は無視されたものとしてマークされます。</string>
+    <string name="learn_more">もっと詳しく</string>
+
+    <string name="text_group_command_fallback">これはグループチャットメッセージです。 古いバージョンの Kontalk を使用しているか、クライアントがグループチャットプロトコルをサポートしていません。 最新バージョンにアップグレードしてください!</string>
+
+    <string name="title_huawei_protected_apps">Huawei 保護アプリ</string>
+    <string name="msg_huawei_protected_apps">Kontalk が正常に機能するには、保護されたアプリで有効にする必要があります。</string>
+    <string name="btn_huawei_protected_apps">保護されたアプリ</string>
+    <string name="check_do_not_show_again">今後表示しない</string>
+
+    <string name="status_label">"ステータス: "</string>
+    <string name="trust_unknown">未確認</string>
+    <string name="trust_ignored">無視</string>
+    <string name="trust_verified">確認済</string>
+
+    <string name="action_compose">新しいチャット</string>
+    <string name="action_compose_group">新しいグループ</string>
+
+    <string name="pref_reporting">匿名の使用統計情報を送信する</string>
+    <string name="pref_title_reporting">クラッシュレポートを含む</string>
+
+    <string name="notification_group_title">%1$s @ %2$s</string>
+
+    <plurals name="unread_messages_group">
+	<item quantity="one">%1$d メッセージ @ %2$s</item>
+	<item quantity="other"/>
+</plurals>
+
+    <plurals name="notification_more">
+	<item quantity="one">+1 以上</item>
+	<item quantity="other"/>
+</plurals>
+
+    <plurals name="group_people">
+	<item quantity="one">1 人</item>
+	<item quantity="other"></item>
+</plurals>
+
 
 </resources>
