@@ -107,7 +107,9 @@ public class Keyring {
         values.put(MyUsers.Keys.TIMESTAMP, date.getTime());
         if (trustLevel >= 0)
             values.put(MyUsers.Keys.TRUST_LEVEL, trustLevel);
-        context.getContentResolver().insert(MyUsers.Keys.getUri(jid, fingerprint), values);
+        context.getContentResolver().insert(MyUsers.Keys.getUri(jid, fingerprint)
+            // since we are handling data from a presence, insert only if it doesn't exist
+            .buildUpon().appendQueryParameter(MyUsers.Keys.INSERT_ONLY, "true").build(), values);
     }
 
     /** Sets the trust level for the given key. */
