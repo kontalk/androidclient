@@ -2193,13 +2193,27 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // used for verifying isPaused()
         String convJid;
         String[] toGroup;
+        GroupController group = null;
 
-        boolean isGroupMsg = (groupJid != null);
-        if (isGroupMsg) {
+        if (groupJid != null) {
             toGroup = data.getStringArray("org.kontalk.message.to");
             // TODO this should be discovered first
             to = XmppStringUtils.completeJidFrom("multicast", mConnection.getServiceName());
             convJid = groupJid;
+
+            // TODO take type from data
+            group = GroupControllerFactory
+                .createController(KontalkGroupController.GROUP_TYPE, mConnection, this);
+
+            // check if we can send messages even with some members with no subscriptipn
+            if (!group.canSendWithNoSubscription()) {
+                for (String jid : toGroup) {
+                    if (!isAuthorized(jid)) {
+                        Log.i(TAG, "not subscribed to " + jid + ", not sending group message");
+                        return;
+                    }
+                }
+            }
         }
         else {
             to = data.getString("org.kontalk.message.to");
@@ -2207,7 +2221,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             convJid = to;
         }
 
-        if (!isGroupMsg && !isAuthorized(to)) {
+        if (group == null && !isAuthorized(to)) {
             Log.i(TAG, "not subscribed to " + to + ", not sending message");
             // warn user: message will not be sent
             if (!retrying && MessagingNotification.isPaused(to)) {
@@ -2320,23 +2334,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             Stanza m, originalStanza;
 
             // pre-process message for group delivery
-            GroupController group = null;
             GroupCommand groupCommand = null;
-            if (isGroupMsg) {
-                // TODO take type from data
-                group = GroupControllerFactory
-                    .createController(KontalkGroupController.GROUP_TYPE, mConnection, this);
-
-                // check if we can send messages even with some members with no subscriptipn
-                if (!group.canSendWithNoSubscription()) {
-                    for (String jid : toGroup) {
-                        if (!isAuthorized(jid)) {
-                            Log.i(TAG, "not subscribed to " + jid + ", not sending group message");
-                            return;
-                        }
-                    }
-                }
-
+            if (group != null) {
                 int groupCommandId = data.getInt("org.kontalk.message.group.command", 0);
                 switch (groupCommandId) {
                     case GROUP_COMMAND_PART:
@@ -2401,7 +2400,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             // message server id
             String serverId = isMessage ? data.getString("org.kontalk.message.ack") : null;
-            boolean ackRequest = isMessage && !data.getBoolean("org.kontalk.message.standalone", false) && !isGroupMsg;
+            boolean ackRequest = isMessage &&
+                !data.getBoolean("org.kontalk.message.standalone", false) &&
+                group == null;
 
             if (isMessage) {
                 org.jivesoftware.smack.packet.Message msg = (org.jivesoftware.smack.packet.Message) m;
@@ -2503,7 +2504,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             // post-process for group delivery
-            if (isGroupMsg) {
+            if (group != null) {
                 m = group.afterEncryption(groupCommand, m, originalStanza);
             }
 
