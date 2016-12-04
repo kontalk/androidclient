@@ -305,9 +305,9 @@
     <string name="pref_text_enter_label_newline">Enter</string>
     <string name="pref_text_enter_label_newline_send">Enviar</string>
     <string name="pref_image_resize_label_original">Original</string>
-    <string name="pref_image_resize_label_small">Pequena (0,3 Mp)</string>
-    <string name="pref_image_resize_label_medium">Média (0,5 Mp)</string>
-    <string name="pref_image_resize_label_large">Grande (0,8 Mp)</string>
+    <string name="pref_image_resize_label_small">Pequena (0,4 Mp)</string>
+    <string name="pref_image_resize_label_medium">Média (1,0 Mp)</string>
+    <string name="pref_image_resize_label_large">Grande (2,0 Mp)</string>
     <string name="pref_idle_time_label_never">Nunca</string>
     <string name="pref_idle_time_label_5m">5 minutos</string>
     <string name="pref_idle_time_label_15m">15 minutos</string>
