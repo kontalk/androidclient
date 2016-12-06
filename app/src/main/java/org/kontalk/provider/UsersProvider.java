@@ -160,7 +160,7 @@ public class UsersProvider extends ContentProvider {
             "ALTER TABLE users_backup RENAME TO " + TABLE_USERS_OFFLINE,
             // keys table
             "CREATE TABLE keys_backup " + CREATE_TABLE_KEYS,
-            "INSERT INTO keys_backup SELECT jid, fingerprint, "+Keys.TRUST_VERIFIED+", strftime('%s')*1000, public_key FROM " + TABLE_KEYS,
+            "INSERT INTO keys_backup SELECT jid, fingerprint, "+Keys.TRUST_VERIFIED+", strftime('%s')*1000, public_key FROM " + TABLE_KEYS + " WHERE fingerprint IS NOT NULL",
             "DROP TABLE " + TABLE_KEYS,
             "ALTER TABLE keys_backup RENAME TO " + TABLE_KEYS,
         };
