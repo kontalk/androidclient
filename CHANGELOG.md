@@ -1,5 +1,9 @@
 # Change Log
 
+## [4.0.0-beta2] - 2016-12-06
+### Fixed
+- Fix crash for some users (#883)
+
 ## [4.0.0-beta1] - 2016-12-04
 ### Changed
 - Group chat (#179)
