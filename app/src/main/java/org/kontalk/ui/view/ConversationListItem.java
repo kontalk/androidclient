@@ -38,7 +38,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.GroupCommandComponent;
-import org.kontalk.provider.MessagesProviderUtils;
+import org.kontalk.provider.MessagesProviderUtils.GroupThreadContent;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.util.MessageUtils;
@@ -212,8 +212,8 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
                 if (GroupCommandComponent.supportsMimeType(conv.getMime()) && draft == null) {
                     if (incoming) {
                         // content is in a special format
-                        String[] parsed = MessagesProviderUtils.parseThreadContent(subject);
-                        subject = parsed[1];
+                        GroupThreadContent parsed = GroupThreadContent.parseIncoming(subject);
+                        subject = parsed.command;
                     }
                     text = new SpannableString(GroupCommandComponent.getTextContent(getContext(), subject, incoming));
                     ((Spannable) text).setSpan(STYLE_ITALIC, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
@@ -221,19 +221,21 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
                 else {
                     if (incoming && conv.isGroupChat()) {
                         // content is in a special format
-                        String[] parsed = MessagesProviderUtils.parseThreadContent(subject);
-                        contact = parsed[0] != null ? Contact.findByUserId(context, parsed[0]) : null;
-                        source = parsed[1];
+                        GroupThreadContent parsed = GroupThreadContent.parseIncoming(subject);
+                        contact = parsed.sender != null ? Contact.findByUserId(context, parsed.sender) : null;
+                        source = parsed.command;
 
-                        String displayName;
-                        if (contact != null) {
+                        String displayName = null;
+                        if (contact != null)
                             displayName = contact.getName();
-                        }
-                        else if (BuildConfig.DEBUG) {
-                            displayName = conv.getRecipient();
-                        }
-                        else {
-                            displayName = context.getString(R.string.peer_unknown);
+
+                        if (displayName == null) {
+                            if (BuildConfig.DEBUG) {
+                                displayName = conv.getRecipient();
+                            }
+                            else {
+                                displayName = context.getString(R.string.peer_unknown);
+                            }
                         }
 
                         if (source == null) {
