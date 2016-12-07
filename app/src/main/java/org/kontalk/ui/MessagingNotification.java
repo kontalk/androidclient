@@ -55,6 +55,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.GroupCommandComponent;
+import org.kontalk.provider.MessagesProviderUtils.GroupThreadContent;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
@@ -296,6 +297,7 @@ public class MessagingNotification {
             MessageAccumulator accumulator = new MessageAccumulator(context);
             while (c.moveToNext()) {
                 long threadId = c.getLong(0);
+                String peer = c.getString(1);
                 String mime = c.getString(2);
                 String content = c.getString(3);
                 boolean encrypted = c.getInt(4) != 0;
@@ -307,12 +309,21 @@ public class MessagingNotification {
                     content = CompositeMessage.getSampleTextContent(mime);
                 }
                 else if (GroupCommandComponent.supportsMimeType(mime)) {
-                    content = GroupCommandComponent.getTextContent(context, content, true);
+                    // content is in a special format
+                    GroupThreadContent parsed = GroupThreadContent.parseIncoming(content);
+                    try {
+                        peer = parsed.sender;
+                        content = GroupCommandComponent.getTextContent(context, parsed.command, true);
+                    }
+                    catch (UnsupportedOperationException e) {
+                        // TODO using another string
+                        content = context.getString(R.string.peer_unknown);
+                    }
                 }
 
                 accumulator.accumulate(
                     threadId,
-                    c.getString(1),
+                    peer,
                     content,
                     c.getInt(5),
                     // group data
