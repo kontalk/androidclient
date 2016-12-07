@@ -508,7 +508,7 @@
     <string name="group_command_subject">群组主题设置为：%s</string>
 
     <string name="group_command_text_create">创建了群组</string>
-    <string name="group_command_text_subject">群组主题已修改</string>
+    <string name="group_command_text_subject">群组主题已变更</string>
     <string name="group_command_text_part">有人离开了该群组</string>
     <string name="group_command_text_add_remove">某人被添加或删除</string>
 
