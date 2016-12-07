@@ -348,16 +348,27 @@ public class MessagesProviderUtils {
         }
     }
 
-    public static String[] parseThreadContent(String content) {
-        String[] parsed = content.split(";", 2);
-        if (parsed.length < 2) {
-            return new String[] { null, content };
+    public static final class GroupThreadContent {
+        public final String sender;
+        public final String command;
+
+        /** Parse thread content text for a special case: incoming group command. */
+        public GroupThreadContent(String sender, String command) {
+            this.sender = sender;
+            this.command = command;
         }
 
-        if (parsed[1].length() == 0)
-            parsed[1] = null;
+        public static GroupThreadContent parseIncoming(String content) {
+            String[] parsed = content.split(";", 2);
+            if (parsed.length < 2) {
+                return new GroupThreadContent(null, content);
+            }
 
-        return parsed;
+            if (parsed[1].length() == 0)
+                parsed[1] = null;
+
+            return new GroupThreadContent(parsed[0], parsed[1]);
+        }
     }
 
 }
