@@ -101,7 +101,7 @@
     <string name="pref_idle_time">闲置多久断线</string>
     <string name="pref_title_idle_time">非活动时断线前需要等待的时间</string>
     <string name="pref_wakeup_time">重新连接到服务器</string>
-    <string name="pref_title_wakeup_time">非活动状态开启后，重连服务器需要的等待时间。仅当推送服务不可用的时候工作</string>
+    <string name="pref_title_wakeup_time">非活动状态一段时间后，重连服务器需要的等待时间。仅当推送服务不可用或者网络状况糟糕的时候使用</string>
     <string name="pref_maintenance">维护</string>
     <string name="pref_regenerate_keypair">重新生成个人密匙</string>
     <string name="pref_title_regenerate_keypair">假定你的个人密匙被泄露后使用</string>
@@ -588,7 +588,18 @@
 
     <plurals name="notification_more">
 	<item quantity="one">加1</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
+
+    <string name="code_validation_intro_callerid">触碰下面的按钮以回拨未接通话。请注意<b>该通话必须从你注册的手机号码中发起</b>。如果你在听到第一次响铃马上挂断，那么该通话就是免费的。这对我们来说已经足够。</string>
+    <string name="code_validation_intro2_callerid">结束通话后，回到该处并触碰下面的验证按钮。</string>
+    <string name="err_authentication_failed_callerid">验证未成功。尝试再次呼叫该号码或者稍等一段时间。</string>
+    <string name="button_validation_fallback_callerid">尝试新的办法</string>
+    <string name="menu_group_info">组信息</string>
+    <string name="chooser_error_no_dialer">找不到可以呼叫的拨号应用或者该设备无法使用电话通讯。</string>
+    <string name="button_refuse">拒绝</string>
+    <string name="button_private_chat">私密聊天</string>
+    <string name="pref_reporting">发送匿名的使用统计</string>
+    <string name="pref_title_reporting">包含崩溃报告</string>
 
     </resources>
