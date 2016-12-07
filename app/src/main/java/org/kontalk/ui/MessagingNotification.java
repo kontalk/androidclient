@@ -642,8 +642,8 @@ public class MessagingNotification {
                     if (count < 5) {
                         SpannableStringBuilder buf = new SpannableStringBuilder();
                         buf.append(name).append(' ');
-                        buf.setSpan(new ForegroundColorSpan(mContext.getResources()
-                                .getColor(R.color.notification_name_color)),
+                        buf.setSpan(new ForegroundColorSpan(ContextCompat
+                            .getColor(mContext, R.color.notification_name_color)),
                             0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                         // take just the last message
                         buf.append(conv.lastContent);
