@@ -1,5 +1,30 @@
 # Change Log
 
+## [4.0.0-beta2] - 2016-12-06
+### Fixed
+- Fix crash for some users (#883)
+
+## [4.0.0-beta1] - 2016-12-04
+### Changed
+- Group chat (#179)
+- Ask passphrase on first start if not available (#650)
+- Improvement and clarification of some preferences (#749, #823)
+- No need to input the phone number anymore when importing the key (#772)
+- Preference to opt-out of Crashlytics (#827)
+- User-initiated missed call verification (#829)
+
+### Fixed
+- Handle database errors (#46)
+- Fix attachments panel crash (#699)
+- Fix several tablet issues (#701, #793)
+- Fix crash when blocking while offline (#723)
+- Fix crash when clicking outside "Load more messages" button (#750)
+- Fix search view bug (#752)
+- Fix crash on missing external apps (#777, #782, #860)
+- Fix user always being away (#787)
+- Compress images and generate thumbnail in the background (#789)
+- Fix compose activity not receiving correct lifecycle calls (#833)
+
 ## [3.1.10] - 2016-05-14
 ### Changed
 - Update country flags (#731)

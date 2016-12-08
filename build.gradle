@@ -5,8 +5,8 @@ buildscript {
         maven { url 'https://maven.fabric.io/public' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.2'
-        classpath 'com.github.triplet.gradle:play-publisher:1.1.4'
+        classpath 'com.android.tools.build:gradle:2.2.3'
+        classpath 'com.github.triplet.gradle:play-publisher:1.2.0-beta1'
         classpath 'io.fabric.tools:gradle:1.+'
     }
 }
@@ -20,8 +20,8 @@ allprojects {
 
     evaluationDependsOn ":client-common-java"
     ext {
-        appVersionCode = 213
-        appVersionName = "4.0.0-beta1"
+        appVersionCode = 215
+        appVersionName = "4.0.0-beta3"
         targetSdkVersion = 22
         compileSdkVersion = 25
         buildToolsVersion = '25.0.1'

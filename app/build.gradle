@@ -172,7 +172,7 @@ if (System.getenv("TRAVIS")) {
 }
 else if (project.hasProperty('GOOGLE_PLAY_DEVELOPER_KEY_FILE')) {
     play {
-        track = 'alpha'
+        track = 'beta'
         jsonFile = file(GOOGLE_PLAY_DEVELOPER_KEY_FILE)
     }
 }
