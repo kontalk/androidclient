@@ -31,6 +31,8 @@ import android.widget.Checkable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import cn.refactor.library.SmoothCheckBox;
+
 
 public class ContactsListItem extends AvatarListItem implements Checkable {
 
@@ -155,7 +157,7 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
     public void setChecked(boolean checked) {
         if (checked != mChecked) {
             mChecked = checked;
-            mCheckbox.setChecked(checked, true);
+            mCheckbox.setChecked(checked, !SystemUtils.isLegacySystem());
             refreshDrawableState();
         }
     }

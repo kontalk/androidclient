@@ -369,7 +369,7 @@ public class Contact {
     private static Drawable generateRandomAvatar(Context context, Contact contact) {
         String letter = (contact.mName != null && contact.mName.length() > 0) ?
             contact.mName : contact.mJID;
-        int size = context.getResources().getDimensionPixelSize(R.dimen.avatar_container);
+        int size = context.getResources().getDimensionPixelSize(R.dimen.avatar_size);
 
         return TextDrawable.builder()
             .beginConfig()

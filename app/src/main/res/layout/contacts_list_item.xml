@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><!-- Kontalk Android client
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kontalk Android client
      Copyright (C) 2016 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
@@ -15,14 +16,14 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<org.kontalk.ui.view.ContactsListItem xmlns:android="http://schemas.android.com/apk/res/android"
+<org.kontalk.ui.view.ContactsListItem
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-
     android:minHeight="@dimen/avatar_list_item_height"
-    android:paddingEnd="?attr/listPreferredItemPaddingRight"
-    android:paddingRight="?attr/listPreferredItemPaddingRight">
+    android:paddingRight="?attr/listPreferredItemPaddingRight"
+    android:paddingEnd="?attr/listPreferredItemPaddingRight">
 
     <FrameLayout
         android:id="@+id/header_container"
@@ -36,12 +37,12 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@+id/header_container"
+        android:minHeight="@dimen/avatar_list_item_height"
         android:layout_toRightOf="@+id/header_container"
-        android:minHeight="@dimen/avatar_list_item_height">
+        android:layout_toEndOf="@+id/header_container">
 
         <RelativeLayout
-            android:id="@+id/container_avatar"
+            android:id="@+id/avatar_container"
             style="@style/AvatarListItemStyle">
 
             <org.kontalk.ui.view.CircleContactBadge
@@ -49,12 +50,13 @@
                 android:layout_width="@dimen/avatar_size"
                 android:layout_height="@dimen/avatar_size" />
 
-            <org.kontalk.ui.view.SmoothCheckBox
+            <cn.refactor.library.SmoothCheckBox
                 android:id="@+id/checkbox"
-                android:layout_width="@dimen/checkbox_size"
-                android:layout_height="@dimen/checkbox_size"
+                android:layout_width="@dimen/avatar_checkbox_size"
+                android:layout_height="@dimen/avatar_checkbox_size"
                 android:layout_alignBottom="@+id/avatar"
                 android:layout_alignRight="@+id/avatar"
+                android:layout_alignEnd="@+id/avatar"
                 app:color_checked="@color/app_primary_dark"
                 app:color_unchecked="@android:color/transparent"
                 app:color_unchecked_stroke="@android:color/transparent" />
@@ -68,10 +70,10 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_alignWithParentIfMissing="true"
-            android:layout_toEndOf="@id/container_avatar"
-            android:layout_toRightOf="@id/container_avatar"
+            android:layout_toEndOf="@id/avatar_container"
+            android:layout_toRightOf="@id/avatar_container"
             android:ellipsize="marquee"
-            android:maxLines="1" />
+            android:maxLines="1"/>
 
         <TextView
             android:id="@android:id/text2"
@@ -79,12 +81,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignWithParentIfMissing="true"
+            android:paddingBottom="16dp"
             android:layout_below="@android:id/text1"
-            android:layout_toEndOf="@id/container_avatar"
-            android:layout_toRightOf="@id/container_avatar"
-            android:ellipsize="end"
+            android:layout_toEndOf="@id/avatar_container"
+            android:layout_toRightOf="@id/avatar_container"
             android:maxLines="2"
-            android:paddingBottom="16dp" />
+            android:ellipsize="end"/>
     </RelativeLayout>
 
 </org.kontalk.ui.view.ContactsListItem>

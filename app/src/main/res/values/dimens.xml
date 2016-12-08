@@ -32,9 +32,8 @@
     <dimen name="emoji_edittext_size">22sp</dimen>
     <dimen name="emoji_listitem_size">18sp</dimen>
 
-    <dimen name="avatar_container">40dp</dimen>
     <dimen name="avatar_size">40dp</dimen>
-    <dimen name="checkbox_size">16dp</dimen>
+    <dimen name="avatar_checkbox_size">16dp</dimen>
 
     <dimen name="msg_status_size">16dp</dimen>
 

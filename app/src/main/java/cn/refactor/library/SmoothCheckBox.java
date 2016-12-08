@@ -1,4 +1,20 @@
-package org.kontalk.ui.view;
+/**
+ * * Copyright 2016 andy
+ * <p/>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package cn.refactor.library;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -19,7 +35,16 @@ import android.widget.Checkable;
 import com.nineoldandroids.animation.ValueAnimator;
 
 import org.kontalk.R;
-import org.kontalk.util.SystemUtils;
+
+
+/**
+ * Author : andy
+ * Date   : 16/1/21 11:28
+ * Email  : andyxialm@gmail.com
+ * Github : github.com/andyxialm
+ * Description : A custom CheckBox with animation for Android
+ */
+
 
 public class SmoothCheckBox extends View implements Checkable {
     private static final String KEY_INSTANCE_STATE = "InstanceState";
@@ -74,7 +99,7 @@ public class SmoothCheckBox extends View implements Checkable {
         mFloorColor = ta.getColor(R.styleable.SmoothCheckBox_color_unchecked_stroke, COLOR_FLOOR_UNCHECKED);
         mCheckedColor = ta.getColor(R.styleable.SmoothCheckBox_color_checked, COLOR_CHECKED);
         mUnCheckedColor = ta.getColor(R.styleable.SmoothCheckBox_color_unchecked, COLOR_UNCHECKED);
-        mStrokeWidth = ta.getDimensionPixelSize(R.styleable.SmoothCheckBox_stroke_width, SystemUtils.dp2px(getContext(), 0));
+        mStrokeWidth = ta.getDimensionPixelSize(R.styleable.SmoothCheckBox_stroke_width, 0);
 
         ta.recycle();
 
@@ -98,20 +123,6 @@ public class SmoothCheckBox extends View implements Checkable {
         mTickPoints[0] = new Point();
         mTickPoints[1] = new Point();
         mTickPoints[2] = new Point();
-
-        /*setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggle();
-                mTickDrawing = false;
-                mDrewDistance = 0;
-                if (isChecked()) {
-                    startCheckedAnimation();
-                } else {
-                    startUnCheckedAnimation();
-                }
-            }
-        });*/
     }
 
     @Override
@@ -188,7 +199,7 @@ public class SmoothCheckBox extends View implements Checkable {
     }
 
     private int measureSize(int measureSpec) {
-        int defSize = SystemUtils.dp2px(getContext(), DEF_DRAW_SIZE);
+        int defSize = dp2px(getContext(), DEF_DRAW_SIZE);
         int specSize = MeasureSpec.getSize(measureSpec);
         int specMode = MeasureSpec.getMode(measureSpec);
 
@@ -203,6 +214,11 @@ public class SmoothCheckBox extends View implements Checkable {
                 break;
         }
         return result;
+    }
+
+    private static int dp2px(Context context, float dipValue) {
+        final float scale = context.getResources().getDisplayMetrics().density;
+        return (int) (dipValue * scale + 0.5f);
     }
 
     @Override
