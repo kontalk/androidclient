@@ -54,6 +54,7 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
     private TextView mSubjectView;
     private TextView mFromView;
     private TextView mDateView;
+    private ImageView mSticky;
     private ImageView mErrorIndicator;
     private TextView mCounterView;
 
@@ -75,6 +76,7 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
         mSubjectView = (TextView) findViewById(R.id.subject);
 
         mDateView = (TextView) findViewById(R.id.date);
+        mSticky = (ImageView) findViewById(R.id.sticky);
         mErrorIndicator = (ImageView) findViewById(R.id.error);
         mCounterView = (TextView) findViewById(R.id.counter);
 
@@ -144,6 +146,7 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
 
         mFromView.setText(from);
         mDateView.setText(MessageUtils.formatTimeStampString(context, conv.getDate()));
+        mSticky.setVisibility(conv.isSticky() ? VISIBLE : GONE);
 
         // error indicator
         int resId = -1;

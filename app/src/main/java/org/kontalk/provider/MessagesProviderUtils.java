@@ -166,6 +166,14 @@ public class MessagesProviderUtils {
             .build(), null, null) > 0);
     }
 
+    public static int setThreadSticky(Context context, long id, boolean sticky) {
+        ContentValues values = new ContentValues(1);
+        values.put(Threads.STICKY, sticky);
+        return context.getContentResolver().update(
+            ContentUris.withAppendedId(Threads.CONTENT_URI, id),
+            values, null, null);
+    }
+
     /** Marks the given message as SENDING, regardless of its current status. */
     public static int retryMessage(Context context, Uri uri) {
         boolean encrypted = Preferences.getEncryptionEnabled(context);
