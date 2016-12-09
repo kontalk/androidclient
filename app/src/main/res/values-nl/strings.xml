@@ -571,4 +571,5 @@ Indien uitgeschakeld kan het netwerkgedrag van Kontalk in netwerkinstellingen in
     <string name="menu_group_info">Groepsinfo</string>
     <string name="button_private_chat">Privégesprek</string>
     <string name="group_info_owner_member">Eigenaar</string>
+    <string name="menu_sticky">Favoriet</string>
     </resources>
