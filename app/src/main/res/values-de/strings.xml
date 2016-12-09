@@ -570,4 +570,5 @@ Wenn sie deaktiviert sind kann das Kontalk Verbindungsverhalten in den Netzwerke
     <string name="menu_group_info">Gruppeninfo</string>
     <string name="button_private_chat">Privater Chat</string>
     <string name="group_info_owner_member">Chef</string>
+    <string name="menu_sticky">Favorit</string>
     </resources>
