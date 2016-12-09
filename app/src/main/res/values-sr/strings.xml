@@ -562,4 +562,11 @@
     <string name="pref_emoji_converter">Претварај смешке у емоџије</string>
     <string name="pref_title_emoji_converter">Аутоматско претварање неких текстуалних емотикона у емоџије</string>
 
+    <string name="menu_group_info">Подаци о групи</string>
+    <string name="button_refuse">Одбиј</string>
+    <string name="button_private_chat">Приватно ћаскање</string>
+    <string name="group_info_owner_member">Власник</string>
+    <string name="pref_reporting">Шаљи анонимну статистику о коришћењу</string>
+    <string name="pref_title_reporting">Укључујући извештаје о краховима</string>
+
     </resources>
