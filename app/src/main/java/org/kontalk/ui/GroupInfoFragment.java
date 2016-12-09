@@ -88,6 +88,7 @@ public class GroupInfoFragment extends ActionModeListFragment
     private Button mSetSubject;
     private Button mLeave;
     private Button mIgnoreAll;
+    private MenuItem mAddMenu;
     private MenuItem mRemoveMenu;
     private MenuItem mChatMenu;
 
@@ -137,10 +138,13 @@ public class GroupInfoFragment extends ActionModeListFragment
     }
 
     private void updateUI() {
+        String selfJid = Authenticator.getSelfJID(getContext());
+        boolean isOwner = KontalkGroup.checkOwnership(mConversation.getGroupJid(), selfJid);
         if (mRemoveMenu != null) {
-            String selfJid = Authenticator.getSelfJID(getContext());
-            boolean isOwner = KontalkGroup.checkOwnership(mConversation.getGroupJid(), selfJid);
             mRemoveMenu.setVisible(isOwner);
+        }
+        if (mAddMenu != null) {
+            mAddMenu.setVisible(isOwner);
         }
     }
 
@@ -164,6 +168,12 @@ public class GroupInfoFragment extends ActionModeListFragment
         mMembersAdapter = new GroupMembersAdapter(getContext(), null);
         setListAdapter(mMembersAdapter);
         setMultiChoiceModeListener(this);
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -221,6 +231,12 @@ public class GroupInfoFragment extends ActionModeListFragment
         return view;
     }
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.group_info_menu, menu);
+        mAddMenu = menu.findItem(R.id.menu_invite);
+    }
+
     void setGroupSubject(String subject) {
         mConversation.setGroupSubject(subject);
         reload();
@@ -228,7 +244,21 @@ public class GroupInfoFragment extends ActionModeListFragment
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        return isActionModeActive() || super.onOptionsItemSelected(item);
+        // action mode is active - no processing
+        if (isActionModeActive())
+            return true;
+
+        switch (item.getItemId()) {
+            case R.id.menu_invite:
+                Activity parent = getActivity();
+                if (parent != null) {
+                    parent.setResult(GroupInfoActivity.RESULT_ADD_USERS, null);
+                    parent.finish();
+                }
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     public boolean isActionModeActive() {
