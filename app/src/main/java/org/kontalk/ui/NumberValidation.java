@@ -388,6 +388,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mPassphrase = saved.passphrase;
             mImportedPublicKey = saved.importedPublicKey;
             mImportedPrivateKey = saved.importedPrivateKey;
+            mTrustedKeys = saved.trustedKeys;
 
             // update UI
             mNameText.setText(mName);
@@ -463,11 +464,16 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_MANUAL_VALIDATION) {
             if (resultCode == RESULT_OK) {
+                Map<String, Keyring.TrustedFingerprint> trustedKeys = null;
+                Map<String, String> keys = (HashMap) data.getSerializableExtra(PARAM_TRUSTED_KEYS);
+                if (keys != null) {
+                    trustedKeys = Keyring.fromTrustedFingerprintMap(keys);
+                }
                 finishLogin(data.getStringExtra(PARAM_SERVER_URI),
                     data.getByteArrayExtra(PARAM_PRIVATEKEY),
                     data.getByteArrayExtra(PARAM_PUBLICKEY),
                     true,
-                    (HashMap) data.getSerializableExtra(PARAM_TRUSTED_KEYS));
+                    trustedKeys);
             }
             else if (resultCode == RESULT_FALLBACK) {
                 mClearState = true;
@@ -1152,7 +1158,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         i.putExtra("passphrase", mPassphrase);
         i.putExtra("importedPublicKey", mImportedPublicKey);
         i.putExtra("importedPrivateKey", mImportedPrivateKey);
-        i.putExtra("trustedKeys", (HashMap) mTrustedKeys);
+        i.putExtra("trustedKeys", (HashMap) Keyring.toTrustedFingerprintMap(mTrustedKeys));
         i.putExtra("server", serverUri);
         i.putExtra("sender", sender);
         i.putExtra("challenge", challenge);
