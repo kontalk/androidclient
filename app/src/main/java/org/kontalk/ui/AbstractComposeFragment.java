@@ -1077,7 +1077,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             .show();
     }
 
-    private void addUsers() {
+    void addUsers() {
         chooseContact();
     }
 
