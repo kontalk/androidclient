@@ -453,13 +453,17 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     }
 
     public void viewGroupInfo() {
+        final Context ctx = getContext();
+        if (ctx == null)
+            return;
+
         int membership = mConversation != null ? mConversation.getGroupMembership() : Groups.MEMBERSHIP_PARTED;
         if (membership == Groups.MEMBERSHIP_MEMBER || membership == Groups.MEMBERSHIP_OBSERVER) {
-            if (Kontalk.hasTwoPanesUI(getContext())) {
-                GroupInfoDialog.start(getContext(), this, getThreadId(), REQUEST_GROUP_INFO);
+            if (Kontalk.hasTwoPanesUI(ctx)) {
+                GroupInfoDialog.start(ctx, this, getThreadId(), REQUEST_GROUP_INFO);
             }
             else {
-                GroupInfoActivity.start(getContext(), this, getThreadId(), REQUEST_GROUP_INFO);
+                GroupInfoActivity.start(ctx, this, getThreadId(), REQUEST_GROUP_INFO);
             }
         }
     }
