@@ -25,7 +25,10 @@ import org.kontalk.util.SystemUtils;
 
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
+import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.style.CharacterStyle;
 import android.util.AttributeSet;
 import android.widget.Checkable;
 import android.widget.ImageView;
@@ -70,6 +73,10 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
     }
 
     public final void bind(Context context, final Contact contact) {
+        bind(context, contact, null, null);
+    }
+
+    public final void bind(Context context, final Contact contact, String prependStatus, CharacterStyle prependStyle) {
         mContact = contact;
 
         setChecked(false);
@@ -82,7 +89,7 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
             mText1.setText(contact.getNumber());
         }
 
-        String text2 = contact.getStatus();
+        CharSequence text2 = contact.getStatus();
         if (text2 == null) {
             text2 = contact.getNumber();
             mText2.setTextColor(ContextCompat.getColor(context, R.color.grayed_out));
@@ -91,6 +98,15 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
             int color = ContextCompat.getColor(context,
                 SystemUtils.getThemedResource(getContext(), android.R.attr.textColorSecondary));
             mText2.setTextColor(color);
+        }
+        if (prependStatus != null) {
+            if (prependStyle != null) {
+                text2 = new SpannableString(prependStatus + " " + text2);
+                ((SpannableString) text2).setSpan(prependStyle, 0, prependStatus.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            else {
+                text2 = prependStatus + " " + text2;
+            }
         }
         mText2.setText(text2);
 
@@ -157,7 +173,8 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
     public void setChecked(boolean checked) {
         if (checked != mChecked) {
             mChecked = checked;
-            mCheckbox.setChecked(checked, !SystemUtils.isLegacySystem());
+            if (mCheckbox != null)
+                mCheckbox.setChecked(checked, !SystemUtils.isLegacySystem());
             refreshDrawableState();
         }
     }

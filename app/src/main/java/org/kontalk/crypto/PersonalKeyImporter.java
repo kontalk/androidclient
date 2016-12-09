@@ -145,25 +145,18 @@ public class PersonalKeyImporter implements PersonalKeyPack {
         return mPublicKey != null ? mPublicKey.toByteArray() : null;
     }
 
+    @SuppressWarnings("unchecked")
     public Map<String, Keyring.TrustedFingerprint> getTrustedKeys() throws IOException {
         if (mTrustedKeys != null) {
             Properties prop = new Properties();
             prop.load(mTrustedKeys.getInputStream());
 
-            Map<String, Keyring.TrustedFingerprint> keys = new HashMap<>(prop.size());
-            for (Map.Entry e : prop.entrySet()) {
-                try {
-                    Keyring.TrustedFingerprint fingerprint =
-                        Keyring.TrustedFingerprint.fromString((String) e.getValue());
-                    if (fingerprint != null) {
-                        keys.put((String) e.getKey(), fingerprint);
-                    }
-                }
-                catch (Exception ex) {
-                    throw new IOException("invalid trusted keys file", ex);
-                }
+            try {
+                return Keyring.fromTrustedFingerprintMap((Map) prop);
             }
-            return keys;
+            catch (Exception ex) {
+                throw new IOException("invalid trusted keys file", ex);
+            }
         }
 
         return null;

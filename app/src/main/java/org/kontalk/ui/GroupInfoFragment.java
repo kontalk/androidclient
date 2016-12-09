@@ -18,6 +18,9 @@
 
 package org.kontalk.ui;
 
+import java.text.Collator;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -33,6 +36,7 @@ import org.spongycastle.openpgp.PGPPublicKeyRing;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -42,6 +46,7 @@ import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.CharacterStyle;
+import android.text.style.ForegroundColorSpan;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -73,6 +78,7 @@ import org.kontalk.util.SystemUtils;
 
 /**
  * Group information fragment
+ * FIXME this class is too tied to the concept of "Kontalk group"
  * @author Daniele Ricci
  */
 public class GroupInfoFragment extends ActionModeListFragment
@@ -114,14 +120,14 @@ public class GroupInfoFragment extends ActionModeListFragment
 
         // load members
         boolean showIgnoreAll = false;
-        // TODO sort by display name
         String[] members = getGroupMembers();
         mMembersAdapter.clear();
         for (String jid : members) {
             Contact c = Contact.findByUserId(getContext(), jid);
             if (c.isKeyChanged() || c.getTrustedLevel() == MyUsers.Keys.TRUST_UNKNOWN)
                 showIgnoreAll = true;
-            mMembersAdapter.add(c);
+            boolean owner = KontalkGroup.checkOwnership(mConversation.getGroupJid(), jid);
+            mMembersAdapter.add(c, owner);
         }
 
         mIgnoreAll.setVisibility(showIgnoreAll ? View.VISIBLE : View.GONE);
@@ -535,6 +541,7 @@ public class GroupInfoFragment extends ActionModeListFragment
     private static final class GroupMembersAdapter extends BaseAdapter {
         private final Context mContext;
         private final List<Contact> mMembers;
+        private String mOwner;
         private String mGroupJid;
 
         GroupMembersAdapter(Context context, String groupJid) {
@@ -551,8 +558,16 @@ public class GroupInfoFragment extends ActionModeListFragment
             mMembers.clear();
         }
 
-        public void add(Contact contact) {
+        @Override
+        public void notifyDataSetChanged() {
+            Collections.sort(mMembers, new DisplayNameComparator());
+            super.notifyDataSetChanged();
+        }
+
+        public void add(Contact contact, boolean isOwner) {
             mMembers.add(contact);
+            if (isOwner)
+                mOwner = contact.getJID();
         }
 
         @Override
@@ -590,7 +605,13 @@ public class GroupInfoFragment extends ActionModeListFragment
         private void bindView(View v, int position) {
             ContactsListItem view = (ContactsListItem) v;
             Contact contact = (Contact) getItem(position);
-            view.bind(mContext, contact);
+            String prependStatus = null;
+            CharacterStyle prependStyle = null;
+            if (contact.getJID().equalsIgnoreCase(mOwner)) {
+                prependStatus = mContext.getString(R.string.group_info_owner_member);
+                prependStyle = new ForegroundColorSpan(Color.RED);
+            }
+            view.bind(mContext, contact, prependStatus, prependStyle);
         }
 
         public void ignoreAll() {
@@ -604,6 +625,24 @@ public class GroupInfoFragment extends ActionModeListFragment
                 }
                 MessageCenterService.retryMessagesTo(mContext, mGroupJid);
             }
+        }
+
+        static class DisplayNameComparator implements
+            Comparator<Contact> {
+            DisplayNameComparator() {
+                mCollator.setStrength(Collator.PRIMARY);
+            }
+
+            public final int compare(Contact a, Contact b) {
+                String sa = !TextUtils.isEmpty(a.getName()) ?
+                    a.getName() : a.getNumber();
+                String sb = !TextUtils.isEmpty(b.getName()) ?
+                    b.getName() : b.getNumber();
+
+                return mCollator.compare(sa, sb);
+            }
+
+            private final Collator mCollator = Collator.getInstance();
         }
 
     }
