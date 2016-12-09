@@ -490,7 +490,7 @@ public class GroupInfoFragment extends ActionModeListFragment
         Intent i = new Intent();
         i.setData(MyMessages.Threads.getUri(jid));
         Activity parent = getActivity();
-        parent.setResult(Activity.RESULT_OK, i);
+        parent.setResult(GroupInfoActivity.RESULT_PRIVATE_CHAT, i);
         parent.finish();
     }
 
