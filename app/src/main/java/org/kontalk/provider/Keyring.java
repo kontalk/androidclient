@@ -209,6 +209,31 @@ public class Keyring {
         return list;
     }
 
+    /** Converts a raw-string trusted fingerprint map to a {@link TrustedFingerprint} map. */
+    public static Map<String, TrustedFingerprint> fromTrustedFingerprintMap(Map<String, String> props) {
+        Map<String, Keyring.TrustedFingerprint> keys = new HashMap<>(props.size());
+        for (Map.Entry e : props.entrySet()) {
+            TrustedFingerprint fingerprint = TrustedFingerprint
+                .fromString((String) e.getValue());
+            if (fingerprint != null) {
+                keys.put((String) e.getKey(), fingerprint);
+            }
+        }
+        return keys;
+    }
+
+    /** Converts a {@link TrustedFingerprint} map to a raw-string trusted fingerprint map. */
+    public static Map<String, String> toTrustedFingerprintMap(Map<String, TrustedFingerprint> props) {
+        Map<String, String> keys = new HashMap<>(props.size());
+        for (Map.Entry<String, TrustedFingerprint> e : props.entrySet()) {
+            TrustedFingerprint fingerprint = e.getValue();
+            if (fingerprint != null) {
+                keys.put(e.getKey(), e.toString());
+            }
+        }
+        return keys;
+    }
+
     public static final class TrustedFingerprint {
         public final String fingerprint;
         public final int trustLevel;

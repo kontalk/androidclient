@@ -577,7 +577,14 @@ public final class Preferences {
         if (trustedKeys != null) {
             trustedKeysOut = new ByteArrayOutputStream();
             Properties prop = new Properties();
-            prop.putAll(trustedKeys);
+
+            for (Map.Entry<String, Keyring.TrustedFingerprint> e : trustedKeys.entrySet()) {
+                Keyring.TrustedFingerprint fingerprint = e.getValue();
+                if (fingerprint != null) {
+                    prop.put(e.getKey(), fingerprint.toString());
+                }
+            }
+
             try {
                 prop.store(trustedKeysOut, null);
             }
@@ -637,12 +644,18 @@ public final class Preferences {
                 try {
                     Properties prop = new Properties();
                     prop.load(trustedKeysProp);
-                    p.trustedKeys = new HashMap<>((Map) prop);
+                    p.trustedKeys = new HashMap<>(prop.size());
+                    for (Map.Entry e : prop.entrySet()) {
+                        Keyring.TrustedFingerprint fingerprint =
+                            Keyring.TrustedFingerprint.fromString((String) e.getValue());
+                        if (fingerprint != null) {
+                            p.trustedKeys.put((String) e.getKey(), fingerprint);
+                        }
+                    }
                 }
                 catch (IOException ignored) {
                 }
             }
-
 
             return p;
         }
@@ -676,7 +689,7 @@ public final class Preferences {
         public String sender;
         public String challenge;
         public boolean force;
-        public Map<String, String> trustedKeys;
+        public Map<String, Keyring.TrustedFingerprint> trustedKeys;
     }
 
     /** Recent statuses database helper. */
