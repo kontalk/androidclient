@@ -67,7 +67,7 @@ import org.kontalk.util.XMPPUtils;
 public class GroupMessageFragment extends AbstractComposeFragment {
     private static final String TAG = ComposeMessage.TAG;
 
-    private static final int REQUEST_PRIVATE_CHAT = REQUEST_FIRST_CHILD + 1;
+    private static final int REQUEST_GROUP_INFO = REQUEST_FIRST_CHILD + 1;
 
     /** The virtual or real group JID. */
     private String mGroupJID;
@@ -456,20 +456,26 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         int membership = mConversation != null ? mConversation.getGroupMembership() : Groups.MEMBERSHIP_PARTED;
         if (membership == Groups.MEMBERSHIP_MEMBER || membership == Groups.MEMBERSHIP_OBSERVER) {
             if (Kontalk.hasTwoPanesUI(getContext())) {
-                GroupInfoDialog.start(getContext(), this, getThreadId(), REQUEST_PRIVATE_CHAT);
+                GroupInfoDialog.start(getContext(), this, getThreadId(), REQUEST_GROUP_INFO);
             }
             else {
-                GroupInfoActivity.start(getContext(), this, getThreadId(), REQUEST_PRIVATE_CHAT);
+                GroupInfoActivity.start(getContext(), this, getThreadId(), REQUEST_GROUP_INFO);
             }
         }
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_PRIVATE_CHAT) {
-            if (resultCode == Activity.RESULT_OK) {
-                ((ComposeMessageParent) getActivity())
-                    .loadConversation(data.getData());
+        if (requestCode == REQUEST_GROUP_INFO) {
+            switch (resultCode) {
+                case GroupInfoActivity.RESULT_PRIVATE_CHAT:
+                    ((ComposeMessageParent) getActivity())
+                        .loadConversation(data.getData());
+                    break;
+
+                case GroupInfoActivity.RESULT_ADD_USERS:
+                    addUsers();
+                    break;
             }
         }
         else {

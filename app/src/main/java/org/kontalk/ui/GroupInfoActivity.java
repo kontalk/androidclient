@@ -22,6 +22,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.view.Menu;
 import android.view.MenuItem;
 
 import org.kontalk.R;
@@ -34,6 +35,9 @@ import org.kontalk.service.msgcenter.MessageCenterService;
  * @author Daniele Ricci
  */
 public class GroupInfoActivity extends ToolbarActivity implements GroupInfoFragment.GroupInfoParent {
+
+    static final int RESULT_PRIVATE_CHAT = RESULT_FIRST_USER;
+    static final int RESULT_ADD_USERS = RESULT_FIRST_USER + 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,8 +71,17 @@ public class GroupInfoActivity extends ToolbarActivity implements GroupInfoFragm
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.group_info_menu, menu);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.menu_invite:
+                setResult(GroupInfoActivity.RESULT_ADD_USERS, null);
+                // go on with the finish
             case android.R.id.home:
                 finish();
                 return true;
