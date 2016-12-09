@@ -221,6 +221,7 @@
     <string name="menu_attachment">Attach</string>
     <string name="menu_smileys">Smileys</string>
     <string name="menu_invite_group">Add users</string>
+    <string name="menu_start_group">Start group</string>
     <string name="menu_group_info">Group info</string>
     <string name="menu_set_group_subject">Set group subject</string>
     <string name="menu_leave_group">Leave group</string>
