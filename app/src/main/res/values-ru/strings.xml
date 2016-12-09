@@ -94,7 +94,7 @@
   <string name="pref_idle_time">Отключаться при бездействии</string>
   <string name="pref_title_idle_time">Время ожидания перед отключением ввиду бездействия</string>
   <string name="pref_wakeup_time">Повторное подключение</string>
-  <string name="pref_title_wakeup_time">Время ожидания перед повторным соединением с сервером после периода бездействия. Работает только когда push-уведомления не доступны</string>
+  <string name="pref_title_wakeup_time">Время ожидания перед повторным соединением с сервером после периода бездействия. Используется только когда push-уведомления недоступны или качество связи очень плохое</string>
   <string name="pref_maintenance">Обслуживание</string>
   <string name="pref_regenerate_keypair">Новая ключевая пара</string>
   <string name="pref_title_regenerate_keypair">Используйте если ваш личный ключ был скомпрометирован</string>
@@ -378,7 +378,7 @@
     <string name="warning_user_blocked">Пользователь был заблокирован вами.</string>
 
     <string name="about_credits_devteam"><b>Kontalk сделан для вас следующими людьми:</b></string>
-    <string name="about_credits_gfx"><b>Графика/Иконки</b></string>
+    <string name="about_credits_gfx"><b>Графика/иконки</b></string>
     <string name="about_credits_translators"><b>Переводчики</b></string>
 
 <string name="error_delete_thread">Невозможно удалить цепочку.</string>
@@ -520,12 +520,17 @@
 
     <plurals name="group_people">
 	<item quantity="one">1 человек</item>
-	<item quantity="few"/>
-	<item quantity="many">%d несколько человек</item>
-	<item quantity="other"/>
+	<item quantity="few">%d человека</item>
+	<item quantity="many">%d человек</item>
+	<item quantity="other"></item>
 </plurals>
 
     <plurals name="unread_messages">
         <item quantity="other">%d непрочитанных сообщений</item>
     </plurals>
-</resources>
+<string name="menu_group_info">О группе</string>
+    <string name="pref_balloon_label_silence">Silence</string>
+    <string name="chooser_error_no_dialer">Нет приложения для набора номера, либо телефония недоступна на этом устройстве.</string>
+    <string name="button_refuse">Отклонить</string>
+    <string name="button_private_chat">Приватная беседа</string>
+    </resources>
