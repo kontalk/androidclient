@@ -91,7 +91,7 @@
 			android:layout_height="@dimen/msg_status_size"
             android:layout_marginLeft="4dip"
             android:layout_marginStart="4dip"
-			android:src="@drawable/ic_favorite"
+			android:src="@drawable/ic_msg_star"
 			android:visibility="gone" />
 
 	    <ImageView
