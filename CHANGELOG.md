@@ -1,5 +1,15 @@
 # Change Log
 
+## [4.0.0-beta3] - 2016-12-09
+### Changed
+- Create group: multiselect checkbox (by @acappelli, #886)
+- Mark admin of a group (#876)
+- Sticky conversations (#887)
+- Group info screen: add users button (#875)
+
+### Fixed
+- Fix several group notifications and presentation bugs (#884)
+
 ## [4.0.0-beta2] - 2016-12-06
 ### Fixed
 - Fix crash for some users (#883)
