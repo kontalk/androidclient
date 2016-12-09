@@ -157,7 +157,8 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
     public void setChecked(boolean checked) {
         if (checked != mChecked) {
             mChecked = checked;
-            mCheckbox.setChecked(checked, !SystemUtils.isLegacySystem());
+            if (mCheckbox != null)
+                mCheckbox.setChecked(checked, !SystemUtils.isLegacySystem());
             refreshDrawableState();
         }
     }
