@@ -898,6 +898,8 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         // TODO one day it will be like this
         // Intent i = new Intent(Intent.ACTION_PICK, Users.CONTENT_URI);
         Intent i = new Intent(getContext(), ContactsListActivity.class);
+        i.putExtra(ContactsListActivity.MODE_MULTI_SELECT, true);
+        i.putExtra(ContactsListActivity.MODE_ADD_USERS, true);
         startActivityForResult(i, REQUEST_INVITE_USERS);
     }
 

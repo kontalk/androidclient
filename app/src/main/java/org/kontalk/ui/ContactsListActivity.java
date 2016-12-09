@@ -42,6 +42,7 @@ public class ContactsListActivity extends ToolbarActivity
     public static final String TAG = ContactsListActivity.class.getSimpleName();
 
     public static final String MODE_MULTI_SELECT = "org.kontalk.contacts.MULTI_SELECT";
+    public static final String MODE_ADD_USERS = "org.kontalk.contacts.ADD_USERS";
 
     private ContactsListFragment mFragment;
 
@@ -54,9 +55,11 @@ public class ContactsListActivity extends ToolbarActivity
         setupToolbar(true);
 
         boolean multiselect = getIntent().getBooleanExtra(MODE_MULTI_SELECT, false);
-        if (multiselect)
+        if (multiselect) {
+            boolean addUsers = getIntent().getBooleanExtra(MODE_ADD_USERS, false);
             // FIXME using another string
-            setTitle(R.string.action_compose_group);
+            setTitle(addUsers ? R.string.menu_invite_group : R.string.action_compose_group);
+        }
 
         if (savedInstanceState == null) {
             mFragment = ContactsListFragment.newInstance(multiselect);
