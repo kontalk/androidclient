@@ -228,16 +228,22 @@ public class ConversationListFragment extends ActionModeListFragment
         mode.setTitle(getResources()
             .getQuantityString(R.plurals.context_selected,
                 mCheckedItemCount, mCheckedItemCount));
+        mode.invalidate();
     }
 
     @Override
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-        if (item.getItemId() == R.id.menu_delete) {
-            // using clone because listview returns its original copy
-            deleteSelectedThreads(SystemUtils
-                .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
-            mode.finish();
-            return true;
+        switch (item.getItemId()) {
+            case R.id.menu_delete:
+                // using clone because listview returns its original copy
+                deleteSelectedThreads(SystemUtils
+                    .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
+                mode.finish();
+                return true;
+            case R.id.menu_sticky:
+                stickSelectedThread();
+                mode.finish();
+                return true;
         }
         return false;
     }
@@ -258,7 +264,9 @@ public class ConversationListFragment extends ActionModeListFragment
 
     @Override
     public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-        return false;
+        boolean singleItem = (mCheckedItemCount == 1);
+        menu.findItem(R.id.menu_sticky).setVisible(singleItem);
+        return true;
     }
 
     private void deleteSelectedThreads(final SparseBooleanArray checked) {
@@ -278,7 +286,7 @@ public class ConversationListFragment extends ActionModeListFragment
             .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                    Context ctx = getActivity();
+                    Context ctx = getContext();
                     for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
                         if (checked.get(i)) {
                             Cursor cursor = (Cursor) mListAdapter.getItem(i);
@@ -297,6 +305,27 @@ public class ConversationListFragment extends ActionModeListFragment
             builder.checkBoxPromptRes(R.string.delete_threads_leave_groups, false, null);
 
         builder.show();
+    }
+
+    private Conversation getCheckedItem() {
+        if (mCheckedItemCount != 1)
+            throw new IllegalStateException("checked items count must be exactly 1");
+
+        Cursor cursor = (Cursor) getListView().getItemAtPosition(getCheckedItemPosition());
+        return Conversation.createFromCursor(getActivity(), cursor);
+    }
+
+    private int getCheckedItemPosition() {
+        SparseBooleanArray checked = getListView().getCheckedItemPositions();
+        return checked.keyAt(checked.indexOfValue(true));
+    }
+
+    private void stickSelectedThread() {
+        Conversation conv = getCheckedItem();
+        if (conv != null) {
+            conv.setSticky(!conv.isSticky());
+        }
+        mListAdapter.notifyDataSetChanged();
     }
 
     public void chooseContact(boolean multiselect) {
