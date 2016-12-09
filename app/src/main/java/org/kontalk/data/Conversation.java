@@ -55,6 +55,7 @@ public class Conversation {
         Threads.ENCRYPTED,
         Threads.DRAFT,
         Threads.REQUEST_STATUS,
+        Threads.STICKY,
         Groups.GROUP_JID,
         Groups.SUBJECT,
         Groups.GROUP_TYPE,
@@ -72,10 +73,11 @@ public class Conversation {
     private static final int COLUMN_ENCRYPTED = 8;
     private static final int COLUMN_DRAFT = 9;
     private static final int COLUMN_REQUEST_STATUS = 10;
-    private static final int COLUMN_GROUP_JID = 11;
-    private static final int COLUMN_GROUP_SUBJECT = 12;
-    private static final int COLUMN_GROUP_TYPE = 13;
-    private static final int COLUMN_GROUP_MEMBERSHIP = 14;
+    private static final int COLUMN_STICKY = 11;
+    private static final int COLUMN_GROUP_JID = 12;
+    private static final int COLUMN_GROUP_SUBJECT = 13;
+    private static final int COLUMN_GROUP_TYPE = 14;
+    private static final int COLUMN_GROUP_MEMBERSHIP = 15;
 
     @SuppressWarnings("WeakerAccess")
     final Context mContext;
@@ -96,6 +98,7 @@ public class Conversation {
     private String mNumberHint;
     private boolean mEncrypted;
     private int mRequestStatus;
+    private boolean mSticky;
 
     // from groups table
     private String mGroupJid;
@@ -125,6 +128,7 @@ public class Conversation {
             mEncrypted = c.getInt(COLUMN_ENCRYPTED) != 0;
             mDraft = c.getString(COLUMN_DRAFT);
             mRequestStatus = c.getInt(COLUMN_REQUEST_STATUS);
+            mSticky = c.getInt(COLUMN_STICKY) != 0;
 
             mGroupJid = c.getString(COLUMN_GROUP_JID);
             mGroupSubject = c.getString(COLUMN_GROUP_SUBJECT);
@@ -264,6 +268,10 @@ public class Conversation {
         return mRequestStatus;
     }
 
+    public boolean isSticky() {
+        return mSticky;
+    }
+
     public String getNumberHint() {
         return mNumberHint;
     }
@@ -372,6 +380,10 @@ public class Conversation {
                     .delete(Groups.getUri(groupJid), null, null);
             }
         }
+    }
+
+    public void setSticky(boolean sticky) {
+        MessagesProviderUtils.setThreadSticky(mContext, mThreadId, sticky);
     }
 
     private void loadGroupPeers(boolean force) {
