@@ -476,7 +476,7 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
      */
     @Override
     protected void shutdown() {
-        if (isSmEnabled()) {
+        if (isSmEnabled() && !smAckSuspend) {
             try {
                 // Try to send a last SM Acknowledgement. Most servers won't find this information helpful, as the SM
                 // state is dropped after a clean disconnect anyways. OTOH it doesn't hurt much either.

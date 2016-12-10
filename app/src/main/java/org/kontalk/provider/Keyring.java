@@ -202,7 +202,9 @@ public class Keyring {
 
         Map<String, TrustedFingerprint> list = new HashMap<>(c.getCount());
         while (c.moveToNext()) {
-            list.put(c.getString(0), new TrustedFingerprint(c.getString(1), c.getInt(2)));
+            String fpr = c.getString(1);
+            if (fpr != null)
+                list.put(c.getString(0), new TrustedFingerprint(fpr, c.getInt(2)));
         }
 
         c.close();
