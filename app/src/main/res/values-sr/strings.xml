@@ -569,4 +569,6 @@
     <string name="pref_reporting">Шаљи анонимну статистику о коришћењу</string>
     <string name="pref_title_reporting">Укључујући извештаје о краховима</string>
 
+    <string name="group_command_owner_parted">Власник (%s) је напустио групу. Нико не може додати или уклонити чланове.</string>
+    <string name="menu_start_group">Почни групу</string>
     </resources>
