@@ -569,7 +569,8 @@ Wenn sie deaktiviert sind kann das Kontalk Verbindungsverhalten in den Netzwerke
     <string name="button_refuse">Ablehnen</string>
     <string name="menu_group_info">Gruppeninfo</string>
     <string name="button_private_chat">Privater Chat</string>
-    <string name="group_info_owner_member">Chef</string>
+    <string name="group_info_owner_member">Admin</string>
     <string name="menu_sticky">Favorit</string>
     <string name="menu_start_group">Neue Gruppe</string>
+    <string name="group_command_owner_parted">Der Admin (%) hat die Gruppe verlassen. Niemand kann Mitglieder zur Gruppe hinzufügen oder entfernen.</string>
     </resources>
