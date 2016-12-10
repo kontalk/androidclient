@@ -79,7 +79,9 @@ public class GroupContentView extends TextView
             }
             else {
                 Contact c = Contact.findByUserId(getContext(), component.getFrom());
-                text = getResources().getString(R.string.group_command_user_parted,
+                boolean isOwner = component.getFrom().equalsIgnoreCase(mComponent.getContent().getOwner());
+                text = getResources().getString(isOwner ?
+                    R.string.group_command_owner_parted : R.string.group_command_user_parted,
                     c.getDisplayName());
             }
         }
