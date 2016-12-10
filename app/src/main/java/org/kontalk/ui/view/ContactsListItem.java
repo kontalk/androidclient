@@ -27,7 +27,6 @@ import android.content.Context;
 import android.support.v4.content.ContextCompat;
 import android.text.SpannableString;
 import android.text.Spanned;
-import android.text.TextUtils;
 import android.text.style.CharacterStyle;
 import android.util.AttributeSet;
 import android.widget.Checkable;
@@ -83,11 +82,7 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
 
         loadAvatar(contact);
 
-        if (!TextUtils.isEmpty(contact.getName())) {
-            mText1.setText(contact.getName());
-        } else {
-            mText1.setText(contact.getNumber());
-        }
+        mText1.setText(contact.getDisplayName());
 
         CharSequence text2 = contact.getStatus();
         if (text2 == null) {

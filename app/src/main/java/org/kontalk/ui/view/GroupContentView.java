@@ -67,10 +67,7 @@ public class GroupContentView extends TextView
                 ((StringBuilder) text).append("\n");
 
                 Contact c = Contact.findByUserId(getContext(), member);
-                if (c != null)
-                    ((StringBuilder) text).append(c.getName());
-                else
-                    ((StringBuilder) text).append(member);
+                ((StringBuilder) text).append(c.getDisplayName());
             }
         }
 
@@ -83,7 +80,7 @@ public class GroupContentView extends TextView
             else {
                 Contact c = Contact.findByUserId(getContext(), component.getFrom());
                 text = getResources().getString(R.string.group_command_user_parted,
-                    (c != null) ? c.getName() : getResources().getString(R.string.peer_unknown));
+                    c.getDisplayName());
             }
         }
 
@@ -102,10 +99,7 @@ public class GroupContentView extends TextView
                         ((StringBuilder) text).append("\n");
 
                         Contact c = Contact.findByUserId(getContext(), member);
-                        if (c != null)
-                            ((StringBuilder) text).append(c.getName());
-                        else
-                            ((StringBuilder) text).append(member);
+                        ((StringBuilder) text).append(c.getDisplayName());
                     }
                 }
 
@@ -121,10 +115,7 @@ public class GroupContentView extends TextView
                         ((StringBuilder) text).append("\n");
 
                         Contact c = Contact.findByUserId(getContext(), member);
-                        if (c != null)
-                            ((StringBuilder) text).append(c.getName());
-                        else
-                            ((StringBuilder) text).append(member);
+                        ((StringBuilder) text).append(c.getDisplayName());
                     }
                 }
             }
@@ -162,9 +153,8 @@ public class GroupContentView extends TextView
     }
 
     public static GroupContentView create(LayoutInflater inflater, ViewGroup parent) {
-        GroupContentView view = (GroupContentView) inflater
+        return (GroupContentView) inflater
             .inflate(R.layout.message_content_group, parent, false);
-        return view;
     }
 
 }

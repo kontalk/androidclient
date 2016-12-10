@@ -434,8 +434,7 @@ public class MessagingNotification {
         // find the contact for the userId
         Contact contact = Contact.findByUserId(context, jid);
 
-        String title = (contact != null) ? contact.getName() :
-            context.getString(R.string.peer_unknown);
+        String title = contact.getDisplayName();
 
         // notification will open the conversation
         Intent ni = ComposeMessage.fromUserId(context, jid);
@@ -619,8 +618,7 @@ public class MessagingNotification {
                     count++;
 
                     Contact contact = Contact.findByUserId(mContext, conv.peer);
-                    String name = (contact != null) ? contact.getName() :
-                        mContext.getString(R.string.peer_unknown);
+                    String name = contact.getDisplayName();
 
                     if (conv.groupJid != null) {
                         if (!singleGroup) {
@@ -630,24 +628,22 @@ public class MessagingNotification {
                         }
                     }
 
-                    if (contact != null) {
-                        // add person to notification
-                        Uri personUri = contact.getUri();
-                        if (personUri == null && contact.getNumber() != null) {
-                            // no contact uri available, try phone number lookup
-                            try {
-                                personUri = Uri.parse("tel:" + contact.getNumber());
-                            }
-                            catch (Exception ignored) {
-                            }
+                    // add person to notification
+                    Uri personUri = contact.getUri();
+                    if (personUri == null && contact.getNumber() != null) {
+                        // no contact uri available, try phone number lookup
+                        try {
+                            personUri = Uri.parse("tel:" + contact.getNumber());
                         }
-                        if (personUri != null)
-                            mBuilder.addPerson(personUri.toString());
-
-                        if (btext.length() > 0)
-                            btext.append(", ");
-                        btext.append(name);
+                        catch (Exception ignored) {
+                        }
                     }
+                    if (personUri != null)
+                        mBuilder.addPerson(personUri.toString());
+
+                    if (btext.length() > 0)
+                        btext.append(", ");
+                    btext.append(name);
 
                     // inbox line
                     if (count < 5) {
@@ -694,8 +690,7 @@ public class MessagingNotification {
 
                 // ticker
                 Contact contact = Contact.findByUserId(mContext, conv.peer);
-                String name = (contact != null) ? contact.getName() :
-                    mContext.getString(R.string.peer_unknown);
+                String name = contact.getDisplayName();
 
                 if (conv.groupJid != null) {
                     name = mContext.getResources().getString(R.string.notification_group_title,
@@ -825,7 +820,7 @@ public class MessagingNotification {
         /** Returns the text that should be used as a ticker in the notification. */
         public CharSequence getTicker() {
             cacheContact();
-            String peer = (mContact != null) ? mContact.getName() :
+            String peer = (mContact != null) ? mContact.getDisplayName() :
                 mContext.getString(R.string.peer_unknown);
                 // debug mode -- conversation.peer;
 
@@ -851,7 +846,7 @@ public class MessagingNotification {
             }
             else {
                 cacheContact();
-                String peer = (mContact != null) ? mContact.getName() :
+                String peer = (mContact != null) ? mContact.getDisplayName() :
                     mContext.getString(R.string.peer_unknown);
                     // debug mode -- conversation.peer;
 

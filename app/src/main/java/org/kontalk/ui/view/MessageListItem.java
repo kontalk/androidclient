@@ -130,10 +130,8 @@ public class MessageListItem extends RelativeLayout implements Checkable {
             Contact contact = Contact.findByUserId(context, msg.getSender(true));
             mBalloonTheme.setIncoming(contact, sameMessageBlock);
 
-            if (contact != null) {
-                mPeer = contact.getNumber();
-                mDisplayName = contact.getName();
-            }
+            mPeer = contact.getNumber();
+            mDisplayName = contact.getDisplayName();
             if (mPeer == null)
                 mPeer = msg.getSender(true);
         }

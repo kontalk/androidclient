@@ -218,7 +218,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             mUserJID = mConversation.getRecipient();
             Contact contact = mConversation.getContact();
             if (contact != null) {
-                mUserName = contact.getName();
+                mUserName = contact.getDisplayName();
                 mUserPhone = contact.getNumber();
             }
             else {
@@ -293,7 +293,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         setThreadId(mConversation.getThreadId());
         Contact contact = mConversation.getContact();
         if (contact != null) {
-            mUserName = contact.getName();
+            mUserName = contact.getDisplayName();
             mUserPhone = contact.getNumber();
         }
         else {

@@ -664,12 +664,7 @@ public class GroupInfoFragment extends ActionModeListFragment
             }
 
             public final int compare(Contact a, Contact b) {
-                String sa = !TextUtils.isEmpty(a.getName()) ?
-                    a.getName() : a.getNumber();
-                String sb = !TextUtils.isEmpty(b.getName()) ?
-                    b.getName() : b.getNumber();
-
-                return mCollator.compare(sa, sb);
+                return mCollator.compare(a.getDisplayName(), b.getDisplayName());
             }
 
             private final Collator mCollator = Collator.getInstance();

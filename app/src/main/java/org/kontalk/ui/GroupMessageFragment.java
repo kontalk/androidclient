@@ -249,8 +249,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         if (msg.getDirection() == MyMessages.Messages.DIRECTION_IN) {
             String userId = msg.getSender();
             Contact c = Contact.findByUserId(getContext(), userId);
-            if (c != null)
-                return c.getName();
+            return c.getName();
         }
         return null;
     }

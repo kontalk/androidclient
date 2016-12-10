@@ -47,6 +47,7 @@ import android.os.Handler;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.PhoneLookup;
+import android.support.annotation.NonNull;
 import android.support.v4.util.LruCache;
 import android.util.Log;
 
@@ -298,6 +299,15 @@ public class Contact {
         return mName;
     }
 
+    /** Returns a visible and readable name that can be used across the UI. */
+    public String getDisplayName() {
+        if (mName != null && mName.length() > 0)
+            return mName;
+        if (mNumber != null && mNumber.length() > 0)
+            return mNumber;
+        return mJID;
+    }
+
     public String getJID() {
         return mJID;
     }
@@ -544,11 +554,12 @@ public class Contact {
         return null;
     }
 
-    public static Contact findByUserId(Context context, String userId) {
+    public static Contact findByUserId(Context context, @NonNull String userId) {
         return findByUserId(context, userId, null);
     }
 
-    public static Contact findByUserId(Context context, String userId, String numberHint) {
+    @NonNull
+    public static Contact findByUserId(Context context, @NonNull String userId, String numberHint) {
         Contact c = cache.get(context, userId, numberHint);
         // build dummy contact if not found
         if (c == null)

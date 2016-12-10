@@ -113,7 +113,7 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
             contact = mConversation.getContact();
 
             if (contact != null) {
-                recipient = contact.getName();
+                recipient = contact.getDisplayName();
             }
 
             if (recipient == null) {
@@ -230,7 +230,7 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
 
                         String displayName = null;
                         if (contact != null)
-                            displayName = contact.getName();
+                            displayName = contact.getDisplayName();
 
                         if (displayName == null) {
                             if (BuildConfig.DEBUG) {
