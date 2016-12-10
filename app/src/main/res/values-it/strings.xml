@@ -581,4 +581,6 @@ Se disattivate, il comportamento delle connessioni di Kontalk può essere config
         <item quantity="other">Abbandona gruppi</item>
     </plurals>
 
-</resources>
+<string name="delete_threads_leave_any_groups">Abbandona eventuali gruppi</string>
+
+    </resources>
