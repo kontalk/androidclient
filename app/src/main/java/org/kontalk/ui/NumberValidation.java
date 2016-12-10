@@ -1158,7 +1158,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         i.putExtra("passphrase", mPassphrase);
         i.putExtra("importedPublicKey", mImportedPublicKey);
         i.putExtra("importedPrivateKey", mImportedPrivateKey);
-        i.putExtra("trustedKeys", (HashMap) Keyring.toTrustedFingerprintMap(mTrustedKeys));
+        i.putExtra("trustedKeys", mTrustedKeys != null ? (HashMap) Keyring.toTrustedFingerprintMap(mTrustedKeys) : null);
         i.putExtra("server", serverUri);
         i.putExtra("sender", sender);
         i.putExtra("challenge", challenge);
