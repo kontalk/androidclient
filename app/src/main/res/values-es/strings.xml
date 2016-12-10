@@ -569,4 +569,5 @@ Cuando están desactivadas, el comportamiento de conexión de Kontalk se puede a
     <string name="menu_sticky">Favorito</string>
     <string name="menu_start_group">Iniciar grupo</string>
     <string name="group_info_owner_member">Propietario</string>
+    <string name="group_command_owner_parted">El dueño (%s) ha dejado el grupo. Nadie puede agregar o quitar miembros.</string>
     </resources>
