@@ -550,7 +550,7 @@
     <string name="pref_push_notifications_title_default">Las notificaciones push son una tecnología asistida por servidor para ahorrar batería. No afecta el envío de mensajes en tiempo-real. 
 
 Cuando están deshabilitadas, el comportamiento de la conexión de Kontalk puede ser ajustado en la pantalla de configuraciones de red.</string>
-    <string name="pref_push_notifications_title_disabled">El soporte para notificaciones push no fue incluido en esta versión.</string>
+    <string name="pref_push_notifications_title_disabled">El soporte para notificaciones push no está incluido en esta versión.</string>
     <string name="pref_push_notifications_title_unavailable">Las notificaciones push no son compatibles con este dispositivo.</string>
     <string name="about_credits_contrib"><b>Colaboradores</b></string>
     <string name="pref_emoji_converter">Convertir smiles a emojis</string>
