@@ -580,7 +580,7 @@ Se desabilitada, você pode fazer ajustes finos no funcionamento da conexão do 
     <string name="chooser_error_no_dialer">Não existe aplicativo de discagem ou telefone disponível nesse aparelho.</string>
     <string name="button_refuse">Recusar</string>
     <string name="button_private_chat">Conversa privada</string>
-    <string name="group_command_owner_parted">O dono (%s) deixou o grupo. Ninguém pode adicionar ou remover membros.</string>
+    <string name="group_command_owner_parted">O administrador (%s) deixou o grupo. Ninguém pode adicionar ou remover membros.</string>
     <string name="group_info_owner_member">Administrador</string>
     <string name="pref_reporting">Enviar estatísticas anônimas de uso</string>
     <string name="pref_title_reporting">Incluindo relatórios de falhas</string>
