@@ -50,16 +50,11 @@
                 android:layout_width="@dimen/avatar_size"
                 android:layout_height="@dimen/avatar_size" />
 
-            <cn.refactor.library.SmoothCheckBox
+            <org.kontalk.ui.view.CircleCheckBox
                 android:id="@+id/checkbox"
-                android:layout_width="@dimen/avatar_checkbox_size"
-                android:layout_height="@dimen/avatar_checkbox_size"
-                android:layout_alignBottom="@+id/avatar"
-                android:layout_alignRight="@+id/avatar"
-                android:layout_alignEnd="@+id/avatar"
-                app:color_checked="@color/app_primary_dark"
-                app:color_unchecked="@android:color/transparent"
-                app:color_unchecked_stroke="@android:color/transparent" />
+                android:layout_width="@dimen/avatar_size"
+                android:layout_height="@dimen/avatar_size"
+                android:visibility="gone"/>
 
         </RelativeLayout>
 
