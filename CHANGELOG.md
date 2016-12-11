@@ -1,5 +1,15 @@
 # Change Log
 
+## [4.0.0-beta4] - 2016-12-11
+### Changed
+- New 2017 icon!
+- Allow multiple users selection in "add users to group" contexts (#892)
+- Use different part message when owner leaves the group
+
+### Fixed
+- Allow add user to group only to owner (#890)
+- Fix several fragment issues (#878)
+
 ## [4.0.0-beta3] - 2016-12-09
 ### Changed
 - Create group: multiselect checkbox (by @acappelli, #886)
