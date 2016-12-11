@@ -551,7 +551,7 @@
 
 Cuando están deshabilitadas, el comportamiento de la conexión de Kontalk puede ser ajustado en la pantalla de configuraciones de red.</string>
     <string name="pref_push_notifications_title_disabled">El soporte para notificaciones push no fue incluido en esta versión.</string>
-    <string name="pref_push_notifications_title_unavailable">Las notificaciones push no están soportadas por este dispositivo.</string>
+    <string name="pref_push_notifications_title_unavailable">Las notificaciones push no son compatibles con este dispositivo.</string>
     <string name="about_credits_contrib"><b>Colaboradores</b></string>
     <string name="pref_emoji_converter">Convertir smiles a emojis</string>
     <string name="pref_title_emoji_converter">Convertir automáticamente sonrisas en texto a emojis</string>
