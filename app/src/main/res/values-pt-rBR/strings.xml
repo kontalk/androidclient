@@ -89,7 +89,7 @@
   <string name="pref_idle_time">Desconectar quando ocioso</string>
   <string name="pref_title_idle_time">Quanto tempo esperar antes de desconectar por inatividade</string>
   <string name="pref_wakeup_time">Reconectar ao servidor</string>
-  <string name="pref_title_wakeup_time">Quanto tempo esperar antes de reconectar ao servidor, após um período de inatividade. Funciona somente se as notificações push não estiverem disponíveis</string>
+  <string name="pref_title_wakeup_time">Quanto tempo esperar antes de reconectar ao servidor, após um período de inatividade. Utilizado somente se as notificações push não estiverem disponíveis ou a qualidade da rede estiver muito ruim.</string>
   <string name="pref_maintenance">Manutenção</string>
   <string name="pref_regenerate_keypair">Regerar a chave pessoal</string>
   <string name="pref_title_regenerate_keypair">Utilize isto caso a sua chave pessoal tenha sido comprometida</string>
@@ -567,4 +567,22 @@ Se desabilitada, você pode fazer ajustes finos no funcionamento da conexão do 
     <string name="pref_push_notifications_title_unavailable">Notificações push não são suportadas neste dispositivo.</string>
     <string name="about_credits_contrib"><b>Colaboradores</b></string>
     <string name="pref_push_notifications_disabled">Desabilitado</string>
+    <string name="code_validation_intro_callerid">Toque no botão abaixo e ligue para esse número, desligando assim que ouvir o sinal de chamada. Repare que <b>a chamada tem que ser feita a partir do telefone que você está registrando</b>. Você não pagará nada por isso, desde que encerre a chamada assim que ouvir o primeiro sinal. Isso é o suficiente para nós.</string>
+    <string name="code_validation_intro2_callerid">Após encerrar a chamada, volte aqui e toque o botão de verificação abaixo.</string>
+    <string name="menu_sticky">Favorito</string>
+    <string name="err_authentication_failed_callerid">A verificação não foi bem sucedida. Tente ligar para o número novamente e esperar um pouco mais.</string>
+    <string name="button_validation_fallback_callerid">Tente outra forma</string>
+    <string name="menu_start_group">Iniciar o grupo</string>
+    <string name="menu_group_info">Informações do grupo</string>
+    <string name="pref_emoji_converter">Converter carinhas (texto) em emojis (gráfico)</string>
+    <string name="pref_title_emoji_converter">Converte automaticamente as carinhas de texto para emojis</string>
+
+    <string name="chooser_error_no_dialer">Não existe aplicativo de discagem ou telefone disponível nesse aparelho.</string>
+    <string name="button_refuse">Recusar</string>
+    <string name="button_private_chat">Conversa privada</string>
+    <string name="group_command_owner_parted">O dono (%s) deixou o grupo. Ninguém pode adicionar ou remover membros.</string>
+    <string name="group_info_owner_member">Administrador</string>
+    <string name="pref_reporting">Enviar estatísticas anônimas de uso</string>
+    <string name="pref_title_reporting">Incluindo relatórios de falhas</string>
+
     </resources>
