@@ -184,7 +184,6 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     /** The thread id. */
     private long threadId = -1;
     protected Conversation mConversation;
-    private Bundle mArguments;
     protected String mUserName;
 
     /** Available resources. */
@@ -241,7 +240,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         args.putString("action", ComposeMessage.ACTION_VIEW_CONVERSATION);
         args.putParcelable("data",
                 ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
-        f.setMyArguments(args);
+        f.setArguments(args);
         return f;
     }
 
@@ -1095,7 +1094,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     }
 
     private boolean isSearching() {
-        Bundle args = myArguments();
+        Bundle args = getArguments();
         return args != null && args.getLong(ComposeMessage.EXTRA_MESSAGE, -1) >= 0;
     }
 
@@ -1170,14 +1169,6 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             startActivity(new Intent(getActivity(), ConversationsActivity.class));
             getActivity().finish();
         }
-    }
-
-    private Bundle myArguments() {
-        return (mArguments != null) ? mArguments : getArguments();
-    }
-
-    public void setMyArguments(Bundle args) {
-        mArguments = args;
     }
 
     @Override
@@ -1372,7 +1363,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             }
         }
         else {
-            args = myArguments();
+            args = getArguments();
         }
 
         if (args != null && args.size() > 0) {
@@ -1398,7 +1389,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         }
 
         // set title if we are autonomous
-        if (mArguments != null) {
+        if (args != null) {
             String title = mUserName;
             //if (mUserPhone != null) title += " <" + mUserPhone + ">";
             setActivityTitle(title, "");
@@ -1452,7 +1443,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
         if (mListAdapter == null) {
             Pattern highlight = null;
-            Bundle args = myArguments();
+            Bundle args = getArguments();
             if (args != null) {
                 String highlightString = args
                         .getString(ComposeMessage.EXTRA_HIGHLIGHT);
@@ -2270,7 +2261,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                         }
 
                         // save reloading status for next time
-                        Bundle args = parent.myArguments();
+                        Bundle args = parent.getArguments();
 
                         // see if we have to scroll to a specific message
                         int newSelectionPos = -1;

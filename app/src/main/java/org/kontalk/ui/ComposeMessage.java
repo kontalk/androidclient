@@ -96,10 +96,17 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
 
         setupActionBar();
 
-        // build chat fragment
-        AbstractComposeFragment f = getComposeFragment(savedInstanceState);
-        // insert it into the activity
-        setComposeFragment(f);
+        if (savedInstanceState != null) {
+            mFragment = (AbstractComposeFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_compose_message);
+        }
+
+        if (mFragment == null) {
+            // build chat fragment
+            AbstractComposeFragment f = getComposeFragment(savedInstanceState);
+            // insert it into the activity
+            setComposeFragment(f);
+        }
     }
 
     private void setupActionBar() {
@@ -227,7 +234,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
                 f = new ComposeMessageFragment();
             }
 
-            f.setMyArguments(args);
+            f.setArguments(args);
             return f;
         }
 
