@@ -33,8 +33,6 @@ import android.widget.Checkable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import cn.refactor.library.SmoothCheckBox;
-
 
 public class ContactsListItem extends AvatarListItem implements Checkable {
 
@@ -44,7 +42,7 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
     private TextView mText1;
     private TextView mText2;
     private ImageView mTrustStatus;
-    private SmoothCheckBox mCheckbox;
+    private CircleCheckBox mCheckbox;
 
     private boolean mChecked;
 
@@ -63,7 +61,7 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
         mText1 = (TextView) findViewById(android.R.id.text1);
         mText2 = (TextView) findViewById(android.R.id.text2);
         mTrustStatus = (ImageView) findViewById(R.id.trust_status);
-        mCheckbox = (SmoothCheckBox) findViewById(R.id.checkbox);
+        mCheckbox = (CircleCheckBox) findViewById(R.id.checkbox);
 
         if (isInEditMode()) {
             mText1.setText("Test contact");
@@ -168,8 +166,10 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
     public void setChecked(boolean checked) {
         if (checked != mChecked) {
             mChecked = checked;
-            if (mCheckbox != null)
-                mCheckbox.setChecked(checked, !SystemUtils.isLegacySystem());
+            if (mCheckbox != null) {
+                mCheckbox.setChecked(checked);
+                mAvatarView.setVisibility(checked ? GONE : VISIBLE);
+            }
             refreshDrawableState();
         }
     }
