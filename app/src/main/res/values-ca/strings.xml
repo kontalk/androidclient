@@ -568,11 +568,15 @@ Quan estan desactivades, el comportament de connexió de Kontalk es pot ajustar 
     <string name="group_command_owner_parted">El propietari (% s) ha deixat el grup. Ningú pot afegir o eliminar membres.</string>
 
     <plurals name="confirm_will_delete_threads">
-        <item quantity="other">S\'eliminaran els xats seleccionats.</item>
-    </plurals>
+	<item quantity="one">S\'eliminarà el xat seleccionat.</item>
+	<item quantity="other">S\'eliminaran els xats seleccionats.</item>
+</plurals>
 
     <plurals name="delete_threads_leave_groups">
-        <item quantity="other">També deixo de ser membre dels grups</item>
-    </plurals>
+	<item quantity="one">També deixo de ser membre del grup</item>
+	<item quantity="other">També deixo de ser membre dels grups</item>
+</plurals>
 
-</resources>
+<string name="delete_threads_leave_any_groups">Surt també dels grups</string>
+
+    </resources>
