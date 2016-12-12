@@ -571,11 +571,15 @@ Cuando están deshabilitadas, el comportamiento de la conexión de Kontalk puede
     <string name="group_command_owner_parted">El propietario (%s) ha dejado el grupo. Nadie puede agregar o quitar miembros.</string>
 
     <plurals name="confirm_will_delete_threads">
-        <item quantity="other">Se eliminarán los chats seleccionados.</item>
-    </plurals>
+	<item quantity="one">Se eliminará el chat seleccionado.</item>
+	<item quantity="other">Se eliminarán los chats seleccionados.</item>
+</plurals>
 
     <plurals name="delete_threads_leave_groups">
-        <item quantity="other">Abandonar los grupos también</item>
-    </plurals>
+	<item quantity="one">Abandonar el grupo también</item>
+	<item quantity="other">Abandonar los grupos también</item>
+</plurals>
 
-</resources>
+<string name="delete_threads_leave_any_groups">Dejar también todos los grupos</string>
+
+    </resources>
