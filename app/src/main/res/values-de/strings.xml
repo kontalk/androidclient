@@ -503,7 +503,7 @@
 
     <string name="button_ignore">Ignorieren</string>
     <string name="title_identity">"Identität "</string>
-    <string name="title_identity_self">Identität (das sind Sie!)</string>
+    <string name="title_identity_self">Identität (Das sind Sie!)</string>
 
     <string name="status_label">"Status: "</string>
     <string name="trust_unknown">Nicht überprüft</string>
