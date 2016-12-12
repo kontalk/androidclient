@@ -396,7 +396,6 @@
     <string name="title_fallback">Tiene algún problema?</string>
     <string name="msg_fallback">Vamos a verificar su número de teléfono de otra manera.</string>
     <string name="menu_manual_verification">Ya tiene un código?</string>
-    <string name="confirm_will_delete_threads">Se eliminarán los chats seleccionados.</string>
     <string name="confirm_will_delete_messages">Se eliminarán los mensajes seleccionados.</string>
     <string name="pref_balloon_label_hangout">Hangout</string>
     <string name="title_block_user_warning">Confirma que quiere bloquear a este usuario?</string>
@@ -541,7 +540,6 @@
     </plurals>
 
     <string name="delete_thread_messages">Eliminar el historial de chat</string>
-    <string name="delete_threads_leave_groups">Abandonar los grupos también</string>
     <string name="leave_group_delete_messages">Eliminar también el historial del chat</string>
 <string name="pref_on">Activar</string>
     <string name="pref_off">Desactivar</string>
@@ -571,4 +569,13 @@ Cuando están deshabilitadas, el comportamiento de la conexión de Kontalk puede
     <string name="menu_start_group">Iniciar grupo</string>
     <string name="group_info_owner_member">Propietario</string>
     <string name="group_command_owner_parted">El propietario (%s) ha dejado el grupo. Nadie puede agregar o quitar miembros.</string>
-    </resources>
+
+    <plurals name="confirm_will_delete_threads">
+        <item quantity="other">Se eliminarán los chats seleccionados.</item>
+    </plurals>
+
+    <plurals name="delete_threads_leave_groups">
+        <item quantity="other">Abandonar los grupos también</item>
+    </plurals>
+
+</resources>

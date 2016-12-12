@@ -396,7 +396,6 @@
     <string name="title_fallback">Hi ha algun problema?</string>
     <string name="msg_fallback">Intentarem verificar el seu número de telèfon d\'una altra manera.</string>
     <string name="menu_manual_verification">Ja té un codi?</string>
-    <string name="confirm_will_delete_threads">S\'eliminaran els xats seleccionats.</string>
     <string name="confirm_will_delete_messages">S\'eliminaran els missatges seleccionats.</string>
     <string name="pref_balloon_label_hangout">Reunió</string>
     <string name="title_block_user_warning">Esteu segurs de voler bloquejar a aquest usuari?</string>
@@ -539,7 +538,6 @@
     </plurals>
 
     <string name="delete_thread_messages">Elimina l\'historial de xat</string>
-    <string name="delete_threads_leave_groups">També deixo de ser membre dels grups</string>
     <string name="leave_group_delete_messages">També s\'elimina l\'historial de xat</string>
 <string name="pref_off">Activa</string>
 
@@ -568,4 +566,13 @@ Quan estan desactivades, el comportament de connexió de Kontalk es pot ajustar 
     <string name="menu_start_group">Inici del grup</string>
     <string name="group_info_owner_member">Propietari</string>
     <string name="group_command_owner_parted">El propietari (% s) ha deixat el grup. Ningú pot afegir o eliminar membres.</string>
-    </resources>
+
+    <plurals name="confirm_will_delete_threads">
+        <item quantity="other">S\'eliminaran els xats seleccionats.</item>
+    </plurals>
+
+    <plurals name="delete_threads_leave_groups">
+        <item quantity="other">També deixo de ser membre dels grups</item>
+    </plurals>
+
+</resources>

@@ -396,7 +396,6 @@
     <string name="title_fallback">Máte potíže?</string>
     <string name="msg_fallback">Zkusíme jiný způsob, jak ověřit vaše telefonní číslo.</string>
     <string name="menu_manual_verification">Už máte kód?</string>
-    <string name="confirm_will_delete_threads">Označené konverzace budou smazány.</string>
     <string name="confirm_will_delete_messages">Označené zprávy budou smazány.</string>
     <string name="pref_balloon_label_hangout">Hangout</string>
     <string name="title_block_user_warning">Opravdu zablokovat tohoto uživatele?</string>
@@ -544,7 +543,6 @@
     </plurals>
 
     <string name="delete_thread_messages">Smazat historii konverzace</string>
-    <string name="delete_threads_leave_groups">Také opustit skupiny</string>
     <string name="pref_balloon_label_silence">Potichu</string>
     <string name="leave_group_delete_messages">Také smazat historii konverzace</string>
 <string name="pref_on">Zapnuto</string>
@@ -575,4 +573,13 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="menu_sticky">Oblíbený</string>
     <string name="menu_start_group">Založit skupinu</string>
     <string name="group_command_owner_parted">Vlastník skupiny (%s) tuto skupinu opustil. Nikdo nemůže přidat nebo odebrat členy.</string>
-    </resources>
+
+    <plurals name="confirm_will_delete_threads">
+        <item quantity="other">Označené konverzace budou smazány.</item>
+    </plurals>
+
+    <plurals name="delete_threads_leave_groups">
+        <item quantity="other">Také opustit skupiny</item>
+    </plurals>
+
+</resources>

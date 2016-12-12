@@ -372,7 +372,6 @@
 
     <string name="menu_manual_verification">Већ имате кôд?</string>
     <string name="msg_importing_key">Увозим лични кључ…</string>
-    <string name="confirm_will_delete_threads">Изабране преписке ће бити обрисане.</string>
     <string name="error_delete_thread">Не могу да обришем преписку.</string>
     <string name="error_delete_message">Не могу да обришем поруку.</string>
     <string name="confirm_will_delete_messages">Изабране поруке ће бити обрисане.</string>
@@ -550,7 +549,6 @@
 
     <string name="pref_balloon_label_silence">Сајленс</string>
     <string name="delete_thread_messages">Обриши историјат ћаскања</string>
-    <string name="delete_threads_leave_groups">Такође напусти групе</string>
     <string name="pref_on">Укљ</string>
     <string name="pref_off">Иск</string>
 
@@ -571,4 +569,13 @@
 
     <string name="group_command_owner_parted">Власник (%s) је напустио групу. Нико не може додати или уклонити чланове.</string>
     <string name="menu_start_group">Почни групу</string>
-    </resources>
+
+    <plurals name="confirm_will_delete_threads">
+        <item quantity="other">Изабране преписке ће бити обрисане.</item>
+    </plurals>
+
+    <plurals name="delete_threads_leave_groups">
+        <item quantity="other">Такође напусти групе</item>
+    </plurals>
+
+</resources>

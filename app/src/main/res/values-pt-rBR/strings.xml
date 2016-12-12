@@ -268,7 +268,6 @@
     <string name="title_confirm_cancel_registration">Cancelar o registro?</string>
     <string name="confirm_cancel_registration">Se você voltar, terá que reiniciar o registro a partir do zero. Caso necessite mudar para outro aplicativo, NÃO utilize o botão \"voltar\" do seu aparelho.</string>
     <string name="resend">Enviar novamente</string>
-    <string name="confirm_will_delete_threads">As conversas selecionadas serão apagadas.</string>
     <string name="audio_message">Mensagem de áudio</string>
     <string name="pref_regenerate_keypair_confirm">Um novo par de chaves será gerado e associado à sua conta. As chaves antigas serão invalidadas.</string>
     <string name="error_delete_thread">Não foi possível apagar a conversa.</string>
@@ -555,7 +554,6 @@
 	<item quantity="other"/>
     </plurals>
 <string name="delete_thread_messages">Apagar o histórico da conversa</string>
-    <string name="delete_threads_leave_groups">Também sair dos grupos</string>
     <string name="pref_on">Ativar</string>
     <string name="pref_off">Desativar</string>
 
@@ -585,4 +583,12 @@ Se desabilitada, você pode fazer ajustes finos no funcionamento da conexão do 
     <string name="pref_reporting">Enviar estatísticas anônimas de uso</string>
     <string name="pref_title_reporting">Incluindo relatórios de falhas</string>
 
-    </resources>
+    <plurals name="confirm_will_delete_threads">
+        <item quantity="other">As conversas selecionadas serão apagadas.</item>
+    </plurals>
+
+    <plurals name="delete_threads_leave_groups">
+        <item quantity="other">Também sair dos grupos</item>
+    </plurals>
+
+</resources>

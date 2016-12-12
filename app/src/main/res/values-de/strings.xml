@@ -396,7 +396,6 @@
     <string name="code_validation_intro2_missed_call">Bitte fügen Sie die letzten %d Ziffern der Nummer ein, von der Sie angerufen wurden.</string>
     <string name="title_fallback">Haben Sie Probleme?</string>
     <string name="menu_manual_verification">Code bereits vorhanden?</string>
-    <string name="confirm_will_delete_threads">Die ausgewählten Chats werden gelöscht.</string>
     <string name="confirm_will_delete_messages">Die ausgewählten Nachrichten werden gelöscht.</string>
     <string name="title_block_user_warning">Diesen Nutzer wirklich blockieren?</string>
     <string name="title_unblock_user_warning">Diesen Nutzer wirklich freigeben?</string>
@@ -543,7 +542,6 @@
 
     <string name="pref_balloon_label_silence">Silence</string>
     <string name="delete_thread_messages">Chatverlauf löschen</string>
-    <string name="delete_threads_leave_groups">Gruppen auch verlassen</string>
     <string name="leave_group_delete_messages">Auch den Chatverlauf löschen</string>
 <string name="pref_on">An</string>
     <string name="pref_off">Aus</string>
@@ -573,4 +571,13 @@ Wenn sie deaktiviert sind kann das Kontalk Verbindungsverhalten in den Netzwerke
     <string name="menu_sticky">Favorit</string>
     <string name="menu_start_group">Neue Gruppe</string>
     <string name="group_command_owner_parted">Der Admin (%) hat die Gruppe verlassen. Niemand kann Mitglieder zur Gruppe hinzufügen oder entfernen.</string>
-    </resources>
+
+    <plurals name="confirm_will_delete_threads">
+        <item quantity="other">Die ausgewählten Chats werden gelöscht.</item>
+    </plurals>
+
+    <plurals name="delete_threads_leave_groups">
+        <item quantity="other">Gruppen auch verlassen</item>
+    </plurals>
+
+</resources>

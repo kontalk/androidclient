@@ -70,7 +70,6 @@
     <string name="delete_thread">ألغاء المحادثة</string>
     <string name="confirm_delete_thread">الغاء المحادثة</string>
     <string name="confirm_will_delete_thread">سيتم الغاء كل المحادثة.</string>
-    <string name="confirm_will_delete_threads">سيتم الغاء المحادثات المختارة .</string>
     <string name="new_messages">رسالة جديدة</string>
     <string name="only_one_account_supported">سيتم أعتماد حساب كونتلك واحد فقط .</string>
     <string name="hint_enter_text">أدخل النص هنا</string>
@@ -465,4 +464,9 @@
     </plurals>
 
     <string name="text_search_results_empty">لم يتم العثور على اية رسائل</string>
+
+    <plurals name="confirm_will_delete_threads">
+        <item quantity="other">سيتم الغاء المحادثات المختارة .</item>
+    </plurals>
+
 </resources>

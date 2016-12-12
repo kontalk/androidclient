@@ -432,7 +432,6 @@
 </plurals>
 
 <string name="mark_read">Прочитано</string>
-    <string name="confirm_will_delete_threads">Выбранные беседы будут удалены.</string>
     <string name="err_import_keypair_read">Не удалось прочитать личный ключ с внешнего хранилища.</string>
     <string name="msg_not_implemented">Пока не реализовано.</string>
 
@@ -533,4 +532,9 @@
     <string name="chooser_error_no_dialer">Нет приложения для набора номера, либо телефония недоступна на этом устройстве.</string>
     <string name="button_refuse">Отклонить</string>
     <string name="button_private_chat">Приватная беседа</string>
-    </resources>
+
+    <plurals name="confirm_will_delete_threads">
+        <item quantity="other">Выбранные беседы будут удалены.</item>
+    </plurals>
+
+</resources>

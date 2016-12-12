@@ -396,7 +396,6 @@
     <string name="button_validation_fallback">Non ricevi la chiamata?</string>
     <string name="title_fallback">Problemi?</string>
     <string name="msg_fallback">Proveremo un altro modo per verificare il tuo numero di telefono.</string>
-    <string name="confirm_will_delete_threads">Le chat selezionate saranno eliminate.</string>
     <string name="confirm_will_delete_messages">I messaggi selezionati saranno eliminati.</string>
     <string name="pref_balloon_label_hangout">Hangout</string>
     <string name="title_block_user_warning">Bloccare l\'utente?</string>
@@ -542,7 +541,6 @@
     </plurals>
 
     <string name="delete_thread_messages">Elimina messaggi</string>
-    <string name="delete_threads_leave_groups">Abbandona i gruppi</string>
     <string name="leave_group_delete_messages">Elimina anche i messaggi</string>
     <string name="pref_on">On</string>
     <string name="pref_off">Off</string>
@@ -572,4 +570,15 @@ Se disattivate, il comportamento delle connessioni di Kontalk può essere config
     <string name="menu_sticky">Preferita</string>
     <string name="menu_start_group">Chat di gruppo</string>
     <string name="group_command_owner_parted">Il proprietario (%s) ha lasciato il gruppo. Nessuno può aggiungere o rimuovere membri.</string>
-    </resources>
+
+    <plurals name="confirm_will_delete_threads">
+        <item quantity="one">La chat selezionata sarà eliminata.</item>
+        <item quantity="other">Le chat selezionate saranno eliminate.</item>
+    </plurals>
+
+    <plurals name="delete_threads_leave_groups">
+        <item quantity="one">Abbandona gruppo</item>
+        <item quantity="other">Abbandona gruppi</item>
+    </plurals>
+
+</resources>
