@@ -582,6 +582,6 @@ Wenn sie deaktiviert sind kann das Kontalk Verbindungsverhalten in den Netzwerke
 	<item quantity="other">Gruppen auch verlassen</item>
 </plurals>
 
-<string name="delete_threads_leave_any_groups">Gruppen auch verlassen</string>
+<string name="delete_threads_leave_any_groups">Eventuelle Gruppen auch verlassen</string>
 
     </resources>
