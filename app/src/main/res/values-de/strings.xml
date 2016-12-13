@@ -573,11 +573,15 @@ Wenn sie deaktiviert sind kann das Kontalk Verbindungsverhalten in den Netzwerke
     <string name="group_command_owner_parted">Der Admin (%) hat die Gruppe verlassen. Niemand kann Mitglieder zur Gruppe hinzufügen oder entfernen.</string>
 
     <plurals name="confirm_will_delete_threads">
-        <item quantity="other">Die ausgewählten Chats werden gelöscht.</item>
-    </plurals>
+	<item quantity="one">Der ausgewählte Chat wird gelöscht.</item>
+	<item quantity="other">Die ausgewählten Chats werden gelöscht.</item>
+</plurals>
 
     <plurals name="delete_threads_leave_groups">
-        <item quantity="other">Gruppen auch verlassen</item>
-    </plurals>
+	<item quantity="one">Gruppe auch verlassen</item>
+	<item quantity="other">Gruppen auch verlassen</item>
+</plurals>
 
-</resources>
+<string name="delete_threads_leave_any_groups">Gruppen auch verlassen</string>
+
+    </resources>
