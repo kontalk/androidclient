@@ -568,11 +568,19 @@
 </plurals>
 
     <plurals name="confirm_will_delete_threads">
-        <item quantity="other">Οι επιλεγμένες συζητήσεις θα διαγραφούν.</item>
-    </plurals>
+	<item quantity="one">Η επιλεγμένη συζήτηση θα διαγραφεί.</item>
+	<item quantity="other">Οι επιλεγμένες συζητήσεις θα διαγραφούν.</item>
+</plurals>
 
     <plurals name="delete_threads_leave_groups">
-        <item quantity="other">Επίσης έξοδος από ομάδα</item>
-    </plurals>
+	<item quantity="one">Επίσης έξοδος από ομάδα</item>
+	<item quantity="other">Επίσης έξοδος από ομάδες</item>
+</plurals>
 
-</resources>
+<string name="menu_sticky">Αγαπημένο</string>
+    <string name="menu_start_group">Δημιουργία ομάδας</string>
+    <string name="group_command_owner_parted">Ο ιδιοκτήτης (%s) έφυγε από την ομάδα. Κανένας δε μπορεί να αφαιρέσει ή να προσθέσει μέλη.</string>
+    <string name="group_info_owner_member">Ιδιοκτήτης</string>
+    <string name="delete_threads_leave_any_groups">Επίσης έξοδος από όποιες ομάδες</string>
+
+    </resources>
