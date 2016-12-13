@@ -435,7 +435,7 @@
     <string name="msg_public_key_changed_warning">¡Por favor verifique con el usuario que el/ella reinstaló Kontalk o regeneró intencionalmente su clave personal, de lo contrario la comunicación podría estar comprometida!</string>
     <string name="mark_read">Leido</string>
     <string name="warning_public_key_unknown">¡La clave personal de este usuario no es de confianza!</string>
-    <string name="title_public_key_unknown_warning">Clave personal insegura</string>
+    <string name="title_public_key_unknown_warning">Clave personal sin confirmar</string>
     <string name="pref_show_blocked_users">Mostrar usuarios bloqueados</string>
     <string name="button_load_next_page">Cargar más mensajes</string>
 
