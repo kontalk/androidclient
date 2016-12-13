@@ -575,11 +575,17 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="group_command_owner_parted">Vlastník skupiny (%s) tuto skupinu opustil. Nikdo nemůže přidat nebo odebrat členy.</string>
 
     <plurals name="confirm_will_delete_threads">
-        <item quantity="other">Označené konverzace budou smazány.</item>
-    </plurals>
+	<item quantity="one">Označená konverzace bude smazána.</item>
+	<item quantity="few">Označené konverzace budou smazány.</item>
+	<item quantity="other">Označené konverzace budou smazány.</item>
+</plurals>
 
     <plurals name="delete_threads_leave_groups">
-        <item quantity="other">Také opustit skupiny</item>
-    </plurals>
+	<item quantity="one">Také opustit skupinu</item>
+	<item quantity="few">Také opustit skupiny</item>
+	<item quantity="other">Také opustit skupiny</item>
+</plurals>
 
-</resources>
+<string name="delete_threads_leave_any_groups">Také opustit všechny skupiny</string>
+
+    </resources>
