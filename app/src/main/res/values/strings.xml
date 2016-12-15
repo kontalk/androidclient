@@ -76,8 +76,6 @@
     <string name="delete_thread_messages">Delete chat history</string>
     <string name="confirm_delete_thread">Delete chat</string>
     <string name="confirm_will_delete_thread">The entire chat will be deleted.</string>
-    <string name="confirm_will_delete_threads">The selected chats will be deleted.</string>
-    <string name="delete_threads_leave_groups">Also leave groups</string>
     <string name="new_messages">New messages</string>
     <string name="only_one_account_supported">Only one Kontalk account is supported.</string>
     <string name="hint_enter_text">Enter your text here</string>
@@ -549,8 +547,20 @@
     <string name="pref_reporting">Send anonymous usage statistics</string>
     <string name="pref_title_reporting">Including crash reports</string>
 
+    <string name="delete_threads_leave_any_groups">Also leave any groups</string>
+
     <!-- contact name, group subject -->
     <string name="notification_group_title">%1$s @ %2$s</string>
+
+    <plurals name="confirm_will_delete_threads">
+        <item quantity="one">The selected chat will be deleted.</item>
+        <item quantity="other">The selected chats will be deleted.</item>
+    </plurals>
+
+    <plurals name="delete_threads_leave_groups">
+        <item quantity="one">Also leave group</item>
+        <item quantity="other">Also leave groups</item>
+    </plurals>
 
     <!-- "one" is not actually used -->
     <plurals name="unread_messages">
@@ -576,6 +586,5 @@
         <item quantity="one">1 person</item>
         <item quantity="other">%d people</item>
     </plurals>
-
 
 </resources>

@@ -396,7 +396,6 @@
     <string name="title_fallback">Problemen?</string>
     <string name="msg_fallback">We zullen een andere manier proberen om je telefoonnummer te bevestigen.</string>
     <string name="menu_manual_verification">Heb je al een code?</string>
-    <string name="confirm_will_delete_threads">De geselecteerde gesprekken zullen verwijderd worden.</string>
     <string name="confirm_will_delete_messages">De geselecteerde berichten zullen verwijderd worden.</string>
     <string name="pref_balloon_label_hangout">Hangout</string>
     <string name="title_block_user_warning">Deze gebruiker echt blokkeren?</string>
@@ -544,7 +543,6 @@
 
     <string name="pref_balloon_label_silence">Stil</string>
     <string name="delete_thread_messages">Verwijder chatgeschiedenis</string>
-    <string name="delete_threads_leave_groups">Groepen ook verlaten</string>
     <string name="leave_group_delete_messages">Gespreksgeschiedenis ook verwijderen</string>
     <string name="pref_on">Aan</string>
     <string name="pref_off">Uit</string>
@@ -573,4 +571,14 @@ Indien uitgeschakeld kan het netwerkgedrag van Kontalk in netwerkinstellingen in
     <string name="group_info_owner_member">Eigenaar</string>
     <string name="menu_sticky">Favoriet</string>
     <string name="menu_start_group">Start groepsgesprek</string>
-    </resources>
+    <string name="group_command_owner_parted">De eigenaar (%s) heeft de groep verlaten. Niemand kan leden toevoegen of verwijderen.</string>
+
+    <plurals name="confirm_will_delete_threads">
+        <item quantity="other">De geselecteerde gesprekken zullen verwijderd worden.</item>
+    </plurals>
+
+    <plurals name="delete_threads_leave_groups">
+        <item quantity="other">Groepen ook verlaten</item>
+    </plurals>
+
+</resources>

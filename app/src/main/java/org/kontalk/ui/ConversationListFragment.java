@@ -271,16 +271,20 @@ public class ConversationListFragment extends ActionModeListFragment
 
     private void deleteSelectedThreads(final SparseBooleanArray checked) {
         boolean addGroupCheckbox = false;
+        int checkedCount = 0;
         for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
-            if (checked.get(i) && Conversation.isGroup((Cursor) mListAdapter.getItem(i), MyMessages.Groups.MEMBERSHIP_MEMBER)) {
-                addGroupCheckbox = true;
-                break;
+            if (checked.get(i)) {
+                checkedCount++;
+                if (!addGroupCheckbox && Conversation.isGroup((Cursor) mListAdapter.getItem(i),
+                        MyMessages.Groups.MEMBERSHIP_MEMBER)) {
+                    addGroupCheckbox = true;
+                }
             }
         }
 
         final boolean hasGroupCheckbox = addGroupCheckbox;
         MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
-            .content(R.string.confirm_will_delete_threads)
+            .content(getResources().getQuantityString(R.plurals.confirm_will_delete_threads, checkedCount))
             .positiveText(android.R.string.ok)
             .positiveColorRes(R.color.button_danger)
             .onPositive(new MaterialDialog.SingleButtonCallback() {
@@ -302,7 +306,8 @@ public class ConversationListFragment extends ActionModeListFragment
             .negativeText(android.R.string.cancel);
 
         if (addGroupCheckbox)
-            builder.checkBoxPromptRes(R.string.delete_threads_leave_groups, false, null);
+            builder.checkBoxPrompt(getResources()
+                .getQuantityString(R.plurals.delete_threads_leave_groups, checkedCount), false, null);
 
         builder.show();
     }

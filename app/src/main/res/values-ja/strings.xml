@@ -397,7 +397,6 @@ http://kontalk.org/</string>
     <string name="button_validation_fallback">着信していませんか?</string>
     <string name="title_fallback">問題がありますか?</string>
     <string name="msg_fallback">あなたの電話番号を確認する別の方法を試します。</string>
-    <string name="confirm_will_delete_threads">選択したチャットは削除されます。</string>
     <string name="confirm_will_delete_messages">選択したメッセージは削除されます。</string>
     <string name="pref_balloon_label_hangout">ハングアウト</string>
     <string name="title_block_user_warning">このユーザーをブロックしてもよろしいですか?</string>
@@ -451,7 +450,6 @@ http://kontalk.org/</string>
     <string name="code_validation_intro_callerid">下のボタンをタップして、その電話番号に不在着信してください。 <b>登録している電話番号から通話を開始する必要があります</b>。 最初の呼び出し音が聞こえてすぐに電話を切ると、通話は無料です。 私たちにとってそれで十分です。</string>
     <string name="code_validation_intro2_callerid">通話を終了したら、ここに戻り、下の確認ボタンをタップします。</string>
     <string name="delete_thread_messages">チャット履歴を削除</string>
-    <string name="delete_threads_leave_groups">グループも離れる</string>
     <string name="pref_push_notifications_disabled">無効</string>
     <string name="pref_push_notifications_title_default">プッシュ通知は、バッテリーを節約するためのサーバ支援技術です。 メッセージのリアルタイム配信には影響しません。
 
@@ -562,5 +560,12 @@ http://kontalk.org/</string>
 	<item quantity="other"></item>
 </plurals>
 
+    <plurals name="confirm_will_delete_threads">
+        <item quantity="other">選択したチャットは削除されます。</item>
+    </plurals>
+
+    <plurals name="delete_threads_leave_groups">
+        <item quantity="other">グループも離れる</item>
+    </plurals>
 
 </resources>

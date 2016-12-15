@@ -68,7 +68,6 @@
     <string name="delete_thread">Konuşmayı sil</string>
     <string name="confirm_delete_thread">Konuşmayı sil</string>
     <string name="confirm_will_delete_thread">Bütün konuşma silinmiş olacak.</string>
-    <string name="confirm_will_delete_threads">Seçilmiş konuşmalar silinmiş olacak.</string>
     <string name="new_messages">Yeni mesajlar</string>
     <string name="only_one_account_supported">Sadece bir Kontalk hesabı desteklenir.</string>
     <string name="hint_enter_text">Yazınızı buraya girin</string>
@@ -113,4 +112,9 @@
     <plurals name="unread_messages">
         <item quantity="other">%d okunmamış mesaj</item>
     </plurals>
+
+    <plurals name="confirm_will_delete_threads">
+        <item quantity="other">Seçilmiş konuşmalar silinmiş olacak.</item>
+    </plurals>
+
 </resources>

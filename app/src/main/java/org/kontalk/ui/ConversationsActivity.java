@@ -596,7 +596,7 @@ public class ConversationsActivity extends MainActivity
                     MessagingNotification.updateMessagesNotification(getApplicationContext(), false);
                 }
             })
-            .checkBoxPromptRes(R.string.delete_threads_leave_groups, false, null)
+            .checkBoxPromptRes(R.string.delete_threads_leave_any_groups, false, null)
             .negativeText(android.R.string.cancel)
             .show();
     }

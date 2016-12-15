@@ -279,7 +279,6 @@
     <string name="title_confirm_cancel_registration">¿Quere cancelar a subcripción?</string>
     <string name="confirm_cancel_registration">Se volve, terá que comezar o rexistro a partir de cero. Se precisa cambiar a outra aplicación, só ten que usar o botón do dispositivo de casa.</string>
     <string name="mark_read">Lido</string>
-    <string name="confirm_will_delete_threads">As conversas seleccionadas serán eliminadas.</string>
     <string name="audio_message">Mensaxe de audio</string>
     <string name="pref_regenerate_keypair_confirm">Un novo par de claves será xerado e asignado á súa conta. A súa clave antiga será inválidada.</string>
     <string name="error_delete_thread">Non se pode borrar o fío.</string>
@@ -537,7 +536,6 @@
 	<item quantity="other"/>
 </plurals>
 <string name="delete_thread_messages">Eliminar o historial da conversa</string>
-    <string name="delete_threads_leave_groups">Tamén deixar os grupos</string>
     <string name="pref_balloon_label_silence">Silencio</string>
     <string name="title_passphrase_request">Contraseña clave persoal</string>
     <string name="err_invalid_passphrase">Contrasinal incorrecto. Reinicie a aplicación para probar outro.</string>
@@ -573,4 +571,12 @@ Cando están desactivadas, o comportamento de conexión Kontalk se pode axustar 
     <string name="pref_reporting">Enviar estatísticas de uso anónimas</string>
     <string name="pref_title_reporting">Incluíndo informes de erros</string>
 
-    </resources>
+    <plurals name="confirm_will_delete_threads">
+        <item quantity="other">As conversas seleccionadas serán eliminadas.</item>
+    </plurals>
+
+    <plurals name="delete_threads_leave_groups">
+        <item quantity="other">Tamén deixar os grupos</item>
+    </plurals>
+
+</resources>

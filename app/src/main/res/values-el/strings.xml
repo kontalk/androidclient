@@ -370,7 +370,6 @@
 <string name="msg_importing_key">Εισαγωγή προσωπικού κλειδιού.…</string>
     <string name="title_confirm_cancel_registration">Ακύρωση εγγραφής;</string>
     <string name="confirm_cancel_registration">Αν πάτε πίσω θα πρέπει να ξεκινήσετε την εγγραφή από την αρχή. Αν πρέπει να μεταφερθείτε σε άλλη εφαρμογή, απλά χρησιμοποιείστε το κουμπί home της συσκευής σας.</string>
-    <string name="confirm_will_delete_threads">Οι επιλεγμένες συζητήσεις θα διαγραφούν.</string>
     <string name="app_name_offline">Kontalk (εκτός σύνδεσης)</string>
     <string name="menu_manual_verification">Έχετε ήδη ένα κωδικό;</string>
     <string name="code_validation_intro_missed_call">Σύντομα θα λάβετε μια αναπάντητη κλήση από αυτό τον αριθμό. <b>ΠΑΡΑΚΑΛΩ ΜΗΝ ΑΠΑΝΤΗΣΕΤΕ ΣΤΗΝ ΚΛΗΣΗ.</b></string>
@@ -504,7 +503,6 @@
     <string name="code_validation_intro_callerid">Πατήστε το κουμπί παρακάτω και κάντε μια αναπάντητη κλήση σε αυτόν τον αριθμό τηλεφώνου. Σημειώστε ότι <b> το τηλεφώνημα πρέπει να το κάνετε από τον αριθμό τηλεφώνου που έχετε εγγραφεί</b>. Η κλήση είναι δωρεάν αν κλείσετε μόλις ακουστεί ο πρώτος χτύπος, αυτό είναι αρκετό για να ολοκληρωθεί η διαδικασία.</string>
     <string name="code_validation_intro2_callerid">Μετά που θα τερματίσετε την κλήση, επιστρέψτε εδώ και πατήστε το κουμπί επιβεβαίωση παρακάτω.</string>
     <string name="delete_thread_messages">Διαγραφή συζήτησης αυτής της ομάδας</string>
-    <string name="delete_threads_leave_groups">Επίσης έξοδος από ομάδα</string>
     <string name="pref_push_notifications_disabled">Απενεργοποιημένο</string>
     <string name="pref_push_notifications_title_default">Τα push notifications είναι τεχνολογία υποβοηθούμενη από διακομιστή για την εξοικονόμηση μπαταρίας. Δεν επηρεάζουν την σε πραγματικό χρόνο παράδοση μηνυμάτων. 
 
@@ -569,4 +567,12 @@
 	<item quantity="other">+% ακόμη</item>
 </plurals>
 
-    </resources>
+    <plurals name="confirm_will_delete_threads">
+        <item quantity="other">Οι επιλεγμένες συζητήσεις θα διαγραφούν.</item>
+    </plurals>
+
+    <plurals name="delete_threads_leave_groups">
+        <item quantity="other">Επίσης έξοδος από ομάδα</item>
+    </plurals>
+
+</resources>

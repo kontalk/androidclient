@@ -396,7 +396,6 @@
     <string name="title_fallback">Tiene algún problema?</string>
     <string name="msg_fallback">Vamos a verificar su número de teléfono de otra manera.</string>
     <string name="menu_manual_verification">Ya tiene un código?</string>
-    <string name="confirm_will_delete_threads">Se eliminarán los chats seleccionados.</string>
     <string name="confirm_will_delete_messages">Se eliminarán los mensajes seleccionados.</string>
     <string name="pref_balloon_label_hangout">Hangout</string>
     <string name="title_block_user_warning">Confirma que quiere bloquear a este usuario?</string>
@@ -436,7 +435,7 @@
     <string name="msg_public_key_changed_warning">¡Por favor verifique con el usuario que el/ella reinstaló Kontalk o regeneró intencionalmente su clave personal, de lo contrario la comunicación podría estar comprometida!</string>
     <string name="mark_read">Leido</string>
     <string name="warning_public_key_unknown">¡La clave personal de este usuario no es de confianza!</string>
-    <string name="title_public_key_unknown_warning">Clave personal no confiable</string>
+    <string name="title_public_key_unknown_warning">Clave personal insegura</string>
     <string name="pref_show_blocked_users">Mostrar usuarios bloqueados</string>
     <string name="button_load_next_page">Cargar más mensajes</string>
 
@@ -541,18 +540,18 @@
     </plurals>
 
     <string name="delete_thread_messages">Eliminar el historial de chat</string>
-    <string name="delete_threads_leave_groups">Dejar también ser miembro de los grupos</string>
     <string name="leave_group_delete_messages">Eliminar también el historial del chat</string>
 <string name="pref_on">Activar</string>
     <string name="pref_off">Desactivar</string>
 
     <string name="pref_push_notifications_disabled">Deshabilitado</string>
-    <string name="pref_push_notifications_title_default">Las notificaciones push son una tecnología de ayuda del servidor para ahorrar batería. No afecta a la entrega en tiempo real de los mensajes.
-Cuando están desactivadas, el comportamiento de conexión de Kontalk se puede ajustar en la pantalla de configuración de red.</string>
-    <string name="pref_push_notifications_title_disabled">El soporte a las notificaciones push no está incluido en esta versión.</string>
+    <string name="pref_push_notifications_title_default">Las notificaciones push son una tecnología asistida por servidor para ahorrar batería. No afecta el envío de mensajes en tiempo-real. 
+
+Cuando están deshabilitadas, el comportamiento de la conexión de Kontalk puede ser ajustado en la pantalla de configuraciones de red.</string>
+    <string name="pref_push_notifications_title_disabled">El soporte para notificaciones push no está incluido en esta versión.</string>
     <string name="pref_push_notifications_title_unavailable">Las notificaciones push no son compatibles con este dispositivo.</string>
     <string name="about_credits_contrib"><b>Colaboradores</b></string>
-    <string name="pref_emoji_converter">Convertir sonrisas a emojis</string>
+    <string name="pref_emoji_converter">Convertir smiles a emojis</string>
     <string name="pref_title_emoji_converter">Convertir automáticamente sonrisas en texto a emojis</string>
 
     <string name="code_validation_intro2_callerid">Al finalizar la llamada, vuelva aquí y presione el botón de verificación de abajo.</string>
@@ -569,4 +568,14 @@ Cuando están desactivadas, el comportamiento de conexión de Kontalk se puede a
     <string name="menu_sticky">Favorito</string>
     <string name="menu_start_group">Iniciar grupo</string>
     <string name="group_info_owner_member">Propietario</string>
-    </resources>
+    <string name="group_command_owner_parted">El propietario (%s) ha dejado el grupo. Nadie puede agregar o quitar miembros.</string>
+
+    <plurals name="confirm_will_delete_threads">
+        <item quantity="other">Se eliminarán los chats seleccionados.</item>
+    </plurals>
+
+    <plurals name="delete_threads_leave_groups">
+        <item quantity="other">Abandonar los grupos también</item>
+    </plurals>
+
+</resources>

@@ -123,7 +123,6 @@
     <string name="title_confirm_cancel_registration">عضویت لغو شود؟</string>
     <string name="confirm_cancel_registration">اگر به عقب بروید، باید ثبت نام را از نو شروع کنید. اگر لازم است وارد کارهٔ دیگری شوید، فقط از دکمهٔ خانه استفاده کنید.</string>
     <string name="mark_read">خواندن</string>
-    <string name="confirm_will_delete_threads">گفت‌وگوی گزیده حذف خواهد شد.</string>
     <string name="error_delete_message">ناتوان در حذف پیام.</string>
     <string name="error_store_outbox">نمی‌توان پیام را در صندوق خروجی ذخیره کرد. شاید حافظه پر است؟</string>
     <string name="error_delete_thread">ناتوان در حذف رشته.</string>
@@ -380,6 +379,14 @@
     </plurals>
 <string name="menu_create_group">ساخت گروه</string>
     <string name="delete_thread_messages">حذف تاریخچه ی گپ</string>
-    <string name="delete_threads_leave_groups">همچنین از گروه ها خارج شو</string>
     <string name="pref_push_notifications_disabled">غیرفعال</string>
-    </resources>
+
+    <plurals name="confirm_will_delete_threads">
+        <item quantity="other">گفت‌وگوی گزیده حذف خواهد شد.</item>
+    </plurals>
+
+    <plurals name="delete_threads_leave_groups">
+        <item quantity="other">همچنین از گروه ها خارج شو</item>
+    </plurals>
+
+</resources>

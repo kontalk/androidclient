@@ -68,7 +68,6 @@
     <string name="delete_thread">删除聊天</string>
     <string name="confirm_delete_thread">删除聊天</string>
     <string name="confirm_will_delete_thread">整个聊天记录将被清空。</string>
-    <string name="confirm_will_delete_threads">选择的聊天记录将被删除。</string>
     <string name="new_messages">新消息</string>
     <string name="only_one_account_supported">仅支持一个Kontalk账户。</string>
     <string name="hint_enter_text">这里输入你的消息</string>
@@ -529,7 +528,6 @@
     </plurals>
 <string name="menu_create_group">创建群组</string>
     <string name="delete_thread_messages">删除聊天历史</string>
-    <string name="delete_threads_leave_groups">同时离开群组</string>
     <string name="pref_push_notifications_disabled">已禁用</string>
     <string name="pref_push_notifications_title_default">推送是服务器端辅助的帮助节约电量的技术。它不会影响实时的消息传送。
 
@@ -602,4 +600,17 @@
     <string name="pref_reporting">发送匿名的使用统计</string>
     <string name="pref_title_reporting">包含崩溃报告</string>
 
-    </resources>
+    <string name="menu_sticky">收藏</string>
+    <string name="menu_start_group">开始群组会话</string>
+    <string name="group_command_owner_parted">群主 (%s) 离开了群组。没有人能够添加或者踢掉成员。</string>
+    <string name="group_info_owner_member">群主</string>
+
+    <plurals name="confirm_will_delete_threads">
+        <item quantity="other">选择的聊天记录将被删除。</item>
+    </plurals>
+
+    <plurals name="delete_threads_leave_groups">
+        <item quantity="other">同时离开群组</item>
+    </plurals>
+
+</resources>
