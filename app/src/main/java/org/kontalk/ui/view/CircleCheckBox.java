@@ -19,8 +19,10 @@
 package org.kontalk.ui.view;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.graphics.drawable.VectorDrawableCompat;
 import android.util.AttributeSet;
 import android.widget.Checkable;
 
@@ -55,7 +57,13 @@ public class CircleCheckBox extends CircleImageView implements Checkable {
     }
 
     private void init() {
-        setImageResource(R.drawable.ic_checkbox);
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.N) {
+            Drawable d = VectorDrawableCompat.create(getResources(), R.drawable.ic_checkbox, getContext().getTheme());
+            setImageDrawable(d);
+        }
+        else {
+            setImageResource(R.drawable.ic_checkbox);
+        }
     }
 
     @Override
