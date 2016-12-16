@@ -500,14 +500,14 @@ http://kontalk.org/</string>
     <string name="group_untitled">無題のグループ</string>
     <string name="title_group_subject">グループ見出し</string>
     <string name="group_command_create">グループを作成:</string>
-    <string name="group_command_self_parted">あなたはグループを離れました。</string>
-    <string name="group_command_user_parted">%s がグループを離れました。</string>
+    <string name="group_command_self_parted">あなたはグループを退出しました。</string>
+    <string name="group_command_user_parted">%s がグループを退出しました。</string>
     <string name="group_command_subject">グループの見出しを設定しました: %s</string>
 
     <string name="group_command_text_create">グループを作成しました</string>
     <string name="group_command_text_subject">グループ見出しを変更しました</string>
-    <string name="group_command_text_part">誰かがこのグループを離れました</string>
-    <string name="group_command_text_part_self">あなたはこのグループを離れました</string>
+    <string name="group_command_text_part">誰かがこのグループを退出しました</string>
+    <string name="group_command_text_part_self">あなたはこのグループを退出しました</string>
     <string name="group_command_text_part_kicked">あなたはこのグループから削除されました</string>
     <string name="group_command_text_add_remove">誰かが追加または削除されました</string>
 
@@ -557,7 +557,7 @@ http://kontalk.org/</string>
 
     <plurals name="group_people">
 	<item quantity="one">1 人</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
 
     <plurals name="confirm_will_delete_threads">
@@ -565,7 +565,13 @@ http://kontalk.org/</string>
     </plurals>
 
     <plurals name="delete_threads_leave_groups">
-        <item quantity="other">グループも離れる</item>
-    </plurals>
+	<item quantity="other">グループも退出する</item>
+</plurals>
 
-</resources>
+<string name="menu_sticky">お気に入り</string>
+    <string name="menu_start_group">グループを開始</string>
+    <string name="group_command_owner_parted">所有者 (%s) がグループから退出しました。 誰もメンバーを追加または削除することはできません。</string>
+    <string name="group_info_owner_member">所有者</string>
+    <string name="delete_threads_leave_any_groups">グループからも退出する</string>
+
+    </resources>
