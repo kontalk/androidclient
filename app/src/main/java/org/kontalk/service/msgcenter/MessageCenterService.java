@@ -2020,11 +2020,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         broadcastPresence(roster, entry, entry.getUser(), id);
     }
 
-    private void broadcastPresence(Roster roster, String jid, String id) {
+    void broadcastPresence(Roster roster, String jid, String id) {
         broadcastPresence(roster, roster.getEntry(jid), jid, id);
     }
 
     private void broadcastPresence(Roster roster, RosterEntry entry, String jid, String id) {
+        // this method might be called async
+        final LocalBroadcastManager lbm = mLocalBroadcastManager;
+        if (lbm == null)
+            return;
+
         Intent i;
         // entry present and not pending subscription
         if (isRosterEntrySubscribed(entry) || Authenticator.isSelfJID(this, jid)) {
@@ -2040,7 +2045,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // to keep track of request-reply
         i.putExtra(EXTRA_PACKET_ID, id);
-        mLocalBroadcastManager.sendBroadcast(i);
+        lbm.sendBroadcast(i);
     }
 
     /** A special method to broadcast our own presence. */
