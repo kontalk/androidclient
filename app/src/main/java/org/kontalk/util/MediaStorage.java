@@ -161,7 +161,6 @@ public abstract class MediaStorage {
         if (thumbnail != bitmap)
             bitmap.recycle();
 
-        thumbnail = bitmapOrientation(context, media, thumbnail);
         Bitmap rotatedThumbnail = bitmapOrientation(context, media, thumbnail);
         if (rotatedThumbnail != thumbnail)
             thumbnail.recycle();
