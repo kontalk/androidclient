@@ -74,6 +74,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
     private MenuItem mInviteGroupMenu;
     private MenuItem mSetGroupSubjectMenu;
+    private MenuItem mGroupInfoMenu;
     private MenuItem mLeaveGroupMenu;
     private MenuItem mAttachMenu;
 
@@ -101,8 +102,21 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
             // menu items requiring membership
             visible = mConversation.getGroupMembership() == Groups.MEMBERSHIP_MEMBER;
+            mGroupInfoMenu.setVisible(visible);
+            mGroupInfoMenu.setEnabled(visible);
             mLeaveGroupMenu.setVisible(visible);
             mLeaveGroupMenu.setEnabled(visible);
+
+            if (visible) {
+                if (mConversation != null) {
+                    int count = mConversation.getGroupPeers().length + 1;
+                    visible = count > 1;
+                }
+                else {
+                    visible = false;
+                }
+            }
+
             mAttachMenu.setVisible(visible);
             mAttachMenu.setEnabled(visible);
             if (!visible)
@@ -115,6 +129,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         inflater.inflate(R.menu.group_message_menu, menu);
         mInviteGroupMenu = menu.findItem(R.id.invite_group);
         mSetGroupSubjectMenu = menu.findItem(R.id.group_subject);
+        mGroupInfoMenu = menu.findItem(R.id.group_info);
         mLeaveGroupMenu = menu.findItem(R.id.leave_group);
         mAttachMenu = menu.findItem(R.id.menu_attachment);
     }
