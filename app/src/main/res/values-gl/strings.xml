@@ -572,11 +572,20 @@ Cando están desactivadas, o comportamento de conexión Kontalk se pode axustar 
     <string name="pref_title_reporting">Incluíndo informes de erros</string>
 
     <plurals name="confirm_will_delete_threads">
-        <item quantity="other">As conversas seleccionadas serán eliminadas.</item>
-    </plurals>
+	<item quantity="one">A conversa seleccionada será eliminada.</item>
+	<item quantity="other">As conversas seleccionadas serán eliminadas.</item>
+</plurals>
 
     <plurals name="delete_threads_leave_groups">
-        <item quantity="other">Tamén deixar os grupos</item>
-    </plurals>
+	<item quantity="one">Deixar tamén os grupos</item>
+	<item quantity="other">Deixar tamén o grupo</item>
+</plurals>
 
-</resources>
+<string name="menu_sticky">Favorito</string>
+    <string name="menu_start_group">Iniciar un grupo</string>
+    <string name="button_private_chat">Conversa privada</string>
+    <string name="group_command_owner_parted">O propietario (% s) deixou o grupo. Ninguén pode engadir ou eliminar membros.</string>
+    <string name="group_info_owner_member">Propietario</string>
+    <string name="delete_threads_leave_any_groups">Deixar tamén todos os grupos</string>
+
+    </resources>
