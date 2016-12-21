@@ -570,7 +570,7 @@ Wenn sie deaktiviert sind kann das Kontalk Verbindungsverhalten in den Netzwerke
     <string name="group_info_owner_member">Admin</string>
     <string name="menu_sticky">Favorit</string>
     <string name="menu_start_group">Neue Gruppe</string>
-    <string name="group_command_owner_parted">Der Admin (%) hat die Gruppe verlassen. Niemand kann Mitglieder zur Gruppe hinzufügen oder entfernen.</string>
+    <string name="group_command_owner_parted">Der Admin (%s) hat die Gruppe verlassen. Niemand kann Mitglieder zur Gruppe hinzufügen oder entfernen.</string>
 
     <plurals name="confirm_will_delete_threads">
 	<item quantity="one">Der ausgewählte Chat wird gelöscht.</item>
