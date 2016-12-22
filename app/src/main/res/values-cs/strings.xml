@@ -103,13 +103,10 @@
   <string name="pref_messaging_settings">Nastavení zpráv</string>
   <string name="pref_privacy_settings">Nastavení soukromí</string>
   <string name="pref_encrypt">Šifrovat zprávy</string>
-  <string name="pref_title_on_encrypt">Všechny zprávy budou od teď šifrované</string>
-  <string name="pref_title_off_encrypt">Všechny zprávy budou od teď posílány nešifrovaně</string>
   <string name="pref_encrypt_userdata">Šifrovat osobní údaje</string>
   <string name="pref_title_on_encrypt_userdata">Vaši stavovou zprávu uvidí pouze uživatelé, kteří mají vaše telefonní číslo</string>
   <string name="pref_title_off_encrypt_userdata">Vaše stavová zpráva bude viditelná pro všechny</string>
   <string name="pref_auto_accept_subscriptions">Automaticky přijímat pozvánky</string>
-  <string name="pref_title_auto_accept_subscriptions">Automaticky přijímat pozvánky na konverzaci od jiných uživatelů</string>
   <string name="pref_send_typing">Odesílat info, že píšete</string>
   <string name="pref_hide_presence">Skrýt přítomnost</string>
   <string name="pref_title_on_hide_presence">Uživatelé vás neuvidí online</string>
@@ -125,7 +122,6 @@
   <string name="pref_update_server_list">Aktualizovat seznam serverů</string>
   <string name="server_list_last_update">Poslední aktualizace: %s</string>
   <string name="pref_title_push_notifications">Používat push notifikace, pokud je server podporuje, šetří baterii</string>
-  <string name="pref_title_disabled_push_notifications">Push notifikace nejsou na tomto zařízení podporovány</string>
   <string name="pref_push_notifications">Push notifikace</string>
   <string name="hint_search_full">Prohledat zprávy</string>
   <string name="hint_search_quickbox">Text ve vašich zprávách</string>
@@ -206,8 +202,6 @@
   <string name="pref_custom_background">Vlastní pozadí</string>
   <string name="pref_background_uri">Pozadí</string>
   <string name="pref_title_background_uri">Nastavit vlastní obrázek pozadí konverzace</string>
-  <string name="pref_title_off_custom_background">Je použito výchozí pozadí</string>
-  <string name="pref_title_on_custom_background">Vyberte pozadí pomocí volby níže</string>
   <string name="err_attachment_corrupted">Nepodařilo se stáhnout přílohu. Zpráva může být narušená.</string>
   <string name="serverlist_updating">Aktualizuji seznam serverů…</string>
   <string name="serverlist_update_error">Nepodařilo se stáhnout seznam serverů. Zkuste to prosím později.</string>
@@ -244,9 +238,6 @@
   <string name="pref_change_passphrase">Změnit heslo k osobnímu klíči</string>
   <string name="pref_title_remove_prefix">Odstranit z uloženého čísla kontaktu předvolbu, aby byl kontakt nalezen v seznamu registrovaných uživatelů</string>
   <string name="pref_export_keypair">Exportovat osobní klíč</string>
-  <string name="pref_title_export_keypair">Exportovat osobní klíč a přihlašovací certifikát na externí úložiště</string>
-  <string name="pref_import_keypair">Importovat osobní klíč</string>
-  <string name="pref_title_import_keypair">Importovat osobní klíč a přihlašovací certifikát z externího úložiště</string>
   <string name="msg_import_keypair">Kontalk naimportuje vaše klíče z %s na vašem externím úložišti. Ujistěte se, že tento soubor existuje a že to je platný archiv s vyexportovanými klíči.</string>
   <string name="msg_import_keypair_complete">Import osobního klíče byl dokončen.</string>
   <string name="err_import_keypair_failed">Při importu osobního klíče došlo k chybě.</string>
@@ -258,7 +249,6 @@
   <string name="msg_status_delivered">Doručeno</string>
   <string name="msg_status_encrypted">Zašifrováno</string>
   <string name="pref_balloons">Vzhled konverzační bubliny</string>
-  <string name="pref_title_balloons">Vyberte vzhled konverzační bubliny</string>
   <string name="attachment_picture">Galerie</string>
   <string name="attachment_contact">Kontakt</string>
   <string name="attachment_audio">Zvuk</string>
@@ -329,11 +319,7 @@
   <string name="warn_encryption_failed">Nepodařilo se zašifrovat zprávu. Pokud chcete zprávu přesto odeslat, vypněte šifrování v nastavení.</string>
   <string name="warn_not_subscribed">Zprávu se nepodařilo odeslat. Uživatel dosud neakceptoval vaši pozvánku.</string>
   <string name="pref_sync_sim_contacts">Synchronizovat SIM kontakty</string>
-  <string name="pref_title_off_sync_sim_contacts">Při zjišťování registrovaných uživatelů se nepoužijí kontakty na kartě SIM</string>
-  <string name="pref_title_on_sync_sim_contacts">Při zjišťování registrovaných uživatelů se použijí i kontakty na kartě SIM</string>
   <string name="pref_sync_invisible_contacts">Zahrnout neviditelné kontakty</string>
-  <string name="pref_title_off_sync_invisible_contacts">Nezahrnovat kontakty, které nejsou zobrazené v aplikaci Kontakty. Zapněte pro DAVDroid</string>
-  <string name="pref_title_on_sync_invisible_contacts">Kontakty, které nejsou zobrazené v aplikaci Kontakty, budou zahrnuty do Kontalku</string>
   <string name="pref_accept_any_certificate">Akceptovat jakýkoliv SSL certifikát</string>
   <string name="pref_delete_account">Smazat váš účet</string>
   <string name="msg_delete_account">Při smazání vašeho účtu dojde také ke smazání všech vašich zpráv. Váš účet na serveru bude smazán automaticky po několika týdnech.</string>
@@ -363,12 +349,8 @@
   <string name="slide_to_cancel">ZRUŠTE POTÁHNUTÍM</string>
   <string name="pref_media_settings">Nastavení médií</string>
   <string name="pref_image_resize">Měnit velikost obrázků</string>
-  <string name="pref_title_image_resize">Před odesláním měnit velikost obrázků</string>
   <string name="err_server_invalid_format">Neplatný formát adresy.</string>
   <string name="err_no_contacts_app">Nebyla nalezena žádná aplikace pro výběr kontaktů.</string>
-  <string name="warning_public_key">Osobní klíč tohoto uživatele se neočekávaně změnil!</string>
-  <string name="title_public_key_warning">Došlo ke změně osobního klíče</string>
-  <string name="msg_public_key_warning">Osobní klíč tohoto uživatele se změnil. Ověřte prosím s tímto uživatelem, jestli reinstaloval Kontalk nebo si záměrně vygeneroval nový klíč, v opačném případě může být ohrožena bezpečnost komunikace!</string>
 <string name="title_user_exists">Uživatel existuje</string>
     <string name="err_validation_user_exists"><b>Číslo, které používáte, je již do Kontalku registrováno.</b> Pokud jste registrovali jiné zařízení, pokračování tímto způsobem ho odpojí od Kontalku. Podívejte se prosím do naší dokumentace, jak překopírovat účet mezi dvěma zařízeními. Pokud chcete přesto pokračovat, zvolte OK.</string>
     <string name="about_credits_devteam"><b>Kontalk vám přináší:</b></string>
@@ -497,7 +479,6 @@
 
     <string name="group_command_self_parted">Opustil(a) jste skupinu.</string>
     <string name="group_command_text_part_self">Opustil(a) jste tuto skupinu</string>
-    <string name="chooser_error_no_audioplayer_app">Není dostupná žádná aplikace pro přehrání zvuku.</string>
 
     <string name="chooser_error_no_app">Pro otevření souboru není k dispozici vhodná aplikace.</string>
 
@@ -536,7 +517,7 @@
     <string name="err_invalid_passphrase">Nesprávné heslo. Restartujte aplikaci, abyste mohli vyzkoušet jiné.</string>
 
     <plurals name="unread_messages">
-	<item quantity="other">%d nepřečtených zpráv</item>
+        <item quantity="other">%d nepřečtených zpráv</item>
     </plurals>
     <plurals name="unread_messages_group">
 	<item quantity="other">%1$d zpráv @ %2$s</item>

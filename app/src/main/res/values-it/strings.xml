@@ -103,13 +103,10 @@
   <string name="pref_messaging_settings">Impostazioni messaggi</string>
   <string name="pref_privacy_settings">Privacy</string>
   <string name="pref_encrypt">Cifra messaggi</string>
-  <string name="pref_title_on_encrypt">Tutti i messaggi saranno cifrati da ora in poi</string>
-  <string name="pref_title_off_encrypt">Tutti i messaggi saranno spediti in chiaro da ora in poi</string>
   <string name="pref_encrypt_userdata">Cifra dati personali</string>
   <string name="pref_title_on_encrypt_userdata">Il messaggio di stato sarà visibile solo a chi possiede il tuo numero di telefono</string>
   <string name="pref_title_off_encrypt_userdata">Il messaggio di stato sarà visibile a tutti</string>
   <string name="pref_auto_accept_subscriptions">Accetta inviti automaticamente</string>
-  <string name="pref_title_auto_accept_subscriptions">Accetta automaticamente inviti a chattare da altri utenti</string>
   <string name="pref_send_typing">Invia notifiche di digitazione</string>
   <string name="pref_hide_presence">Nascondi presenza</string>
   <string name="pref_title_on_hide_presence">Gli utenti non ti vedranno online</string>
@@ -125,7 +122,6 @@
   <string name="pref_update_server_list">Aggiorna lista server</string>
   <string name="server_list_last_update">Ultimo aggiornamento: %s</string>
   <string name="pref_title_push_notifications">Usa notifiche push se il server lo supporta, aumenta la durata della batteria</string>
-  <string name="pref_title_disabled_push_notifications">Le notifiche push non sono supportate su questo dispositivo</string>
   <string name="pref_push_notifications">Notifiche push</string>
   <string name="hint_search_full">Cerca messaggi</string>
   <string name="hint_search_quickbox">Testo nei messaggi</string>
@@ -206,8 +202,6 @@
   <string name="pref_custom_background">Sfondo personalizzato</string>
   <string name="pref_background_uri">Sfondo</string>
   <string name="pref_title_background_uri">Imposta uno sfondo personalizzato nelle conversazioni</string>
-  <string name="pref_title_off_custom_background">Sarà usato lo sfondo predefinito</string>
-  <string name="pref_title_on_custom_background">Scegli uno sfondo usando l\'opzione di seguito</string>
   <string name="err_attachment_corrupted">Impossibile scaricare l\'allegato. Il messaggio potrebbe essere danneggiato.</string>
   <string name="serverlist_updating">Aggiornamento lista server…</string>
   <string name="serverlist_update_error">Impossibile scaricare la lista dei server. Riprova in seguito.</string>
@@ -244,9 +238,6 @@
   <string name="pref_change_passphrase">Cambia password chiave personale</string>
   <string name="pref_title_remove_prefix">Rimuovi un prefisso in Kontalk per far corrispondere i numeri di telefono</string>
   <string name="pref_export_keypair">Esporta chiave personale</string>
-  <string name="pref_title_export_keypair">Esporta la tua chiave personale e il certificato di login nella memoria esterna</string>
-  <string name="pref_import_keypair">Importa chiave personale</string>
-  <string name="pref_title_import_keypair">Importa la chiave personale e il certificato di login dalla memoria esterna</string>
   <string name="msg_import_keypair">Kontalk importerà le tue chiavi da %s nella memoria esterna. Assicurati che il file esista e che sia un archivio di chiavi esportate valido.</string>
   <string name="msg_import_keypair_complete">Importazione chiave personale completata.</string>
   <string name="err_import_keypair_failed">Importazione chiave personale fallita.</string>
@@ -258,7 +249,6 @@
   <string name="msg_status_delivered">Consegnato</string>
   <string name="msg_status_encrypted">Cifrato</string>
   <string name="pref_balloons">Tema messaggi</string>
-  <string name="pref_title_balloons">Scegli il tema delle chat</string>
   <string name="attachment_picture">Galleria</string>
   <string name="attachment_contact">Contatto</string>
   <string name="attachment_audio">Audio</string>
@@ -329,11 +319,7 @@
   <string name="warn_encryption_failed">Impossibile cifrare il messaggio. Disabilita la cifratura dalle impostazioni per inviare comunque il messaggio.</string>
   <string name="warn_not_subscribed">Impossibile inviare il messaggio. L\'utente non ha ancora accettato il tuo invito.</string>
   <string name="pref_sync_sim_contacts">Leggi contatti su SIM</string>
-  <string name="pref_title_off_sync_sim_contacts">Non includere i contatti dalla SIM durante il controllo degli utenti registrati</string>
-  <string name="pref_title_on_sync_sim_contacts">I contatti dalla SIM saranno inclusi nel controllo degli utenti registrati</string>
   <string name="pref_sync_invisible_contacts">Includi contatti non visibili</string>
-  <string name="pref_title_off_sync_invisible_contacts">Non includere contatti non visualizzati in rubrica. Usare come workaround per DAVDroid</string>
-  <string name="pref_title_on_sync_invisible_contacts">Contatto non visualizzati in rubrica non saranno inclusi in Kontalk</string>
   <string name="pref_accept_any_certificate">Accetta qualsiasi certificato SSL</string>
   <string name="pref_delete_account">Cancella account</string>
   <string name="msg_delete_account">La cancellazione dell\'account cancellerà anche tutti i tuoi messaggi. Il tuo account sul server sarà cancellato automaticamente dopo qualche settimana.</string>
@@ -363,12 +349,8 @@
   <string name="slide_to_cancel">SCORRI PER ANNULLARE</string>
   <string name="pref_media_settings">Impostazioni messaggi multimediali</string>
   <string name="pref_image_resize">Comprimi immagini</string>
-  <string name="pref_title_image_resize">Comprimi le immagini prima di inviarle</string>
   <string name="err_server_invalid_format">Formato indirizzo non valido.</string>
   <string name="err_no_contacts_app">Nessuna applicazione per i contatti trovata.</string>
-  <string name="warning_public_key">La chiave personale di questo utente è cambiata!</string>
-  <string name="title_public_key_warning">Chiave personale</string>
-  <string name="msg_public_key_warning">La chiave personale per questo utente è cambiata. Verifica che l\'utente abbia reinstallato Kontalk o che abbia rigenerato la sua chiave intenzionalmente, altrimenti la comunicazione potrebbe essere compromessa!</string>
 <string name="title_user_exists">Account esistente</string>
     <string name="err_validation_user_exists"><b>Il numero che stai usando risulta essere già registrato su Kontalk.</b> Se hai registrato un altro dispositivo, procedendo in questo modo non gli sarà più permesso l\'accesso a Kontalk. Fai riferimento alla nostra documentazione per sapere come copiare un account da un dispositivo ad un altro. Scegli OK per proseguire comunque.</string>
     <string name="about_credits_devteam"><b>Kontalk è sviluppato da:</b></string>

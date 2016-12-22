@@ -103,13 +103,10 @@
   <string name="pref_messaging_settings">Ρυθμίσεις μηνυμάτων</string>
   <string name="pref_privacy_settings">Ρυθμίσεις ιδιωτικότητας</string>
   <string name="pref_encrypt">Κρυπτογράφηση μηνυμάτων</string>
-  <string name="pref_title_on_encrypt">Όλα τα μηνύματα θα κρυπτογραφούνται από τώρα και στο εξής</string>
-  <string name="pref_title_off_encrypt">Όλα τα μηνύματα θα αποστέλλονται σε απλό κείμενο από τώρα και στο εξής</string>
   <string name="pref_encrypt_userdata">Κρυπτογράφηση προσωπικών δεδομένων</string>
   <string name="pref_title_on_encrypt_userdata">Το μήνυμα \"status\" θα είναι ορατό μόνο στους χρήστες που έχουν το νούμερο τηλεφώνου σας</string>
   <string name="pref_title_off_encrypt_userdata">Το μήνυμα \"status\" θα είναι ορατό σε όλους</string>
   <string name="pref_auto_accept_subscriptions">Αυτόματη αποδοχή προσκλήσεων</string>
-  <string name="pref_title_auto_accept_subscriptions">Αυτόματη αποδοχή συνομιλίας προσκλήσεων από άλλους χρήστες</string>
   <string name="pref_send_typing">Αποστολή ειδοποίησης πληκτρογράφησης</string>
   <string name="pref_hide_presence">Απόκρυψη κατάστασης σύνδεσης</string>
   <string name="pref_title_on_hide_presence">Οι άλλοι χρήστες δεν θα σας βλέπουν συνδεδεμένους</string>
@@ -125,7 +122,6 @@
   <string name="pref_update_server_list">Ανανέωση λίστας server</string>
   <string name="server_list_last_update">Τελευταία ανανέωση: %s</string>
   <string name="pref_title_push_notifications">Χρήση ειδοποιήσεων \"push\" εάν το επιτρέπει ο server, εξοικονόμηση μπαταρίας</string>
-  <string name="pref_title_disabled_push_notifications">Οι ειδοποιήσεις \"push\" δεν υποστηρίζονται σε αυτή τη συσκευή</string>
   <string name="pref_push_notifications">Ειδοποιήσεις \"push\"</string>
   <string name="hint_search_full">Αναζήτηση μηνυμάτων</string>
   <string name="hint_search_quickbox">Κείμενο στα μηνύματά σας</string>
@@ -206,8 +202,6 @@
   <string name="pref_custom_background">Προσαρμοσμένος φόντος</string>
   <string name="pref_background_uri">Φόντος</string>
   <string name="pref_title_background_uri">Ορισμός εικόνας φόντου προσαρμοσμένων συνομιλιών </string>
-  <string name="pref_title_off_custom_background">Χρήση προεπιλεγμένου φόντου</string>
-  <string name="pref_title_on_custom_background">Διαλέξτε ένα φόντο χρησιμοποιώντας την επιλογή παρακάτω</string>
   <string name="err_attachment_corrupted">Δεν είναι δυνατή λήψη του συνημμένου. Το μήνυμα μπορεί να είναι κατεστραμμένο.</string>
   <string name="serverlist_updating">Ανανέωση της λίστας διακομιστή…</string>
   <string name="serverlist_update_error">Δεν είναι δυνατή η λήψη της λίστας διακομιστών. Παρακαλούμε δοκιμάστε ξανά αργότερα.</string>
@@ -244,9 +238,6 @@
   <string name="pref_change_passphrase">Αλλαγή προσωπικού κλειδιού κωδικού πρόσβασης</string>
   <string name="pref_title_remove_prefix">Αφαιρέστε κάποιο πρόθεμα κλήσης στο Kontalk για να ανταπεξέλθει με τους αριθμούς τηλεφώνου σωστά</string>
   <string name="pref_export_keypair">Εξαγωγή προσωπικού κλειδιού</string>
-  <string name="pref_title_export_keypair">Εξαγωγή προσωπικού κλειδιού και σύνδεσης πιστοποιητικού για εξωτερικό μέσο αποθήκευσης</string>
-  <string name="pref_import_keypair">Εισαγωγή προσωπικού κλειδιού</string>
-  <string name="pref_title_import_keypair">Εισαγωγή προσωπικού κλειδιού και σύνδεσης πιστοποιητικου από εξωτερικό μέσο αποθήκευσης</string>
   <string name="msg_import_keypair">Το Kontalk θα εισάγει τα κλειδιά από το %s στο εξωτερικό μέσο αποθήκευσης σας. Να είστε βέβαιος ότι το αρχείο υπάρχει και είναι ένα έγκυρο αρχείο εξάγωγης κλειδιών.</string>
   <string name="msg_import_keypair_complete">Η εισαγωγη του προσωπικου κλειδιου ολοκληρωθηκε.</string>
   <string name="err_import_keypair_failed">Η εισαγωγή του προσωπικού κλειδιού απέτυχε.</string>
@@ -258,7 +249,6 @@
   <string name="msg_status_delivered">Παραδόθηκε</string>
   <string name="msg_status_encrypted">Κρυπτογραφημένο</string>
   <string name="pref_balloons">Μπαλόνι θέματος συνομιλίας </string>
-  <string name="pref_title_balloons">Επιλέξτε ενα μπαλόνι θέματος συνομιλίας </string>
   <string name="attachment_picture">Γκαλερί</string>
   <string name="attachment_contact">Επαφή</string>
   <string name="attachment_audio">Ήχος</string>
@@ -329,11 +319,7 @@
   <string name="warn_encryption_failed">Δεν είναι δυνατή η κρυπτογράφηση των μηνυμάτων. Απενεργοποιήστε την κρυπτογράφηση από τις ρυθμίσεις για να στείλετε μήνυμα ούτως ή άλλως.</string>
   <string name="warn_not_subscribed">Αδυναμία αποστολής μηνύματος. Ο χρήστης δεν έχει αποδεχτεί την πρόσκλησή σας ακόμα.</string>
   <string name="pref_sync_sim_contacts">Συγχρονισμός από τις επαφές SIM</string>
-  <string name="pref_title_off_sync_sim_contacts">Μην συμπεριλάβετε τις επαφές SIM κατά τον έλεγχο για εγγεγραμμένους χρήστες</string>
-  <string name="pref_title_on_sync_sim_contacts">Οι επαφές της κάρτας SIM περιλαμβάνονται, επίσης, κατά τον έλεγχο για εγγεγραμμένους χρήστες</string>
   <string name="pref_sync_invisible_contacts">Συμπερίληψη αόρατων επαφών</string>
-  <string name="pref_title_off_sync_invisible_contacts">Μην συμπεριλάβετε τις επαφές που δεν εμφανίζονται στην εφαρμογή Επαφών. Ενεργοποίηση του DAVDroid εναλλακτικό τρόπο αντιμετώπισης</string>
-  <string name="pref_title_on_sync_invisible_contacts">Οι επαφές που δεν εμφανίζονται στην εφαρμογή Επαφών θα  συμπεριληφθούν στο Kontalk</string>
   <string name="pref_accept_any_certificate">Αποδοχή οποιουδήποτε πιστοποιητικού SSL</string>
   <string name="pref_delete_account">Διαγραφή του λογαριασμού σας</string>
   <string name="msg_delete_account">Η διαγραφή του λογαριασμού σας, θα διαγράψει επίσης όλα τα μηνύματά σας. Ο λογαριασμός σας στο διακομιστή θα διαγραφθεί αυτόματα μετά από μερικές εβδομάδες.</string>
@@ -361,12 +347,8 @@
   <string name="err_playing_sdcard">Σφάλμα κατά την ανάγνωση από το εξωτερικό μέσο αποθήκευσης.</string>
   <string name="pref_media_settings">Ρυθμίσεις πολυμέσων </string>
   <string name="pref_image_resize">Αλλαγή μεγέθους εικόνων</string>
-  <string name="pref_title_image_resize">Αλλαγή μεγέθους εικόνων πριν από την αποστολή</string>
   <string name="err_server_invalid_format">Μη έγκυρη μορφή διεύθυνσης.</string>
   <string name="err_no_contacts_app">Δεν βρέθηκαν επαφές εφαρμογής.</string>
-  <string name="warning_public_key">ΠΡΟΣΟΧΗ! Το προσωπικό κλειδί για αυτόν τον χρήστη άλλαξε ξαφνικά! Κάντε κλικ εδώ για λεπτομέρειες.</string>
-  <string name="title_public_key_warning">Το προσωπικο κλειδί άλλαξε</string>
-  <string name="msg_public_key_warning">Το προσωπικο κλειδί αυτου του χρήστη έχει αλλάξει. Παρακαλουμε ελέγξτε οτι ο χρήστης εκανε επανεγκατάσταση του Kontalk ή αναδημιουργησε το κλειδί του σκόπιμα, διαφορετικά η επικοινωνία θα μπορούσε να τεθεί σε κίνδυνο!</string>
 <string name="msg_importing_key">Εισαγωγή προσωπικού κλειδιού.…</string>
     <string name="title_confirm_cancel_registration">Ακύρωση εγγραφής;</string>
     <string name="confirm_cancel_registration">Αν πάτε πίσω θα πρέπει να ξεκινήσετε την εγγραφή από την αρχή. Αν πρέπει να μεταφερθείτε σε άλλη εφαρμογή, απλά χρησιμοποιείστε το κουμπί home της συσκευής σας.</string>
@@ -495,8 +477,7 @@
     <string name="confirm_will_leave_group">Δεν θα μπορείτε να εισέλθετε ξανά σε αυτήν την ομάδα μετά την αποχώρησή σας.</string>
 
     <plurals name="unread_messages">
-	<item quantity="one">% νέα μηνύματα</item>
-	<item quantity="other"/>
+	<item quantity="other">%d νέα μηνύματα</item>
 </plurals>
 
 <string name="menu_create_group">Δημιουργία ομάδας</string>
@@ -504,7 +485,7 @@
     <string name="code_validation_intro2_callerid">Μετά που θα τερματίσετε την κλήση, επιστρέψτε εδώ και πατήστε το κουμπί επιβεβαίωση παρακάτω.</string>
     <string name="delete_thread_messages">Διαγραφή συζήτησης αυτής της ομάδας</string>
     <string name="pref_push_notifications_disabled">Απενεργοποιημένο</string>
-    <string name="pref_push_notifications_title_default">Τα push notifications είναι τεχνολογία υποβοηθούμενη από διακομιστή για την εξοικονόμηση μπαταρίας. Δεν επηρεάζουν την σε πραγματικό χρόνο παράδοση μηνυμάτων. 
+    <string name="pref_push_notifications_title_default">Τα push notifications είναι τεχνολογία υποβοηθούμενη από διακομιστή για την εξοικονόμηση μπαταρίας. Δεν επηρεάζουν την σε πραγματικό χρόνο παράδοση μηνυμάτων.
 
 Όταν είναι απενεργοποιημένο, η συμπεριφορά σύνδεσης του Kontalk μπορεί να ρυθμιστεί στην οθόνη ρυθμίσεων δικτύου.</string>
     <string name="pref_push_notifications_title_disabled">Η υποστήριξη push notifications δε συμπεριλήφθηκε σε αυτήν την έκδοση.</string>
@@ -558,13 +539,12 @@
     <string name="notification_group_title">%1$s @ %2$s</string>
 
     <plurals name="unread_messages_group">
-	<item quantity="one">%1$ μηνύματα @ %2$s</item>
-	<item quantity="other"/>
+	<item quantity="other">%1$d μηνύματα @ %2$s</item>
 </plurals>
 
     <plurals name="notification_more">
 	<item quantity="one">+1 ακόμη</item>
-	<item quantity="other">+% ακόμη</item>
+	<item quantity="other">+%d ακόμη</item>
 </plurals>
 
     <plurals name="confirm_will_delete_threads">

@@ -96,13 +96,10 @@
   <string name="pref_messaging_settings">Configuración de mensaxe</string>
   <string name="pref_privacy_settings">Configuración de privacidade</string>
   <string name="pref_encrypt">Cifrar mensaxes</string>
-  <string name="pref_title_on_encrypt">Todas as mensaxes serán cifradas a partir deste momento</string>
-  <string name="pref_title_off_encrypt">Todas as mensaxes serán enviadas sen criptografar a partir deste momento</string>
   <string name="pref_encrypt_userdata">Cifrar os dados persoais</string>
   <string name="pref_title_on_encrypt_userdata">A mensaxe de estado será visible apenas cando os usuarios/as teñan o teu número de teléfono</string>
   <string name="pref_title_off_encrypt_userdata">A mensaxe de estado será visible para calquera</string>
   <string name="pref_auto_accept_subscriptions">Aceptar os convites automaticamente</string>
-  <string name="pref_title_auto_accept_subscriptions">Aceptar automaticamente convites de conversas doutros usuarios</string>
   <string name="pref_send_typing">Enviar notificación de dixitación</string>
   <string name="pref_hide_presence">Ocultar presenza</string>
   <string name="pref_title_on_hide_presence">Os usuarios/as non verán se estás conectado</string>
@@ -193,8 +190,6 @@
   <string name="pref_custom_background">Fondo personalizado</string>
   <string name="pref_background_uri">Fondo</string>
   <string name="pref_title_background_uri">Define unha imaxe personalizada para as conversas</string>
-  <string name="pref_title_off_custom_background">Usando o fondo predefinido</string>
-  <string name="pref_title_on_custom_background">Escolle un fondo usando a seguinte opción</string>
   <string name="err_attachment_corrupted">Non foi posible descargar o anexo. A mensaxe debe estar corrompida.</string>
   <string name="serverlist_updating">Actualizando a lista de servidores…</string>
   <string name="serverlist_update_error">Non foi posible baixar a lista de servidores. Por favor, téntao máis tarde.</string>
@@ -202,7 +197,6 @@
   <string name="pref_remove_prefix">Prefixo de marcación</string>
   <string name="pref_title_remove_prefix">Retira algúns prefixos de marcación no Kontalk para que os números de teléfono coincidan correctamente</string>
   <string name="pref_export_keypair">Exportar a clave persoal</string>
-  <string name="pref_title_export_keypair">Exportar a clave persoal e o certificado de sesión para un almacenamento externo</string>
   <string name="msg_status_sending">Enviando</string>
   <string name="msg_status_sent">Enviado</string>
   <string name="msg_status_notaccepted">Rexeitado</string>
@@ -210,7 +204,6 @@
   <string name="msg_status_delivered">Recibido</string>
   <string name="msg_status_encrypted">Cifrado</string>
   <string name="pref_balloons">Tema dos globos das conversas</string>
-  <string name="pref_title_balloons">Escolle un tema para os globos das conversas</string>
   <string name="attachment_picture">Galería</string>
   <string name="attachment_contact">Contacto</string>
   <string name="chooser_send_picture">Enviar imaxe</string>
@@ -283,7 +276,6 @@
     <string name="pref_regenerate_keypair_confirm">Un novo par de claves será xerado e asignado á súa conta. A súa clave antiga será inválidada.</string>
     <string name="error_delete_thread">Non se pode borrar o fío.</string>
     <string name="error_delete_message">Non se puido borrar a mensaxe.</string>
-    <string name="pref_title_disabled_push_notifications">As notificacións \"empuxón\" non estás soportadas no seu dispositivo</string>
     <string name="pref_enable_notification_led">Notificación LED</string>
     <string name="pref_notification_led_color">Cor da notificación LED</string>
     <string name="confirm_will_delete_messages">As mensaxes seleccionadas serán borradas.</string>
@@ -532,8 +524,7 @@
     </plurals>
 
     <plurals name="unread_messages">
-	<item quantity="one">%d mensaxes non lidas</item>
-	<item quantity="other"/>
+	<item quantity="other">%d mensaxes non lidas</item>
 </plurals>
 <string name="delete_thread_messages">Eliminar o historial da conversa</string>
     <string name="pref_balloon_label_silence">Silencio</string>
@@ -548,8 +539,7 @@
     <string name="group_info_menu_remove">Quitar</string>
 
     <plurals name="unread_messages_group">
-	<item quantity="one">%1$d mensaxes @ %2$s</item>
-	<item quantity="other"/>
+	<item quantity="other">%1$d mensaxes @ %2$s</item>
 </plurals>
 
     <string name="code_validation_intro_callerid">Preme o botón de abaixo e faga unha chamada perdida a ese número de teléfono.Teña en conta que &lt;b&gt; 1 a chamada debe facerse desde o número de teléfono que se está a registrar &lt;/ b&gt; 2. A chamada é de balde si colga cando escoite o primeiro timbre. Será suficiente para nós.<b>the call must be initiated from the phone number you are registering</b>. The call is free of charge if you hang up as soon as you hear the first ring. It will be enough for us.</string>
@@ -584,7 +574,7 @@ Cando están desactivadas, o comportamento de conexión Kontalk se pode axustar 
 <string name="menu_sticky">Favorito</string>
     <string name="menu_start_group">Iniciar un grupo</string>
     <string name="button_private_chat">Conversa privada</string>
-    <string name="group_command_owner_parted">O propietario (% s) deixou o grupo. Ninguén pode engadir ou eliminar membros.</string>
+    <string name="group_command_owner_parted">O propietario (%s) deixou o grupo. Ninguén pode engadir ou eliminar membros.</string>
     <string name="group_info_owner_member">Propietario</string>
     <string name="delete_threads_leave_any_groups">Deixar tamén todos os grupos</string>
 

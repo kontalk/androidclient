@@ -103,13 +103,10 @@
   <string name="pref_messaging_settings">Поставке дописивања</string>
   <string name="pref_privacy_settings">Поставке приватности</string>
   <string name="pref_encrypt">Шифруј поруке</string>
-  <string name="pref_title_on_encrypt">Све поруке од сада ће бити шифроване</string>
-  <string name="pref_title_off_encrypt">Све поруке од сада ће бити послате као обичан текст</string>
   <string name="pref_encrypt_userdata">Шифруј личне податке</string>
   <string name="pref_title_on_encrypt_userdata">Порука стања ће бити видљива корисницима који имају ваш број телефона</string>
   <string name="pref_title_off_encrypt_userdata">Порука стања ће бити видљива свима</string>
   <string name="pref_auto_accept_subscriptions">Аутоматски прихватај позивнице</string>
-  <string name="pref_title_auto_accept_subscriptions">Аутоматски прихватај позивнице од других корисника</string>
   <string name="pref_send_typing">Шаљи обавештење о куцању</string>
   <string name="pref_hide_presence">Сакриј присутност</string>
   <string name="pref_title_on_hide_presence">Корисници неће видети кад сте на вези</string>
@@ -125,7 +122,6 @@
   <string name="pref_update_server_list">Освежи списак сервера</string>
   <string name="server_list_last_update">последње освежавање: %s</string>
   <string name="pref_title_push_notifications">Користи push обавештења ако их сервер подржава — штеде батерију</string>
-  <string name="pref_title_disabled_push_notifications">Push обавештења нису подржана на овом уређају</string>
   <string name="pref_push_notifications">Push обавештења</string>
   <string name="hint_search_full">Претражи поруке</string>
   <string name="hint_search_quickbox">Текст у порукама</string>
@@ -206,8 +202,6 @@
   <string name="pref_custom_background">Посебна позадина</string>
   <string name="pref_background_uri">Позадина</string>
   <string name="pref_title_background_uri">Поставите посебну позадину за преписке</string>
-  <string name="pref_title_off_custom_background">Користи подразумевану</string>
-  <string name="pref_title_on_custom_background">Изаберите позадину</string>
   <string name="err_attachment_corrupted">Не могу да преузмем прилог. Порука је можда оштећена.</string>
   <string name="serverlist_updating">Освежавам списак сервера…</string>
   <string name="serverlist_update_error">Не могу да освежим списак сервера. Покушајте касније.</string>
@@ -244,9 +238,6 @@
   <string name="pref_change_passphrase">Измените лозинку личног кључа</string>
   <string name="pref_title_remove_prefix">Уклањање неких префикса бирања да би се бројеви исправно поклопили</string>
   <string name="pref_export_keypair">Извези лични кључ</string>
-  <string name="pref_title_export_keypair">Извоз личног кључа и сертификата на спољну меморију</string>
-  <string name="pref_import_keypair">Увези лични кључ</string>
-  <string name="pref_title_import_keypair">Увоз личног кључа и сертификата са спољне меморије</string>
   <string name="msg_import_keypair">Контак ће увести ваше кључеве из %s са спољашњег складишта. Уверите се да фајл постоји и да је исправна архива извезеног кључа.</string>
   <string name="msg_import_keypair_complete">Увоз личног кључа завршен.</string>
   <string name="err_import_keypair_failed">Увоз личног кључа није успео.</string>
@@ -258,7 +249,6 @@
   <string name="msg_status_delivered">Испоручено</string>
   <string name="msg_status_encrypted">Шифровано</string>
   <string name="pref_balloons">Тема балончића</string>
-  <string name="pref_title_balloons">Изаберите тему балончића ћаскања</string>
   <string name="attachment_picture">Галерија</string>
   <string name="attachment_contact">Контакт</string>
   <string name="attachment_audio">Звук</string>
@@ -329,11 +319,7 @@
   <string name="warn_encryption_failed">Не могу да шифрујем поруку. Искључите шифровање у поставкама да свеједно пошаљете поруку.</string>
   <string name="warn_not_subscribed">Не могу да пошаљем поруку. Корисник још није прихватио позивницу.</string>
   <string name="pref_sync_sim_contacts">Синхронизуј са СИМ контактима</string>
-  <string name="pref_title_off_sync_sim_contacts">Не укључуј СИМ контакте кад провераваш регистроване кориснике</string>
-  <string name="pref_title_on_sync_sim_contacts">СИМ контакти су такође укључени у проверу регистрованих корисника</string>
   <string name="pref_sync_invisible_contacts">Укључи и невидљиве контакте</string>
-  <string name="pref_title_off_sync_invisible_contacts">Не укључуј особе које се не приказују у апликацији Контакти. Укључи за заобилажење ДАВДроида</string>
-  <string name="pref_title_on_sync_invisible_contacts">Особе које се не приказују у Контактима биће укључене у Контаку</string>
   <string name="pref_accept_any_certificate">Прихвати сваки ССЛ сертификат</string>
   <string name="pref_delete_account">Обришите свој налог</string>
   <string name="msg_delete_account">Брисањем налога такође бришете све ваше поруке. Ваш налог на серверу биће обрисан аутоматски након пар недеља.</string>
@@ -361,12 +347,8 @@
   <string name="err_playing_sdcard">Грешка при читању спољашњег складишта.</string>
   <string name="pref_media_settings">Поставке медија</string>
   <string name="pref_image_resize">Величина слика</string>
-  <string name="pref_title_image_resize">Промена величине пре слања</string>
   <string name="err_server_invalid_format">Неисправан формат адресе.</string>
   <string name="err_no_contacts_app">Нема апликације за контакте.</string>
-  <string name="warning_public_key">Лични кључ овог корисника је неочекивано промењен!</string>
-  <string name="title_public_key_warning">Лични кључ промењен</string>
-  <string name="msg_public_key_warning">Лични кључ овог корисника је промењен. Проверите са њим да није поново инсталирао Контак или поново направио свој кључ. Ако није, сигурност комуникације може бити угрожена!</string>
 <string name="hint_record">Тапните икону микрофона за почетак снимања.</string>
     <string name="slide_to_cancel">ПРЕВУЦИТЕ ЗА ОТКАЗИВАЊЕ</string>
 
@@ -389,10 +371,8 @@
     <string name="about_credits_translators"><b>Преводиоци</b></string>
 
     <plurals name="context_selected">
-	<item quantity="one">1 изабрана</item>
+	<item quantity="one">%d изабрана</item>
 	<item quantity="few">%d изабране</item>
-	<item quantity="many">%d изабрано</item>
-	<item quantity="other"/>
 </plurals>
 
 <string name="app_name_offline">Контак (ван везе)</string>
@@ -479,10 +459,8 @@
     <string name="group_command_text_part">Неко је напустио ову групу</string>
 
     <plurals name="group_people">
-	<item quantity="one">1 особа</item>
+	<item quantity="one">%d особа</item>
 	<item quantity="few">%d особе</item>
-	<item quantity="many">%d особа</item>
-	<item quantity="other"/>
 </plurals>
 
 
@@ -500,7 +478,6 @@
 
     <string name="group_command_self_parted">Напустили сте групу.</string>
     <string name="group_command_text_part_self">Напустили сте групу</string>
-    <string name="chooser_error_no_audioplayer_app">Нема апликације за пуштање звука.</string>
 
     <string name="chooser_error_no_app">Нема подесне апликације за отварање фајла.</string>
 
@@ -518,10 +495,8 @@
     <string name="notification_group_title">%1$s @ %2$s</string>
 
     <plurals name="notification_more">
-	<item quantity="one">+још једна</item>
+	<item quantity="one">+још %d</item>
 	<item quantity="few">+још %d</item>
-	<item quantity="many">+још %d</item>
-	<item quantity="other"/>
 </plurals>
 
     <string name="title_ignore_all_identities">Игнорисати све идентитете?</string>

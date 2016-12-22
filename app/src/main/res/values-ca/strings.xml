@@ -103,13 +103,10 @@
   <string name="pref_messaging_settings">Configuració dels missatges</string>
   <string name="pref_privacy_settings">Configuració de privadesa</string>
   <string name="pref_encrypt">Xifra els missatges</string>
-  <string name="pref_title_on_encrypt">D\'ara endavant tots els missatges seran xifrats</string>
-  <string name="pref_title_off_encrypt">D\'ara endavant tots els missatges s\'enviaran sense xifrar</string>
   <string name="pref_encrypt_userdata">Xifra les dades personals</string>
   <string name="pref_title_on_encrypt_userdata">Només veuran el voste missatge d\'estat els qui tinguen el vostre número de telèfon</string>
   <string name="pref_title_off_encrypt_userdata">Tothom podrà veure el vostre missatge d\'estat</string>
   <string name="pref_auto_accept_subscriptions">Accepta automàticament les invitacions</string>
-  <string name="pref_title_auto_accept_subscriptions">Accepta automàticament invitacions de xat d\'altre usuaris</string>
   <string name="pref_send_typing">Informa els contactes quan estic escrivint</string>
   <string name="pref_hide_presence">Amaga la meva presència</string>
   <string name="pref_title_on_hide_presence">La resta d\'usuaris no sabrà que esteu en línia</string>
@@ -125,7 +122,6 @@
   <string name="pref_update_server_list">Actualitza la llista de servidors</string>
   <string name="server_list_last_update">Darrera actualització: %s</string>
   <string name="pref_title_push_notifications">Usa notificacions \'push\' si el servidor les admet, estalvia bateria</string>
-  <string name="pref_title_disabled_push_notifications">Aquest dispositiu no admet notificacions \'push\'</string>
   <string name="pref_push_notifications">Notificacions \'push\'</string>
   <string name="hint_search_full">Cerca missatges</string>
   <string name="hint_search_quickbox">Text en els vostres missatges</string>
@@ -206,8 +202,6 @@
   <string name="pref_custom_background">Fons personalitzat</string>
   <string name="pref_background_uri">Fons</string>
   <string name="pref_title_background_uri">Definiu la imatge de fons per a les converses</string>
-  <string name="pref_title_off_custom_background">S\'està utilitzant el fons predeterminat</string>
-  <string name="pref_title_on_custom_background">Trieu un fons usant l\'opció següent</string>
   <string name="err_attachment_corrupted">No ha estat possible descarregar el fitxer adjunt. El missatge podria estar corromput.</string>
   <string name="serverlist_updating">S\'està actualitzant la llista de servidors…</string>
   <string name="serverlist_update_error">No ha estat possible descarregar la llista de servidors. Per favor, torneu a intentar-ho més tard.</string>
@@ -244,9 +238,6 @@
   <string name="pref_change_passphrase">Canvia la contrasenya de la clau personal</string>
   <string name="pref_title_remove_prefix">Elimina el prefix perquè l\'aplicació trobe els números de telèfon</string>
   <string name="pref_export_keypair">Exporta la clau personal</string>
-  <string name="pref_title_export_keypair">Exporteu la clau personal i el certificat d\'autenticació a l\'emmagatzematge extern</string>
-  <string name="pref_import_keypair">Importa la clau personal</string>
-  <string name="pref_title_import_keypair">Importa la clau personal i el certificat d\'autenticació de l\'emmagatzematge extern</string>
   <string name="msg_import_keypair">Kontalk importara les vostres claus de %s al vostre sistema d\'emmagatzematge extern. Assegureu-vos que el fitxer existeix i que és un arxiu d\'exportació de claus vàlid.</string>
   <string name="msg_import_keypair_complete">S\'ha completat la importació de la clau personal.</string>
   <string name="err_import_keypair_failed">Ha fallat la importació de la clau personal.</string>
@@ -258,7 +249,6 @@
   <string name="msg_status_delivered">Lliurat</string>
   <string name="msg_status_encrypted">Xifrat</string>
   <string name="pref_balloons">Tema dels globus del xat</string>
-  <string name="pref_title_balloons">Tria un tema per als globus del xat</string>
   <string name="attachment_picture">Galeria</string>
   <string name="attachment_contact">Contacte</string>
   <string name="attachment_audio">Àudio</string>
@@ -329,11 +319,7 @@
   <string name="warn_encryption_failed">No ha estat possible encriptar el missatge. Desactiveu l\'encriptació si voleu enviar el missatge de tota manera.</string>
   <string name="warn_not_subscribed">No ha estat possible enviar el missatge. L\'usuari no ha acceptat la invitació encara.</string>
   <string name="pref_sync_sim_contacts">Sincronitza amb els contactes de la SIM</string>
-  <string name="pref_title_off_sync_sim_contacts">Exclou els contactes de la SIM en la recerca d\'usuaris registrats</string>
-  <string name="pref_title_on_sync_sim_contacts">Els contactes de la SIM s\'inclouen en la recerca d\'usuaris registrats</string>
   <string name="pref_sync_invisible_contacts">Inclou els contactes no visibles</string>
-  <string name="pref_title_off_sync_invisible_contacts">No incloguis els contactes no mostrats en l\'app Contactes. Activeu si voleu la solució DAVDroid</string>
-  <string name="pref_title_on_sync_invisible_contacts">Els contactes que no es mostren en l\'app Contacts seran inclosos a Kontalk</string>
   <string name="pref_accept_any_certificate">Accepta qualsevol certificat SSL</string>
   <string name="pref_delete_account">Esborra el compte</string>
   <string name="msg_delete_account">Esborrar el vostre compte suposa també que se\'n suprimeixin els vostres missatges. El vostre compte serà eliminat del servidor automàticament d\'ací a unes setmanes.</string>
@@ -363,12 +349,8 @@
   <string name="slide_to_cancel">Llisqueu per a cancel·lar</string>
   <string name="pref_media_settings">Configuració multimèdia</string>
   <string name="pref_image_resize">Redimensiona les imatges</string>
-  <string name="pref_title_image_resize">Redimensiona les imatges abans d\'enviar-les</string>
   <string name="err_server_invalid_format">Format d\'adreça no vàlid.</string>
   <string name="err_no_contacts_app">No s\'ha trobat l\'app de gestió de contactes.</string>
-  <string name="warning_public_key">La clau personal d\'aquest usuari ha canviat inesperadament!</string>
-  <string name="title_public_key_warning">La clau personal ha canviat</string>
-  <string name="msg_public_key_warning">La clau personal d\'aquest usuari ha canviat. Per favor, esbrineu si l\'usuari ha reinstal·lat Kontalk o si ha regenerat la clau deliberadament; si no, la comunicació podria haver estat compromesa!</string>
 <string name="title_user_exists">L\'usuari ja existeix</string>
     <string name="err_validation_user_exists"><b>Aquest número ja està registrat a Kontalk.</b> Si estàs registrat amb un altre dispositiu, continuar amb el procés desconnectarà aquell dispositiu de Kontalk. Sisplau consulta la nostra documentació per copiar el compte entre diferents dispositius. Selecciona OK per continuar de totes maneres.</string>
     <string name="pref_help">Ajuda</string>

@@ -97,13 +97,10 @@
   <string name="pref_messaging_settings">Configurações das mensagens</string>
   <string name="pref_privacy_settings">Configurações de privacidade</string>
   <string name="pref_encrypt">Criptografar mensagens</string>
-  <string name="pref_title_on_encrypt">Todas as mensagens serão criptografadas de agora em diante</string>
-  <string name="pref_title_off_encrypt">Todas as mensagens serão enviadas em texto puro de agora em diante</string>
   <string name="pref_encrypt_userdata">Criptografar dados pessoais</string>
   <string name="pref_title_on_encrypt_userdata">A mensagem de status será visível apenas para quem tiver o seu número de telefone</string>
   <string name="pref_title_off_encrypt_userdata">A mensagem de status será visível para qualquer um</string>
   <string name="pref_auto_accept_subscriptions">Aceitar os convites automaticamente</string>
-  <string name="pref_title_auto_accept_subscriptions">Aceitar os convites de conversa das outras pessoas automaticamente</string>
   <string name="pref_send_typing">Enviar notificação de digitação</string>
   <string name="pref_hide_presence">Ocultar presença</string>
   <string name="pref_title_on_hide_presence">As pessoas não verão que você está conectado</string>
@@ -194,8 +191,6 @@
   <string name="pref_custom_background">Fundo personalizado</string>
   <string name="pref_background_uri">Fundo</string>
   <string name="pref_title_background_uri">Defina uma imagem personalizada para as conversas</string>
-  <string name="pref_title_off_custom_background">Usando fundo padrão</string>
-  <string name="pref_title_on_custom_background">Escolha um fundo usando a opção abaixo</string>
   <string name="err_attachment_corrupted">Não foi possível baixar o anexo. A mensagem deve estar corrompida.</string>
   <string name="serverlist_updating">Atualizando a lista de servidores…</string>
   <string name="serverlist_update_error">Não foi possível baixar a lista de servidores. Por favor, tente novamente mais tarde.</string>
@@ -203,7 +198,6 @@
   <string name="pref_remove_prefix">Prefixo de discagem</string>
   <string name="pref_title_remove_prefix">Remover qualquer prefixo de marcação no Kontalk para os números de telefone coincidirem corretamente</string>
   <string name="pref_export_keypair">Exportar chave pessoal</string>
-  <string name="pref_title_export_keypair">Exportar a chave pessoal e o certificado de autenticação para um armazenamento externo</string>
   <string name="msg_status_sending">Enviando</string>
   <string name="msg_status_sent">Enviada</string>
   <string name="msg_status_notaccepted">Recusada</string>
@@ -211,7 +205,6 @@
   <string name="msg_status_delivered">Enviada</string>
   <string name="msg_status_encrypted">Criptografada</string>
   <string name="pref_balloons">Tema do balão de conversa</string>
-  <string name="pref_title_balloons">Escolha um tema para os balões de conversa</string>
   <string name="attachment_picture">Galeria</string>
   <string name="attachment_contact">Contato</string>
   <string name="chooser_send_picture">Enviar imagem</string>
@@ -272,7 +265,6 @@
     <string name="pref_regenerate_keypair_confirm">Um novo par de chaves será gerado e associado à sua conta. As chaves antigas serão invalidadas.</string>
     <string name="error_delete_thread">Não foi possível apagar a conversa.</string>
     <string name="error_delete_message">Não foi possível apagar a mensagem.</string>
-    <string name="pref_title_disabled_push_notifications">Notificações push não são suportadas neste dispositivo</string>
     <string name="confirm_will_delete_messages">As mensagens selecionadas serão apagadas.</string>
     <string name="title_user_exists">O usuário já existe</string>
     <string name="err_validation_nonetwork">Não existe nenhuma conexão com a Internet disponível. Kontalk necessita de uma conexão ativa com a Internet para funcionar.</string>
@@ -319,8 +311,6 @@
     <string name="pref_wakeup_time_label_3h">3 horas</string>
 
     <string name="pref_change_passphrase">Alterar a senha da chave pessoal</string>
-    <string name="pref_import_keypair">Importar chave pessoal</string>
-    <string name="pref_title_import_keypair">Importa a chave pessoal e o certificado de autenticação de um armazenamento externo</string>
     <string name="msg_import_keypair">O Kontalk irá importar sua chaves de %s em seu armazeno externo. Certifique-se de que o arquivo existe e que é um arquivo de exportação de chaves válido.</string>
     <string name="msg_import_keypair_complete">A importação da chave pessoal foi finalizada.</string>
     <string name="err_import_keypair_failed">Não foi possível importar a chave pessoal.</string>
@@ -450,7 +440,7 @@
     <string name="pref_show_blocked_users">Exibir usuários bloqueados</string>
 
     <plurals name="context_selected">
-	<item quantity="one">1 selecionado</item>
+	<item quantity="one">%d selecionado</item>
 	<item quantity="other">%d selecionados</item>
 </plurals>
 
@@ -502,7 +492,7 @@
     <string name="confirm_will_leave_group">Você não conseguirá retornar a esse grupo depois que sair dele.</string>
 
     <plurals name="group_people">
-	<item quantity="one">1 pessoa</item>
+	<item quantity="one">%d pessoa</item>
 	<item quantity="other">%d pessoas</item>
 </plurals>
 
@@ -529,7 +519,7 @@
     <string name="notification_group_title">%1$s @ %2$s</string>
 
     <plurals name="notification_more">
-	<item quantity="one">mais 1</item>
+	<item quantity="one">mais %d</item>
 	<item quantity="other">mais %d</item>
 </plurals>
 
@@ -550,8 +540,7 @@
     </plurals>
 
     <plurals name="unread_messages_group">
-	<item quantity="one">%1$d mensagens @ %2$s</item>
-	<item quantity="other"/>
+	<item quantity="other">%1$d mensagens @ %2$s</item>
     </plurals>
 <string name="delete_thread_messages">Apagar o histórico da conversa</string>
     <string name="pref_on">Ativar</string>

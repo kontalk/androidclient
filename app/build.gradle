@@ -92,11 +92,6 @@ android {
         }
     }
 
-    lintOptions {
-        checkReleaseBuilds false
-        abortOnError false
-    }
-
     testOptions {
         unitTests.returnDefaultValues = true
     }

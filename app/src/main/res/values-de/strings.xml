@@ -103,13 +103,10 @@
   <string name="pref_messaging_settings">Nachrichteneinstellungen</string>
   <string name="pref_privacy_settings">Privatsphären-Einstellungen</string>
   <string name="pref_encrypt">Nachrichten verschlüsseln</string>
-  <string name="pref_title_on_encrypt">Alle Nachrichten werden ab sofort verschlüsselt</string>
-  <string name="pref_title_off_encrypt">Alle Nachrichten werden ab sofort im Klartext gesendet</string>
   <string name="pref_encrypt_userdata">Persönliche Daten verbergen</string>
   <string name="pref_title_on_encrypt_userdata">Statusnachricht nur Kontakten anzeigen, die meine Telefonnummer im Adressbuch haben</string>
   <string name="pref_title_off_encrypt_userdata">Statusnachricht ist für jeden sichtbar</string>
   <string name="pref_auto_accept_subscriptions">Einladungen automatisch annehmen</string>
-  <string name="pref_title_auto_accept_subscriptions">Einladungen zum Chat von anderen Nutzern automatisch annehmen</string>
   <string name="pref_send_typing">\"Schreibt...\" -Benachrichtigung senden</string>
   <string name="pref_hide_presence">Anwesenheit verbergen</string>
   <string name="pref_title_on_hide_presence">Sie werden anderen Nutzern als offline angezeigt</string>
@@ -125,7 +122,6 @@
   <string name="pref_update_server_list">Serverliste aktualisieren</string>
   <string name="server_list_last_update">Letzte Aktualisierung: %s</string>
   <string name="pref_title_push_notifications">Push-Benachrichtigungen nutzen wenn es der Server unterstützt, spart Batterie</string>
-  <string name="pref_title_disabled_push_notifications">Push-Benachrichtigungen werden von diesem Gerät nicht unterstützt</string>
   <string name="pref_push_notifications">Push-Benachrichtigungen</string>
   <string name="hint_search_full">Nachrichten suchen</string>
   <string name="hint_search_quickbox">Text in Ihren Nachrichten</string>
@@ -206,8 +202,6 @@
   <string name="pref_custom_background">Eigener Hintergrund</string>
   <string name="pref_background_uri">Hintergrund</string>
   <string name="pref_title_background_uri">Ein eigenes Hintergrundbild für Gespräche auswählen</string>
-  <string name="pref_title_off_custom_background">Den Standardhintergrund benutzen</string>
-  <string name="pref_title_on_custom_background">Ein Hintergrundbild mit untenstehender Option wählen</string>
   <string name="err_attachment_corrupted">Anhang kann nicht heruntergeladen werden. Nachricht möglicherweise defekt.</string>
   <string name="serverlist_updating">Aktualisiere Serverliste…</string>
   <string name="serverlist_update_error">Die Serverliste kann nicht heruntergeladen werden. Bitte versuchen Sie es später noch einmal.</string>
@@ -244,9 +238,6 @@
   <string name="pref_change_passphrase">Passwort für persönlichen Schlüssel ändern</string>
   <string name="pref_title_remove_prefix">Wählpräfix in Kontalk entfernen um Tel.Nr. korrekt erkennen zu können</string>
   <string name="pref_export_keypair">Persönlichen Schlüssel exportieren</string>
-  <string name="pref_title_export_keypair">Persönlichen Schlüssel und Loginzertifikat auf externen Speicher exportieren</string>
-  <string name="pref_import_keypair">Persönlichen Schlüssel importieren</string>
-  <string name="pref_title_import_keypair">Persönlichen Schlüssel und Loginzertifikat von externem Speicher importieren</string>
   <string name="msg_import_keypair">Kontalk wird Ihre Schlüssel aus %s ihres externen Speichers importieren. Stellen Sie sicher, dass die Datei existiert und ein gültiges exportiertes Schlüsselarchiv ist.</string>
   <string name="msg_import_keypair_complete">Import von persönlichem Schlüssel abgeschlossen.</string>
   <string name="err_import_keypair_failed">Import von persönlichem Schlüssel fehlgeschlagen.</string>
@@ -258,7 +249,6 @@
   <string name="msg_status_delivered">Zugestellt</string>
   <string name="msg_status_encrypted">Verschlüsselt</string>
   <string name="pref_balloons">Sprechblasendesign</string>
-  <string name="pref_title_balloons">Ein Sprechblasendesign auswählen</string>
   <string name="attachment_picture">Galerie</string>
   <string name="attachment_contact">Kontakt</string>
   <string name="attachment_audio">Audio</string>
@@ -329,11 +319,7 @@
   <string name="warn_encryption_failed">Verschlüsselung nicht möglich. Verschlüsselung deaktivieren um die Nachricht dennoch zu senden.</string>
   <string name="warn_not_subscribed">Es ist nicht möglich, die Nachricht zu senden. Der Benutzer hat Ihre Einladung noch nicht angenommen.</string>
   <string name="pref_sync_sim_contacts">Kontakte von SIM-Karte synchronisieren</string>
-  <string name="pref_title_off_sync_sim_contacts">SIM-Kartenkontakte bei der Suche nach registrierten Nutzern nicht mit einbeziehen</string>
-  <string name="pref_title_on_sync_sim_contacts">Auch SIM-Kartenkontakte bei der Suche nach registrierten Nutzern mit einbeziehen</string>
   <string name="pref_sync_invisible_contacts">Ausgeblendete Kontakte einbeziehen</string>
-  <string name="pref_title_off_sync_invisible_contacts">Kontakte mit einbeziehen die nicht in der Kontakte-App angezeigt werden. Möglichkeit für einen DAVDroid-Workaround</string>
-  <string name="pref_title_on_sync_invisible_contacts">Kontakte, die nicht in der Kontakte App angezeigt werden, werden in Kontalk eingeschlossen.</string>
   <string name="pref_accept_any_certificate">Jedes SSL-Zertifikat akzeptieren</string>
   <string name="pref_delete_account">Ihren Account löschen</string>
   <string name="msg_delete_account">Mit Ihrem Account werden auch alle Ihre Nachrichten gelöscht. Ihr Account auf dem Server wird nach ein paar Wochen automatisch gelöscht.</string>
@@ -363,12 +349,8 @@
   <string name="slide_to_cancel">WISCHEN UM ABZUBRECHEN</string>
   <string name="pref_media_settings">Medieneinstellungen</string>
   <string name="pref_image_resize">Bildgröße anpassen</string>
-  <string name="pref_title_image_resize">Bildgröße vorm Senden anpassen</string>
   <string name="err_server_invalid_format">Ungültiges Adressformat.</string>
   <string name="err_no_contacts_app">Keine Kontakte App gefunden.</string>
-  <string name="warning_public_key">Der persönliche Schlüssel dieses Nutzers hat sich unerwartet geändert!</string>
-  <string name="title_public_key_warning">Persönlicher Schlüssel geändert</string>
-  <string name="msg_public_key_warning">Der persönliche Schlüssel dieses Nutzers hat sich geändert. Klären Sie bitte mit dem Nutzer ab, ob er/sie Kontalk neu installiert hat oder seinen/ihren Schlüssel absichtlich neu erzeugt hat. Andernfalls könnte es sein, dass die Kommunikation kompromittiert wurde!</string>
 <string name="title_user_exists">Nutzer existiert</string>
     <string name="err_validation_user_exists"><b>Die von Ihnen benutzte Nummer ist bereits bei Kontalk registriert.</b> Wenn Sie bereits ein anderes Gerät registriert haben, wird es aus dem Kontalk-Netzwerk entfernt, wenn sie fortfahren. Bitte lesen Sie in unserer Dokumentation nach, wie ihr Account auf verschiedene Geräte kopiert werden kann. Wählen Sie OK, um dennoch fortzufahren.</string>
     <string name="about_credits_translators"><b>Übersetzer</b></string>
@@ -496,7 +478,6 @@
 
     <string name="group_command_self_parted">Sie haben die Gruppe verlassen.</string>
     <string name="group_command_text_part_self">Sie haben diese Gruppe verlassen</string>
-    <string name="chooser_error_no_audioplayer_app">Keine Audioplayer App verfügbar.</string>
 
     <string name="chooser_error_no_app">Keine passende App verfügbar um diese Datei zu öffnen.</string>
 

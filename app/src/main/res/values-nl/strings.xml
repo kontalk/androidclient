@@ -103,13 +103,10 @@
   <string name="pref_messaging_settings">Berichten</string>
   <string name="pref_privacy_settings">Privacy</string>
   <string name="pref_encrypt">Berichten versleutelen</string>
-  <string name="pref_title_on_encrypt">Alle berichten worden versleuteld verzonden</string>
-  <string name="pref_title_off_encrypt">Alle berichten worden zonder versleuteling verzonden</string>
   <string name="pref_encrypt_userdata">Persoonlijke gegevens versleutelen</string>
   <string name="pref_title_on_encrypt_userdata">Je statusbericht zal alleen zichtbaar zijn voor gebruikers die je telefoonnummer hebben</string>
   <string name="pref_title_off_encrypt_userdata">Je statusbericht zal voor iedereen zichtbaar zijn</string>
   <string name="pref_auto_accept_subscriptions">Uitnodigingen automatisch aanvaarden</string>
-  <string name="pref_title_auto_accept_subscriptions">Gespreksuitnodigingen van andere gebruikers automatisch aanvaarden</string>
   <string name="pref_send_typing">Anderen zien “aan het typen…”</string>
   <string name="pref_hide_presence">Offline weergeven</string>
   <string name="pref_title_on_hide_presence">Gebruikers zullen je niet online zien</string>
@@ -125,7 +122,6 @@
   <string name="pref_update_server_list">Kontalk-serverlijst bijwerken</string>
   <string name="server_list_last_update">Laatst bijgewerkt: %s</string>
   <string name="pref_title_push_notifications">Gebruik pushmeldingen als de server die ondersteunt. Dit verlengt de levensduur van de batterij</string>
-  <string name="pref_title_disabled_push_notifications">Pushnotificaties worden niet ondersteund op dit apparaat</string>
   <string name="pref_push_notifications">Pushmeldingen</string>
   <string name="hint_search_full">Berichten zoeken</string>
   <string name="hint_search_quickbox">Tekst in je berichten</string>
@@ -206,8 +202,6 @@
   <string name="pref_custom_background">Aangepaste achtergrond</string>
   <string name="pref_background_uri">Achtergrond</string>
   <string name="pref_title_background_uri">Aangepaste achtergrond voor gesprekken instellen</string>
-  <string name="pref_title_off_custom_background">Standaardachtergrond gebruiken</string>
-  <string name="pref_title_on_custom_background">Kies een achtergrond uit met de optie hieronder</string>
   <string name="err_attachment_corrupted">Kan bijlage niet downloaden. Mogelijk is het bericht corrupt.</string>
   <string name="serverlist_updating">Bezig met bijwerken van serverlijst…</string>
   <string name="serverlist_update_error">Kan serverlijst niet downloaden. Probeer het later opnieuw.</string>
@@ -244,9 +238,6 @@
   <string name="pref_change_passphrase">Wachtwoord van persoonlijk sleutelpaar veranderen</string>
   <string name="pref_title_remove_prefix">Alleen nodig als je met dit toestel altijd vanuit een bedrijfsnetwerk belt, en al je telefoonnummers zijn opgeslagen voorafgegaan door dat nummer</string>
   <string name="pref_export_keypair">Persoonlijk sleutelpaar exporteren</string>
-  <string name="pref_title_export_keypair">Persoonlijk sleutelpaar en inlogcertificaat exporteren naar externe opslag</string>
-  <string name="pref_import_keypair">Persoonlijk sleutelpaar importeren</string>
-  <string name="pref_title_import_keypair">Persoonlijk sleutelpaar en inlogcertificaat importeren van externe opslag</string>
   <string name="msg_import_keypair">Kontalk zal je persoonlijke sleutelpaar importeren van %s op je externe opslag. Verzeker je ervan dat het bestand bestaat en dat het een geldig bestand van een geëxporteerde persoonlijke sleutel is.</string>
   <string name="msg_import_keypair_complete">Importeren van persoonlijk sleutelpaar voltooid.</string>
   <string name="err_import_keypair_failed">Importeren van persoonlijk sleutelpaar mislukt.</string>
@@ -258,7 +249,6 @@
   <string name="msg_status_delivered">Afgeleverd</string>
   <string name="msg_status_encrypted">Versleuteld</string>
   <string name="pref_balloons">Thema voor tekstballonnen</string>
-  <string name="pref_title_balloons">Kies een thema voor de tekstballonnen</string>
   <string name="attachment_picture">Gallerij</string>
   <string name="attachment_contact">Contact</string>
   <string name="attachment_audio">Audio</string>
@@ -329,11 +319,7 @@
   <string name="warn_encryption_failed">Kan bericht niet versleutelen. Schakel versleuteling uit bij Instellingen om het bericht toch te versturen.</string>
   <string name="warn_not_subscribed">Kon bericht niet verzenden. De gebruiker heeft je uitnodiging nog niet aanvaard.</string>
   <string name="pref_sync_sim_contacts">Synchroniseren met SIM-contacten</string>
-  <string name="pref_title_off_sync_sim_contacts">Niet zoeken in SIM-contacten naar gebruikers van Kontalk</string>
-  <string name="pref_title_on_sync_sim_contacts">Wel zoeken in SIM-contacten naar gebruikers van Kontalk</string>
   <string name="pref_sync_invisible_contacts">Onzichtbare contacten tonen</string>
-  <string name="pref_title_off_sync_invisible_contacts">Toon geen contacten die niet in de Personen app getoond worden. Schakel dit in om DAVDroid contacten weer te geven</string>
-  <string name="pref_title_on_sync_invisible_contacts">Contacten die niet in Personen weergegeven worden zullen in Kontalk getoond worden</string>
   <string name="pref_accept_any_certificate">Aanvaard elk SSL-certificaat</string>
   <string name="pref_delete_account">Je account verwijderen</string>
   <string name="msg_delete_account">Als je je account verwijdert worden ook al je berichten verwijderd. Je account zal na een paar weken ook van de Kontalk-server verwijderd zijn.</string>
@@ -363,12 +349,8 @@
   <string name="slide_to_cancel">VERSLEEP OM TE ANNULEREN</string>
   <string name="pref_media_settings">Media</string>
   <string name="pref_image_resize">Afbeeldingen schalen</string>
-  <string name="pref_title_image_resize">Afbeelding schalen voordat ze verzonden worden</string>
   <string name="err_server_invalid_format">Ongeldig adres.</string>
   <string name="err_no_contacts_app">Er is op dit apparaat geen app beschikbaar waarmee contacten opgeslagen kunnen worden.</string>
-  <string name="warning_public_key">De persoonlijke sleutel voor deze gebruiker is onverwacht veranderd!</string>
-  <string name="title_public_key_warning">Persoonlijke sleutel veranderd</string>
-  <string name="msg_public_key_warning">De persoonlijke sleutel voor deze gebruiker is veranderd. Ga na bij de gebruiker of hij/zij Kontalk opnieuw heeft geïnstalleerd of zijn/haar sleutel bewust opnieuw heeft aangemaakt, anders zou je communicatie aangetast kunnen zijn!</string>
 <string name="title_user_exists">Gebruiker bestaat</string>
     <string name="err_validation_user_exists"><b>Het nummer dat je gebruikt is al geregistreerd op Kontalk.</b> Als je al met een ander apparaat hebt geregistreerd, kan deze Kontalk niet meer gebruiken. Lees onze documentatie voor instructies over het kopiëren van jouw account tussen apparaten. Kies Oké om toch door te gaan.</string>
     <string name="about_credits_devteam"><b>Kontalk is gemaakt door:</b></string>
@@ -495,7 +477,6 @@
 
     <string name="group_command_self_parted">Je hebt de groep verlaten.</string>
     <string name="group_command_text_part_self">Je hebt deze groep verlaten</string>
-    <string name="chooser_error_no_audioplayer_app">Geen audio speler app beschikbaar.</string>
 
     <string name="chooser_error_no_app">Geen app beschikbaar om het bestand mee te openen.</string>
 
@@ -537,8 +518,7 @@
     </plurals>
 
     <plurals name="unread_messages_group">
-	<item quantity="one">%1$d berichten @ %2$s</item>
-	<item quantity="other"/>
+	<item quantity="other">%1$d berichten @ %2$s</item>
     </plurals>
 
     <string name="pref_balloon_label_silence">Stil</string>

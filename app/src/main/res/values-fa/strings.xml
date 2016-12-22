@@ -107,13 +107,10 @@
     <string name="pref_messaging_settings">تنظیمات پیام‌رسانی</string>
     <string name="pref_privacy_settings">تنظیمات حریم خصوصی</string>
     <string name="pref_encrypt">رمزنگاری پیام‌ها</string>
-    <string name="pref_title_on_encrypt">از اکنون تمامی پیام‌ها رمزنگاری خواهند شد</string>
-    <string name="pref_title_off_encrypt">از اکنون تمامی پیام‌ها به صورت متن واضح فرستاده خواهد شد</string>
     <string name="pref_encrypt_userdata">رمزنگاری داده‌های شخصی</string>
     <string name="pref_title_on_encrypt_userdata">پیام وضعیت تنها برای کاربرهایی که شمارهٔ تلفن شما را دارند نمایان می‌شود</string>
     <string name="pref_title_off_encrypt_userdata">پیام وضعیت برای همه نمایان خواهد شد</string>
     <string name="pref_auto_accept_subscriptions">پذیرش خودکار دعوت‌ها</string>
-    <string name="pref_title_auto_accept_subscriptions">پذیرش خودکار دعوت‌های گپ با دیگر کاربرها</string>
     <string name="pref_send_typing">فرستادن اعلان در حال نوشتن</string>
     <string name="pref_hide_presence">پنهان‌سازی حضور</string>
     <string name="pref_title_on_hide_presence">کاربرها شما را برخط نخواهند دید</string>
@@ -135,7 +132,6 @@
     <string name="pref_update_server_list">به‌روز رسانی فهرست کارساز</string>
     <string name="server_list_last_update">آخرین به‌روز رسانی: %s</string>
     <string name="pref_title_push_notifications">استفاده از ارسال آگاهی‌ها در صورت پشتیبانی کارساز، باتری را حفظ می‌کند</string>
-    <string name="pref_title_disabled_push_notifications">ارسال آگاهی‌ها روی این افزاره پشتیبانی نمی‌شود</string>
     <string name="pref_push_notifications">ارسال آگاهی‌ها</string>
     <string name="hint_search_full">جست‌وجوی پیام‌ها</string>
     <string name="hint_search_quickbox">متن پیام‌هایتان</string>

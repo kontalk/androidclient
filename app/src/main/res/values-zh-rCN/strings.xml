@@ -109,13 +109,10 @@
     <string name="pref_messaging_settings">消息设置</string>
     <string name="pref_privacy_settings">隐私设置</string>
     <string name="pref_encrypt">加密消息</string>
-    <string name="pref_title_on_encrypt">所有的消息将从现在开始加密</string>
-    <string name="pref_title_off_encrypt">所有的消息将从现在开始明文传输</string>
     <string name="pref_encrypt_userdata">加密个人数据</string>
     <string name="pref_title_on_encrypt_userdata">仅当用户拥有你的手机号码时，才显示状态信息</string>
     <string name="pref_title_off_encrypt_userdata">任何人都将看到状态信息</string>
     <string name="pref_auto_accept_subscriptions">自动接受邀请</string>
-    <string name="pref_title_auto_accept_subscriptions">自动接受用户发出的聊天要求</string>
     <string name="pref_send_typing">发送正在输入的提示</string>
     <string name="pref_hide_presence">隐身</string>
     <string name="pref_title_on_hide_presence">用户将无法看到你在线</string>
@@ -133,7 +130,6 @@
     <string name="pref_update_server_list">更新服务器列表</string>
     <string name="server_list_last_update">上次更新：%s</string>
     <string name="pref_title_push_notifications">如果服务器支持推送服务则开启，以节约电量</string>
-    <string name="pref_title_disabled_push_notifications">该设备不支持推送服务</string>
     <string name="pref_push_notifications">推送服务</string>
     <string name="hint_search_full">搜索消息</string>
     <string name="hint_search_quickbox">你消息中的文本</string>
@@ -222,8 +218,6 @@
     <string name="pref_custom_background">自定义背景</string>
     <string name="pref_background_uri">背景</string>
     <string name="pref_title_background_uri">设置自定义的会话背景图片</string>
-    <string name="pref_title_off_custom_background">正在使用默认的背景</string>
-    <string name="pref_title_on_custom_background">使用以下选项选择背景</string>
     <string name="err_custom_background">设置背景时发生了错误。请尝试新的图片。</string>
     <string name="err_attachment_corrupted">无法下载附件。消息可能已失效。</string>
     <string name="serverlist_updating">正在更新服务器列表……</string>
@@ -264,9 +258,6 @@
     <string name="pref_change_passphrase">修改个人密匙的密码</string>
     <string name="pref_title_remove_prefix">Kontalk中移除某些拨号首码，用以正确匹配手机号码</string>
     <string name="pref_export_keypair">导出个人密匙</string>
-    <string name="pref_title_export_keypair">导出个人密匙和登录证书到外置存储器</string>
-    <string name="pref_import_keypair">导入个人密匙</string>
-    <string name="pref_title_import_keypair">导入个人密匙和登录证书从外置存储器</string>
     <string name="msg_import_keypair">Kontalk将从外置存储器的%s导入你的密匙。确认该文件存在，且是有效的已导出的密匙归档文件。</string>
     <string name="msg_import_keypair_complete">个人密匙导入完成。</string>
     <string name="err_import_keypair_failed">个人密匙导入失败。</string>
@@ -281,7 +272,6 @@
     <string name="msg_status_encrypted">已加密</string>
 
     <string name="pref_balloons">聊天气泡主题</string>
-    <string name="pref_title_balloons">选择聊天气泡主题</string>
 
     <string name="attachment_picture">相册</string>
     <string name="attachment_contact">联系人</string>
@@ -374,12 +364,8 @@
     <string name="warn_not_subscribed">无法发送消息。用户还没有接受你的邀请。</string>
 
     <string name="pref_sync_sim_contacts">从SIM卡联系人同步</string>
-    <string name="pref_title_off_sync_sim_contacts">当检查已注册的用户时，不要包含SIM卡的联系人</string>
-    <string name="pref_title_on_sync_sim_contacts">当检查已注册的用户时，同样包含SIM卡的联系人</string>
 
     <string name="pref_sync_invisible_contacts">包含不可见的联系人</string>
-    <string name="pref_title_off_sync_invisible_contacts">不要包含不在“联系人”应用里显示的联系人。开启以适应DAVDroid</string>
-    <string name="pref_title_on_sync_invisible_contacts">不在“联系人”应用里显示的联系人将被包含进Kontalk</string>
 
     <string name="pref_accept_any_certificate">接受任意SSL证书</string>
 
@@ -424,7 +410,6 @@
 
     <string name="pref_media_settings">媒体设置</string>
     <string name="pref_image_resize">调整图像尺寸</string>
-    <string name="pref_title_image_resize">发送前调整图像尺寸</string>
 
     <string name="err_server_invalid_format">无效的地址格式。</string>
 
@@ -433,9 +418,6 @@
 
     <string name="warning_button_details">详细信息</string>
     <string name="warning_older_version">你的好友正在使用较旧版本的Kontalk。一些特性可能无法正确工作。</string>
-    <string name="warning_public_key">该用户的个人密匙突然发生了改变！</string>
-    <string name="title_public_key_warning">个人密匙已改变</string>
-    <string name="msg_public_key_warning">该用户的个人密匙已改变。请与该用户验证，他/她是否有意识地重新安装了Kontalk或是重新生成了他/她的密匙，否则会话可能已经泄露！</string>
 
     <string name="warning_user_blocked">你禁止了该用户。</string>
 
@@ -445,7 +427,6 @@
 
     <plurals name="context_selected">
 	<item quantity="one">1个已经选择</item>
-	<item quantity="other"/>
 </plurals>
 
 <string name="app_name_offline">Kontalk （离线）</string>
@@ -524,7 +505,6 @@
 
     <plurals name="group_people">
 	<item quantity="one">1个人</item>
-	<item quantity="other"/>
     </plurals>
 <string name="menu_create_group">创建群组</string>
     <string name="delete_thread_messages">删除聊天历史</string>
@@ -586,7 +566,6 @@
 
     <plurals name="notification_more">
 	<item quantity="one">加1</item>
-	<item quantity="other"/>
 </plurals>
 
     <string name="code_validation_intro_callerid">触碰下面的按钮以回拨未接通话。请注意<b>该通话必须从你注册的手机号码中发起</b>。如果你在听到第一次响铃马上挂断，那么该通话就是免费的。这对我们来说已经足够。</string>

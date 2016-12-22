@@ -103,13 +103,10 @@
   <string name="pref_messaging_settings">メッセージング設定</string>
   <string name="pref_privacy_settings">プライバシー設定</string>
   <string name="pref_encrypt">メッセージを暗号化</string>
-  <string name="pref_title_on_encrypt">すべてのメッセージが、今から暗号化されます</string>
-  <string name="pref_title_off_encrypt">すべてのメッセージが、今からクリアテキストで送信されます</string>
   <string name="pref_encrypt_userdata">パーソナルデータを暗号化</string>
   <string name="pref_title_on_encrypt_userdata">ユーザーが電話番号を持っている時のみ、ステータス·メッセージが表示されます</string>
   <string name="pref_title_off_encrypt_userdata">ステータスメッセージは誰にでも表示されます</string>
   <string name="pref_auto_accept_subscriptions">自動的に招待を受け入れる</string>
-  <string name="pref_title_auto_accept_subscriptions">他のユーザーによるチャットの招待を自動的に受け入れます</string>
   <string name="pref_send_typing">タイプ中の通知を送信</string>
   <string name="pref_hide_presence">存在を隠す</string>
   <string name="pref_title_on_hide_presence">ユーザーからオンラインとして表示されません</string>
@@ -125,7 +122,6 @@
   <string name="pref_update_server_list">サーバーリストを更新</string>
   <string name="server_list_last_update">最終更新: %s</string>
   <string name="pref_title_push_notifications">サーバーがサポートしている場合は、プッシュ通知を使用してください。バッテリーを節約します</string>
-  <string name="pref_title_disabled_push_notifications">このデバイスではプッシュ通知はサポートされていません</string>
   <string name="pref_push_notifications">プッシュ通知</string>
   <string name="hint_search_full">メッセージを検索</string>
   <string name="hint_search_quickbox">メッセージ中のテキスト</string>
@@ -207,8 +203,6 @@ http://kontalk.org/</string>
   <string name="pref_custom_background">背景をカスタマイズ</string>
   <string name="pref_background_uri">背景</string>
   <string name="pref_title_background_uri">カスタムの会話の背景画像を設定</string>
-  <string name="pref_title_off_custom_background">デフォルトの背景を使用しています</string>
-  <string name="pref_title_on_custom_background">下のオプションを使用して背景を選択してください</string>
   <string name="err_attachment_corrupted">添付ファイルをダウンロードできません。メッセージが壊れている可能性があります。</string>
   <string name="serverlist_updating">サーバーリストを更新中…</string>
   <string name="serverlist_update_error">サーバーリストをダウンロードできません。後で再度実行してください。</string>
@@ -245,9 +239,6 @@ http://kontalk.org/</string>
   <string name="pref_change_passphrase">秘密鍵のパスワードを変更</string>
   <string name="pref_title_remove_prefix">電話番号を正しく一致させるために、Kontalk 中のいくつかのダイヤル プレフィックスを削除してください</string>
   <string name="pref_export_keypair">秘密鍵をエクスポート</string>
-  <string name="pref_title_export_keypair">パーソナルキーとログイン証明書を、外部ストレージにエクスポート</string>
-  <string name="pref_import_keypair">パーソナルキーをインポート</string>
-  <string name="pref_title_import_keypair">パーソナルキーとログイン証明書を、外部ストレージからインポート</string>
   <string name="msg_import_keypair">Kontalk は、外部ストレージの %s から鍵をインポートします。ファイルが存在すること、それが有効なエクスポートされた鍵のアーカイブであることを確認してください。</string>
   <string name="msg_import_keypair_complete">秘密鍵のインポートが完了しました。</string>
   <string name="err_import_keypair_failed">秘密鍵のインポートに失敗しました。</string>
@@ -259,7 +250,6 @@ http://kontalk.org/</string>
   <string name="msg_status_delivered">配送しました</string>
   <string name="msg_status_encrypted">暗号化しました</string>
   <string name="pref_balloons">チャット吹き出しのテーマ</string>
-  <string name="pref_title_balloons">チャット吹き出しのテーマを選択してください</string>
   <string name="attachment_picture">ギャラリー</string>
   <string name="attachment_contact">連絡先</string>
   <string name="attachment_audio">音声</string>
@@ -330,11 +320,7 @@ http://kontalk.org/</string>
   <string name="warn_encryption_failed">メッセージを暗号化できません。とにかくメッセージを送信するためには、設定から暗号化を無効にしてください。</string>
   <string name="warn_not_subscribed">メッセージを送信できません。ユーザーがまだ招待を承認していません。</string>
   <string name="pref_sync_sim_contacts">SIM の連絡先から同期</string>
-  <string name="pref_title_off_sync_sim_contacts">登録されたユーザーをチェックする時に、SIM の連絡先を含めません</string>
-  <string name="pref_title_on_sync_sim_contacts">登録されたユーザーをチェックする時に、SIM の連絡先も含めます</string>
   <string name="pref_sync_invisible_contacts">不可視の連絡先を含める</string>
-  <string name="pref_title_off_sync_invisible_contacts">連絡先アプリに表示されていない連絡先を含めません。 DAVDroid の回避策のために有効にします</string>
-  <string name="pref_title_on_sync_invisible_contacts">Kontalk に、連絡先アプリに表示されていない連絡先を含めます</string>
   <string name="pref_accept_any_certificate">すべてのSSL証明書を受け入れる</string>
   <string name="pref_delete_account">あなたのアカウントを削除</string>
   <string name="msg_delete_account">あなたのアカウントを削除すると、あなたのメッセージがすべて削除されます。サーバー上のアカウントは、数週間後に自動的に削除されます。</string>
@@ -364,12 +350,8 @@ http://kontalk.org/</string>
   <string name="slide_to_cancel">スライドするとキャンセル</string>
   <string name="pref_media_settings">メディア設定</string>
   <string name="pref_image_resize">画像のサイズ変更</string>
-  <string name="pref_title_image_resize">送信前に画像をサイズ変更</string>
   <string name="err_server_invalid_format">アドレスの形式が正しくありません。</string>
   <string name="err_no_contacts_app">連絡先のアプリが見つかりません。</string>
-  <string name="warning_public_key">このユーザーのパーソナルキーが予期せず変更されました!</string>
-  <string name="title_public_key_warning">パーソナルキーが変更されました</string>
-  <string name="msg_public_key_warning">このユーザーのパーソナルキーが変更されました。このユーザーに Kontalk を再インストールしたか、あるいは意図的に鍵を再生成したかを確認してください。そうしないと通信が危険にさらされる可能性があります!</string>
 <string name="title_user_exists">ユーザーが存在します</string>
     <string name="err_validation_user_exists"><b>使用している番号はすでにKontalkに登録されています。</b>別のデバイスで登録している場合、この方法では Kontalk から遮断されます。デバイス間でアカウントをコピーする方法については、ドキュメントを参照してください。とにかく続行するには OK を選択します。</string>
     <string name="warning_user_blocked">あなたがこのユーザーをブロックしました。</string>
@@ -403,7 +385,7 @@ http://kontalk.org/</string>
     <string name="title_unblock_user_warning">このユーザーのブロックを解除してもよろしいですか?</string>
     <string name="warning_button_details">詳細</string>
     <plurals name="context_selected">
-	<item quantity="other">1 選択済</item>
+	<item quantity="one">1 選択済</item>
 </plurals>
 
 <string name="title_confirm_cancel_registration">登録をキャンセルしますか?</string>
@@ -546,18 +528,15 @@ http://kontalk.org/</string>
     <string name="notification_group_title">%1$s @ %2$s</string>
 
     <plurals name="unread_messages_group">
-	<item quantity="one">%1$d メッセージ @ %2$s</item>
-	<item quantity="other"/>
+	<item quantity="other">%1$d メッセージ @ %2$s</item>
 </plurals>
 
     <plurals name="notification_more">
 	<item quantity="one">+1 以上</item>
-	<item quantity="other"/>
 </plurals>
 
     <plurals name="group_people">
 	<item quantity="one">1 人</item>
-	<item quantity="other"/>
 </plurals>
 
     <plurals name="confirm_will_delete_threads">

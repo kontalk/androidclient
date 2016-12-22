@@ -103,13 +103,10 @@
   <string name="pref_messaging_settings">Ajustes de mensajes</string>
   <string name="pref_privacy_settings">Ajustes de privacidad</string>
   <string name="pref_encrypt">Cifrar mensajes</string>
-  <string name="pref_title_on_encrypt">Todos los mensajes se cifrarán a partir de ahora</string>
-  <string name="pref_title_off_encrypt">A partir de ahora, todos los mensajes serán enviados sin cifrar</string>
   <string name="pref_encrypt_userdata">Cifrar los datos personales</string>
   <string name="pref_title_on_encrypt_userdata">El mensaje de estado solo será visible para quienes tengan su número de teléfono</string>
   <string name="pref_title_off_encrypt_userdata">El mensaje de estado será visible para cualquiera</string>
   <string name="pref_auto_accept_subscriptions">Aceptar invitaciones automáticamente</string>
-  <string name="pref_title_auto_accept_subscriptions">Aceptar automáticamente invitaciones de otros usuarios para conversar</string>
   <string name="pref_send_typing">Indica al interlocutor que estoy escribiendo</string>
   <string name="pref_hide_presence">Ocultar su presencia</string>
   <string name="pref_title_on_hide_presence">Los usuarios no podrán saber cuando está conectado</string>
@@ -125,7 +122,6 @@
   <string name="pref_update_server_list">Actualizar la lista de servidores</string>
   <string name="server_list_last_update">Última actualización: %s</string>
   <string name="pref_title_push_notifications">Usar notificaciones push si el servidor lo soporta, ahorra batería</string>
-  <string name="pref_title_disabled_push_notifications">Las notificaciones push no están soportadas en este dispositivo</string>
   <string name="pref_push_notifications">Notificaciones push</string>
   <string name="hint_search_full">Buscar mensajes</string>
   <string name="hint_search_quickbox">Texto en sus mensajes</string>
@@ -206,8 +202,6 @@
   <string name="pref_custom_background">Fondo personalizado</string>
   <string name="pref_background_uri">Fondo</string>
   <string name="pref_title_background_uri">Usar una imagen de fondo personalizada en las conversaciones</string>
-  <string name="pref_title_off_custom_background">Usando el fondo predeterminado</string>
-  <string name="pref_title_on_custom_background">Elija un fondo con la opción siguiente</string>
   <string name="err_attachment_corrupted">No se pudo descargar el archivo adjunto. El mensaje podría estar dañado.</string>
   <string name="serverlist_updating">Actualizando la lista de servidores…</string>
   <string name="serverlist_update_error">No se pudo descargar la lista de servidores. Por favor, inténtelo de nuevo más tarde.</string>
@@ -244,9 +238,6 @@
   <string name="pref_change_passphrase">Cambiar la contraseña de la clave personal</string>
   <string name="pref_title_remove_prefix">Borrar algunos prefijos telefónicos en Kontalk para encontrar números de teléfono adecuadamente</string>
   <string name="pref_export_keypair">Exportar la clave personal</string>
-  <string name="pref_title_export_keypair">Exportar la clave personal y el certificado de inicio de sesión al almacenamiento externo</string>
-  <string name="pref_import_keypair">Importar la clave personal</string>
-  <string name="pref_title_import_keypair">Importar la clave personal y el certificado de inicio de sesión del almacenamiento externo</string>
   <string name="msg_import_keypair">Kontalk importará sus claves desde %s a su almacenamiento externo. Asegúrese de que el fichero existe y es un archivo válido de claves exportadas.</string>
   <string name="msg_import_keypair_complete">Importado de la clave personal completado.</string>
   <string name="err_import_keypair_failed">Fallo al importar la clave personal.</string>
@@ -258,7 +249,6 @@
   <string name="msg_status_delivered">Entregado</string>
   <string name="msg_status_encrypted">Cifrado</string>
   <string name="pref_balloons">Tema de los globos de texto</string>
-  <string name="pref_title_balloons">Escoger un tema de globos de conversación</string>
   <string name="attachment_picture">Galería</string>
   <string name="attachment_contact">Contacto</string>
   <string name="attachment_audio">Audio</string>
@@ -329,11 +319,7 @@
   <string name="warn_encryption_failed">No se ha podido cifrar el mensaje. Desactiva el cifrado en las preferencias para enviar el mensaje de todos modos.</string>
   <string name="warn_not_subscribed">No ha sido posible enviar el mensaje. El usuario aún no ha aceptado su invitación.</string>
   <string name="pref_sync_sim_contacts">Sincronizar contactos de la SIM</string>
-  <string name="pref_title_off_sync_sim_contacts">No incluir los contactos de la SIM al comprobar los usuarios registrados</string>
-  <string name="pref_title_on_sync_sim_contacts">Los contactos de la SIM se incluyen al comprobar usuarios registrados</string>
   <string name="pref_sync_invisible_contacts">Incluir contactos invisibles</string>
-  <string name="pref_title_off_sync_invisible_contacts">No incluir contactos que no se muestran en la aplicación de Contactos. Habilitar la solución DAVDroid</string>
-  <string name="pref_title_on_sync_invisible_contacts">Los contactos que no se muestran en Contactos se incluirán en Kontalk</string>
   <string name="pref_accept_any_certificate">Aceptar cualquier certificado SSL</string>
   <string name="pref_delete_account">Borrar su cuenta</string>
   <string name="msg_delete_account">El borrado de su cuenta también borrará todos sus mensajes. Su cuenta en el servidor será borrada automáticamente pasadas unas semanas.</string>
@@ -363,12 +349,8 @@
   <string name="slide_to_cancel">DESLIZAR PARA CANCELAR</string>
   <string name="pref_media_settings">Archivos multimedia</string>
   <string name="pref_image_resize">Redimensionar imágenes</string>
-  <string name="pref_title_image_resize">Redimensionar las imágenes antes de enviarlas</string>
   <string name="err_server_invalid_format">Formato de dirección inválido.</string>
   <string name="err_no_contacts_app">No se encontró la aplicación de contactos.</string>
-  <string name="warning_public_key">¡La clave personal de este usuario cambió inesperadamente!</string>
-  <string name="title_public_key_warning">Cambió la clave personal</string>
-  <string name="msg_public_key_warning">La clave personal de este usuario ha cambiado. Por favor verifique con esa persona que reinstaló Kontalk o que regeneró su clave de manera intencionada, en otro caso, ¡la comunicación puede estar comprometida!</string>
 <string name="title_user_exists">El usuario ya existe</string>
     <string name="err_validation_user_exists"><b>Este número ya está registrado en Kontalk.</b> Si está registrado con otro dispositivo, continuar con este proceso desconectará aquel dispositivo de Kontalk. Por favor consulte nuestra documentación para copiar la cuenta entre diferentes dispositivos. Seleccione OK para continuar igualmente.</string>
     <string name="pref_help">Ayuda</string>
@@ -494,7 +476,6 @@
     <string name="confirm_will_leave_group">Usted no será capaz de volver a entrar a este grupo luego de salir.</string>
 
     <string name="group_command_text_part_self">Dejaste este grupo</string>
-    <string name="chooser_error_no_audioplayer_app">No hay aplicación de audio disponible.</string>
 
     <string name="chooser_error_no_app">No hay niguna aplicación apropiada para abrir el archivo.</string>
 
@@ -545,7 +526,7 @@
     <string name="pref_off">Desactivar</string>
 
     <string name="pref_push_notifications_disabled">Deshabilitado</string>
-    <string name="pref_push_notifications_title_default">Las notificaciones push son una tecnología asistida por servidor para ahorrar batería. No afecta el envío de mensajes en tiempo-real. 
+    <string name="pref_push_notifications_title_default">Las notificaciones push son una tecnología asistida por servidor para ahorrar batería. No afecta el envío de mensajes en tiempo-real.
 
 Cuando están deshabilitadas, el comportamiento de la conexión de Kontalk puede ser ajustado en la pantalla de configuraciones de red.</string>
     <string name="pref_push_notifications_title_disabled">El soporte para notificaciones push no está incluido en esta versión.</string>

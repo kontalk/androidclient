@@ -132,7 +132,6 @@
     <string name="pref_update_server_list">تحديث قائمة المخدمات</string>
     <string name="server_list_last_update">أخر تحديث : %s</string>
     <string name="pref_title_push_notifications">أستخدام دفع الأشعارات أذا كانت مدعومه من المخدم , لحفظ البطارية</string>
-    <string name="pref_title_disabled_push_notifications">جهازك ﻻ يدعم عملية دفع الأشعارات</string>
     <string name="pref_push_notifications">دفع الأشعارات</string>
     <string name="hint_search_full">بحث الرسائل</string>
     <string name="hint_search_quickbox">بحث عن نص في رسالئك</string>
