@@ -24,10 +24,11 @@ allprojects {
         appVersionName = "4.0.0-beta5"
         targetSdkVersion = 22
         compileSdkVersion = 25
-        buildToolsVersion = '25.0.1'
+        buildToolsVersion = '25.0.2'
         smackVersion = project(':client-common-java').smackVersion
         spongyCastleVersion = '1.54.0.0'
-        appcompatVersion = '25.0.1'
+        appcompatVersion = '25.1.0'
+        // Google will drop support for Android 2.3 after 10.0.x
         googlePlayServicesVersion = '10.0.1'
     }
 }
