@@ -413,11 +413,11 @@
 
     <string name="pref_title_sync_invisible_contacts">Doorzoek ook contacten die niet zichtbaar zijn in de Contacten app. Schakel dit in als je DAVDroid gebruikt</string>
 
-    <string name="warning_public_key_changed">De persoonlijke sleutel van deze gebruiker is onverwacht veranderd!</string>
+    <string name="warning_public_key_changed">Persoonlijke sleutel veranderd</string>
     <string name="title_public_key_changed_warning">Persoonlijke sleutel veranderd</string>
     <string name="msg_public_key_changed_warning">Controleer met deze gebruiker of hij/zij Kontalk opnieuw geïnstalleerd heeft of zijn/haar sleutel expres opnieuw gegenereerd heeft, anders is de communicatie mogelijk niet langer veilig!</string>
-    <string name="warning_public_key_unknown">De persoonlijke sleutel van deze gebruiker is niet-vertrouwd!</string>
-    <string name="title_public_key_unknown_warning">Niet-vertrouwde persoonlijke sleutel</string>
+    <string name="warning_public_key_unknown">Persoonlijke sleutel nog niet geverifieerd</string>
+    <string name="title_public_key_unknown_warning">Verifieer persoonlijke sleutel</string>
     <string name="msg_public_key_unknown_warning">Controleer met deze gebruiker of zijn/haar vingerafdruk overeen komt met de sleutel in het <b>identiteit</b>-dialoogvenster, anders is de communicatie mogelijk niet veilig!</string>
 
     <string name="pref_show_blocked_users">Toon geblokkeerde gebruikers</string>
@@ -563,4 +563,6 @@ Indien uitgeschakeld kan het netwerkgedrag van Kontalk in netwerkinstellingen in
 	<item quantity="other">Groepen ook verlaten</item>
 </plurals>
 
-</resources>
+<string name="delete_threads_leave_any_groups">Verlaat ook groepen</string>
+
+    </resources>
