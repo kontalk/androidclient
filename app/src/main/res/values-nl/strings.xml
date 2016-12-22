@@ -565,4 +565,6 @@ Indien uitgeschakeld kan het netwerkgedrag van Kontalk in netwerkinstellingen in
 
 <string name="delete_threads_leave_any_groups">Verlaat ook groepen</string>
 
+    <string name="pref_balloons_groups">Thema voor groepsballonnen</string>
+
     </resources>
