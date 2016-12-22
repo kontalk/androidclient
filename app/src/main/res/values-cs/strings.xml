@@ -569,4 +569,6 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
 
 <string name="delete_threads_leave_any_groups">Také opustit všechny skupiny</string>
 
+    <string name="pref_balloons_groups">Styl zobrazení skupinové konverzace</string>
+
     </resources>
