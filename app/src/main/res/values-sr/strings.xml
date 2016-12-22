@@ -373,6 +373,8 @@
     <plurals name="context_selected">
 	<item quantity="one">%d изабрана</item>
 	<item quantity="few">%d изабране</item>
+	<item quantity="many">%d изабрано</item>
+	<item quantity="other"/>
 </plurals>
 
 <string name="app_name_offline">Контак (ван везе)</string>
@@ -424,8 +426,8 @@
     <string name="pref_media_autodownload_label_wifi">само на бежичном</string>
     <string name="pref_media_autodownload_label_always">увек</string>
 
-    <string name="warning_public_key_changed">Лични кључ овог корисника је измењен неочекивано!</string>
-    <string name="title_public_key_changed_warning">Чилни кључ измењен</string>
+    <string name="warning_public_key_changed">Лични кључ измењен</string>
+    <string name="title_public_key_changed_warning">Лични кључ измењен</string>
     <string name="pref_show_blocked_users">Прикажи блокиране кориснике</string>
     <string name="button_load_next_page">Учитај још порука</string>
 
@@ -461,6 +463,8 @@
     <plurals name="group_people">
 	<item quantity="one">%d особа</item>
 	<item quantity="few">%d особе</item>
+	<item quantity="many">%d особа</item>
+	<item quantity="other"/>
 </plurals>
 
 
@@ -497,6 +501,8 @@
     <plurals name="notification_more">
 	<item quantity="one">+још %d</item>
 	<item quantity="few">+још %d</item>
+	<item quantity="many">+још %d</item>
+	<item quantity="other"/>
 </plurals>
 
     <string name="title_ignore_all_identities">Игнорисати све идентитете?</string>
@@ -546,11 +552,18 @@
     <string name="menu_start_group">Почни групу</string>
 
     <plurals name="confirm_will_delete_threads">
-        <item quantity="other">Изабране преписке ће бити обрисане.</item>
-    </plurals>
+	<item quantity="one">Изабрана преписка ће бити обрисана.</item>
+	<item quantity="few">Изабране преписке ће бити обрисане.</item>
+	<item quantity="many">Изабране преписке ће бити обрисане.</item>
+	<item quantity="other"/>
+</plurals>
 
     <plurals name="delete_threads_leave_groups">
-        <item quantity="other">Такође напусти групе</item>
-    </plurals>
+	<item quantity="one">Такође напусти групу</item>
+	<item quantity="few">Такође напусти групе</item>
+	<item quantity="many">Такође напусти групе</item>
+	<item quantity="other"/>
+</plurals>
 
-</resources>
+<string name="menu_sticky">Омиљено</string>
+    </resources>
