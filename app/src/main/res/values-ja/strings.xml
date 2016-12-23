@@ -553,4 +553,6 @@ http://kontalk.org/</string>
     <string name="group_info_owner_member">所有者</string>
     <string name="delete_threads_leave_any_groups">グループからも退出する</string>
 
+    <string name="pref_balloons_groups">グループチャット バルーンテーマ</string>
+
     </resources>
