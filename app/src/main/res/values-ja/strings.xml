@@ -414,11 +414,11 @@ http://kontalk.org/</string>
 
     <string name="pref_title_sync_invisible_contacts">連絡先アプリに表示されない連絡先を含めます。DAVDroid を使用する場合に有効にします</string>
 
-    <string name="warning_public_key_changed">このユーザーの秘密鍵が予期せず変更されました!</string>
+    <string name="warning_public_key_changed">秘密鍵が変更されました</string>
     <string name="title_public_key_changed_warning">秘密鍵が変更されました</string>
     <string name="msg_public_key_changed_warning">ユーザーに、彼/彼女の Kontalk を再インストールしたり、意図的に鍵を再生成したか、確認してください。そうでなければ通信が侵害される可能性があります!</string>
-    <string name="warning_public_key_unknown">このユーザーの秘密鍵は信頼できません!</string>
-    <string name="title_public_key_unknown_warning">信頼できない秘密鍵</string>
+    <string name="warning_public_key_unknown">秘密鍵は検証されていません</string>
+    <string name="title_public_key_unknown_warning">秘密鍵を検証</string>
     <string name="msg_public_key_unknown_warning">ユーザーに、彼/彼女のフィンガープリントが <b>識別</b> のダイアログに表示されたものと一致するか確認してください。そうでなければ通信が侵害される可能性があります!</string>
 
     <string name="pref_show_blocked_users">ブロックされたユーザーを表示</string>
