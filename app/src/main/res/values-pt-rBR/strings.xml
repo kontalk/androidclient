@@ -584,4 +584,6 @@ Se desabilitada, você pode fazer ajustes finos no funcionamento da conexão do 
 
 <string name="delete_threads_leave_any_groups">Também sair de todos os grupos</string>
 
+    <string name="pref_balloons_groups">Tema do balão de conversas em grupo</string>
+
     </resources>
