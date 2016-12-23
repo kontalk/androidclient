@@ -561,4 +561,6 @@ Quan estan desactivades, el comportament de connexió de Kontalk es pot ajustar 
 
 <string name="delete_threads_leave_any_groups">Surt també dels grups</string>
 
+    <string name="pref_balloons_groups">Tema dels globus de text del xat de grup</string>
+
     </resources>
