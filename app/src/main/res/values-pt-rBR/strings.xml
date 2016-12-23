@@ -424,11 +424,11 @@
 
     <string name="warning_button_details">DETALHES</string>
     <string name="warning_older_version">Esse seu contato está usando uma versão mais antiga do Kontalk. Alguns recursos podem não funcionar corretamente.</string>
-    <string name="warning_public_key_changed">A chave pessoal dessa pessoa mudou inesperadamente!</string>
+    <string name="warning_public_key_changed">A chave pessoal mudou</string>
     <string name="title_public_key_changed_warning">Chave pessoal alterada</string>
     <string name="msg_public_key_changed_warning">Por favor, verifique com essa pessoa se ela reinstalou o Kontalk ou regerou a sua chave intencionalmente, caso contrário a comunicação pode ter sido comprometida!</string>
-    <string name="warning_public_key_unknown">A chave pessoal dessa pessoa não é confiável!</string>
-    <string name="title_public_key_unknown_warning">Chave pessoal não confiável</string>
+    <string name="warning_public_key_unknown">A chave pessoal ainda não foi verificada</string>
+    <string name="title_public_key_unknown_warning">Verificar chave pessoal</string>
     <string name="msg_public_key_unknown_warning">Por favor, verifique com essa pessoa se a fingerprint dela corresponde àquela exibida na tela <b>identidade</b>, caso contrário a comunicação pode ter sido comprometida!</string>
 
     <string name="warning_user_blocked">Você bloqueou essa pessoa.</string>
@@ -573,11 +573,15 @@ Se desabilitada, você pode fazer ajustes finos no funcionamento da conexão do 
     <string name="pref_title_reporting">Incluindo relatórios de falhas</string>
 
     <plurals name="confirm_will_delete_threads">
-        <item quantity="other">As conversas selecionadas serão apagadas.</item>
-    </plurals>
+	<item quantity="one">A conversa selecionada será apagada.</item>
+	<item quantity="other">As conversas selecionadas serão apagadas.</item>
+</plurals>
 
     <plurals name="delete_threads_leave_groups">
-        <item quantity="other">Também sair dos grupos</item>
-    </plurals>
+	<item quantity="one">Também sair do grupo</item>
+	<item quantity="other">Também sair dos grupos</item>
+</plurals>
 
-</resources>
+<string name="delete_threads_leave_any_groups">Também sair de todos os grupos</string>
+
+    </resources>
