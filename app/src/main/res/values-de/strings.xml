@@ -415,10 +415,10 @@
     <string name="warning_public_key_changed">Persönlicher Schlüssel wurde geändert</string>
     <string name="title_public_key_changed_warning">Persönlicher Schlüssel geändert</string>
     <string name="msg_public_key_changed_warning">Bitte klären Sie mit dem Nutzer ob er/sie Kontalk neu installiert oder den Schlüssel absichtlich neu generiert hat. Anderenfalls könnte es sein, dass die Kommunikation kompromittiert wurde!</string>
-    <string name="warning_public_key_unknown">Persönlicher Schlüssel noch nicht geprüft</string>
+    <string name="warning_public_key_unknown">Persönlicher Schlüssel noch nicht überprüft</string>
     <string name="msg_public_key_unknown_warning">Bitte klären Sie mit dem Nutzer ob sein/ihr Fingerabdruck mit dem übereinstimmt, der im <b>Identität</b>-Dialog angezeigt wird. Anderenfalls könnte es sein, dass die Kommunikation kompromittiert wurde!</string>
 
-    <string name="title_public_key_unknown_warning">Persönlichen Schlüssel prüfen</string>
+    <string name="title_public_key_unknown_warning">Persönlichen Schlüssel überprüfen</string>
     <string name="pref_enable_notification_led">Benachrichtigungs LED</string>
     <string name="pref_notification_led_color">Farbe Benachrichtigungs LED</string>
     <string name="seen_away_label">online</string>
