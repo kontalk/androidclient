@@ -565,4 +565,6 @@ Wenn sie deaktiviert sind kann das Kontalk Verbindungsverhalten in den Netzwerke
 
 <string name="delete_threads_leave_any_groups">Eventuelle Gruppen auch verlassen</string>
 
+    <string name="pref_balloons_groups">Sprechblasendesign für Gruppenchats</string>
+
     </resources>
