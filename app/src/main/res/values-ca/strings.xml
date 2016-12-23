@@ -423,11 +423,11 @@
     <string name="pref_media_autodownload_label_wifi">Només en Wifi</string>
     <string name="pref_media_autodownload_label_always">Sempre</string>
 
-    <string name="warning_public_key_changed">La clau personal d\'aquest usuari ha canviat de forma inesperada!</string>
+    <string name="warning_public_key_changed">La clau personal ha canviat</string>
     <string name="title_public_key_changed_warning">La clau personal va canviar</string>
     <string name="msg_public_key_changed_warning">Si us plau, comproveu amb l\'usuari que el/la ha reinstal·lat kontalk o ha regenerat el seu/la seva clau intencionadament, en cas contrari la comunicació podria veure compromesa!</string>
-    <string name="warning_public_key_unknown">La clau personal d\'aquest usuari és de confiança!</string>
-    <string name="title_public_key_unknown_warning">La clau personal no és de confiança</string>
+    <string name="warning_public_key_unknown">Encara no s\'ha verificat la clau personal</string>
+    <string name="title_public_key_unknown_warning">Verifiqui la clau personal</string>
     <string name="msg_public_key_unknown_warning">"Si us plau, comproveu amb l\'usuari que el seu / la seva empremta digital coincideix amb el que apareix a la   "<b> 1identitat</b> 2 de diàleg, en cas contrari la comunicació podria veure compromesa!</string>
 
     <string name="pref_show_blocked_users">Mostra els usuaris bloquejats</string>
