@@ -416,11 +416,11 @@
     <string name="pref_enable_notification_led">LED notifiche</string>
     <string name="pref_notification_led_color">Colore LED notifiche</string>
     <string name="seen_away_label">online</string>
-    <string name="warning_public_key_changed">La chiave personale di questo utente è cambiata!</string>
+    <string name="warning_public_key_changed">Nuova chiave personale</string>
     <string name="title_public_key_changed_warning">Chiave personale cambiata</string>
     <string name="msg_public_key_changed_warning">Verifica che l\'utente abbia reinstallato Kontalk o che abbia rigenerato la sua chiave intenzionalmente, altrimenti la comunicazione potrebbe essere compromessa!</string>
-    <string name="warning_public_key_unknown">Chiave personale sconosciuta!</string>
-    <string name="title_public_key_unknown_warning">Chiave personale sconosciuta</string>
+    <string name="warning_public_key_unknown">Chiave personale non verificata</string>
+    <string name="title_public_key_unknown_warning">Verifica chiave personale</string>
     <string name="msg_public_key_unknown_warning">Verifica con l\'utente che l\'impronta della sua chiave corrisponda a quella visualizzata nella finestra <b>identità</b>, altrimenti la comunicazione potrebbe essere compromessa!</string>
 
     <string name="button_load_next_page">Carica altri messaggi</string>
