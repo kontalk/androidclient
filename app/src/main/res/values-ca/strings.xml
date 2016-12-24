@@ -563,4 +563,6 @@ Quan estan desactivades, el comportament de connexió de Kontalk es pot ajustar 
 
     <string name="pref_balloons_groups">Tema dels globus de text del xat de grup</string>
 
+    <string name="delete_threads_groups_disclaimer">Perquè s\'elimini l\'historial de xat de grup la casella de verificació de dalt ha d\'estar seleccionada.</string>
+
     </resources>
