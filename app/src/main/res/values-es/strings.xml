@@ -565,4 +565,6 @@ Cuando están deshabilitadas, el comportamiento de la conexión de Kontalk puede
 
     <string name="pref_balloons_groups">Tema de los globos de texto del chat de grupo</string>
 
+    <string name="delete_threads_groups_disclaimer">Para que se elimine el historial de chat de grupo la casilla de verificación de arriba debe estar seleccionada.</string>
+
     </resources>
