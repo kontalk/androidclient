@@ -18,6 +18,7 @@
 
 <org.kontalk.ui.view.ContactsListItem
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:minHeight="@dimen/avatar_list_item_height"
@@ -53,6 +54,7 @@
                 android:id="@+id/checkbox"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                app:civ_fill_color="?attr/colorPrimaryDark"
                 android:visibility="gone"/>
 
         </FrameLayout>
