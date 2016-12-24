@@ -567,4 +567,6 @@ Se disattivate, il comportamento delle connessioni di Kontalk può essere config
 
     <string name="pref_balloons_groups">Tema messaggi di gruppo</string>
 
+    <string name="delete_threads_groups_disclaimer">Per i gruppi solo la cronologia dei messaggi sarà cancellata a meno che la spunta sopra sia selezionata.</string>
+
     </resources>
