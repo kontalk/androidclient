@@ -567,4 +567,6 @@ Indien uitgeschakeld kan het netwerkgedrag van Kontalk in netwerkinstellingen in
 
     <string name="pref_balloons_groups">Thema voor groepsballonnen</string>
 
+    <string name="delete_threads_groups_disclaimer">De chatgeschiedenis van groepsgesprekken zal alleen verwijderd worden als bovenstaand selectievakje niet geselecteerd is.</string>
+
     </resources>
