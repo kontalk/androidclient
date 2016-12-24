@@ -98,6 +98,10 @@ public class MessageListAdapter extends CursorAdapter {
         return (GroupCommandComponent.supportsMimeType(mime));
     }
 
+    private boolean isGroupChat(Cursor cursor) {
+        return cursor.getString(CompositeMessage.COLUMN_GROUP_JID) != null;
+    }
+
     private int getItemViewType(Cursor cursor) {
         int type = cursor.getInt(CompositeMessage.COLUMN_DIRECTION);
         // MyMessages.DIRECTION_* OR-ed with 2 for group events
@@ -123,9 +127,10 @@ public class MessageListAdapter extends CursorAdapter {
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
         int type = cursor.getInt(CompositeMessage.COLUMN_DIRECTION);
         boolean event = isEvent(cursor);
+        boolean groupChat = isGroupChat(cursor);
         MessageListItem view = (MessageListItem) mFactory
             .inflate(R.layout.message_list_item, parent, false);
-        view.afterInflate(type, event);
+        view.afterInflate(type, event, groupChat);
         return view;
     }
 

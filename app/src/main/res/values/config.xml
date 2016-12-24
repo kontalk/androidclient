@@ -36,6 +36,7 @@
     <!-- appearance settings defaults -->
     <string name="pref_default_font_size">medium</string>
     <string name="pref_default_balloons">hangout</string>
+    <string name="pref_default_balloons_groups">hangout</string>
     <string name="pref_default_text_enter">default</string>
     <bool name="pref_default_emoji_converter">false</bool>
 

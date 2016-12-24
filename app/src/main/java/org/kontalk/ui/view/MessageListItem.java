@@ -94,9 +94,11 @@ public class MessageListItem extends RelativeLayout implements Checkable {
         mDateHeader = (TextView) findViewById(R.id.date_header);
     }
 
-    public void afterInflate(int direction, boolean event) {
+    public void afterInflate(int direction, boolean event, boolean groupChat) {
         ViewStub stub = (ViewStub) findViewById(R.id.balloon_stub);
-        String theme = Preferences.getBalloonTheme(getContext());
+        String theme = groupChat ?
+            Preferences.getBalloonGroupsTheme(getContext()) :
+            Preferences.getBalloonTheme(getContext());
         mBalloonTheme = MessageListItemThemeFactory.createTheme(theme, direction, event);
         mBalloonTheme.inflate(stub);
     }

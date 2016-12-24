@@ -68,6 +68,7 @@ public final class Preferences {
     private static SharedPreferences sPreferences;
     private static Drawable sCustomBackground;
     private static String sBalloonTheme;
+    private static String sBalloonGroupsTheme;
 
     public static void init(Context context) {
         sPreferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -85,6 +86,10 @@ public final class Preferences {
 
     public static void setCachedBalloonTheme(String balloonTheme) {
         sBalloonTheme = balloonTheme;
+    }
+
+    public static void setCachedBalloonGroupsTheme(String balloonTheme) {
+        sBalloonGroupsTheme = balloonTheme;
     }
 
     public static void updateServerListLastUpdate(Preference pref, ServerList list) {
@@ -297,6 +302,13 @@ public final class Preferences {
             sBalloonTheme = getString(context, "pref_balloons", context
                 .getString(R.string.pref_default_balloons));
         return sBalloonTheme;
+    }
+
+    public static String getBalloonGroupsTheme(Context context) {
+        if (sBalloonGroupsTheme == null)
+            sBalloonGroupsTheme = getString(context, "pref_balloons_groups", context
+                .getString(R.string.pref_default_balloons_groups));
+        return sBalloonGroupsTheme;
     }
 
     public static boolean getEmojiConverter(Context context){

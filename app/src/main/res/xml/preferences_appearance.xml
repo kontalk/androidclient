@@ -42,6 +42,13 @@
         android:entryValues="@array/balloons_values"
         android:defaultValue="@string/pref_default_balloons"/>
     <com.afollestad.materialdialogs.prefs.MaterialListPreference
+        android:key="pref_balloons_groups"
+        android:title="@string/pref_balloons_groups"
+        android:summary="%s"
+        android:entries="@array/balloons_labels_groups"
+        android:entryValues="@array/balloons_values_groups"
+        android:defaultValue="@string/pref_default_balloons_groups"/>
+    <com.afollestad.materialdialogs.prefs.MaterialListPreference
         android:key="pref_text_enter"
         android:title="@string/pref_text_enter"
         android:summary="@string/pref_title_text_enter"

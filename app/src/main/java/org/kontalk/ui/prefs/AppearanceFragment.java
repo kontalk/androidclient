@@ -86,6 +86,16 @@ public class AppearanceFragment extends RootPreferenceFragment {
                 return true;
             }
         });
+
+        // set balloon theme for groups
+        final Preference balloonsGroups = findPreference("pref_balloons_groups");
+        balloons.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                Preferences.setCachedBalloonGroupsTheme((String) newValue);
+                return true;
+            }
+        });
     }
 
     @Override
