@@ -566,4 +566,6 @@
 </plurals>
 
 <string name="menu_sticky">Омиљено</string>
+    <string name="delete_threads_leave_any_groups">Такође напусти групе</string>
+
     </resources>
