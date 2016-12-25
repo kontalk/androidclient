@@ -555,4 +555,6 @@ http://kontalk.org/</string>
 
     <string name="pref_balloons_groups">グループチャット バルーンテーマ</string>
 
+    <string name="delete_threads_groups_disclaimer">グループのチャットは、上のチェックボックスが選択されていない限り、チャットの履歴のみが削除されます。</string>
+
     </resources>
