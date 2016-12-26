@@ -226,7 +226,8 @@ public abstract class MediaStorage {
             return matrix;
         }
         finally {
-            tmp.delete();
+            if (tmp != null)
+                tmp.delete();
             SystemUtils.closeStream(in);
             SystemUtils.closeStream(out);
         }
