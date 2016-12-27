@@ -509,11 +509,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                 setCurrentStatusText(statusText);
             }
         }
-
-        // subscription accepted, probe presence
-        else if (type == Presence.Type.subscribed) {
-            requestPresence();
-        }
     }
 
     /** Sends a subscription request for the current peer. */
@@ -627,6 +622,13 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                             R.string.msg_user_unblocked,
                             Toast.LENGTH_LONG).show();
                     }
+
+                    else if (MessageCenterService.ACTION_SUBSCRIBED.equals(intent.getAction())) {
+                        // reload contact
+                        invalidateContact();
+                        // subscription accepted, probe presence
+                        requestPresence();
+                    }
                 }
             };
 
@@ -637,6 +639,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             filter.addAction(MessageCenterService.ACTION_PUBLICKEY);
             filter.addAction(MessageCenterService.ACTION_BLOCKED);
             filter.addAction(MessageCenterService.ACTION_UNBLOCKED);
+            filter.addAction(MessageCenterService.ACTION_SUBSCRIBED);
             mLocalBroadcastManager.registerReceiver(mBroadcastReceiver, filter);
         }
 
@@ -724,7 +727,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         MessageCenterService.replySubscription(ctx, mUserJID, action);
     }
 
-    private void invalidateContact() {
+    void invalidateContact() {
         Contact.invalidate(mUserJID);
         reloadContact();
     }
