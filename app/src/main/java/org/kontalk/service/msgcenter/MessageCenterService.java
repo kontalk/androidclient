@@ -1834,6 +1834,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                  * only to existing members and not to the ones being removed.
                  */
                 groupMembers = MessagesProviderUtils.getGroupMembers(this, groupJid, -1);
+                if (groupMembers.length == 0) {
+                    // no group member left - skip message
+                    // this might be a pending message that was queued before we realized there were no members left
+                    // since the group might get populated again, we just skip the message but keep it
+                    Log.d(TAG, "no members in group - skipping message");
+                    continue;
+                }
             }
 
             // media message encountered and no upload service available - delay message
