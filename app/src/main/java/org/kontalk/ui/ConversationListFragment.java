@@ -42,7 +42,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.CheckBox;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import org.kontalk.R;
 import org.kontalk.data.Contact;
@@ -284,20 +286,26 @@ public class ConversationListFragment extends ActionModeListFragment
 
         final boolean hasGroupCheckbox = addGroupCheckbox;
         MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
-            .content(getResources().getQuantityString(R.plurals.confirm_will_delete_threads, checkedCount))
+            .customView(R.layout.dialog_text2_check, false)
             .positiveText(android.R.string.ok)
             .positiveColorRes(R.color.button_danger)
             .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                     Context ctx = getContext();
+                    boolean promptCheckBoxChecked = false;
+                    if (hasGroupCheckbox) {
+                        CheckBox promptCheckbox = (CheckBox) dialog.getCustomView().findViewById(R.id.promptCheckbox);
+                        promptCheckBoxChecked = promptCheckbox.isChecked();
+                    }
+
                     for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
                         if (checked.get(i)) {
                             Cursor cursor = (Cursor) mListAdapter.getItem(i);
                             boolean hasLeftGroup = Conversation.isGroup(cursor, MyMessages.Groups.MEMBERSHIP_PARTED) ||
                                 Conversation.isGroup(cursor, MyMessages.Groups.MEMBERSHIP_KICKED);
                             Conversation.deleteFromCursor(ctx, cursor,
-                                hasGroupCheckbox ? dialog.isPromptCheckBoxChecked() : hasLeftGroup);
+                                hasGroupCheckbox ? promptCheckBoxChecked : hasLeftGroup);
                         }
                     }
                     mListAdapter.notifyDataSetChanged();
@@ -305,11 +313,23 @@ public class ConversationListFragment extends ActionModeListFragment
             })
             .negativeText(android.R.string.cancel);
 
-        if (addGroupCheckbox)
-            builder.checkBoxPrompt(getResources()
-                .getQuantityString(R.plurals.delete_threads_leave_groups, checkedCount), false, null);
+        MaterialDialog dialog = builder.build();
 
-        builder.show();
+        ((TextView) dialog.getCustomView().findViewById(android.R.id.text1))
+            .setText(getResources().getQuantityString(R.plurals.confirm_will_delete_threads, checkedCount));
+
+        if (addGroupCheckbox) {
+            TextView text2 = (TextView) dialog.getCustomView().findViewById(android.R.id.text2);
+            text2.setText(R.string.delete_threads_groups_disclaimer);
+            text2.setVisibility(View.VISIBLE);
+
+            CheckBox promptCheckbox = (CheckBox) dialog.getCustomView().findViewById(R.id.promptCheckbox);
+            promptCheckbox.setText(getResources()
+                .getQuantityString(R.plurals.delete_threads_leave_groups, checkedCount));
+            promptCheckbox.setVisibility(View.VISIBLE);
+        }
+
+        dialog.show();
     }
 
     private Conversation getCheckedItem() {
