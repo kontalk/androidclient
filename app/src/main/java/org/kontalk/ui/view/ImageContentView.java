@@ -84,14 +84,20 @@ public class ImageContentView extends FrameLayout
         showBitmap(bitmap);
     }
 
+    /** This method might be called from a thread other than the main thread. */
     void showBitmap(Bitmap bitmap) {
+        // this method might be called from another thread
+        final ImageComponent component = mComponent;
+        if (component == null)
+            return;
+
         if (bitmap != null) {
             mContent.setImageBitmap(bitmap);
             mPlaceholder.setVisibility(GONE);
             mContent.setVisibility(VISIBLE);
         }
         else {
-            String placeholder = CompositeMessage.getSampleTextContent(mComponent.getContent().getMime());
+            String placeholder = CompositeMessage.getSampleTextContent(component.getContent().getMime());
             mPlaceholder.setText(placeholder);
             TextContentView.setTextStyle(mPlaceholder);
             mContent.setVisibility(GONE);
