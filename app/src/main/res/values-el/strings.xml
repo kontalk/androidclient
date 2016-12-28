@@ -414,11 +414,11 @@
 
     <string name="warning_button_details">ΛΕΠΤΟΜΕΡΕΙΕΣ</string>
     <string name="warning_older_version">Η επαφή σας χρησιμοποιεί μια πιο παλιά έκδοση της Kontalk. Ορισμένες δυνατότητες ενδέχεται να μη λειτουργούν σωστά.</string>
-    <string name="warning_public_key_changed">Το προσωπικό κλειδί αυτού του χρήστη άλλαξε αναπάντεχα!</string>
+    <string name="warning_public_key_changed">Το προσωπικό κλειδί άλλαξε</string>
     <string name="title_public_key_changed_warning">Το προσωπικό κλειδί άλλαξε</string>
     <string name="msg_public_key_changed_warning">Παρακαλούμε επιβεβαιώστε με το χρήστη ότι έχει επανεγκαταστήσει την Kontalk ή έχει ηθελημένα επαναδημιουργήσει το κλειδί του/της, αλλιώς η επικοινωνίας σας μπορεί να έχει παραβιαστεί!</string>
-    <string name="warning_public_key_unknown">Το προσωπικό κλειδί αυτού του χρήστη δεν είναι αξιόπιστο!</string>
-    <string name="title_public_key_unknown_warning">Αναξιόπιστο προσωπικό κλειδί</string>
+    <string name="warning_public_key_unknown">Το προσωπικό κλειδί δεν έχει επιβεβαιωθεί</string>
+    <string name="title_public_key_unknown_warning">Επιβεβαιώστε το προσωπικό κλειδί</string>
     <string name="msg_public_key_unknown_warning">Παρακαλούμε επιβεβαίωστε με το χρήστη ότι το αποτύπωμα τους ταιριάζει με αυτό που εμφανίζεται στο παράθυρο διαλόγου <b>ταυτότητα</b>, διαφορετικά η επικοινωνία σας μπορεί να έχει παραβιαστεί!</string>
 
     <string name="warning_user_blocked">Εσείς έχετε μπλοκάρει αυτόν τον χρήστη.</string>
@@ -562,5 +562,7 @@
     <string name="group_command_owner_parted">Ο ιδιοκτήτης (%s) έφυγε από την ομάδα. Κανένας δε μπορεί να αφαιρέσει ή να προσθέσει μέλη.</string>
     <string name="group_info_owner_member">Ιδιοκτήτης</string>
     <string name="delete_threads_leave_any_groups">Επίσης έξοδος από όποιες ομάδες</string>
+
+    <string name="pref_balloons_groups">Θέμα με μπαλόνια για συζητήσεις ομάδων</string>
 
     </resources>
