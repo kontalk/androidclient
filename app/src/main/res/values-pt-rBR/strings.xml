@@ -586,4 +586,8 @@ Se desabilitada, você pode fazer ajustes finos no funcionamento da conexão do 
 
     <string name="pref_balloons_groups">Tema do balão de conversas em grupo</string>
 
+    <string name="delete_threads_groups_disclaimer">Conversas em grupo terão somente seu histórico de conversas excluído, a não ser que a a opção acima seja selecionada.</string>
+    <string name="create_group_disclaimer">Por favor, lembre-se de que todas as pessoas do grupo devem conhecer-se umas às outras para poderem conversar.</string>
+    <string name="check_dont_show_again">Não exibir novamente</string>
+
     </resources>
