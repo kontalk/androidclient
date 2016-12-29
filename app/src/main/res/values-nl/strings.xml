@@ -569,4 +569,7 @@ Indien uitgeschakeld kan het netwerkgedrag van Kontalk in netwerkinstellingen in
 
     <string name="delete_threads_groups_disclaimer">De chatgeschiedenis van groepsgesprekken zal alleen verwijderd worden als bovenstaand selectievakje niet geselecteerd is.</string>
 
+    <string name="create_group_disclaimer">Let erop dat alle leden in de groep elkaar moeten kennen om te kunnen chatten.</string>
+    <string name="check_dont_show_again">Toon niet opnieuw</string>
+
     </resources>
