@@ -319,7 +319,7 @@ public class ConversationsActivity extends MainActivity
                         users, encrypted, ContentUris.parseId(cmdMsg), msgId);
 
                     // load the new conversation
-                    openConversation(Threads.getUri(groupJid));
+                    openConversation(Threads.getUri(groupJid), true);
                 }
             })
             .inputRange(0, MyMessages.Groups.GROUP_SUBJECT_MAX_LENGTH)
@@ -362,14 +362,14 @@ public class ConversationsActivity extends MainActivity
 
     /** For tablets. */
     @Override
-    public void loadConversation(long threadId) {
-        openConversation(threadId);
+    public void loadConversation(long threadId, boolean creatingGroup) {
+        openConversation(threadId, creatingGroup);
     }
 
     /** For tablets. */
     @Override
     public void loadConversation(Uri threadUri) {
-        openConversation(threadUri);
+        openConversation(threadUri, false);
     }
 
     public void openConversation(Conversation conv, int position) {
@@ -381,7 +381,7 @@ public class ConversationsActivity extends MainActivity
 
             // check if we are replacing the same fragment
             if (f == null || !f.getConversation().getRecipient().equals(conv.getRecipient())) {
-                f = AbstractComposeFragment.fromConversation(this, conv);
+                f = AbstractComposeFragment.fromConversation(this, conv, false);
                 // Execute a transaction, replacing any existing fragment
                 // with this one inside the frame.
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -396,6 +396,10 @@ public class ConversationsActivity extends MainActivity
     }
 
     void openConversation(Uri threadUri) {
+        openConversation(threadUri, false);
+    }
+
+    void openConversation(Uri threadUri, boolean creatingGroup) {
         if (isDualPane()) {
             // load conversation
             String userId = threadUri.getLastPathSegment();
@@ -407,9 +411,9 @@ public class ConversationsActivity extends MainActivity
             // check if we are replacing the same fragment
             if (f == null || conv == null || !f.getConversation().getRecipient().equals(conv.getRecipient())) {
                 if (conv == null)
-                    f = AbstractComposeFragment.fromUserId(this, userId);
+                    f = AbstractComposeFragment.fromUserId(this, userId, creatingGroup);
                 else
-                    f = AbstractComposeFragment.fromConversation(this, conv);
+                    f = AbstractComposeFragment.fromConversation(this, conv, creatingGroup);
 
                 // Execute a transaction, replacing any existing fragment
                 // with this one inside the frame.
@@ -420,7 +424,7 @@ public class ConversationsActivity extends MainActivity
             }
         }
         else {
-            Intent i = ComposeMessage.fromUserId(this, threadUri.getLastPathSegment());
+            Intent i = ComposeMessage.fromUserId(this, threadUri.getLastPathSegment(), creatingGroup);
             if (i != null)
                 startActivity(i);
             else
@@ -430,6 +434,10 @@ public class ConversationsActivity extends MainActivity
     }
 
     private void openConversation(long threadId) {
+        openConversation(threadId, false);
+    }
+
+    private void openConversation(long threadId, boolean creatingGroup) {
         if (isDualPane()) {
             // load conversation
             Conversation conv = Conversation.loadFromId(this, threadId);
@@ -441,7 +449,7 @@ public class ConversationsActivity extends MainActivity
 
             // check if we are replacing the same fragment
             if (f == null || !f.getConversation().getRecipient().equals(conv.getRecipient())) {
-                f = AbstractComposeFragment.fromConversation(this, conv);
+                f = AbstractComposeFragment.fromConversation(this, conv, creatingGroup);
 
                 // Execute a transaction, replacing any existing fragment
                 // with this one inside the frame.
@@ -452,7 +460,7 @@ public class ConversationsActivity extends MainActivity
             }
         }
         else {
-            startActivity(ComposeMessage.fromConversation(this, threadId));
+            startActivity(ComposeMessage.fromConversation(this, threadId, creatingGroup));
         }
     }
 

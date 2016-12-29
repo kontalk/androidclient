@@ -172,7 +172,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
             String[] users = usersList.toArray(new String[usersList.size()]);
             mConversation.addUsers(users);
             // reload conversation
-            ((ComposeMessageParent) getActivity()).loadConversation(getThreadId());
+            ((ComposeMessageParent) getActivity()).loadConversation(getThreadId(), false);
         }
     }
 
@@ -234,7 +234,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     void setGroupSubject(String subject) {
         mConversation.setGroupSubject(subject);
         // reload conversation
-        ((ComposeMessageParent) getActivity()).loadConversation(getThreadId());
+        ((ComposeMessageParent) getActivity()).loadConversation(getThreadId(), false);
     }
 
     private void requestPresence() {
@@ -306,7 +306,22 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
     @Override
     protected void onArgumentsProcessed() {
-        // nothing
+        if (getArguments().getBoolean(ComposeMessage.EXTRA_CREATING_GROUP) &&
+                Preferences.getGroupChatCreateDisclaimer(getContext())) {
+            new MaterialDialog.Builder(getContext())
+                .content(R.string.create_group_disclaimer)
+                .checkBoxPromptRes(R.string.check_dont_show_again, false, null)
+                .positiveText(android.R.string.ok)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        if (dialog.isPromptCheckBoxChecked()) {
+                            Preferences.setGroupChatCreateDisclaimer(getContext());
+                        }
+                    }
+                })
+                .show();
+        }
     }
 
     @Override

@@ -210,7 +210,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     private int mCheckedItemCount;
 
     /** Returns a new fragment instance from a picked contact. */
-    public static AbstractComposeFragment fromUserId(Context context, String userId) {
+    public static AbstractComposeFragment fromUserId(Context context, String userId, boolean creatingGroup) {
         AbstractComposeFragment f = new ComposeMessageFragment();
         Conversation conv = Conversation.loadFromUserId(context, userId);
         // not found - create new
@@ -218,28 +218,30 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             Bundle args = new Bundle();
             args.putString("action", ComposeMessage.ACTION_VIEW_USERID);
             args.putParcelable("data", Threads.getUri(userId));
+            // non existing group threads can't exist, so no reason to use creatingGroup
             f.setArguments(args);
             return f;
         }
 
-        return fromConversation(context, conv);
+        return fromConversation(context, conv, creatingGroup);
     }
 
     /** Returns a new fragment instance from a {@link Conversation} instance. */
     public static AbstractComposeFragment fromConversation(Context context,
-            Conversation conv) {
-        return fromConversation(context, conv.getThreadId(), conv.isGroupChat());
+            Conversation conv, boolean creatingGroup) {
+        return fromConversation(context, conv.getThreadId(), conv.isGroupChat(), creatingGroup);
     }
 
     /** Returns a new fragment instance from a thread ID. */
     private static AbstractComposeFragment fromConversation(Context context,
-            long threadId, boolean group) {
+            long threadId, boolean group, boolean creatingGroup) {
         AbstractComposeFragment f = group ?
             new GroupMessageFragment() : new ComposeMessageFragment();
         Bundle args = new Bundle();
         args.putString("action", ComposeMessage.ACTION_VIEW_CONVERSATION);
         args.putParcelable("data",
                 ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
+        args.putBoolean(ComposeMessage.EXTRA_CREATING_GROUP, creatingGroup);
         f.setArguments(args);
         return f;
     }
