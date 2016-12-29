@@ -567,4 +567,6 @@ Wenn sie deaktiviert sind kann das Kontalk Verbindungsverhalten in den Netzwerke
 
     <string name="pref_balloons_groups">Sprechblasendesign für Gruppenchats</string>
 
+    <string name="delete_threads_groups_disclaimer">Gruppenchats werden nur dann gelöscht, wenn das Kontrollkästchen oben markiert ist.</string>
+
     </resources>
