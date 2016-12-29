@@ -71,6 +71,9 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     public static final String EXTRA_HIGHLIGHT = "org.kontalk.conversation.HIGHLIGHT";
     /** Used internally when reloading: does not trigger scroll-to-match. */
     static final String EXTRA_RELOADING = "org.kontalk.conversation.RELOADING";
+    /** Set to true for showing the group chat on creation disclaimer. */
+    static final String EXTRA_CREATING_GROUP = "org.kontalk.CREATING_GROUP";
+
 
     /** The SEND intent. */
     private Intent sendIntent;
@@ -146,9 +149,9 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     }
 
     @Override
-    public void loadConversation(long threadId) {
+    public void loadConversation(long threadId, boolean creatingGroup) {
         // create bootstrap intent
-        setIntent(ComposeMessage.fromConversation(this, threadId));
+        setIntent(ComposeMessage.fromConversation(this, threadId, creatingGroup));
         loadConversation();
     }
 
@@ -281,6 +284,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
                     args.putParcelable("data", uri);
                     args.putLong(EXTRA_MESSAGE, intent.getLongExtra(EXTRA_MESSAGE, -1));
                     args.putString(EXTRA_HIGHLIGHT, intent.getStringExtra(EXTRA_HIGHLIGHT));
+                    args.putBoolean(EXTRA_CREATING_GROUP, intent.getBooleanExtra(EXTRA_CREATING_GROUP, false));
                 }
             }
 
@@ -382,6 +386,10 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     }
 
     public static Intent fromUserId(Context context, String userId) {
+        return fromUserId(context, userId, false);
+    }
+
+    public static Intent fromUserId(Context context, String userId, boolean creatingGroup) {
         Conversation conv = Conversation.loadFromUserId(context, userId);
         // not found - create new
         if (conv == null) {
@@ -391,7 +399,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
             return ni;
         }
 
-        return fromConversation(context, conv);
+        return fromConversation(context, conv, creatingGroup);
     }
 
     public static Intent fromThreadUri(Context context, Uri threadUri) {
@@ -410,15 +418,26 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
 
     /** Creates an {@link Intent} for launching the composer for a given {@link Conversation}. */
     public static Intent fromConversation(Context context, Conversation conv) {
-        return fromConversation(context, conv.getThreadId());
+        return fromConversation(context, conv, false);
+    }
+
+    /** Creates an {@link Intent} for launching the composer for a given {@link Conversation}. */
+    public static Intent fromConversation(Context context, Conversation conv, boolean creatingGroup) {
+        return fromConversation(context, conv.getThreadId(), creatingGroup);
     }
 
     /** Creates an {@link Intent} for launching the composer for a given thread Id. */
     public static Intent fromConversation(Context context, long threadId) {
-        return new Intent(ComposeMessage.ACTION_VIEW_CONVERSATION,
-                ContentUris.withAppendedId(Conversations.CONTENT_URI,
-                        threadId),
+        return fromConversation(context, threadId, false);
+    }
+
+    /** Creates an {@link Intent} for launching the composer for a given thread Id. */
+    public static Intent fromConversation(Context context, long threadId, boolean creatingGroup) {
+        Intent i = new Intent(ComposeMessage.ACTION_VIEW_CONVERSATION,
+                ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId),
                 context, ComposeMessage.class);
+        i.putExtra(EXTRA_CREATING_GROUP, creatingGroup);
+        return i;
     }
 
     /** Creates an {@link Intent} for sending a text message. */

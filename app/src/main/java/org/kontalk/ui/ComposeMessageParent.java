@@ -35,7 +35,7 @@ interface ComposeMessageParent {
     void setUpdatingSubtitle();
 
     /** Loads the given conversation, replacing the fragment as needed. */
-    void loadConversation(long threadId);
+    void loadConversation(long threadId, boolean creatingGroup);
 
     /** Loads the given conversation, replacing the fragment as needed. */
     void loadConversation(Uri threadUri);

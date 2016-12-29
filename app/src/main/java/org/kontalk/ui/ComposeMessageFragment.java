@@ -789,7 +789,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                         ContentUris.parseId(cmdMsg), msgId);
 
                     // open the new conversation
-                    ((ComposeMessageParent) getActivity()).loadConversation(groupThreadId);
+                    ((ComposeMessageParent) getActivity()).loadConversation(groupThreadId, true);
                 }
             })
             .inputRange(0, MyMessages.Groups.GROUP_SUBJECT_MAX_LENGTH)
