@@ -571,4 +571,8 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
 
     <string name="pref_balloons_groups">Styl zobrazení skupinové konverzace</string>
 
+    <string name="check_dont_show_again">Znovu nezobrazovat</string>
+
+    <string name="create_group_disclaimer">Pamatujte prosím na to, že všichni členové skupiny se musí znát navzájem, aby spolu mohli konverzovat.</string>
+    <string name="delete_threads_groups_disclaimer">Historie skupinové konverzace bude smazána pouze pokud fajfka výše není zatržená.</string>
     </resources>
