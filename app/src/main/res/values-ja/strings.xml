@@ -557,4 +557,7 @@ http://kontalk.org/</string>
 
     <string name="delete_threads_groups_disclaimer">グループのチャットは、上のチェックボックスが選択されていない限り、チャットの履歴のみが削除されます。</string>
 
+    <string name="create_group_disclaimer">チャットするために、グループ内のすべてのメンバーがお互いを知っている必要があります。</string>
+    <string name="check_dont_show_again">今後表示しない</string>
+
     </resources>
