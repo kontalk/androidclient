@@ -35,8 +35,10 @@ public class StepTimer {
     /** Delay accumulator. */
     private long mDelay;
 
+    /** The delay for the step in milliseconds. */
     public StepTimer(long delay) {
         mMinDelay = delay;
+        reset();
     }
 
     public void reset() {
