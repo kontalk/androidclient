@@ -39,7 +39,7 @@
   <string name="number_validation_intro1">Per favor, introduïu el nom, trieu el codi del país i escriviu el número de mòbil. A la següent pantalla hi haurà més instruccions.</string>
   <string name="number_validation_intro2">Si no podeu rebre SMS en aquest dispositiu, introduïu el número d\'un telèfon vostre: associarem el número a aquest dispositiu.</string>
   <string name="code_validation_intro">Tot seguit hauríeu de rebre un SMS o una trucada des d\'aquest número:</string>
-  <string name="code_validation_intro2">Per favor escriviu a sota el codi que heu rebut.</string>
+  <string name="code_validation_intro2">Per favor escriviu a sota el codi que heu rebut o escoltat.</string>
   <string name="code_validation_intro_manual">Per favor, escriviu el codi de verificació que heu rebut. Recordeu que cada codi només es pot fer servir una vegada.</string>
   <string name="hint_validation_name">El vostre nom</string>
   <string name="hint_validation_number">El vostre número</string>
@@ -328,7 +328,7 @@
   <string name="msg_user_unblocked">S\'ha desblocat l\'usuari.</string>
   <string name="msg_block_user_warning">Esteu a punt de blocar aquest usuari. Si ho feu, aquest usuari no podrà enviar-vos cap missatge fins que el desbloqueu. Tampoc podrà veure el vostre estat ni l\'última connexió, i tampoc podreu veure el seu estat. Com a efecte secundari, tampoc podreu enviar-li cap missatge.</string>
   <string name="msg_unblock_user_warning">Esteu a punt de desblocar aquest usuari. Si el desbloqueu podrà enviar-vos missatges i veure el vostre estat i l\'última connexió.</string>
-  <string name="notification_text_more">Toque ací si en voleu més informació</string>
+  <string name="notification_text_more">Cliqui ací si vol més informació</string>
   <string name="title_auth_error">Error d\'autenticació</string>
   <string name="msg_auth_error">L\'autenticació amb el servidor de Kontalk va fallar l\'última vegada. Podria ser una fallada temporal del servidor o, més probablement, que el servidor haja refusat la vostra clau personal. La millor solució és esborrar el vostre compte de Kontalk des de la configuració d\'Android i tornar a donar-vos d\'alta (perdreu tots els missatges, això sí).</string>
   <string name="warn_invite_no_app">No hi ha cap aplicació disponible per a convidar usuaris.</string>
