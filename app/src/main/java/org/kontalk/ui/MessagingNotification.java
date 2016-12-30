@@ -81,9 +81,6 @@ public class MessagingNotification {
     public static final int NOTIFICATION_ID_INVITATION      = 109;
     public static final int NOTIFICATION_ID_AUTH_ERROR      = 110;
 
-    /** Minimum delay for progress notification updates. */
-    public static final int NOTIFICATION_UPDATE_DELAY = 500;
-
     private static final String[] MESSAGES_UNREAD_PROJECTION =
     {
         Messages.THREAD_ID,

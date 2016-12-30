@@ -32,6 +32,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
 
@@ -54,6 +55,8 @@ public class HTPPFileUploadConnection implements UploadConnection {
 
     private final static int CONNECT_TIMEOUT = 15000;
     private final static int READ_TIMEOUT = 40000;
+    /** Minimum delay for progress notification updates in milliseconds. */
+    private static final int PROGRESS_PUBLISH_DELAY = 1000;
 
     public HTPPFileUploadConnection(Context context, String url) {
         mContext = context;
@@ -80,8 +83,8 @@ public class HTPPFileUploadConnection implements UploadConnection {
             currentRequest = prepareMessage(length, mime, acceptAnyCertificate);
 
             // execute!
-            ProgressInputStreamEntity entity = new ProgressInputStreamEntity(inMessage, this, listener);
-            entity.writeTo(currentRequest.getOutputStream());
+            ProgressInputStreamEntity entity = new ProgressInputStreamEntity(inMessage, this, listener, PROGRESS_PUBLISH_DELAY);
+            entity.writeTo(currentRequest.getOutputStream(), length);
 
             if (currentRequest.getResponseCode() != 200)
                 throw new IOException(currentRequest.getResponseCode() + " " + currentRequest.getResponseMessage());
@@ -106,11 +109,11 @@ public class HTPPFileUploadConnection implements UploadConnection {
     }
 
     private IOException innerException(String detail, Throwable cause) {
-        IOException ie = new IOException(detail);
-        ie.initCause(cause);
-        return ie;
+        return new IOException(detail, cause);
     }
 
+    @SuppressLint("AllowAllHostnameVerifier")
+    @SuppressWarnings("deprecation")
     private void setupClient(HttpsURLConnection conn, long length, String mime, boolean acceptAnyCertificate)
         throws CertificateException, UnrecoverableKeyException,
         NoSuchAlgorithmException, KeyStoreException,

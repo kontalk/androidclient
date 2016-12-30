@@ -24,7 +24,6 @@ package org.kontalk.service;
  */
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_UPLOADING;
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_UPLOAD_ERROR;
-import static org.kontalk.ui.MessagingNotification.NOTIFICATION_UPDATE_DELAY;
 
 import java.io.File;
 import java.util.LinkedHashMap;
@@ -40,7 +39,6 @@ import org.kontalk.ui.ProgressNotificationBuilder;
 import org.kontalk.upload.HTPPFileUploadConnection;
 import org.kontalk.upload.UploadConnection;
 import org.kontalk.util.MediaStorage;
-import org.kontalk.util.StepTimer;
 
 import android.app.IntentService;
 import android.app.Notification;
@@ -95,8 +93,6 @@ public class UploadService extends IntentService implements ProgressListener {
     // data about the upload currently being processed
     private Notification mCurrentNotification;
     private long mTotalBytes;
-    /** Step timer for notification updates. */
-    private StepTimer mUpdateTimer = new StepTimer(NOTIFICATION_UPDATE_DELAY);
 
     private long mMessageId;
     private UploadConnection mConn;
@@ -265,7 +261,6 @@ public class UploadService extends IntentService implements ProgressListener {
 
     @Override
     public void start(UploadConnection conn) {
-        mUpdateTimer.reset();
         startForeground(mTotalBytes);
     }
 
@@ -317,8 +312,7 @@ public class UploadService extends IntentService implements ProgressListener {
 
 
         // notify!!
-        ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE))
-            .notify(NOTIFICATION_ID_UPLOAD_ERROR, builder.build());
+        nm.notify(NOTIFICATION_ID_UPLOAD_ERROR, builder.build());
     }
 
     @Override
@@ -329,7 +323,7 @@ public class UploadService extends IntentService implements ProgressListener {
             mCanceled = true;
         }
 
-        if (mCurrentNotification != null && (bytes >= mTotalBytes || mUpdateTimer.isStep())) {
+        if (mCurrentNotification != null) {
             int progress = (int) ((100 * bytes) / mTotalBytes);
             foregroundNotification(progress);
             // send the updates to the notification manager

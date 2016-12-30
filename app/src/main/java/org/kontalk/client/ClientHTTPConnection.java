@@ -47,6 +47,7 @@ import javax.net.ssl.X509TrustManager;
 
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 
@@ -70,6 +71,8 @@ public class ClientHTTPConnection {
     /** Regex used to parse content-disposition headers */
     private static final Pattern CONTENT_DISPOSITION_PATTERN = Pattern
             .compile("attachment;\\s*filename\\s*=\\s*\"([^\"]*)\"");
+    /** Minimum delay for progress notification updates in milliseconds. */
+    private static final int PROGRESS_PUBLISH_DELAY = 1000;
 
     private final Context mContext;
 
@@ -115,11 +118,11 @@ public class ClientHTTPConnection {
     }
 
     private IOException innerException(String detail, Throwable cause) {
-        IOException ie = new IOException(detail);
-        ie.initCause(cause);
-        return ie;
+        return new IOException(detail, cause);
     }
 
+    @SuppressWarnings("deprecation")
+    @SuppressLint("AllowAllHostnameVerifier")
     private void setupClient(HttpsURLConnection conn, boolean acceptAnyCertificate)
             throws CertificateException, UnrecoverableKeyException,
             NoSuchAlgorithmException, KeyStoreException,
@@ -168,11 +171,13 @@ public class ClientHTTPConnection {
                         return null;
                     }
 
+                    @SuppressLint("TrustAllX509TrustManager")
                     @Override
                     public void checkServerTrusted(X509Certificate[] chain, String authType)
                         throws CertificateException {
                     }
 
+                    @SuppressLint("TrustAllX509TrustManager")
                     @Override
                     public void checkClientTrusted(X509Certificate[] chain, String authType)
                         throws CertificateException {
@@ -236,7 +241,8 @@ public class ClientHTTPConnection {
             }
 
             // we need to wrap the entity to monitor the download progress
-            ProgressOutputStreamEntity entity = new ProgressOutputStreamEntity(currentRequest, url, destination, listener);
+            ProgressOutputStreamEntity entity =
+                new ProgressOutputStreamEntity(currentRequest, url, destination, listener, PROGRESS_PUBLISH_DELAY);
             FileOutputStream out = new FileOutputStream(destination);
             entity.writeTo(out);
             out.close();
