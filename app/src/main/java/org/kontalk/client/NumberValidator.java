@@ -655,6 +655,12 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         if (myRegionCode != null)
             myRegionCode = myRegionCode.toUpperCase(Locale.US);
 
+        return fixNumber(number, myNumber, myRegionCode, lastResortCc);
+    }
+
+    static String fixNumber(String number, String myNumber, String myRegionCode, int lastResortCc)
+        throws NumberParseException {
+
         PhoneNumberUtil util = PhoneNumberUtil.getInstance();
         try {
             if (myNumber != null) {
