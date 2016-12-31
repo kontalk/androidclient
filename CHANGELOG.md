@@ -1,5 +1,20 @@
 # Change Log
 
+## [4.0.0-beta5] - 2016-12-31
+### Changed
+- New 2017 icon!
+- Better explain what happens when you delete a group thread (#898)
+- Difference chat balloon themes for single and group chats (#906)
+- Switch to Let's Encrypt certificates (#913)
+
+### Fixed
+- Fix profile picture disappearing in group chat members selection (#895)
+- Fix wrong picture orientation on some devices (#899)
+- Fix crash when sending square images (#903)
+- Fix performance issue when composing messages (#904)
+- Fix several stability issues (#901, #905, #908, #911)
+- Fix several translation issues
+
 ## [4.0.0-beta4] - 2016-12-11
 ### Changed
 - New 2017 icon!
