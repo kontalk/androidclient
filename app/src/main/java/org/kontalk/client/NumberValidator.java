@@ -202,17 +202,6 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         return count;
     }
 
-    /** Handles special numbers not handled by libphonenumber. */
-    public static boolean isSpecialNumber(PhoneNumber number) {
-        if (number.getCountryCode() == 31) {
-            // handle special M2M numbers: 11 digits starting with 097[0-8]
-            final Pattern regex = Pattern.compile("^97[0-8][0-9]{8}$");
-            Matcher m = regex.matcher(String.valueOf(number.getNationalNumber()));
-            return m.matches();
-        }
-        return false;
-    }
-
     public synchronized void start() {
         if (mThread != null) throw new IllegalArgumentException("already started");
 
@@ -641,6 +630,17 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         void onAuthTokenFailed(NumberValidator v, int reason);
     }
 
+    /** Handles special numbers not handled by libphonenumber. */
+    public static boolean isSpecialNumber(PhoneNumber number) {
+        if (number.getCountryCode() == 31) {
+            // handle special M2M numbers: 11 digits starting with 097[0-8]
+            final Pattern regex = Pattern.compile("^97[0-8][0-9]{8}$");
+            Matcher m = regex.matcher(String.valueOf(number.getNationalNumber()));
+            return m.matches();
+        }
+        return false;
+    }
+
     /**
      * Converts pretty much any phone number into E.164 format.
      * @param myNumber used to take the country code if not found in the number
@@ -687,8 +687,44 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 throw e;
         }
 
+        handleSpecialCases(parsedNum);
+
         // a NumberParseException would have been thrown at this point
         return util.format(parsedNum, PhoneNumberFormat.E164);
+    }
+
+    /**
+     * Handles special cases in a parsed phone number.
+     * @param phoneNumber the phone number to check. It will be modified in place.
+     */
+    public static void handleSpecialCases(PhoneNumber phoneNumber) {
+        PhoneNumberUtil util = PhoneNumberUtil.getInstance();
+
+        // Argentina numbering rules
+        int argCode = util.getCountryCodeForRegion("AR");
+        if (phoneNumber.getCountryCode() == argCode) {
+            // forcibly add the 9 between country code and national number
+            long nsn = phoneNumber.getNationalNumber();
+            if (firstDigit(nsn) != 9) {
+                phoneNumber.setNationalNumber(addSignificantDigits(nsn, 9));
+            }
+        }
+    }
+
+    static long addSignificantDigits(long n, int ds) {
+        final long orig = n;
+        int count = 1;
+        while (n < -9 || 9 < n) {
+            n /= 10;
+            count++;
+        }
+        long power = ds * (long) Math.pow(10, count);
+        return orig + power;
+    }
+
+    private static int firstDigit(long n) {
+        while (n < -9 || 9 < n) n /= 10;
+        return (int) Math.abs(n);
     }
 
     /** Returns the (parsed) number stored in this device SIM card. */

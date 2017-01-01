@@ -446,21 +446,7 @@ public class Syncer {
             String number = cursor.getString(1);
             String lookupKey = cursor.getString(2);
 
-            // a phone number with less than 4 digits???
-            if (number.length() < 4)
-                continue;
-
-            // fix number
-            try {
-                number = NumberValidator.fixNumber(mContext, number, account.name, 0);
-            }
-            catch (Exception e) {
-                Log.e(TAG, "unable to normalize number: " + number + " - skipping", e);
-                // skip number
-                continue;
-            }
-
-            // avoid to send duplicates to server
+            // avoid to send duplicates to the server
             if (lookupNumbers.put(XmppStringUtils.parseLocalpart(jid),
                     new RawPhoneNumberEntry(lookupKey, number, jid)) == null)
                 jidList.add(jid);

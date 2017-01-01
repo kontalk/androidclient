@@ -563,6 +563,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                             cc = (CountryCode) mCountryCode.getItemAtPosition(position);
                         }
                     }
+                    // handle special cases
+                    NumberValidator.handleSpecialCases(phone);
                     if (!util.isValidNumberForRegion(phone, cc.regionCode) && !NumberValidator.isSpecialNumber(phone))
                         throw new NumberParseException(ErrorType.INVALID_COUNTRY_CODE, "invalid number for region " + cc.regionCode);
                 }

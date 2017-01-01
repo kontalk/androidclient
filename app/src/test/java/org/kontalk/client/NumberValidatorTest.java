@@ -20,14 +20,27 @@ package org.kontalk.client;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 
 public class NumberValidatorTest {
 
     @Test
     public void testFixNumber() throws Exception {
-        // TODO see https://github.com/kontalk/androidclient/issues/917
+        // see https://github.com/kontalk/androidclient/issues/917
+        assertEquals("+5491112345678", NumberValidator.fixNumber("+54 9 11 1234 5678", "+5491112345678", "AR", 0));
+        assertEquals("+5491112345678", NumberValidator.fixNumber("+54 11 1234 5678", "+5491112345678", "AR", 0));
+        // invalid case: NumberValidator.fixNumber("15 1234 5678", "+5491112345678", "AR", 0);
+        assertEquals("+5491112345678", NumberValidator.fixNumber("0 11 15 1234 5678", "+5491112345678", "AR", 0));
+
+        assertEquals("+393351234567", NumberValidator.fixNumber("+39 335 123 4567", "+393321213456", "IT", 0));
+        assertEquals("+393351234567", NumberValidator.fixNumber("335 123 4567", "+393321213456", "IT", 0));
+    }
+
+    @Test
+    public void testAddSignificantDigits() {
+        assertEquals(91112345678L, NumberValidator.addSignificantDigits(1112345678L, 9));
+        assertEquals(341112345678L, NumberValidator.addSignificantDigits(1112345678L, 34));
     }
 
 }
