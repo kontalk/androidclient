@@ -405,6 +405,11 @@ class MessageListener extends MessageCenterPacketListener {
                         return;
                     }
 
+                    if (msg.getComponents().size() == 0) {
+                        Log.w(TAG, "message has no content, discarding");
+                        return;
+                    }
+
                     msg.setStatus(needAck ? Messages.STATUS_INCOMING : Messages.STATUS_CONFIRMED);
 
                     Uri msgUri = incoming(msg);

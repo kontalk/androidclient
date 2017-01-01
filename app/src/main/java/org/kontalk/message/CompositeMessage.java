@@ -165,7 +165,7 @@ public class CompositeMessage {
     /** Empty constructor for local use. */
     private CompositeMessage(Context context) {
         mContext = context;
-        mComponents = new ArrayList<MessageComponent<?>>();
+        mComponents = new ArrayList<>();
     }
 
     public String getId() {
