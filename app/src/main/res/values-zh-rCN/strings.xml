@@ -100,7 +100,7 @@
     <string name="pref_idle_time">闲置多久断线</string>
     <string name="pref_title_idle_time">非活动时断线前需要等待的时间</string>
     <string name="pref_wakeup_time">重新连接到服务器</string>
-    <string name="pref_title_wakeup_time">非活动状态一段时间后，重连服务器需要的等待时间。仅当推送服务不可用或者网络状况糟糕的时候使用</string>
+    <string name="pref_title_wakeup_time">非活动状态一段时间后，重连服务器需要的等待时间。仅当推送服务不可用或者网络状况不佳的时候使用</string>
     <string name="pref_maintenance">维护</string>
     <string name="pref_regenerate_keypair">重新生成个人密匙</string>
     <string name="pref_title_regenerate_keypair">假定你的个人密匙被泄露后使用</string>
@@ -463,7 +463,7 @@
     <string name="button_load_next_page">载入更多消息</string>
 
     <string name="mark_read">阅读</string>
-    <string name="pref_media_autodownload_threshold">自动下载的极限值</string>
+    <string name="pref_media_autodownload_threshold">自动下载的最低值</string>
     <string name="pref_title_media_autodownload_threshold">低于该大小的文件总是自动下载</string>
     <string name="pref_msg_media_autodownload_threshold">输入一个以KB为单位的数值。设置成0，则永不自动下载。</string>
 
