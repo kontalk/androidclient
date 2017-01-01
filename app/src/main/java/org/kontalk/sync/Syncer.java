@@ -59,7 +59,6 @@ import android.util.Log;
 import org.kontalk.BuildConfig;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.NumberValidator;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PGPUserID;
 import org.kontalk.data.Contact;
