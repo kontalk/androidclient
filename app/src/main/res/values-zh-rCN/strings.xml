@@ -452,11 +452,11 @@
 
     <string name="pref_title_sync_invisible_contacts">联系人应用不显示包含的联系人。当你使用DAVDroid时开启</string>
 
-    <string name="warning_public_key_changed">用户的个人密匙意外改变！</string>
+    <string name="warning_public_key_changed">个人密匙已改变</string>
     <string name="title_public_key_changed_warning">个人密匙已改变</string>
     <string name="msg_public_key_changed_warning">请验证对方是否有意识地重新安装了Kontalk或是修改了密匙，否则会话将会泄密！</string>
-    <string name="warning_public_key_unknown">用户的个人密匙不可信任！</string>
-    <string name="title_public_key_unknown_warning">不可信任的个人密匙</string>
+    <string name="warning_public_key_unknown">个人密匙还未验证</string>
+    <string name="title_public_key_unknown_warning">验证个人密匙</string>
     <string name="msg_public_key_unknown_warning">请验证对方的指纹是否与显示在<b>身份</b>的对话框匹配，否则会话将会泄密！</string>
 
     <string name="pref_show_blocked_users">显示被禁的用户</string>
@@ -585,11 +585,19 @@
     <string name="group_info_owner_member">群主</string>
 
     <plurals name="confirm_will_delete_threads">
-        <item quantity="other">选择的聊天记录将被删除。</item>
-    </plurals>
+	<item quantity="other">选择的聊天会话将被删除。</item>
+</plurals>
 
     <plurals name="delete_threads_leave_groups">
         <item quantity="other">同时离开群组</item>
     </plurals>
 
-</resources>
+<string name="pref_balloons_groups">群组聊天气球主题</string>
+
+    <string name="delete_threads_leave_any_groups">同时离开所有群组</string>
+
+    <string name="delete_threads_groups_disclaimer">如果上面的复选框被选中，那么群组聊天中将只删除聊天记录。</string>
+    <string name="create_group_disclaimer">请注意该群组中的每个成员之间必须是好友才能聊天。</string>
+    <string name="check_dont_show_again">不再显示</string>
+
+    </resources>
