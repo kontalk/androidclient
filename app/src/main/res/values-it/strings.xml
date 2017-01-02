@@ -572,4 +572,7 @@ Se disattivate, il comportamento delle connessioni di Kontalk può essere config
     <string name="create_group_disclaimer">Ricordati che in un gruppo tutti gli utenti devono conoscersi per chattare.</string>
     <string name="check_dont_show_again">Non mostrare di nuovo</string>
 
+    <string name="pref_debug_log">Abilita debug log</string>
+    <string name="pref_send_debug_log">Invia debug log</string>
+
     </resources>
