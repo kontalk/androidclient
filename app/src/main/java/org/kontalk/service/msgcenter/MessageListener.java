@@ -39,9 +39,9 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.util.Log;
 
 import org.kontalk.Kontalk;
+import org.kontalk.Log;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.E2EEncryption;

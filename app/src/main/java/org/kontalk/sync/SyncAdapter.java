@@ -18,11 +18,6 @@
 
 package org.kontalk.sync;
 
-import org.kontalk.authenticator.Authenticator;
-import org.kontalk.provider.UsersProvider;
-import org.kontalk.service.msgcenter.MessageCenterService;
-import org.kontalk.util.Preferences;
-
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;
 import android.content.AbstractThreadedSyncAdapter;
@@ -35,7 +30,12 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.ContactsContract;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
+
+import org.kontalk.Log;
+import org.kontalk.authenticator.Authenticator;
+import org.kontalk.provider.UsersProvider;
+import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.util.Preferences;
 
 
 /**

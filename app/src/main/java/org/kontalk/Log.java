@@ -37,24 +37,29 @@ public final class Log {
 
     private static final String LOG_FILENAME = "kontalk-android.log";
 
-    private static RotatingFileWriter sLogFile;
+    private static RotatingFileWriter sLogFileWriter;
+    private static File sLogFile;
 
     public static void init(Context context) {
         try {
             if (Preferences.isDebugLogEnabled(context)) {
-                File logFile = new File(context.getExternalCacheDir(), LOG_FILENAME);
-                sLogFile = new RotatingFileWriter(logFile);
+                sLogFile = new File(context.getExternalCacheDir(), LOG_FILENAME);
+                sLogFileWriter = new RotatingFileWriter(sLogFile);
             }
             else {
-                if (sLogFile != null) {
-                    sLogFile.abort();
-                    sLogFile = null;
+                if (sLogFileWriter != null) {
+                    sLogFileWriter.abort();
+                    sLogFileWriter = null;
                 }
             }
         }
         catch (IOException e) {
             // TODO notify to user via Toast?
         }
+    }
+
+    public static File getLogFile() {
+        return sLogFile;
     }
 
     private static String buildLog(String tag, int level, String msg) {
@@ -83,21 +88,21 @@ public final class Log {
     }
 
     private static void log(String tag, int level, Throwable tr) {
-        if (sLogFile != null && tr != null) {
+        if (sLogFileWriter != null && tr != null) {
             log(tag, level, android.util.Log.getStackTraceString(tr));
         }
     }
 
     private static void log(String tag, int level, String msg) {
-        if (sLogFile != null) {
+        if (sLogFileWriter != null) {
             try {
-                sLogFile.println(buildLog(tag, level, msg));
-                sLogFile.flush();
+                sLogFileWriter.println(buildLog(tag, level, msg));
+                sLogFileWriter.flush();
             }
             catch (IOException e) {
                 // disable logging but keep the file
-                SystemUtils.closeStream(sLogFile);
-                sLogFile = null;
+                SystemUtils.closeStream(sLogFileWriter);
+                sLogFileWriter = null;
             }
         }
     }

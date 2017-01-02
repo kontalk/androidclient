@@ -21,9 +21,12 @@ package org.kontalk.ui;
 import java.io.File;
 import java.io.IOException;
 
-import org.kontalk.R;
-import org.kontalk.ui.view.CircularSeekBar;
-import org.kontalk.util.MediaStorage;
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.nineoldandroids.animation.Animator;
+import com.nineoldandroids.animation.Animator.AnimatorListener;
+import com.nineoldandroids.animation.ObjectAnimator;
+import com.nineoldandroids.animation.ValueAnimator;
+import com.nineoldandroids.animation.ValueAnimator.AnimatorUpdateListener;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
@@ -37,7 +40,6 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.format.DateUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -47,12 +49,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.afollestad.materialdialogs.MaterialDialog;
-import com.nineoldandroids.animation.Animator;
-import com.nineoldandroids.animation.Animator.AnimatorListener;
-import com.nineoldandroids.animation.ObjectAnimator;
-import com.nineoldandroids.animation.ValueAnimator;
-import com.nineoldandroids.animation.ValueAnimator.AnimatorUpdateListener;
+import org.kontalk.Log;
+import org.kontalk.R;
+import org.kontalk.ui.view.CircularSeekBar;
+import org.kontalk.util.MediaStorage;
 
 
 /**

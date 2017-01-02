@@ -84,7 +84,7 @@
             android:title="@string/pref_debug_log"
             android:defaultValue="@bool/pref_default_debug_log"
             android:layout="@layout/md_preference_custom"/>
-        <Preference android:key="pref_send_debug_log"
+        <org.kontalk.ui.prefs.SendDebugLogPreference android:key="pref_send_debug_log"
             android:title="@string/pref_send_debug_log"
             android:dependency="pref_debug_log"
             android:layout="@layout/md_preference_custom"/>

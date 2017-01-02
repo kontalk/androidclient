@@ -49,10 +49,10 @@ import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.util.Log;
 
 import info.guardianproject.netcipher.client.TlsOnlySocketFactory;
 
+import org.kontalk.Log;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.service.DownloadListener;
 import org.kontalk.util.InternalTrustStore;

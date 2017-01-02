@@ -18,17 +18,17 @@
 
 package org.kontalk.service;
 
-import org.kontalk.Kontalk;
-import org.kontalk.service.msgcenter.AndroidAdaptiveServerPingManager;
-import org.kontalk.service.msgcenter.MessageCenterService;
-import org.kontalk.util.Preferences;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.util.Log;
+
+import org.kontalk.Kontalk;
+import org.kontalk.Log;
+import org.kontalk.service.msgcenter.AndroidAdaptiveServerPingManager;
+import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.util.Preferences;
 
 
 /**

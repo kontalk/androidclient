@@ -49,8 +49,8 @@ import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.PhoneLookup;
 import android.support.annotation.NonNull;
 import android.support.v4.util.LruCache;
-import android.util.Log;
 
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.crypto.PGPLazyPublicKeyRingLoader;
 import org.kontalk.provider.Keyring;

@@ -20,7 +20,6 @@ package org.kontalk.ui.adapter;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +27,7 @@ import android.widget.AbsListView.RecyclerListener;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.data.Conversation;
 import org.kontalk.ui.ConversationsActivity;

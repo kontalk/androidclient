@@ -74,7 +74,6 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.view.ActionMode;
 import android.text.ClipboardManager;
 import android.text.TextUtils;
-import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -88,6 +87,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.kontalk.Kontalk;
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.Coder;

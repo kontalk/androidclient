@@ -37,7 +37,13 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.sasl.SASLError;
 import org.jivesoftware.smack.sasl.SASLErrorException;
+import org.spongycastle.openpgp.PGPException;
+
+import android.content.Context;
+import android.provider.Settings;
+
 import org.kontalk.Kontalk;
+import org.kontalk.Log;
 import org.kontalk.authenticator.LegacyAuthentication;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
@@ -48,11 +54,6 @@ import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.PGPKeyPairRingProvider;
 import org.kontalk.util.InternalTrustStore;
 import org.kontalk.util.Preferences;
-import org.spongycastle.openpgp.PGPException;
-
-import android.content.Context;
-import android.provider.Settings;
-import android.util.Log;
 
 
 /**

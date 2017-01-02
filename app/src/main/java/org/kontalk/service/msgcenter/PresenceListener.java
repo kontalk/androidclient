@@ -37,8 +37,8 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
+import org.kontalk.Log;
 import org.kontalk.client.PublicKeyPresence;
 import org.kontalk.client.PublicKeyPublish;
 import org.kontalk.crypto.PGP;
@@ -55,6 +55,7 @@ import org.kontalk.util.Preferences;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_PRESENCE;
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_SUBSCRIBED;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FINGERPRINT;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PRIORITY;
@@ -62,11 +63,10 @@ import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_ROSTER_NA
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_SHOW;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_STAMP;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_STATUS;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TYPE;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FINGERPRINT;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_SUBSCRIBED_FROM;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_SUBSCRIBED_TO;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TYPE;
 
 
 /**

@@ -23,8 +23,8 @@ import org.jivesoftware.smack.packet.Stanza;
 import org.jxmpp.util.XmppStringUtils;
 
 import android.content.Intent;
-import android.util.Log;
 
+import org.kontalk.Log;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.PublicKeyPublish;
 import org.kontalk.crypto.PGP;

@@ -26,7 +26,6 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;

@@ -21,7 +21,7 @@ package org.kontalk.service.msgcenter;
 import com.google.android.gms.security.ProviderInstaller;
 
 import android.content.Context;
-import android.util.Log;
+import org.kontalk.Log;
 
 import org.kontalk.Kontalk;
 
