@@ -369,16 +369,16 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
         Preferences.RegistrationProgress saved = null;
         if (mClearState) {
-            Preferences.clearRegistrationProgress(this);
+            Preferences.clearRegistrationProgress();
             mClearState = false;
         }
         else {
             try {
-                saved = Preferences.getRegistrationProgress(this);
+                saved = Preferences.getRegistrationProgress();
             }
             catch (Exception e) {
                 Log.w(TAG, "unable to restore registration progress");
-                Preferences.clearRegistrationProgress(this);
+                Preferences.clearRegistrationProgress();
             }
         }
         if (saved != null) {
@@ -748,7 +748,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     void startImport(ZipInputStream zip, String passphrase) {
         PersonalKeyImporter importer = null;
-        String manualServer = Preferences.getServerURI(this);
+        String manualServer = Preferences.getServerURI();
 
         try {
             importer = new PersonalKeyImporter(zip, passphrase);
@@ -1146,7 +1146,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
         // save state to preferences
         if (saveProgress) {
-            Preferences.saveRegistrationProgress(this,
+            Preferences.saveRegistrationProgress(
                 mName, mPhoneNumber, mKey, mPassphrase,
                 mImportedPublicKey, mImportedPrivateKey,
                 serverUri, sender, challenge, mForce, mTrustedKeys);

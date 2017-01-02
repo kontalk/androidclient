@@ -50,10 +50,10 @@ class PushDiscoverItemsListener extends MessageCenterPacketListener {
                 setPushSenderId(senderId);
 
                 if (isPushNotificationsEnabled()) {
-                    String oldSender = Preferences.getPushSenderId(getContext());
+                    String oldSender = Preferences.getPushSenderId();
 
                     // store the new sender id
-                    Preferences.setPushSenderId(getContext(), senderId);
+                    Preferences.setPushSenderId(senderId);
 
                     // begin a registration cycle if senderId is different
                     if (oldSender != null && !oldSender.equals(senderId)) {

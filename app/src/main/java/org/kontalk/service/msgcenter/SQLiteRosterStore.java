@@ -194,7 +194,7 @@ public class SQLiteRosterStore extends SQLiteOpenHelper implements RosterStore {
 
     @Override
     public String getRosterVersion() {
-        return Preferences.getRosterVersion(mContext);
+        return Preferences.getRosterVersion();
     }
 
     private boolean addEntry(SQLiteDatabase db, RosterPacket.Item item) {

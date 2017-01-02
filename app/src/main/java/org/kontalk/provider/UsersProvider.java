@@ -625,7 +625,7 @@ public class UsersProvider extends ContentProvider {
             " VALUES(?, ?, ?, ?, ?, ?)");
 
         Cursor phones = null;
-        String dialPrefix = Preferences.getDialPrefix(context);
+        String dialPrefix = Preferences.getDialPrefix();
         int dialPrefixLen = dialPrefix != null ? dialPrefix.length() : 0;
 
         try {

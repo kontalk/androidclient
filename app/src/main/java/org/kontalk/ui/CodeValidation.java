@@ -220,7 +220,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 @Override
                 public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
                     // we are going back voluntarily
-                    Preferences.clearRegistrationProgress(CodeValidation.this);
+                    Preferences.clearRegistrationProgress();
                     CodeValidation.super.onBackPressed();
                 }
             })
@@ -335,7 +335,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         }
         else {
             // ending - clear registration progress
-            Preferences.clearRegistrationProgress(this);
+            Preferences.clearRegistrationProgress();
         }
         keepScreenOn(false);
         if (mValidator != null) {

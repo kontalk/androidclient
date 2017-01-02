@@ -1980,7 +1980,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     }
 
     private void offlineModeWarning() {
-        if (Preferences.getOfflineMode(getActivity()) && !mOfflineModeWarned) {
+        if (Preferences.getOfflineMode() && !mOfflineModeWarned) {
             mOfflineModeWarned = true;
             Toast.makeText(getActivity(), R.string.warning_offline_mode,
                 Toast.LENGTH_LONG).show();

@@ -1514,7 +1514,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         broadcast(ACTION_CONNECTED);
 
         // we can now release any pending push notification
-        Preferences.setLastPushNotification(this, -1);
+        Preferences.setLastPushNotification(-1);
 
         // force inactive state if needed
         mIdleHandler.forceInactiveIfNeeded();
@@ -1647,7 +1647,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private Presence createPresence(Presence.Mode mode) {
-        String status = Preferences.getStatusMessage(this);
+        String status = Preferences.getStatusMessage();
         Presence p = new Presence(Presence.Type.available);
         if (!TextUtils.isEmpty(status))
             p.setStatus(status);
@@ -2649,7 +2649,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static boolean isOfflineMode(Context context) {
-        return Preferences.getOfflineMode(context);
+        return Preferences.getOfflineMode();
     }
 
     private static Intent getStartIntent(Context context) {
@@ -2733,7 +2733,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // FIXME this is what sendPresence already does
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(ACTION_PRESENCE);
-        i.putExtra(EXTRA_STATUS, Preferences.getStatusMessage(context));
+        i.putExtra(EXTRA_STATUS, Preferences.getStatusMessage());
         context.startService(i);
     }
 

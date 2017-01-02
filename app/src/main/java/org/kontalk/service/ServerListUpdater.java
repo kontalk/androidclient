@@ -99,7 +99,7 @@ public class ServerListUpdater extends BroadcastReceiver {
         }
 
         // check for offline mode
-        if (Preferences.getOfflineMode(mContext)) {
+        if (Preferences.getOfflineMode()) {
             if (mListener != null)
                 mListener.offlineModeEnabled();
             return;

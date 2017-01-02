@@ -75,7 +75,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             boolean force = extras.getBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, false);
 
             // do not start if offline
-            if (Preferences.getOfflineMode(mContext)) {
+            if (Preferences.getOfflineMode()) {
                 Log.d(TAG, "not requesting sync - offline mode");
                 return;
             }
@@ -87,7 +87,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             }
 
             if (!force) {
-                if (isThrottling(mContext)) {
+                if (isThrottling()) {
                     Log.d(TAG, "not starting sync - throttling");
                     // TEST do not delay - syncResult.delayUntil = (long) diff;
                     return;
@@ -96,7 +96,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
             Log.i(TAG, "sync started (authority=" + authority + ")");
             // avoid other syncs to get scheduled in the meanwhile
-            Preferences.setLastSyncTimestamp(mContext, System.currentTimeMillis());
+            Preferences.setLastSyncTimestamp(System.currentTimeMillis());
 
             ContentProviderClient usersProvider = getContext().getContentResolver()
                 .acquireContentProviderClient(UsersProvider.AUTHORITY);
@@ -118,7 +118,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 // release user provider
                 usersProvider.release();
 
-                Preferences.setLastSyncTimestamp(mContext, System.currentTimeMillis());
+                Preferences.setLastSyncTimestamp(System.currentTimeMillis());
                 // some stats :)
                 long endTime = SystemClock.elapsedRealtime();
                 Log.d(TAG, String.format("sync took %.5f seconds",
@@ -142,13 +142,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
      * @return true if the sync has been actually requested to the system.
      */
     public static boolean requestSync(Context context, boolean force) {
-        if (!force && isThrottling(context)) {
+        if (!force && isThrottling()) {
             Log.d(TAG, "not requesting sync - throttling");
             return false;
         }
 
         // do not start if offline
-        if (Preferences.getOfflineMode(context)) {
+        if (Preferences.getOfflineMode()) {
             Log.d(TAG, "not requesting sync - offline mode");
             return false;
         }
@@ -163,8 +163,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         return true;
     }
 
-    public static boolean isThrottling(Context context) {
-        long lastSync = Preferences.getLastSyncTimestamp(context);
+    public static boolean isThrottling() {
+        long lastSync = Preferences.getLastSyncTimestamp();
         float diff = (System.currentTimeMillis() - lastSync) / 1000;
         return (lastSync >= 0 && diff < MAX_SYNC_DELAY);
     }

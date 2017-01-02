@@ -75,7 +75,7 @@ public class ContactsListActivity extends ToolbarActivity
         if (!getIntent().getBooleanExtra("picker", false))
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        if (!Preferences.getContactsListVisited(this))
+        if (!Preferences.getContactsListVisited())
             Toast.makeText(this, R.string.msg_do_refresh,
                     Toast.LENGTH_LONG).show();
     }

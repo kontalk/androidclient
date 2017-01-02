@@ -234,7 +234,7 @@ public class Kontalk extends Application {
 
     private void xmppUpgrade() {
         // delete custom server
-        Preferences.setServerURI(this, null);
+        Preferences.setServerURI(null);
         // delete cached server list
         ServerListUpdater.deleteCachedList(this);
     }

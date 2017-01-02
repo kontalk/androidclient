@@ -123,10 +123,10 @@ public class NetworkStateReceiver extends BroadcastReceiver {
         // check if some activity is holding to the message center
         // or there is a pending push notification
         if (((Kontalk) context.getApplicationContext()).hasReference() ||
-                Preferences.getLastPushNotification(context) < 0)
+                Preferences.getLastPushNotification() < 0)
             return true;
 
-        long lastConnect = Preferences.getLastConnection(context);
+        long lastConnect = Preferences.getLastConnection();
 
         // no last connection registered
         if (lastConnect < 0)

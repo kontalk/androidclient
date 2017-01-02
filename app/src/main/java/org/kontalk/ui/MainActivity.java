@@ -73,7 +73,7 @@ public abstract class MainActivity extends ToolbarActivity {
 
     // http://stackoverflow.com/a/35220476/1045199
     private boolean ifHuaweiAlert() {
-        boolean skipMessage = Preferences.isSkipHuaweiProtectedApps(this);
+        boolean skipMessage = Preferences.isSkipHuaweiProtectedApps();
         if (!skipMessage) {
             Intent intent = new Intent();
             intent.setClassName("com.huawei.systemmanager", "com.huawei.systemmanager.optimize.process.ProtectActivity");
