@@ -554,6 +554,9 @@
     <string name="create_group_disclaimer">Please remember that every member in the group must know each other in order to chat.</string>
     <string name="check_dont_show_again">Do not show again</string>
 
+    <string name="pref_debug_log">Enable debug log</string>
+    <string name="pref_send_debug_log">Send debug log</string>
+
     <!-- contact name, group subject -->
     <string name="notification_group_title">%1$s @ %2$s</string>
 

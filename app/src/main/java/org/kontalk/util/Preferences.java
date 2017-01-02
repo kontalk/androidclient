@@ -559,6 +559,11 @@ public final class Preferences {
             .getResources().getBoolean(R.bool.pref_default_reporting));
     }
 
+    public static boolean isDebugLogEnabled(Context context) {
+        return getBoolean("pref_debug_log", context
+            .getResources().getBoolean(R.bool.pref_default_debug_log));
+    }
+
     public static long getPingAlarmInterval(Context context, long defaultValue) {
         String networkType = SystemUtils.getCurrentNetworkName(context);
         return (networkType != null) ?
