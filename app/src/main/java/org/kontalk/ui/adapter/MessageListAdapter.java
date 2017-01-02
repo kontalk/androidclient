@@ -20,23 +20,23 @@ package org.kontalk.ui.adapter;
 
 import java.util.regex.Pattern;
 
-import org.kontalk.R;
-import org.kontalk.message.CompositeMessage;
-import org.kontalk.message.GroupCommandComponent;
-import org.kontalk.ui.view.AudioPlayerControl;
-import org.kontalk.ui.ComposeMessage;
-import org.kontalk.ui.view.MessageListItem;
-import org.kontalk.util.MessageUtils;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.support.v4.widget.CursorAdapter;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView.RecyclerListener;
 import android.widget.ListView;
+
+import org.kontalk.Log;
+import org.kontalk.R;
+import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.GroupCommandComponent;
+import org.kontalk.ui.ComposeMessage;
+import org.kontalk.ui.view.AudioPlayerControl;
+import org.kontalk.ui.view.MessageListItem;
+import org.kontalk.util.MessageUtils;
 
 
 public class MessageListAdapter extends CursorAdapter {

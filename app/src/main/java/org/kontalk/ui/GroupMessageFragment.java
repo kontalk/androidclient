@@ -37,7 +37,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -46,6 +45,7 @@ import android.widget.Toast;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.KontalkGroupManager;
@@ -307,7 +307,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     @Override
     protected void onArgumentsProcessed() {
         if (getArguments().getBoolean(ComposeMessage.EXTRA_CREATING_GROUP) &&
-                Preferences.getGroupChatCreateDisclaimer(getContext())) {
+                Preferences.getGroupChatCreateDisclaimer()) {
             new MaterialDialog.Builder(getContext())
                 .content(R.string.create_group_disclaimer)
                 .checkBoxPromptRes(R.string.check_dont_show_again, false, null)
@@ -316,7 +316,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
                     @Override
                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                         if (dialog.isPromptCheckBoxChecked()) {
-                            Preferences.setGroupChatCreateDisclaimer(getContext());
+                            Preferences.setGroupChatCreateDisclaimer();
                         }
                     }
                 })

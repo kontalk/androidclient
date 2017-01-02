@@ -31,7 +31,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import org.kontalk.Log;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
@@ -95,7 +95,7 @@ public class GcmIntentService extends IntentService {
                     if (ACTION_CHECK_MESSAGES.equals(dataAction)) {
                         // remember we just received a push notifications
                         // this means that there are really messages waiting for us
-                        Preferences.setLastPushNotification(this,
+                        Preferences.setLastPushNotification(
                             System.currentTimeMillis());
 
                         // test message center connection

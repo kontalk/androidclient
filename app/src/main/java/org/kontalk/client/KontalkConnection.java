@@ -44,10 +44,10 @@ import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 
 import android.annotation.SuppressLint;
-import android.util.Log;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
+import org.kontalk.Log;
 import org.kontalk.authenticator.LegacyAuthentication;
 
 

@@ -26,8 +26,8 @@ import java.util.Map;
 import com.android.providers.contacts.ContactLocaleUtils;
 import com.android.providers.contacts.FastScrollingIndexCache;
 
-import android.annotation.TargetApi;
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -49,10 +49,10 @@ import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.RawContacts;
 import android.support.annotation.NonNull;
 import android.support.v4.database.DatabaseUtilsCompat;
-import android.util.Log;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
+import org.kontalk.Log;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.crypto.PersonalKey;
@@ -625,7 +625,7 @@ public class UsersProvider extends ContentProvider {
             " VALUES(?, ?, ?, ?, ?, ?)");
 
         Cursor phones = null;
-        String dialPrefix = Preferences.getDialPrefix(context);
+        String dialPrefix = Preferences.getDialPrefix();
         int dialPrefixLen = dialPrefix != null ? dialPrefix.length() : 0;
 
         try {

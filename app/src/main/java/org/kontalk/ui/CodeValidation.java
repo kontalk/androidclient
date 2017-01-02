@@ -18,6 +18,10 @@
 
 package org.kontalk.ui;
 
+import java.net.SocketException;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
@@ -25,7 +29,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
@@ -36,6 +39,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
@@ -45,10 +49,6 @@ import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
-
-import java.net.SocketException;
-import java.util.HashMap;
-import java.util.Map;
 
 
 /** Manual validation code input. */
@@ -220,7 +220,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 @Override
                 public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
                     // we are going back voluntarily
-                    Preferences.clearRegistrationProgress(CodeValidation.this);
+                    Preferences.clearRegistrationProgress();
                     CodeValidation.super.onBackPressed();
                 }
             })
@@ -335,7 +335,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         }
         else {
             // ending - clear registration progress
-            Preferences.clearRegistrationProgress(this);
+            Preferences.clearRegistrationProgress();
         }
         keepScreenOn(false);
         if (mValidator != null) {

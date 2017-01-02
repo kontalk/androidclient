@@ -18,6 +18,13 @@
 
 package org.kontalk.ui.prefs;
 
+import java.io.FileNotFoundException;
+import java.io.OutputStream;
+
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.afollestad.materialdialogs.folderselector.FolderChooserDialog;
+
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.app.Activity;
@@ -30,14 +37,10 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.support.annotation.NonNull;
 import android.text.InputType;
-import android.util.Log;
 import android.widget.Toast;
 
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
-import com.afollestad.materialdialogs.folderselector.FolderChooserDialog;
-
 import org.kontalk.Kontalk;
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PersonalKey;
@@ -48,9 +51,6 @@ import org.kontalk.ui.LockedDialog;
 import org.kontalk.ui.PasswordInputDialog;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
-
-import java.io.FileNotFoundException;
-import java.io.OutputStream;
 
 
 /**

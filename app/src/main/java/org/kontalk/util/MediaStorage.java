@@ -45,10 +45,10 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.media.ExifInterface;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.webkit.MimeTypeMap;
 
 import org.kontalk.Kontalk;
+import org.kontalk.Log;
 
 
 /**

@@ -27,8 +27,7 @@ import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.disco.packet.DiscoverItems;
 
-import android.util.Log;
-
+import org.kontalk.Log;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.HTTPFileUpload;
 import org.kontalk.client.PushRegistration;

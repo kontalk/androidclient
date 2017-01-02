@@ -18,31 +18,31 @@
 
 package org.kontalk.ui.view;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.util.AttributeSet;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.TextView;
-
-import org.kontalk.R;
-import org.kontalk.message.CompositeMessage;
-import org.kontalk.message.ImageComponent;
-import org.kontalk.ui.ComposeMessage;
-import org.kontalk.util.MediaStorage;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.regex.Pattern;
+
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.util.AttributeSet;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import org.kontalk.Log;
+import org.kontalk.R;
+import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.ImageComponent;
+import org.kontalk.ui.ComposeMessage;
+import org.kontalk.util.MediaStorage;
 
 
 /**

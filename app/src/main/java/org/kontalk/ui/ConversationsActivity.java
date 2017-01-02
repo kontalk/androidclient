@@ -500,8 +500,8 @@ public class ConversationsActivity extends MainActivity
 
             case R.id.menu_offline:
                 final Context ctx = this;
-                final boolean currentMode = Preferences.getOfflineMode(ctx);
-                if (!currentMode && !Preferences.getOfflineModeUsed(ctx)) {
+                final boolean currentMode = Preferences.getOfflineMode();
+                if (!currentMode && !Preferences.getOfflineModeUsed()) {
                     // show offline mode warning
                     new MaterialDialog.Builder(ctx)
                         .content(R.string.message_offline_mode_warning)
@@ -509,7 +509,7 @@ public class ConversationsActivity extends MainActivity
                         .onPositive(new MaterialDialog.SingleButtonCallback() {
                             @Override
                             public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                Preferences.setOfflineModeUsed(ctx);
+                                Preferences.setOfflineModeUsed();
                                 switchOfflineMode();
                             }
                         })
@@ -571,7 +571,7 @@ public class ConversationsActivity extends MainActivity
     /** Updates offline mode menu. */
     private void updateOffline() {
         if (mOfflineMenu != null) {
-            boolean offlineMode = Preferences.getOfflineMode(this);
+            boolean offlineMode = Preferences.getOfflineMode();
             // set menu
             int icon = (offlineMode) ? R.drawable.ic_menu_online :
                 R.drawable.ic_menu_offline;
@@ -584,7 +584,7 @@ public class ConversationsActivity extends MainActivity
     }
 
     void switchOfflineMode() {
-        boolean currentMode = Preferences.getOfflineMode(this);
+        boolean currentMode = Preferences.getOfflineMode();
         Preferences.switchOfflineMode(this);
         updateOffline();
         // notify the user about the change

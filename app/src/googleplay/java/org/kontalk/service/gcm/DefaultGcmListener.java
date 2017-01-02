@@ -23,7 +23,7 @@ import org.kontalk.service.msgcenter.IPushListener;
 import org.kontalk.service.msgcenter.MessageCenterService;
 
 import android.content.Context;
-import android.util.Log;
+import org.kontalk.Log;
 
 
 /**

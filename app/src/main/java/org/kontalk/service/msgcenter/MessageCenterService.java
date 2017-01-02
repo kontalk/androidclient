@@ -21,6 +21,8 @@ package org.kontalk.service.msgcenter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -44,6 +46,9 @@ import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.debugger.AbstractDebugger;
+import org.jivesoftware.smack.debugger.SmackDebugger;
+import org.jivesoftware.smack.debugger.SmackDebuggerFactory;
 import org.jivesoftware.smack.filter.StanzaFilter;
 import org.jivesoftware.smack.filter.StanzaIdFilter;
 import org.jivesoftware.smack.filter.StanzaTypeFilter;
@@ -96,11 +101,11 @@ import android.os.Process;
 import android.os.SystemClock;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
-import android.util.Log;
 import android.widget.Toast;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.authenticator.LegacyAuthentication;
@@ -161,6 +166,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     static {
         SmackConfiguration.DEBUG = BuildConfig.DEBUG;
+        // we need our own debugger factory because of our internal logging system
+        SmackConfiguration.setDebuggerFactory(new SmackDebuggerFactory() {
+            @Override
+            public SmackDebugger create(XMPPConnection connection, Writer writer, Reader reader) throws IllegalArgumentException {
+                return new AbstractDebugger(connection, writer, reader) {
+                    @Override
+                    protected void log(String logMessage) {
+                        Log.d("SMACK", logMessage);
+                    }
+                };
+            }
+        });
     }
 
     public static final String ACTION_HOLD = "org.kontalk.action.HOLD";
@@ -1514,7 +1531,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         broadcast(ACTION_CONNECTED);
 
         // we can now release any pending push notification
-        Preferences.setLastPushNotification(this, -1);
+        Preferences.setLastPushNotification(-1);
 
         // force inactive state if needed
         mIdleHandler.forceInactiveIfNeeded();
@@ -1647,7 +1664,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private Presence createPresence(Presence.Mode mode) {
-        String status = Preferences.getStatusMessage(this);
+        String status = Preferences.getStatusMessage();
         Presence p = new Presence(Presence.Type.available);
         if (!TextUtils.isEmpty(status))
             p.setStatus(status);
@@ -2649,7 +2666,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static boolean isOfflineMode(Context context) {
-        return Preferences.getOfflineMode(context);
+        return Preferences.getOfflineMode();
     }
 
     private static Intent getStartIntent(Context context) {
@@ -2733,7 +2750,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // FIXME this is what sendPresence already does
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(ACTION_PRESENCE);
-        i.putExtra(EXTRA_STATUS, Preferences.getStatusMessage(context));
+        i.putExtra(EXTRA_STATUS, Preferences.getStatusMessage());
         context.startService(i);
     }
 

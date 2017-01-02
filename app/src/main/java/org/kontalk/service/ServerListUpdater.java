@@ -35,8 +35,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
@@ -99,7 +99,7 @@ public class ServerListUpdater extends BroadcastReceiver {
         }
 
         // check for offline mode
-        if (Preferences.getOfflineMode(mContext)) {
+        if (Preferences.getOfflineMode()) {
             if (mListener != null)
                 mListener.offlineModeEnabled();
             return;

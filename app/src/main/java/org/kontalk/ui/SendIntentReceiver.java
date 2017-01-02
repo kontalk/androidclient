@@ -23,9 +23,9 @@ import java.util.ArrayList;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.util.Log;
 import android.widget.Toast;
 
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.message.TextComponent;

@@ -18,18 +18,18 @@
 
 package org.kontalk.ui.adapter;
 
-import org.kontalk.R;
-import org.kontalk.data.SearchItem;
-import org.kontalk.ui.SearchActivity;
-import org.kontalk.ui.view.SearchListItem;
-
 import android.content.Context;
 import android.database.Cursor;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
+
+import org.kontalk.Log;
+import org.kontalk.R;
+import org.kontalk.data.SearchItem;
+import org.kontalk.ui.SearchActivity;
+import org.kontalk.ui.view.SearchListItem;
 
 
 public class SearchListAdapter extends CursorAdapter {

@@ -37,7 +37,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGP;
@@ -105,6 +104,47 @@ public class Kontalk extends Application {
     /** Messages controller singleton instance. */
     private MessagesController mMessagesController;
 
+    private final SharedPreferences.OnSharedPreferenceChangeListener mPrefListener =
+        new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+                // debug log
+                if ("pref_debug_log".equals(key)) {
+                    Log.init(Kontalk.this);
+                }
+                // reporting opt-in
+                else if ("pref_reporting".equals(key)) {
+                    if (Preferences.isReportingEnabled(Kontalk.this)) {
+                        ReportingManager.register(Kontalk.this);
+                    }
+                    else {
+                        ReportingManager.unregister(Kontalk.this);
+                    }
+                }
+                // actions requiring an account
+                else if (Authenticator.getDefaultAccount(Kontalk.this) != null) {
+                    // manual server address
+                    if ("pref_network_uri".equals(key)) {
+                        // temporary measure for users coming from old betas
+                        // this is triggered because manual server address is cleared
+                        if (Authenticator.getDefaultServer(Kontalk.this) != null) {
+                            // just restart the message center for now
+                            Log.w(TAG, "network address changed");
+                            MessageCenterService.restart(Kontalk.this);
+                        }
+                    }
+                    // hide presence flag / encrypt user data flag
+                    else if ("pref_hide_presence".equals(key) || "pref_encrypt_userdata".equals(key)) {
+                        MessageCenterService.updateStatus(Kontalk.this);
+                    }
+                    // changing remove prefix
+                    else if ("pref_remove_prefix".equals(key)) {
+                        SyncAdapter.requestSync(Kontalk.this, true);
+                    }
+                }
+            }
+        };
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -114,6 +154,10 @@ public class Kontalk extends Application {
         // because we need access to the reporting opt-in preference.
         // However this call will not be reported if it crashes
         Preferences.init(this);
+
+        // init logging system
+        // done after preferences because we need to access debug log preference
+        Log.init(this);
 
         // register reporting manager
         if (Preferences.isReportingEnabled(this))
@@ -136,47 +180,7 @@ public class Kontalk extends Application {
         MessagingNotification.init(this);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        final SharedPreferences.OnSharedPreferenceChangeListener prefListener =
-            new SharedPreferences.OnSharedPreferenceChangeListener() {
-            @Override
-            public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-                // no account - abort
-                if (Authenticator.getDefaultAccount(Kontalk.this) == null)
-                    return;
-
-                // manual server address
-                if ("pref_network_uri".equals(key)) {
-                    // temporary measure for users coming from old betas
-                    // this is triggered because manual server address is cleared
-                    if (Authenticator.getDefaultServer(Kontalk.this) != null) {
-                        // just restart the message center for now
-                        Log.w(TAG, "network address changed");
-                        MessageCenterService.restart(Kontalk.this);
-                    }
-                }
-
-                // hide presence flag / encrypt user data flag
-                else if ("pref_hide_presence".equals(key) || "pref_encrypt_userdata".equals(key)) {
-                    MessageCenterService.updateStatus(Kontalk.this);
-                }
-
-                // changing remove prefix
-                else if ("pref_remove_prefix".equals(key)) {
-                    SyncAdapter.requestSync(Kontalk.this, true);
-                }
-
-                // reporting opt-in
-                else if ("pref_reporting".equals(key)) {
-                    if (Preferences.isReportingEnabled(Kontalk.this)) {
-                        ReportingManager.register(Kontalk.this);
-                    }
-                    else {
-                        ReportingManager.unregister(Kontalk.this);
-                    }
-                }
-            }
-        };
-        prefs.registerOnSharedPreferenceChangeListener(prefListener);
+        prefs.registerOnSharedPreferenceChangeListener(mPrefListener);
 
         // TODO listen for changes to phone numbers
 
@@ -234,7 +238,7 @@ public class Kontalk extends Application {
 
     private void xmppUpgrade() {
         // delete custom server
-        Preferences.setServerURI(this, null);
+        Preferences.setServerURI(null);
         // delete cached server list
         ServerListUpdater.deleteCachedList(this);
     }

@@ -37,7 +37,7 @@ public abstract class BasePreferencesActivity extends ToolbarActivity
     // used only for notification LED color for now
     @Override
     public void onColorSelection(@NonNull ColorChooserDialog dialog, @ColorInt int selectedColor) {
-        Preferences.setNotificationLEDColor(this, selectedColor);
+        Preferences.setNotificationLEDColor(selectedColor);
     }
 
 }

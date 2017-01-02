@@ -125,7 +125,7 @@ public class NotificationFragment extends RootPreferenceFragment {
                 Context ctx = getActivity();
                 if (ctx != null) {
                     Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
-                    Preferences.setRingtone(ctx, uri != null ? uri.toString() : "");
+                    Preferences.setRingtone(uri != null ? uri.toString() : "");
                 }
             }
         }
