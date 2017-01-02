@@ -572,4 +572,7 @@ Wenn sie deaktiviert sind kann das Kontalk Verbindungsverhalten in den Netzwerke
     <string name="create_group_disclaimer">Bitte beachten: Die Mitglieder der Gruppe müssen einander bekannt sein um zu chatten.</string>
     <string name="check_dont_show_again">Nicht noch einmal zeigen</string>
 
+    <string name="pref_debug_log">Debugprotokollierung aktivieren</string>
+    <string name="pref_send_debug_log">Fehlerbericht senden</string>
+
     </resources>
