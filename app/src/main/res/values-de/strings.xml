@@ -573,6 +573,6 @@ Wenn sie deaktiviert sind kann das Kontalk Verbindungsverhalten in den Netzwerke
     <string name="check_dont_show_again">Nicht noch einmal zeigen</string>
 
     <string name="pref_debug_log">Debugprotokollierung aktivieren</string>
-    <string name="pref_send_debug_log">Fehlerbericht senden</string>
+    <string name="pref_send_debug_log">Logdatei senden</string>
 
     </resources>
