@@ -518,6 +518,12 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             Context context = getContext();
             if (context != null) {
                 // all of this shall be done only if there isn't a request from the other contact
+                // FIXME when accepting an invitation, the if below could be
+                // false because of delay or no reloading of mConversation at all
+                // thus skipping the presence request.
+                // An automatic solution could be to emit a ROSTER_LOADED whenever the roster changes
+                // still this _if_ should go away in favour of the message center checking for subscription status
+                // and the UI reacting to a pending request status (i.e. "pending_in")
                 if (mConversation.getRequestStatus() != Threads.REQUEST_WAITING) {
                     // request last presence
                     MessageCenterService.requestPresence(context, mUserJID);
