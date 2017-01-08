@@ -134,7 +134,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         // TODO these two interfaces should be handled by an inner class
         AudioDialog.AudioDialogListener, AudioPlayerControl,
         MultiChoiceModeListener {
-    private static final String TAG = ComposeMessage.TAG;
+    static final String TAG = ComposeMessage.TAG;
 
     private static final int MESSAGE_LIST_QUERY_TOKEN = 8720;
     private static final int CONVERSATION_QUERY_TOKEN = 8721;
@@ -182,7 +182,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     private MenuItem mDeleteThreadMenu;
 
     /** The thread id. */
-    private long threadId = -1;
+    long threadId = -1;
     protected Conversation mConversation;
     protected String mUserName;
 
@@ -327,7 +327,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     private final MessageListAdapter.OnContentChangedListener mContentChangedListener = new MessageListAdapter.OnContentChangedListener() {
         public void onContentChanged(MessageListAdapter adapter) {
             if (isVisible())
-                startQuery(false);
+                startQuery();
         }
     };
 
@@ -664,7 +664,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 threadId = MessagesProviderUtils.getThreadByMessage(getContext(), newMsg);
                 if (threadId > 0) {
                     // we can run it here because progress=false
-                    startQuery(false);
+                    startQuery();
                 }
                 else {
                     Log.v(TAG, "no data - cannot start query for this composer");
@@ -711,8 +711,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 if (threadId <= 0) {
                     threadId = MessagesProviderUtils.getThreadByMessage(context, newMsg);
                     if (threadId > 0) {
-                        // we can run it here because progress=false
-                        startQuery(false);
+                        startQuery();
                     }
                     else {
                         Log.v(TAG, "no data - cannot start query for this composer");
@@ -1091,7 +1090,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 (Messages.CONTENT_URI, msg.getDatabaseId()));
     }
 
-    private void scrollToPosition(int position) {
+    void scrollToPosition(int position) {
         getListView().setSelection(position);
     }
 
@@ -1100,16 +1099,13 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         return args != null && args.getLong(ComposeMessage.EXTRA_MESSAGE, -1) >= 0;
     }
 
-    protected synchronized void startQuery(boolean progress) {
-        if (progress)
-            getActivity().setProgressBarIndeterminateVisibility(true);
-
+    protected synchronized void startQuery() {
         Conversation.startQuery(mQueryHandler,
                 CONVERSATION_QUERY_TOKEN, threadId);
         // message list query will be started by query handler
     }
 
-    private void startMessagesQuery() {
+    void startMessagesQuery() {
         CompositeMessage.startQuery(mQueryHandler, MESSAGE_LIST_QUERY_TOKEN,
             threadId, isSearching() ? 0 : MESSAGE_PAGE_SIZE, 0);
     }
@@ -1436,7 +1432,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 : null;
     }
 
-    private void processStart(boolean resuming) {
+    void processStart() {
         ComposeMessage activity = getParentActivity();
         // opening for contact picker - do nothing
         if (threadId < 0 && activity != null
@@ -1462,12 +1458,9 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
         if (threadId > 0) {
             // always reload conversation
-            startQuery(resuming);
+            startQuery();
         }
         else {
-            // HACK this is for crappy honeycomb :)
-            getActivity().setProgressBarIndeterminateVisibility(false);
-
             mConversation = Conversation.createNew(getActivity());
             mConversation.setRecipient(getUserId());
             onConversationCreated();
@@ -1479,14 +1472,16 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         // restore any draft
         mComposer.restoreText(mConversation.getDraft());
 
-        if (mConversation.getThreadId() > 0 && mConversation.getUnreadCount() > 0) {
-            /*
-             * FIXME this has the usual issue about resuming while screen is
-             * still locked, having focus and so on...
-             * See issue #28.
-             */
-            Log.v(TAG, "marking thread as read");
-            mConversation.markAsRead();
+        if (mConversation.getThreadId() > 0) {
+            if (mConversation.getUnreadCount() > 0) {
+                /*
+                 * FIXME this has the usual issue about resuming while screen is
+                 * still locked, having focus and so on...
+                 * See issue #28.
+                 */
+                Log.v(TAG, "marking thread as read");
+                mConversation.markAsRead();
+            }
         }
         else {
             // new conversation -- observe peer Uri
@@ -1707,7 +1702,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         }
     }
 
-    private synchronized void unregisterPeerObserver() {
+    synchronized void unregisterPeerObserver() {
         if (mPeerObserver != null) {
             Context context = mPeerObserver.mContext;
             context.getContentResolver().unregisterContentObserver(mPeerObserver);
@@ -1716,9 +1711,9 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     }
 
     private final class PeerObserver extends ContentObserver {
-        private final Context mContext;
+        final Context mContext;
 
-        public PeerObserver(Context context, Handler handler) {
+        PeerObserver(Context context, Handler handler) {
             super(handler);
             mContext = context;
         }
@@ -1737,7 +1732,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
             // fire cursor update
             Log.v(TAG, "peer observer active");
-            processStart(false);
+            processStart();
         }
 
         @Override
@@ -1761,11 +1756,11 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
         ComposeMessage activity = getParentActivity();
         if (activity == null || !activity.hasLostFocus() || activity.hasWindowFocus()) {
-            onFocus(true);
+            onFocus();
         }
     }
 
-    public void onFocus(boolean resuming) {
+    public void onFocus() {
         // resume content watcher
         resumeContentListener();
 
@@ -1776,7 +1771,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         setActivityStatusUpdating();
 
         // cursor was previously destroyed -- reload everything
-        processStart(resuming);
+        processStart();
     }
 
     @Override
@@ -1910,11 +1905,11 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         return (activity == null || activity.isFinishing()) || isRemoving();
     }
 
-    private void showHeaderView() {
+    void showHeaderView() {
         mHeaderView.setVisibility(View.VISIBLE);
     }
 
-    private void hideHeaderView() {
+    void hideHeaderView() {
         mHeaderView.setVisibility(View.GONE);
     }
 
@@ -2207,7 +2202,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         private boolean mCancel;
         private long mLastId;
 
-        public MessageListQueryHandler(AbstractComposeFragment parent) {
+        MessageListQueryHandler(AbstractComposeFragment parent) {
             super(parent.getActivity().getApplicationContext().getContentResolver());
             mParent = new WeakReference<>(parent);
         }
@@ -2299,7 +2294,6 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                         if (newSelectionPos < 0 && cursor.getCount() >= MESSAGE_PAGE_SIZE)
                             parent.showHeaderView();
 
-                        parent.getActivity().setProgressBarIndeterminateVisibility(false);
                         parent.updateUI();
                     }
 
@@ -2329,7 +2323,6 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                         if (newSelectionPos >= 0)
                             parent.getListView().setSelection(newSelectionPos);
 
-                        parent.getActivity().setProgressBarIndeterminateVisibility(false);
                         parent.updateUI();
                     }
                     else {

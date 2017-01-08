@@ -1565,7 +1565,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         broadcast(action, null, null);
     }
 
-    private void broadcast(String action, String extraName, String extraValue) {
+    void broadcast(String action, String extraName, String extraValue) {
         if (mLocalBroadcastManager != null) {
             Intent i = new Intent(action);
             if (extraName != null)

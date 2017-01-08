@@ -632,7 +632,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                     else if (MessageCenterService.ACTION_SUBSCRIBED.equals(intent.getAction())) {
                         // reload contact
                         invalidateContact();
-                        // subscription accepted, probe presence
+                        // request presence
                         requestPresence();
                     }
                 }
@@ -716,6 +716,9 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
 
         Context ctx = getActivity();
 
+        // temporarly disable peer observer because the next call will write to the threads table
+        unregisterPeerObserver();
+
         // mark request as pending accepted
         UsersProvider.setRequestStatus(ctx, mUserJID, status);
 
@@ -731,6 +734,19 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         invalidateContact();
         // send command to message center
         MessageCenterService.replySubscription(ctx, mUserJID, action);
+        // reload manually
+        mConversation = Conversation.loadFromUserId(ctx, mUserJID);
+        if (mConversation == null) {
+            // threads was deleted (it was a request thread)
+            threadId = 0;
+        }
+        processStart();
+        if (threadId == 0) {
+            // no thread means no peer observer will be invoked
+            // we need to manually trigger this
+            MessageCenterService.requestConnectionStatus(ctx);
+            MessageCenterService.requestRosterStatus(ctx);
+        }
     }
 
     void invalidateContact() {
@@ -997,8 +1013,8 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         }
     }
 
-    public void onFocus(boolean resuming) {
-        super.onFocus(resuming);
+    public void onFocus() {
+        super.onFocus();
 
         if (mUserJID != null) {
             // clear chat invitation (if any)

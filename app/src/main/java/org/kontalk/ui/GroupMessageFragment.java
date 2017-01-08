@@ -207,7 +207,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
                         mConversation.leaveGroup();
                         // reload conversation
                         if (isVisible())
-                            startQuery(false);
+                            startQuery();
                     }
                 }
             })

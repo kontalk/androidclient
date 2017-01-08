@@ -499,7 +499,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
 
         if (hasFocus && mResumed) {
             if (mLostFocus) {
-                mFragment.onFocus(true);
+                mFragment.onFocus();
                 mLostFocus = false;
             }
         }
