@@ -834,7 +834,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     private void setEncryption(boolean encryption) {
         if (mConversation != null)
-            mConversation.setEncryption(encryption);
+            mConversation.setEncryptionEnabled(encryption);
     }
 
     @Override

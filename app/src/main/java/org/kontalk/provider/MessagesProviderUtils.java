@@ -207,8 +207,10 @@ public class MessagesProviderUtils {
             }
             cThread.close();
         }
+
+        int count = c.getCount();
         c.close();
-        return c.getCount();
+        return count;
     }
 
     /** Marks all pending messages as SENDING. */

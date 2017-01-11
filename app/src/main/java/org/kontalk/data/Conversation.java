@@ -357,7 +357,7 @@ public class Conversation {
     }
 
     private static void deleteInternal(Context context, long threadId, String groupJid,
-                                       String[] groupPeers, String groupType, boolean leaveGroup, boolean encrypted) {
+            String[] groupPeers, String groupType, boolean leaveGroup, boolean encrypted) {
         // it makes sense to leave a group if we have someone to tell about it
         boolean groupChat = groupJid != null;
         boolean actuallySend = groupChat &&
@@ -393,6 +393,7 @@ public class Conversation {
     }
 
     public void setSticky(boolean sticky) {
+        mSticky = sticky;
         MessagesProviderUtils.setThreadSticky(mContext, mThreadId, sticky);
     }
 
@@ -506,9 +507,9 @@ public class Conversation {
         }
     }
 
-    public void setEncryption(boolean encryption) {
-        mEncryption = encryption;
-        MessagesProviderUtils.setEncryption(mContext, mThreadId, encryption);
+    public void setEncryptionEnabled(boolean encryptionEnabled) {
+        mEncryption = encryptionEnabled;
+        MessagesProviderUtils.setEncryption(mContext, mThreadId, encryptionEnabled);
     }
 
     public void markAsRead() {
