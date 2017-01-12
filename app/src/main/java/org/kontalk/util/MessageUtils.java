@@ -721,4 +721,8 @@ public final class MessageUtils {
         }
     }
 
+    public static boolean sendEncrypted(Context context, boolean chatEncryptionEnabled) {
+        return Preferences.getEncryptionEnabled(context) && chatEncryptionEnabled;
+    }
+
 }

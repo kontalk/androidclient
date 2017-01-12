@@ -65,7 +65,7 @@ public class MessagesController {
     }
 
     public Uri sendTextMessage(Conversation conv, String text) {
-        boolean encrypted = Preferences.getEncryptionEnabled(mContext);
+        boolean encrypted = MessageUtils.sendEncrypted(mContext, conv.isEncryptionEnabled());
 
         String msgId = MessageUtils.messageId();
         String userId = conv.isGroupChat() ? conv.getGroupJid() : conv.getRecipient();
@@ -96,7 +96,7 @@ public class MessagesController {
         Class<? extends MessageComponent<?>> klass) throws IOException {
         String msgId = MessageCenterService.messageId();
 
-        boolean encrypted = Preferences.getEncryptionEnabled(mContext);
+        boolean encrypted = MessageUtils.sendEncrypted(mContext, conv.isEncryptionEnabled());
         int compress = 0;
         if (klass == ImageComponent.class) {
             compress = Preferences.getImageCompression(mContext);
