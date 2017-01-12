@@ -799,6 +799,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                         mComposer.getText().toString());
 
                     // store create group command to outbox
+                    // NOTE: group chats can currently only be created with chat encryption enabled
                     boolean encrypted = Preferences.getEncryptionEnabled(getContext());
                     String msgId = MessageCenterService.messageId();
                     Uri cmdMsg = KontalkGroupCommands.createGroup(getContext(),
