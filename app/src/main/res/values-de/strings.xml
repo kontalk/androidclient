@@ -577,9 +577,8 @@ Wenn sie deaktiviert sind kann das Kontalk Verbindungsverhalten in den Netzwerke
 
     <string name="menu_encryption">Verschlüsselung</string>
     <string name="title_disable_encryption">Verschlüsselung für diesen Chat deaktivieren?</string>
-    <string name="msg_disable_encryption">"Alle neuen Nachrichten in diesem Chat werden UNVERSCHLÜSSELT gesendet.
-Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen Schlüssel hat.
- "</string>
+    <string name="msg_disable_encryption">Alle neuen Nachrichten in diesem Chat werden UNVERSCHLÜSSELT gesendet.
+Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen Schlüssel hat.</string>
     <string name="menu_disable_encryption">Deaktivieren</string>
 
     </resources>
