@@ -590,4 +590,7 @@ Se desabilitada, você pode fazer ajustes finos no funcionamento da conexão do 
     <string name="create_group_disclaimer">Por favor, lembre-se de que todas as pessoas do grupo devem conhecer-se umas às outras para poderem conversar.</string>
     <string name="check_dont_show_again">Não exibir novamente</string>
 
+    <string name="pref_debug_log">Habilitar o relatório de depuração</string>
+    <string name="pref_send_debug_log">Enviar o relatório de depuração</string>
+
     </resources>

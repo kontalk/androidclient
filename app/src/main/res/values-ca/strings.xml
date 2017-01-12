@@ -568,4 +568,7 @@ Quan estan desactivades, el comportament de connexió de Kontalk es pot ajustar 
     <string name="create_group_disclaimer">Recordeu que, per poder xatejar, els membres del grup s\'han de conèixer entre ells.</string>
     <string name="check_dont_show_again">No torneu a mostrar</string>
 
+    <string name="pref_debug_log">Habilita el registre d\'errors</string>
+    <string name="pref_send_debug_log">Envia el registre d\'errors</string>
+
     </resources>

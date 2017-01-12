@@ -65,7 +65,7 @@
   <string name="new_messages">Новые сообщения</string>
   <string name="only_one_account_supported">Поддерживается только один аккаунт Kontalk.</string>
   <string name="hint_enter_text">Введите текст сообщения</string>
-  <string name="hint_type_to_compose">Печатайте текст</string>
+  <string name="hint_type_to_compose">Напечатайте текст</string>
   <string name="hint_open_kbd_to_compose">Выведите клавиатуру для написания сообщения</string>
   <string name="view_image">Просмотреть изображение</string>
   <string name="title_message_options">Опции сообщения</string>
@@ -196,7 +196,7 @@
   <string name="attachment_download">Загрузка вложения</string>
   <string name="attachment_upload">Отправка вложения</string>
   <string name="seen_moment_ago_label">только что</string>
-  <string name="seen_online_label">онлайн</string>
+  <string name="seen_online_label">активность</string>
   <string name="seen_typing_label">набирает…</string>
   <string name="invitation_sent_label">ожидающее приглашение</string>
   <string name="pref_custom_background">Другой фон</string>
@@ -419,7 +419,7 @@
     <string name="err_keypair_export_write">Не удалось записать личный ключ во внешнее хранилище.</string>
     <string name="err_keypair_export_other">Не удалось экспортировать личный ключ.</string>
 
-    <string name="warning_public_key_changed">Личный ключ пользователя неожиданно изменился!</string>
+    <string name="warning_public_key_changed">Личный ключ изменился</string>
     <string name="button_load_next_page">Загрузить больше сообщений</string>
 
     <string name="menu_create_group">Создать группу</string>
@@ -443,9 +443,9 @@
     <string name="warning_button_details">ДЕТАЛИ</string>
     <string name="title_public_key_changed_warning">Персональный ключ изменён</string>
     <string name="msg_public_key_changed_warning">Пожалуйста подтвердите, что это пользователь, который переустановил Контолк или создал новый ключ для себя специально, иначе дальнейшая связь с этим контактом может быть прочитана хакерами!</string>
-    <string name="warning_public_key_unknown">Персональный ключ пользователя является недоверенным!</string>
-    <string name="title_public_key_unknown_warning">Недоверенный персональный ключ</string>
-    <string name="msg_public_key_unknown_warning">Пожалуйста подтвердите, что это пользователь, отпечаток которого соответствует тому, что отражено в его диалоге <b>Личность</b>, иначе беседа с пользователем может быть прочитана хакерами!</string>
+    <string name="warning_public_key_unknown">Ключ пользователя пока что не опознан</string>
+    <string name="title_public_key_unknown_warning">Проверите персональный ключ</string>
+    <string name="msg_public_key_unknown_warning">Пожалуйста подтвердите, что отпечаток пользователя соответствует тому, который отражен в его диалоге <b>Личность</b>, иначе разговор может быть прочитан не только вашим собеседником!</string>
     <string name="warning_public_key_group_unverified">Личности некоторых участников группы не были подтверждены.</string>
 
     <string name="group_untitled">Группа без названия</string>
@@ -471,13 +471,13 @@
     <string name="group_info_menu_remove">Удалить</string>
 
     <string name="title_ignore_all_identities">Проигнорировать все личности?</string>
-    <string name="msg_ignore_all_identities">Все не подтвеждённые личности попадут в Ваш список игнорирования.</string>
+    <string name="msg_ignore_all_identities">Все не подтверждённые личности попадут в Ваш список игнорирования.</string>
     <string name="learn_more">Узнать больше</string>
 
     <string name="text_group_command_fallback">Это групповое сообщение беседы. Вы используете старую версию Контолка или Ваш клиент не поддерживает протокол групповой беседы. Пожалуйста обновитесь до последней версии!</string>
 
-    <string name="title_huawei_protected_apps">Приложения, Защищённые Huawei</string>
-    <string name="msg_huawei_protected_apps">Контолк требует, чтобы он был включён в список Защищённых Приложений, чтобы функционировать правильно.</string>
+    <string name="title_huawei_protected_apps">Приложения, защищённые Huawei</string>
+    <string name="msg_huawei_protected_apps">Контaлк требует, чтобы он был включён в список Защищённых Приложений, чтобы функционировать правильно.</string>
     <string name="btn_huawei_protected_apps">Защищённые Приложения</string>
     <string name="check_do_not_show_again">Не показывать снова</string>
 
@@ -513,7 +513,10 @@
     <string name="button_private_chat">Приватная беседа</string>
 
     <plurals name="confirm_will_delete_threads">
-        <item quantity="other">Выбранные беседы будут удалены.</item>
-    </plurals>
+	<item quantity="one">Выбраннй чат будет удалена.</item>
+	<item quantity="few">Выбранные чаты будут удалены.</item>
+	<item quantity="many">Выбранные чаты будут удалены.</item>
+	<item quantity="other"/>
+</plurals>
 
 </resources>

@@ -431,8 +431,8 @@
     <string name="pref_show_blocked_users">Прикажи блокиране кориснике</string>
     <string name="button_load_next_page">Учитај још порука</string>
 
-    <string name="warning_public_key_unknown">Лични кључ овог корисника је непоуздан!</string>
-    <string name="title_public_key_unknown_warning">Непоуздан лични кључ</string>
+    <string name="warning_public_key_unknown">Лични кључ још није потврђен</string>
+    <string name="title_public_key_unknown_warning">Потврди лични кључ</string>
     <string name="text_search_results_empty">Нема порука.</string>
     <string name="chooser_error_no_gallery_app">Нема апликације за галерију.</string>
 
@@ -568,4 +568,18 @@
 <string name="menu_sticky">Омиљено</string>
     <string name="delete_threads_leave_any_groups">Такође напусти групе</string>
 
+    <string name="menu_encryption">Шифровање</string>
+    <string name="pref_balloons_groups">Тема балончића групног ћаскања</string>
+
+    <string name="chooser_error_no_dialer">Нема апликације за позивање или телефонија не постоји на овом уређају.</string>
+    <string name="title_disable_encryption">Искључити шифровање за ово ћаскање?</string>
+    <string name="menu_disable_encryption">Искључи</string>
+
+    <string name="check_dont_show_again">Не приказуј поново</string>
+
+    <string name="pref_debug_log">Укључи извештаје за исправљање грешака</string>
+    <string name="pref_send_debug_log">Пошаљи извештај за исправљање грешака</string>
+
+    <string name="err_authentication_failed_callerid">"Провера није успела. Покушајте да позовете број  поново и сачекајте мало дуже."</string>
+    <string name="button_validation_fallback_callerid">Покушајте на други начин</string>
     </resources>

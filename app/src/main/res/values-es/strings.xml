@@ -570,4 +570,7 @@ Cuando están deshabilitadas, el comportamiento de la conexión de Kontalk puede
     <string name="create_group_disclaimer">Recuerde que, para poder chatear, los miembros del grupo deben conocerse entre sí.</string>
     <string name="check_dont_show_again">No mostrar de nuevo</string>
 
+    <string name="pref_debug_log">Habilitar el registro de errores</string>
+    <string name="pref_send_debug_log">Enviar el registro de errores</string>
+
     </resources>
