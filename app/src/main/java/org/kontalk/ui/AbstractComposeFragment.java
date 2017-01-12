@@ -180,6 +180,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     private View mNextPageButton;
     private TextView mStatusText;
     private MenuItem mDeleteThreadMenu;
+    private MenuItem mToggleEncryptionMenu;
 
     /** The thread id. */
     long threadId = -1;
@@ -760,6 +761,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         onInflateOptionsMenu(menu, inflater);
         mDeleteThreadMenu = menu.findItem(R.id.delete_thread);
+        mToggleEncryptionMenu = menu.findItem(R.id.toggle_encryption);
         updateUI();
     }
 
@@ -782,9 +784,41 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             case R.id.invite_group:
                 addUsers();
                 return true;
+
+            case R.id.toggle_encryption:
+                toggleEncryption();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void toggleEncryption() {
+        if (mConversation.isEncryptionEnabled()) {
+            new MaterialDialog.Builder(getActivity())
+                .title(R.string.title_disable_encryption)
+                .content(R.string.msg_disable_encryption)
+                .positiveText(R.string.menu_disable_encryption)
+                .positiveColorRes(R.color.button_danger)
+                .negativeText(android.R.string.cancel)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
+                        setEncryption(false);
+                        updateUI();
+                    }
+                })
+                .show();
+        }
+        else {
+            setEncryption(true);
+            updateUI();
+        }
+    }
+
+    void setEncryption(boolean encryption) {
+        if (mConversation != null)
+            mConversation.setEncryptionEnabled(encryption);
     }
 
     @Override
@@ -1087,7 +1121,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     private void retryMessage(CompositeMessage msg) {
         MessageCenterService.retryMessage(getContext(), ContentUris.withAppendedId
-                (Messages.CONTENT_URI, msg.getDatabaseId()));
+                (Messages.CONTENT_URI, msg.getDatabaseId()), mConversation.isEncryptionEnabled());
     }
 
     void scrollToPosition(int position) {
@@ -1922,6 +1956,23 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
         if (mDeleteThreadMenu != null) {
             mDeleteThreadMenu.setEnabled(threadEnabled);
+        }
+
+        if (mToggleEncryptionMenu != null) {
+            Context context = getActivity();
+            if (mConversation != null && Preferences.getEncryptionEnabled(context)) {
+                boolean encryption = mConversation.isEncryptionEnabled();
+                mToggleEncryptionMenu
+                    .setVisible(true)
+                    .setEnabled(true)
+                    .setChecked(encryption);
+            }
+            else {
+                mToggleEncryptionMenu
+                    .setVisible(false)
+                    .setEnabled(false)
+                    .setChecked(false);
+            }
         }
     }
 

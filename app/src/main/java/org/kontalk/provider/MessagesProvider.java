@@ -103,7 +103,7 @@ public class MessagesProvider extends ContentProvider {
     private static HashMap<String, String> groupsProjectionMap;
 
     private static class DatabaseHelper extends SQLiteOpenHelper {
-        private static final int DATABASE_VERSION = 11;
+        private static final int DATABASE_VERSION = 12;
         private static final String DATABASE_NAME = "messages.db";
 
         private static final String _SCHEMA_MESSAGES = "(" +
@@ -170,7 +170,8 @@ public class MessagesProvider extends ContentProvider {
             "encrypted INTEGER NOT NULL DEFAULT 0, " +
             "draft TEXT," +
             "request_status INTEGER NOT NULL DEFAULT 0," +
-            "sticky INTEGER NOT NULL DEFAULT 0" +
+            "sticky INTEGER NOT NULL DEFAULT 0," +
+            "encryption INTEGER NOT NULL DEFAULT 1" +
             ")";
 
         /** This table will contain the latest message from each conversation. */
@@ -365,6 +366,9 @@ public class MessagesProvider extends ContentProvider {
             "ALTER TABLE threads ADD COLUMN sticky INTEGER NOT NULL DEFAULT 0",
         };
 
+        private static final String SCHEMA_UPGRADE_V11 =
+            "ALTER TABLE " + TABLE_THREADS + " ADD COLUMN encryption INTEGER NOT NULL DEFAULT 1";
+
         private Context mContext;
 
         protected DatabaseHelper(Context context) {
@@ -436,6 +440,12 @@ public class MessagesProvider extends ContentProvider {
                 for (String sql : SCHEMA_UPGRADE_V10) {
                     db.execSQL(sql);
                 }
+                // fallback to next upgrade
+                oldVersion = 11;
+            }
+
+            if (oldVersion == 11) {
+                db.execSQL(SCHEMA_UPGRADE_V11);
             }
         }
     }
@@ -631,6 +641,7 @@ public class MessagesProvider extends ContentProvider {
             values.remove(Groups.GROUP_JID);
             values.remove(Groups.SUBJECT);
             values.remove(Groups.GROUP_TYPE);
+            values.remove(Threads.ENCRYPTION);
 
             // insert the new message now!
             long rowId = db.insertOrThrow(TABLE_MESSAGES, null, values);
@@ -808,6 +819,8 @@ public class MessagesProvider extends ContentProvider {
 
         values.put(Threads.PEER, peer);
         values.put(Threads.TIMESTAMP, initialValues.getAsLong(Messages.TIMESTAMP));
+        if (initialValues.containsKey(Threads.ENCRYPTION))
+            values.put(Threads.ENCRYPTION, initialValues.getAsBoolean(Threads.ENCRYPTION));
 
         if (requestOnly) {
 
@@ -1701,6 +1714,7 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Threads.DRAFT, Threads.DRAFT);
         threadsProjectionMap.put(Threads.REQUEST_STATUS, Threads.REQUEST_STATUS);
         threadsProjectionMap.put(Threads.STICKY, Threads.STICKY);
+        threadsProjectionMap.put(Threads.ENCRYPTION, Threads.ENCRYPTION);
         threadsProjectionMap.put(Groups.GROUP_JID, Groups.GROUP_JID);
         threadsProjectionMap.put(Groups.SUBJECT, Groups.SUBJECT);
         threadsProjectionMap.put(Groups.GROUP_TYPE, Groups.GROUP_TYPE);
