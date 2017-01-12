@@ -180,8 +180,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     private View mNextPageButton;
     private TextView mStatusText;
     private MenuItem mDeleteThreadMenu;
-    private MenuItem mEnableEncryptionMenu;
-    private MenuItem mDisableEncryptionMenu;
+    private MenuItem mToggleEncryptionMenu;
 
     /** The thread id. */
     long threadId = -1;
@@ -762,8 +761,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         onInflateOptionsMenu(menu, inflater);
         mDeleteThreadMenu = menu.findItem(R.id.delete_thread);
-        mEnableEncryptionMenu = menu.findItem(R.id.enable_encryption);
-        mDisableEncryptionMenu = menu.findItem(R.id.disable_encryption);
+        mToggleEncryptionMenu = menu.findItem(R.id.toggle_encryption);
         updateUI();
     }
 
@@ -787,36 +785,17 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 addUsers();
                 return true;
 
-            case R.id.enable_encryption:
-                enableEncryption();
-                return true;
-
-            case R.id.disable_encryption:
-                disableEncryption();
+            case R.id.toggle_encryption:
+                toggleEncryption();
                 return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private void enableEncryption() {
-        new MaterialDialog.Builder(getActivity())
-                .title(R.string.title_enable_encryption)
-                .content(R.string.msg_enable_encryption)
-                .positiveText(R.string.menu_enable_encryption)
-                .negativeText(android.R.string.cancel)
-                .onPositive(new MaterialDialog.SingleButtonCallback() {
-                    @Override
-                    public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
-                        setEncryption(true);
-                        updateUI();
-                    }
-                })
-                .show();
-    }
-
-    private void disableEncryption() {
-        new MaterialDialog.Builder(getActivity())
+    private void toggleEncryption() {
+        if (mConversation.isEncryptionEnabled()) {
+            new MaterialDialog.Builder(getActivity())
                 .title(R.string.title_disable_encryption)
                 .content(R.string.msg_disable_encryption)
                 .positiveText(R.string.menu_disable_encryption)
@@ -830,9 +809,14 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                     }
                 })
                 .show();
+        }
+        else {
+            setEncryption(true);
+            updateUI();
+        }
     }
 
-    private void setEncryption(boolean encryption) {
+    void setEncryption(boolean encryption) {
         if (mConversation != null)
             mConversation.setEncryptionEnabled(encryption);
     }
@@ -1974,16 +1958,20 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             mDeleteThreadMenu.setEnabled(threadEnabled);
         }
 
-        if (mEnableEncryptionMenu != null && mDisableEncryptionMenu != null) {
+        if (mToggleEncryptionMenu != null) {
             Context context = getActivity();
             if (mConversation != null && Preferences.getEncryptionEnabled(context)) {
                 boolean encryption = mConversation.isEncryptionEnabled();
-                mEnableEncryptionMenu.setVisible(!encryption).setEnabled(!encryption);
-                mDisableEncryptionMenu.setVisible(encryption).setEnabled(encryption);
+                mToggleEncryptionMenu
+                    .setVisible(true)
+                    .setEnabled(true)
+                    .setChecked(encryption);
             }
             else {
-                mEnableEncryptionMenu.setVisible(false).setEnabled(false);
-                mDisableEncryptionMenu.setVisible(false).setEnabled(false);
+                mToggleEncryptionMenu
+                    .setVisible(false)
+                    .setEnabled(false)
+                    .setChecked(false);
             }
         }
     }

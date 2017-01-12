@@ -394,7 +394,8 @@ public class Conversation {
 
     public void setSticky(boolean sticky) {
         mSticky = sticky;
-        MessagesProviderUtils.setThreadSticky(mContext, mThreadId, sticky);
+        if (mThreadId > 0)
+            MessagesProviderUtils.setThreadSticky(mContext, mThreadId, sticky);
     }
 
     private void loadGroupPeers(boolean force) {
@@ -509,7 +510,8 @@ public class Conversation {
 
     public void setEncryptionEnabled(boolean encryptionEnabled) {
         mEncryption = encryptionEnabled;
-        MessagesProviderUtils.setEncryption(mContext, mThreadId, encryptionEnabled);
+        if (mThreadId > 0)
+            MessagesProviderUtils.setEncryption(mContext, mThreadId, encryptionEnabled);
     }
 
     public void markAsRead() {

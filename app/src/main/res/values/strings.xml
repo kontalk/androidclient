@@ -225,8 +225,7 @@
     <string name="menu_leave_group">Leave group</string>
     <string name="menu_block_user">Block</string>
     <string name="menu_unblock_user">Unblock</string>
-    <string name="enable_encryption">Enable encryption</string>
-    <string name="disable_encryption">Disable encryption</string>
+    <string name="menu_encryption">Encryption</string>
     <string name="vcard_message">vCard message</string>
     <string name="open_file">Open file</string>
     <string name="open_audio">Play audio file</string>
@@ -435,12 +434,9 @@
     <string name="title_unblock_user_warning">Really unblock this user?</string>
     <string name="msg_unblock_user_warning">You\'re about to unblock this user. Unblocking will allow him/her to send messages to you and see your status and last known presence.</string>
 
-    <string name="title_enable_encryption">Enable encryption for this chat?</string>
-    <string name="msg_enable_encryption">All new messages sent in this chat will be encrypted</string>
-    <string name="menu_enable_encryption">Enable</string>
     <string name="title_disable_encryption">Disable encryption for this chat?</string>
     <string name="msg_disable_encryption">All new messages sent in this chat will NOT be encrypted.
-        Disable encryption only if the receiver does not have a personal key.
+        Disable encryption only if your contact does not have a personal key.
     </string>
     <string name="menu_disable_encryption">Disable</string>
 

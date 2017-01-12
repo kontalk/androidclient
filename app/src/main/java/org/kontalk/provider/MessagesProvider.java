@@ -440,8 +440,11 @@ public class MessagesProvider extends ContentProvider {
                 for (String sql : SCHEMA_UPGRADE_V10) {
                     db.execSQL(sql);
                 }
+                // fallback to next upgrade
+                oldVersion = 11;
             }
-            if (oldVersion < 11) {
+
+            if (oldVersion == 11) {
                 db.execSQL(SCHEMA_UPGRADE_V11);
             }
         }
@@ -638,6 +641,7 @@ public class MessagesProvider extends ContentProvider {
             values.remove(Groups.GROUP_JID);
             values.remove(Groups.SUBJECT);
             values.remove(Groups.GROUP_TYPE);
+            values.remove(Threads.ENCRYPTION);
 
             // insert the new message now!
             long rowId = db.insertOrThrow(TABLE_MESSAGES, null, values);
@@ -815,6 +819,8 @@ public class MessagesProvider extends ContentProvider {
 
         values.put(Threads.PEER, peer);
         values.put(Threads.TIMESTAMP, initialValues.getAsLong(Messages.TIMESTAMP));
+        if (initialValues.containsKey(Threads.ENCRYPTION))
+            values.put(Threads.ENCRYPTION, initialValues.getAsBoolean(Threads.ENCRYPTION));
 
         if (requestOnly) {
 
