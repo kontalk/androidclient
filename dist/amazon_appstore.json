@@ -3,5 +3,5 @@
     "recent_changes": " ",
     "short_description": "Kontalk is a secure instant messenger, allowing you to send and receive text, image and voice messages to and from other Kontalk users completely free of charge - Your phone number is your ID. No usernames or passwords - It automatically finds other Kontalk users by looking at your address book - End-to-end encryption ensures safe and private conversations - Your and all phone numbers used on the network are irreversibly encrypted - Supports multiple devices - Based on open standards - Open Source community project hosted on GitHub (https://github.com/kontalk). The network relies on community donations to keep the infrastructure running, please donate on http://kontalk.net/. Even small donations matter.",
     "feature_bullets": "• Securely send text, photos and audio messages to your contacts\n• Use your phone number to identify and look up other contacts on the network\n• Uses end-to-end encryption and solid communication standards (XMPP)\n• Completely open source project, hosted on GitHub",
-    "title": "Kontalk lynmeldingsklient"
+    "title": "Kontalk Messenger"
 }
