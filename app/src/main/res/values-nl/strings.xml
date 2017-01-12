@@ -577,9 +577,8 @@ Indien uitgeschakeld kan het netwerkgedrag van Kontalk in netwerkinstellingen in
 
     <string name="menu_encryption">Versleuteling</string>
     <string name="title_disable_encryption">Schakel versleuteling uit voor dit gesprek?</string>
-    <string name="msg_disable_encryption">"Alle nieuwe berichten in dit gesprek zullen NIET versleuteld worden.
- Schakel versleuteling enkel uit als dit contact geen persoonlijke sleutel heeft.
- "</string>
+    <string name="msg_disable_encryption">Alle nieuwe berichten in dit gesprek zullen NIET versleuteld worden.
+Schakel versleuteling enkel uit als dit contact geen persoonlijke sleutel heeft.</string>
     <string name="menu_disable_encryption">Schakel uit</string>
 
     </resources>
