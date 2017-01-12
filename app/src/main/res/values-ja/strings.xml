@@ -563,4 +563,11 @@ http://kontalk.org/</string>
     <string name="pref_debug_log">デバッグログを有効にする</string>
     <string name="pref_send_debug_log">デバッグログを送信</string>
 
+    <string name="menu_encryption">暗号化</string>
+    <string name="title_disable_encryption">このチャットで暗号化を無効にしますか?</string>
+    <string name="msg_disable_encryption">"このチャットで送信される新しいメッセージはすべて暗号化されません。
+ 連絡先に秘密鍵がない場合のみ、暗号化を無効にしてください。
+ "</string>
+    <string name="menu_disable_encryption">無効</string>
+
     </resources>
