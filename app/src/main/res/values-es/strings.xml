@@ -577,9 +577,8 @@ Cuando están deshabilitadas, el comportamiento de la conexión de Kontalk puede
 
     <string name="menu_encryption">Cifrado</string>
     <string name="title_disable_encryption">¿Deshabilitar el cifrado para este chat?</string>
-    <string name="msg_disable_encryption">"Desde este momento los mensajes enviados a este chat NO se cifrarán.
-Deshabilite el cifrado sólo si su contacto no tiene una clave personal.
- "</string>
+    <string name="msg_disable_encryption">Desde este momento los mensajes enviados a este chat NO se cifrarán.
+Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string>
     <string name="menu_disable_encryption">Deshabilitar</string>
 
     </resources>
