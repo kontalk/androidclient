@@ -584,9 +584,8 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
 
     <string name="menu_encryption">Šifrování</string>
     <string name="title_disable_encryption">Vypnout šifrování pro tuto konverzaci?</string>
-    <string name="msg_disable_encryption">"Všechny nové zprávy zaslané v této konverzaci NEBUDOU šifrované.
- Šifrování vypínejte pouze v případě, pokud váš kontakt nemá osobní klíč.
- "</string>
+    <string name="msg_disable_encryption">Všechny nové zprávy zaslané v této konverzaci NEBUDOU šifrované.
+Šifrování vypínejte pouze v případě, pokud váš kontakt nemá osobní klíč.</string>
     <string name="menu_disable_encryption">Vypnout</string>
 
     </resources>
