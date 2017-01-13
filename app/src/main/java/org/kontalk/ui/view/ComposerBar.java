@@ -212,6 +212,8 @@ public class ComposerBar extends RelativeLayout implements
                 if (Preferences.getEmojiConverter(mContext)) {
                     mTextEntry.removeTextChangedListener(this);
                     MessageUtils.convertSmileys(s);
+                    InputMethodManager imm = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.restartInput(mTextEntry);
                     mTextEntry.addTextChangedListener(this);
                 }
             }
