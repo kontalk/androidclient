@@ -88,11 +88,30 @@ public final class MessageUtils {
     private static Map<String, String> sEmojiConverterMap = new HashMap<>();
 
     static {
+        //http://apps.timwhitlock.info/emoji/tables/unicode
+        //http://unicode.org/emoji/charts/full-emoji-list.html
+        //use this to get UTF-16 from UTF-32: http://www.fileformat.info/info/unicode/char/search.htm
+        //you have to use UTF-16 here!
         sEmojiConverterMap.put(":)", "\uD83D\uDE42");
         sEmojiConverterMap.put(":-)", "\uD83D\uDE42");
         sEmojiConverterMap.put(":(", "\uD83D\uDE41");
         sEmojiConverterMap.put(":-(", "\uD83D\uDE41");
         sEmojiConverterMap.put(":'(", "\uD83D\uDE22");
+        sEmojiConverterMap.put("<3", "\u0000\u2764");
+        sEmojiConverterMap.put(";-)", "\uD83D\uDE09");
+        sEmojiConverterMap.put(";)", "\uD83D\uDE09");
+        sEmojiConverterMap.put(":p", "\uD83D\uDE1B");
+        sEmojiConverterMap.put(":P", "\uD83D\uDE1B");
+        sEmojiConverterMap.put(":b", "\uD83D\uDE1B");
+        sEmojiConverterMap.put(";p", "\uD83D\uDE1C");
+        sEmojiConverterMap.put(";P", "\uD83D\uDE1C");
+        sEmojiConverterMap.put(";b", "\uD83D\uDE1C");
+        sEmojiConverterMap.put("xp", "\uD83D\uDE1D");
+        sEmojiConverterMap.put("xP", "\uD83D\uDE1D");
+        sEmojiConverterMap.put("xb", "\uD83D\uDE1D");
+        sEmojiConverterMap.put("Xp", "\uD83D\uDE1D");
+        sEmojiConverterMap.put("XP", "\uD83D\uDE1D");
+        sEmojiConverterMap.put("Xb", "\uD83D\uDE1D");
     }
 
     public static final int MILLISECONDS_IN_DAY = 86400000;
