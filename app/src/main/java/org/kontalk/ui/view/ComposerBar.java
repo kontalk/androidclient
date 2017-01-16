@@ -211,9 +211,10 @@ public class ComposerBar extends RelativeLayout implements
                 //FIXME may doesn't work yet because of issues with Emojicon
                 if (Preferences.getEmojiConverter(mContext)) {
                     mTextEntry.removeTextChangedListener(this);
-                    MessageUtils.convertSmileys(s);
-                    InputMethodManager imm = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.restartInput(mTextEntry);
+                    if (MessageUtils.convertSmileys(s)) {
+                        InputMethodManager imm = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.restartInput(mTextEntry);
+                    }
                     mTextEntry.addTextChangedListener(this);
                 }
             }

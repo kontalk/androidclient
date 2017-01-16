@@ -727,17 +727,22 @@ public final class MessageUtils {
         return text;
     }
 
-    public static void convertSmileys(Editable input) {
+    public static boolean convertSmileys(Editable input) {
         for (String key : sEmojiConverterMap.keySet()) {
-            replaceEditable(input, key, sEmojiConverterMap.get(key));
+            if (replaceEditable(input, key, sEmojiConverterMap.get(key))){
+                return true;
+            }
         }
+        return false;
     }
 
-    private static void replaceEditable(Editable text, String in, String out) {
+    private static boolean replaceEditable(Editable text, String in, String out) {
         int position = text.toString().indexOf(in);
         if (position >= 0) {
             text.replace(position, position + in.length(), out);
+            return true;
         }
+        return false;
     }
 
     public static boolean sendEncrypted(Context context, boolean chatEncryptionEnabled) {
