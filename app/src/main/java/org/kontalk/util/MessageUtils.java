@@ -728,12 +728,16 @@ public final class MessageUtils {
     }
 
     public static boolean convertSmileys(Editable input) {
+        int i = 0;
         for (String key : sEmojiConverterMap.keySet()) {
             if (replaceEditable(input, key, sEmojiConverterMap.get(key))){
-                return true;
+                i++;
             }
         }
-        return false;
+        if (i>0){
+            return true;
+        }
+        else return false;
     }
 
     private static boolean replaceEditable(Editable text, String in, String out) {
