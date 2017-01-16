@@ -737,12 +737,15 @@ public final class MessageUtils {
     }
 
     private static boolean replaceEditable(Editable text, String in, String out) {
-        int position = text.toString().indexOf(in);
-        if (position >= 0) {
+        int i = 0;
+        for (int position = text.toString().indexOf(in); position >= 0; position = text.toString().indexOf(in)){
             text.replace(position, position + in.length(), out);
+            i++;
+        }
+        if (i>0){
             return true;
         }
-        return false;
+        else return false;
     }
 
     public static boolean sendEncrypted(Context context, boolean chatEncryptionEnabled) {
