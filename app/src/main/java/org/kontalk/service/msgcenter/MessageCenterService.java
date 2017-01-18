@@ -211,6 +211,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_ROSTER_LOADED = "org.kontalk.action.ROSTER_LOADED";
 
     /**
+     * Send this intent to request roster status of any user.
+     * Broadcasted back in reply to requests.
+     */
+    public static final String ACTION_ROSTER_STATUS = "org.kontalk.action.ROSTER_STATUS";
+
+    /**
      * Broadcasted when a presence stanza is received.
      * Send this intent to broadcast presence.
      * Send this intent with type="probe" to request a presence in the roster.
@@ -734,6 +740,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         AndroidAdaptiveServerPingManager.onDestroy();
         // destroy roster store
         mRosterStore.onDestroy();
+        mRosterStore = null;
         // unregister screen off listener for manual inactivation
         unregisterInactivity();
 
@@ -921,6 +928,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 case ACTION_ROSTER_LOADED:
                     doConnect = handleRosterLoaded();
+                    break;
+
+                case ACTION_ROSTER_STATUS:
+                    doConnect = handleRosterStatus(intent);
                     break;
 
                 case ACTION_PRESENCE:
@@ -1168,6 +1179,34 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private boolean handleRosterLoaded() {
         if (isConnected() && isRosterLoaded())
             broadcast(ACTION_ROSTER_LOADED);
+        return false;
+    }
+
+    @CommandHandler(name = ACTION_ROSTER_STATUS)
+    private boolean handleRosterStatus(Intent intent) {
+        if (mRosterStore != null) {
+            final String to = intent.getStringExtra(EXTRA_TO);
+
+            RosterPacket.Item entry = mRosterStore.getEntry(to);
+            if (entry != null) {
+                final String id = intent.getStringExtra(EXTRA_PACKET_ID);
+
+                Intent i = new Intent(ACTION_ROSTER_STATUS);
+                i.putExtra(EXTRA_FROM, to);
+                i.putExtra(EXTRA_ROSTER_NAME, entry.getName());
+
+                RosterPacket.ItemType subscriptionType = entry.getItemType();
+                i.putExtra(EXTRA_SUBSCRIBED_FROM, subscriptionType == RosterPacket.ItemType.both ||
+                    subscriptionType == RosterPacket.ItemType.from);
+                i.putExtra(EXTRA_SUBSCRIBED_TO, subscriptionType == RosterPacket.ItemType.both ||
+                    subscriptionType == RosterPacket.ItemType.to);
+
+                // to keep track of request-reply
+                i.putExtra(EXTRA_PACKET_ID, id);
+
+                mLocalBroadcastManager.sendBroadcast(i);
+            }
+        }
         return false;
     }
 
@@ -3024,6 +3063,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static void requestRosterStatus(final Context context) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_ROSTER_LOADED);
+        context.startService(i);
+    }
+
+    public static void requestRosterEntryStatus(final Context context, String to) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_ROSTER_STATUS);
+        i.putExtra(MessageCenterService.EXTRA_TO, to);
         context.startService(i);
     }
 
