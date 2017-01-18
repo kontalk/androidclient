@@ -6,9 +6,6 @@
     <!-- Since some languages are not fully translated... -->
     <issue id="MissingTranslation" severity="warning" />
 
-    <!-- TODO This should go away one day -->
-    <issue id="MissingQuantity" severity="warning" />
-
     <!-- Hardcoded text is a serious matter -->
     <issue id="HardcodedText" severity="error" />
 </lint>

@@ -435,8 +435,7 @@
     <string name="msg_unblock_user_warning">You\'re about to unblock this user. Unblocking will allow him/her to send messages to you and see your status and last known presence.</string>
 
     <string name="title_disable_encryption">Disable encryption for this chat?</string>
-    <string name="msg_disable_encryption">All new messages sent in this chat will NOT be encrypted.
-        Disable encryption only if your contact does not have a personal key.
+    <string name="msg_disable_encryption">All new messages sent in this chat will NOT be encrypted.\nDisable encryption only if your contact does not have a personal key.
     </string>
     <string name="menu_disable_encryption">Disable</string>
 
