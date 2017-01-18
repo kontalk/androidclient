@@ -577,7 +577,8 @@ Se disattivate, il comportamento delle connessioni di Kontalk può essere config
 
     <string name="menu_encryption">Cifratura</string>
     <string name="title_disable_encryption">Disattivare cifratura per questa chat?</string>
-    <string name="msg_disable_encryption">"I messaggi che invierai NON saranno cifrati.
-Disattiva la cifratura solo con contatti che non posseggono una chiave personale.
- "</string>
+    <string name="msg_disable_encryption">I messaggi che invierai NON saranno cifrati.
+Disattiva la cifratura solo con contatti che non posseggono una chiave personale.</string>
+    <string name="menu_disable_encryption">Disattiva</string>
+
     </resources>
