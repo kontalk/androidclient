@@ -577,6 +577,7 @@
 
     <!-- "one" is not actually used -->
     <plurals name="unread_messages">
+        <item quantity="one">1 unread message</item>
         <item quantity="other">%d unread messages</item>
     </plurals>
 

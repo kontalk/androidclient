@@ -252,6 +252,7 @@
   <string name="button_accept">Aceitar</string>
   <string name="button_block">Bloquear</string>
   <plurals name="unread_messages">
+    <item quantity="one">%d mensagens não lidas</item>
     <item quantity="other">%d mensagens não lidas</item>
   </plurals>
 </resources>

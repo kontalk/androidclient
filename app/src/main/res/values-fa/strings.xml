@@ -15,7 +15,7 @@
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="app_name">کانتاک</string>
 <string name="app_description">شبکهٔ پیام‌رسانی آنی جامعه‌محور</string>
     <string name="service_name">مرکز پیام</string>
@@ -371,6 +371,7 @@
     <string name="msg_iab_thankyou_warning">چیزی اشتباه شد، ولی اعانه پرداخت شد. ممنون!</string>
 
     <plurals name="unread_messages">
+        <item quantity="one">%d پیام خوانده نشده</item>
         <item quantity="other">%d پیام خوانده نشده</item>
     </plurals>
 <string name="menu_create_group">ساخت گروه</string>
@@ -378,10 +379,12 @@
     <string name="pref_push_notifications_disabled">غیرفعال</string>
 
     <plurals name="confirm_will_delete_threads">
+        <item quantity="one" tools:ignore="ImpliedQuantity">گفت‌وگوی گزیده حذف خواهد شد.</item>
         <item quantity="other">گفت‌وگوی گزیده حذف خواهد شد.</item>
     </plurals>
 
     <plurals name="delete_threads_leave_groups">
+        <item quantity="one" tools:ignore="ImpliedQuantity">همچنین از گروه ها خارج شو</item>
         <item quantity="other">همچنین از گروه ها خارج شو</item>
     </plurals>
 

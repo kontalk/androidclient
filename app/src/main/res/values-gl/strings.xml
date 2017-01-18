@@ -524,8 +524,9 @@
     </plurals>
 
     <plurals name="unread_messages">
-	<item quantity="other">%d mensaxes non lidas</item>
-</plurals>
+        <item quantity="one">%d mensaxes non lidas</item>
+	    <item quantity="other">%d mensaxes non lidas</item>
+    </plurals>
 <string name="delete_thread_messages">Eliminar o historial da conversa</string>
     <string name="pref_balloon_label_silence">Silencio</string>
     <string name="title_passphrase_request">Contraseña clave persoal</string>
@@ -539,8 +540,9 @@
     <string name="group_info_menu_remove">Quitar</string>
 
     <plurals name="unread_messages_group">
-	<item quantity="other">%1$d mensaxes @ %2$s</item>
-</plurals>
+        <item quantity="one">%1$d mensaxes @ %2$s</item>
+	    <item quantity="other">%1$d mensaxes @ %2$s</item>
+    </plurals>
 
     <string name="code_validation_intro_callerid">Preme o botón de abaixo e faga unha chamada perdida a ese número de teléfono.Teña en conta que &lt;b&gt; 1 a chamada debe facerse desde o número de teléfono que se está a registrar &lt;/ b&gt; 2. A chamada é de balde si colga cando escoite o primeiro timbre. Será suficiente para nós.<b>the call must be initiated from the phone number you are registering</b>. The call is free of charge if you hang up as soon as you hear the first ring. It will be enough for us.</string>
     <string name="code_validation_intro2_callerid">Tras colgar a chamada, volva eiquí e delle a continuación ó botón de comprobar.</string>

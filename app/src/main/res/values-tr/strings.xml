@@ -110,10 +110,12 @@
     <string name="warning_user_blocked">Kullanıcı sizin tarafınızdan engellendi.</string>
 
     <plurals name="unread_messages">
+        <item quantity="one">1 okunmamış mesaj</item>
         <item quantity="other">%d okunmamış mesaj</item>
     </plurals>
 
     <plurals name="confirm_will_delete_threads">
+        <item quantity="one">Seçilmiş konuşmalar silinmiş olacak.</item>
         <item quantity="other">Seçilmiş konuşmalar silinmiş olacak.</item>
     </plurals>
 

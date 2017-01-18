@@ -454,17 +454,31 @@
     <string name="button_load_next_page">تحميل رسائل أكثر</string>
 
     <plurals name="context_selected">
-	<item quantity="one">لم يتم أختيار أي شئ</item>
-	<item quantity="other">أختيار خيار واحد</item>
+        <item quantity="one">لم يتم أختيار أي شئ</item>
+        <item quantity="few">أختيار خيار واحد</item>
+        <item quantity="many">أختيار خيار واحد</item>
+        <item quantity="two">أختيار خيار واحد</item>
+        <item quantity="zero">أختيار خيار واحد</item>
+        <item quantity="other">أختيار خيار واحد</item>
     </plurals>
 
     <plurals name="unread_messages">
+        <item quantity="zero">%d رسائل غير مقروءه</item>
+        <item quantity="one">%d رسائل غير مقروءه</item>
+        <item quantity="two">%d رسائل غير مقروءه</item>
+        <item quantity="few">%d رسائل غير مقروءه</item>
+        <item quantity="many">%d رسائل غير مقروءه</item>
         <item quantity="other">%d رسائل غير مقروءه</item>
     </plurals>
 
     <string name="text_search_results_empty">لم يتم العثور على اية رسائل</string>
 
     <plurals name="confirm_will_delete_threads">
+        <item quantity="zero">سيتم الغاء المحادثات المختارة .</item>
+        <item quantity="one">سيتم الغاء المحادثات المختارة .</item>
+        <item quantity="two">سيتم الغاء المحادثات المختارة .</item>
+        <item quantity="few">سيتم الغاء المحادثات المختارة .</item>
+        <item quantity="many">سيتم الغاء المحادثات المختارة .</item>
         <item quantity="other">سيتم الغاء المحادثات المختارة .</item>
     </plurals>
 

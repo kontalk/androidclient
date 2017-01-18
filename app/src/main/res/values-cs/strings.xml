@@ -517,10 +517,14 @@
     <string name="err_invalid_passphrase">Nesprávné heslo. Restartujte aplikaci, abyste mohli vyzkoušet jiné.</string>
 
     <plurals name="unread_messages">
+        <item quantity="one">%d nepřečtených zpráv</item>
+        <item quantity="few">%d nepřečtených zpráv</item>
         <item quantity="other">%d nepřečtených zpráv</item>
     </plurals>
     <plurals name="unread_messages_group">
-	<item quantity="other">%1$d zpráv @ %2$s</item>
+        <item quantity="one">%1$d zpráv @ %2$s</item>
+        <item quantity="few">%1$d zpráv @ %2$s</item>
+	    <item quantity="other">%1$d zpráv @ %2$s</item>
     </plurals>
 
     <string name="delete_thread_messages">Smazat historii konverzace</string>

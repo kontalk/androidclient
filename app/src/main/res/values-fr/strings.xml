@@ -15,7 +15,7 @@
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="app_name">Kontalk</string>
   <string name="app_description">Réseau de messagerie instantanée géré par la communauté</string>
   <string name="service_name">Messagerie</string>
@@ -425,10 +425,12 @@
     <string name="button_load_next_page">Charger plus de messages</string>
 
     <plurals name="unread_messages">
+        <item quantity="one">%d messages non lus</item>
         <item quantity="other">%d messages non lus</item>
     </plurals>
 
     <plurals name="confirm_will_delete_threads">
+      <item quantity="one" tools:ignore="ImpliedQuantity">Les conversations sélectionnés seront supprimés.</item>
       <item quantity="other">Les conversations sélectionnés seront supprimés.</item>
     </plurals>
 

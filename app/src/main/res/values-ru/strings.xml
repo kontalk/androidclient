@@ -15,7 +15,7 @@
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="app_name">Kontalk</string>
   <string name="app_description">Сеть обмена мгновенными сообщениями, управляемая сообществом</string>
   <string name="service_name">Центр сообщений</string>
@@ -504,6 +504,9 @@
 </plurals>
 
     <plurals name="unread_messages">
+        <item quantity="few">%d непрочитанных сообщений</item>
+        <item quantity="many">%d непрочитанных сообщений</item>
+        <item quantity="one">%d непрочитанных сообщений</item>
         <item quantity="other">%d непрочитанных сообщений</item>
     </plurals>
 <string name="menu_group_info">О группе</string>
@@ -513,10 +516,10 @@
     <string name="button_private_chat">Приватная беседа</string>
 
     <plurals name="confirm_will_delete_threads">
-	<item quantity="one">Выбраннй чат будет удалена.</item>
-	<item quantity="few">Выбранные чаты будут удалены.</item>
-	<item quantity="many">Выбранные чаты будут удалены.</item>
-	<item quantity="other"/>
-</plurals>
+        <item quantity="one" tools:ignore="ImpliedQuantity">Выбраннй чат будет удалена.</item>
+        <item quantity="few">Выбранные чаты будут удалены.</item>
+        <item quantity="many">Выбранные чаты будут удалены.</item>
+        <item quantity="other"/>
+    </plurals>
 
 </resources>

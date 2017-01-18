@@ -15,7 +15,7 @@
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="app_name">Контак</string>
   <string name="app_description">Заједницом потпомогнута брзогласничка мрежа</string>
   <string name="service_name">Центар за поруке</string>
@@ -373,9 +373,8 @@
     <plurals name="context_selected">
 	<item quantity="one">%d изабрана</item>
 	<item quantity="few">%d изабране</item>
-	<item quantity="many">%d изабрано</item>
-	<item quantity="other"/>
-</plurals>
+	<item quantity="other">%d изабрано</item>
+    </plurals>
 
 <string name="app_name_offline">Контак (ван везе)</string>
     <string name="code_validation_intro_missed_call">Требало би ускоро да примите пропуштен позив са овог броја. <b>НЕ ЈАВЉАЈТЕ СЕ НА ПОЗИВ.</b></string>
@@ -463,9 +462,8 @@
     <plurals name="group_people">
 	<item quantity="one">%d особа</item>
 	<item quantity="few">%d особе</item>
-	<item quantity="many">%d особа</item>
-	<item quantity="other"/>
-</plurals>
+	<item quantity="other">%d особа</item>
+    </plurals>
 
 
 <string name="text_invitation_info">(позивница за ћаскање)</string>
@@ -501,9 +499,8 @@
     <plurals name="notification_more">
 	<item quantity="one">+још %d</item>
 	<item quantity="few">+још %d</item>
-	<item quantity="many">+још %d</item>
-	<item quantity="other"/>
-</plurals>
+	<item quantity="other">+још %d</item>
+    </plurals>
 
     <string name="title_ignore_all_identities">Игнорисати све идентитете?</string>
     <string name="group_info_ignore_all">Игнориши све</string>
@@ -521,11 +518,15 @@
     <string name="group_info_menu_remove">Уклони</string>
 
     <plurals name="unread_messages">
-	<item quantity="other">%d непрочитаних порука</item>
+        <item quantity="one">%d непрочитаних порука</item>
+        <item quantity="few">%d непрочитаних порука</item>
+    	<item quantity="other">%d непрочитаних порука</item>
     </plurals>
 
     <plurals name="unread_messages_group">
-	<item quantity="other">%1$d порука у %2$s</item>
+        <item quantity="one">%1$d порука у %2$s</item>
+        <item quantity="few">%1$d порука у %2$s</item>
+        <item quantity="other">%1$d порука у %2$s</item>
     </plurals>
 
     <string name="pref_balloon_label_silence">Сајленс</string>
@@ -552,18 +553,14 @@
     <string name="menu_start_group">Почни групу</string>
 
     <plurals name="confirm_will_delete_threads">
-	<item quantity="one">Изабрана преписка ће бити обрисана.</item>
-	<item quantity="few">Изабране преписке ће бити обрисане.</item>
-	<item quantity="many">Изабране преписке ће бити обрисане.</item>
-	<item quantity="other"/>
-</plurals>
+        <item quantity="one" tools:ignore="ImpliedQuantity">Изабрана преписка ће бити обрисана.</item>
+        <item quantity="few">Изабране преписке ће бити обрисане.</item>
+    </plurals>
 
     <plurals name="delete_threads_leave_groups">
-	<item quantity="one">Такође напусти групу</item>
-	<item quantity="few">Такође напусти групе</item>
-	<item quantity="many">Такође напусти групе</item>
-	<item quantity="other"/>
-</plurals>
+        <item quantity="one" tools:ignore="ImpliedQuantity">Такође напусти групу</item>
+        <item quantity="few">Такође напусти групе</item>
+    </plurals>
 
 <string name="menu_sticky">Омиљено</string>
     <string name="delete_threads_leave_any_groups">Такође напусти групе</string>
