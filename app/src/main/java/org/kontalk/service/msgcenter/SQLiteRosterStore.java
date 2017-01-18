@@ -175,7 +175,7 @@ public class SQLiteRosterStore extends SQLiteOpenHelper implements RosterStore {
         Cursor c = null;
         try {
             c = db.query(TABLE_ROSTER, null,
-                "user = ?", new String[] { bareJid },
+                "jid = ?", new String[] { bareJid },
                 null, null, null);
             if (c != null && c.moveToFirst()) {
                 return fromCursor(c);
@@ -250,7 +250,7 @@ public class SQLiteRosterStore extends SQLiteOpenHelper implements RosterStore {
     public boolean removeEntry(String bareJid, String version) {
         SQLiteDatabase db = getWritableDatabase();
         try {
-            db.delete(TABLE_ROSTER, "user = ?", new String[]{bareJid});
+            db.delete(TABLE_ROSTER, "jid = ?", new String[]{bareJid});
             return setRosterVersion(version);
         }
         catch (SQLiteException e) {
