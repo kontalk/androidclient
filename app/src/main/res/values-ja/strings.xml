@@ -384,9 +384,6 @@ http://kontalk.org/</string>
     <string name="title_block_user_warning">このユーザーをブロックしてもよろしいですか?</string>
     <string name="title_unblock_user_warning">このユーザーのブロックを解除してもよろしいですか?</string>
     <string name="warning_button_details">詳細</string>
-    <plurals name="context_selected">
-	<item quantity="one">1 選択済</item>
-</plurals>
 
 <string name="title_confirm_cancel_registration">登録をキャンセルしますか?</string>
     <string name="confirm_cancel_registration">戻る場合は、登録を最初から開始する必要があります。別のアプリに切り替える必要がある場合は、デバイスのホームボタンを使用するだけです。</string>
@@ -529,14 +526,6 @@ http://kontalk.org/</string>
 
     <plurals name="unread_messages_group">
 	<item quantity="other">%1$d メッセージ @ %2$s</item>
-</plurals>
-
-    <plurals name="notification_more">
-	<item quantity="one">+1 以上</item>
-</plurals>
-
-    <plurals name="group_people">
-	<item quantity="one">1 人</item>
 </plurals>
 
     <plurals name="confirm_will_delete_threads">

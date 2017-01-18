@@ -477,8 +477,9 @@
     <string name="confirm_will_leave_group">Δεν θα μπορείτε να εισέλθετε ξανά σε αυτήν την ομάδα μετά την αποχώρησή σας.</string>
 
     <plurals name="unread_messages">
-	<item quantity="other">%d νέα μηνύματα</item>
-</plurals>
+        <item quantity="one">%d νέα μηνύματα</item>
+	    <item quantity="other">%d νέα μηνύματα</item>
+    </plurals>
 
 <string name="menu_create_group">Δημιουργία ομάδας</string>
     <string name="code_validation_intro_callerid">Πατήστε το κουμπί παρακάτω και κάντε μια αναπάντητη κλήση σε αυτόν τον αριθμό τηλεφώνου. Σημειώστε ότι <b> το τηλεφώνημα πρέπει να το κάνετε από τον αριθμό τηλεφώνου που έχετε εγγραφεί</b>. Η κλήση είναι δωρεάν αν κλείσετε μόλις ακουστεί ο πρώτος χτύπος, αυτό είναι αρκετό για να ολοκληρωθεί η διαδικασία.</string>
@@ -539,8 +540,9 @@
     <string name="notification_group_title">%1$s @ %2$s</string>
 
     <plurals name="unread_messages_group">
-	<item quantity="other">%1$d μηνύματα @ %2$s</item>
-</plurals>
+        <item quantity="one">%1$d μηνύματα @ %2$s</item>
+	    <item quantity="other">%1$d μηνύματα @ %2$s</item>
+    </plurals>
 
     <plurals name="notification_more">
 	<item quantity="one">+1 ακόμη</item>
@@ -565,4 +567,4 @@
 
     <string name="pref_balloons_groups">Θέμα με μπαλόνια για συζητήσεις ομάδων</string>
 
-    </resources>
+</resources>

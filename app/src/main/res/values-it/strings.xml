@@ -515,11 +515,13 @@
     <string name="err_invalid_passphrase">Password errata. Riavvia l\'app per provarne un\'altra.</string>
 
     <plurals name="unread_messages">
+        <item quantity="one">1 messaggio non letto</item>
         <item quantity="other">%d messaggi non letti</item>
     </plurals>
 
     <plurals name="unread_messages_group">
-	<item quantity="other">%1$d messaggi @ %2$s</item>
+        <item quantity="one">%1$d messaggio @ %2$s</item>
+	    <item quantity="other">%1$d messaggi @ %2$s</item>
     </plurals>
 
     <string name="delete_thread_messages">Elimina messaggi</string>

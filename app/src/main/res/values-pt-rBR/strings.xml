@@ -15,7 +15,7 @@
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="app_name">Kontalk</string>
   <string name="app_description">Rede de mensagens instantâneas mantida pela comunidade</string>
   <string name="service_name">Centro de mensagens</string>
@@ -536,11 +536,13 @@
     <string name="group_command_text_part_kicked">Você foi removido desse grupo</string>
 
     <plurals name="unread_messages">
+        <item quantity="one">%d mensagens não lidas</item>
         <item quantity="other">%d mensagens não lidas</item>
     </plurals>
 
     <plurals name="unread_messages_group">
-	<item quantity="other">%1$d mensagens @ %2$s</item>
+        <item quantity="one">%1$d mensagens @ %2$s</item>
+	    <item quantity="other">%1$d mensagens @ %2$s</item>
     </plurals>
 <string name="delete_thread_messages">Apagar o histórico da conversa</string>
     <string name="pref_on">Ativar</string>
@@ -573,12 +575,12 @@ Se desabilitada, você pode fazer ajustes finos no funcionamento da conexão do 
     <string name="pref_title_reporting">Incluindo relatórios de falhas</string>
 
     <plurals name="confirm_will_delete_threads">
-	<item quantity="one">A conversa selecionada será apagada.</item>
+	<item quantity="one" tools:ignore="ImpliedQuantity">A conversa selecionada será apagada.</item>
 	<item quantity="other">As conversas selecionadas serão apagadas.</item>
 </plurals>
 
     <plurals name="delete_threads_leave_groups">
-	<item quantity="one">Também sair do grupo</item>
+	<item quantity="one" tools:ignore="ImpliedQuantity">Também sair do grupo</item>
 	<item quantity="other">Também sair dos grupos</item>
 </plurals>
 

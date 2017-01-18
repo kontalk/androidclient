@@ -514,10 +514,12 @@
     <string name="title_passphrase_request">Contraseña de la clave personal</string>
     <string name="pref_balloon_label_silence">Silencio</string>
     <plurals name="unread_messages">
-	<item quantity="other">%d mensajes no leídos</item>
+        <item quantity="one">%d mensajes no leídos</item>
+        <item quantity="other">%d mensajes no leídos</item>
     </plurals>
     <plurals name="unread_messages_group">
-	<item quantity="other">%1$d mensajes @ %2$s</item>
+        <item quantity="one">%d mensajes no leídos</item>
+	    <item quantity="other">%1$d mensajes @ %2$s</item>
     </plurals>
 
     <string name="delete_thread_messages">Eliminar el historial de chat</string>

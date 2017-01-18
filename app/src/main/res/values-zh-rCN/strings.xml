@@ -425,10 +425,6 @@
     <string name="about_credits_gfx"><b>图像/图标</b></string>
     <string name="about_credits_translators"><b>译者</b></string>
 
-    <plurals name="context_selected">
-	<item quantity="one">1个已经选择</item>
-</plurals>
-
 <string name="app_name_offline">Kontalk （离线）</string>
     <string name="seen_away_label">在线</string>
     <string name="err_import_keypair_read">无法从外置存储器读取密匙。</string>
@@ -503,9 +499,6 @@
         <item quantity="other">%d条未读消息</item>
     </plurals>
 
-    <plurals name="group_people">
-	<item quantity="one">1个人</item>
-    </plurals>
 <string name="menu_create_group">创建群组</string>
     <string name="delete_thread_messages">删除聊天历史</string>
     <string name="pref_push_notifications_disabled">已禁用</string>
@@ -562,10 +555,6 @@
 
     <plurals name="unread_messages_group">
 	<item quantity="other">%1$d 个消息 @ %2$s</item>
-</plurals>
-
-    <plurals name="notification_more">
-	<item quantity="one">加1</item>
 </plurals>
 
     <string name="code_validation_intro_callerid">触碰下面的按钮以回拨未接通话。请注意<b>该通话必须从你注册的手机号码中发起</b>。如果你在听到第一次响铃马上挂断，那么该通话就是免费的。这对我们来说已经足够。</string>
