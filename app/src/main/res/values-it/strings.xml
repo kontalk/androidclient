@@ -575,4 +575,6 @@ Se disattivate, il comportamento delle connessioni di Kontalk può essere config
     <string name="pref_debug_log">Abilita debug log</string>
     <string name="pref_send_debug_log">Invia debug log</string>
 
+    <string name="menu_encryption">Cifratura</string>
+    <string name="title_disable_encryption">Disattivare cifratura per questa chat?</string>
     </resources>
