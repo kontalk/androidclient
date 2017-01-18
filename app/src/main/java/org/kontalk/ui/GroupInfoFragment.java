@@ -34,13 +34,16 @@ import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.view.ActionMode;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -98,6 +101,18 @@ public class GroupInfoFragment extends ActionModeListFragment
 
     private int mCheckedItemCount;
 
+    private BroadcastReceiver mRosterReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+            boolean isSubscribed = intent
+                .getBooleanExtra(MessageCenterService.EXTRA_SUBSCRIBED_FROM, false) &&
+                intent.getBooleanExtra(MessageCenterService.EXTRA_SUBSCRIBED_TO, false);
+            mMembersAdapter.setSubscribed(jid, isSubscribed);
+        }
+    };
+    private LocalBroadcastManager mLocalBroadcastManager;
+
     public static GroupInfoFragment newInstance(long threadId) {
         GroupInfoFragment f = new GroupInfoFragment();
         Bundle data = new Bundle();
@@ -119,6 +134,10 @@ public class GroupInfoFragment extends ActionModeListFragment
         mSetSubject.setEnabled(isOwner && isMember);
         mLeave.setEnabled(isMember);
 
+        // listen to roster entry status requests
+        IntentFilter filter = new IntentFilter(MessageCenterService.ACTION_ROSTER_STATUS);
+        mLocalBroadcastManager.registerReceiver(mRosterReceiver, filter);
+
         // load members
         boolean showIgnoreAll = false;
         String[] members = getGroupMembers();
@@ -128,7 +147,12 @@ public class GroupInfoFragment extends ActionModeListFragment
             if (c.isKeyChanged() || c.getTrustedLevel() == MyUsers.Keys.TRUST_UNKNOWN)
                 showIgnoreAll = true;
             boolean owner = KontalkGroup.checkOwnership(mConversation.getGroupJid(), jid);
-            mMembersAdapter.add(c, owner);
+            boolean isSelfJid = jid.equalsIgnoreCase(selfJid);
+            mMembersAdapter.add(c, owner, isSelfJid);
+            if (!isSelfJid) {
+                // request roster entry status
+                MessageCenterService.requestRosterEntryStatus(getContext(), jid);
+            }
         }
 
         mIgnoreAll.setVisibility(showIgnoreAll ? View.VISIBLE : View.GONE);
@@ -373,14 +397,16 @@ public class GroupInfoFragment extends ActionModeListFragment
         if (choiceMode == ListView.CHOICE_MODE_NONE || choiceMode == ListView.CHOICE_MODE_SINGLE) {
             // open identity dialog
             // one day this will be the contact info activity
-            showIdentityDialog(((ContactsListItem) v).getContact());
+            GroupMembersAdapter.GroupMember member =
+                (GroupMembersAdapter.GroupMember) mMembersAdapter.getItem(position);
+            showIdentityDialog(member.contact, member.subscribed);
         }
         else {
             super.onListItemClick(l, v, position, id);
         }
     }
 
-    private void showIdentityDialog(Contact c) {
+    private void showIdentityDialog(Contact c, boolean subscribed) {
         final String jid = c.getJID();
         final String dialogFingerprint;
         final String fingerprint;
@@ -477,7 +503,7 @@ public class GroupInfoFragment extends ActionModeListFragment
             .content(text)
             .title(titleResId);
 
-        if (dialogFingerprint != null) {
+        if (dialogFingerprint != null && subscribed) {
             builder.onAny(new MaterialDialog.SingleButtonCallback() {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
@@ -566,11 +592,28 @@ public class GroupInfoFragment extends ActionModeListFragment
         if (!(context instanceof GroupInfoParent))
             throw new IllegalArgumentException("parent activity must implement " +
                 GroupInfoParent.class.getSimpleName());
+        mLocalBroadcastManager = LocalBroadcastManager.getInstance(context);
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        if (mLocalBroadcastManager != null)
+            mLocalBroadcastManager.unregisterReceiver(mRosterReceiver);
     }
 
     private static final class GroupMembersAdapter extends BaseAdapter {
+        private static final class GroupMember {
+            final Contact contact;
+            boolean subscribed;
+            GroupMember(Contact contact, boolean subscribed) {
+                this.contact = contact;
+                this.subscribed = subscribed;
+            }
+        }
+
         private final Context mContext;
-        private final List<Contact> mMembers;
+        private final List<GroupMember> mMembers;
         private String mOwner;
         private String mGroupJid;
 
@@ -594,8 +637,8 @@ public class GroupInfoFragment extends ActionModeListFragment
             super.notifyDataSetChanged();
         }
 
-        public void add(Contact contact, boolean isOwner) {
-            mMembers.add(contact);
+        public void add(Contact contact, boolean isOwner, boolean subscribed) {
+            mMembers.add(new GroupMember(contact, subscribed));
             if (isOwner)
                 mOwner = contact.getJID();
         }
@@ -634,19 +677,22 @@ public class GroupInfoFragment extends ActionModeListFragment
 
         private void bindView(View v, int position) {
             ContactsListItem view = (ContactsListItem) v;
-            Contact contact = (Contact) getItem(position);
+            GroupMember member = (GroupMember) getItem(position);
+            Contact contact = member.contact;
             String prependStatus = null;
             CharacterStyle prependStyle = null;
             if (contact.getJID().equalsIgnoreCase(mOwner)) {
                 prependStatus = mContext.getString(R.string.group_info_owner_member);
                 prependStyle = new ForegroundColorSpan(Color.RED);
             }
-            view.bind(mContext, contact, prependStatus, prependStyle);
+            view.bind(mContext, contact, prependStatus, prependStyle,
+                member.subscribed);
         }
 
         public void ignoreAll() {
             synchronized (mMembers) {
-                for (Contact c : mMembers) {
+                for (GroupMember m : mMembers) {
+                    Contact c = m.contact;
                     if (c.isKeyChanged() || c.getTrustedLevel() == MyUsers.Keys.TRUST_UNKNOWN) {
                         String fingerprint = c.getFingerprint();
                         Keyring.setTrustLevel(mContext, c.getJID(), fingerprint, MyUsers.Keys.TRUST_IGNORED);
@@ -657,14 +703,29 @@ public class GroupInfoFragment extends ActionModeListFragment
             }
         }
 
+        public void setSubscribed(String jid, boolean isSubscribed) {
+            synchronized (mMembers) {
+                for (GroupMember m : mMembers) {
+                    Contact c = m.contact;
+                    if (c.getJID().equalsIgnoreCase(jid)) {
+                        m.subscribed = isSubscribed;
+                        break;
+                    }
+                }
+            }
+            // we don't need to sort, so call super directly
+            super.notifyDataSetChanged();
+        }
+
         static class DisplayNameComparator implements
-            Comparator<Contact> {
+            Comparator<GroupMember> {
             DisplayNameComparator() {
                 mCollator.setStrength(Collator.PRIMARY);
             }
 
-            public final int compare(Contact a, Contact b) {
-                return mCollator.compare(a.getDisplayName(), b.getDisplayName());
+            public final int compare(GroupMember a, GroupMember b) {
+                return mCollator.compare(a.contact.getDisplayName(),
+                    b.contact.getDisplayName());
             }
 
             private final Collator mCollator = Collator.getInstance();
