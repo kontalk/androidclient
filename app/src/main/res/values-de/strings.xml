@@ -583,4 +583,6 @@ Wenn sie deaktiviert sind kann das Kontalk Verbindungsverhalten in den Netzwerke
 Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen Schlüssel hat.</string>
     <string name="menu_disable_encryption">Deaktivieren</string>
 
+    <string name="group_info_menu_add_again">Wieder hinzufügen</string>
+
     </resources>
