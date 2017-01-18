@@ -606,6 +606,7 @@ public class GroupInfoFragment extends ActionModeListFragment
         private static final class GroupMember {
             final Contact contact;
             boolean subscribed;
+
             GroupMember(Contact contact, boolean subscribed) {
                 this.contact = contact;
                 this.subscribed = subscribed;
