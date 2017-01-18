@@ -600,4 +600,14 @@
     <string name="create_group_disclaimer">请注意该群组中的每个成员之间必须是好友才能聊天。</string>
     <string name="check_dont_show_again">不再显示</string>
 
+    <string name="menu_encryption">加密</string>
+    <string name="title_disable_encryption">对该聊天禁用加密?</string>
+    <string name="msg_disable_encryption">"该聊天收到的所有消息都不会被加密。
+只推荐在您的联系人没有个人密匙的时候禁用加密。
+ "</string>
+    <string name="menu_disable_encryption">禁用</string>
+
+    <string name="pref_debug_log">开启调试日志</string>
+    <string name="pref_send_debug_log">发送调试日志</string>
+
     </resources>
