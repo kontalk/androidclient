@@ -588,4 +588,6 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
 Šifrování vypínejte pouze v případě, pokud váš kontakt nemá osobní klíč.</string>
     <string name="menu_disable_encryption">Vypnout</string>
 
+    <string name="group_info_menu_add_again">Přidat znovu</string>
+
     </resources>
