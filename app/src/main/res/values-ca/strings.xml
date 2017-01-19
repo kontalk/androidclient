@@ -513,9 +513,9 @@
 
     <string name="pref_balloon_label_silence">Silenci</string>
     <plurals name="unread_messages">
-        <item quantity="one">%d missatges sense llegir</item>
-	    <item quantity="other">%d missatges sense llegir</item>
-    </plurals>
+	<item quantity="one">%d missatge sense llegir</item>
+	<item quantity="other">%d missatges sense llegir</item>
+</plurals>
     <plurals name="unread_messages_group">
         <item quantity="one">%1$d missatges @ %2$s</item>
 	    <item quantity="other">%1$d missatges @ %2$s</item>
@@ -575,9 +575,8 @@ Quan estan desactivades, el comportament de connexió de Kontalk es pot ajustar 
 
     <string name="menu_encryption">Xifrat</string>
     <string name="title_disable_encryption">¿Deshabilitar el xifrat per a aquest xat?</string>
-    <string name="msg_disable_encryption">"A partir d\'ara els missatges enviats a aquest xat NO es xifraran.
-Deshabiliti el xifrat només si el seu contacte no té una clau personal.
- "</string>
+    <string name="msg_disable_encryption">A partir d\'ara els missatges enviats a aquest xat NO es xifraran.
+Deshabiliti el xifrat només si el seu contacte no té una clau personal.</string>
     <string name="menu_disable_encryption">Deshabilita</string>
 
     </resources>
