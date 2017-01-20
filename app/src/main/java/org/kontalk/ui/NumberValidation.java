@@ -124,6 +124,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public static final String PARAM_PUBLICKEY = "org.kontalk.publickey";
     public static final String PARAM_PRIVATEKEY = "org.kontalk.privatekey";
     public static final String PARAM_SERVER_URI = "org.kontalk.server";
+    public static final String PARAM_CHALLENGE = "org.kontalk.challenge";
     public static final String PARAM_TRUSTED_KEYS = "org.kontalk.trustedkeys";
 
     private AccountManager mAccountManager;
@@ -470,6 +471,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                     trustedKeys = Keyring.fromTrustedFingerprintMap(keys);
                 }
                 finishLogin(data.getStringExtra(PARAM_SERVER_URI),
+                    data.getStringExtra(PARAM_CHALLENGE),
                     data.getByteArrayExtra(PARAM_PRIVATEKEY),
                     data.getByteArrayExtra(PARAM_PUBLICKEY),
                     true,
@@ -969,7 +971,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             @Override
             public void run() {
                 abort(true);
-                finishLogin(v.getServer().toString(), privateKey, publicKey, false, mTrustedKeys);
+                finishLogin(v.getServer().toString(), v.getServerChallenge(), privateKey, publicKey, false, mTrustedKeys);
             }
         });
     }
@@ -996,7 +998,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         setProgressMessage(getString(R.string.msg_initializing));
     }
 
-    protected void finishLogin(final String serverUri, final byte[] privateKeyData, final byte[] publicKeyData, boolean updateKey, Map<String, Keyring.TrustedFingerprint> trustedKeys) {
+    protected void finishLogin(final String serverUri, final String challenge,
+            final byte[] privateKeyData, final byte[] publicKeyData, boolean updateKey,
+            Map<String, Keyring.TrustedFingerprint> trustedKeys) {
         Log.v(TAG, "finishing login");
         statusInitializing();
 
@@ -1011,10 +1015,11 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             }
         }
 
-        completeLogin(serverUri, privateKeyData, publicKeyData, trustedKeys);
+        completeLogin(serverUri, challenge, privateKeyData, publicKeyData, trustedKeys);
     }
 
-    private void completeLogin(String serverUri, byte[] privateKeyData, byte[] publicKeyData, Map<String, Keyring.TrustedFingerprint> trustedKeys) {
+    private void completeLogin(String serverUri, String challenge,
+            byte[] privateKeyData, byte[] publicKeyData, Map<String, Keyring.TrustedFingerprint> trustedKeys) {
         // generate the bridge certificate
         byte[] bridgeCertData;
         try {
@@ -1031,7 +1036,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         // procedure will continue in removeAccount callback
         mAccountManager.removeAccount(account,
             new AccountRemovalCallback(this, account, mPassphrase,
-                privateKeyData, publicKeyData, bridgeCertData, mName, serverUri, trustedKeys),
+                privateKeyData, publicKeyData, bridgeCertData,
+                mName, serverUri, challenge, trustedKeys),
             mHandler);
     }
 
@@ -1178,11 +1184,13 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         private final byte[] bridgeCertData;
         private final String name;
         private final String serverUri;
+        private final String challenge;
         private final Map<String, Keyring.TrustedFingerprint> trustedKeys;
 
         AccountRemovalCallback(NumberValidation activity, Account account,
             String passphrase, byte[] privateKeyData, byte[] publicKeyData,
-            byte[] bridgeCertData, String name, String serverUri, Map<String, Keyring.TrustedFingerprint> trustedKeys) {
+            byte[] bridgeCertData, String name, String serverUri, String challenge,
+            Map<String, Keyring.TrustedFingerprint> trustedKeys) {
             this.a = new WeakReference<>(activity);
             this.account = account;
             this.passphrase = passphrase;
@@ -1191,6 +1199,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             this.bridgeCertData = bridgeCertData;
             this.name = name;
             this.serverUri = serverUri;
+            this.challenge = challenge;
             this.trustedKeys = trustedKeys;
         }
 
@@ -1235,6 +1244,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
                 ctx.setAccountAuthenticatorResult(intent.getExtras());
                 ctx.setResult(RESULT_OK, intent);
+
+                ReportingManager.logSignUp(challenge);
 
                 // manual sync starter
                 ctx.delayedSync();
