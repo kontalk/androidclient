@@ -19,6 +19,8 @@
 package org.kontalk.reporting;
 
 import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.SignUpEvent;
 
 import android.content.Context;
 
@@ -56,6 +58,13 @@ public class ReportingManager {
     public static void logException(Throwable exception) {
         if (!BuildConfig.DEBUG && sEnabled)
             Crashlytics.logException(exception);
+    }
+
+    public static void logSignUp(String method) {
+        if (!BuildConfig.DEBUG && sEnabled)
+            Answers.getInstance().logSignUp(new SignUpEvent()
+                .putMethod(method)
+                .putSuccess(true));
     }
 
 }

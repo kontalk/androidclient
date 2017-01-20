@@ -393,6 +393,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 i.putExtra(NumberValidation.PARAM_PUBLICKEY, publicKeyData);
                 i.putExtra(NumberValidation.PARAM_PRIVATEKEY, privateKeyData);
                 i.putExtra(NumberValidation.PARAM_TRUSTED_KEYS, (HashMap) mTrustedKeys);
+                i.putExtra(NumberValidation.PARAM_CHALLENGE, v.getServerChallenge());
                 setResult(RESULT_OK, i);
                 finish();
             }

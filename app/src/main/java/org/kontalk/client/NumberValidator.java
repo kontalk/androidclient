@@ -132,6 +132,9 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     @SuppressWarnings("WeakerAccess")
     Handler mInternalHandler;
 
+    /** This will used to store the server-indicated challenge. */
+    private String mServerChallenge;
+
     public NumberValidator(Context context, EndpointServer.EndpointServerProvider serverProvider,
         String name, String phone, PersonalKey key, String passphrase) {
         mServerProvider = serverProvider;
@@ -182,6 +185,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
     public EndpointServer getServer() {
         return mConnector.getServer();
+    }
+
+    public String getServerChallenge() {
+        return mServerChallenge;
     }
 
     public static boolean isMissedCall(String senderId) {
@@ -295,6 +302,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
                                 if (smsFrom != null) {
                                     Log.d(TAG, "using sender id: " + smsFrom + ", challenge: " + challenge);
+                                    mServerChallenge = challenge;
                                     mListener.onValidationRequested(NumberValidator.this, smsFrom, challenge);
 
                                     // prevent error handling
