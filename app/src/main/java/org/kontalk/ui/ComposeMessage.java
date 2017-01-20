@@ -26,6 +26,7 @@ import android.content.Intent;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
@@ -107,8 +108,14 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
         if (mFragment == null) {
             // build chat fragment
             AbstractComposeFragment f = getComposeFragment(savedInstanceState);
-            // insert it into the activity
-            setComposeFragment(f);
+            if (f != null) {
+                // insert it into the activity
+                setComposeFragment(f);
+            }
+            else {
+                // conversation disappeared
+                finish();
+            }
         }
     }
 
@@ -137,15 +144,13 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
         return super.onOptionsItemSelected(item);
     }
 
-    private void setComposeFragment(AbstractComposeFragment f) {
-        if (f != null) {
-            mFragment = f;
-            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            ft.replace(R.id.fragment_compose_message, f);
-            ft.setTransition(FragmentTransaction.TRANSIT_NONE);
-            ft.commitAllowingStateLoss();
-            getSupportFragmentManager().executePendingTransactions();
-        }
+    private void setComposeFragment(@NonNull AbstractComposeFragment f) {
+        mFragment = f;
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.fragment_compose_message, f);
+        ft.setTransition(FragmentTransaction.TRANSIT_NONE);
+        ft.commitAllowingStateLoss();
+        getSupportFragmentManager().executePendingTransactions();
     }
 
     @Override
@@ -163,8 +168,14 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     public void loadConversation() {
         // build chat fragment
         AbstractComposeFragment f = getComposeFragment(null);
-        // insert it into the activity
-        setComposeFragment(f);
+        if (f != null) {
+            // insert it into the activity
+            setComposeFragment(f);
+        }
+        else {
+            // conversation disappeared
+            finish();
+        }
     }
 
     @Override
@@ -215,15 +226,17 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     private AbstractComposeFragment getComposeFragment(Bundle savedInstanceState) {
         Bundle args = processIntent(savedInstanceState);
         if (args != null) {
-            AbstractComposeFragment f;
+            AbstractComposeFragment f = null;
             Uri threadUri = args.getParcelable("data");
             String action = args.getString("action");
             if (ACTION_VIEW_CONVERSATION.equals(action)) {
                 long threadId = ContentUris.parseId(threadUri);
                 Conversation conv = Conversation.loadFromId(this, threadId);
-                f = conv.isGroupChat() ?
-                    new GroupMessageFragment() :
-                    new ComposeMessageFragment();
+                if (conv != null) {
+                    f = conv.isGroupChat() ?
+                        new GroupMessageFragment() :
+                        new ComposeMessageFragment();
+                }
             }
             else if (ACTION_VIEW_USERID.equals(action)) {
                 String userId =  threadUri.getLastPathSegment();
@@ -237,7 +250,8 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
                 f = new ComposeMessageFragment();
             }
 
-            f.setArguments(args);
+            if (f != null)
+                f.setArguments(args);
             return f;
         }
 
