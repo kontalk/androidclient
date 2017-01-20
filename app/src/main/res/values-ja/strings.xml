@@ -422,8 +422,8 @@ http://kontalk.org/</string>
     <string name="button_load_next_page">さらにメッセージを読み込む</string>
 
     <plurals name="unread_messages">
-        <item quantity="other">%d の未読メッセージ</item>
-    </plurals>
+	<item quantity="other">1 未読メッセージ</item>
+</plurals>
 
 <string name="menu_create_group">グループを作成</string>
     <string name="code_validation_intro_callerid">下のボタンをタップして、その電話番号に不在着信してください。 <b>登録している電話番号から通話を開始する必要があります</b>。 最初の呼び出し音が聞こえてすぐに電話を切ると、通話は無料です。 私たちにとってそれで十分です。</string>
@@ -554,9 +554,23 @@ http://kontalk.org/</string>
 
     <string name="menu_encryption">暗号化</string>
     <string name="title_disable_encryption">このチャットで暗号化を無効にしますか?</string>
-    <string name="msg_disable_encryption">"このチャットで送信される新しいメッセージはすべて暗号化されません。
- 連絡先に秘密鍵がない場合のみ、暗号化を無効にしてください。
- "</string>
+    <string name="msg_disable_encryption">このチャットで送信される新しいメッセージはすべて暗号化されません。
+ 連絡先に秘密鍵がない場合のみ、暗号化を無効にしてください。</string>
     <string name="menu_disable_encryption">無効</string>
 
-    </resources>
+    <plurals name="notification_more">
+	<item quantity="one">+1 以上</item>
+	<item quantity="other"/>
+</plurals>
+
+    <plurals name="context_selected">
+	<item quantity="one">1 選択済</item>
+	<item quantity="other"/>
+</plurals>
+
+    <plurals name="group_people">
+	<item quantity="one">1 人</item>
+	<item quantity="other"></item>
+</plurals>
+
+</resources>
