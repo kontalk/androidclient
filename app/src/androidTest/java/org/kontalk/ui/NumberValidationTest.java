@@ -20,7 +20,6 @@ package org.kontalk.ui;
 
 import com.robotium.solo.Solo;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -51,11 +50,6 @@ public class NumberValidationTest {
     public void setUp() throws Exception {
         solo = new Solo(InstrumentationRegistry.getInstrumentation(),
             mActivityRule.getActivity());
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        solo.finishOpenedActivities();
     }
 
     @Test

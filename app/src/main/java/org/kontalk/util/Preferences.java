@@ -54,6 +54,7 @@ import android.net.Uri;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
+import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.view.Display;
@@ -494,6 +495,13 @@ public final class Preferences {
     public static boolean getAcceptAnyCertificate(Context context) {
         return getBoolean("pref_accept_any_certificate", context.getResources()
             .getBoolean(R.bool.pref_default_accept_any_certificate));
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public static boolean setAcceptAnyCertificate(boolean acceptAnyCertificate) {
+        return sPreferences.edit()
+            .putBoolean("pref_accept_any_certificate", acceptAnyCertificate)
+            .commit();
     }
 
     public static int getIdleTimeMillis(Context context, int minValue) {

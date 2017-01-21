@@ -20,21 +20,19 @@ package org.kontalk.ui;
 
 import com.robotium.solo.Solo;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.app.Instrumentation;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.intent.rule.IntentsTestRule;
 import android.support.test.filters.LargeTest;
 import android.support.test.runner.AndroidJUnit4;
 
-import org.kontalk.authenticator.Authenticator;
+import org.kontalk.TestUtils;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 
 @RunWith(AndroidJUnit4.class)
@@ -52,22 +50,12 @@ public class ConversationsActivityTest {
         solo = new Solo(InstrumentationRegistry.getInstrumentation());
     }
 
-    @After
-    public void tearDown() {
-        solo.finishOpenedActivities();
-    }
-
     @Test
     public void testOpenRegistration() throws Exception {
-        Instrumentation inst = InstrumentationRegistry.getInstrumentation();
-
-        // account was registered - skip the test
-        if (Authenticator.getDefaultAccount(inst.getContext()) != null)
-            return;
+        TestUtils.skipIfDefaultAccountExists();
 
         // this must be done now otherwise solo won't see it
         mActivityRule.launchActivity(null);
-
         assertTrue(solo.waitForActivity(NumberValidation.class));
     }
 
