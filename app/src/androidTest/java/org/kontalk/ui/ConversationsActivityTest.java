@@ -20,36 +20,55 @@ package org.kontalk.ui;
 
 import com.robotium.solo.Solo;
 
-import android.test.ActivityInstrumentationTestCase2;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import android.app.Instrumentation;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.intent.rule.IntentsTestRule;
+import android.support.test.filters.LargeTest;
+import android.support.test.runner.AndroidJUnit4;
 
 import org.kontalk.authenticator.Authenticator;
 
+import static org.junit.Assert.*;
 
-public class ConversationsActivityTest extends ActivityInstrumentationTestCase2<ConversationsActivity> {
+
+@RunWith(AndroidJUnit4.class)
+@LargeTest
+public class ConversationsActivityTest {
+
+    @Rule
+    public IntentsTestRule<ConversationsActivity> mActivityRule =
+        new IntentsTestRule<>(ConversationsActivity.class, false, false);
 
     private Solo solo;
 
-    public ConversationsActivityTest() {
-        super(ConversationsActivity.class);
+    @Before
+    public void setUp() {
+        solo = new Solo(InstrumentationRegistry.getInstrumentation());
     }
 
-    @Override
-    public void setUp() throws Exception {
-        solo = new Solo(getInstrumentation());
-        getActivity();
-    }
-
-    @Override
-    public void tearDown() throws Exception {
+    @After
+    public void tearDown() {
         solo.finishOpenedActivities();
     }
 
+    @Test
     public void testOpenRegistration() throws Exception {
-        solo.unlockScreen();
-        // no account registered - wait for registration activity
-        if (Authenticator.getDefaultAccount(getActivity()) == null) {
-            assertTrue(solo.waitForActivity(NumberValidation.class));
-        }
+        Instrumentation inst = InstrumentationRegistry.getInstrumentation();
+
+        // account was registered - skip the test
+        if (Authenticator.getDefaultAccount(inst.getContext()) != null)
+            return;
+
+        // this must be done now otherwise solo won't see it
+        mActivityRule.launchActivity(null);
+
+        assertTrue(solo.waitForActivity(NumberValidation.class));
     }
 
 }

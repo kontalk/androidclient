@@ -18,8 +18,6 @@
 
 package org.kontalk.provider;
 
-import java.util.Arrays;
-
 import org.jivesoftware.smack.util.StringUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -34,7 +32,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
-import android.test.MoreAsserts;
 import android.test.ProviderTestCase2;
 
 import org.kontalk.provider.MyMessages.Groups;
@@ -42,6 +39,9 @@ import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.SystemUtils;
+
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 
 @RunWith(AndroidJUnit4.class)
@@ -128,7 +128,7 @@ public class MessagesProviderTest extends ProviderTestCase2<MessagesProvider> {
             Groups.THREAD_ID, String.valueOf(threadId));
 
         String[] actualMembers = MessagesProviderUtils.getGroupMembers(getMockContext(), groupJid, 0);
-        MoreAsserts.assertEquals(members, actualMembers);
+        assertThat(actualMembers, arrayContainingInAnyOrder(members));
     }
 
     @Test
@@ -150,7 +150,7 @@ public class MessagesProviderTest extends ProviderTestCase2<MessagesProvider> {
 
         // user list should return the same list as per create message
         String[] actualMembers = MessagesProviderUtils.getGroupMembers(getMockContext(), groupJid, 0);
-        MoreAsserts.assertEquals(members, actualMembers);
+        assertThat(actualMembers, arrayContainingInAnyOrder(members));
 
         // clear pending flag
         getMockContext().getContentResolver().update(Groups
@@ -162,7 +162,7 @@ public class MessagesProviderTest extends ProviderTestCase2<MessagesProvider> {
         // user list should return charlie too now
         actualMembers = MessagesProviderUtils.getGroupMembers(getMockContext(), groupJid, 0);
         members = SystemUtils.concatenate(members, "charlie@prime.kontalk.net");
-        MoreAsserts.assertContentsInAnyOrder(Arrays.asList(actualMembers), members);
+        assertThat(actualMembers, arrayContainingInAnyOrder(members));
     }
 
     /** Tries to reproduce issue #761. */
