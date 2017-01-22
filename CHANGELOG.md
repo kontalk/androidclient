@@ -1,5 +1,18 @@
 # Change Log
 
+## [4.0.0-beta6] - 2017-01-22
+### Changed
+- Toggle encryption per conversation (#271)
+- Internal logging system (#623)
+
+### Fixed
+- Fix group chat issues (#874)
+- Handle some Argentinian number special cases (#917)
+- Request presence after accepting invitation (#924)
+- Show subscription status in group members list (#928)
+- Fix missing translations causing crash (#930)
+- Fix crash in rare situations (#933)
+
 ## [4.0.0-beta5] - 2016-12-31
 ### Changed
 - New 2017 icon!
