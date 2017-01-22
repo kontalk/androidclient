@@ -430,11 +430,11 @@
 
     <string name="warning_button_details">DETALLES</string>
     <string name="warning_older_version">O seu amigo está a usar unha versión antiga do Kontalk. Algúns recursos poden non funcionar correctamente.</string>
-    <string name="warning_public_key_changed">A clave persoal do usuario cambiou de forma inesperada!</string>
+    <string name="warning_public_key_changed">A clave persoal do usuario cambiou</string>
     <string name="title_public_key_changed_warning">A clave persoal cambiou</string>
     <string name="msg_public_key_changed_warning">Por favor, asegúrese que o usuario reinstalarle Kontalk ou rexenere a súa clave intencionadamente, se non, a comunicación pode ser comprometida!</string>
-    <string name="warning_public_key_unknown">A clave persoal do usuario é fiable!</string>
-    <string name="title_public_key_unknown_warning">Clave persoal non fiable</string>
+    <string name="warning_public_key_unknown">A clave persoal do usuario non é fiable!</string>
+    <string name="title_public_key_unknown_warning">Comprobe a clave persoal</string>
     <string name="msg_public_key_unknown_warning">"Por favor, asegúrese de que a pegada do usuario  corresponde ao exhibido no "<b>1identidade</b>2 diálogo, se non, a comunicación pode ser comprometida!</string>
 
     <string name="warning_user_blocked">Vostede bloqueou a este usuario.</string>
@@ -579,5 +579,20 @@ Cando están desactivadas, o comportamento de conexión Kontalk se pode axustar 
     <string name="group_command_owner_parted">O propietario (%s) deixou o grupo. Ninguén pode engadir ou eliminar membros.</string>
     <string name="group_info_owner_member">Propietario</string>
     <string name="delete_threads_leave_any_groups">Deixar tamén todos os grupos</string>
+
+    <string name="menu_encryption">Cifrado</string>
+    <string name="pref_balloons_groups">Tema dos globos do grupo</string>
+
+    <string name="title_disable_encryption">Desactivar a cifraxe con esta coversa?</string>
+    <string name="msg_disable_encryption">Todas as mensaxes enviadas neste chat non serán cifradas.
+Desactivar a cifraxe só se o contacto non ten unha chave persoal.</string>
+    <string name="menu_disable_encryption">Desactivar</string>
+
+    <string name="delete_threads_groups_disclaimer">As conversas en grupo serán eliminadas do historial, a non ser que o seleccione na caixa de arriba</string>
+    <string name="create_group_disclaimer">Por favor, lembre que cada membro do grupo deberá coñecerse uns aos outros, a fin de falar.</string>
+    <string name="check_dont_show_again">Non mostrar de novo</string>
+
+    <string name="pref_debug_log">Activar o rexistro de depuración</string>
+    <string name="pref_send_debug_log">Enviar o rexistro de depuración</string>
 
     </resources>
