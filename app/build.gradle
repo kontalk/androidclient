@@ -140,9 +140,7 @@ dependencies {
     compile 'com.afollestad.material-dialogs:commons:0.9.0.2'
     compile 'com.github.castorflex.smoothprogressbar:library:1.1.0'
     compile 'com.nispok:snackbar:2.11.0'
-    compile ('com.github.daniele-athome:FloatingActionButton:-SNAPSHOT') {
-        changing = true;
-    }
+    compile 'com.github.daniele-athome:FloatingActionButton:d47bb3f18e'
     compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'com.github.vlivanov:ListViewVariants:f606578467'
 
