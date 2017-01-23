@@ -1,5 +1,10 @@
 # Change Log
 
+## [4.0.0-beta6.1] - 2017-01-23
+### Fixed
+- Fix email recipient for debug log (#934)
+- Fix sharing pictures and text to Kontalk (#935)
+
 ## [4.0.0-beta6] - 2017-01-22
 ### Changed
 - Toggle encryption per conversation (#271)
