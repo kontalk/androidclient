@@ -112,10 +112,6 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
                 // insert it into the activity
                 setComposeFragment(f);
             }
-            else {
-                // conversation disappeared
-                finish();
-            }
         }
     }
 
