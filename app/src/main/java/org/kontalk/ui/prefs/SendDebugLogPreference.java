@@ -74,7 +74,7 @@ public class SendDebugLogPreference extends Preference {
         if (file != null && file.isFile()) {
             Intent i = new Intent(Intent.ACTION_SEND);
             i.setType("text/plain");
-            i.putExtra(Intent.EXTRA_EMAIL, context.getString(R.string.mailto));
+            i.putExtra(Intent.EXTRA_EMAIL, new String[] { context.getString(R.string.mailto) });
             i.putExtra(Intent.EXTRA_SUBJECT, "Kontalk debug log");
             i.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
             context.startActivity(i);
