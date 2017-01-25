@@ -54,7 +54,7 @@
         android:hint="@string/hint_enter_text"
         android:minHeight="48dip"
         android:inputType="textAutoCorrect|textCapSentences|textMultiLine"
-        android:imeOptions="actionSend|flagNoEnterAction"
+        android:imeOptions="actionSend|flagNoEnterAction|flagNoExtractUi|flagNoFullscreen"
         />
 
     <org.kontalk.ui.FrameLayoutFixed
