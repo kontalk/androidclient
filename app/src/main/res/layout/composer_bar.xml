@@ -47,19 +47,22 @@
         android:textColor="?android:textColorPrimary"
         android:textSize="16sp"
         android:layout_toRightOf="@id/emoji_button"
+        android:layout_toEndOf="@id/emoji_button"
         android:layout_toLeftOf="@id/send_button"
+        android:layout_toStartOf="@id/send_button"
         android:layout_alignParentTop="true"
         app:emojiconSize="@dimen/emoji_edittext_size"
         android:nextFocusRight="@+id/send_button"
         android:hint="@string/hint_enter_text"
         android:minHeight="48dip"
         android:inputType="textAutoCorrect|textCapSentences|textMultiLine"
-        android:imeOptions="actionSend|flagNoEnterAction"
+        android:imeOptions="actionSend|flagNoEnterAction|flagNoExtractUi|flagNoFullscreen"
         />
 
     <org.kontalk.ui.FrameLayoutFixed
         android:layout_height="48dp"
         android:layout_width="fill_parent"
+        android:layout_toStartOf="@+id/audio_send_button"
         android:layout_toLeftOf="@+id/audio_send_button"
         android:background="@android:color/white"
         android:id="@+id/record_layout"
@@ -70,6 +73,7 @@
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:layout_gravity="center"
+            android:layout_marginStart="30dp"
             android:layout_marginLeft="30dp"
             android:orientation="horizontal"
             android:id="@+id/slide_text">
@@ -86,6 +90,7 @@
                 android:layout_height="wrap_content"
                 android:textColor="?android:textColorSecondary"
                 android:textSize="12sp"
+                android:layout_marginStart="6dp"
                 android:layout_marginLeft="6dp"
                 android:text="@string/slide_to_cancel"
                 android:id="@+id/slide_to_cancel"
@@ -97,6 +102,7 @@
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:layout_gravity="center_vertical"
+            android:paddingStart="13dp"
             android:paddingLeft="13dp"
             android:orientation="horizontal"
             android:background="@android:color/white">
@@ -116,6 +122,7 @@
                 android:textColor="?android:textColorPrimary"
                 android:textSize="16sp"
                 android:layout_gravity="center_vertical"
+                android:layout_marginStart="6dp"
                 android:layout_marginLeft="6dp"/>
 
         </LinearLayout>
@@ -131,6 +138,7 @@
         android:layout_height="wrap_content"
         android:minHeight="48dip"
         android:layout_alignBottom="@id/text_editor"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:contentDescription="@string/send"
         android:nextFocusLeft="@+id/text_editor" />
@@ -146,7 +154,9 @@
         android:drawablePadding="0dip"
         android:adjustViewBounds="false"
         android:layout_alignLeft="@id/send_button"
+        android:layout_alignStart="@id/send_button"
         android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_alignBottom="@+id/text_editor"/>
 
 </org.kontalk.ui.view.ComposerBar>
