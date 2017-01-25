@@ -92,10 +92,10 @@ public final class MessageUtils {
         //http://unicode.org/emoji/charts/full-emoji-list.html
         //use this to get UTF-16 from UTF-32: http://www.fileformat.info/info/unicode/char/search.htm
         //you have to use UTF-16 here!
-        sEmojiConverterMap.put(":)", "\uD83D\uDE42");   //can't be displayed horizontal
-        sEmojiConverterMap.put(":-)", "\uD83D\uDE42");  //can't be displayed horizontal
-        sEmojiConverterMap.put(":(", "\uD83D\uDE41");   //can't be displayed horizontal
-        sEmojiConverterMap.put(":-(", "\uD83D\uDE41");  //can't be displayed horizontal
+        sEmojiConverterMap.put(":)", "\uD83D\uDE42");
+        sEmojiConverterMap.put(":-)", "\uD83D\uDE42");
+        sEmojiConverterMap.put(":(", "\uD83D\uDE41");
+        sEmojiConverterMap.put(":-(", "\uD83D\uDE41");
         sEmojiConverterMap.put(":'(", "\uD83D\uDE22");
         sEmojiConverterMap.put("<3", "\u0000\u2764");
         sEmojiConverterMap.put(";-)", "\uD83D\uDE09");
