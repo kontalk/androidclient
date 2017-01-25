@@ -2109,8 +2109,11 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                     stopMediaPlayerUpdater();
                     view.end();
                     AudioFragment audio = findAudioFragment();
-                    if (audio != null)
+                    if (audio != null) {
+                        // this is mainly to get the wake lock released
+                        audio.pausePlaying();
                         audio.seekPlayerTo(0);
+                    }
                     setAudioStatus(AudioContentView.STATUS_ENDED);
                 }
             });
@@ -2125,19 +2128,20 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     @Override
     public void playAudio(AudioContentViewControl view, long messageId) {
         view.play();
-        findAudioFragment().getPlayer().start();
+        findAudioFragment().startPlaying();
         setAudioStatus(AudioContentView.STATUS_PLAYING);
         startMediaPlayerUpdater(view);
     }
 
     private void updatePosition(AudioContentViewControl view) {
+        // we don't use getElapsedTime() here because it might get moved by seeking
         view.updatePosition(findAudioFragment().getPlayer().getCurrentPosition());
     }
 
     @Override
     public void pauseAudio(AudioContentViewControl view) {
         view.pause();
-        findAudioFragment().getPlayer().pause();
+        findAudioFragment().pausePlaying();
         stopMediaPlayerUpdater();
         setAudioStatus(AudioContentView.STATUS_PAUSED);
     }
