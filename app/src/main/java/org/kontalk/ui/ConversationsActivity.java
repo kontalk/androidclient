@@ -113,8 +113,8 @@ public class ConversationsActivity extends MainActivity
     }
 
     protected boolean handleIntent(Intent intent) {
-        if (!super.handleIntent(intent))
-            return false;
+        if (super.handleIntent(intent))
+            return true;
 
         if (intent != null) {
             String action = intent.getAction();
@@ -223,20 +223,25 @@ public class ConversationsActivity extends MainActivity
             // since we have the conversation list open, we're going to disable notifications
             // no need to notify the user twice
             MessagingNotification.disable();
-
-            Intent intent = getIntent();
-            if (intent != null) {
-                Intent sendIntent = getIntent().getParcelableExtra(EXTRA_SEND_INTENT);
-                if (sendIntent != null) {
-                    // handle the share intent sent from ComposeMessage
-                    processSendIntent(sendIntent);
-                    // clear the intent
-                    intent.removeExtra(EXTRA_SEND_INTENT);
-                }
-            }
         }
 
         updateOffline();
+    }
+
+    @Override
+    protected void onResumeFragments() {
+        super.onResumeFragments();
+
+        Intent intent = getIntent();
+        if (intent != null) {
+            Intent sendIntent = getIntent().getParcelableExtra(EXTRA_SEND_INTENT);
+            if (sendIntent != null) {
+                // handle the share intent sent from ComposeMessage
+                processSendIntent(sendIntent);
+                // clear the intent
+                intent.removeExtra(EXTRA_SEND_INTENT);
+            }
+        }
     }
 
     @Override
