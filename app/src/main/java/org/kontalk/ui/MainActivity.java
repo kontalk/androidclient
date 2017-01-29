@@ -288,6 +288,11 @@ public abstract class MainActivity extends ToolbarActivity {
         return super.onCreateDialog(id, args);
     }
 
+    /**
+     * Something to handle for the given intent.
+     * @param intent
+     * @return <code>true</code> if the intent has been handled.
+     */
     protected boolean handleIntent(Intent intent) {
         if (intent != null) {
             String action = intent.getAction();
