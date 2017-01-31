@@ -433,7 +433,7 @@
     <string name="warning_public_key_changed">A clave persoal do usuario cambiou</string>
     <string name="title_public_key_changed_warning">A clave persoal cambiou</string>
     <string name="msg_public_key_changed_warning">Por favor, asegúrese que o usuario reinstalarle Kontalk ou rexenere a súa clave intencionadamente, se non, a comunicación pode ser comprometida!</string>
-    <string name="warning_public_key_unknown">A clave persoal do usuario non é fiable!</string>
+    <string name="warning_public_key_unknown">A clave persoal do usuario non é fiable</string>
     <string name="title_public_key_unknown_warning">Comprobe a clave persoal</string>
     <string name="msg_public_key_unknown_warning">"Por favor, asegúrese de que a pegada do usuario  corresponde ao exhibido no "<b>1identidade</b>2 diálogo, se non, a comunicación pode ser comprometida!</string>
 
@@ -524,9 +524,9 @@
     </plurals>
 
     <plurals name="unread_messages">
-        <item quantity="one">%d mensaxes non lidas</item>
-	    <item quantity="other">%d mensaxes non lidas</item>
-    </plurals>
+	<item quantity="one">1 mensaxes non lidas</item>
+	<item quantity="other">%d mensaxes non lidas</item>
+</plurals>
 <string name="delete_thread_messages">Eliminar o historial da conversa</string>
     <string name="pref_balloon_label_silence">Silencio</string>
     <string name="title_passphrase_request">Contraseña clave persoal</string>
@@ -588,7 +588,7 @@ Cando están desactivadas, o comportamento de conexión Kontalk se pode axustar 
 Desactivar a cifraxe só se o contacto non ten unha chave persoal.</string>
     <string name="menu_disable_encryption">Desactivar</string>
 
-    <string name="delete_threads_groups_disclaimer">As conversas en grupo serán eliminadas do historial, a non ser que o seleccione na caixa de arriba</string>
+    <string name="delete_threads_groups_disclaimer">As conversas en grupo serán eliminadas do historial, a non ser que o seleccione na caixa de arriba.</string>
     <string name="create_group_disclaimer">Por favor, lembre que cada membro do grupo deberá coñecerse uns aos outros, a fin de falar.</string>
     <string name="check_dont_show_again">Non mostrar de novo</string>
 
