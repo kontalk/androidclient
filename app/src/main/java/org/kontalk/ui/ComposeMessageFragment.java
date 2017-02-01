@@ -839,7 +839,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             .append('\n');
 
         Contact c = mConversation.getContact();
-        if (c != null) {
+        if (c != null && c.getName() != null && c.getNumber() != null) {
             text.append(c.getName())
                 .append(" <")
                 .append(c.getNumber())
