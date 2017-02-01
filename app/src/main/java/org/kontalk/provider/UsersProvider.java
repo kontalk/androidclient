@@ -48,6 +48,7 @@ import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.RawContacts;
 import android.support.annotation.NonNull;
+import android.support.annotation.VisibleForTesting;
 import android.support.v4.database.DatabaseUtilsCompat;
 
 import org.kontalk.BuildConfig;
@@ -73,7 +74,8 @@ import org.kontalk.util.XMPPUtils;
 public class UsersProvider extends ContentProvider {
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".users";
 
-    private static final int DATABASE_VERSION = 10;
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    static final int DATABASE_VERSION = 10;
     private static final String DATABASE_NAME = "users.db";
     private static final String TABLE_USERS = "users";
     private static final String TABLE_USERS_OFFLINE = "users_offline";
@@ -95,7 +97,8 @@ public class UsersProvider extends ContentProvider {
     private static HashMap<String, String> usersProjectionMap;
     private static HashMap<String, String> keysProjectionMap;
 
-    private static class DatabaseHelper extends SQLiteOpenHelper {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    static class DatabaseHelper extends SQLiteOpenHelper {
         private static final String CREATE_TABLE_USERS = "(" +
             "_id INTEGER PRIMARY KEY," +
             "jid TEXT NOT NULL UNIQUE," +

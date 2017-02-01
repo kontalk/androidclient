@@ -40,8 +40,8 @@ import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.SystemUtils;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 
 
 @RunWith(AndroidJUnit4.class)

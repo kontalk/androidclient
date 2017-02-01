@@ -39,6 +39,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.Log;
@@ -102,9 +103,12 @@ public class MessagesProvider extends ContentProvider {
     private static HashMap<String, String> groupsMembersProjectionMap;
     private static HashMap<String, String> groupsProjectionMap;
 
-    private static class DatabaseHelper extends SQLiteOpenHelper {
-        private static final int DATABASE_VERSION = 12;
-        private static final String DATABASE_NAME = "messages.db";
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    static class DatabaseHelper extends SQLiteOpenHelper {
+        @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+        static final int DATABASE_VERSION = 12;
+        @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+        static final String DATABASE_NAME = "messages.db";
 
         private static final String _SCHEMA_MESSAGES = "(" +
             "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
