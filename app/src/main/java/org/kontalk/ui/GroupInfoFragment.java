@@ -358,12 +358,13 @@ public class GroupInfoFragment extends ActionModeListFragment
         List<String> users = new LinkedList<>();
         for (int i = 0, c = mMembersAdapter.getCount(); i < c; ++i) {
             if (checked.get(i)) {
-                Contact contact = (Contact) mMembersAdapter.getItem(i);
-                if (Authenticator.isSelfJID(getContext(), contact.getJID())) {
+                GroupMembersAdapter.GroupMember member =
+                    (GroupMembersAdapter.GroupMember) mMembersAdapter.getItem(i);
+                if (Authenticator.isSelfJID(getContext(), member.contact.getJID())) {
                     removingSelf = true;
                 }
                 else {
-                    users.add(contact.getJID());
+                    users.add(member.contact.getJID());
                 }
             }
         }
