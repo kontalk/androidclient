@@ -1,0 +1,20 @@
+<b>Hjelp oss å gjøre Kontalk bedre! Semd e-post til devteam@kontalk.org hvis du har noen problemer!! Å legge igjen negativ poenggivining er ikke noe som hjelper et ikke-kommersielt prosjekt! Takk!</b>
+<i>MERK: IKKE INSTALLER PÅ SD-KORT!</i>
+
+<b>Følg @kontalknet på identi.ca eller Twitter for å se de siste endringene og tjenestestatus!</b>
+
+Kontalk er en sikker lynmeldingsklient, som lar deg sende og motta tekst, bilde og stemmemeldinger (andre filtyper kommer snart) til og fra andre Kontalk-brukere, helt gratis (*).
+
+&#8226;&#8195; <b>Ditt telefonnummer er din ID.</b> Ingen brukernavn eller passord<br/>
+&#8226;&#8195; <b>Det finner automatisk andre Kontalk-brukere</b> ved å se gjennom kontaktlista di, noe som gjør det enda enklere for din vennekrets å komme igang med å sludre på Kontalk<br/>
+&#8226;&#8195; <b>Ende-til-ende -kryptering</b> sørger for sikre og private samtaler, slik at bare du og personen du snakker med kan lese dem<br/>
+&#8226;&#8195; Du og alle telefonnummer brukt på nettverket er kryptert uten mulighet for opplåsing<br/>
+&#8226;&#8195; Det støtter flerfoldige enheter, noe som gjør det enkelt å komme igang med sludring på telefonen, for så å fullføre seansen på ditt nettbrett!<br/>
+&#8226;&#8195; Based på åpne standarder: XMPP og OpenPGP
+
+Kontalk er i sin helhet et friprog-prosjekt, med all kildekode gjort tilgjengelig på GitHub (https://github.com/kontalk), noe som lar alle overgå og forbedre sikkerheten.
+Nettverket avhenger av donasjoner for fortsatt drift, så hvis du kan, vær så snill å doner på http://kontalk.net/. Selv små donasjoner monner.
+
+Du kan se alle tilgangene brukt av dette programmet forklart på denne siden: https://github.com/kontalk/androidclient/wiki/Android-client-permissions
+
+(*) Kostnader fra tjenestetilbyder for datatrafikk kan tilkomme

@@ -1,0 +1,6 @@
+* 更新了国家标识
+* 修正了多个图片上传的问题
+* 修正了波斯语语言环境下的注册错误
+* 其他的Bug修正
+
+详细更新日志请参看https://github.com/kontalk/androidclient/releases/tag/v3.1.10

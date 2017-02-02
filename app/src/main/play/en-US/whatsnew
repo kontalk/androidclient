@@ -1,0 +1,6 @@
+* Update country flags
+* Fix multiple photo upload
+* Fix registration error in Persian locale
+* Other bugfixes
+
+Detailed changelog can be found at https://github.com/kontalk/androidclient/releases/tag/v3.1.10

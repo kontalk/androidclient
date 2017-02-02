@@ -1,0 +1,6 @@
+* Update Landesflaggen
+* Fehler beim gleichzeitigem Upload von mehreren Bildern behoben
+* Registrierungsfehler bei Geräten mit Persischer Sprache behoben
+* Weitere Fehlerbehebungen
+
+Details zu den Änderungen unter: https://github.com/kontalk/androidclient/releases/tag/v3.1.10
