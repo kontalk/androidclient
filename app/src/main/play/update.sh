@@ -6,6 +6,7 @@
 set -e
 
 DEFAULT_LOCALE="en-US"
+MAX_SHORT_DESC_LEN="80"
 
 function check_lang() {
     INFILE="$1"
@@ -15,7 +16,7 @@ function check_lang() {
     FULL_DESC=$(cat ${INFILE} | perl -MJSON -Mutf8 -n0777 \
      -E 'binmode(STDIN, ":encoding(UTF-8)"); binmode(STDOUT, ":encoding(UTF-8)"); $r = decode_json($_); print $r->{full_description}' -)
     SHORT_DESC_LEN=$(expr length "${SHORT_DESC}")
-    [ -n "${SHORT_DESC}" ] && [ "${SHORT_DESC_LEN}" -le "80" ] && [ -n "${FULL_DESC}" ]
+    [ -n "${SHORT_DESC}" ] && [ "${SHORT_DESC_LEN}" -le "${MAX_SHORT_DESC_LEN}" ] && [ -n "${FULL_DESC}" ]
 }
 
 function copy_lang() {
