@@ -589,13 +589,19 @@ Bruk <b>Meny</b> &gt; <b>Inviter brukere</b> for å sende noen en invitasjonsmel
     <string name="notification_group_title">%1$s @ %2$s</string>
 
     <plurals name="unread_messages">
-	<item quantity="one">%d uleste meldinger</item>
-	<item quantity="other"/>
+	<item quantity="one">Én ulest melding</item>
+	<item quantity="other">%d uleste meldinger</item>
 </plurals>
 
     <plurals name="unread_messages_group">
 	<item quantity="one">%1$d meldinger @ %2$s</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
+
+    <string name="menu_encryption">Kryptering</string>
+    <string name="title_disable_encryption">Skru av kryptering for denne samtalen?</string>
+    <string name="msg_disable_encryption">Alle nye meldinger sendt til denne samtalen vil IKKE bli kryptert.
+Bare skru av kryptering hvis din kontakt ikke har en personlig nøkkel.</string>
+    <string name="menu_disable_encryption">Skru av</string>
 
     </resources>
