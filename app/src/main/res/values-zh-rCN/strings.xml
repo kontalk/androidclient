@@ -496,8 +496,8 @@
     <string name="check_do_not_show_again">不再显示</string>
 
     <plurals name="unread_messages">
-        <item quantity="other">%d条未读消息</item>
-    </plurals>
+	<item quantity="other">1条未读消息</item>
+</plurals>
 
 <string name="menu_create_group">创建群组</string>
     <string name="delete_thread_messages">删除聊天历史</string>
@@ -591,12 +591,26 @@
 
     <string name="menu_encryption">加密</string>
     <string name="title_disable_encryption">对该聊天禁用加密?</string>
-    <string name="msg_disable_encryption">"该聊天收到的所有消息都不会被加密。
-只推荐在您的联系人没有个人密匙的时候禁用加密。
- "</string>
+    <string name="msg_disable_encryption">该聊天收到的所有消息都不会被加密。
+只推荐在您的联系人没有个人密匙的时候禁用加密。</string>
     <string name="menu_disable_encryption">禁用</string>
 
     <string name="pref_debug_log">开启调试日志</string>
     <string name="pref_send_debug_log">发送调试日志</string>
 
-    </resources>
+    <plurals name="notification_more">
+	<item quantity="one">顶一个</item>
+	<item quantity="other"/>
+</plurals>
+
+    <plurals name="context_selected">
+	<item quantity="one">一个已被选择</item>
+	<item quantity="other"/>
+</plurals>
+
+    <plurals name="group_people">
+	<item quantity="one">一个人</item>
+	<item quantity="other"/>
+</plurals>
+
+</resources>
