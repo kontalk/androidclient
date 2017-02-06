@@ -22,5 +22,6 @@
     <!-- actions -->
     <item android:id="@+id/menu_chat" android:title="@string/button_private_chat" android:icon="@drawable/ic_menu_chat" app:showAsAction="ifRoom"/>
     <item android:id="@+id/menu_remove" android:title="@string/group_info_menu_remove" android:icon="@drawable/ic_menu_delete" app:showAsAction="ifRoom"/>
+    <item android:id="@+id/menu_add_again" android:title="@string/group_info_menu_add_again" android:icon="@drawable/ic_menu_invite" app:showAsAction="ifRoom"/>
 
 </menu>
