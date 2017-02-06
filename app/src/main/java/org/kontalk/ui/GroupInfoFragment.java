@@ -94,6 +94,7 @@ public class GroupInfoFragment extends ActionModeListFragment
     private MenuItem mAddMenu;
     private MenuItem mRemoveMenu;
     private MenuItem mChatMenu;
+    private MenuItem mReaddMenu;
 
     GroupMembersAdapter mMembersAdapter;
 
@@ -310,9 +311,11 @@ public class GroupInfoFragment extends ActionModeListFragment
                     .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
                 mode.finish();
                 return true;
+            case R.id.menu_add_again:
+                readdUser(getCheckedItem().contact.getJID());
+                return true;
             case R.id.menu_chat:
-                Contact c = getCheckedItem();
-                openChat(c.getJID());
+                openChat(getCheckedItem().contact.getJID());
                 return true;
         }
         return false;
@@ -324,6 +327,7 @@ public class GroupInfoFragment extends ActionModeListFragment
         inflater.inflate(R.menu.group_info_ctx, menu);
         mRemoveMenu = menu.findItem(R.id.menu_remove);
         mChatMenu = menu.findItem(R.id.menu_chat);
+        mReaddMenu = menu.findItem(R.id.menu_add_again);
         updateUI();
         return true;
     }
@@ -338,14 +342,24 @@ public class GroupInfoFragment extends ActionModeListFragment
     @Override
     public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
         mChatMenu.setVisible(mCheckedItemCount == 1);
+        if (mCheckedItemCount == 1) {
+            String selfJid = Authenticator.getSelfJID(getContext());
+            boolean isOwner = KontalkGroup.checkOwnership(mConversation.getGroupJid(), selfJid);
+            mReaddMenu.setVisible(isOwner);
+        }
+        else {
+            mReaddMenu.setVisible(false);
+        }
+
         return true;
     }
 
-    private Contact getCheckedItem() {
+    private GroupMembersAdapter.GroupMember getCheckedItem() {
         if (mCheckedItemCount != 1)
             throw new IllegalStateException("checked items count must be exactly 1");
 
-        return (Contact) getListView().getItemAtPosition(getCheckedItemPosition());
+        return (GroupMembersAdapter.GroupMember) getListView()
+            .getItemAtPosition(getCheckedItemPosition());
     }
 
     private int getCheckedItemPosition() {
@@ -541,6 +555,11 @@ public class GroupInfoFragment extends ActionModeListFragment
         }
 
         builder.show();
+    }
+
+    private void readdUser(String jid) {
+        mConversation.addUsers(new String[] { jid });
+        getActivity().finish();
     }
 
     void openChat(String jid) {

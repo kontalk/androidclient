@@ -18,6 +18,10 @@
 
 package org.kontalk.data;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import android.content.AsyncQueryHandler;
 import android.content.ContentUris;
 import android.content.Context;
@@ -34,7 +38,6 @@ import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.group.GroupControllerFactory;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.util.MessageUtils;
-import org.kontalk.util.SystemUtils;
 
 
 /**
@@ -455,10 +458,12 @@ public class Conversation {
         // TODO check for null
 
         // send add group member command now
-        String[] allMembers = SystemUtils.concatenate(getGroupPeers(), members);
+        Set<String> allMembers = new HashSet<>();
+        Collections.addAll(allMembers, getGroupPeers());
+        Collections.addAll(allMembers, members);
         MessageCenterService.addGroupMembers(mContext, mGroupJid,
-            mGroupSubject, allMembers, members, encrypted,
-            ContentUris.parseId(cmdMsg), msgId);
+            mGroupSubject, allMembers.toArray(new String[allMembers.size()]),
+            members, encrypted, ContentUris.parseId(cmdMsg), msgId);
     }
 
     public void removeUsers(String[] members) {
