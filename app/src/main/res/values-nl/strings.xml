@@ -514,9 +514,9 @@
     <string name="err_invalid_passphrase">Verkeerd wachtwoord. Herstart de app om een ander wachtwoord te proberen.</string>
 
     <plurals name="unread_messages">
-        <item quantity="one">%d ongelezen berichten</item>
-        <item quantity="other">%d ongelezen berichten</item>
-    </plurals>
+	<item quantity="one">1 ongelezen bericht</item>
+	<item quantity="other">%d ongelezen berichten</item>
+</plurals>
 
     <plurals name="unread_messages_group">
         <item quantity="one">%1$d berichten @ %2$s</item>
