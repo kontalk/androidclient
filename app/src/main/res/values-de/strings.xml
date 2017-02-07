@@ -585,4 +585,6 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
 
     <string name="group_info_menu_add_again">Wieder hinzufügen</string>
 
+    <string name="status_notsubscribed">Nicht erlaubt/Blockiert</string>
+
     </resources>
