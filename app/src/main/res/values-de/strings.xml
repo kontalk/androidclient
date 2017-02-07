@@ -515,9 +515,9 @@
     <string name="err_invalid_passphrase">Falsches Passwort. Starten Sie die App erneut und probieren Sie ein anderes.</string>
 
     <plurals name="unread_messages">
-        <item quantity="one">%d ungelesene Nachrichten</item>
-        <item quantity="other">%d ungelesene Nachrichten</item>
-    </plurals>
+	<item quantity="one">%d ungelesene Nachricht</item>
+	<item quantity="other">%d ungelesene Nachrichten</item>
+</plurals>
     <plurals name="unread_messages_group">
         <item quantity="one">%d ungelesene Nachrichten</item>
         <item quantity="other">%1$d Nachrichten @ %2$s</item>
