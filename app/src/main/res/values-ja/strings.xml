@@ -575,4 +575,6 @@ http://kontalk.org/</string>
 
 <string name="group_info_menu_add_again">もう一度追加</string>
 
+    <string name="status_notsubscribed">許可しない/ブロック済</string>
+
     </resources>
