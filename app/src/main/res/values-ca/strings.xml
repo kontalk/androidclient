@@ -581,4 +581,6 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
 
     <string name="group_info_menu_add_again">Afegeix novament</string>
 
+    <string name="status_notsubscribed">Sense permís/Bloquejat</string>
+
     </resources>
