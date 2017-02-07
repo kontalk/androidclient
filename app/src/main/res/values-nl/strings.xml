@@ -585,4 +585,6 @@ Schakel versleuteling enkel uit als dit contact geen persoonlijke sleutel heeft.
 
     <string name="group_info_menu_add_again">Voeg opnieuw toe</string>
 
+    <string name="status_notsubscribed">Niet toegestaan/Geblokkeerd</string>
+
     </resources>
