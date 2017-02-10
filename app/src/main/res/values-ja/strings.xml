@@ -570,7 +570,9 @@ http://kontalk.org/</string>
 
     <plurals name="group_people">
 	<item quantity="one">1 人</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
 
-</resources>
+<string name="group_info_menu_add_again">もう一度追加</string>
+
+    </resources>

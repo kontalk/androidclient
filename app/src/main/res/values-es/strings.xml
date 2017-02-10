@@ -581,4 +581,6 @@ Cuando están deshabilitadas, el comportamiento de la conexión de Kontalk puede
 Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string>
     <string name="menu_disable_encryption">Deshabilitar</string>
 
+    <string name="group_info_menu_add_again">Añadir de nuevo</string>
+
     </resources>

@@ -579,4 +579,6 @@ Quan estan desactivades, el comportament de connexió de Kontalk es pot ajustar 
 Deshabiliti el xifrat només si el seu contacte no té una clau personal.</string>
     <string name="menu_disable_encryption">Deshabilita</string>
 
+    <string name="group_info_menu_add_again">Afegeix novament</string>
+
     </resources>
