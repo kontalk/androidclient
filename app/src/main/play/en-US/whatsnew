@@ -1,6 +1,9 @@
-* Update country flags
-* Fix multiple photo upload
-* Fix registration error in Persian locale
-* Other bugfixes
+Group chats are here! Help us improve and fix bugs by reporting them on GitHub or discussing them on our new forum: https://forum.kontalk.org
 
-Detailed changelog can be found at https://github.com/kontalk/androidclient/releases/tag/v3.1.10
+* NEW: toggle encryption per chat
+* NEW: internal logging system
+* NEW: sticky conversations
+* NEW: new app icon by Giovanni Lauricella
+* organize preferences by category
+* more reliable registration procedure
+* many bugfixes and lots of minor improvements

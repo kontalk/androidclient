@@ -1,6 +1,9 @@
-* Bandiere nazioni aggiornate
-* Correzione invio foto multiple
-* Correzione errore di registrazione in lingua Persiana
-* Correzioni varie
+Finalmente con le chat di gruppo! Aiutaci a migliorarla e correggere bug segnalandoli su GitHub o discutendoli sul nostro nuovo forum: https://forum.kontalk.org
 
-Changelog dettagliato disponibile su https://github.com/kontalk/androidclient/releases/tag/v3.1.10
+* NEW: disattiva cifratura per singola chat
+* NEW: sistema di logging interno
+* NEW: conversazioni preferite
+* NEW: nuova icona app by Giovanni Lauricella
+* preferenze riorganizzate per categoria
+* procedura di registrazione più affidabile
+* svariate altre correzioni e miglioramenti vari

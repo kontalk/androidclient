@@ -13,7 +13,7 @@ Kontalk ist ein sicherer Instant Messenger, der es Ihnen erlaubt Text-, Bild- un
 &#8226;&#8195; Es werden mehrere Geräte unterstützt, was es Ihnen sehr einfach macht einen Chat auf Ihrem Smartphone zu beginnen und auf Ihrem Tablet weiter zu führen<br/>
 &#8226;&#8195; Basierend auf offenen Standards: XMPP und OpenPGP
 
-Kontalk ist vollständig ein Open-Source Gemeinschaftsprojekt, der gesamte Quellcode wird auf GitHub gehosted (https://github.com/kontalk), was jedem erlaubt, die Sicherheit zu überprüfen und zu verbessern.
+Kontalk ist ein vollständig Open-Source Gemeinschaftsprojekt. Der gesamte Quellcode wird auf GitHub gehosted (https://github.com/kontalk), was jedem erlaubt, die Sicherheit zu überprüfen und zu verbessern.
 Das Netzwerk ist auf öffentliche Spenden angewiesen um die Infrastruktur aufrecht zu erhalten. Wenn Sie also können, spenden Sie bitte auf http://kontalk.net/. Auch kleine Spenden helfen.
 
 Alle Berechtigungen welche die App benötigt, werden auf dieser Seite erklärt: https://github.com/kontalk/androidclient/wiki/[de]-Android-App-Berechtigungen

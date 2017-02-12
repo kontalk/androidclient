@@ -1,6 +1,10 @@
-* Update Landesflaggen
-* Fehler beim gleichzeitigem Upload von mehreren Bildern behoben
-* Registrierungsfehler bei Geräten mit Persischer Sprache behoben
-* Weitere Fehlerbehebungen
+Lang erwartete Gruppenchats!
+Helfen Sie uns bei Verbesserungen und Fehlerbehebungen indem Sie Fehlerreports auf Github posten oder in unserem neuen Forum darüber diskutieren: https://forum.kontalk.org
 
-Details zu den Änderungen unter: https://github.com/kontalk/androidclient/releases/tag/v3.1.10
+* NEU: Verschlüsselung pro Chat abschaltbar
+* NEU: internes Logsystem zur Fehlersuche
+* NEU: Chats als wichtig markieren
+* NEU: neues Appicon von Giovanni Lauricella
+* besser sortiertes Einstellungsmenü
+* zuverlässigere Anmeldeprozedur
+* viele Fehlerbehebungen und Verbesserungen
