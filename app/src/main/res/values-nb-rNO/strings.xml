@@ -604,4 +604,6 @@ Bruk <b>Meny</b> &gt; <b>Inviter brukere</b> for å sende noen en invitasjonsmel
 Bare skru av kryptering hvis din kontakt ikke har en personlig nøkkel.</string>
     <string name="menu_disable_encryption">Skru av</string>
 
+    <string name="group_info_menu_add_again">Legg til igjen</string>
+
     </resources>

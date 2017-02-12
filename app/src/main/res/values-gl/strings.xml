@@ -595,4 +595,6 @@ Desactivar a cifraxe só se o contacto non ten unha chave persoal.</string>
     <string name="pref_debug_log">Activar o rexistro de depuración</string>
     <string name="pref_send_debug_log">Enviar o rexistro de depuración</string>
 
+    <string name="group_info_menu_add_again">Engadir de novo</string>
+
     </resources>
