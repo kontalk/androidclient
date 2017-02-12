@@ -30,6 +30,10 @@ allprojects {
         appcompatVersion = '25.1.1'
         // Google will drop support for Android 2.3 after 10.0.x
         googlePlayServicesVersion = '10.0.1'
+
+        travisBuild = System.getenv("TRAVIS") == "true"
+        // allows for -Dpre-dex=false to be set
+        preDexEnabled = "true" == System.getProperty("pre-dex", "true")
     }
 }
 
