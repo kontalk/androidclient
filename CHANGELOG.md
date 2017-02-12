@@ -1,5 +1,15 @@
 # Change Log
 
+## [4.0.0] - 2017-02-12
+### Changed
+- Groups: button for adding users again (for members losing their messages)
+
+### Fixed
+- Do not extract keyboard UI in landscape (#936)
+- Fix floating action button animation (#937)
+- Keep screen on while playing audio messages (#939)
+- Fix crash on tablets (#943)
+
 ## [4.0.0-beta6.1] - 2017-01-23
 ### Fixed
 - Fix email recipient for debug log (#934)
