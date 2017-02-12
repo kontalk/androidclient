@@ -51,10 +51,10 @@ function copy_lang() {
     if [ -n "${SHORT_DESC}" ] && [ -n "${FULL_DESC}" ]; then
         echo "Updating locale ${LOCALE}"
         mkdir -p ${LOCALE}/listing
-        [ -n "${TITLE}" ] && echo "${TITLE}" >${LOCALE}/listing/title
-        echo "${SHORT_DESC}" >${LOCALE}/listing/shortdescription
-        echo "${FULL_DESC}" >${LOCALE}/listing/fulldescription
-        [ -n "${WHATSNEW}" ] && echo "${WHATSNEW}" >${LOCALE}/whatsnew
+        [ -n "${TITLE}" ] && echo -n "${TITLE}" >${LOCALE}/listing/title
+        echo -n "${SHORT_DESC}" >${LOCALE}/listing/shortdescription
+        echo -n "${FULL_DESC}" >${LOCALE}/listing/fulldescription
+        [ -n "${WHATSNEW}" ] && echo -n "${WHATSNEW}" >${LOCALE}/whatsnew
     else
         echo "Skipping locale ${LOCALE}"
     fi
