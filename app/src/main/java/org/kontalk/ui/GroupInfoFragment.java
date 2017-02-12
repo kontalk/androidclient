@@ -171,6 +171,9 @@ public class GroupInfoFragment extends ActionModeListFragment
         if (mAddMenu != null) {
             mAddMenu.setVisible(isOwner);
         }
+        if (mReaddMenu != null) {
+            mReaddMenu.setVisible(isOwner);
+        }
     }
 
     private String[] getGroupMembers() {
@@ -312,7 +315,9 @@ public class GroupInfoFragment extends ActionModeListFragment
                 mode.finish();
                 return true;
             case R.id.menu_add_again:
-                readdUser(getCheckedItem().contact.getJID());
+                // using clone because listview returns its original copy
+                readdUser(SystemUtils
+                    .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
                 return true;
             case R.id.menu_chat:
                 openChat(getCheckedItem().contact.getJID());
@@ -342,15 +347,6 @@ public class GroupInfoFragment extends ActionModeListFragment
     @Override
     public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
         mChatMenu.setVisible(mCheckedItemCount == 1);
-        if (mCheckedItemCount == 1) {
-            String selfJid = Authenticator.getSelfJID(getContext());
-            boolean isOwner = KontalkGroup.checkOwnership(mConversation.getGroupJid(), selfJid);
-            mReaddMenu.setVisible(isOwner);
-        }
-        else {
-            mReaddMenu.setVisible(false);
-        }
-
         return true;
     }
 
@@ -557,8 +553,22 @@ public class GroupInfoFragment extends ActionModeListFragment
         builder.show();
     }
 
-    private void readdUser(String jid) {
-        mConversation.addUsers(new String[] { jid });
+    private void readdUser(final SparseBooleanArray checked) {
+        List<String> users = new LinkedList<>();
+        for (int i = 0, c = mMembersAdapter.getCount(); i < c; ++i) {
+            if (checked.get(i)) {
+                GroupMembersAdapter.GroupMember member =
+                    (GroupMembersAdapter.GroupMember) mMembersAdapter.getItem(i);
+                if (!Authenticator.isSelfJID(getContext(), member.contact.getJID())) {
+                    users.add(member.contact.getJID());
+                }
+            }
+        }
+
+        if (users.size() > 0) {
+            mConversation.addUsers(users.toArray(new String[users.size()]));
+        }
+
         getActivity().finish();
     }
 
