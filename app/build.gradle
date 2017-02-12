@@ -53,7 +53,7 @@ android {
     }
 
     signingConfigs {
-        if (System.getenv("TRAVIS")) {
+        if (travisBuild) {
             release {
                 storeFile rootProject.file('dist/release.keystore')
                 storePassword System.getenv("RELEASE_STORE_PASSWORD")
@@ -76,7 +76,7 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
-            if (project.hasProperty('RELEASE_STORE_FILE') || System.getenv("TRAVIS"))
+            if (project.hasProperty('RELEASE_STORE_FILE') || travisBuild)
                 signingConfig signingConfigs.release
         }
         debug {
@@ -90,6 +90,11 @@ android {
             testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg', 'proguard-test.cfg'
             ext.enableCrashlytics = false
         }
+    }
+
+    dexOptions {
+        // skip pre-dexing when running on Travis CI or when disabled via -Dpre-dex=false.
+        preDexLibraries = preDexEnabled && !travisBuild
     }
 
     lintOptions {
@@ -159,7 +164,7 @@ dependencies {
     androidTestCompile 'com.jayway.android.robotium:robotium-solo:5.6.3'
 }
 
-if (System.getenv("TRAVIS")) {
+if (travisBuild) {
     play {
         track = 'alpha'
         jsonFile = rootProject.file('dist/googleplay-developer-key.json')
