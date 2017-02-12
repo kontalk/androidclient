@@ -170,7 +170,7 @@ if (travisBuild) {
         jsonFile = rootProject.file('dist/googleplay-developer-key.json')
     }
 
-    task publish(dependsOn: ['publishApkGoogleplayRelease']) {
+    task publish(dependsOn: ['publishGoogleplayRelease']) {
         group = 'Kontalk'
         description = 'Publish to Google Play alpha channel'
     }
