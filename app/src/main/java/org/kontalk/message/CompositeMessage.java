@@ -32,6 +32,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.GroupExtension;
@@ -505,19 +506,18 @@ public class CompositeMessage {
      * @param mime MIME type of the incoming attachment
      * @param timestamp timestamp of the message
      */
-    public static File getIncomingFile(String mime, Date timestamp) {
-        Class<AttachmentComponent> klass = getSupportingComponent(mime);
-        if (klass != null) {
-            if (klass.isAssignableFrom(ImageComponent.class)) {
+    public static File getIncomingFile(String mime, @NonNull Date timestamp) {
+        if (mime != null) {
+            if (ImageComponent.supportsMimeType(mime)) {
                 String ext = ImageComponent.getFileExtension(mime);
                 return MediaStorage.getIncomingImageFile(timestamp, ext);
             }
-            else if (klass.isAssignableFrom(AudioComponent.class)) {
+            else if (AudioComponent.supportsMimeType(mime)) {
                 String ext = AudioComponent.getFileExtension(mime);
                 return MediaStorage.getIncomingAudioFile(timestamp, ext);
             }
-        }
 
+        }
         return null;
     }
 
@@ -526,17 +526,14 @@ public class CompositeMessage {
      * @param mime MIME type of the incoming attachment
      * @param timestamp timestamp of the message
      */
-    public static String getFilename(String mime, Date timestamp) {
-        Class<AttachmentComponent> klass = getSupportingComponent(mime);
-        if (klass != null) {
-            if (klass.isAssignableFrom(ImageComponent.class)) {
-                String ext = ImageComponent.getFileExtension(mime);
-                return MediaStorage.getOutgoingPictureFilename(timestamp, ext);
-            }
-            else if (klass.isAssignableFrom(AudioComponent.class)) {
-                String ext = AudioComponent.getFileExtension(mime);
-                return MediaStorage.getOutgoingAudioFilename(timestamp, ext);
-            }
+    public static String getFilename(String mime, @NonNull Date timestamp) {
+        if (ImageComponent.supportsMimeType(mime)) {
+            String ext = ImageComponent.getFileExtension(mime);
+            return MediaStorage.getOutgoingPictureFilename(timestamp, ext);
+        }
+        else if (AudioComponent.supportsMimeType(mime)) {
+            String ext = AudioComponent.getFileExtension(mime);
+            return MediaStorage.getOutgoingAudioFilename(timestamp, ext);
         }
 
         return null;

@@ -82,8 +82,8 @@ public class DownloadService extends IntentService implements DownloadListener {
     /** A map to avoid duplicate downloads. */
     private static final Map<String, Long> sQueue = new LinkedHashMap<>();
 
-    public static final String ACTION_DOWNLOAD_URL = "org.kontalk.action.DOWNLOAD_URL";
-    public static final String ACTION_DOWNLOAD_ABORT = "org.kontalk.action.DOWNLOAD_ABORT";
+    private static final String ACTION_DOWNLOAD_URL = "org.kontalk.action.DOWNLOAD_URL";
+    private static final String ACTION_DOWNLOAD_ABORT = "org.kontalk.action.DOWNLOAD_ABORT";
 
     private static final String EXTRA_NOTIFY = "org.kontalk.download.notify";
 
@@ -164,21 +164,28 @@ public class DownloadService extends IntentService implements DownloadListener {
                 return;
             }
 
-            // make sure storage directory is present
-            MediaStorage.MEDIA_ROOT.mkdirs();
-
             mMessageId = args.getLong(CompositeMessage.MSG_ID, 0);
             mPeer = args.getString(CompositeMessage.MSG_SENDER);
             mEncrypted = args.getBoolean(CompositeMessage.MSG_ENCRYPTED, false);
             sQueue.put(url, mMessageId);
 
-            Date date = null;
+            Date date;
             long timestamp = args.getLong(CompositeMessage.MSG_TIMESTAMP);
             if (timestamp > 0)
                 date = new Date(timestamp);
+            else
+                date = new Date();
+
+            String mime = args.getString(CompositeMessage.MSG_MIME);
+            // this will be used if the server doesn't provide one
+            // if the server provides a filename, only the path will be used
+            File defaultFile = CompositeMessage.getIncomingFile(mime, date);
+            if (defaultFile == null) {
+                defaultFile = MediaStorage.getIncomingFile(date, "bin");
+            }
 
             // download content
-            mDownloadClient.downloadAutofilename(url, MediaStorage.MEDIA_ROOT, date, this);
+            mDownloadClient.downloadAutofilename(url, defaultFile, date, this);
         }
         catch (Exception e) {
             error(url, null, e);
@@ -402,19 +409,29 @@ public class DownloadService extends IntentService implements DownloadListener {
         return sQueue.containsKey(url);
     }
 
-    public static void start(Context context, long databaseId, String sender, long timestamp, boolean encrypted, String url) {
-        start(context, databaseId, sender, timestamp, encrypted, url, true);
+    public static void start(Context context, long databaseId, String sender,
+            String mime, long timestamp, boolean encrypted, String url) {
+        start(context, databaseId, sender, mime, timestamp, encrypted, url, true);
     }
 
-    public static void start(Context context, long databaseId, String sender, long timestamp, boolean encrypted, String url, boolean notify) {
+    public static void start(Context context, long databaseId, String sender,
+            String mime, long timestamp, boolean encrypted, String url, boolean notify) {
         Intent i = new Intent(context, DownloadService.class);
         i.setAction(DownloadService.ACTION_DOWNLOAD_URL);
         i.putExtra(CompositeMessage.MSG_ID, databaseId);
         i.putExtra(CompositeMessage.MSG_SENDER, sender);
+        i.putExtra(CompositeMessage.MSG_MIME, mime);
         i.putExtra(CompositeMessage.MSG_TIMESTAMP, timestamp);
         i.putExtra(CompositeMessage.MSG_ENCRYPTED, encrypted);
         i.putExtra(EXTRA_NOTIFY, notify);
         i.setData(Uri.parse(url));
+        context.startService(i);
+    }
+
+    public static void abort(Context context, Uri uri) {
+        Intent i = new Intent(context, DownloadService.class);
+        i.setAction(DownloadService.ACTION_DOWNLOAD_ABORT);
+        i.setData(uri);
         context.startService(i);
     }
 

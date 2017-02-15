@@ -58,8 +58,6 @@ import org.kontalk.Log;
 public abstract class MediaStorage {
     private static final String TAG = Kontalk.TAG;
 
-    public static final File MEDIA_ROOT = new File(Environment.getExternalStorageDirectory(), "Kontalk");
-
     public static final String UNKNOWN_FILENAME = "unknown_file.bin";
 
     private static final File DCIM_ROOT = new File(Environment
@@ -73,6 +71,12 @@ public abstract class MediaStorage {
         "Kontalk"), "Sent");
     private static final File AUDIO_ROOT = new File(Environment
         .getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
+        "Kontalk");
+    private static final File AUDIO_SENT_ROOT = new File(new File(Environment
+        .getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
+        "Kontalk"), "Sent");
+    private static final File DOWNLOADS_ROOT = new File(Environment
+        .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
         "Kontalk");
 
     private static final DateFormat sDateFormat =
@@ -249,27 +253,6 @@ public abstract class MediaStorage {
         return bitmap;
     }
 
-    public static File writeMedia(String filename, InputStream source) throws IOException {
-        MEDIA_ROOT.mkdirs();
-        File f = new File(MEDIA_ROOT, filename);
-        FileOutputStream fout = new FileOutputStream(f);
-        byte[] buffer = new byte[1024];
-        int len;
-        while ((len = source.read(buffer)) != -1)
-            fout.write(buffer, 0, len);
-        fout.close();
-        return f;
-    }
-
-    public static File writeMedia(String filename, byte[] contents) throws IOException {
-        MEDIA_ROOT.mkdirs();
-        File f = new File(MEDIA_ROOT, filename);
-        FileOutputStream fout = new FileOutputStream(f);
-        fout.write(contents);
-        fout.close();
-        return f;
-    }
-
     public static long getLength(Context context, Uri media) throws IOException {
         AssetFileDescriptor stat = null;
         long length = 0;
@@ -391,9 +374,9 @@ public abstract class MediaStorage {
     }
 
     private static File getOutgoingAudioFile(Date date) throws IOException {
-        createNoMedia(AUDIO_ROOT);
+        createNoMedia(AUDIO_SENT_ROOT);
         String timeStamp = sDateFormat.format(date);
-        File f = new File(AUDIO_ROOT, "record_" + timeStamp + ".3gp");
+        File f = new File(AUDIO_SENT_ROOT, "record_" + timeStamp + ".3gp");
         f.createNewFile();
         return f;
     }
@@ -408,6 +391,12 @@ public abstract class MediaStorage {
         createNoMedia(AUDIO_ROOT);
         String timeStamp = sDateFormat.format(date);
         return new File(AUDIO_ROOT, "audio_" + timeStamp + "." + extension);
+    }
+
+    public static File getIncomingFile(Date date, String extension) {
+        createMedia(DOWNLOADS_ROOT);
+        String timeStamp = sDateFormat.format(date);
+        return new File(DOWNLOADS_ROOT, "file_" + timeStamp + "." + extension);
     }
 
     /** Ensures that the given path exists. */
