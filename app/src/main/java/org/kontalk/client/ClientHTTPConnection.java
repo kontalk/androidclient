@@ -49,6 +49,7 @@ import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.support.annotation.NonNull;
 
 import info.guardianproject.netcipher.client.TlsOnlySocketFactory;
 
@@ -56,7 +57,6 @@ import org.kontalk.Log;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.service.DownloadListener;
 import org.kontalk.util.InternalTrustStore;
-import org.kontalk.util.MediaStorage;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.ProgressOutputStreamEntity;
 
@@ -206,11 +206,11 @@ public class ClientHTTPConnection {
      * Downloads to a directory represented by a {@link File} object,
      * determining the file name from the Content-Disposition header.
      */
-    public void downloadAutofilename(String url, File defaultBase, Date timestamp, DownloadListener listener) throws IOException {
-        _download(url, defaultBase, timestamp, listener);
+    public void downloadAutofilename(String url, @NonNull File defaultFile, Date timestamp, DownloadListener listener) throws IOException {
+        _download(url, defaultFile, timestamp, listener);
     }
 
-    private void _download(String url, File defaultBase, Date timestamp, DownloadListener listener) throws IOException {
+    private void _download(String url, @NonNull File defaultFile, Date timestamp, DownloadListener listener) throws IOException {
         boolean acceptAnyCertificate = Preferences.getAcceptAnyCertificate(mContext);
         currentRequest = prepareURLDownload(url, acceptAnyCertificate);
 
@@ -232,12 +232,14 @@ public class ClientHTTPConnection {
                 if (disp != null)
                     name = parseContentDisposition(disp);
 
-                if (name == null) {
-                    // very bad hack to overcome server bad behaviour
-                    name = MediaStorage.UNKNOWN_FILENAME;
+                if (name != null) {
+                    // combine default file directory with server-provided filename
+                    destination = new File(defaultFile.getParentFile(), name);
                 }
-
-                destination = new File(defaultBase, name);
+                else {
+                    // fallback to default filename
+                    destination = defaultFile;
+                }
             }
 
             // we need to wrap the entity to monitor the download progress
