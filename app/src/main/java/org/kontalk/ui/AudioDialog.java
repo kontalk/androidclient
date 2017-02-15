@@ -20,6 +20,7 @@ package org.kontalk.ui;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.nineoldandroids.animation.Animator;
@@ -76,7 +77,7 @@ public class AudioDialog extends AlertDialog {
     private static final int STATUS_SEND = 6;
 
     /** Max duration of recorded audio in milliseconds. */
-    private static final int MAX_AUDIO_DURATION = 120*1000;
+    private static final long MAX_AUDIO_DURATION = TimeUnit.MINUTES.toMillis(5);
     private static final int MAX_PROGRESS = 100;
 
     private CircularSeekBar mProgressBar;
@@ -439,7 +440,7 @@ public class AudioDialog extends AlertDialog {
     }
 
     private void animate(final CircularSeekBar progressBar, final AnimatorListener listener,
-            final float progress, final float maxProgress, final int duration) {
+            final float progress, final float maxProgress, final long duration) {
         mProgressBarAnimator = ObjectAnimator.ofFloat(progressBar, "progress", maxProgress);
         mProgressBarAnimator.setInterpolator(new LinearInterpolator());
         mProgressBarAnimator.setDuration(duration);
