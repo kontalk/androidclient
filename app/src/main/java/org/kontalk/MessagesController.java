@@ -279,7 +279,8 @@ public class MessagesController {
             if (att != null && att.getFetchUrl() != null &&
                 Preferences.canAutodownloadMedia(mContext, att.getLength())) {
                 long databaseId = ContentUris.parseId(msgUri);
-                DownloadService.start(mContext, databaseId, sender, msg.getTimestamp(),
+                DownloadService.start(mContext, databaseId, sender,
+                    att.getMime(), msg.getTimestamp(),
                     att.getSecurityFlags() != Coder.SECURITY_CLEARTEXT,
                     att.getFetchUrl(), false);
 

@@ -890,7 +890,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
         if (attachment != null && attachment.getFetchUrl() != null) {
             DownloadService.start(getContext(), msg.getDatabaseId(),
-                msg.getSender(), msg.getTimestamp(),
+                msg.getSender(), attachment.getMime(), msg.getTimestamp(),
                 attachment.getSecurityFlags() != Coder.SECURITY_CLEARTEXT,
                 attachment.getFetchUrl());
         }
@@ -905,10 +905,8 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         AttachmentComponent attachment = msg.getComponent(AttachmentComponent.class);
 
         if (attachment != null && attachment.getFetchUrl() != null) {
-            Intent i = new Intent(getActivity(), DownloadService.class);
-            i.setAction(DownloadService.ACTION_DOWNLOAD_ABORT);
-            i.setData(Uri.parse(attachment.getFetchUrl()));
-            getActivity().startService(i);
+            DownloadService.abort(getContext(),
+                Uri.parse(attachment.getFetchUrl()));
         }
     }
 
