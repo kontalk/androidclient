@@ -20,6 +20,7 @@ package org.kontalk.ui.view;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.view.ViewHelper;
@@ -81,7 +82,7 @@ public class ComposerBar extends RelativeLayout implements
     private static final String TAG = ComposeMessage.TAG;
 
     private static final int MIN_RECORDING_TIME = 900;
-    private static final int MAX_RECORDING_TIME = 60000;
+    private static final long MAX_RECORDING_TIME = TimeUnit.MINUTES.toMillis(2);
     private static final int AUDIO_RECORD_VIBRATION = 20;
     private static final int AUDIO_RECORD_ANIMATION = 300;
 
