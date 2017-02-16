@@ -55,7 +55,6 @@
         android:entries="@array/text_enter_labels"
         android:entryValues="@array/text_enter_values"
         android:defaultValue="@string/pref_default_text_enter"/>
-    <!-- FIXME may doesn't work yet because of issues with Emojicon -->
     <CheckBoxPreference
         android:defaultValue="@bool/pref_default_emoji_converter"
         android:title="@string/pref_emoji_converter"

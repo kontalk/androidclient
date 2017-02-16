@@ -208,10 +208,10 @@ public class ComposerBar extends RelativeLayout implements
                     mListener.textChanged(s);
 
                 // convert ascii to emojis if preference set
-                //FIXME may doesn't work yet because of issues with Emojicon
                 if (Preferences.getEmojiConverter(mContext)) {
                     mTextEntry.removeTextChangedListener(this);
                     if (MessageUtils.convertSmileys(s)) {
+                        // restart IME to solve problems with deleting emojis
                         InputMethodManager imm = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
                         imm.restartInput(mTextEntry);
                     }

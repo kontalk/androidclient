@@ -735,29 +735,24 @@ public final class MessageUtils {
         return text;
     }
 
+    // checks for ASCII-smileys and replace them
     public static boolean convertSmileys(Editable input) {
-        int i = 0;
+        boolean converted = false;
         for (String key : sEmojiConverterMap.keySet()) {
-            if (replaceEditable(input, key, sEmojiConverterMap.get(key))){
-                i++;
-            }
+            // order of arguments of AND is essential here!
+            converted = replaceEditable(input, key, sEmojiConverterMap.get(key)) || converted;
         }
-        if (i>0){
-            return true;
-        }
-        else return false;
+        return converted;
     }
-
+    
+    // actual replacement ASCII -> UTF-16 if necessary
     private static boolean replaceEditable(Editable text, String in, String out) {
-        int i = 0;
+        boolean replaced = false;
         for (int position = text.toString().indexOf(in); position >= 0; position = text.toString().indexOf(in)){
             text.replace(position, position + in.length(), out);
-            i++;
+            replaced = true;
         }
-        if (i>0){
-            return true;
-        }
-        else return false;
+        return replaced;
     }
 
     public static boolean sendEncrypted(Context context, boolean chatEncryptionEnabled) {
