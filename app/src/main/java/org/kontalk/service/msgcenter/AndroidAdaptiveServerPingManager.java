@@ -18,7 +18,6 @@
 
 package org.kontalk.service.msgcenter;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -50,7 +49,7 @@ public class AndroidAdaptiveServerPingManager extends AbstractAdaptiveServerPing
     private static final String PING_ALARM_ACTION = "org.igniterealtime.smackx.ping.ACTION";
 
     private static final Map<XMPPConnection, AndroidAdaptiveServerPingManager> INSTANCES =
-        new WeakHashMap<XMPPConnection, AndroidAdaptiveServerPingManager>();
+        new WeakHashMap<>();
 
     private static AlarmManager sAlarmManager;
 
@@ -222,9 +221,10 @@ public class AndroidAdaptiveServerPingManager extends AbstractAdaptiveServerPing
 
     public static void onConnected() {
         synchronized (INSTANCES) {
-            Iterator<Map.Entry<XMPPConnection, AndroidAdaptiveServerPingManager>> it = INSTANCES.entrySet().iterator();
-            while (it.hasNext()) {
-                AndroidAdaptiveServerPingManager instance = it.next().getValue();
+            for (Map.Entry<XMPPConnection, AndroidAdaptiveServerPingManager>
+                    xmppConnectionAndroidAdaptiveServerPingManagerEntry : INSTANCES.entrySet()) {
+                AndroidAdaptiveServerPingManager instance = xmppConnectionAndroidAdaptiveServerPingManagerEntry
+                    .getValue();
                 instance.onConnectivityChanged();
             }
         }
@@ -235,9 +235,10 @@ public class AndroidAdaptiveServerPingManager extends AbstractAdaptiveServerPing
      */
     public static void onDestroy() {
         synchronized (INSTANCES) {
-            Iterator<Map.Entry<XMPPConnection, AndroidAdaptiveServerPingManager>> it = INSTANCES.entrySet().iterator();
-            while (it.hasNext()) {
-                AndroidAdaptiveServerPingManager instance = it.next().getValue();
+            for (Map.Entry<XMPPConnection, AndroidAdaptiveServerPingManager>
+                    xmppConnectionAndroidAdaptiveServerPingManagerEntry : INSTANCES.entrySet()) {
+                AndroidAdaptiveServerPingManager instance = xmppConnectionAndroidAdaptiveServerPingManagerEntry
+                    .getValue();
                 instance.disable();
             }
         }
