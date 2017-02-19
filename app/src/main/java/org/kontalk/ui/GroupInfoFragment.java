@@ -597,7 +597,7 @@ public class GroupInfoFragment extends ActionModeListFragment
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                     // leave group
                     mConversation.leaveGroup();
-                    reload();
+                    getActivity().finish();
                 }
             })
             .show();
