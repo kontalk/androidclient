@@ -598,9 +598,9 @@ public class MessagesProvider extends ContentProvider {
         boolean success = false;
         List<Uri> notifications = new ArrayList<>();
 
-        try {
-            beginTransaction(db);
+        beginTransaction(db);
 
+        try {
             switch (match) {
                 case GROUPS:
                     // configure thread as group
@@ -1021,9 +1021,9 @@ public class MessagesProvider extends ContentProvider {
         boolean success = false;
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-        try {
-            beginTransaction(db);
+        beginTransaction(db);
 
+        try {
             // handle clear pending flags
             String pendingFlags = uri.getQueryParameter(Messages.CLEAR_PENDING);
             if (pendingFlags != null) {
@@ -1260,8 +1260,8 @@ public class MessagesProvider extends ContentProvider {
 
                 boolean success = false;
                 int num = 0;
+                beginTransaction(db);
                 try {
-                    beginTransaction(db);
                     // rows count will be conversations
                     num = db.delete(TABLE_THREADS, null, null);
                     db.delete(TABLE_MESSAGES, null, null);
@@ -1297,9 +1297,11 @@ public class MessagesProvider extends ContentProvider {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         boolean success = false;
         List<Uri> notifications = new ArrayList<>();
+
+        // let's begin this big transaction :S
+        beginTransaction(db);
+
         try {
-            // let's begin this big transaction :S
-            beginTransaction(db);
 
             long threadId = -1;
             if (table.equals(TABLE_MESSAGES)) {
@@ -1369,10 +1371,11 @@ public class MessagesProvider extends ContentProvider {
         if (threadId > 0) {
             SQLiteDatabase db = dbHelper.getWritableDatabase();
             boolean success = false;
+
+            beginTransaction(db);
+
             try {
                 int num = 0;
-
-                beginTransaction(db);
 
                 if (!keepGroup)
                     num = db.delete(TABLE_THREADS, Threads._ID + " = " + threadId, null);
