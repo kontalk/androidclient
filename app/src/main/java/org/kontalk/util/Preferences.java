@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
@@ -435,8 +436,10 @@ public final class Preferences {
         if (offline) {
             // stop the message center and never start it again
             MessageCenterService.stop(context);
+            Kontalk.setBackendEnabled(context, false);
         }
         else {
+            Kontalk.setBackendEnabled(context, true);
             MessageCenterService.start(context);
         }
 
