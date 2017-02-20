@@ -104,7 +104,7 @@ public class AboutFragment extends Fragment implements OnClickListener {
     }
 
     private void startUrl(String url) {
-        Intent link = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        Intent link = SystemUtils.externalIntent(Intent.ACTION_VIEW, Uri.parse(url));
         startActivity(link);
     }
 

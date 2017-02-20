@@ -206,7 +206,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.number_validation);
-        setupToolbar(false);
+        setupToolbar(false, false);
 
         mAccountManager = AccountManager.get(this);
         mHandler = new Handler();
@@ -300,6 +300,12 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 setProgressMessage(data.progressMessage, true);
             }
         }
+    }
+
+    /** Not used. */
+    @Override
+    protected boolean isNormalUpNavigation() {
+        return false;
     }
 
     @Override

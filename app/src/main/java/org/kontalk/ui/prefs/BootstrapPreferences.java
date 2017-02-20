@@ -42,6 +42,7 @@ public class BootstrapPreferences extends RootPreferenceFragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
+                // our parent is the registration activity, just finish
                 getActivity().finish();
                 return true;
         }

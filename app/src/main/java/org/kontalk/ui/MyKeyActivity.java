@@ -31,7 +31,6 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
-import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -61,7 +60,7 @@ public class MyKeyActivity extends ToolbarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mykey_screen);
 
-        setupToolbar(true);
+        setupToolbar(true, true);
 
         mAccountName = (TextView) findViewById(R.id.account);
         mTextName = (TextView) findViewById(R.id.name);
@@ -104,14 +103,8 @@ public class MyKeyActivity extends ToolbarActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+    protected boolean isNormalUpNavigation() {
+        return true;
     }
 
     private Bitmap getQRCodeBitmap(String text) throws WriterException {

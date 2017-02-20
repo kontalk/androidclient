@@ -300,7 +300,7 @@ public class ContactsListFragment extends ListFragment implements
 
     private void startInvite() {
         Context ctx = getActivity();
-        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        Intent shareIntent = SystemUtils.externalIntent(Intent.ACTION_SEND);
         shareIntent.setType(TextComponent.MIME_TYPE);
         shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.text_invite_message));
 
