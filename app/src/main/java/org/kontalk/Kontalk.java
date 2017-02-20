@@ -310,6 +310,12 @@ public class Kontalk extends Application {
         PackageManager pm = context.getPackageManager();
         enableService(context, pm, ComposeMessage.class, enabled);
         enableService(context, pm, SearchActivity.class, enabled);
+        setBackendEnabled(context, enabled);
+    }
+
+    /** Enable/disable backend application components when account is added or removed. */
+    public static void setBackendEnabled(Context context, boolean enabled) {
+        PackageManager pm = context.getPackageManager();
         enableService(context, pm, MessageCenterService.class, enabled);
         enableService(context, pm, DownloadService.class, enabled);
         enableService(context, pm, UploadService.class, enabled);
