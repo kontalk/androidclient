@@ -43,7 +43,7 @@ public class GroupInfoActivity extends ToolbarActivity implements GroupInfoFragm
         super.onCreate(savedInstanceState);
         setContentView(R.layout.group_info_screen);
 
-        setupToolbar(true);
+        setupToolbar(true, false);
 
         if (savedInstanceState == null) {
             Intent i = getIntent();
@@ -67,6 +67,12 @@ public class GroupInfoActivity extends ToolbarActivity implements GroupInfoFragm
         super.onResume();
         // hold message center
         MessageCenterService.hold(this, true);
+    }
+
+    /** Not used. */
+    @Override
+    protected boolean isNormalUpNavigation() {
+        return false;
     }
 
     @Override

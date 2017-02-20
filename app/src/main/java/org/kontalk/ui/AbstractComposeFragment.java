@@ -914,7 +914,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         AttachmentComponent attachment = msg.getComponent(AttachmentComponent.class);
 
         if (attachment != null) {
-            Intent i = new Intent(Intent.ACTION_VIEW);
+            Intent i = SystemUtils.externalIntent(Intent.ACTION_VIEW);
             i.setDataAndType(attachment.getLocalUri(), attachment.getMime());
             try {
                 startActivity(i);
@@ -967,14 +967,14 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         try {
             // check if camera is available
             final PackageManager packageManager = getActivity().getPackageManager();
-            final Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            final Intent intent = SystemUtils.externalIntent(MediaStore.ACTION_IMAGE_CAPTURE);
             List<ResolveInfo> list =
                 packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
             if (list.size() <= 0) throw new UnsupportedOperationException();
 
             mCurrentPhoto = MediaStorage.getOutgoingPhotoFile();
             Uri uri = Uri.fromFile(mCurrentPhoto);
-            Intent take = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            Intent take = SystemUtils.externalIntent(MediaStore.ACTION_IMAGE_CAPTURE);
             take.putExtra(MediaStore.EXTRA_OUTPUT, uri);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                 take.setClipData(ClipData.newUri(getContext().getContentResolver(),
@@ -1026,11 +1026,11 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     private Intent createGalleryIntent(boolean useSAF) {
         Intent intent;
         if (!useSAF) {
-            intent = new Intent(Intent.ACTION_GET_CONTENT)
+            intent = SystemUtils.externalIntent(Intent.ACTION_GET_CONTENT)
                 .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
         else {
-            intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent = SystemUtils.externalIntent(Intent.ACTION_OPEN_DOCUMENT);
         }
 
         return intent
@@ -1043,7 +1043,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     /** Starts activity for a vCard attachment from a contact. */
     void selectContactAttachment() {
         try {
-            Intent i = new Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
+            Intent i = SystemUtils.externalIntent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
             startActivityForResult(i, SELECT_ATTACHMENT_CONTACT);
         }
         catch (ActivityNotFoundException e) {

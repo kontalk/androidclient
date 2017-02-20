@@ -31,7 +31,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -86,9 +85,8 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.code_validation_screen);
-        setupToolbar(true);
+        setupToolbar(true, false);
 
         mCode = (EditText) findViewById(R.id.validation_code);
         mButton = (Button) findViewById(R.id.send_button);
@@ -194,6 +192,12 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
              * https://github.com/kontalk/androidclient/issues/118
              */
             mServerProvider = Preferences.getEndpointServerProvider(this);
+    }
+
+    /** Not used. */
+    @Override
+    protected boolean isNormalUpNavigation() {
+        return false;
     }
 
     @Override

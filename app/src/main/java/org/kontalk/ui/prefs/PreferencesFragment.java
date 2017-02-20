@@ -18,8 +18,6 @@
 
 package org.kontalk.ui.prefs;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -29,7 +27,6 @@ import android.view.MenuItem;
 import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.R;
-import org.kontalk.ui.ConversationsActivity;
 
 
 /**
@@ -79,9 +76,8 @@ public final class PreferencesFragment extends RootPreferenceFragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                Activity ctx = getActivity();
-                ctx.finish();
-                startActivity(new Intent(ctx, ConversationsActivity.class));
+                // don't use up navigation here
+                getActivity().finish();
                 return true;
         }
 

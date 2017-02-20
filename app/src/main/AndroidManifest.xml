@@ -17,7 +17,8 @@
  -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="org.kontalk"
+          xmlns:tools="http://schemas.android.com/tools"
+          package="org.kontalk"
       android:installLocation="internalOnly">
 
     <!-- internal permissions -->
@@ -60,7 +61,8 @@
         <service android:name=".service.msgcenter.MessageCenterService"
             android:label="@string/service_name"/>
         <service android:name=".authenticator.AccountAuthenticatorService"
-                android:label="@string/authenticator_name">
+                 android:label="@string/authenticator_name"
+                 tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator"/>
             </intent-filter>
@@ -68,7 +70,8 @@
                 android:resource="@xml/authenticator"/>
         </service>
         <service android:name=".sync.ContactsSyncAdapterService"
-                android:label="@string/sync_service_name">
+                 android:label="@string/sync_service_name"
+                 tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter"/>
             </intent-filter>
@@ -123,20 +126,27 @@
                 android:value="org.kontalk.ui.SearchActivity" />
         </activity>
 
-        <activity android:name=".ui.SearchActivity">
+        <activity android:name=".ui.SearchActivity"
+              android:parentActivityName=".ui.ConversationsActivity"
+              tools:targetApi="jelly_bean">
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <meta-data android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.ConversationsActivity" />
         </activity>
 
         <activity android:name=".ui.ComposeMessage"
             android:launchMode="singleTop"
             android:configChanges="keyboardHidden"
-            android:windowSoftInputMode="stateHidden">
-            <intent-filter>
+            android:windowSoftInputMode="stateHidden"
+            android:parentActivityName=".ui.ConversationsActivity"
+            tools:targetApi="jelly_bean">
+        <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <data android:mimeType="vnd.android.cursor.item/${applicationId}.user"
@@ -174,20 +184,33 @@
                 <data android:scheme="sms" />
                 <data android:scheme="smsto" />
             </intent-filter>
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.ConversationsActivity" />
         </activity>
 
-        <activity android:name=".ui.prefs.PreferencesActivity">
+        <activity android:name=".ui.prefs.PreferencesActivity"
+              android:parentActivityName=".ui.ConversationsActivity"
+              tools:targetApi="jelly_bean">
             <intent-filter>
                 <action android:name="android.intent.action.MANAGE_NETWORK_USAGE" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.ConversationsActivity" />
         </activity>
 
-        <activity android:name=".ui.prefs.NotificationPreferencesActivity">
+        <activity android:name=".ui.prefs.NotificationPreferencesActivity"
+              android:parentActivityName=".ui.ConversationsActivity"
+              tools:targetApi="jelly_bean">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.NOTIFICATION_PREFERENCES" />
             </intent-filter>
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.ConversationsActivity" />
         </activity>
 
         <activity android:name=".ui.NumberValidation"/>
@@ -195,15 +218,39 @@
         <activity android:name=".ui.CodeValidation"/>
 
         <activity android:name=".ui.ContactsListActivity"
-            android:label="@string/contacts_list_title"/>
+            android:label="@string/contacts_list_title"
+            android:parentActivityName=".ui.ConversationsActivity"
+            tools:targetApi="jelly_bean">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.ConversationsActivity" />
+        </activity>
 
         <activity android:name=".ui.StatusActivity"
-            android:label="@string/status_activity_title"/>
+            android:label="@string/status_activity_title"
+            android:parentActivityName=".ui.ConversationsActivity"
+            tools:targetApi="jelly_bean">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.ConversationsActivity" />
+        </activity>
 
-        <activity android:name=".ui.AboutActivity"/>
+        <activity android:name=".ui.AboutActivity"
+            android:parentActivityName=".ui.ConversationsActivity"
+            tools:targetApi="jelly_bean">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.ConversationsActivity" />
+        </activity>
 
         <activity android:name=".ui.MyKeyActivity"
-            android:label="@string/mykey_activity_title"/>
+            android:label="@string/mykey_activity_title"
+            android:parentActivityName=".ui.ConversationsActivity"
+            tools:targetApi="jelly_bean">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.ConversationsActivity" />
+        </activity>
 
         <activity android:name=".ui.GroupInfoActivity"
             android:label="@string/groupinfo_activity_title"/>

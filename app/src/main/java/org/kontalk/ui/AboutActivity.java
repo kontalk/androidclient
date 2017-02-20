@@ -25,7 +25,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.view.MenuItem;
 
 import org.kontalk.R;
 import org.kontalk.billing.BillingServiceManager;
@@ -56,7 +55,7 @@ public class AboutActivity extends ToolbarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.about_screen);
 
-        setupToolbar(true);
+        setupToolbar(true, true);
 
         AboutPagerAdapter adapter = new AboutPagerAdapter(getSupportFragmentManager());
 
@@ -81,14 +80,8 @@ public class AboutActivity extends ToolbarActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+    protected boolean isNormalUpNavigation() {
+        return true;
     }
 
     @Override
@@ -99,7 +92,7 @@ public class AboutActivity extends ToolbarActivity {
     }
 
     private class AboutPagerAdapter extends FragmentPagerAdapter {
-        public AboutPagerAdapter(FragmentManager fm) {
+        AboutPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 

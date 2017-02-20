@@ -67,6 +67,14 @@ public abstract class MainActivity extends ToolbarActivity {
     private static final String ACTION_AUTH_ERROR_WARNING = "org.kontalk.AUTH_ERROR_WARN";
     private static final String ACTION_AUTH_REQUEST_PASSWORD = "org.kontalk.AUTH_REQUEST_PASSWORD";
 
+    /**
+     * Doesn't really matter because subclasses should not use use setDisplayHomeAsUpEnabled.
+     */
+    @Override
+    protected boolean isNormalUpNavigation() {
+        return true;
+    }
+
     protected boolean afterOnCreate() {
         return !xmppUpgrade() && !checkPassword() && ifHuaweiAlert();
     }

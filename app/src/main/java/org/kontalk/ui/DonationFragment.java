@@ -157,7 +157,7 @@ public class DonationFragment extends Fragment implements OnClickListener {
     private void donateBitcoin() {
         final String address = getString(R.string.bitcoin_address);
         Uri uri = Uri.parse("bitcoin:" + address);
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri.toString()));
+        Intent intent = SystemUtils.externalIntent(Intent.ACTION_VIEW, Uri.parse(uri.toString()));
 
         Activity ctx = getActivity();
         final PackageManager pm = ctx.getPackageManager();
