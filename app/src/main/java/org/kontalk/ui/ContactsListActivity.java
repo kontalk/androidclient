@@ -24,7 +24,6 @@ import java.util.List;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.MenuItem;
 import android.widget.Toast;
 
 import org.kontalk.R;
@@ -52,7 +51,7 @@ public class ContactsListActivity extends ToolbarActivity
 
         setContentView(R.layout.contacts_list_screen);
 
-        setupToolbar(true);
+        setupToolbar(true, true);
 
         boolean multiselect = getIntent().getBooleanExtra(MODE_MULTI_SELECT, false);
         if (multiselect) {
@@ -104,15 +103,8 @@ public class ContactsListActivity extends ToolbarActivity
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                startActivity(new Intent(this, ConversationsActivity.class));
-                return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+    protected boolean isNormalUpNavigation() {
+        return false;
     }
 
     /** Called when a contact has been selected from a {@link ContactsListFragment}. */

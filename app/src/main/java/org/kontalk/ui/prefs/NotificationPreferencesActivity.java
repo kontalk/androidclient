@@ -20,7 +20,6 @@ package org.kontalk.ui.prefs;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.view.MenuItem;
 
 import org.kontalk.R;
 
@@ -36,7 +35,7 @@ public class NotificationPreferencesActivity extends BasePreferencesActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.preferences_screen);
-        setupToolbar(true);
+        setupToolbar(true, true);
 
         if (savedInstanceState == null) {
             Fragment fragment = new NotificationFragment();
@@ -47,13 +46,8 @@ public class NotificationPreferencesActivity extends BasePreferencesActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            finish();
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+    protected boolean isNormalUpNavigation() {
+        return true;
     }
 
 }

@@ -33,7 +33,6 @@ import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.StyleSpan;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -47,6 +46,7 @@ import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.SystemUtils;
 import org.kontalk.util.XMPPUtils;
 
 
@@ -116,7 +116,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     }
 
     private void setupActionBar() {
-        Toolbar toolbar = super.setupToolbar(true);
+        Toolbar toolbar = super.setupToolbar(true, true);
         // TODO find a way to use a colored selector
         toolbar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -128,16 +128,8 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int itemId = item.getItemId();
-
-        switch (itemId) {
-            case android.R.id.home:
-                onHomeClick();
-                return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+    protected boolean isNormalUpNavigation() {
+        return false;
     }
 
     private void setComposeFragment(@NonNull AbstractComposeFragment f) {
@@ -205,11 +197,6 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     public void onBackPressed() {
         if (mFragment == null || (!mFragment.tryHideAttachmentView() && !mFragment.tryHideEmojiDrawer()))
             super.onBackPressed();
-    }
-
-    private void onHomeClick() {
-        finish();
-        startActivity(new Intent(this, ConversationsActivity.class));
     }
 
     public void onTitleClick() {
@@ -452,14 +439,14 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
 
     /** Creates an {@link Intent} for sending a text message. */
     public static Intent sendTextMessage(String text) {
-        Intent i = new Intent(Intent.ACTION_SEND);
+        Intent i = SystemUtils.externalIntent(Intent.ACTION_SEND);
         i.setType(TextComponent.MIME_TYPE);
         i.putExtra(Intent.EXTRA_TEXT, text);
         return i;
     }
 
     public static Intent sendMediaMessage(Uri uri, String mime) {
-        Intent i = new Intent(Intent.ACTION_SEND);
+        Intent i = SystemUtils.externalIntent(Intent.ACTION_SEND);
         i.setType(mime);
         i.putExtra(Intent.EXTRA_STREAM, uri);
         return i;

@@ -35,7 +35,7 @@ import android.os.Bundle;
  * is never set or if it is set to null then error {@link android.accounts.AccountManager#ERROR_CODE_CANCELED}
  * will be called on the response.
  */
-public class AccountAuthenticatorActionBarActivity extends ToolbarActivity {
+public abstract class AccountAuthenticatorActionBarActivity extends ToolbarActivity {
     private AccountAuthenticatorResponse mAccountAuthenticatorResponse = null;
     private Bundle mResultBundle = null;
 

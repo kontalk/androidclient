@@ -18,13 +18,12 @@
 
 package org.kontalk.ui;
 
-import org.kontalk.R;
-import org.kontalk.service.msgcenter.MessageCenterService;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.MenuItem;
+
+import org.kontalk.R;
+import org.kontalk.service.msgcenter.MessageCenterService;
 
 
 /**
@@ -39,7 +38,7 @@ public class StatusActivity extends ToolbarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.status_screen);
 
-        setupToolbar(true);
+        setupToolbar(true, true);
     }
 
     public static void start(Activity context) {
@@ -62,16 +61,8 @@ public class StatusActivity extends ToolbarActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                startActivity(new Intent(this, ConversationsActivity.class));
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
-        }
+    protected boolean isNormalUpNavigation() {
+        return true;
     }
 
 }

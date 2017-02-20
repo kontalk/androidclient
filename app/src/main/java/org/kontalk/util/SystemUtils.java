@@ -363,7 +363,7 @@ public final class SystemUtils {
 
     public static void openURL(Context context, String url) {
         try {
-            context.startActivity(new Intent(Intent.ACTION_VIEW,
+            context.startActivity(externalIntent(Intent.ACTION_VIEW,
                 Uri.parse(url)));
         }
         catch (ActivityNotFoundException e) {
@@ -374,7 +374,7 @@ public final class SystemUtils {
 
     public static void dial(Context context, CharSequence phone) {
         try {
-            context.startActivity(new Intent(Intent.ACTION_DIAL,
+            context.startActivity(externalIntent(Intent.ACTION_DIAL,
                 Uri.parse("tel:" + phone)));
         }
         catch (ActivityNotFoundException e) {
@@ -387,6 +387,21 @@ public final class SystemUtils {
         List<ResolveInfo> list = context.getPackageManager().queryIntentActivities(intent,
             PackageManager.MATCH_DEFAULT_ONLY);
         return list.size() > 0;
+    }
+
+    public static Intent externalIntent(String action) {
+        return externalIntent(action, null);
+    }
+
+    public static Intent externalIntent(String action, Uri data) {
+        Intent i = new Intent(action, data);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+        }
+        else {
+            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+        }
+        return i;
     }
 
     public static String getUserSerial(Context context) {

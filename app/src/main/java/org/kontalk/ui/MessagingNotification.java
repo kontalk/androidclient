@@ -43,6 +43,7 @@ import android.support.v4.app.NotificationCompat.BigTextStyle;
 import android.support.v4.app.NotificationCompat.InboxStyle;
 import android.support.v4.app.NotificationCompat.Style;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.ContextCompat;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -63,6 +64,7 @@ import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.NotificationActionReceiver;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.SystemUtils;
 
 
 /**
@@ -283,8 +285,7 @@ public class MessagingNotification {
             else {
                 ni = ComposeMessage.fromConversation(context, id);
             }
-            PendingIntent pi = PendingIntent.getActivity(context, NOTIFICATION_ID_MESSAGES,
-                    ni, 0);
+            PendingIntent pi = createPendingIntent(context, ni);
 
             builder.setContentIntent(pi);
         }
@@ -733,7 +734,7 @@ public class MessagingNotification {
                     // phone number for call intent
                     String phoneNumber = contact.getNumber();
                     if (phoneNumber != null) {
-                        Intent callIntent = new Intent(Intent.ACTION_CALL,
+                        Intent callIntent = SystemUtils.externalIntent(Intent.ACTION_CALL,
                             Uri.parse("tel:" + phoneNumber));
                         callPendingIntent = PendingIntent.getActivity(mContext, 0, callIntent, 0);
                     }
@@ -758,6 +759,15 @@ public class MessagingNotification {
 
             return convCount;
         }
+    }
+
+    static PendingIntent createPendingIntent(Context context, Intent intent) {
+        return TaskStackBuilder.create(context)
+            // add all of DetailsActivity's parents to the stack,
+            // followed by DetailsActivity itself
+            .addNextIntentWithParentStack(intent)
+            .getPendingIntent(NOTIFICATION_ID_MESSAGES,
+                PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     /**
@@ -879,8 +889,7 @@ public class MessagingNotification {
             else {
                 ni = ComposeMessage.fromConversation(mContext, conversation.id);
             }
-            return PendingIntent.getActivity(mContext, NOTIFICATION_ID_MESSAGES,
-                    ni, 0);
+            return createPendingIntent(mContext, ni);
         }
 
         public String getLastMessageText() {

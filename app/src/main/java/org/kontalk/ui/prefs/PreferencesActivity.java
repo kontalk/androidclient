@@ -52,7 +52,7 @@ public final class PreferencesActivity extends BasePreferencesActivity
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.preferences_screen);
-        setupToolbar(true);
+        setupToolbar(true, false);
 
         if (savedInstanceState == null) {
             Fragment fragment;
@@ -69,6 +69,12 @@ public final class PreferencesActivity extends BasePreferencesActivity
                 .replace(R.id.container, fragment)
                 .commit();
         }
+    }
+
+    /** Not used (manual implementation in fragments). */
+    @Override
+    protected boolean isNormalUpNavigation() {
+        return false;
     }
 
     @Override

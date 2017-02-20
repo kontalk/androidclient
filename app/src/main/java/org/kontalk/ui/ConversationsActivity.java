@@ -94,7 +94,7 @@ public class ConversationsActivity extends MainActivity
 
         setContentView(R.layout.conversations_screen);
 
-        setupToolbar(false);
+        setupToolbar(false, false);
 
         mFragment = (ConversationListFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_conversation_list);
@@ -497,6 +497,7 @@ public class ConversationsActivity extends MainActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case android.R.id.home:
+                 // TODO @deprecated
                 onBackPressed();
                 return true;
 

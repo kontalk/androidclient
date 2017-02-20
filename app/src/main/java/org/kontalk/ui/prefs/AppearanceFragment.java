@@ -31,6 +31,7 @@ import android.widget.Toast;
 
 import org.kontalk.R;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.SystemUtils;
 
 import java.io.File;
 
@@ -64,7 +65,7 @@ public class AppearanceFragment extends RootPreferenceFragment {
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 try {
-                    final Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+                    final Intent i = SystemUtils.externalIntent(Intent.ACTION_GET_CONTENT);
                     i.addCategory(Intent.CATEGORY_OPENABLE);
                     i.setType("image/*");
                     startActivityForResult(i, REQUEST_PICK_BACKGROUND);

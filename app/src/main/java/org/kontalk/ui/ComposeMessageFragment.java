@@ -124,7 +124,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
 
         switch (item.getItemId()) {
             case R.id.call_contact:
-                startActivity(new Intent(Intent.ACTION_CALL, Uri.parse("tel:"
+                startActivity(SystemUtils.externalIntent(Intent.ACTION_CALL, Uri.parse("tel:"
                     + mUserPhone)));
                 return true;
 
@@ -158,7 +158,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             if (contact != null) {
                 Uri uri = contact.getUri();
                 if (uri != null) {
-                    Intent i = new Intent(Intent.ACTION_VIEW, uri);
+                    Intent i = SystemUtils.externalIntent(Intent.ACTION_VIEW, uri);
                     if (i.resolveActivity(getActivity().getPackageManager()) != null) {
                         startActivity(i);
                     }
@@ -534,7 +534,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
 
     void sendInvitation() {
         // FIXME is this specific to sms app?
-        Intent i = new Intent(Intent.ACTION_SENDTO,
+        Intent i = SystemUtils.externalIntent(Intent.ACTION_SENDTO,
             Uri.parse("smsto:" + mUserPhone));
         i.putExtra("sms_body",
             getString(R.string.text_invite_message));
