@@ -40,6 +40,7 @@ import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
@@ -74,13 +75,13 @@ public class ServerListUpdater extends BroadcastReceiver {
     }
 
     public void start() {
-        /**
+        /*
          * We have a server list - either builtin or cached. Now pick a random
          * server from the list and contact it for the latest server list.
          */
         EndpointServer random = Preferences.getEndpointServer(mContext);
 
-        /** no server found -- notify to user */
+        /* no server found -- notify to user */
         if (random == null) {
             Log.i(TAG, "no list to pick a random server from - aborting");
 
@@ -211,9 +212,7 @@ public class ServerListUpdater extends BroadcastReceiver {
             return list;
         }
         catch (Exception e) {
-            IOException ie = new IOException("parse error");
-            ie.initCause(e);
-            throw ie;
+            throw new IOException("parse error", e);
         }
     }
 
@@ -255,16 +254,20 @@ public class ServerListUpdater extends BroadcastReceiver {
         if (sCurrentList != null)
             return sCurrentList;
 
+        ServerList builtin = null;
         try {
+            builtin = parseBuiltinList(context);
             sCurrentList = parseCachedList(context);
+            // use cached list if recent than
+            if (builtin.getDate().after(sCurrentList.getDate()))
+                sCurrentList = builtin;
         }
         catch (IOException e) {
-            try {
-                sCurrentList = parseBuiltinList(context);
+            if (builtin == null) {
+                ReportingManager.logException(e);
+                Log.w(TAG, "unable to load builtin server list", e);
             }
-            catch (IOException be) {
-                Log.w(TAG, "unable to load builtin server list", be);
-            }
+            sCurrentList = builtin;
         }
 
         return sCurrentList;
@@ -272,14 +275,14 @@ public class ServerListUpdater extends BroadcastReceiver {
 
     public interface UpdaterListener {
         /** Called if either the cached list or the built-in list cannot be loaded.*/
-        public void noData();
+        void noData();
         /** Called when network is not available. */
-        public void networkNotAvailable();
+        void networkNotAvailable();
         /** Called when offline mode is active. */
-        public void offlineModeEnabled();
+        void offlineModeEnabled();
         /** Called if an error occurs during update. */
-        public void error(Throwable e);
+        void error(Throwable e);
         /** Called when list update has finished. */
-        public void updated(ServerList list);
+        void updated(ServerList list);
     }
 }
