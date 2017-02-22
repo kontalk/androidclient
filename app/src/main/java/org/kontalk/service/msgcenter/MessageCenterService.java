@@ -2491,7 +2491,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         try {
                             MediaStorage.cacheThumbnail(this, previewUri, previewPath, true);
                         }
-                        catch (IOException e) {
+                        catch (Exception e) {
                             Log.w(TAG, "unable to generate preview for media", e);
                         }
                     }
