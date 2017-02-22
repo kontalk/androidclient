@@ -33,7 +33,7 @@ import java.util.Random;
 public class ServerList extends ArrayList<EndpointServer> {
     private static final long serialVersionUID = 1L;
 
-    protected final Date mDate;
+    private final Date mDate;
 
     private final Random mSeed = new Random();
 
@@ -64,7 +64,7 @@ public class ServerList extends ArrayList<EndpointServer> {
 
         public ServerListProvider(ServerList list) {
             mList = new ServerList(list.getDate(), list);
-            mUsed = new LinkedList<EndpointServer>();
+            mUsed = new LinkedList<>();
         }
 
         @Override
