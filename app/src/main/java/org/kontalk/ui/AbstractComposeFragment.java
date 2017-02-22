@@ -1958,18 +1958,20 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
         if (mToggleEncryptionMenu != null) {
             Context context = getActivity();
-            if (mConversation != null && Preferences.getEncryptionEnabled(context)) {
-                boolean encryption = mConversation.isEncryptionEnabled();
-                mToggleEncryptionMenu
-                    .setVisible(true)
-                    .setEnabled(true)
-                    .setChecked(encryption);
-            }
-            else {
-                mToggleEncryptionMenu
-                    .setVisible(false)
-                    .setEnabled(false)
-                    .setChecked(false);
+            if (context != null) {
+                if (mConversation != null && Preferences.getEncryptionEnabled(context)) {
+                    boolean encryption = mConversation.isEncryptionEnabled();
+                    mToggleEncryptionMenu
+                        .setVisible(true)
+                        .setEnabled(true)
+                        .setChecked(encryption);
+                }
+                else {
+                    mToggleEncryptionMenu
+                        .setVisible(false)
+                        .setEnabled(false)
+                        .setChecked(false);
+                }
             }
         }
     }

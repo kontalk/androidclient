@@ -214,7 +214,7 @@ public class ImageContentView extends FrameLayout
                     MediaStorage.cacheThumbnail(context, mLocalUri, mPreviewFile, false);
                     return true;
                 }
-                catch (IOException e) {
+                catch (Exception e) {
                     Log.e(TAG, "unable to generate thumbnail", e);
                 }
             }
