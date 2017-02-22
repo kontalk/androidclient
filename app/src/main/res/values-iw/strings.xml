@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
@@ -15,7 +15,31 @@
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
-
 <resources>
     <string name="app_name">Kontalk</string>
-</resources>
+<string name="app_name_offline">Kontalk (מנותק)</string>
+    <string name="app_description">רשת מסרים מידיים קהילתית</string>
+    <string name="service_name">מרכז ההודעות</string>
+    <string name="authenticator_name">שירות אימות</string>
+    <string name="sync_service_name">סנכרן אנשי קשר</string>
+    <string name="download_service">הורד שירות</string>
+    <string name="yes">כן</string>
+    <string name="no">לא</string>
+    <string name="send">שלח</string>
+    <string name="menu_compose">חבר</string>
+    <string name="menu_create_group">צור קבוצה</string>
+    <string name="menu_delete_all">מחק שיחות</string>
+    <string name="menu_search">חיפוש</string>
+    <string name="mykey_activity_title">המפתח הפרטי שלי</string>
+    <string name="menu_settings">הגדרות</string>
+    <string name="menu_offline">התנתק</string>
+    <string name="menu_online">התחבר</string>
+    <string name="menu_import_key">יבא מפתח</string>
+    <string name="menu_manual_verification">כבר יש לך קוד?</string>
+    <string name="pref_network_settings">הגדרות רשת</string>
+    <string name="pref_network_uri">כתובת שרת ידנית</string>
+    <string name="pref_title_network_uri">הגדרה זו תעקוף ניהול אוטומטי של רשימת שרתים</string>
+    <string name="number_validation_intro1">אנה הכנס את שמך, בחר את קוד המדינה שלך והכנס את מספר הטלפון הנייד שלך. הוראות נוספות במסך הבא.</string>
+    <string name="number_validation_intro2">אם אינך מסוגל לקבל שיחות או הודעות SMS במכשיר הזה, הכנס מספר טלפון בבעלותך: אנחנו נקשר את המספר למכשיר.</string>
+    <string name="code_validation_intro">הודעת SMS או שיחה אמורה להתקבל ממספר זה בקרוב:</string>
+    </resources>
