@@ -581,7 +581,9 @@
 	<item quantity="one">Также покинуть группу</item>
 	<item quantity="few">Также покинуть группы</item>
 	<item quantity="many">Также покинуть группы</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
+
+    <string name="status_notsubscribed">Не разрешено/Заблокировано</string>
 
     </resources>
