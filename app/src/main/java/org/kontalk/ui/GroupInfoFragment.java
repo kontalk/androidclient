@@ -466,42 +466,51 @@ public class GroupInfoFragment extends ActionModeListFragment
         text.append(fingerprint);
         text.setSpan(SystemUtils.getTypefaceSpan(Typeface.BOLD), start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        int trustedLevel;
-        if (c.isKeyChanged()) {
-            // the key has changed and was not trusted yet
-            trustedLevel = MyUsers.Keys.TRUST_UNKNOWN;
-        }
-        else {
-            trustedLevel = c.getTrustedLevel();
-        }
-
         int trustStringId;
         CharacterStyle[] trustSpans;
-        switch (trustedLevel) {
-            case MyUsers.Keys.TRUST_IGNORED:
-                trustStringId = R.string.trust_ignored;
-                trustSpans = new CharacterStyle[] {
-                    SystemUtils.getTypefaceSpan(Typeface.BOLD),
-                    SystemUtils.getColoredSpan(getContext(), R.color.button_danger)
-                };
-                break;
 
-            case MyUsers.Keys.TRUST_VERIFIED:
-                trustStringId = R.string.trust_verified;
-                trustSpans = new CharacterStyle[] {
-                    SystemUtils.getTypefaceSpan(Typeface.BOLD),
-                    SystemUtils.getColoredSpan(getContext(), R.color.button_success)
-                };
-                break;
+        if (subscribed) {
+            int trustedLevel;
+            if (c.isKeyChanged()) {
+                // the key has changed and was not trusted yet
+                trustedLevel = MyUsers.Keys.TRUST_UNKNOWN;
+            }
+            else {
+                trustedLevel = c.getTrustedLevel();
+            }
 
-            case MyUsers.Keys.TRUST_UNKNOWN:
-            default:
-                trustStringId = R.string.trust_unknown;
-                trustSpans = new CharacterStyle[] {
-                    SystemUtils.getTypefaceSpan(Typeface.BOLD),
-                    SystemUtils.getColoredSpan(getContext(), R.color.button_danger)
-                };
-                break;
+            switch (trustedLevel) {
+                case MyUsers.Keys.TRUST_IGNORED:
+                    trustStringId = R.string.trust_ignored;
+                    trustSpans = new CharacterStyle[] {
+                        SystemUtils.getTypefaceSpan(Typeface.BOLD),
+                        SystemUtils.getColoredSpan(getContext(), R.color.button_danger)
+                    };
+                    break;
+
+                case MyUsers.Keys.TRUST_VERIFIED:
+                    trustStringId = R.string.trust_verified;
+                    trustSpans = new CharacterStyle[] {
+                        SystemUtils.getTypefaceSpan(Typeface.BOLD),
+                        SystemUtils.getColoredSpan(getContext(), R.color.button_success)
+                    };
+                    break;
+
+                case MyUsers.Keys.TRUST_UNKNOWN:
+                default:
+                    trustStringId = R.string.trust_unknown;
+                    trustSpans = new CharacterStyle[] {
+                        SystemUtils.getTypefaceSpan(Typeface.BOLD),
+                        SystemUtils.getColoredSpan(getContext(), R.color.button_danger)
+                    };
+                    break;
+            }
+        }
+        else {
+            trustStringId = R.string.status_notsubscribed;
+            trustSpans = new CharacterStyle[] {
+                SystemUtils.getTypefaceSpan(Typeface.BOLD),
+            };
         }
 
         text.append('\n').append(getString(R.string.status_label));
