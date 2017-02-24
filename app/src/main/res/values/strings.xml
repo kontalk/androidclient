@@ -547,6 +547,7 @@
     <string name="trust_unknown">Not verified</string>
     <string name="trust_ignored">Ignored</string>
     <string name="trust_verified">Verified</string>
+    <string name="status_notsubscribed">Not allowed/Blocked</string>
 
     <string name="action_compose">New chat</string>
     <string name="action_compose_group">New group</string>
