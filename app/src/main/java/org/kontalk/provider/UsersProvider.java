@@ -132,24 +132,6 @@ public class UsersProvider extends ContentProvider {
         private static final String SCHEMA_KEYS =
             "CREATE TABLE " + TABLE_KEYS + " " + CREATE_TABLE_KEYS;
 
-        private static final String[] SCHEMA_UPGRADE_V7 = {
-            SCHEMA_KEYS,
-            "INSERT INTO " + TABLE_KEYS + " SELECT jid, public_key, fingerprint FROM " + TABLE_USERS,
-        };
-
-        private static final String[] SCHEMA_UPGRADE_V8 = {
-            // online table
-            "CREATE TABLE users_backup " + CREATE_TABLE_USERS,
-            "INSERT INTO users_backup SELECT _id, jid, number, display_name, lookup_key, contact_id, registered, status, last_seen, public_key, fingerprint, blocked FROM " + TABLE_USERS,
-            "DROP TABLE " + TABLE_USERS,
-            "ALTER TABLE users_backup RENAME TO " + TABLE_USERS,
-            // offline table
-            "CREATE TABLE users_backup " + CREATE_TABLE_USERS,
-            "INSERT INTO users_backup SELECT _id, jid, number, display_name, lookup_key, contact_id, registered, status, last_seen, public_key, fingerprint, blocked FROM " + TABLE_USERS_OFFLINE,
-            "DROP TABLE " + TABLE_USERS_OFFLINE,
-            "ALTER TABLE users_backup RENAME TO " + TABLE_USERS_OFFLINE,
-        };
-
         private static final String[] SCHEMA_UPGRADE_V9 = {
             // online table
             "CREATE TABLE users_backup " + CREATE_TABLE_USERS,
@@ -168,12 +150,14 @@ public class UsersProvider extends ContentProvider {
             "ALTER TABLE keys_backup RENAME TO " + TABLE_KEYS,
         };
 
-        // any upgrade - just replace the table
+        // any upgrade - just re-create all tables
         private static final String[] SCHEMA_UPGRADE = {
             "DROP TABLE IF EXISTS " + TABLE_USERS,
             SCHEMA_USERS,
             "DROP TABLE IF EXISTS " + TABLE_USERS_OFFLINE,
             SCHEMA_USERS_OFFLINE,
+            "DROP TABLE IF EXISTS " + TABLE_KEYS,
+            SCHEMA_KEYS,
         };
 
         private Context mContext;
@@ -199,15 +183,6 @@ public class UsersProvider extends ContentProvider {
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             switch (oldVersion) {
-                case 7:
-                    // create keys table and trust anyone
-                    for (String sql : SCHEMA_UPGRADE_V7)
-                        db.execSQL(sql);
-                    // go on with next version
-                case 8:
-                    for (String sql : SCHEMA_UPGRADE_V8)
-                        db.execSQL(sql);
-                    // go on with next version
                 case 9:
                     // new keys management
                     for (String sql : SCHEMA_UPGRADE_V9)
