@@ -579,4 +579,8 @@
 
     <string name="err_authentication_failed_callerid">"Провера није успела. Покушајте да позовете број  поново и сачекајте мало дуже."</string>
     <string name="button_validation_fallback_callerid">Покушајте на други начин</string>
+    <string name="group_info_menu_add_again">Додај поново</string>
+
+    <string name="status_notsubscribed">Није дозвољен/блокиран</string>
+
     </resources>
