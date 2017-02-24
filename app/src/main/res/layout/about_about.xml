@@ -84,6 +84,23 @@
             android:autoLink="all"
             android:text="@string/mailto" />
 
+        <TextView android:id="@+id/forum"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:autoLink="all"
+            android:text="@string/forum" />
+
+        <TextView android:id="@+id/irc_link"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:autoLink="none"
+            android:textIsSelectable="true"
+            android:text="@string/irc_link" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

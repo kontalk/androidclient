@@ -20,6 +20,8 @@
 <resources>
     <string name="website" translatable="false">www.kontalk.org</string>
     <string name="mailto" translatable="false">devteam@kontalk.org</string>
+    <string name="forum" translatable="false">forum.kontalk.org</string>
+    <string name="irc_link" translatable="false">irc://chat.freenode.net/kontalk</string>
     <string name="facebook_link" translatable="false">http://www.facebook.com/kontalknet</string>
     <string name="facebook_profile" translatable="false">fb://profile/337867392917587</string>
     <string name="googleplus_link" translatable="false">https://plus.google.com/u/0/102201749813756709299</string>
