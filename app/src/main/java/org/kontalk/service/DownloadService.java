@@ -298,8 +298,7 @@ public class DownloadService extends IntentService implements DownloadListener {
             catch (Exception e) {
                 Log.e(TAG, "decryption failed!", e);
                 errorNotification(getString(R.string.notify_ticker_download_error),
-                    // TODO i18n
-                    "Decryption failed.");
+                    getString(R.string.notify_text_decryption_error));
                 return;
             }
             finally {
