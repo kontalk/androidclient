@@ -182,6 +182,7 @@
     <string name="notify_text_download_completed">Attachment download completed</string>
     <string name="notify_ticker_download_error">Download failed</string>
     <string name="notify_title_download_error">Download error</string>
+    <string name="notify_text_decryption_error">Decryption failed</string>
     <string name="notify_text_download_error">Attachment download failed</string>
     <string name="notify_ticker_upload_error">Upload failed</string>
     <string name="notify_title_upload_error">Upload error</string>
@@ -512,6 +513,8 @@
     <string name="group_command_user_parted">%s left the group.</string>
     <string name="group_command_owner_parted">The owner (%s) left the group. No one can add or remove members.</string>
     <string name="group_command_subject">Group subject set to: %s</string>
+    <string name="group_command_users_added">Users added:</string>
+    <string name="group_command_users_removed">Users removed:</string>
 
     <string name="group_command_text_create">Group created</string>
     <string name="group_command_text_subject">Group subject changed</string>

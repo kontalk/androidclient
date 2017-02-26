@@ -21,10 +21,10 @@ package org.kontalk.ui.view;
 import java.util.regex.Pattern;
 
 import android.content.Context;
+import android.support.v7.widget.AppCompatTextView;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import org.kontalk.R;
 import org.kontalk.data.Contact;
@@ -35,7 +35,7 @@ import org.kontalk.message.GroupCommandComponent;
  * Message component for {@link GroupCommandComponent}.
  * @author Daniele Ricci
  */
-public class GroupContentView extends TextView
+public class GroupContentView extends AppCompatTextView
     implements MessageContentView<GroupCommandComponent> {
 
     private GroupCommandComponent mComponent;
@@ -94,8 +94,7 @@ public class GroupContentView extends TextView
                 // add member(s)
                 String[] added = component.getAddedMembers();
                 if (added != null && added.length > 0) {
-                    // TODO i18n
-                    ((StringBuilder) text).append("Users added:");
+                    ((StringBuilder) text).append(getResources().getString(R.string.group_command_users_added));
                     for (String member : added) {
                         // TODO use something more "colorful"
                         ((StringBuilder) text).append("\n");
@@ -110,8 +109,7 @@ public class GroupContentView extends TextView
                 if (removed != null && removed.length > 0) {
                     if (text.length() > 0)
                         ((StringBuilder) text).append("\n");
-                    // TODO i18n
-                    ((StringBuilder) text).append("Users removed:");
+                    ((StringBuilder) text).append(getResources().getString(R.string.group_command_users_removed));
                     for (String member : removed) {
                         // TODO use something more "colorful"
                         ((StringBuilder) text).append("\n");
