@@ -583,4 +583,17 @@
 
     <string name="status_notsubscribed">Није дозвољен/блокиран</string>
 
+    <string name="code_validation_intro_callerid">Тапните на дугме испод да бисте цимнули тај број. <b>Позив морате да затражите са броја телефона ког пријављујете</b>. Позив је бесплатан ако поклопите одмах након првог звона. То ће нам бити довољно.</string>
+    <string name="code_validation_intro2_callerid">Након затварања позива, вратите се овде и тапните дугме за проверу испод.</string>
+    <string name="pref_push_notifications_title_default">"Обавештења гурања („push“) је сервером потпомогнута технологија за поштеду батерије. Не утиче на правовремену испоруку порука.
+
+АКо је укључено, детаље повезивања Контака  можете фино да подесите на екрану мрежних поставки."</string>
+    <string name="notify_text_decryption_error">Дешифровање није успело</string>
+    <string name="msg_disable_encryption">Све нове поруке послате у овом ћаскању НЕЋЕ бити шифроване.
+Искључите шифровање само ако ваш контакт нема лични кључ.</string>
+    <string name="group_command_users_added">Додати корисници:</string>
+    <string name="group_command_users_removed">Уклоњени корисници:</string>
+
+    <string name="delete_threads_groups_disclaimer">Историјат групних ћаскања ће бити обрисан само ако је опција изнад укључена.</string>
+    <string name="create_group_disclaimer">Имајте на уму да се сви чланови морају међусобно познавати да би могли да ћаскају.</string>
     </resources>
