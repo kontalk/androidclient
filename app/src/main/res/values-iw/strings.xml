@@ -170,4 +170,47 @@
     <string name="err_validation_network_error">לא ניתן להתחבר לשרת. אנה נסה שוב מאוחר יותר.</string>
     <string name="err_validation_server_not_supported">השרת הנבחר אינו תומך ברישום. אנה הגדר שרת אחר במסך ההגדרות.</string>
     <string name="err_validation_user_exists"><b>המספר בו הנך משתמש כבר רשום ל Kontalk </b> אם רשמת מכשיר אחר, המשך התהליך ינתק אותו מ Kontalk. אנה פנה לתיעוד שלנו על מנת ללמוד איך מעבירים חשבון ממכשיר למכשיר. בחר OK על מנת להמשיך בכל זאת.</string>
+    <string name="text_encrypted">(מוצפן)</string>
+    <string name="peer_unknown">(לא ידוע)</string>
+    <string name="msg_draft_saved">הודעה נשמרה כטיוטה.</string>
+    <string name="send_mime_not_supported">סוג קובץ לא נתמך.</string>
+    <string name="button_validate">הרשם</string>
+    <string name="button_validation_register">אמת</string>
+    <string name="button_validation_fallback">לא מקבל שיחה?</string>
+    <string name="button_validation_fallback_callerid">נסה דרך אחרת</string>
+    <string name="notify_ticker_download_completed">הורדה הושלמה</string>
+    <string name="notify_title_download_completed">הורדה הושלמה</string>
+    <string name="notify_text_download_completed">הורדת קובץ מצורף הושלמה</string>
+    <string name="notify_ticker_download_error">הורדה נכשלה</string>
+    <string name="notify_title_download_error">שגיאת הורדה</string>
+    <string name="notify_text_download_error">הורדת קובץ מצורף נכשלה</string>
+    <string name="notify_ticker_upload_error">העלאה נכשלה</string>
+    <string name="notify_title_upload_error">שגיאת העלאה</string>
+    <string name="notify_text_upload_error">העלאת קובץ מצורף נכשלה</string>
+    <string name="title_invalid_number">מספר שגוי</string>
+    <string name="err_store_message_failed">שמירת הודעה לתיקיית דואר יוצא נכשלה.</string>
+    <string name="msg_invalid_number">אנה הכנס מספר טלפון תקף.</string>
+    <string name="msg_invalid_cc">אנה הכנס קידומת מדינה תקיפה.</string>
+    <string name="title_invalid_code">קוד לא תקף</string>
+    <string name="msg_invalid_code">אנה הכנס קוד תקף.</string>
+    <string name="title_nonetwork">אין חיבור אינטרנט</string>
+    <string name="title_fallback">יש בעיות?</string>
+    <string name="msg_fallback">ננסה דרך אחרת לאמת את מספר הטלפון שלך.</string>
+    <string name="title_no_name">שמך</string>
+    <string name="msg_no_name">אנה הכנס שם.</string>
+    <string name="menu_refresh">רענן</string>
+    <string name="menu_invite">הזמן משתמשים</string>
+    <string name="title_error">שגיאה</string>
+    <string name="msg_do_refresh">השתמש ב תפריט &gt; רענן לעדכון רשימת אנשי קשר.</string>
+    <string name="msg_sync_progress">מרענן רשימת אנשי קשר…</string>
+    <string name="err_sync_failed">לא ניתן לרענן רשימת אנשי קשר. אנה נסה שוב מאוחר יותר.</string>
+    <string name="err_sync_nonetwork">רשת לא זמינה. אנה נסה שוב מאוחר יותר.</string>
+    <string name="text_invite_message">הי! נסה את Kontalk, אפליקציית מסרים חופשית! http://kontalk.org</string>
+    <string name="text_contacts_empty">משתמשים חדשים יתווספו אוטומטית לרשימה.
+
+השתמש ב<b>תפריט</b> &gt; <b> הזמן משתמשים</b> לשלוח הודעת הזמנה למישהו.</string>
+    <string name="text_conversations_empty">להתחלת כתיבת הודעות השתמש בכפתור <b>הודעה חדשה</b> למטה.</string>
+    <string name="notify_ticker_external_storage">אחסון חיצוני לא זמין</string>
+    <string name="notify_text_external_storage">לא ניתן לכתוב לאחסון חיצוני.</string>
+    <string name="title_user_not_found">משתמש לא נמצא</string>
     </resources>
