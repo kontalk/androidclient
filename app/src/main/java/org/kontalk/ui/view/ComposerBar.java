@@ -301,10 +301,11 @@ public class ComposerBar extends RelativeLayout implements
                         animateRecordFrame();
                         mAudioButton.getParent().requestDisallowInterceptTouchEvent(true);
                     }
-                    else if ((motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) && !mCheckMove) {
+                    else if ((motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) &&
+                            !mCheckMove && mIsRecordingAudio) {
                         if (mOrientation == SystemUtils.getDisplayRotation(mContext)) {
                             mDraggingX = -1;
-                            stopRecording(true);
+                            stopRecording(motionEvent.getAction() == MotionEvent.ACTION_UP);
                             animateRecordFrame();
                         }
                     }
