@@ -586,4 +586,8 @@
 
     <string name="status_notsubscribed">Не разрешено/Заблокировано</string>
 
+    <string name="notify_text_decryption_error">Дешифровка не сработала</string>
+    <string name="group_command_users_added">Добавленные пользователи:</string>
+    <string name="group_command_users_removed">Удалённые пользователи:</string>
+
     </resources>
