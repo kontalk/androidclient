@@ -585,4 +585,8 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
 
     <string name="status_notsubscribed">Sin permiso/Bloqueado</string>
 
+    <string name="notify_text_decryption_error">No se ha podido desencriptar</string>
+    <string name="group_command_users_added">Usuarios añadidos:</string>
+    <string name="group_command_users_removed">Usuarios eliminados:</string>
+
     </resources>
