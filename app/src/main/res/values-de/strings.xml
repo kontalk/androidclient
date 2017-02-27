@@ -587,4 +587,8 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
 
     <string name="status_notsubscribed">Nicht erlaubt/Blockiert</string>
 
+    <string name="notify_text_decryption_error">Entschlüsselung fehlgeschlagen</string>
+    <string name="group_command_users_added">Hinzugefügte Nutzer:</string>
+    <string name="group_command_users_removed">Entfernte Nutzer:</string>
+
     </resources>
