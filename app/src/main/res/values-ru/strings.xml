@@ -566,7 +566,7 @@
     <string name="delete_threads_leave_any_groups">Также покинуть все группы</string>
 
     <string name="delete_threads_groups_disclaimer">В групповых чатах история бесед будет удаляться, пока не будет отмечено окошко выше.</string>
-    <string name="create_group_disclaimer">Пожалуйста, помните, что любой член группы должен знать других для участия в общении.</string>
+    <string name="create_group_disclaimer">Пожалуйста, помните, что каждый член группы должен знать каждого из других для участия в общении.</string>
     <string name="check_dont_show_again">Не показывать больше</string>
 
     <string name="pref_debug_log">Включить журнал отладки</string>
