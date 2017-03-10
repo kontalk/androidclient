@@ -213,4 +213,240 @@
     <string name="notify_ticker_external_storage">אחסון חיצוני לא זמין</string>
     <string name="notify_text_external_storage">לא ניתן לכתוב לאחסון חיצוני.</string>
     <string name="title_user_not_found">משתמש לא נמצא</string>
+    <string name="message_user_not_found">לא נראה שאיש הקשר רשום ל Kontalk. אפשר לנסות ליצור קשר עם המשתמש בכל זאת או לשלוח הודעת הזמנה.</string>
+    <string name="yes_user_not_found">צור קשר עם המשתמש בכל זאת</string>
+    <string name="no_user_not_found">שלח הזמנה</string>
+    <string name="pref_appearance_settings">הגדרות מראה</string>
+    <string name="pref_font_size">גודל גופן</string>
+    <string name="menu_status">סטטוס</string>
+    <string name="menu_attachment">צרף</string>
+    <string name="menu_smileys">חייכנים</string>
+    <string name="menu_invite_group">הוסף משתמשים</string>
+    <string name="menu_start_group">פתח קבוצה</string>
+    <string name="menu_group_info">מידע על הקבוצה</string>
+    <string name="menu_set_group_subject">קבע את נושא הקבוצה</string>
+    <string name="menu_leave_group">עזוב קבוצה</string>
+    <string name="menu_block_user">חסום</string>
+    <string name="menu_unblock_user">הסר חסימה</string>
+    <string name="menu_encryption">הצפנה</string>
+    <string name="vcard_message">הודעת vCard</string>
+    <string name="open_file">פתח קובץ</string>
+    <string name="open_audio">נגן קובץ שמע</string>
+    <string name="msg_msgcenter_restarted">מרכז ההודעות אותחל.</string>
+    <string name="downloading_attachment">הורד קובץ מצורף…</string>
+    <string name="decrypting_attachment">מפענח קובץ מצורף…</string>
+    <string name="attachment_download">הורדת קובץ מצורף</string>
+    <string name="attachment_upload">העלאת קובץ מצורף</string>
+    <string name="seen_moment_ago_label">לפני רגע</string>
+    <string name="seen_online_label">פעיל</string>
+    <string name="seen_away_label">מקוון</string>
+    <string name="seen_typing_label">מקליד…</string>
+    <string name="invitation_sent_label">הזמנה תלויה ועומדת</string>
+    <string name="pref_custom_background">רקע מותאם</string>
+    <string name="notify_text_decryption_error">פיענוח נכשל</string>
+    <string name="pref_background_uri">רקע</string>
+    <string name="pref_title_background_uri">קבע רקע מותאם לשיחות</string>
+    <string name="pref_title_custom_background">בחר ברקע דרך האפשרות למטה</string>
+    <string name="err_custom_background">ארעה שגיאה במהלך מימוש הרקע. אנה נסה תמונה אחרת.</string>
+    <string name="err_attachment_corrupted">לא ניתן להוריד קובץ מצורף. יתכן שההודעה פגומה.</string>
+    <string name="serverlist_updating">מעדכן רשימת שרתים…</string>
+    <string name="serverlist_update_error">לא ניתן להוריד רשימת שרתים. אנה נסה שוב מאוחר יותר.</string>
+    <string name="serverlist_update_nodata">אין רשימת שרתים זמינה.</string>
+    <string name="serverlist_update_nonetwork">רשת לא זמינה. אנה נסה שוב מאוחר יותר.</string>
+    <string name="serverlist_update_offline">מצב לא מקוון מופעל.</string>
+    <string name="pref_emoji_converter">המר חייכנים לאימוג׳י</string>
+    <string name="pref_title_emoji_converter">המר אוטומטית חלק מחייכני הטקסט לאימוג׳י</string>
+
+    <string name="pref_vibrate_label_always">תמיד</string>
+    <string name="pref_vibrate_label_silent">רק כאשר מושתק</string>
+    <string name="pref_vibrate_label_never">אף פעם</string>
+    <string name="pref_fontsize_label_small">קטן</string>
+    <string name="pref_fontsize_label_medium">בינוני</string>
+    <string name="pref_fontsize_label_large">גדול</string>
+    <string name="pref_balloon_label_hangout">Hangout</string>
+    <string name="pref_balloon_label_silence">Silence</string>
+    <string name="pref_balloon_label_classic">קלאסי</string>
+    <string name="pref_balloon_label_classic_old">קלאסי (ישן)</string>
+    <string name="pref_balloon_label_iphone">iPhone</string>
+    <string name="pref_text_enter_label_default">ברירת מחדל</string>
+    <string name="pref_text_enter_label_newline">רד שורה</string>
+    <string name="pref_text_enter_label_newline_send">שלח</string>
+    <string name="pref_image_resize_label_original">מקורי</string>
+    <string name="pref_image_resize_label_small">קטן (0.4MP)</string>
+    <string name="pref_image_resize_label_medium">בינוני (1.0MP)</string>
+    <string name="pref_image_resize_label_large">גדול (2.0MP)</string>
+    <string name="pref_idle_time_label_never">לעולם לא</string>
+    <string name="pref_idle_time_label_5m">5 דקות</string>
+    <string name="pref_idle_time_label_15m">15 דקות</string>
+    <string name="pref_idle_time_label_30m">30 דקות</string>
+    <string name="pref_idle_time_label_1h">1 שעה</string>
+    <string name="pref_wakeup_time_label_5m">5 דקות</string>
+    <string name="pref_wakeup_time_label_15m">15 דקות</string>
+    <string name="pref_wakeup_time_label_30m">30 דקות</string>
+    <string name="pref_wakeup_time_label_1h">1 שעה</string>
+    <string name="pref_wakeup_time_label_3h">3 שעות</string>
+
+    <string name="pref_remove_prefix">קידומת</string>
+    <string name="pref_change_passphrase">שנה ססמא של מפתח פרטי</string>
+    <string name="pref_title_remove_prefix">הסר חלק מהקידומות ב Kontalk להתאמה נכונה למספרי טלפון</string>
+    <string name="pref_export_keypair">יצא מפתח פרטי</string>
+    <string name="msg_import_keypair">Kontalk ייבא את המפתחות שלך מ %s בהתקן האחסון החיצוני. וודא שהקובץ אכן קיים ומכיל ארכיון מייוצא תקף של מפתחות.</string>
+    <string name="msg_import_keypair_complete">ייבוא מפתח פרטי הושלם.</string>
+    <string name="err_import_keypair_failed">ייבוא מפתח פרטי נכשל.</string>
+    <string name="err_import_keypair_uid_mismatch">המפתח שיובא לא תואם את מספר הטלפון שהכנסת.</string>
+    <string name="err_import_keypair_read">לא ניתן לקרוא את המפתח הפרטי מהתקן האחסון החיצוני.</string>
+    <string name="title_passphrase">ססמא</string>
+    <string name="title_passphrase_request">ססמא למפתח הפרטי</string>
+    <string name="err_invalid_passphrase">ססמא שגויה. אתחל את האפליקציה לנסות אחרת.</string>
+
+    <string name="msg_status_sending">שולח</string>
+    <string name="msg_status_sent">נשלח</string>
+    <string name="msg_status_notaccepted">סורב</string>
+    <string name="msg_status_notdelivered">לא.נשלח</string>
+    <string name="msg_status_delivered">נשלח</string>
+    <string name="msg_status_encrypted">מוצפן</string>
+
+    <string name="pref_balloons">ערכת נושא לבלוני שיחה</string>
+    <string name="pref_balloons_groups">ערכת נושא לבלוני שיחה קבוצתית</string>
+
+    <string name="attachment_camera">מצלמה</string>
+    <string name="attachment_picture">גלריה</string>
+    <string name="attachment_contact">איש קשר</string>
+    <string name="attachment_audio">שמע</string>
+    <string name="attachment_video">ווידאו</string>
+    <string name="attachment_file">קובץ</string>
+    <string name="attachment_vcard">איש קשר</string>
+    <string name="attachment_location">מיקום</string>
+
+    <string name="msg_not_implemented">לא ממומש עדיין.</string>
+
+    <string name="chooser_send_picture">שלח תמונה</string>
+    <string name="chooser_error_no_camera">התקן אחסון חיצוני אינו זמין. צילום לא יהיה זמין.</string>
+    <string name="chooser_error_no_camera_app">אין אפליקצית מצלמה זמינה.</string>
+    <string name="chooser_error_no_gallery_app">אין אפליקצית גלריה זמינה.</string>
+    <string name="chooser_error_no_app">אין אפליקציה זמינה לפתיחת קובץ.</string>
+
+    <string name="chooser_error_no_dialer">אין אפליקציית חייגן זמינה לחיוג או אין תמיכה בטלפוניה במכשיר זה.</string>
+    <string name="chooser_error_no_browser">אין דפדפן זמין לפתיחת הקישור.</string>
+    <string name="chooser_select_link">בחר פעולה</string>
+
+    <string name="status_activity_title">הודעת סטטוס</string>
+    <string name="hint_status_entry">הקלד את הודעת הסטטוס שלך כאן</string>
+    <string name="header_recent_status">הודעות סטטוס שהיו בשימוש לאחרונה</string>
+
+    <string name="title_offline_mode_warning">מצב לא מקוון</string>
+    <string name="message_offline_mode_warning">במצב לא מקוון Kontalk לא יתחבר לשרת עד לחזרה למצב מקוון. לא ניתן יהיה לשלוח או לקבל הודעות ומשתמשים יראו שאתה לא מחובר.</string>
+
+    <string name="warning_offline_mode">מצב לא מקוון פעיל. ההודעות יישלחו כאשר החיבור יתחדש.</string>
+    <string name="going_offline">עובר למצב לא מקוון.</string>
+    <string name="going_online">עובר למצב מקוון.</string>
+
+    <string name="pref_other">אחר</string>
+    <string name="pref_help">עזרה</string>
+    <string name="pref_donate">תרום</string>
+    <string name="pref_about">אודות</string>
+
+    <string name="title_about">אודות</string>
+    <string name="title_donation">תרום</string>
+    <string name="title_credits">קרדיטים</string>
+
+    <string name="about_version">%1$s (%2$d)</string>
+
+    <string name="social_twitter">טוויטר</string>
+    <string name="social_googleplus">גוגל פלוס</string>
+    <string name="social_facebook">פייסבוק</string>
+    <string name="social_identica">Identi.ca</string>
+
+    <string name="donate_text">Kontalk זקוק לכסף על מנת להמשיך לרוץ. אנה שקול תרומה, אפילו קטנה.</string>
+    <string name="title_bitcoin_dialog">ביטקוין</string>
+    <string name="text_bitcoin_dialog">כתובת ביטקוין:
+%s</string>
+    <string name="donate_wallet">Google Play</string>
+    <string name="donate_paypal">PayPal</string>
+    <string name="donate_bitcoin">ביטקוין</string>
+    <string name="donate_flattr">Flattr</string>
+
+    <string name="msg_generating_keypair">מייצר מפתח פרטי ברקע.</string>
+    <string name="msg_gen_keypair_complete">ייצור מחדש של מפתח פרטי הושלם.</string>
+    <string name="notify_gen_keypair_ticker">מייצר מפתח פרטי…</string>
+    <string name="notify_gen_keypair_title">מייצר מפתח פרטי</string>
+    <string name="notify_gen_keypair_text">אפשר להמשיך לעבוד כרגיל.</string>
+
+    <string name="msg_xmpp_upgrading">משדרג…</string>
+    <string name="title_no_personal_key">אין מפתח פרטי</string>
+    <string name="msg_no_personal_key">מפתח פרטי אינו זמין כרגע ( ככל הנראה כיוון שכרגע שידרגת). לא תוכל להתחבר לרשת Kontalk ללא יצירת מפתח פרטי. אנה הכנס את שמך על ידי סגירה ופתיחה מחדש של Kontalk.</string>
+    <string name="msg_keypair_exported">מפתח פרטי ותעודת כניסה יוצאו להתקן אחסון חיצוני.</string>
+    <string name="err_keypair_export_write">לא ניתן לשמור מפתח פרטי להתקן אחסון חיצוני.</string>
+    <string name="err_keypair_export_other">ייצוא מפתח פרטי נכשל.</string>
+
+    <string name="security_status_good">טוב</string>
+    <string name="security_status_bad">רע</string>
+
+    <string name="security_error_invalid_signature">" (חתימה לא תקפה)"</string>
+    <string name="security_error_invalid_sender">" (שולח לא תקף)"</string>
+    <string name="security_error_invalid_recipient">" (נמען לא תקף)"</string>
+    <string name="security_error_invalid_timestamp">" (חתימת זמן לא תקפה)"</string>
+    <string name="security_error_invalid_data">" (נתונים לא תקפים)"</string>
+    <string name="security_error_decrypt_failed">" (פענוח נכשל)"</string>
+    <string name="security_error_integrity_check">" (בדיקת שלמות)"</string>
+    <string name="security_error_public_key_unavail">" (מפתח ציבורי לא זמין)"</string>
+
+    <string name="invite_notification">מזמין אותך לשוחח</string>
+    <string name="title_invitation">הזמנה לשיחה</string>
+    <string name="text_invitation1">בקשה מ:</string>
+    <string name="text_invitation2">תביעת אצבע:</string>
+    <string name="button_accept">קבל</string>
+    <string name="button_refuse">סרב</string>
+    <string name="button_block">חסום</string>
+    <string name="button_ignore">התעלם</string>
+    <string name="button_identity">זהות</string>
+    <string name="button_private_chat">שיחה פרטית</string>
+    <string name="text_invitation_info">(הזמנה לשיחה)</string>
+    <string name="title_identity">זהות</string>
+    <string name="title_identity_self">זהות (זה אתה!)</string>
+
+    <string name="msg_connecting_iab">מתחבר ל Google play…</string>
+    <string name="msg_iab_thankyou">תודה רבה!</string>
+    <string name="msg_iab_thankyou_warning">משהו השתבש, אבל התרומה התקבלה. תודה רבה!</string>
+
+    <string name="iab_error_setup">שגיאה במהלך הגדרת חיוב דרך האפליקציה (%d)</string>
+    <string name="iab_error_query">נכשל בשאילתה למצאי בחיוב מתוך האפליקציה (%d)</string>
+
+    <string name="copy_clipboard">העתק ללוח</string>
+    <string name="bitcoin_clipboard_copied">כתובת הביטקוין הועתקה ללוח.</string>
+
+    <string name="warn_no_personal_key">לא ניתן לטעון מפתח פרטי. נטרל הצפנה מתוך ההגדרות על מנת לשלוח הודעה בכל זאת.</string>
+    <string name="warn_no_public_key">לא נמצא מפתח ציבורי עבור המשתמש. נסה לרענן את רשימת אנשי הקשר או נטרל הצפנה מתוך ההגדרות על מנת לשלוח הודעה בכל זאת.</string>
+    <string name="warn_encryption_failed">לא ניתן להצפין את ההודעה. נטרל הצפנה מתוך תפריט ההגדרות על מנת לשלוח את ההודעה בכל זאת.</string>
+    <string name="warn_not_subscribed">לא ניתן לשלוח את ההודעה. המשתמש לא קיבל את הזמנתך עדיין.</string>
+
+    <string name="pref_sync_sim_contacts">סנכרן מאנשי קשר ב SIM</string>
+    <string name="pref_title_sync_sim_contacts">הכלל אנשי קשר מ SIM בבדיקת משתמשים רשומים</string>
+
+    <string name="pref_sync_invisible_contacts">הכלל אנשי קשר בלתי נראים</string>
+    <string name="pref_title_sync_invisible_contacts">הכלל אנשי קשר שלא מוצגים באפליקצית באנשי הקשר. הפעל אם הנך משתמש ב DAVDroid</string>
+
+    <string name="pref_accept_any_certificate">קבל כל תעודת SSL</string>
+
+    <string name="pref_delete_account">מחק את חשבונך</string>
+    <string name="msg_delete_account">מחיקת חשבונך יגרום למחיקת כל הודעותך. חשבונך על השרת יימחק אוטומטית לאחר מספר שבועות.</string>
+    <string name="msg_delete_account_progress">מוחק את חשבונך…</string>
+
+    <string name="msg_user_blocked">המשתמש נחסם.</string>
+    <string name="msg_user_unblocked">הוסרה חסימת המשתמש.</string>
+    <string name="title_block_user_warning">באמת לחסום משתמש זה?</string>
+    <string name="msg_block_user_warning">"הנך עומד לחסום משתמש זה. אם תעשה כן, משתמש זה לא יוכל לשלוח לך הודעות מכל סוג עד אשר תסיר את החסימה. המשתמש גם לא יוכל לראות את הסטטוס שלך או את הנוכחות האחרונה שלך ואתה את שלו.  בנוסף גם לא תוכל לשלוח אליו הודעות מכל סוג."</string>
+    <string name="title_unblock_user_warning">באמת להסיר את החסימה על משתמש זה?</string>
+    <string name="msg_unblock_user_warning">הנך עומד להסיר את החסימה ממשתמש זה. הסרת החסימה תאפשר לו לשלוח לך הודעות ולצפות בסטטוס שלך ובנוכחות האחרונה שלך.</string>
+
+    <string name="title_disable_encryption">לנטרל הצפנה בשיחה זו?</string>
+    <string name="msg_disable_encryption">כל ההודעות החדשות שיישלחו בשיחה זו לא יוצפנו.
+נטרל הצפנה רק אם לאיש הקשר אין מפתח פרטי.</string>
+    <string name="menu_disable_encryption">נטרל</string>
+
+    <string name="notification_text_more">לחץ כאן ללמוד עוד</string>
+
+    <string name="title_auth_error">שגיאת אימות</string>
+    <string name="msg_auth_error">אימות לשרת Kontalk נכשל בנסיון חיבור האחרון. יתכן והסיבה כשל זמני בשרת, או יותר סביר השרת דוחה את המפתח האישי שלך. אנחנו ממליצים למחוק את חשבון ה Kontalk שלך מהגדרות מערכת אנדרואיד ולהגדיר את החשבון מחדש (כתוצאה מכך כל הודעות ה Kontalk שלך ימחקו).</string>
+
     </resources>
