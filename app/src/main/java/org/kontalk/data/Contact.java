@@ -521,14 +521,7 @@ public class Contact {
             c.mRegistered = registered;
             c.mStatus = status;
 
-            // trusted key
-            Keyring.TrustedPublicKeyData trustedKeyring = Keyring.getPublicKeyData(context, jid, Keys.TRUST_IGNORED);
-            // latest (possibly unknown) fingerprint
-            c.mFingerprint = Keyring.getFingerprint(context, jid, Keys.TRUST_UNKNOWN);
-            if (trustedKeyring != null) {
-                c.mTrustedKeyRing = new PGPLazyPublicKeyRingLoader(trustedKeyring.keyData);
-                c.mTrustedLevel = trustedKeyring.trustLevel;
-            }
+            retrieveKeyInfo(context, c);
 
             cache.put(jid, c);
         }
@@ -562,9 +555,25 @@ public class Contact {
     public static Contact findByUserId(Context context, @NonNull String userId, String numberHint) {
         Contact c = cache.get(context, userId, numberHint);
         // build dummy contact if not found
-        if (c == null)
+        if (c == null) {
             c = new Contact(-1, null, userId, numberHint, userId, false);
+            // try to retrieve the key from the keyring
+            // We may find one for pending subscription users which have
+            // disappeared from the users table after a resync
+            retrieveKeyInfo(context, c);
+        }
         return c;
+    }
+
+    private static void retrieveKeyInfo(Context context, Contact c) {
+        // trusted key
+        Keyring.TrustedPublicKeyData trustedKeyring = Keyring.getPublicKeyData(context, c.getJID(), Keys.TRUST_IGNORED);
+        // latest (possibly unknown) fingerprint
+        c.mFingerprint = Keyring.getFingerprint(context, c.getJID(), Keys.TRUST_UNKNOWN);
+        if (trustedKeyring != null) {
+            c.mTrustedKeyRing = new PGPLazyPublicKeyRingLoader(trustedKeyring.keyData);
+            c.mTrustedLevel = trustedKeyring.trustLevel;
+        }
     }
 
     static Contact _findByUserId(Context context, String userId) {
@@ -594,14 +603,7 @@ public class Contact {
             contact.mRegistered = registered;
             contact.mStatus = status;
 
-            // trusted key
-            Keyring.TrustedPublicKeyData trustedKeyring = Keyring.getPublicKeyData(context, userId, Keys.TRUST_IGNORED);
-            // latest (possibly unknown) fingerprint
-            contact.mFingerprint = Keyring.getFingerprint(context, userId, Keys.TRUST_UNKNOWN);
-            if (trustedKeyring != null) {
-                contact.mTrustedKeyRing = new PGPLazyPublicKeyRingLoader(trustedKeyring.keyData);
-                contact.mTrustedLevel = trustedKeyring.trustLevel;
-            }
+            retrieveKeyInfo(context, contact);
 
             return contact;
         }
