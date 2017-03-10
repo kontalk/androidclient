@@ -449,4 +449,24 @@
     <string name="title_auth_error">שגיאת אימות</string>
     <string name="msg_auth_error">אימות לשרת Kontalk נכשל בנסיון חיבור האחרון. יתכן והסיבה כשל זמני בשרת, או יותר סביר השרת דוחה את המפתח האישי שלך. אנחנו ממליצים למחוק את חשבון ה Kontalk שלך מהגדרות מערכת אנדרואיד ולהגדיר את החשבון מחדש (כתוצאה מכך כל הודעות ה Kontalk שלך ימחקו).</string>
 
+    <string name="warn_invite_no_app">אין אפליקציה זמינה להזמנת משתמשים.</string>
+
+    <string name="pref_text_enter">כפתור שורה חדשה</string>
+    <string name="pref_title_text_enter">בחר התנהגות של כפתור שורה חדשה</string>
+
+    <string name="title_password1">ססמא:</string>
+    <string name="title_password2">אשרר ססמא:</string>
+
+    <string name="err_password_too_short">הססמא חייבת להיות בעלת %d אותיות לפחות.</string>
+    <string name="err_passwords_mismatch">ססמאות לא תואמות!</string>
+    <string name="err_password_invalid">ססמא שגויה.</string>
+
+    <string name="hint_record">לחץ על המקרופון להתחלת ההקלטה.</string>
+    <string name="hint_ptt">לחץ בהתמדה על המקרופון להקליט.</string>
+    <string name="err_change_passphrase">לא ניתן להחליף את הססמא של המפתח האישי.</string>
+    <string name="err_file_not_found">קובץ לא נמצא.</string>
+    <string name="err_audio_record">שגיאה בהתחלת הקלטת שמע.</string>
+    <string name="err_audio_record_writing">שגיאה בכתיבה להתקן זיכרון חיצוני.</string>
+    <string name="err_audio_record_noaudio">לא התבצעה הקלטת שמע.</string>
+    <string name="err_playing_audio">שגיאה בניגון שמע.</string>
     </resources>
