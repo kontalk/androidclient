@@ -637,8 +637,8 @@ public class MessagesProvider extends ContentProvider {
                 success = setTransactionSuccessful(db);
 
                 // draft or request - return conversation
-                if (draft != null || !requestExists)
-                    return ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId);
+                return (draft != null || !requestExists) ?
+                    ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId) : null;
             }
 
             // remove reserved columns
