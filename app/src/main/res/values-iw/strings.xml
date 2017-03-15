@@ -107,7 +107,7 @@
     <string name="pref_idle_time">התנתק כאשר לא בשימוש</string>
     <string name="pref_title_idle_time">פרק זמן לפני ניתוק מחוסר שימוש</string>
     <string name="pref_wakeup_time">התחבר מחדש לשרת</string>
-    <string name="pref_title_wakeup_time">פרק הזמן שצריך לחכות לפני התחברות מחדש לשרת לאחר תקופת חוסר פעילות. רלוונטי רק אם דחיפת הודעות אינה זמינה או איכות ירודה של חיבור לרשת.</string>
+    <string name="pref_title_wakeup_time">פרק הזמן שצריך לחכות לפני התחברות מחדש לשרת לאחר תקופת חוסר פעילות. רלוונטי רק אם דחיפת הודעות אינה זמינה או איכות ירודה של חיבור לרשת</string>
     <string name="pref_maintenance">תחזוקה</string>
     <string name="pref_regenerate_keypair">צור מחדש מפתח פרטי</string>
     <string name="pref_title_regenerate_keypair">השתמש במקרה שהמפתח הפרטי שלך כבר לא בטוח</string>
