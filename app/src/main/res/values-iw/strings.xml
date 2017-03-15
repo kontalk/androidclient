@@ -469,4 +469,144 @@
     <string name="err_audio_record_writing">שגיאה בכתיבה להתקן זיכרון חיצוני.</string>
     <string name="err_audio_record_noaudio">לא התבצעה הקלטת שמע.</string>
     <string name="err_playing_audio">שגיאה בניגון שמע.</string>
-    </resources>
+    <string name="err_playing_sdcard">שגיאה בקריאה מהתקן אחסון חיצוני.</string>
+    <string name="slide_to_cancel">החלק לביטול</string>
+
+    <string name="pref_media_settings">הגדרות מדיה</string>
+    <string name="pref_image_resize">שנה גודל תמונות</string>
+    <string name="pref_media_autodownload_threshold">סף להורדה אוטומטית</string>
+    <string name="pref_title_media_autodownload_threshold">קבצים קטנים מגודל זה תמיד יורדו אוטומטית</string>
+    <string name="pref_msg_media_autodownload_threshold">הכנס ערך ב KB. קבע ל 0 אם ברצונך לא להוריד אוטומטית אף פעם.</string>
+
+    <string name="pref_media_autodownload">הורד אוטומטית</string>
+    <string name="pref_media_autodownload_label_never">אף פעם</string>
+    <string name="pref_media_autodownload_label_wifi">רק על Wi-Fi</string>
+    <string name="pref_media_autodownload_label_always">תמיד</string>
+
+    <string name="pref_on">דלוק</string>
+    <string name="pref_off">כבוי</string>
+
+    <string name="err_server_invalid_format">פורמט כתובת לא תקין.</string>
+
+    <string name="err_no_contacts_app">לא נמצאה אפליקצית אנשי קשר.</string>
+    <string name="err_no_contact">איש קשר לא נמצא.</string>
+
+    <string name="warning_button_details">פרטים</string>
+    <string name="warning_older_version">חברך משתמש בגרסה ישנה יותר של Kontalk. חלק מהיכולות עלולות לא לעבוד כראוי.</string>
+    <string name="warning_public_key_changed">מפתח אישי שונה</string>
+    <string name="title_public_key_changed_warning">מפתח אישי שונה</string>
+    <string name="msg_public_key_changed_warning">אנה וודא עם המשתמש שהוא התקין מחדש את Kontalk או יצר מחדש את המפתח שלו בכוונה, אחרת התקשורת בינכם עלולה להיות לא בטוחה!</string>
+    <string name="warning_public_key_unknown">מפתח אישי לא מאומת עדיין</string>
+    <string name="title_public_key_unknown_warning">אמת מפתח אישי</string>
+    <string name="msg_public_key_unknown_warning">אנה וודא עם המשתמש שתביעת האצבע שלו תואמת את המופיעה בתיבת השיח <b>זהות</b> , אחרת התקשורת אינה מאובטחת!</string>
+    <string name="warning_public_key_group_unverified">זהותם של חלק מחברי הקבוצה לא אומתה.</string>
+
+    <string name="warning_user_blocked">חסמת משתמש זה.</string>
+
+    <string name="about_credits_devteam"><b>אפליקצית Kontalk מוגשת לכם על ידי:</b></string>
+    <string name="about_credits_gfx"><b>גרפיקה/אייקונים</b></string>
+    <string name="about_credits_contrib"><b>תורמים</b></string>
+    <string name="about_credits_translators"><b>מתרגמים</b></string>
+
+    <string name="pref_show_blocked_users">הצג משתמשים חסומים</string>
+    <string name="button_load_next_page">טען הודעות נוספות</string>
+
+    <string name="group_untitled">קבוצה ללא שם</string>
+    <string name="title_group_subject">נושא הקבוצה</string>
+    <string name="group_command_create">קבוצה נוצרה:</string>
+    <string name="group_command_self_parted">עזבת את הקבוצה.</string>
+    <string name="group_command_user_parted">%s עזב את הקבוצה.</string>
+    <string name="group_command_owner_parted">הבעלים (%s) עזב את הקבוצה. אף אחד לא יכול להוסיף או להסיר חברים.</string>
+    <string name="group_command_subject">נושא הקבוצה נקבע ל: %s</string>
+    <string name="group_command_users_added">משתמשים שנוספו:</string>
+    <string name="group_command_users_removed">משתמשים שהוסרו:</string>
+
+    <string name="group_command_text_create">קבוצה נוצרה</string>
+    <string name="group_command_text_subject">נושא הקבוצה שונה</string>
+    <string name="group_command_text_part">מישהו עזב את הקבוצה</string>
+    <string name="group_command_text_part_self">עזבת את הקבוצה</string>
+    <string name="group_command_text_part_kicked">הוסרת מהקבוצה</string>
+    <string name="group_command_text_add_remove">מישהו נוסף או הוסר</string>
+
+    <string name="groupinfo_activity_title">מידע על הקבוצה</string>
+
+    <string name="group_info_set_title">שנה נושא</string>
+    <string name="group_info_leave">עזוב קבוצה</string>
+    <string name="group_info_members">חברי הקבוצה</string>
+    <string name="group_info_ignore_all">התעלם מכולם</string>
+    <string name="group_info_owner_member">בעלים</string>
+    <string name="confirm_will_leave_group">לא תוכל להיכנס לקבוצה שוב לאחר שתעזוב.</string>
+    <string name="leave_group_delete_messages">למחוק בנוסף היסטורית שיחה</string>
+    <string name="group_info_menu_remove">הסר</string>
+    <string name="group_info_menu_add_again">הוסף שוב</string>
+
+    <string name="title_ignore_all_identities">התעלם מכל הזהויות?</string>
+    <string name="msg_ignore_all_identities">כל הזהויות הלא מאומתות יסומנו בהתעלמות.</string>
+    <string name="learn_more">למד עוד</string>
+
+    <string name="text_group_command_fallback">זו הודעה של שיחה קבוצתית. הנך משתמש בגרסה ישנה של Kontalk או שהלקוח לא תומך בפרוטוקול שיחה קבוצתית. אנה שדרג לגרסה האחרונה!</string>
+
+    <string name="title_huawei_protected_apps">אפליקציות מוגנות של Huawei</string>
+    <string name="msg_huawei_protected_apps">יש לאפשר את Kontalk באפליקציות המוגנות על מנת שיתפקד כראוי.</string>
+    <string name="btn_huawei_protected_apps">אפליקציות מוגנות</string>
+    <string name="check_do_not_show_again">אל תראה שוב</string>
+
+    <string name="status_label">"מצב: "</string>
+    <string name="trust_unknown">לא מאומת</string>
+    <string name="trust_ignored">להתעלם</string>
+    <string name="trust_verified">מאומת</string>
+    <string name="status_notsubscribed">אסור/חסום</string>
+
+    <string name="action_compose">שיחה חדשה</string>
+    <string name="action_compose_group">קבוצה חדשה</string>
+
+    <string name="pref_reporting">שלח סטטיסטיקת שימוש אנונימית</string>
+    <string name="pref_title_reporting">כולל דוחות קריסה</string>
+
+    <string name="delete_threads_leave_any_groups">בנוסף עזוב כל קבוצה</string>
+
+    <string name="delete_threads_groups_disclaimer">אם תיבת הבחירה למעלה לא מסומנת רק ההיסטוריה של השיחות הקבוצתיות תימחק.</string>
+    <string name="create_group_disclaimer">אנה זכור שכל חברי הקבוצה חייבים להכיר אחד את השני על מנת לשוחח.</string>
+    <string name="check_dont_show_again">אל תראה שוב</string>
+
+    <string name="pref_debug_log">אפשר רישום תיקון באגים</string>
+    <string name="pref_send_debug_log">שלח רישום תיקון באגים</string>
+
+    <string name="notification_group_title">%1$s @ %2$s</string>
+
+    <plurals name="confirm_will_delete_threads">
+	<item quantity="one">השיחה הנבחרת תימחק.</item>
+	<item quantity="other">השיחות הנבחרות יימחקו.</item>
+</plurals>
+
+    <plurals name="delete_threads_leave_groups">
+	<item quantity="one">עזוב גם קבוצה</item>
+	<item quantity="other">עזוב גם קבוצות</item>
+</plurals>
+
+    <plurals name="unread_messages">
+	<item quantity="one">הודעה אחת לא נקראה</item>
+	<item quantity="other">%d הודעות לא נקראו</item>
+</plurals>
+
+    <plurals name="unread_messages_group">
+	<item quantity="one">%1$d הודעות @ %2$s</item>
+	<item quantity="other"/>
+</plurals>
+
+    <plurals name="notification_more">
+	<item quantity="one">יותר 1+</item>
+	<item quantity="other">יותר %d+</item>
+</plurals>
+
+    <plurals name="context_selected">
+	<item quantity="one">1 נבחר</item>
+	<item quantity="other">%d נבחרו</item>
+</plurals>
+
+    <plurals name="group_people">
+	<item quantity="one">אדם 1</item>
+	<item quantity="other">%d אנשים</item>
+</plurals>
+
+</resources>
