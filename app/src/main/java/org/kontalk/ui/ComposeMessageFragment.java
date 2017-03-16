@@ -906,12 +906,12 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
     }
 
     private void showKeyWarning(int textId, final int dialogTitleId, final int dialogMessageId, final Object... data) {
-        Activity context = getActivity();
+        final Activity context = getActivity();
         if (context != null) {
             showWarning(context.getText(textId), new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    new MaterialDialog.Builder(getActivity())
+                    new MaterialDialog.Builder(context)
                         .title(dialogTitleId)
                         .content(dialogMessageId)
                         .positiveText(R.string.button_accept)
