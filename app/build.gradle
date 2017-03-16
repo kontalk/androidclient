@@ -133,7 +133,7 @@ dependencies {
     compile "com.madgag.spongycastle:pkix:$spongyCastleVersion"
     compile "com.madgag.spongycastle:pg:$spongyCastleVersion"
     compile 'info.guardianproject.netcipher:netcipher:1.2.1'
-    compile 'com.googlecode.libphonenumber:libphonenumber:8.3.1'
+    compile 'com.googlecode.libphonenumber:libphonenumber:8.3.3'
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'com.google.zxing:core:3.3.0'
     compile 'com.segment.backo:backo:1.0.0'
