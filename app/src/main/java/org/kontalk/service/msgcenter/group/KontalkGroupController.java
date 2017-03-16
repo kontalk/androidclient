@@ -18,6 +18,9 @@
 
 package org.kontalk.service.msgcenter.group;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Stanza;
@@ -77,18 +80,15 @@ public class KontalkGroupController implements GroupController<Message> {
             KontalkAddRemoveMembersCommand addRemove = (KontalkAddRemoveMembersCommand) command;
             String[] added = addRemove.getAddedMembers();
             String[] members = addRemove.getMembers();
-            String[] filteredMembers = members;
-            if (added != null) {
-                // remove added users from members list
-                filteredMembers = new String[members.length - added.length];
-                int fi = 0;
-                for (String member : members) {
-                    if (!SystemUtils.contains(added, member)) {
-                        filteredMembers[fi++] = member;
-                    }
+            Set<String> filteredMembers = new HashSet<>();
+            for (String member : members) {
+                // do not include added users in members list
+                if (added == null || !SystemUtils.contains(added, member)) {
+                    filteredMembers.add(member);
                 }
             }
-            group.addRemoveMembers(addRemove.getSubject(), filteredMembers,
+            group.addRemoveMembers(addRemove.getSubject(),
+                filteredMembers.toArray(new String[filteredMembers.size()]),
                 addRemove.getAddedMembers(), addRemove.getRemovedMembers(), packet);
         }
         else if (command instanceof PartCommand) {
