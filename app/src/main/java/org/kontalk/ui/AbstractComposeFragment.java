@@ -2203,7 +2203,9 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
-                    getAudioFragment().seekPlayerTo(0);
+                    AudioFragment audio = getAudioFragment();
+                    if (audio != null)
+                        audio.seekPlayerTo(0);
                     setAudioStatus(AudioContentView.STATUS_ENDED);
                 }
             });
