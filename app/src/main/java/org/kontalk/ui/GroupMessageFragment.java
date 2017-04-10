@@ -291,17 +291,18 @@ public class GroupMessageFragment extends AbstractComposeFragment {
      * Used only during activity restore.
      */
     @Override
-    protected void handleActionViewConversation(Uri uri, Bundle args) {
+    protected boolean handleActionViewConversation(Uri uri, Bundle args) {
         mGroupJID = uri.getPathSegments().get(1);
         mConversation = Conversation.loadFromUserId(getActivity(), mGroupJID);
         // unlikely, but better safe than sorry
         if (mConversation == null) {
             Log.i(TAG, "conversation for " + mGroupJID + " not found - exiting");
-            getActivity().finish();
+            return false;
         }
 
         setThreadId(mConversation.getThreadId());
         mUserName = mGroupJID;
+        return true;
     }
 
     @Override

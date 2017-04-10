@@ -272,7 +272,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
     }
 
     @Override
-    protected void handleActionViewConversation(Uri uri, Bundle args) {
+    protected boolean handleActionViewConversation(Uri uri, Bundle args) {
         mUserJID = uri.getPathSegments().get(1);
         mConversation = Conversation.loadFromUserId(getActivity(),
             mUserJID);
@@ -300,6 +300,8 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             mUserName = mUserJID;
             mUserPhone = null;
         }
+
+        return true;
     }
 
     @Override

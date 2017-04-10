@@ -1365,7 +1365,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     protected abstract void handleActionView(Uri uri);
 
     /** Handles ACTION_VIEW_USERID intents: providing the user ID/JID. */
-    protected abstract void handleActionViewConversation(Uri uri, Bundle args);
+    protected abstract boolean handleActionViewConversation(Uri uri, Bundle args);
 
     private void processArguments(Bundle savedInstanceState) {
         Bundle args;
@@ -1414,7 +1414,10 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             // view conversation - just userId provided
             else if (ComposeMessage.ACTION_VIEW_USERID.equals(action)) {
                 Uri uri = args.getParcelable("data");
-                handleActionViewConversation(uri, args);
+                if (!handleActionViewConversation(uri, args)) {
+                    getActivity().finish();
+                    return;
+                }
             }
         }
 
