@@ -580,4 +580,12 @@
     <string name="pref_debug_log">Ενεργοποίηση καταγραφής εντοπισμού σφαλμάτων</string>
     <string name="pref_send_debug_log">Αποστολή καταγραμμένου ιστορικού σφαλμάτων</string>
 
+    <string name="notify_text_decryption_error">Η αποκρυπτογράφηση απέτυχε</string>
+    <string name="group_command_users_added">Προστέθηκαν οι χρήστες:</string>
+    <string name="group_command_users_removed">Αφαιρέθηκαν οι χρήστες:</string>
+
+    <string name="group_info_menu_add_again">Προσθήκη ξανά</string>
+
+    <string name="status_notsubscribed">Δεν έχει επιτραπεί/Μπλοκαρισμένος/η</string>
+
     </resources>

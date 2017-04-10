@@ -370,7 +370,7 @@
     <string name="err_import_keypair_uid_mismatch">Der importierte Schlüssel gehört nicht zu der von Ihnen angegebenen Nummer.</string>
     <string name="err_audio_record_noaudio">Es wurde kein Audio aufgenommen.</string>
     <string name="err_custom_background">Beim setzen des Hintergrundes ist ein Fehler aufgetreten. Bitte versuchen Sie ein anderes Bild.</string>
-    <string name="hint_ptt">Um Aufzunehmen das Mikrofonicon gedrückt halten.</string>
+    <string name="hint_ptt">Um Aufzunehmen das Mikrofon-Icon gedrückt halten.</string>
     <string name="msg_importing_key">Importiere persönlichen Schlüssel…</string>
     <string name="button_validation_fallback">Keinen Anruf erhalten?</string>
     <string name="msg_fallback">Wir werden einen anderen Weg probieren, um Ihre Tel.Nr. zu überprüfen.</string>
@@ -584,5 +584,11 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="menu_disable_encryption">Deaktivieren</string>
 
     <string name="group_info_menu_add_again">Wieder hinzufügen</string>
+
+    <string name="status_notsubscribed">Nicht erlaubt/Blockiert</string>
+
+    <string name="notify_text_decryption_error">Entschlüsselung fehlgeschlagen</string>
+    <string name="group_command_users_added">Hinzugefügte Nutzer:</string>
+    <string name="group_command_users_removed">Entfernte Nutzer:</string>
 
     </resources>

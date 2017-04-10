@@ -575,4 +575,10 @@ http://kontalk.org/</string>
 
 <string name="group_info_menu_add_again">もう一度追加</string>
 
+    <string name="status_notsubscribed">許可しない/ブロック済</string>
+
+    <string name="notify_text_decryption_error">復号化に失敗しました</string>
+    <string name="group_command_users_added">ユーザーを追加しました:</string>
+    <string name="group_command_users_removed">ユーザーを削除しました:</string>
+
     </resources>

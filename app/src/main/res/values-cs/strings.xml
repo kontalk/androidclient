@@ -590,4 +590,10 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
 
     <string name="group_info_menu_add_again">Přidat znovu</string>
 
+    <string name="notify_text_decryption_error">Dešifrování se nezdařilo</string>
+    <string name="group_command_users_added">Přidaní uživatelé:</string>
+    <string name="group_command_users_removed">Odebraní uživatelé:</string>
+
+    <string name="status_notsubscribed">Nepovolený/blokovaný</string>
+
     </resources>

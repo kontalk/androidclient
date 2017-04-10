@@ -518,10 +518,11 @@
     <string name="group_info_menu_remove">Уклони</string>
 
     <plurals name="unread_messages">
-        <item quantity="one">%d непрочитаних порука</item>
-        <item quantity="few">%d непрочитаних порука</item>
-    	<item quantity="other">%d непрочитаних порука</item>
-    </plurals>
+	<item quantity="one">%d непрочитана порука</item>
+	<item quantity="few">%d непрочитане поруке</item>
+	<item quantity="many">%d непрочитаних порука</item>
+	<item quantity="other"></item>
+</plurals>
 
     <plurals name="unread_messages_group">
         <item quantity="one">%1$d порука у %2$s</item>
@@ -553,14 +554,18 @@
     <string name="menu_start_group">Почни групу</string>
 
     <plurals name="confirm_will_delete_threads">
-        <item quantity="one" tools:ignore="ImpliedQuantity">Изабрана преписка ће бити обрисана.</item>
-        <item quantity="few">Изабране преписке ће бити обрисане.</item>
-    </plurals>
+	<item quantity="one">Изабрана преписка ће бити обрисана.</item>
+	<item quantity="few">Изабране преписке ће бити обрисане.</item>
+	<item quantity="many">Изабране преписке ће бити обрисане.</item>
+	<item quantity="other"/>
+</plurals>
 
     <plurals name="delete_threads_leave_groups">
-        <item quantity="one" tools:ignore="ImpliedQuantity">Такође напусти групу</item>
-        <item quantity="few">Такође напусти групе</item>
-    </plurals>
+	<item quantity="one">Такође напусти групу</item>
+	<item quantity="few">Такође напусти групе</item>
+	<item quantity="many">Такође напусти групе</item>
+	<item quantity="other"/>
+</plurals>
 
 <string name="menu_sticky">Омиљено</string>
     <string name="delete_threads_leave_any_groups">Такође напусти групе</string>
@@ -579,4 +584,21 @@
 
     <string name="err_authentication_failed_callerid">"Провера није успела. Покушајте да позовете број  поново и сачекајте мало дуже."</string>
     <string name="button_validation_fallback_callerid">Покушајте на други начин</string>
+    <string name="group_info_menu_add_again">Додај поново</string>
+
+    <string name="status_notsubscribed">Није дозвољен/блокиран</string>
+
+    <string name="code_validation_intro_callerid">Тапните на дугме испод да бисте цимнули тај број. <b>Позив морате да затражите са броја телефона ког пријављујете</b>. Позив је бесплатан ако поклопите одмах након првог звона. То ће нам бити довољно.</string>
+    <string name="code_validation_intro2_callerid">Након затварања позива, вратите се овде и тапните дугме за проверу испод.</string>
+    <string name="pref_push_notifications_title_default">"Обавештења гурања („push“) је сервером потпомогнута технологија за поштеду батерије. Не утиче на правовремену испоруку порука.
+
+АКо је укључено, детаље повезивања Контака  можете фино да подесите на екрану мрежних поставки."</string>
+    <string name="notify_text_decryption_error">Дешифровање није успело</string>
+    <string name="msg_disable_encryption">Све нове поруке послате у овом ћаскању НЕЋЕ бити шифроване.
+Искључите шифровање само ако ваш контакт нема лични кључ.</string>
+    <string name="group_command_users_added">Додати корисници:</string>
+    <string name="group_command_users_removed">Уклоњени корисници:</string>
+
+    <string name="delete_threads_groups_disclaimer">Историјат групних ћаскања ће бити обрисан само ако је опција изнад укључена.</string>
+    <string name="create_group_disclaimer">Имајте на уму да се сви чланови морају међусобно познавати да би могли да ћаскају.</string>
     </resources>

@@ -585,4 +585,10 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
 
     <string name="group_info_menu_add_again">Invita di nuovo</string>
 
+    <string name="status_notsubscribed">Non autorizzato/Bloccato</string>
+
+    <string name="notify_text_decryption_error">Decifratura fallita</string>
+    <string name="group_command_users_added">Utenti aggiunti:</string>
+    <string name="group_command_users_removed">Utenti rimossi:</string>
+
     </resources>

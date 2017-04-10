@@ -585,4 +585,10 @@ Schakel versleuteling enkel uit als dit contact geen persoonlijke sleutel heeft.
 
     <string name="group_info_menu_add_again">Voeg opnieuw toe</string>
 
+    <string name="status_notsubscribed">Niet toegestaan/Geblokkeerd</string>
+
+    <string name="notify_text_decryption_error">Ontsleutelen mislukt</string>
+    <string name="group_command_users_added">Gebruikers toegevoegd:</string>
+    <string name="group_command_users_removed">Gebruikers verwijderd:</string>
+
     </resources>

@@ -597,4 +597,10 @@ Desactivar a cifraxe só se o contacto non ten unha chave persoal.</string>
 
     <string name="group_info_menu_add_again">Engadir de novo</string>
 
+    <string name="notify_text_decryption_error">Fallou o descifrado</string>
+    <string name="group_command_users_added">Usuarios engadidos:</string>
+    <string name="group_command_users_removed">Usuarios eliminados:</string>
+
+    <string name="status_notsubscribed">Non permitido/Bloqueado</string>
+
     </resources>

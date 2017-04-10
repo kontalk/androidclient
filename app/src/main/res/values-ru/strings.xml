@@ -20,7 +20,7 @@
   <string name="app_description">Сеть обмена мгновенными сообщениями, управляемая сообществом</string>
   <string name="service_name">Центр сообщений</string>
   <string name="authenticator_name">Служба аутентификации</string>
-  <string name="sync_service_name">Синхронизация контактов</string>
+  <string name="sync_service_name">Синхронизировать контакты</string>
   <string name="download_service">Служба загрузок</string>
   <string name="yes">Да</string>
   <string name="no">Нет</string>
@@ -137,7 +137,7 @@
   <string name="err_authentication_failed">Проверочный код отклонен. Аутентификация не удалась.</string>
   <string name="err_validation_failed">Ошибка проверки номера телефона.</string>
   <string name="err_validation_retry_later">Слишком много попыток. Пожалуйста, повторите через несколько минут.</string>
-  <string name="msg_validation_canceled">Проверка отменена. Возможно, вы всё равно получите SMS.</string>
+  <string name="msg_validation_canceled">Проверка отменена. Вы всё равно можете получить SMS.</string>
   <string name="err_validation_error">Произошла ошибка при проверке. Пожалуйста, попробуйте позже.</string>
   <string name="err_validation_network_error">Невозможно подключиться к серверу. Пожалуйста, попробуйте позже.</string>
   <string name="err_validation_server_not_supported">Выбранный сервер не поддерживает регистрацию. Пожалуйста, укажите другой на экране настроек.</string>
@@ -493,9 +493,10 @@
 
     <plurals name="notification_more">
 	<item quantity="one">+%d ещё</item>
-	<item quantity="few">+%d несколько ещё</item>
+	<item quantity="few">+%d ещё</item>
 	<item quantity="many">+%d ещё</item>
-    </plurals>
+	<item quantity="other"/>
+</plurals>
 
     <plurals name="group_people">
 	<item quantity="one">%d человек</item>
@@ -504,11 +505,11 @@
 </plurals>
 
     <plurals name="unread_messages">
-        <item quantity="few">%d непрочитанных сообщений</item>
-        <item quantity="many">%d непрочитанных сообщений</item>
-        <item quantity="one">%d непрочитанных сообщений</item>
-        <item quantity="other">%d непрочитанных сообщений</item>
-    </plurals>
+	<item quantity="one">Непрочитанных сообщений: %d</item>
+	<item quantity="few">Непрочитанных сообщений: %d</item>
+	<item quantity="many">Непрочитанных сообщений: %d</item>
+	<item quantity="other"/>
+</plurals>
 <string name="menu_group_info">О группе</string>
     <string name="pref_balloon_label_silence">Silence</string>
     <string name="chooser_error_no_dialer">Нет приложения для набора номера, либо телефония недоступна на этом устройстве.</string>
@@ -522,4 +523,71 @@
         <item quantity="other"/>
     </plurals>
 
-</resources>
+<string name="code_validation_intro_callerid">Нажмите на кнопку ниже и отправьте пропущенный вызов на этот номер. Пожалуйста, имейте в виду: <b>вызов должен быть совершен с Вашего зарегистрированного телефонного номера</b>. Вызов будет бесплатным, если Вы повесите трубку как только услышите первый сигнал. Этого для нас будет достаточно.</string>
+    <string name="code_validation_intro2_callerid">После закрытия вызова, вернитесь сюда и нажмите кнопку верификации ниже.</string>
+    <string name="menu_sticky">Избранное</string>
+    <string name="delete_thread_messages">Удалить историю чата</string>
+    <string name="pref_push_notifications_disabled">Отключено</string>
+    <string name="pref_push_notifications_title_default">Пуш уведомления - технология, поддерживаемая сервером для экономии батареи. Она не влияет на доставку сообщений в реальном времени.
+
+Если Kontalk отключен, политику соединения можно детально настроить в разделе настроек сети.</string>
+    <string name="pref_push_notifications_title_disabled">Поддержка пуш-сообщений не включена в данной версии.</string>
+    <string name="pref_push_notifications_title_unavailable">Пуш-сообщения не поддерживаются на данном устройстве.</string>
+    <string name="err_authentication_failed_callerid">Ошибка верификации. Попробуйте вызвать номер снова и подождать чуть дольше.</string>
+    <string name="button_validation_fallback_callerid">Попробуйте по-другому</string>
+    <string name="menu_start_group">Создать группу</string>
+    <string name="menu_encryption">Шифрование</string>
+    <string name="pref_emoji_converter">Преобразовать смайлы в эмоджи</string>
+    <string name="pref_title_emoji_converter">Автоматически преобразовывать некоторые текстовые смайлы в эмоджи</string>
+
+    <string name="title_passphrase_request">Пароль ключевой пары</string>
+    <string name="err_invalid_passphrase">Неправильный пароль. Перезапустите приложение для повторной попытки.</string>
+
+    <string name="pref_balloons_groups">Стиль окна группового чата</string>
+
+    <string name="title_disable_encryption">Отключить шифрование для этого чата?</string>
+    <string name="menu_disable_encryption">Отключить</string>
+
+    <string name="msg_disable_encryption">Все новые сообщения, отправленные в этот чат, НЕ будут зашифрованы.
+Отключайте шифрование только если у Вашего контакта нет ключевой пары.</string>
+    <string name="pref_on">Вкл</string>
+    <string name="pref_off">Выкл</string>
+
+    <string name="about_credits_contrib"><b>Участники</b></string>
+    <string name="group_command_owner_parted">Администратор (%s) покинул группу. Никто не может добавлять или удалять участников.</string>
+    <string name="group_command_text_part_kicked">Вы были удалены из группы</string>
+    <string name="group_info_owner_member">Администратор</string>
+    <string name="leave_group_delete_messages">Удалить также историю чата</string>
+    <string name="group_info_menu_add_again">Добавить снова</string>
+
+    <string name="pref_reporting">Отправлять анонимную статистику использования</string>
+    <string name="pref_title_reporting">Включая сообщения об ошибках</string>
+
+    <string name="delete_threads_leave_any_groups">Также покинуть все группы</string>
+
+    <string name="delete_threads_groups_disclaimer">В групповых чатах история бесед будет удаляться, пока не будет отмечено окошко выше.</string>
+    <string name="create_group_disclaimer">Пожалуйста, помните, что каждый член группы должен знать каждого из других для участия в общении.</string>
+    <string name="check_dont_show_again">Не показывать больше</string>
+
+    <string name="pref_debug_log">Включить журнал отладки</string>
+    <string name="pref_send_debug_log">Отправить журнал отладки</string>
+
+    <plurals name="unread_messages_group">
+	<item quantity="one">%1$d сообщ. @ %2$s</item>
+	<item quantity="other"/>
+</plurals>
+
+    <plurals name="delete_threads_leave_groups">
+	<item quantity="one">Также покинуть группу</item>
+	<item quantity="few">Также покинуть группы</item>
+	<item quantity="many">Также покинуть группы</item>
+	<item quantity="other"/>
+</plurals>
+
+    <string name="status_notsubscribed">Не разрешено/Заблокировано</string>
+
+    <string name="notify_text_decryption_error">Дешифровка не сработала</string>
+    <string name="group_command_users_added">Добавленные пользователи:</string>
+    <string name="group_command_users_removed">Удалённые пользователи:</string>
+
+    </resources>

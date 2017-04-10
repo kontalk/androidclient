@@ -581,4 +581,10 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
 
     <string name="group_info_menu_add_again">Afegeix novament</string>
 
+    <string name="status_notsubscribed">Sense permís/Bloquejat</string>
+
+    <string name="notify_text_decryption_error">No s\'ha pogut desxifrar</string>
+    <string name="group_command_users_added">Usuaris afegits:</string>
+    <string name="group_command_users_removed">Usuaris eliminats:</string>
+
     </resources>
