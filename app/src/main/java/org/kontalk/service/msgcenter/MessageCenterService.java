@@ -3259,11 +3259,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     void cancelIdleAlarm() {
-        ensureIdleAlarm();
-        mAlarmManager.cancel(mIdleIntent);
+        // synchronized access since we might get a call from IdleThread
+        final AlarmManager alarms = mAlarmManager;
+        if (alarms != null) {
+            ensureIdleAlarm();
+            alarms.cancel(mIdleIntent);
+        }
     }
 
     private void setIdleAlarm() {
+        // even if this is called from IdleThread, we don't need to synchronize
+        // because at that point mConnection is null so we never get called
         long delay = Preferences.getIdleTimeMillis(this, 0);
         if (delay > 0) {
             ensureIdleAlarm();
