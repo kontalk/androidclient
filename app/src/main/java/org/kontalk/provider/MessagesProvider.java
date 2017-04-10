@@ -43,10 +43,6 @@ import android.support.annotation.VisibleForTesting;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.Log;
-import org.kontalk.client.EndpointServer;
-import org.kontalk.client.ServerList;
-import org.kontalk.crypto.Coder;
-import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages.CommonColumns;
@@ -55,7 +51,6 @@ import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Messages.Fulltext;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
-import org.kontalk.service.ServerListUpdater;
 import org.kontalk.util.SystemUtils;
 
 
@@ -317,53 +312,50 @@ public class MessagesProvider extends ContentProvider {
             DELETE_GROUP_MEMBERS      + ";" +
             "END";
 
-        private static final String[] SCHEMA_UPGRADE_V4 = {
-            // create temporary messages tables without msg_id UNIQUE constraint
-            "CREATE TABLE " + TABLE_MESSAGES + "_new " + _SCHEMA_MESSAGES,
-            // create temporary threads tables without msg_id UNIQUE constraint
-            "CREATE TABLE " + TABLE_THREADS + "_new " + _SCHEMA_THREADS,
-            // copy contents of messages table
-            "INSERT INTO " + TABLE_MESSAGES + "_new SELECT " +
-            "_id, thread_id, msg_id, SUBSTR(peer, 1, ?) || '@' || ?, direction, unread, 0, timestamp, status_changed, status, 'text/plain', " +
-            "CASE WHEN mime <> 'text/plain' THEN NULL ELSE content END, "+
-            "CASE WHEN mime <> 'text/plain' THEN 0 ELSE length(content) END, " +
-            "CASE WHEN mime <> 'text/plain' THEN mime ELSE NULL END, preview_path, fetch_url, local_uri, length, 0, 0, 0, encrypted, " +
-            "CASE WHEN encrypt_key IS NOT NULL THEN " + Coder.SECURITY_LEGACY_ENCRYPTED + " ELSE " + Coder.SECURITY_CLEARTEXT + " END, "+
-            "strftime('%s', server_timestamp)*1000" +
-                " FROM " + TABLE_MESSAGES + " WHERE encrypted = 0",
-            // copy contents of threads table
-            "INSERT INTO " + TABLE_THREADS + "_new SELECT " +
-            "_id, msg_id, SUBSTR(peer, 1, ?) || '@' || ?, direction, count, unread, 0, 'text/plain', content, timestamp, status_changed, status, 0, draft, 0" +
-                " FROM " + TABLE_THREADS,
-            // drop table messages
-            "DROP TABLE " + TABLE_MESSAGES,
-            // drop table threads
-            "DROP TABLE " + TABLE_THREADS,
-            // rename messages_new to messages
-            "ALTER TABLE " + TABLE_MESSAGES + "_new RENAME TO " + TABLE_MESSAGES,
-            // rename threads_new to threads
-            "ALTER TABLE " + TABLE_THREADS + "_new RENAME TO " + TABLE_THREADS,
-            // unique message index
-            SCHEMA_MESSAGES_INDEX,
-            // timestamp message index (for sorting)
-            SCHEMA_MESSAGES_TIMESTAMP_IDX,
-            // triggers
-            TRIGGER_THREADS_INSERT_COUNT,
-            TRIGGER_THREADS_UPDATE_COUNT,
-            TRIGGER_THREADS_DELETE_COUNT
-        };
+        // -- schema upgrades --
+        // the number in the constant name is the version we are upgrading *from*
 
         private static final String[] SCHEMA_UPGRADE_V8 = {
-            SCHEMA_GROUPS,
-            SCHEMA_GROUPS_MEMBERS,
-            SCHEMA_MESSAGES_GROUPS,
-            TRIGGER_GROUPS_DELETE_MEMBERS,
+            "CREATE TABLE groups (" +
+                "group_jid TEXT NOT NULL PRIMARY KEY, " +
+                "thread_id INTEGER NOT NULL," +
+                "group_type TEXT NOT NULL," +
+                "subject TEXT" +
+            ")",
+            "CREATE TABLE group_members (" +
+                "group_jid TEXT NOT NULL, " +
+                "group_peer TEXT NOT NULL, " +
+                "pending INTEGER NOT NULL DEFAULT 0," +
+                "PRIMARY KEY (group_jid, group_peer)" +
+            ")",
+            "CREATE VIEW messages_groups AS " +
+            "SELECT messages.*," +
+            "groups.group_jid," +
+            "groups.subject," +
+            "groups.group_type" +
+            " FROM messages LEFT JOIN threads" +
+            " ON messages.thread_id=threads._id" +
+            " LEFT OUTER JOIN groups ON " +
+            "threads._id=groups.thread_id",
+            "CREATE TRIGGER delete_groups_on_delete AFTER DELETE ON groups" +
+            " BEGIN " +
+            "DELETE FROM group_members WHERE group_jid=old.group_jid;" +
+            "END",
         };
 
         private static final String[] SCHEMA_UPGRADE_V9 = {
             "ALTER TABLE groups ADD COLUMN membership INTEGER NOT NULL DEFAULT 1",
-            "DROP VIEW " + TABLE_MESSAGES_GROUPS,
-            SCHEMA_MESSAGES_GROUPS,
+            "DROP VIEW messages_groups",
+            "CREATE VIEW messages_groups AS " +
+            "SELECT messages.*," +
+            "groups.group_jid," +
+            "groups.subject," +
+            "groups.group_type," +
+            "groups.membership" +
+            " FROM messages LEFT JOIN threads" +
+            " ON messages.thread_id=threads._id" +
+            " LEFT OUTER JOIN groups ON " +
+            "threads._id=groups.thread_id",
         };
 
         private static final String[] SCHEMA_UPGRADE_V10 = {
@@ -371,7 +363,7 @@ public class MessagesProvider extends ContentProvider {
         };
 
         private static final String SCHEMA_UPGRADE_V11 =
-            "ALTER TABLE " + TABLE_THREADS + " ADD COLUMN encryption INTEGER NOT NULL DEFAULT 1";
+            "ALTER TABLE threads ADD COLUMN encryption INTEGER NOT NULL DEFAULT 1";
 
         private Context mContext;
 
@@ -398,58 +390,29 @@ public class MessagesProvider extends ContentProvider {
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            if (oldVersion != 4 && oldVersion < 8) {
+            if (oldVersion < 8) {
                 // unsupported version
-                throw new SQLException("database can only be upgraded from version 4 or versions greather than 7");
+                throw new SQLException("database can only be upgraded from versions greater than 7");
             }
 
-            if (oldVersion == 4) {
-                // take the first server from the builtin list
-                ServerList list = ServerListUpdater.getCurrentList(mContext);
-                EndpointServer server = list.get(0);
-                String host = server.getNetwork();
-
-                for (String sql : SCHEMA_UPGRADE_V4) {
-                    if (sql.startsWith("INSERT ")) {
-                        db.execSQL(sql, new Object[]{
-                            CompositeMessage.USERID_LENGTH,
-                            host
-                        });
-                    }
-                    else {
+            switch (oldVersion) {
+                case 8:
+                    for (String sql : SCHEMA_UPGRADE_V8) {
                         db.execSQL(sql);
                     }
-                }
-
-                // fallback to next upgrade
-                oldVersion = 8;
-            }
-
-            if (oldVersion == 8) {
-                for (String sql : SCHEMA_UPGRADE_V8) {
-                    db.execSQL(sql);
-                }
-                // fallback to next upgrade
-                oldVersion = 10;
-            }
-            else if (oldVersion == 9) {
-                for (String sql : SCHEMA_UPGRADE_V9) {
-                    db.execSQL(sql);
-                }
-                // fallback to next upgrade
-                oldVersion = 10;
-            }
-
-            if (oldVersion == 10) {
-                for (String sql : SCHEMA_UPGRADE_V10) {
-                    db.execSQL(sql);
-                }
-                // fallback to next upgrade
-                oldVersion = 11;
-            }
-
-            if (oldVersion == 11) {
-                db.execSQL(SCHEMA_UPGRADE_V11);
+                    // fall through
+                case 9:
+                    for (String sql : SCHEMA_UPGRADE_V9) {
+                        db.execSQL(sql);
+                    }
+                    // fall through
+                case 10:
+                    for (String sql : SCHEMA_UPGRADE_V10) {
+                        db.execSQL(sql);
+                    }
+                    // fall through
+                case 11:
+                    db.execSQL(SCHEMA_UPGRADE_V11);
             }
         }
     }
