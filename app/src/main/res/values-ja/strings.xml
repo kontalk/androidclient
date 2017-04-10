@@ -559,21 +559,18 @@ http://kontalk.org/</string>
     <string name="menu_disable_encryption">無効</string>
 
     <plurals name="notification_more">
-	<item quantity="one">+1 以上</item>
-	<item quantity="other"/>
-</plurals>
+	    <item quantity="other">+%d 以上</item>
+    </plurals>
 
     <plurals name="context_selected">
-	<item quantity="one">1 選択済</item>
-	<item quantity="other"/>
-</plurals>
+	    <item quantity="other">%d 選択済</item>
+    </plurals>
 
     <plurals name="group_people">
-	<item quantity="one">1 人</item>
-	<item quantity="other"/>
-</plurals>
+	    <item quantity="other">%d 人</item>
+    </plurals>
 
-<string name="group_info_menu_add_again">もう一度追加</string>
+    <string name="group_info_menu_add_again">もう一度追加</string>
 
     <string name="status_notsubscribed">許可しない/ブロック済</string>
 
@@ -581,4 +578,4 @@ http://kontalk.org/</string>
     <string name="group_command_users_added">ユーザーを追加しました:</string>
     <string name="group_command_users_removed">ユーザーを削除しました:</string>
 
-    </resources>
+</resources>

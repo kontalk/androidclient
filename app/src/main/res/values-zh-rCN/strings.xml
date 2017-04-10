@@ -599,18 +599,15 @@
     <string name="pref_send_debug_log">发送调试日志</string>
 
     <plurals name="notification_more">
-	<item quantity="one">顶一个</item>
-	<item quantity="other"/>
-</plurals>
+	    <item quantity="other">顶%d</item>
+    </plurals>
 
     <plurals name="context_selected">
-	<item quantity="one">一个已被选择</item>
-	<item quantity="other"/>
-</plurals>
+	    <item quantity="other">%d已被选择</item>
+    </plurals>
 
     <plurals name="group_people">
-	<item quantity="one">一个人</item>
-	<item quantity="other"/>
-</plurals>
+	    <item quantity="other">%d人</item>
+    </plurals>
 
 </resources>
