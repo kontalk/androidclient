@@ -65,7 +65,7 @@ public class AppearanceFragment extends RootPreferenceFragment {
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 try {
-                    final Intent i = SystemUtils.externalIntent(Intent.ACTION_GET_CONTENT);
+                    final Intent i = new Intent(Intent.ACTION_GET_CONTENT);
                     i.addCategory(Intent.CATEGORY_OPENABLE);
                     i.setType("image/*");
                     startActivityForResult(i, REQUEST_PICK_BACKGROUND);

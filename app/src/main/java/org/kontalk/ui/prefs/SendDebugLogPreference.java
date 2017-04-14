@@ -73,7 +73,7 @@ public class SendDebugLogPreference extends Preference {
     void sendDebugLog(Context context) {
         File file = Log.getLogFile();
         if (file != null && file.isFile()) {
-            Intent i = SystemUtils.externalIntent(Intent.ACTION_SEND);
+            Intent i = new Intent(Intent.ACTION_SEND);
             i.setType("text/plain");
             i.putExtra(Intent.EXTRA_EMAIL, new String[] { context.getString(R.string.mailto) });
             i.putExtra(Intent.EXTRA_SUBJECT, "Kontalk debug log");

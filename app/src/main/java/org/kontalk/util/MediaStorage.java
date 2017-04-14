@@ -590,7 +590,7 @@ public abstract class MediaStorage {
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public static void createFile(Fragment fragment, String mimeType, String fileName, int requestCode) {
-        Intent intent = SystemUtils.externalIntent(Intent.ACTION_CREATE_DOCUMENT);
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
 
         // Filter to only show results that can be "opened", such as
         // a file (as opposed to a list of contacts or timezones).

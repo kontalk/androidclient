@@ -914,7 +914,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         AttachmentComponent attachment = msg.getComponent(AttachmentComponent.class);
 
         if (attachment != null) {
-            Intent i = SystemUtils.externalIntent(Intent.ACTION_VIEW);
+            Intent i = new Intent(Intent.ACTION_VIEW);
             i.setDataAndType(attachment.getLocalUri(), attachment.getMime());
             try {
                 startActivity(i);
