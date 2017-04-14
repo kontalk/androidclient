@@ -191,7 +191,7 @@ public class Kontalk extends Application {
                 xmppUpgrade();
 
             // update notifications from locally unread messages
-            MessagingNotification.updateMessagesNotification(this, false);
+            MessagingNotification.delayedUpdateMessagesNotification(this, false);
 
             // register account change listener
             final OnAccountsUpdateListener listener = new OnAccountsUpdateListener() {
