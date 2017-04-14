@@ -30,7 +30,6 @@ import android.util.AttributeSet;
 
 import org.kontalk.Log;
 import org.kontalk.R;
-import org.kontalk.util.SystemUtils;
 
 
 /**

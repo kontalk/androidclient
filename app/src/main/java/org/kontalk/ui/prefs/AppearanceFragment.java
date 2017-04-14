@@ -31,9 +31,9 @@ import android.widget.Toast;
 
 import org.kontalk.R;
 import org.kontalk.util.Preferences;
-import org.kontalk.util.SystemUtils;
 
 import java.io.File;
+
 
 /**
  * Appearance settings fragment.
