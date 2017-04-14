@@ -386,7 +386,8 @@ public class ConversationsActivity extends MainActivity
             AbstractComposeFragment f = getCurrentConversation();
 
             // check if we are replacing the same fragment
-            if (f == null || !f.getConversation().getRecipient().equals(conv.getRecipient())) {
+            Conversation oldConv = (f != null ? f.getConversation() : null);
+            if (oldConv == null || !oldConv.getRecipient().equals(conv.getRecipient())) {
                 f = AbstractComposeFragment.fromConversation(this, conv, false);
                 // Execute a transaction, replacing any existing fragment
                 // with this one inside the frame.
@@ -415,7 +416,8 @@ public class ConversationsActivity extends MainActivity
             AbstractComposeFragment f = getCurrentConversation();
 
             // check if we are replacing the same fragment
-            if (f == null || conv == null || !f.getConversation().getRecipient().equals(conv.getRecipient())) {
+            Conversation oldConv = (f != null ? f.getConversation() : null);
+            if (oldConv == null || conv == null || !oldConv.getRecipient().equals(conv.getRecipient())) {
                 if (conv == null)
                     f = AbstractComposeFragment.fromUserId(this, userId, creatingGroup);
                 else
@@ -454,7 +456,8 @@ public class ConversationsActivity extends MainActivity
             AbstractComposeFragment f = getCurrentConversation();
 
             // check if we are replacing the same fragment
-            if (f == null || !f.getConversation().getRecipient().equals(conv.getRecipient())) {
+            Conversation oldConv = (f != null ? f.getConversation() : null);
+            if (oldConv == null || !oldConv.getRecipient().equals(conv.getRecipient())) {
                 f = AbstractComposeFragment.fromConversation(this, conv, creatingGroup);
 
                 // Execute a transaction, replacing any existing fragment
