@@ -1,9 +1,8 @@
 Group chats are here! Help us improve and fix bugs by reporting them on GitHub or discussing them on our new forum: https://forum.kontalk.org
 
-* NEW: toggle encryption per chat
-* NEW: internal logging system
-* NEW: sticky conversations
-* NEW: new app icon by Giovanni Lauricella
-* organize preferences by category
-* more reliable registration procedure
-* many bugfixes and lots of minor improvements
+* audio recording limit is now 2m on PTT and 5m on audio dialog
+* improve app navigation
+* improve battery saving in offline mode
+* fix crash on tablets
+* fix crash while recording PTT audio
+* many bugfixes

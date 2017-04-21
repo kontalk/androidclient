@@ -1,5 +1,21 @@
 # Change Log
 
+## [4.0.1] - 2017-04-17
+### Changed
+- Audio recording limit is now 2m on PTT and 5m on audio dialog
+- Improve battery saving in offline mode (#869)
+- Improve app navigation (#961)
+- Fix group member information (#968)
+
+### Fixed
+- Fix audio files downloaded in wrong directory (#952)
+- Fix crash on tablets (#953)
+- Fix PTT crash after reaching time limit (#954)
+- Fix registration error in rare cases (#963)
+- Fix key never marked as trusted (#973)
+- Fix upgrades from older versions (#983)
+- Fix some crash issues (#955, #958, #965, #975, #976, #977)
+
 ## [4.0.0] - 2017-02-12
 ### Changed
 - Groups: button for adding users again (for members losing their messages)

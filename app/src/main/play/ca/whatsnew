@@ -1,6 +1,8 @@
-* Actualització de les banderes de països
-* Solucionat el problema de pujada múltiple de fotos
-* Solucionat l'error de registre a la configuració persa
-* Altres errors solucionats
+Ja tenim els xats en grup! Ajuda'ns a millorar i corregir els errors informant a GitHub o a discutir-los al nou fòrum: https://forum.kontalk.org
 
-Es pot accedir a l'arxiu històric de modificacions a https://github.com/kontalk/androidclient/releases/tag/v3.1.10
+* el límit de gravació d'àudio és ara de 2m de PTT i 5m de diàleg d'àudio
+* millora en la navegació de l'app
+* augment de l'estalvi de bateria en mode offline
+* correccions de fallades a les tabletes
+* correccions de fallada durant la gravació d'àudio PTT
+* moltes correccions d'errors

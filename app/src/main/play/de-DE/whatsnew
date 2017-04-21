@@ -1,10 +1,9 @@
 Lang erwartete Gruppenchats!
 Helfen Sie uns bei Verbesserungen und Fehlerbehebungen indem Sie Fehlerreports auf Github posten oder in unserem neuen Forum darüber diskutieren: https://forum.kontalk.org
 
-* NEU: Verschlüsselung pro Chat abschaltbar
-* NEU: internes Logsystem zur Fehlersuche
-* NEU: Chats als wichtig markieren
-* NEU: neues Appicon von Giovanni Lauricella
-* besser sortiertes Einstellungsmenü
-* zuverlässigere Anmeldeprozedur
-* viele Fehlerbehebungen und Verbesserungen
+* Maximale Aufnahmezeit für PTT ist jetzt 2 Minuten und im Audiodialog 5 Minuten 
+* Verbesserte Appnavigation
+* Verbesserter Stromverbrauch im Offlinemodus
+* Abstürze bei Tablets behoben 
+* Abstürze bei PTT-Aufnahmen behoben 
+* viele Fehlerbehebungen

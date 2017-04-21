@@ -1,9 +1,8 @@
 Finalmente con le chat di gruppo! Aiutaci a migliorarla e correggere bug segnalandoli su GitHub o discutendoli sul nostro nuovo forum: https://forum.kontalk.org
 
-* NEW: disattiva cifratura per singola chat
-* NEW: sistema di logging interno
-* NEW: conversazioni preferite
-* NEW: nuova icona app by Giovanni Lauricella
-* preferenze riorganizzate per categoria
-* procedura di registrazione più affidabile
-* svariate altre correzioni e miglioramenti vari
+* limite registrazione audio ora a 2m in PTT e 5m in allegato audio
+* miglioramento navigazione in app
+* miglioramento consumo batteria in modalità offline
+* corretto crash su tablet
+* corretto crash messaggi vocali
+* svariate altre correzioni
