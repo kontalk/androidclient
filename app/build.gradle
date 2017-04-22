@@ -168,6 +168,7 @@ if (travisBuild) {
     play {
         track = 'alpha'
         jsonFile = rootProject.file('dist/googleplay-developer-key.json')
+        untrackOld = true
     }
 
     task publish(dependsOn: ['publishGoogleplayRelease']) {
@@ -180,5 +181,6 @@ else if (project.hasProperty('GOOGLE_PLAY_DEVELOPER_KEY_FILE')) {
     play {
         track = 'beta'
         jsonFile = file(GOOGLE_PLAY_DEVELOPER_KEY_FILE)
+        untrackOld = true
     }
 }
