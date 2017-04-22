@@ -1,5 +1,10 @@
 # Change Log
 
+## [4.0.3] - 2017-04-22
+### Fixed
+- Fix crash on playing audio (#995)
+- Fix rare crash (#996)
+
 ## [4.0.2] - 2017-04-22
 ### Fixed
 - Fix crash on some devices (#994)
