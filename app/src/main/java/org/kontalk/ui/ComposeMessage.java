@@ -134,11 +134,10 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
 
     private void setComposeFragment(@NonNull AbstractComposeFragment f) {
         mFragment = f;
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.fragment_compose_message, f);
-        ft.setTransition(FragmentTransaction.TRANSIT_NONE);
-        ft.commitAllowingStateLoss();
-        getSupportFragmentManager().executePendingTransactions();
+        getSupportFragmentManager().beginTransaction()
+            .replace(R.id.fragment_compose_message, f)
+            .setTransition(FragmentTransaction.TRANSIT_NONE)
+            .commitNowAllowingStateLoss();
     }
 
     @Override

@@ -1076,12 +1076,10 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             FragmentActivity parent = getActivity();
             if (parent != null) {
                 fragment = new AudioFragment();
-                FragmentManager fm = parent.getSupportFragmentManager();
+                FragmentManager fm = getFragmentManager();
                 fm.beginTransaction()
                     .add(fragment, "audio")
                     .commit();
-                // commit immediately please
-                fm.executePendingTransactions();
             }
         }
 
