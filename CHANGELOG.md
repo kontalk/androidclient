@@ -1,5 +1,9 @@
 # Change Log
 
+## [4.0.2] - 2017-04-22
+### Fixed
+- Fix crash on some devices (#994)
+
 ## [4.0.1] - 2017-04-17
 ### Changed
 - Audio recording limit is now 2m on PTT and 5m on audio dialog
