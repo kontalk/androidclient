@@ -246,6 +246,11 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
             mLostFocus = savedInstanceState.getBoolean("lostFocus");
 
             Uri uri = savedInstanceState.getParcelable(Uri.class.getName());
+            if (uri == null) {
+                Log.d(TAG, "restoring non-loaded conversation, aborting");
+                finish();
+                return null;
+            }
             intent = new Intent(ACTION_VIEW_USERID, uri);
         }
         else {
