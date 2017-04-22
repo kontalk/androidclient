@@ -67,7 +67,6 @@ import android.os.Handler;
 import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -195,6 +194,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     private Handler mHandler;
     private Runnable mMediaPlayerUpdater;
     private AudioContentViewControl mAudioControl;
+    private AudioFragment mAudioFragment;
 
     /** Audio recording dialog. */
     private AudioDialog mAudioDialog;
@@ -1071,25 +1071,21 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     }
 
     private AudioFragment getAudioFragment() {
-        AudioFragment fragment = findAudioFragment();
-        if (fragment == null) {
-            FragmentActivity parent = getActivity();
-            if (parent != null) {
-                fragment = new AudioFragment();
-                FragmentManager fm = getFragmentManager();
+        FragmentManager fm = getFragmentManager();
+        if (fm != null) {
+            AudioFragment found = (AudioFragment) fm.findFragmentByTag("audio");
+            if (found != null) {
+                mAudioFragment = found;
+            }
+            else {
+                mAudioFragment = new AudioFragment();
                 fm.beginTransaction()
-                    .add(fragment, "audio")
+                    .add(mAudioFragment, "audio")
                     .commit();
             }
         }
 
-        return fragment;
-    }
-
-    private AudioFragment findAudioFragment() {
-        FragmentManager fm = getFragmentManager();
-        return fm != null ? (AudioFragment) fm
-            .findFragmentByTag("audio") : null;
+        return mAudioFragment;
     }
 
     protected abstract void deleteConversation();
@@ -1891,7 +1887,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         MessageCenterService.release(getActivity());
 
         // release audio player
-        AudioFragment audio = findAudioFragment();
+        AudioFragment audio = getAudioFragment();
         if (audio != null) {
             stopMediaPlayerUpdater();
 
@@ -2109,7 +2105,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 public void onCompletion(MediaPlayer mp) {
                     stopMediaPlayerUpdater();
                     view.end();
-                    AudioFragment audio = findAudioFragment();
+                    AudioFragment audio = getAudioFragment();
                     if (audio != null) {
                         // this is mainly to get the wake lock released
                         audio.pausePlaying();
@@ -2129,20 +2125,20 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     @Override
     public void playAudio(AudioContentViewControl view, long messageId) {
         view.play();
-        findAudioFragment().startPlaying();
+        getAudioFragment().startPlaying();
         setAudioStatus(AudioContentView.STATUS_PLAYING);
         startMediaPlayerUpdater(view);
     }
 
     private void updatePosition(AudioContentViewControl view) {
         // we don't use getElapsedTime() here because it might get moved by seeking
-        view.updatePosition(findAudioFragment().getPlayer().getCurrentPosition());
+        view.updatePosition(getAudioFragment().getPlayer().getCurrentPosition());
     }
 
     @Override
     public void pauseAudio(AudioContentViewControl view) {
         view.pause();
-        findAudioFragment().pausePlaying();
+        getAudioFragment().pausePlaying();
         stopMediaPlayerUpdater();
         setAudioStatus(AudioContentView.STATUS_PAUSED);
     }
@@ -2152,7 +2148,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             stopMediaPlayerUpdater();
             view.end();
         }
-        AudioFragment audio = findAudioFragment();
+        AudioFragment audio = getAudioFragment();
         if (audio != null) {
             audio.resetPlayer();
             audio.setMessageId(-1);
@@ -2170,7 +2166,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     @Override
     public void onBind(long messageId, final AudioContentViewControl view) {
-        final AudioFragment audio = findAudioFragment();
+        final AudioFragment audio = getAudioFragment();
         if (audio != null && audio.getMessageId() == messageId) {
             mAudioControl = view;
             audio.getPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -2197,7 +2193,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     @Override
     public void onUnbind(long messageId, AudioContentViewControl view) {
-        AudioFragment audio = findAudioFragment();
+        AudioFragment audio = getAudioFragment();
         if (audio != null && audio.getMessageId() == messageId) {
             mAudioControl = null;
             MediaPlayer player = audio.getPlayer();
@@ -2224,13 +2220,13 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     @Override
     public boolean isPlaying() {
-        AudioFragment audio = findAudioFragment();
+        AudioFragment audio = getAudioFragment();
         return audio != null && audio.isPlaying();
     }
 
     @Override
     public void seekTo(int position) {
-        AudioFragment audio = findAudioFragment();
+        AudioFragment audio = getAudioFragment();
         if (audio != null)
             audio.seekPlayerTo(position);
     }
