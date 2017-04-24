@@ -131,6 +131,25 @@ public class MessagesController {
         return false;
     }
 
+    private void addMembersInternal(GroupCommandComponent group, String[] members) {
+        ContentValues membersValues = new ContentValues();
+
+        for (String member : members) {
+            // do not add ourselves...
+            if (Authenticator.isSelfJID(mContext, member)) {
+                // ...but mark our membership
+                MessagesProviderUtils.setGroupMembership(mContext,
+                    group.getContent().getJID(), MyMessages.Groups.MEMBERSHIP_MEMBER);
+                continue;
+            }
+
+            // add member to group
+            membersValues.put(MyMessages.Groups.PEER, member);
+            mContext.getContentResolver().insert(MyMessages.Groups
+                .getMembersUri(group.getContent().getJID()), membersValues);
+        }
+    }
+
     /** Process an incoming message. */
     public Uri incoming(CompositeMessage msg) {
         final String sender = msg.getSender(true);
@@ -167,7 +186,7 @@ public class MessagesController {
             // the following operations will work because we are operating with
             // groups and group_members table directly (that is, no foreign keys)
 
-            String[] added = null, removed = null;
+            String[] added = null, removed = null, existing = null;
 
             // group creation
             if (group.isCreateCommand()) {
@@ -178,23 +197,17 @@ public class MessagesController {
             else if (group.isAddOrRemoveCommand()) {
                 added = group.getAddedMembers();
                 removed = group.getRemovedMembers();
+                existing = group.getExistingMembers();
             }
 
             if (added != null) {
                 ContentValues membersValues = new ContentValues();
-                for (String member : added) {
-                    // do not add ourselves...
-                    if (Authenticator.isSelfJID(mContext, member)) {
-                        // ...but mark our membership
-                        MessagesProviderUtils.setGroupMembership(mContext,
-                            group.getContent().getJID(), MyMessages.Groups.MEMBERSHIP_MEMBER);
-                        continue;
-                    }
+                if (added.length > 0) {
+                    addMembersInternal(group, added);
+                }
 
-                    // add member to group
-                    membersValues.put(MyMessages.Groups.PEER, member);
-                    mContext.getContentResolver().insert(MyMessages.Groups
-                        .getMembersUri(group.getContent().getJID()), membersValues);
+                if (existing != null && existing.length > 0) {
+                    addMembersInternal(group, existing);
                 }
 
                 // add owner as member (since the owner is adding us)
