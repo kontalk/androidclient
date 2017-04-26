@@ -760,7 +760,7 @@ public final class MessageUtils {
                 }
             }
             // emoji at beginning is okay, emoji with other char than space in front is not okay
-            if (position > 0 && text.charAt(position - 1) != 32) {
+            if (position > 0 && text.charAt(position - 1) > 32 && text.charAt(position - 1) < 255) {
                 notReplaced++;
                 continue;
             }
