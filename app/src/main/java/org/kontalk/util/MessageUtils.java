@@ -739,7 +739,7 @@ public final class MessageUtils {
     public static boolean convertSmileys(Editable input) {
         boolean converted = false;
         for (String key : sEmojiConverterMap.keySet()) {
-            // order of arguments of AND is essential here!
+            // order of arguments of OR is essential here!
             converted = replaceEditable(input, key, sEmojiConverterMap.get(key)) || converted;
         }
         return converted;
@@ -748,11 +748,46 @@ public final class MessageUtils {
     // actual replacement ASCII -> UTF-16 if necessary
     private static boolean replaceEditable(Editable text, String in, String out) {
         boolean replaced = false;
+        int notReplaced = 0;
         for (int position = text.toString().indexOf(in); position >= 0; position = text.toString().indexOf(in)){
+
+            // check if there are symbols that should not be converted, e.g. in "http://" or "experte"
+            // if only these last, exit the loop
+            if (notReplaced > 0){
+                position = ordinalIndexOf(text.toString(), " " + in, notReplaced) + 1;
+                if (position < 1){
+                    break;
+                }
+            }
+            // emoji at beginning is okay, emoji with other char than space in front is not okay
+            if (position > 0 && text.charAt(position - 1) != 32) {
+                notReplaced++;
+                continue;
+            }
             text.replace(position, position + in.length(), out);
             replaced = true;
         }
         return replaced;
+    }
+
+    //can't find such a function in java api, so take it from StringUtils.java
+    public static int ordinalIndexOf(String str, String searchStr, int ordinal) {
+        if (str == null || searchStr == null || ordinal <= 0) {
+            return -1;
+        }
+        if (searchStr.length() == 0) {
+            return 0;
+        }
+        int found = 0;
+        int index = -1;
+        do {
+            index = str.indexOf(searchStr, index + 1);
+            if (index < 0) {
+                return index;
+            }
+            found++;
+        } while (found < ordinal);
+        return index;
     }
 
     public static boolean sendEncrypted(Context context, boolean chatEncryptionEnabled) {
