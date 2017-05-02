@@ -58,8 +58,6 @@ import android.database.Cursor;
 import android.database.MergeCursor;
 import android.database.sqlite.SQLiteDiskIOException;
 import android.graphics.drawable.Drawable;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -195,7 +193,6 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     private Runnable mMediaPlayerUpdater;
     private AudioContentViewControl mAudioControl;
     private AudioFragment mAudioFragment;
-    private AudioManager.OnAudioFocusChangeListener mAudioFocusListener;
 
     /** Audio recording dialog. */
     private AudioDialog mAudioDialog;
@@ -1896,7 +1893,6 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 if (!getActivity().isChangingConfigurations()) {
                     audio.setMessageId(-1);
                     audio.finish(true);
-                    releaseAudioFocus();
                 }
             }
         }
@@ -2090,31 +2086,29 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         stopMediaPlayerUpdater();
         try {
             AudioFragment audio = getAudioFragment();
-            final MediaPlayer player = audio.getPlayer();
-            player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            player.setDataSource(audioFile.getAbsolutePath());
-            player.prepare();
+            audio.preparePlayer(audioFile);
 
             // prepare was successful
             audio.setMessageId(messageId);
             mAudioControl = view;
 
-            view.prepare(player.getDuration());
-            player.seekTo(view.getPosition());
+            view.prepare(audio.getPlayerDuration());
+            audio.seekPlayerTo(view.getPosition());
             view.setProgressChangeListener(true);
-            player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            audio.setOnCompletionListener(new AudioFragment.OnCompletionListener() {
                 @Override
-                public void onCompletion(MediaPlayer mp) {
+                public void onCompletion(AudioFragment audio) {
                     stopMediaPlayerUpdater();
                     view.end();
-                    AudioFragment audio = getAudioFragment();
-                    if (audio != null) {
-                        // this is mainly to get the wake lock released
-                        audio.pausePlaying();
-                        audio.seekPlayerTo(0);
-                    }
+                    // this is mainly to get the wake lock released
+                    audio.pausePlaying();
+                    audio.seekPlayerTo(0);
                     setAudioStatus(AudioContentView.STATUS_ENDED);
-                    releaseAudioFocus();
+                }
+
+                @Override
+                public void onAudioFocusLost(AudioFragment audio) {
+                    stopAllSounds();
                 }
             });
             return true;
@@ -2127,49 +2121,16 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     @Override
     public void playAudio(AudioContentViewControl view, long messageId) {
-        if (acquireAudioFocus()) {
+        if (getAudioFragment().startPlaying()) {
             view.play();
-            getAudioFragment().startPlaying();
             setAudioStatus(AudioContentView.STATUS_PLAYING);
             startMediaPlayerUpdater(view);
         }
     }
 
-    private boolean acquireAudioFocus() {
-        final Context ctx = getContext();
-        if (ctx != null) {
-            if (mAudioFocusListener == null) {
-                mAudioFocusListener = new AudioManager.OnAudioFocusChangeListener() {
-                    @Override
-                    public void onAudioFocusChange(int focusChange) {
-                        if (focusChange == AudioManager.AUDIOFOCUS_LOSS ||
-                            focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT ||
-                            focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
-                            stopAllSounds();
-                        }
-                    }
-                };
-            }
-
-            AudioManager audio = (AudioManager) ctx.getSystemService(Context.AUDIO_SERVICE);
-            return audio.requestAudioFocus(mAudioFocusListener, AudioManager.STREAM_MUSIC,
-                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
-        }
-        return false;
-    }
-
-    private void releaseAudioFocus() {
-        final Context ctx = getContext();
-        if (ctx != null && mAudioFocusListener != null) {
-            AudioManager audio = (AudioManager) ctx.getSystemService(Context.AUDIO_SERVICE);
-            audio.abandonAudioFocus(mAudioFocusListener);
-            mAudioFocusListener = null;
-        }
-    }
-
     private void updatePosition(AudioContentViewControl view) {
         // we don't use getElapsedTime() here because it might get moved by seeking
-        view.updatePosition(getAudioFragment().getPlayer().getCurrentPosition());
+        view.updatePosition(getAudioFragment().getPlayerPosition());
     }
 
     @Override
@@ -2178,14 +2139,12 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         getAudioFragment().pausePlaying();
         stopMediaPlayerUpdater();
         setAudioStatus(AudioContentView.STATUS_PAUSED);
-        releaseAudioFocus();
     }
 
     private void resetAudio(AudioContentViewControl view) {
         if (view != null) {
             stopMediaPlayerUpdater();
             view.end();
-            releaseAudioFocus();
         }
         AudioFragment audio = getAudioFragment();
         if (audio != null) {
@@ -2208,18 +2167,23 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         final AudioFragment audio = getAudioFragment();
         if (audio != null && audio.getMessageId() == messageId) {
             mAudioControl = view;
-            audio.getPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            audio.setOnCompletionListener(new AudioFragment.OnCompletionListener() {
                 @Override
-                public void onCompletion(MediaPlayer mp) {
+                public void onCompletion(AudioFragment audio) {
                     stopMediaPlayerUpdater();
                     view.end();
                     audio.seekPlayerTo(0);
                     setAudioStatus(AudioContentView.STATUS_ENDED);
                 }
+
+                @Override
+                public void onAudioFocusLost(AudioFragment audio) {
+                    stopAllSounds();
+                }
             });
 
             view.setProgressChangeListener(true);
-            view.prepare(audio.getPlayer().getDuration());
+            view.prepare(audio.getPlayerDuration());
             if (audio.isPlaying()) {
                 startMediaPlayerUpdater(view);
                 view.play();
@@ -2235,14 +2199,16 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         AudioFragment audio = getAudioFragment();
         if (audio != null && audio.getMessageId() == messageId) {
             mAudioControl = null;
-            MediaPlayer player = audio.getPlayer();
-            player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            audio.setOnCompletionListener(new AudioFragment.OnCompletionListener() {
                 @Override
-                public void onCompletion(MediaPlayer mp) {
-                    AudioFragment audio = getAudioFragment();
-                    if (audio != null)
-                        audio.seekPlayerTo(0);
+                public void onCompletion(AudioFragment audio) {
+                    audio.seekPlayerTo(0);
                     setAudioStatus(AudioContentView.STATUS_ENDED);
+                }
+
+                @Override
+                public void onAudioFocusLost(AudioFragment audio) {
+                    stopAllSounds();
                 }
             });
 

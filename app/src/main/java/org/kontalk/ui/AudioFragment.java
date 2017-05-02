@@ -18,9 +18,12 @@
 
 package org.kontalk.ui;
 
+import java.io.File;
 import java.io.IOException;
 
 import android.app.Activity;
+import android.content.Context;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
@@ -35,7 +38,8 @@ import org.kontalk.util.SystemUtils;
  * of its parent activity.
  * @author Daniele Ricci
  */
-public class AudioFragment extends Fragment {
+public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionListener,
+        AudioManager.OnAudioFocusChangeListener {
 
     private MediaRecorder mRecorder;
     private MediaPlayer mPlayer;
@@ -45,18 +49,14 @@ public class AudioFragment extends Fragment {
     /** Message id of the media currently being played. */
     private long mMessageId = -1;
 
+    private OnCompletionListener mOnCompletionListener;
+    private boolean mAudioFocus;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setRetainInstance(true);
-    }
-
-    public MediaPlayer getPlayer() {
-        if (mPlayer == null) {
-            mPlayer = new MediaPlayer();
-        }
-        return mPlayer;
     }
 
     public MediaRecorder getRecorder() {
@@ -90,13 +90,36 @@ public class AudioFragment extends Fragment {
         }
     }
 
-    public void startPlaying() {
-        if (mPlayer != null) {
-            mStartTime = SystemClock.uptimeMillis();
-            mPlayer.start();
-            // started, acquire lock
-            acquireLock();
+    public void preparePlayer(File audioFile) throws IOException {
+        if (mPlayer == null) {
+            mPlayer = new MediaPlayer();
+            mPlayer.setOnCompletionListener(this);
         }
+
+        mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        mPlayer.setDataSource(audioFile.getAbsolutePath());
+        mPlayer.prepare();
+    }
+
+    public int getPlayerDuration() {
+        return mPlayer != null ? mPlayer.getDuration() : -1;
+    }
+
+    public int getPlayerPosition() {
+        return mPlayer != null ? mPlayer.getCurrentPosition() : -1;
+    }
+
+    public boolean startPlaying() {
+        if (mPlayer != null) {
+            if (acquireAudioFocus()) {
+                mStartTime = SystemClock.uptimeMillis();
+                mPlayer.start();
+                // started, acquire lock
+                acquireLock();
+                return true;
+            }
+        }
+        return false;
     }
 
     public void pausePlaying() {
@@ -104,6 +127,7 @@ public class AudioFragment extends Fragment {
             mPlayer.pause();
             // paused, release lock
             releaseLock();
+            releaseAudioFocus();
         }
     }
 
@@ -115,6 +139,27 @@ public class AudioFragment extends Fragment {
     public void resetPlayer() {
         if (mPlayer != null)
             mPlayer.reset();
+        releaseAudioFocus();
+    }
+
+    public void setOnCompletionListener(OnCompletionListener listener)
+    {
+        mOnCompletionListener = listener;
+    }
+
+    interface OnCompletionListener {
+        void onCompletion(AudioFragment audio);
+        void onAudioFocusLost(AudioFragment audio);
+    }
+
+    @Override
+    public void onCompletion(MediaPlayer mp) {
+        // release any audio focus
+        releaseAudioFocus();
+
+        if (mOnCompletionListener != null) {
+            mOnCompletionListener.onCompletion(this);
+        }
     }
 
     public boolean isPlaying() {
@@ -139,7 +184,9 @@ public class AudioFragment extends Fragment {
         mPlayer = null;
         mRecorder = null;
         mStartTime = 0;
+        mOnCompletionListener = null;
         releaseLock();
+        releaseAudioFocus();
     }
 
     private void acquireLock() {
@@ -153,5 +200,50 @@ public class AudioFragment extends Fragment {
         if (a != null)
             SystemUtils.releaseScreenOn(a);
     }
+
+    private boolean acquireAudioFocus() {
+        if (!mAudioFocus) {
+            final Context ctx = getContext();
+            if (ctx != null) {
+                // using the application context so the audio focus is global
+                AudioManager audio = (AudioManager) ctx.getApplicationContext()
+                    .getSystemService(Context.AUDIO_SERVICE);
+                if (audio.requestAudioFocus(this, AudioManager.STREAM_MUSIC,
+                    AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                    mAudioFocus = true;
+                    return true;
+                }
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private void releaseAudioFocus() {
+        if (mAudioFocus) {
+            final Context ctx = getContext();
+            if (ctx != null) {
+                // using the application context so the audio focus is global
+                AudioManager audio = (AudioManager) ctx.getApplicationContext()
+                    .getSystemService(Context.AUDIO_SERVICE);
+                audio.abandonAudioFocus(this);
+                mAudioFocus = false;
+            }
+        }
+    }
+
+    @Override
+    public void onAudioFocusChange(int focusChange) {
+        if (focusChange == AudioManager.AUDIOFOCUS_LOSS ||
+            focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT ||
+            focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
+            mAudioFocus = false;
+            if (mOnCompletionListener != null) {
+                // notify listener that we should stop playing now
+                mOnCompletionListener.onAudioFocusLost(AudioFragment.this);
+            }
+        }
+    }
+
 
 }
