@@ -195,6 +195,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     private Runnable mMediaPlayerUpdater;
     private AudioContentViewControl mAudioControl;
     private AudioFragment mAudioFragment;
+    private AudioManager.OnAudioFocusChangeListener mAudioFocusListener;
 
     /** Audio recording dialog. */
     private AudioDialog mAudioDialog;
@@ -1895,6 +1896,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 if (!getActivity().isChangingConfigurations()) {
                     audio.setMessageId(-1);
                     audio.finish(true);
+                    releaseAudioFocus();
                 }
             }
         }
@@ -2112,6 +2114,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                         audio.seekPlayerTo(0);
                     }
                     setAudioStatus(AudioContentView.STATUS_ENDED);
+                    releaseAudioFocus();
                 }
             });
             return true;
@@ -2124,10 +2127,44 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     @Override
     public void playAudio(AudioContentViewControl view, long messageId) {
-        view.play();
-        getAudioFragment().startPlaying();
-        setAudioStatus(AudioContentView.STATUS_PLAYING);
-        startMediaPlayerUpdater(view);
+        if (acquireAudioFocus()) {
+            view.play();
+            getAudioFragment().startPlaying();
+            setAudioStatus(AudioContentView.STATUS_PLAYING);
+            startMediaPlayerUpdater(view);
+        }
+    }
+
+    private boolean acquireAudioFocus() {
+        final Context ctx = getContext();
+        if (ctx != null) {
+            if (mAudioFocusListener == null) {
+                mAudioFocusListener = new AudioManager.OnAudioFocusChangeListener() {
+                    @Override
+                    public void onAudioFocusChange(int focusChange) {
+                        if (focusChange == AudioManager.AUDIOFOCUS_LOSS ||
+                            focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT ||
+                            focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
+                            stopAllSounds();
+                        }
+                    }
+                };
+            }
+
+            AudioManager audio = (AudioManager) ctx.getSystemService(Context.AUDIO_SERVICE);
+            return audio.requestAudioFocus(mAudioFocusListener, AudioManager.STREAM_MUSIC,
+                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
+        }
+        return false;
+    }
+
+    private void releaseAudioFocus() {
+        final Context ctx = getContext();
+        if (ctx != null && mAudioFocusListener != null) {
+            AudioManager audio = (AudioManager) ctx.getSystemService(Context.AUDIO_SERVICE);
+            audio.abandonAudioFocus(mAudioFocusListener);
+            mAudioFocusListener = null;
+        }
     }
 
     private void updatePosition(AudioContentViewControl view) {
@@ -2141,12 +2178,14 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         getAudioFragment().pausePlaying();
         stopMediaPlayerUpdater();
         setAudioStatus(AudioContentView.STATUS_PAUSED);
+        releaseAudioFocus();
     }
 
     private void resetAudio(AudioContentViewControl view) {
         if (view != null) {
             stopMediaPlayerUpdater();
             view.end();
+            releaseAudioFocus();
         }
         AudioFragment audio = getAudioFragment();
         if (audio != null) {
