@@ -33,7 +33,7 @@
   <string name="menu_offline">Offline gehen</string>
   <string name="menu_online">Online gehen</string>
   <string name="menu_import_key">Schlüssel importieren</string>
-  <string name="pref_network_settings">Netzwerkeinstellungen</string>
+  <string name="pref_network_settings">Netzwerk</string>
   <string name="pref_network_uri">Manuelle Serveradresse</string>
   <string name="pref_title_network_uri">Dies übergeht die automatische Verwaltung der Serverliste</string>
   <string name="number_validation_intro1">Bitte Namen und Mobilfunknummer eingeben sowie den Ländercode auswählen. Alles Weitere folgt im nächsten Schritt.</string>
@@ -100,8 +100,8 @@
   <string name="pref_title_regenerate_keypair">Antippen wenn ihr persönlicher Schlüssel kompromittiert wurde</string>
   <string name="pref_regenerate_keypair_confirm">Ein neues Schlüsselpaar wird erzeugt und Ihrem Account zugeordnet. Ihr alter Schlüssel ist danach ungültig.</string>
   <string name="contacts_list_title">Wählen Sie einen Kontakt</string>
-  <string name="pref_messaging_settings">Nachrichteneinstellungen</string>
-  <string name="pref_privacy_settings">Privatsphären-Einstellungen</string>
+  <string name="pref_messaging_settings">Nachrichten</string>
+  <string name="pref_privacy_settings">Privatsphäre</string>
   <string name="pref_encrypt">Nachrichten verschlüsseln</string>
   <string name="pref_encrypt_userdata">Persönliche Daten verbergen</string>
   <string name="pref_title_on_encrypt_userdata">Statusnachricht nur Kontakten anzeigen, die meine Telefonnummer im Adressbuch haben</string>
@@ -126,7 +126,7 @@
   <string name="hint_search_full">Nachrichten suchen</string>
   <string name="hint_search_quickbox">Text in Ihren Nachrichten</string>
   <string name="title_search">Suchen: \"%s\"</string>
-  <string name="pref_notification_settings">Benachrichtigungseinstellungen</string>
+  <string name="pref_notification_settings">Benachrichtigungen</string>
   <string name="pref_enable_notifications">Benachrichtigungen</string>
   <string name="pref_title_enable_notifications">Benachrichtigungen über neue Nachrichten in der Statusleiste anzeigen</string>
   <string name="pref_ringtone">Klingelton auswählen</string>
@@ -180,7 +180,7 @@
   <string name="message_user_not_found">Der Kontakt scheint nicht bei Kontalk registriert zu sein. Sie können trotzdem versuchen, den Nutzer zu kontaktieren oder ihm/ihr eine Einladung schicken.</string>
   <string name="yes_user_not_found">Nutzer trotzdem kontaktieren</string>
   <string name="no_user_not_found">Einladung schicken</string>
-  <string name="pref_appearance_settings">Darstellungseinstellungen</string>
+  <string name="pref_appearance_settings">Darstellung</string>
   <string name="pref_font_size">Schriftgröße</string>
   <string name="menu_status">Status</string>
   <string name="menu_attachment">Anhängen</string>
@@ -347,7 +347,7 @@
   <string name="err_playing_audio">Fehler beim Audio abspielen.</string>
   <string name="err_playing_sdcard">Fehler beim Lesen vom externen Speicher.</string>
   <string name="slide_to_cancel">WISCHEN UM ABZUBRECHEN</string>
-  <string name="pref_media_settings">Medieneinstellungen</string>
+  <string name="pref_media_settings">Medien</string>
   <string name="pref_image_resize">Bildgröße anpassen</string>
   <string name="err_server_invalid_format">Ungültiges Adressformat.</string>
   <string name="err_no_contacts_app">Keine Kontakte App gefunden.</string>
