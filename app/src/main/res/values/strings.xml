@@ -37,7 +37,7 @@
     <string name="menu_online">Go online</string>
     <string name="menu_import_key">Import key</string>
     <string name="menu_manual_verification">Already have a code?</string>
-    <string name="pref_network_settings">Network settings</string>
+    <string name="pref_network_settings">Network</string>
     <string name="pref_network_uri">Manual server address</string>
     <string name="pref_title_network_uri">This will override server list automatic management</string>
     <string name="number_validation_intro1">Please enter your name, select your country code and input your mobile phone number. More instructions will be provided in the next screen.</string>
@@ -114,8 +114,8 @@
     <string name="pref_title_regenerate_keypair">Use this in case your personal key has been compromised</string>
     <string name="pref_regenerate_keypair_confirm">A new key pair will be generated and assigned to your account. Your old key will become invalid.</string>
     <string name="contacts_list_title">Choose a contact</string>
-    <string name="pref_messaging_settings">Messaging settings</string>
-    <string name="pref_privacy_settings">Privacy settings</string>
+    <string name="pref_messaging_settings">Messaging</string>
+    <string name="pref_privacy_settings">Privacy</string>
     <string name="pref_encrypt">Encrypt messages</string>
     <string name="pref_encrypt_userdata">Encrypt personal data</string>
     <string name="pref_title_on_encrypt_userdata">Status message will be visible only to users having your phone number</string>
@@ -147,7 +147,7 @@
     <string name="hint_search_quickbox">Text in your messages</string>
     <string name="title_search">Search: \"%s\"</string>
     <string name="text_search_results_empty">No messages found.</string>
-    <string name="pref_notification_settings">Notification settings</string>
+    <string name="pref_notification_settings">Notifications</string>
     <string name="pref_enable_notifications">Notifications</string>
     <string name="pref_enable_notification_led">Notification LED</string>
     <string name="pref_notification_led_color">Notification LED color</string>
@@ -214,7 +214,7 @@
     <string name="message_user_not_found">Contact seems not to be registered on Kontalk. You can try to contact the user anyway or send him/her an invitation message.</string>
     <string name="yes_user_not_found">Contact user anyway</string>
     <string name="no_user_not_found">Send invite</string>
-    <string name="pref_appearance_settings">Appearance settings</string>
+    <string name="pref_appearance_settings">Appearance</string>
     <string name="pref_font_size">Font size</string>
     <string name="menu_status">Status</string>
     <string name="menu_attachment">Attach</string>
@@ -467,7 +467,7 @@
     <string name="err_playing_sdcard">Error reading from external storage.</string>
     <string name="slide_to_cancel">SLIDE TO CANCEL</string>
 
-    <string name="pref_media_settings">Media settings</string>
+    <string name="pref_media_settings">Media</string>
     <string name="pref_image_resize">Resize images</string>
     <string name="pref_media_autodownload_threshold">Automatic download threshold</string>
     <string name="pref_title_media_autodownload_threshold">Files smaller than this size will always be downloaded automatically</string>
