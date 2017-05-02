@@ -288,7 +288,8 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                             DataForm response = iq.getExtension("x", "jabber:x:data");
                             if (response != null) {
                                 // ok! message will be sent
-                                String smsFrom = null, challenge = null;
+                                String smsFrom = null, challenge = null,
+                                    brandImage = null, brandLink = null;
                                 List<FormField> iter = response.getFields();
                                 for (FormField field : iter) {
                                     String fieldName = field.getVariable();
@@ -298,12 +299,19 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                                     else if ("challenge".equals(fieldName)) {
                                         challenge = field.getValues().get(0);
                                     }
+                                    else if ("brand-image".equals(fieldName)) {
+                                        brandImage = field.getValues().get(0);
+                                    }
+                                    else if ("brand-link".equals(fieldName)) {
+                                        brandLink = field.getValues().get(0);
+                                    }
                                 }
 
                                 if (smsFrom != null) {
                                     Log.d(TAG, "using sender id: " + smsFrom + ", challenge: " + challenge);
                                     mServerChallenge = challenge;
-                                    mListener.onValidationRequested(NumberValidator.this, smsFrom, challenge);
+                                    mListener.onValidationRequested(NumberValidator.this,
+                                        smsFrom, challenge, brandImage, brandLink);
 
                                     // prevent error handling
                                     return;
@@ -626,7 +634,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         void onServerCheckFailed(NumberValidator v);
 
         /** Called on confirmation that the validation SMS is being sent. */
-        void onValidationRequested(NumberValidator v, String sender, String challenge);
+        void onValidationRequested(NumberValidator v, String sender, String challenge, String brandImage, String brandLink);
 
         /** Called if phone number validation failed. */
         void onValidationFailed(NumberValidator v, int reason);
