@@ -402,7 +402,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mPhone.setText(mPhoneNumber);
             syncCountryCodeSelector();
 
-            startValidationCode(REQUEST_MANUAL_VALIDATION, saved.sender, saved.challenge, saved.server, false);
+            startValidationCode(REQUEST_MANUAL_VALIDATION, saved.sender,
+                saved.brandImage, saved.brandLink, saved.challenge, saved.server, false);
         }
 
         if (mKey == null) {
@@ -667,7 +668,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     /** Opens manual validation window immediately. */
     public void validateCode() {
         if (checkInput(false))
-            startValidationCode(REQUEST_VALIDATION_CODE, null, null);
+            startValidationCode(REQUEST_VALIDATION_CODE, null, null, null, null);
     }
 
     /** Opens import keys from another device wizard. */
@@ -1100,9 +1101,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
-    public void onValidationRequested(NumberValidator v, String sender, String challenge) {
+    public void onValidationRequested(NumberValidator v, String sender, String challenge, String brandImage, String brandLink) {
         Log.d(TAG, "validation has been requested, requesting validation code to user");
-        proceedManual(sender, challenge);
+        proceedManual(sender, challenge, brandImage, brandLink);
     }
 
     void userExistsWarning() {
@@ -1134,21 +1135,22 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     /** Proceeds to the next step in manual validation. */
-    private void proceedManual(final String sender, final String challenge) {
+    private void proceedManual(final String sender, final String challenge, final String brandImage, final String brandLink) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 abortProgress(true);
-                startValidationCode(REQUEST_MANUAL_VALIDATION, sender, challenge);
+                startValidationCode(REQUEST_MANUAL_VALIDATION, sender, challenge, brandImage, brandLink);
             }
         });
     }
 
-    void startValidationCode(int requestCode, String sender, String challenge) {
-        startValidationCode(requestCode, sender, challenge, null, true);
+    void startValidationCode(int requestCode, String sender, String challenge, String brandImage, String brandLink) {
+        startValidationCode(requestCode, sender, challenge, brandImage, brandLink, null, true);
     }
 
-    private void startValidationCode(int requestCode, String sender, String challenge, EndpointServer server, boolean saveProgress) {
+    private void startValidationCode(int requestCode, String sender, String challenge,
+            String brandImage, String brandLink, EndpointServer server, boolean saveProgress) {
         // validator might be null if we are skipping verification code request
         String serverUri = null;
         if (server != null)
@@ -1161,7 +1163,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             Preferences.saveRegistrationProgress(
                 mName, mPhoneNumber, mKey, mPassphrase,
                 mImportedPublicKey, mImportedPrivateKey,
-                serverUri, sender, challenge, mForce, mTrustedKeys);
+                serverUri, sender, challenge, brandImage, brandLink,
+                mForce, mTrustedKeys);
         }
 
         Intent i = new Intent(NumberValidation.this, CodeValidation.class);
@@ -1177,6 +1180,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         i.putExtra("sender", sender);
         i.putExtra("challenge", challenge);
         i.putExtra(KeyPairGeneratorService.EXTRA_KEY, mKey);
+        i.putExtra("brandImage", brandImage);
+        i.putExtra("brandLink", brandLink);
 
         startActivityForResult(i, REQUEST_MANUAL_VALIDATION);
     }

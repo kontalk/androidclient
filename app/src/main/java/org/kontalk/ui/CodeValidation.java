@@ -51,6 +51,7 @@ import org.kontalk.util.SystemUtils;
 
 
 /** Manual validation code input. */
+// TODO honor brandImage and brandLink
 public class CodeValidation extends AccountAuthenticatorActionBarActivity
         implements NumberValidatorListener {
     private static final String TAG = NumberValidation.TAG;
@@ -375,7 +376,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
-    public void onValidationRequested(NumberValidator v, String sender, String challenge) {
+    public void onValidationRequested(NumberValidator v, String sender, String challenge, String brandImage, String brandLink) {
         // not used.
     }
 
