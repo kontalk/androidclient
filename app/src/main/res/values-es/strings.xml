@@ -589,4 +589,6 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
     <string name="group_command_users_added">Usuarios añadidos:</string>
     <string name="group_command_users_removed">Usuarios eliminados:</string>
 
+    <string name="registration_poweredby">Impulsado por</string>
+
     </resources>
