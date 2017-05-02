@@ -33,7 +33,7 @@
   <string name="menu_offline">Иди ван везе</string>
   <string name="menu_online">Повежи се</string>
   <string name="menu_import_key">Увези кључ</string>
-  <string name="pref_network_settings">Поставке мреже</string>
+  <string name="pref_network_settings">Мрежа</string>
   <string name="pref_network_uri">Ручно унета адреса сервера</string>
   <string name="pref_title_network_uri">Ово ће надјачати аутоматско управљање списком сервера</string>
   <string name="number_validation_intro1">Унесите ваше име, изаберите кôд земље и унесите број вашег телефона. Додатна упутства су на следећем екрану.</string>
@@ -100,8 +100,8 @@
   <string name="pref_title_regenerate_keypair">Користите ово ако је лични кључ компромитован</string>
   <string name="pref_regenerate_keypair_confirm">Нови пар кључева ће бити направљен и додељен вашем налогу. Стари кључ ће бити неважећи.</string>
   <string name="contacts_list_title">Изаберите контакт</string>
-  <string name="pref_messaging_settings">Поставке дописивања</string>
-  <string name="pref_privacy_settings">Поставке приватности</string>
+  <string name="pref_messaging_settings">Размена порука</string>
+  <string name="pref_privacy_settings">Приватност</string>
   <string name="pref_encrypt">Шифруј поруке</string>
   <string name="pref_encrypt_userdata">Шифруј личне податке</string>
   <string name="pref_title_on_encrypt_userdata">Порука стања ће бити видљива корисницима који имају ваш број телефона</string>
@@ -126,7 +126,7 @@
   <string name="hint_search_full">Претражи поруке</string>
   <string name="hint_search_quickbox">Текст у порукама</string>
   <string name="title_search">Тражи: „%s“</string>
-  <string name="pref_notification_settings">Поставке обавештења</string>
+  <string name="pref_notification_settings">Обавештења</string>
   <string name="pref_enable_notifications">Обавештења</string>
   <string name="pref_title_enable_notifications">Приказ обавештења у траци стања</string>
   <string name="pref_ringtone">Изаберите тон звона</string>
@@ -180,7 +180,7 @@
   <string name="message_user_not_found">Контакт изгледа није регистрован на Контак. Можете покушати да свеједно пошаљете поруку или пошаљите позивницу.</string>
   <string name="yes_user_not_found">Свеједно контактирај</string>
   <string name="no_user_not_found">Пошаљи позивницу</string>
-  <string name="pref_appearance_settings">Поставке приказа</string>
+  <string name="pref_appearance_settings">Приказ</string>
   <string name="pref_font_size">Величина фонта</string>
   <string name="menu_status">Стање</string>
   <string name="menu_attachment">Приложи</string>
@@ -345,7 +345,7 @@
   <string name="err_audio_record_writing">Грешка при упису у спољашње складиште.</string>
   <string name="err_playing_audio">Грешка при пуштању звучног записа.</string>
   <string name="err_playing_sdcard">Грешка при читању спољашњег складишта.</string>
-  <string name="pref_media_settings">Поставке медија</string>
+  <string name="pref_media_settings">Медија</string>
   <string name="pref_image_resize">Величина слика</string>
   <string name="err_server_invalid_format">Неисправан формат адресе.</string>
   <string name="err_no_contacts_app">Нема апликације за контакте.</string>
@@ -521,7 +521,7 @@
 	<item quantity="one">%d непрочитана порука</item>
 	<item quantity="few">%d непрочитане поруке</item>
 	<item quantity="many">%d непрочитаних порука</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
 
     <plurals name="unread_messages_group">
