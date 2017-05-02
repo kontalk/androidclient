@@ -536,9 +536,9 @@
     <string name="group_command_text_part_kicked">Você foi removido desse grupo</string>
 
     <plurals name="unread_messages">
-        <item quantity="one">%d mensagens não lidas</item>
-        <item quantity="other">%d mensagens não lidas</item>
-    </plurals>
+	<item quantity="one">1 mensagem não lida</item>
+	<item quantity="other">%d mensagens não lidas</item>
+</plurals>
 
     <plurals name="unread_messages_group">
         <item quantity="one">%1$d mensagens @ %2$s</item>
