@@ -34,8 +34,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
@@ -166,12 +164,17 @@ public class AudioDialog extends AlertDialog {
         @SuppressLint("InflateParams")
         View v = inflater.inflate(R.layout.audio_dialog, null);
         setView(v);
-        mData.getPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+        mData.setOnCompletionListener(new AudioFragment.OnCompletionListener() {
             @Override
-            public void onCompletion(MediaPlayer mp) {
+            public void onCompletion(AudioFragment audio) {
                 mImageButton.setImageResource(R.drawable.play);
                 mProgressBarAnimator.end();
                 mStatus = STATUS_ENDED;
+            }
+
+            @Override
+            public void onAudioFocusLost(AudioFragment audio) {
+                pauseAudio();
             }
         });
 
@@ -205,7 +208,7 @@ public class AudioDialog extends AlertDialog {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (mFile != null) {
-                    mData.getPlayer().setOnCompletionListener(null);
+                    mData.setOnCompletionListener(null);
                     mListener.onRecordingSuccessful(mFile);
                     mStatus = STATUS_SEND;
                 }
@@ -237,14 +240,14 @@ public class AudioDialog extends AlertDialog {
             case STATUS_PAUSED:
             case STATUS_ENDED:
                 // restart
-                animate(mProgressBar, null, 0, MAX_PROGRESS, mData.getPlayer().getDuration());
+                animate(mProgressBar, null, 0, MAX_PROGRESS, mData.getPlayerDuration());
                 setupViewForPlaying(0, mStatus);
-                mData.getPlayer().seekTo(0);
+                mData.seekPlayerTo(0);
                 break;
             case STATUS_PLAYING:
                 // restore animator
                 float progress = calculatePlayingProgress();
-                animate(mProgressBar, null, progress, MAX_PROGRESS, mData.getPlayer().getDuration());
+                animate(mProgressBar, null, progress, MAX_PROGRESS, mData.getPlayerDuration());
                 setupViewForPlaying(progress);
                 setupForPlaying();
                 resumeAudio();
@@ -267,7 +270,7 @@ public class AudioDialog extends AlertDialog {
         }
         else if (mStatus == STATUS_PLAYING || mStatus == STATUS_SEND) {
             pauseAudio(mStatus == STATUS_SEND);
-            mData.getPlayer().release();
+            mData.finish(true);
         }
 
         if (mStatus != STATUS_SEND && mFile != null) {
@@ -284,7 +287,7 @@ public class AudioDialog extends AlertDialog {
 
     private float calculatePlayingProgress() {
         long time = mData.getElapsedTime();
-        return (float) (time * 100) / mData.getPlayer().getDuration();
+        return (float) (time * 100) / mData.getPlayerDuration();
     }
 
     @SuppressLint("ResourceAsColor")
@@ -388,10 +391,7 @@ public class AudioDialog extends AlertDialog {
     void playAudio() {
         mProgressBar.setClickable(true);
         try {
-            MediaPlayer player = mData.getPlayer();
-            player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            player.setDataSource(mFile.getAbsolutePath());
-            player.prepare();
+            mData.preparePlayer(mFile);
         }
         catch (IOException e) {
             Log.e (TAG, "error reading from external storage", e);
@@ -404,7 +404,7 @@ public class AudioDialog extends AlertDialog {
             Log.e(TAG, "error playing audio", e);
         }
         setupForPlaying();
-        animate(mProgressBar, null, 0, MAX_PROGRESS, mData.getPlayer().getDuration());
+        animate(mProgressBar, null, 0, MAX_PROGRESS, mData.getPlayerDuration());
         resumeAudio();
     }
 
@@ -413,7 +413,7 @@ public class AudioDialog extends AlertDialog {
         mTimeTxt.setVisibility(View.VISIBLE);
         int color = ContextCompat.getColor(getContext(), R.color.audio_pbar_play);
         mTimeTxt.setTextColor(color);
-        mTimeCircle = MAX_PROGRESS / (float) mData.getPlayer().getDuration();
+        mTimeCircle = MAX_PROGRESS / (float) mData.getPlayerDuration();
     }
 
     void pauseAudio() {
@@ -434,7 +434,7 @@ public class AudioDialog extends AlertDialog {
             mProgressBarAnimator.start();
         // STATUS_PLAYING is used when restoring dialog
         if (mStatus == STATUS_PAUSED || mStatus == STATUS_PLAYING)
-            mProgressBarAnimator.setCurrentPlayTime(mData.getPlayer().getCurrentPosition());
+            mProgressBarAnimator.setCurrentPlayTime(mData.getPlayerPosition());
         mData.startPlaying();
         mStatus = STATUS_PLAYING;
     }
@@ -478,7 +478,7 @@ public class AudioDialog extends AlertDialog {
                         else if (event.getAction() == android.view.MotionEvent.ACTION_UP) {
                             progressBar.setPointerAlpha(0);
                             progressBar.setPointerAlphaOnTouch(0);
-                            mData.getPlayer().seekTo(mPlayerSeekTo);
+                            mData.seekPlayerTo(mPlayerSeekTo);
                             if (mCheckSeek == STATUS_PLAYING)
                                 resumeAudio();
                         }
