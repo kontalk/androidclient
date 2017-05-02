@@ -587,4 +587,6 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
     <string name="group_command_users_added">Usuaris afegits:</string>
     <string name="group_command_users_removed">Usuaris eliminats:</string>
 
+    <string name="registration_poweredby">Impulsat per</string>
+
     </resources>
