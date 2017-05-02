@@ -100,7 +100,7 @@
   <string name="pref_title_regenerate_keypair">Use esto en caso de que su clave personal haya sido comprometida</string>
   <string name="pref_regenerate_keypair_confirm">Se generará un nuevo par de claves y se asignarán a su cuenta. La clave antigua ya no será válida.</string>
   <string name="contacts_list_title">Elija un contacto</string>
-  <string name="pref_messaging_settings">Mensajes</string>
+  <string name="pref_messaging_settings">Mensajería</string>
   <string name="pref_privacy_settings">Privacidad</string>
   <string name="pref_encrypt">Cifrar mensajes</string>
   <string name="pref_encrypt_userdata">Cifrar los datos personales</string>
