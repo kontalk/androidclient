@@ -100,8 +100,8 @@
   <string name="pref_title_regenerate_keypair">Use esto en caso de que su clave personal haya sido comprometida</string>
   <string name="pref_regenerate_keypair_confirm">Se generará un nuevo par de claves y se asignarán a su cuenta. La clave antigua ya no será válida.</string>
   <string name="contacts_list_title">Elija un contacto</string>
-  <string name="pref_messaging_settings">Ajustes de mensajes</string>
-  <string name="pref_privacy_settings">Ajustes de privacidad</string>
+  <string name="pref_messaging_settings">Mensajes</string>
+  <string name="pref_privacy_settings">Privacidad</string>
   <string name="pref_encrypt">Cifrar mensajes</string>
   <string name="pref_encrypt_userdata">Cifrar los datos personales</string>
   <string name="pref_title_on_encrypt_userdata">El mensaje de estado solo será visible para quienes tengan su número de teléfono</string>
@@ -126,7 +126,7 @@
   <string name="hint_search_full">Buscar mensajes</string>
   <string name="hint_search_quickbox">Texto en sus mensajes</string>
   <string name="title_search">Buscar: \"%s\"</string>
-  <string name="pref_notification_settings">Configuración de notificaciones</string>
+  <string name="pref_notification_settings">Notificaciones</string>
   <string name="pref_enable_notifications">Notificaciones</string>
   <string name="pref_title_enable_notifications">Mostrar las notificaciones de mensajes en la barra de estado</string>
   <string name="pref_ringtone">Seleccionar tono</string>
@@ -180,7 +180,7 @@
   <string name="message_user_not_found">Este contacto parece no estar registrado en Kontalk. Puede intentar ponerse en contacto con el usuario de todas formas o enviarle un mensaje de invitación.</string>
   <string name="yes_user_not_found">Sí, póngame en contacto con el usuario de todas formas</string>
   <string name="no_user_not_found">Enviar una invitación</string>
-  <string name="pref_appearance_settings">Configuración del aspecto</string>
+  <string name="pref_appearance_settings">Aspecto</string>
   <string name="pref_font_size">Tamaño de la letra</string>
   <string name="menu_status">Estado</string>
   <string name="menu_attachment">Adjuntar</string>
@@ -347,7 +347,7 @@
   <string name="err_playing_audio">Error reproduciendo audio.</string>
   <string name="err_playing_sdcard">Error leyendo del almacenamiento externo.</string>
   <string name="slide_to_cancel">DESLIZAR PARA CANCELAR</string>
-  <string name="pref_media_settings">Archivos multimedia</string>
+  <string name="pref_media_settings">Multimedia</string>
   <string name="pref_image_resize">Redimensionar imágenes</string>
   <string name="err_server_invalid_format">Formato de dirección inválido.</string>
   <string name="err_no_contacts_app">No se encontró la aplicación de contactos.</string>
