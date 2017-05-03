@@ -24,11 +24,14 @@ import java.util.Map;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.view.MenuItem;
 import android.view.View;
@@ -204,12 +207,24 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         if (brandImage != null) {
             findViewById(R.id.brand_poweredby).setVisibility(View.VISIBLE);
 
-            ImageView brandView = (ImageView) findViewById(R.id.brand);
+            final ImageView brandView = (ImageView) findViewById(R.id.brand);
             brandView.setVisibility(View.VISIBLE);
             Ion.with(brandView)
-                // TODO .error(...)
-                // TODO .animateLoad(R.anim.progress_indeterminate)
-                .load(brandImage);
+                .placeholder(R.drawable.progress_ring)
+                .animateLoad(R.anim.progress_indeterminate)
+                .animateIn(0)
+                .load(brandImage)
+                .setCallback(new FutureCallback<ImageView>() {
+                    @Override
+                    public void onCompleted(Exception e, ImageView result) {
+                        if (e != null && brandLink != null) {
+                            brandView.setVisibility(View.GONE);
+                            TextView brandTextView = (TextView) findViewById(R.id.brand_text);
+                            brandTextView.setText(brandLink);
+                            brandTextView.setVisibility(View.VISIBLE);
+                        }
+                    }
+                });
 
             if (brandLink != null) {
                 brandView.setContentDescription(brandLink);
