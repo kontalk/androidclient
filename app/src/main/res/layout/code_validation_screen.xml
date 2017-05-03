@@ -35,21 +35,55 @@
         tools:ignore="UnknownIdInLayout"/>
 
     <ScrollView
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:scrollbars="vertical"
         android:layout_below="@id/toolbar">
 
         <LinearLayout
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:orientation="vertical"
             android:padding="18dip" >
 
             <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
+                android:id="@+id/brand_poweredby"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingLeft="20dip"
+                android:paddingRight="20dip"
+                android:gravity="center"
+                android:visibility="gone"
+                android:text="@string/registration_poweredby" />
+
+            <!-- content description will be added at runtime -->
+            <ImageView
+                android:id="@+id/brand"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:paddingLeft="20dip"
+                android:paddingRight="20dip"
+                android:layout_marginBottom="10dp"
+                android:visibility="gone"
+                tools:ignore="ContentDescription"/>
+
+            <TextView
+                style="?android:attr/textAppearanceLarge"
+                android:id="@+id/brand_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingLeft="20dip"
+                android:paddingRight="20dip"
+                android:layout_marginBottom="10dp"
+                android:linksClickable="true"
+                android:autoLink="web"
+                android:gravity="center"
+                android:visibility="gone"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:paddingLeft="20dip"
                 android:paddingRight="20dip"
                 android:paddingBottom="10dip"
@@ -61,7 +95,7 @@
                 android:id="@+id/code_validation_sender"
                 style="?android:attr/textAppearanceLarge"
                 android:layout_width="wrap_content"
-                android:layout_height="fill_parent"
+                android:layout_height="match_parent"
                 android:paddingLeft="20dip"
                 android:paddingRight="20dip"
                 android:paddingBottom="10dip"
@@ -75,7 +109,7 @@
                 android:id="@+id/code_validation_call"
                 style="?android:attr/textAppearanceLarge"
                 android:layout_width="wrap_content"
-                android:layout_height="fill_parent"
+                android:layout_height="match_parent"
                 android:paddingLeft="30dp"
                 android:paddingStart="30dp"
                 android:paddingRight="30dp"
@@ -88,8 +122,8 @@
 
             <TextView
                 android:id="@+id/code_validation_intro2"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:paddingLeft="20dip"
                 android:paddingRight="20dip"
                 android:paddingBottom="10dip"
@@ -105,22 +139,23 @@
 
             <Button
                 android:id="@+id/send_button"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:onClick="validateCode"
                 android:text="@string/button_validation_register" />
 
             <Button
                 android:id="@+id/fallback_button"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:onClick="doFallback"
                 android:text="@string/button_validation_fallback" />
 
+            <!--
             <TextView
                 android:id="@+id/brand_poweredby"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:paddingLeft="20dip"
                 android:paddingRight="20dip"
                 android:layout_marginTop="10dip"
@@ -128,16 +163,29 @@
                 android:visibility="gone"
                 android:text="@string/registration_poweredby" />
 
-            <!-- content description will be added at runtime -->
+            - content description will be added at runtime -
             <ImageView
                 android:id="@+id/brand"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="80dp"
                 android:paddingLeft="20dip"
                 android:paddingRight="20dip"
                 android:layout_marginBottom="10dp"
                 android:visibility="gone"
                 tools:ignore="ContentDescription"/>
+
+            <TextView
+                android:id="@+id/brand_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingLeft="20dip"
+                android:paddingRight="20dip"
+                android:layout_marginBottom="10dp"
+                android:gravity="center"
+                android:linksClickable="true"
+                android:autoLink="web"
+                android:visibility="gone"/>
+            -->
 
         </LinearLayout>
 
