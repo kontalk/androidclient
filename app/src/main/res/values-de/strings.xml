@@ -591,6 +591,6 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="group_command_users_added">Hinzugefügte Nutzer:</string>
     <string name="group_command_users_removed">Entfernte Nutzer:</string>
 
-    <string name="registration_poweredby">Unterstützt von</string>
+    <string name="registration_poweredby">Unterstützt durch</string>
 
     </resources>
