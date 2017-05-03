@@ -148,7 +148,10 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
     }
 
     interface OnCompletionListener {
+        /** Called on play completion. */
         void onCompletion(AudioFragment audio);
+
+        /** Called when the app loses audio focus. */
         void onAudioFocusLost(AudioFragment audio);
     }
 
@@ -244,6 +247,5 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
             }
         }
     }
-
 
 }

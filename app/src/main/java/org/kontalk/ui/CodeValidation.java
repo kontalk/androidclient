@@ -24,6 +24,7 @@ import java.util.Map;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.koushikdutta.ion.Ion;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -34,6 +35,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -184,15 +186,41 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         mTrustedKeys = (HashMap) i.getSerializableExtra("trustedKeys");
 
         String server = i.getStringExtra("server");
-        if (server != null)
+        if (server != null) {
             mServerProvider = new EndpointServer.SingleServerProvider(server);
-        else
+        }
+        else {
             /*
              * FIXME HUGE problem here. If we already have a verification code,
              * how are we supposed to know from what server it came from??
              * https://github.com/kontalk/androidclient/issues/118
              */
             mServerProvider = Preferences.getEndpointServerProvider(this);
+        }
+
+        // brand information
+        final String brandImage = i.getStringExtra("brandImage");
+        final String brandLink = i.getStringExtra("brandLink");
+        if (brandImage != null) {
+            findViewById(R.id.brand_poweredby).setVisibility(View.VISIBLE);
+
+            ImageView brandView = (ImageView) findViewById(R.id.brand);
+            brandView.setVisibility(View.VISIBLE);
+            Ion.with(brandView)
+                // TODO .error(...)
+                // TODO .animateLoad(R.anim.progress_indeterminate)
+                .load(brandImage);
+
+            if (brandLink != null) {
+                brandView.setContentDescription(brandLink);
+                brandView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        SystemUtils.openURL(CodeValidation.this, brandLink);
+                    }
+                });
+            }
+        }
     }
 
     /** Not used. */

@@ -117,6 +117,28 @@
                 android:onClick="doFallback"
                 android:text="@string/button_validation_fallback" />
 
+            <TextView
+                android:id="@+id/brand_poweredby"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:paddingLeft="20dip"
+                android:paddingRight="20dip"
+                android:layout_marginTop="10dip"
+                android:gravity="center"
+                android:visibility="gone"
+                android:text="@string/registration_poweredby" />
+
+            <!-- content description will be added at runtime -->
+            <ImageView
+                android:id="@+id/brand"
+                android:layout_width="fill_parent"
+                android:layout_height="80dp"
+                android:paddingLeft="20dip"
+                android:paddingRight="20dip"
+                android:layout_marginBottom="10dp"
+                android:visibility="gone"
+                tools:ignore="ContentDescription"/>
+
         </LinearLayout>
 
     </ScrollView>
