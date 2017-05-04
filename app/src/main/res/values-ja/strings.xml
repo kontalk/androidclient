@@ -578,4 +578,6 @@ http://kontalk.org/</string>
     <string name="group_command_users_added">ユーザーを追加しました:</string>
     <string name="group_command_users_removed">ユーザーを削除しました:</string>
 
-</resources>
+<string name="registration_poweredby">Powered by</string>
+
+    </resources>
