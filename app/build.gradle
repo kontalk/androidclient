@@ -152,7 +152,7 @@ dependencies {
 
     googleplayCompile "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
     googleplayCompile "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"
-    googleplayCompile('com.crashlytics.sdk.android:crashlytics:2.6.7@aar') {
+    googleplayCompile('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
         transitive = true;
     }
 
