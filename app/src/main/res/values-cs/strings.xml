@@ -596,6 +596,6 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
 
     <string name="status_notsubscribed">Nepovolený/blokovaný</string>
 
-    <string name="registration_poweredby">Powered by</string>
+    <string name="registration_poweredby">Poháněno</string>
 
     </resources>
