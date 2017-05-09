@@ -38,7 +38,7 @@
   <string name="pref_title_network_uri">Dies übergeht die automatische Verwaltung der Serverliste</string>
   <string name="number_validation_intro1">Bitte Namen und Mobilfunknummer eingeben sowie den Ländercode auswählen. Alles Weitere folgt im nächsten Schritt.</string>
   <string name="number_validation_intro2">Falls Sie auf diesem Gerät keine Anrufe oder SMS empfangen können, geben Sie eine Ihnen gehörende Tel.Nr. an: Wir werden diese Nummer dann mit diesem Gerät hier verbinden.</string>
-  <string name="code_validation_intro">Sie sollten in Kürze eine SMS oder einen Anruf von dieser Nummer erhalten:</string>
+  <string name="code_validation_intro">Sie sollten in Kürze eine SMS oder einen Anruf an Ihre Nummer erhalten.</string>
   <string name="code_validation_intro2">Fügen Sie unten bitte den Code ein, den Sie erhalten bzw. gehört haben.</string>
   <string name="code_validation_intro_manual">Bitte fügen Sie den Überprüfungs-Code ein, den Sie bekommen haben. Beachten Sie bitte, dass ein Überprüfungs-Code nur einmal verwendet werden kann.</string>
   <string name="hint_validation_name">Ihr Name</string>
@@ -372,9 +372,9 @@
     <string name="err_custom_background">Beim setzen des Hintergrundes ist ein Fehler aufgetreten. Bitte versuchen Sie ein anderes Bild.</string>
     <string name="hint_ptt">Um Aufzunehmen das Mikrofon-Icon gedrückt halten.</string>
     <string name="msg_importing_key">Importiere persönlichen Schlüssel…</string>
-    <string name="button_validation_fallback">Keinen Anruf erhalten?</string>
+    <string name="button_validation_fallback">Nichts erhalten?</string>
     <string name="msg_fallback">Wir werden einen anderen Weg probieren, um Ihre Tel.Nr. zu überprüfen.</string>
-    <string name="code_validation_intro_missed_call">Sie sollten in Kürze einen verpassten Anruf von folgender Nummer vorfinden. <b>Bitte nehmen Sie den Anruf NICHT an.</b></string>
+    <string name="code_validation_intro_missed_call">Sie sollten in Kürze einen verpassten Anruf vorfinden. <b>BITTE NEHMEN SIE DEN ANRUF NICHT an.</b></string>
     <string name="code_validation_intro2_missed_call">Bitte fügen Sie die letzten %d Ziffern der Nummer ein, von der Sie angerufen wurden.</string>
     <string name="title_fallback">Haben Sie Probleme?</string>
     <string name="menu_manual_verification">Code bereits vorhanden?</string>
