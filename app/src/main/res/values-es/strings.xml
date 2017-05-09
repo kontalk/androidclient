@@ -38,7 +38,7 @@
   <string name="pref_title_network_uri">Esto anulará la gestión automática de la lista de servidores</string>
   <string name="number_validation_intro1">Por favor, introduzca su nombre, elija su código de país y escriba su número de teléfono móvil. En la siguiente pantalla encontrará más instrucciones.</string>
   <string name="number_validation_intro2">Si no puede recibir SMS en este dispositivo, inserte un número que posea: asociaremos ese número a este dispositivo.</string>
-  <string name="code_validation_intro">Debería recibir un SMS o llamada desde este número en breve:</string>
+  <string name="code_validation_intro">Debería recibir un SMS o llamada a su número en breve:</string>
   <string name="code_validation_intro2">Por favor introduzca abajo el código que reciba o escuche.</string>
   <string name="code_validation_intro_manual">Por favor inserte el código de verificación que ha recibido. Por favor, tenga en cuenta que un código de verificación sólo puede usarse una vez.</string>
   <string name="hint_validation_name">Su nombre</string>
@@ -372,9 +372,9 @@
     <string name="hint_ptt">Mantenga el botón de micro pulsado para grabar.</string>
     <string name="err_audio_record_noaudio">No se ha grabado ningún audio.</string>
     <string name="msg_importing_key">Importando la clave personal…</string>
-    <string name="code_validation_intro_missed_call">En breves instantes tendrá una llamada perdida de este número. <b>POR FAVOR NO RESPONDA A LA LLAMADA.</b></string>
+    <string name="code_validation_intro_missed_call">En breves instantes tendrá una llamada perdida a su número. <b>POR FAVOR NO RESPONDA A LA LLAMADA.</b></string>
     <string name="code_validation_intro2_missed_call">Por favor, introduzca los últimos %d dígitos del número de la llamada perdida.</string>
-    <string name="button_validation_fallback">No ha recibido la llamada?</string>
+    <string name="button_validation_fallback">No ha recibido nada?</string>
     <string name="title_fallback">Tiene algún problema?</string>
     <string name="msg_fallback">Vamos a verificar su número de teléfono de otra manera.</string>
     <string name="menu_manual_verification">Ya tiene un código?</string>
