@@ -42,9 +42,9 @@
     <string name="pref_title_network_uri">This will override server list automatic management</string>
     <string name="number_validation_intro1">Please enter your name, select your country code and input your mobile phone number. More instructions will be provided in the next screen.</string>
     <string name="number_validation_intro2">If you are unable to receive calls or SMS on this device, insert a phone number you own: we will associate that number to this device.</string>
-    <string name="code_validation_intro">You should receive a SMS or a call from this number briefly:</string>
+    <string name="code_validation_intro">You should receive a SMS or a call to your number briefly.</string>
     <string name="code_validation_intro2">Please insert the code you receive or hear below.</string>
-    <string name="code_validation_intro_missed_call">You should receive a missed call from this number briefly. <b>PLEASE DO NOT ANSWER THE CALL.</b></string>
+    <string name="code_validation_intro_missed_call">You should receive a missed call to your number briefly. <b>PLEASE DO NOT ANSWER THE CALL.</b></string>
     <string name="code_validation_intro2_missed_call">Please insert the last %d digits of the number you will be called by.</string>
     <string name="code_validation_intro_callerid">Tap the button below and give a missed call to that phone number. Please note that <b>the call must be initiated from the phone number you are registering</b>. The call is free of charge if you hang up as soon as you hear the first ring. It will be enough for us.</string>
     <string name="code_validation_intro2_callerid">After closing the call, come back here and tap the verify button below.</string>
@@ -175,7 +175,7 @@
     <string name="send_mime_not_supported">File type not supported.</string>
     <string name="button_validate">Register</string>
     <string name="button_validation_register">Verify</string>
-    <string name="button_validation_fallback">Not receiving a call?</string>
+    <string name="button_validation_fallback">Not receiving anything?</string>
     <string name="button_validation_fallback_callerid">Try another way</string>
     <string name="notify_ticker_download_completed">Download completed</string>
     <string name="notify_title_download_completed">Download completed</string>

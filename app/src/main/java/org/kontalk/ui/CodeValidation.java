@@ -24,14 +24,15 @@ import java.util.Map;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
 
-import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.view.MenuItem;
 import android.view.View;
@@ -56,7 +57,6 @@ import org.kontalk.util.SystemUtils;
 
 
 /** Manual validation code input. */
-// TODO honor brandImage and brandLink
 public class CodeValidation extends AccountAuthenticatorActionBarActivity
         implements NumberValidatorListener {
     private static final String TAG = NumberValidation.TAG;
@@ -111,10 +111,13 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
             mTrustedKeys = data.trustedKeys;
         }
 
-        int requestCode = getIntent().getIntExtra("requestCode", -1);
+        Intent i = getIntent();
+        mPhone = i.getStringExtra("phone");
+
+        int requestCode = i.getIntExtra("requestCode", -1);
         if (requestCode == NumberValidation.REQUEST_VALIDATION_CODE ||
                 getIntent().getStringExtra("sender") == null) {
-            findViewById(R.id.code_validation_sender)
+            findViewById(R.id.code_validation_phone)
                 .setVisibility(View.GONE);
             findViewById(R.id.code_validation_intro2)
                 .setVisibility(View.GONE);
@@ -122,10 +125,19 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 .setText(R.string.code_validation_intro_manual);
         }
         else {
-            String challenge = getIntent().getStringExtra("challenge");
-            String sender = getIntent().getStringExtra("sender");
+            String challenge = i.getStringExtra("challenge");
+            String sender = i.getStringExtra("sender");
 
-            final TextView senderText = (TextView) findViewById(R.id.code_validation_sender);
+            final TextView phoneText = (TextView) findViewById(R.id.code_validation_phone);
+            String formattedPhone;
+            try {
+                PhoneNumberUtil util = PhoneNumberUtil.getInstance();
+                Phonenumber.PhoneNumber phoneNumber = util.parse(mPhone, null);
+                formattedPhone = util.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL);
+            }
+            catch (NumberParseException e) {
+                formattedPhone = mPhone;
+            }
 
             CharSequence textId1, textId2;
             if (NumberValidator.isMissedCall(sender) || NumberValidator.CHALLENGE_MISSED_CALL.equals(challenge)) {
@@ -136,8 +148,8 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 mFallbackButton.setText(R.string.button_validation_fallback);
                 mFallbackButton.setVisibility(View.VISIBLE);
                 // show sender label and hide call button
-                senderText.setText(sender);
-                senderText.setVisibility(View.VISIBLE);
+                phoneText.setText(formattedPhone);
+                phoneText.setVisibility(View.VISIBLE);
                 mCallButton.setVisibility(View.GONE);
                 mCode.setVisibility(View.VISIBLE);
             }
@@ -150,7 +162,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 // show call button and hide sender label
                 mCallButton.setText(sender);
                 mCallButton.setVisibility(View.VISIBLE);
-                senderText.setVisibility(View.GONE);
+                phoneText.setVisibility(View.GONE);
                 mCode.setVisibility(View.GONE);
             }
             else {
@@ -159,8 +171,8 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 textId2 = getText(R.string.code_validation_intro2);
                 mFallbackButton.setVisibility(View.GONE);
                 // show sender label and hide call button
-                senderText.setText(sender);
-                senderText.setVisibility(View.VISIBLE);
+                phoneText.setText(formattedPhone);
+                phoneText.setVisibility(View.VISIBLE);
                 mCallButton.setVisibility(View.GONE);
                 mCode.setVisibility(View.VISIBLE);
             }
@@ -178,10 +190,8 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
             ((TextView) findViewById(R.id.code_validation_intro2)).setText(textId2);
         }
 
-        Intent i = getIntent();
         mKey = i.getParcelableExtra(KeyPairGeneratorService.EXTRA_KEY);
         mName = i.getStringExtra("name");
-        mPhone = i.getStringExtra("phone");
         mForce = i.getBooleanExtra("force", false);
         mPassphrase = i.getStringExtra("passphrase");
         mImportedPrivateKey = i.getByteArrayExtra("importedPrivateKey");
