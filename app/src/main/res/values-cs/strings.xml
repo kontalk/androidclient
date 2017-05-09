@@ -38,7 +38,7 @@
   <string name="pref_title_network_uri">Toto nastavení má přednost před automatickou správou seznamu serverů</string>
   <string name="number_validation_intro1">Zadejte prosím své jméno, zvolte svou národní předvolbu a zadejte své mobilní telefonní číslo. Více instrukcí bude poskytnuto na následující obrazovce.</string>
   <string name="number_validation_intro2">Pokud nemůžete přijmout hovor nebo SMS na tomto zařízení, zadejte telefonní číslo, které vám patří: propojíme toto číslo s tímto zařízením.</string>
-  <string name="code_validation_intro">Zanedlouho by vám měla z tohoto čísla přijít SMS nebo hovor:</string>
+  <string name="code_validation_intro">Zanedlouho by vám měla na vaše číslo přijít SMS nebo hovor.</string>
   <string name="code_validation_intro2">Níže prosím zadejte kód, který vám přišel nebo byl přečten.</string>
   <string name="code_validation_intro_manual">Zadejte prosím ověřovací kód, který jste obdrželi. Ověřovací kód může být použit pouze jednou.</string>
   <string name="hint_validation_name">Vaše jméno</string>
@@ -372,9 +372,9 @@
     <string name="err_custom_background">Při nastavení pozadí došlo k chybě. Zkuste prosím jiný obrázek.</string>
     <string name="hint_ptt">Pro nahrávání stiskněte a držte mikrofon.</string>
     <string name="msg_importing_key">Importuji osobní klíč…</string>
-    <string name="code_validation_intro_missed_call">Zanedlouho byste měli obdržet zmeškaný hovor z tohoto čísla. <b>NEZVEDEJTE PROSÍM TENTO HOVOR.</b></string>
+    <string name="code_validation_intro_missed_call">Zanedlouho byste měli na své číslo obdržet zmeškaný hovor. <b>NEZVEDEJTE PROSÍM TENTO HOVOR.</b></string>
     <string name="code_validation_intro2_missed_call">Vložte prosím posledních %d číslic z čísla, které vám zavolá.</string>
-    <string name="button_validation_fallback">Hovor nepřichází?</string>
+    <string name="button_validation_fallback">Nic nepřichází?</string>
     <string name="title_fallback">Máte potíže?</string>
     <string name="msg_fallback">Zkusíme jiný způsob, jak ověřit vaše telefonní číslo.</string>
     <string name="menu_manual_verification">Už máte kód?</string>
