@@ -33,7 +33,7 @@
   <string name="menu_offline">Přejít do režimu Offline</string>
   <string name="menu_online">Přejít do režimu Online</string>
   <string name="menu_import_key">Importovat klíč</string>
-  <string name="pref_network_settings">Nastavení sítě</string>
+  <string name="pref_network_settings">Síť</string>
   <string name="pref_network_uri">Zadat adresu serveru ručně</string>
   <string name="pref_title_network_uri">Toto nastavení má přednost před automatickou správou seznamu serverů</string>
   <string name="number_validation_intro1">Zadejte prosím své jméno, zvolte svou národní předvolbu a zadejte své mobilní telefonní číslo. Více instrukcí bude poskytnuto na následující obrazovce.</string>
@@ -100,8 +100,8 @@
   <string name="pref_title_regenerate_keypair">Použijte tuto volbu, pokud byl váš osobní klíč kompromitován</string>
   <string name="pref_regenerate_keypair_confirm">Bude vygenerován nový pár klíčů a bude přiřazen k vašemu účtu. Váš starý klíč bude zneplatněn.</string>
   <string name="contacts_list_title">Vyberte kontakt</string>
-  <string name="pref_messaging_settings">Nastavení zpráv</string>
-  <string name="pref_privacy_settings">Nastavení soukromí</string>
+  <string name="pref_messaging_settings">Zprávy</string>
+  <string name="pref_privacy_settings">Soukromí</string>
   <string name="pref_encrypt">Šifrovat zprávy</string>
   <string name="pref_encrypt_userdata">Šifrovat osobní údaje</string>
   <string name="pref_title_on_encrypt_userdata">Vaši stavovou zprávu uvidí pouze uživatelé, kteří mají vaše telefonní číslo</string>
@@ -126,7 +126,7 @@
   <string name="hint_search_full">Prohledat zprávy</string>
   <string name="hint_search_quickbox">Text ve vašich zprávách</string>
   <string name="title_search">Hledání: \"%s\"</string>
-  <string name="pref_notification_settings">Nastavení oznámení</string>
+  <string name="pref_notification_settings">Oznámení</string>
   <string name="pref_enable_notifications">Oznámení</string>
   <string name="pref_title_enable_notifications">Zobrazit oznámení o nové zprávě ve stavovém řádku</string>
   <string name="pref_ringtone">Vybrat oznamovací tón</string>
@@ -180,7 +180,7 @@
   <string name="message_user_not_found">Vypadá to, že tento kontakt není zaregistrován u Kontalku. Můžete ho přesto zkusit kontaktovat nebo mu poslat pozvánku.</string>
   <string name="yes_user_not_found">Kontaktovat uživatele přesto</string>
   <string name="no_user_not_found">Odeslat pozvánku</string>
-  <string name="pref_appearance_settings">Nastavení vzhledu</string>
+  <string name="pref_appearance_settings">Vzhled</string>
   <string name="pref_font_size">Velikost písma</string>
   <string name="menu_status">Stavová zpráva</string>
   <string name="menu_attachment">Připojit</string>
@@ -347,7 +347,7 @@
   <string name="err_playing_audio">Chyba při přehrávání zvuku.</string>
   <string name="err_playing_sdcard">Chyba při čtení z externího úložiště.</string>
   <string name="slide_to_cancel">ZRUŠTE POTÁHNUTÍM</string>
-  <string name="pref_media_settings">Nastavení médií</string>
+  <string name="pref_media_settings">Média</string>
   <string name="pref_image_resize">Měnit velikost obrázků</string>
   <string name="err_server_invalid_format">Neplatný formát adresy.</string>
   <string name="err_no_contacts_app">Nebyla nalezena žádná aplikace pro výběr kontaktů.</string>
@@ -595,5 +595,7 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="group_command_users_removed">Odebraní uživatelé:</string>
 
     <string name="status_notsubscribed">Nepovolený/blokovaný</string>
+
+    <string name="registration_poweredby">Powered by</string>
 
     </resources>
