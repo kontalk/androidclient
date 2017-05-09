@@ -90,20 +90,18 @@
                 android:id="@+id/code_validation_intro"
                 android:text="@string/code_validation_intro" />
 
-            <!-- FIXME white icon on light background -->
             <TextView
-                android:id="@+id/code_validation_sender"
+                android:id="@+id/code_validation_phone"
                 style="?android:attr/textAppearanceLarge"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:paddingLeft="20dip"
                 android:paddingRight="20dip"
                 android:paddingBottom="10dip"
-                android:layout_marginLeft="-20dp"
-                android:layout_marginStart="-20dp"
                 android:gravity="center"
-                android:drawableLeft="@drawable/ic_menu_call"
-                android:drawableStart="@drawable/ic_menu_call" />
+                android:drawablePadding="8dp"
+                android:drawableLeft="@drawable/ic_menu_call_black"
+                android:drawableStart="@drawable/ic_menu_call_black" />
 
             <Button
                 android:id="@+id/code_validation_call"
