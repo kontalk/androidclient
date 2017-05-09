@@ -263,9 +263,9 @@
     <string name="mykey_activity_title">A miña clave persoal</string>
     <string name="menu_import_key">Importa a clave</string>
     <string name="menu_manual_verification">Xa ten un código?</string>
-    <string name="code_validation_intro">Vostede debe recibir unha SMS ou unha chamada en breves momentos dende o número:</string>
+    <string name="code_validation_intro">Vostede debe recibir unha SMS ou unha chamada en breves momentos ó seu número:</string>
     <string name="code_validation_intro2">Por favor inserir o código recibido ou escoite abaixo.</string>
-    <string name="code_validation_intro_missed_call">Ou debe recibir unha chamada perdida dende número brevemente. <b>Por favor non respondea a chamada.</b></string>
+    <string name="code_validation_intro_missed_call">Ou debe recibir unha chamada perdida ó seu número brevemente. <b>Por favor non respondea a chamada.</b></string>
     <string name="code_validation_intro2_missed_call">Introduza os últimos %d díxitos do número que lle chamará.</string>
     <string name="code_validation_intro_manual">Por favor, introduce o código de verificación que recibiu. Teña en conta que un código de verificación só pode ser usado unha vez.</string>
     <string name="msg_importing_key">Importando a clave persoal…</string>
@@ -282,7 +282,7 @@
     <string name="title_user_exists">O usuario existe</string>
     <string name="err_validation_nonetwork">A conexión a Internet non está dispoñible. Kontalk require dunha conexión de Internet activa para funcionar.</string>
     <string name="err_validation_user_exists"><b> 1 O número que está a usar xa está rexistrado en Kontalk .</b>" 2  Se quere rexistrar outro dispositivo, procedendo deste xeito pode producir erros no Kontalk. Consulte a nosa documentación sobre como copiar a sua conta entre os dispositivos. Seleccione Aceptar para continuar de todos os xeitos."</string>
-    <string name="button_validation_fallback">¿Non está a recibir unha chamada?</string>
+    <string name="button_validation_fallback">¿Non está a recibir nada?</string>
     <string name="title_nonetwork">Non hai conexión a internet</string>
     <string name="title_fallback">¿Está a ter problemas?</string>
     <string name="msg_fallback">Intentaremos outra forma de comprobar o seu número de teléfono.</string>
