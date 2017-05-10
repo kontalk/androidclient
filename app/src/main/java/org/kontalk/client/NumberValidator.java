@@ -100,7 +100,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     /** Challenge the user with the caller ID presented in a user-initiated call to a given phone number. */
     public static final String CHALLENGE_CALLER_ID = "callerid";
     // default requested challenge
-    private static final String DEFAULT_CHALLENGE = CHALLENGE_CALLER_ID;
+    private static final String DEFAULT_CHALLENGE = CHALLENGE_PIN;
 
     @SuppressWarnings("WeakerAccess")
     final EndpointServer.EndpointServerProvider mServerProvider;

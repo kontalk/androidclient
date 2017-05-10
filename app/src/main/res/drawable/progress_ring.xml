@@ -2,8 +2,8 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
        android:shape="ring" android:innerRadiusRatio="3"
        android:thicknessRatio="8" android:useLevel="false">
-    <size android:width="48dip" android:height="48dip" />
+    <size android:width="80dp" android:height="80dp" />
     <gradient android:type="sweep" android:useLevel="false"
               android:startColor="#4c737373" android:centerColor="#4c737373"
-              android:centerY="0.50" android:endColor="#ffffd300" />
+              android:centerY="0.50" android:endColor="@color/app_accent" />
 </shape>
