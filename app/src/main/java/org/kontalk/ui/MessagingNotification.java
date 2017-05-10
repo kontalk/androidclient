@@ -35,7 +35,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
@@ -62,7 +61,6 @@ import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.NotificationActionReceiver;
-import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
@@ -454,9 +452,9 @@ public class MessagingNotification {
 
         // include an avatar if any
         if (contact != null) {
-            Drawable avatar = contact.getAvatar(context);
+            Bitmap avatar = contact.getAvatarBitmap(context);
             if (avatar != null)
-                builder.setLargeIcon(MessageUtils.drawableToBitmap(avatar));
+                builder.setLargeIcon(avatar);
         }
 
         // defaults (sound, vibration, lights)
@@ -727,9 +725,9 @@ public class MessagingNotification {
                         mBuilder.addPerson(personUri.toString());
 
                     // avatar
-                    Drawable avatar = contact.getAvatar(mContext);
+                    Bitmap avatar = contact.getAvatarBitmap(mContext);
                     if (avatar != null)
-                        mBuilder.setLargeIcon(MessageUtils.drawableToBitmap(avatar));
+                        mBuilder.setLargeIcon(avatar);
 
                     // phone number for call intent
                     String phoneNumber = contact.getNumber();
