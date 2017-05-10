@@ -258,11 +258,14 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         }
         else {
             final TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-            final String regionCode = tm.getSimCountryIso().toUpperCase(Locale.US);
-            CountryCode cc = new CountryCode();
-            cc.regionCode = regionCode;
-            cc.countryCode = util.getCountryCodeForRegion(regionCode);
-            mCountryCode.setSelection(ccList.getPositionForId(cc));
+            String country = tm.getSimCountryIso();
+            if (country != null) {
+                final String regionCode = country.toUpperCase(Locale.US);
+                CountryCode cc = new CountryCode();
+                cc.regionCode = regionCode;
+                cc.countryCode = util.getCountryCodeForRegion(regionCode);
+                mCountryCode.setSelection(ccList.getPositionForId(cc));
+            }
         }
 
         // listener for autoselecting country code from typed phone number

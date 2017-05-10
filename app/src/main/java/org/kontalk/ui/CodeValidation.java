@@ -221,7 +221,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
             brandView.setVisibility(View.VISIBLE);
             Ion.with(brandView)
                 .placeholder(R.drawable.progress_ring)
-                .animateLoad(R.anim.progress_indeterminate)
+                .animateLoad(R.anim.rotate_indeterminate)
                 .animateIn(0)
                 .load(brandImage)
                 .setCallback(new FutureCallback<ImageView>() {

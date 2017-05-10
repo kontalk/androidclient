@@ -62,10 +62,9 @@
                 android:id="@+id/brand"
                 android:layout_width="match_parent"
                 android:layout_height="80dp"
-                android:paddingLeft="20dip"
-                android:paddingRight="20dip"
                 android:layout_marginBottom="10dp"
                 android:visibility="gone"
+                android:scaleType="fitCenter"
                 tools:ignore="ContentDescription"/>
 
             <TextView
