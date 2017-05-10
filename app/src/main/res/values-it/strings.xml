@@ -38,7 +38,7 @@
   <string name="pref_title_network_uri">In questo modo annullerai la gestione automatica dei server</string>
   <string name="number_validation_intro1">Inserisci il tuo nome, seleziona il tuo prefisso internazionale e inserisci il tuo numero di cellulare. Ti saranno fornite ulteriori istruzioni nella prossima schermata.</string>
   <string name="number_validation_intro2">Se non puoi ricevere SMS su questo dispositivo, inserisci un altro numero che possiedi: associeremo il numero a questo dispositivo.</string>
-  <string name="code_validation_intro">Dovresti ricevere un SMS o una chiamata da questo numero a breve:</string>
+  <string name="code_validation_intro">Dovresti ricevere un SMS o una chiamata al tuo numero a breve.</string>
   <string name="code_validation_intro2">Inserisci il codice che ricevi o senti qui sotto.</string>
   <string name="code_validation_intro_manual">Inserisci il codice di verifica che hai ricevuto. Ricorda che un codice di verifica può essere usato una volta sola.</string>
   <string name="hint_validation_name">Il tuo nome</string>
@@ -373,9 +373,9 @@
     <string name="err_audio_record_noaudio">Nessun suono registrato.</string>
     <string name="msg_importing_key">Importazione chiave personale…</string>
     <string name="menu_manual_verification">Hai già un codice?</string>
-    <string name="code_validation_intro_missed_call">Dovresti ricevere a breve una chiamata persa da questo numero. <b>NON RISPONDERE ALLA CHIAMATA.</b></string>
+    <string name="code_validation_intro_missed_call">Dovresti ricevere a breve uno squillo al tuo numero. <b>NON RISPONDERE ALLA CHIAMATA.</b></string>
     <string name="code_validation_intro2_missed_call">Inserisci le ultime %d cifre del numero che ti chiamerà.</string>
-    <string name="button_validation_fallback">Non ricevi la chiamata?</string>
+    <string name="button_validation_fallback">Non ricevi nulla?</string>
     <string name="title_fallback">Problemi?</string>
     <string name="msg_fallback">Proveremo un altro modo per verificare il tuo numero di telefono.</string>
     <string name="confirm_will_delete_messages">I messaggi selezionati saranno eliminati.</string>
@@ -590,5 +590,7 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
     <string name="notify_text_decryption_error">Decifratura fallita</string>
     <string name="group_command_users_added">Utenti aggiunti:</string>
     <string name="group_command_users_removed">Utenti rimossi:</string>
+
+    <string name="registration_poweredby">Offerto da</string>
 
     </resources>
