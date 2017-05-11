@@ -439,6 +439,25 @@ public abstract class MediaStorage {
         return mime;
     }
 
+    /** Guesses the MIME type of an URL. */
+    public static String getType(String url) {
+        String mime;
+
+        // the following methods actually use the same underlying implementation
+        // (libcore.net.MimeUtils), but that could change in the future so no
+        // hurt in trying them all just in case.
+        // Lowercasing the filename seems to help in detecting the correct MIME.
+
+        // try WebKit detection
+        mime = MimeTypeMap.getSingleton()
+            .getMimeTypeFromExtension(MimeTypeMap
+                .getFileExtensionFromUrl(url).toLowerCase());
+        if (mime == null)
+            // try Java detection
+            mime = URLConnection.guessContentTypeFromName(url.toLowerCase());
+        return mime;
+    }
+
     public static File resizeImage(Context context, Uri uri, int maxSize) throws IOException {
         return resizeImage(context, uri, maxSize, maxSize, COMPRESSION_QUALITY);
     }
