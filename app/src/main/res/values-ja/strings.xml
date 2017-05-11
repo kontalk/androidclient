@@ -38,7 +38,7 @@
   <string name="pref_title_network_uri">サーバーリスト自動管理を上書きします</string>
   <string name="number_validation_intro1">あなたの名前を入力し、お住まいの国コードを選択し、あなたの携帯電話番号を入力してください。次の指示は、次の画面で提供されます。</string>
   <string name="number_validation_intro2">この端末で着信またはSMSを受信できない場合は、携帯電話の番号を入力してください。その番号をこの端末に関連付けます。</string>
-  <string name="code_validation_intro">一度この番号で SMS か電話を受け取る必要があります:</string>
+  <string name="code_validation_intro">一度この番号で SMS か電話を受け取る必要があります。</string>
   <string name="code_validation_intro2">あなたが受け取ったか聞いたコードを下に入力してください。</string>
   <string name="code_validation_intro_manual">あなたが受け取った検証コードを入力してください。検証コードは一度しか使用できないことにご注意ください。</string>
   <string name="hint_validation_name">あなたの名前</string>
@@ -374,7 +374,7 @@ http://kontalk.org/</string>
     <string name="hint_ptt">押し続けると録音します。</string>
     <string name="msg_importing_key">秘密鍵のインポート中…</string>
     <string name="menu_manual_verification">すでにコードがありますか?</string>
-    <string name="code_validation_intro_missed_call">一度この番号で不在着信を受ける必要があります。 <b>この着信には応答しないでください。</b></string>
+    <string name="code_validation_intro_missed_call">一度この番号で不在着信を受ける必要があります。 <b>この着信には応答しないでください </b></string>
     <string name="code_validation_intro2_missed_call">着信される番号の最後の %d 桁を入力してください。</string>
     <string name="button_validation_fallback">着信していませんか?</string>
     <string name="title_fallback">問題がありますか?</string>
