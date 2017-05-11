@@ -343,10 +343,6 @@ class MessageListener extends MessageCenterPacketListener {
                                 filename = ImageComponent.buildMediaFilename(msgId, previewMime);
                             }
 
-                            else if (VCardComponent.supportsMimeType(previewMime)) {
-                                filename = VCardComponent.buildMediaFilename(msgId, previewMime);
-                            }
-
                             try {
                                 if (filename != null) previewFile =
                                     MediaStorage.writeInternalMedia(getContext(),
