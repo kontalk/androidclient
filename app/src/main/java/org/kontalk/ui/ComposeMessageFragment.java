@@ -1034,7 +1034,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         boolean contactEnabled = contact != null && contact.getId() > 0;
 
         if (mCallMenu != null) {
-            Context context = getActivity();
+            Context context = getContext();
             // FIXME what about VoIP?
             if (context != null && !context.getPackageManager().hasSystemFeature(
                     PackageManager.FEATURE_TELEPHONY)) {
@@ -1048,24 +1048,27 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         }
 
         if (mBlockMenu != null) {
-            Context context = getActivity();
-            if (context != null && Authenticator.isSelfJID(context, mUserJID)) {
-                mBlockMenu.setVisible(false).setEnabled(false);
-                mUnblockMenu.setVisible(false).setEnabled(false);
-            }
-            else if (contact != null) {
-                // block/unblock
-                boolean blocked = contact.isBlocked();
-                if (blocked)
-                    // show warning if blocked
-                    showWarning(getText(R.string.warning_user_blocked), null, WarningType.WARNING);
+            Context context = getContext();
+            if (context != null) {
+                if (Authenticator.isSelfJID(context, mUserJID)) {
+                    mBlockMenu.setVisible(false).setEnabled(false);
+                    mUnblockMenu.setVisible(false).setEnabled(false);
+                }
+                else if (contact != null) {
+                    // block/unblock
+                    boolean blocked = contact.isBlocked();
+                    if (blocked)
+                        // show warning if blocked
+                        showWarning(context.getText(R.string.warning_user_blocked),
+                            null, WarningType.WARNING);
 
-                mBlockMenu.setVisible(!blocked).setEnabled(!blocked);
-                mUnblockMenu.setVisible(blocked).setEnabled(blocked);
-            }
-            else {
-                mBlockMenu.setVisible(true).setEnabled(true);
-                mUnblockMenu.setVisible(true).setEnabled(true);
+                    mBlockMenu.setVisible(!blocked).setEnabled(!blocked);
+                    mUnblockMenu.setVisible(blocked).setEnabled(blocked);
+                }
+                else {
+                    mBlockMenu.setVisible(true).setEnabled(true);
+                    mUnblockMenu.setVisible(true).setEnabled(true);
+                }
             }
         }
     }
