@@ -31,6 +31,7 @@ import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 import java.util.Iterator;
 
 import org.spongycastle.openpgp.PGPException;
@@ -388,9 +389,9 @@ public class PersonalKey implements Parcelable {
         throw new PGPException("invalid key data");
     }
 
-    public static PersonalKey create() throws IOException {
+    public static PersonalKey create(Date timestamp) throws IOException {
         try {
-            PGPDecryptedKeyPairRing kp = PGP.create();
+            PGPDecryptedKeyPairRing kp = PGP.create(timestamp);
             return new PersonalKey(kp, null);
         }
         catch (Exception e) {

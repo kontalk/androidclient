@@ -20,6 +20,9 @@ package org.kontalk.service;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.Date;
+
+import com.instacart.library.truetime.TrueTime;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -58,6 +61,9 @@ public class KeyPairGeneratorService extends Service {
 
     public static final String EXTRA_KEY = "org.kontalk.keypair.KEY";
     public static final String EXTRA_FOREGROUND = "org.kontalk.keypair.FOREGROUND";
+
+    private static final String NTP_DEFAULT_SERVER = "time.google.com";
+    private static final int NTP_MAX_RETRIES = 3;
 
     private GeneratorThread mThread;
     private volatile PersonalKey mKey;
@@ -137,8 +143,8 @@ public class KeyPairGeneratorService extends Service {
     private static final class GeneratorThread extends Thread {
         private WeakReference<KeyPairGeneratorService> s;
 
-        public GeneratorThread(KeyPairGeneratorService service) {
-            s = new WeakReference<KeyPairGeneratorService>(service);
+        GeneratorThread(KeyPairGeneratorService service) {
+            s = new WeakReference<>(service);
         }
 
         @Override
@@ -148,8 +154,11 @@ public class KeyPairGeneratorService extends Service {
 
             KeyPairGeneratorService service = s.get();
             if (service != null) {
+                // we need the real time from the Internet
+                Date timestamp = getRealtime(service);
+
                 try {
-                    PersonalKey key = PersonalKey.create();
+                    PersonalKey key = PersonalKey.create(timestamp);
                     Log.v("KeyPair", "key pair generated: " + key);
                     service.keypairGenerated(key);
                 }
@@ -161,10 +170,39 @@ public class KeyPairGeneratorService extends Service {
                 service.stopForeground();
             }
         }
+
+        private Date getRealtime(Context context) {
+            try {
+                return TrueTime.now();
+            }
+            catch (IllegalStateException e) {
+                int retryCount = 0;
+                while (retryCount < NTP_MAX_RETRIES) {
+                    try {
+                        TrueTime.build()
+                            .withSharedPreferences(context)
+                            .withNtpHost(NTP_DEFAULT_SERVER)
+                            .initialize();
+                        break;
+                    }
+                    catch (IOException ioe) {
+                        retryCount++;
+                    }
+                }
+
+                try {
+                    return TrueTime.now();
+                }
+                catch (IllegalStateException ise) {
+                    Log.w("KeyPair", "unable to retrieve real time from network, using system time");
+                    return new Date();
+                }
+            }
+        }
     }
 
     public interface PersonalKeyRunnable {
-        public void run(PersonalKey key);
+        void run(PersonalKey key);
     }
 
     public final static class KeyGeneratorReceiver extends BroadcastReceiver {

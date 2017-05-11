@@ -154,7 +154,7 @@ public class PGP {
     }
 
     /** Creates an ECDSA/ECDH key pair. */
-    public static PGPDecryptedKeyPairRing create()
+    public static PGPDecryptedKeyPairRing create(Date timestamp)
             throws NoSuchAlgorithmException, NoSuchProviderException, PGPException, InvalidAlgorithmParameterException {
 
         KeyPairGenerator gen;
@@ -163,17 +163,17 @@ public class PGP {
         gen = KeyPairGenerator.getInstance("RSA", PROVIDER);
         gen.initialize(RSA_KEY_LENGTH);
 
-        authKp = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, gen.generateKeyPair(), new Date());
+        authKp = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, gen.generateKeyPair(), timestamp);
 
         gen = KeyPairGenerator.getInstance("ECDH", PROVIDER);
         gen.initialize(new ECGenParameterSpec(EC_CURVE));
 
-        encryptKp = new JcaPGPKeyPair(PGPPublicKey.ECDH, gen.generateKeyPair(), new Date());
+        encryptKp = new JcaPGPKeyPair(PGPPublicKey.ECDH, gen.generateKeyPair(), timestamp);
 
         gen = KeyPairGenerator.getInstance("ECDSA", PROVIDER);
         gen.initialize(new ECGenParameterSpec(EC_CURVE));
 
-        signKp = new JcaPGPKeyPair(PGPPublicKey.ECDSA, gen.generateKeyPair(), new Date());
+        signKp = new JcaPGPKeyPair(PGPPublicKey.ECDSA, gen.generateKeyPair(), timestamp);
 
         return new PGPDecryptedKeyPairRing(authKp, signKp, encryptKp);
     }
