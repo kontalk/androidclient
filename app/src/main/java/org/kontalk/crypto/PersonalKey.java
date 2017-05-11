@@ -394,9 +394,7 @@ public class PersonalKey implements Parcelable {
             return new PersonalKey(kp, null);
         }
         catch (Exception e) {
-            IOException io = new IOException("unable to generate keypair");
-            io.initCause(e);
-            throw io;
+            throw new IOException("unable to generate keypair", e);
         }
     }
 
@@ -447,7 +445,6 @@ public class PersonalKey implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        // TODO write byte arrays
         try {
             PGP.toParcel(mPair, dest);
         }
