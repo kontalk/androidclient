@@ -146,6 +146,7 @@ dependencies {
     compile 'com.github.castorflex.smoothprogressbar:library:1.1.0'
     compile 'com.nispok:snackbar:2.11.0'
     compile 'com.koushikdutta.ion:ion:2.1.9'
+    compile 'com.github.instacart.truetime-android:library:3.0'
     compile 'com.github.daniele-athome:FloatingActionButton:b976d71658'
     compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'com.github.vlivanov:ListViewVariants:f606578467'
