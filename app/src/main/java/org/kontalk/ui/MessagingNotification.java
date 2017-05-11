@@ -91,6 +91,7 @@ public class MessagingNotification {
         CommonColumns.ENCRYPTED,
         Groups.GROUP_JID,
         Groups.SUBJECT,
+        CommonColumns.TIMESTAMP,
     };
 
     private static final String[] THREADS_UNREAD_PROJECTION =
@@ -103,6 +104,7 @@ public class MessagingNotification {
         CommonColumns.UNREAD,
         Groups.GROUP_JID,
         Groups.SUBJECT,
+        CommonColumns.TIMESTAMP,
     };
 
     private static final String MESSAGES_UNREAD_SELECTION =
@@ -243,6 +245,7 @@ public class MessagingNotification {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context.getApplicationContext());
         Set<Uri> conversationIds = new HashSet<>(unread);
+        long latestTimestamp = 0;
 
         if (supportsBigNotifications()) {
             NotificationGenerator ngen = new NotificationGenerator(context, builder);
@@ -258,11 +261,13 @@ public class MessagingNotification {
                 boolean encrypted = c.getInt(5) != 0;
                 String groupJid = c.getString(6);
                 String groupSubject = c.getString(7);
+                long timestamp = c.getLong(8);
 
                 // store conversation id for intents
                 conversationIds.add(ContentUris.withAppendedId(Threads.CONTENT_URI, id));
 
                 ngen.addMessage(peer, mime, content, attMime, encrypted, groupJid, groupSubject);
+                latestTimestamp = Math.max(latestTimestamp, timestamp);
             }
             c.close();
 
@@ -326,6 +331,9 @@ public class MessagingNotification {
                     c.getString(6),
                     c.getString(7)
                 );
+                // actually we don't need to check for max since conversations were selected
+                // in timestamp order, but whatever...
+                latestTimestamp = Math.max(latestTimestamp, c.getLong(8));
                 conversationIds.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
             }
             c.close();
@@ -343,6 +351,10 @@ public class MessagingNotification {
             builder.setContentText(accumulator.getText());
             builder.setContentIntent(accumulator.getPendingIntent());
         }
+
+        // shouldn't happen, but let's check it anyway
+        if (latestTimestamp > 0)
+            builder.setWhen(latestTimestamp);
 
         // build on delete intent for conversations
         Intent notificationDeleteIntent = new Intent(context, NotificationActionReceiver.class);
