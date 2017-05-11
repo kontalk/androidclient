@@ -339,11 +339,11 @@ class MessageListener extends MessageCenterPacketListener {
 
                             String filename = null;
 
-                            if (ImageComponent.supportsMimeType(mime)) {
+                            if (ImageComponent.supportsMimeType(previewMime)) {
                                 filename = ImageComponent.buildMediaFilename(msgId, previewMime);
                             }
 
-                            else if (VCardComponent.supportsMimeType(mime)) {
+                            else if (VCardComponent.supportsMimeType(previewMime)) {
                                 filename = VCardComponent.buildMediaFilename(msgId, previewMime);
                             }
 
