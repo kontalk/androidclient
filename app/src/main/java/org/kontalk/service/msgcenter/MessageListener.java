@@ -339,12 +339,8 @@ class MessageListener extends MessageCenterPacketListener {
 
                             String filename = null;
 
-                            if (ImageComponent.supportsMimeType(mime)) {
+                            if (ImageComponent.supportsMimeType(previewMime)) {
                                 filename = ImageComponent.buildMediaFilename(msgId, previewMime);
-                            }
-
-                            else if (VCardComponent.supportsMimeType(mime)) {
-                                filename = VCardComponent.buildMediaFilename(msgId, previewMime);
                             }
 
                             try {
@@ -361,7 +357,19 @@ class MessageListener extends MessageCenterPacketListener {
 
                         MessageComponent<?> attachment = null;
 
+                        if (mime == null) {
+                            // try to guess MIME from URL
+                            mime = MediaStorage.getType(fetchUrl);
+                        }
+
                         if (ImageComponent.supportsMimeType(mime)) {
+                            if (previewFile == null) {
+                                // no bits of binary, generate a filename anyway so the thumbnail will be generated
+                                // from the original file once downloaded
+                                String filename = ImageComponent.buildMediaFilename(msgId, mime);
+                                previewFile = MediaStorage.getInternalMediaFile(getContext(), filename);
+                            }
+
                             msg.clearComponents();
                             // cleartext only for now
                             attachment = new ImageComponent(mime, previewFile, null, fetchUrl, length,
