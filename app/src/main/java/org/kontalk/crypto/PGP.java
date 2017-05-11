@@ -27,8 +27,8 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.Provider;
 import java.security.PublicKey;
-import java.security.Security;
 import java.security.SignatureException;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Date;
@@ -83,7 +83,7 @@ import org.kontalk.util.MessageUtils;
 public class PGP {
 
     /** Security provider: Spongy Castle. */
-    public static final String PROVIDER = "SC";
+    public static Provider PROVIDER;
 
     /** Default EC curve used. */
     private static final String EC_CURVE = "P-256";
@@ -135,8 +135,9 @@ public class PGP {
     }
 
     public static void registerProvider() {
-        // register spongy castle provider
-        Security.insertProviderAt(new BouncyCastleProvider(), 1);
+        // create spongy castle provider
+        // do not register it as can cause issues on some devices
+        PROVIDER = new BouncyCastleProvider();
         try {
             // apply RNG fixes
             PRNGFixes.apply();
