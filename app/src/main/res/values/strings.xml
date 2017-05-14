@@ -69,6 +69,7 @@
     <string name="message_text_copied">Message text copied.</string>
     <string name="call">Call</string>
     <string name="mark_read">Read</string>
+    <string name="reply">Reply</string>
     <string name="view_contact">View contact</string>
     <string name="view_conversation">View chat</string>
     <string name="delete_thread">Delete chat</string>
@@ -201,6 +202,7 @@
     <string name="menu_refresh">Refresh</string>
     <string name="menu_invite">Invite users</string>
     <string name="title_error">Error</string>
+    <string name="person_me">Me</string>
     <string name="msg_do_refresh">Use Menu > Refresh to update contact list.</string>
     <string name="msg_sync_progress">Refreshing contacts list&#8230;</string>
     <string name="err_sync_failed">Unable to refresh contacts list. Please retry later.</string>

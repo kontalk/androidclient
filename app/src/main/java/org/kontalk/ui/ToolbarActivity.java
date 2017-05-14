@@ -83,6 +83,7 @@ public abstract class ToolbarActivity extends AppCompatActivity {
                     .addNextIntentWithParentStack(upIntent)
                     // Navigate up to the closest parent
                     .startActivities();
+                finish();
             }
             else {
                 // This activity is part of this app's task, so simply
