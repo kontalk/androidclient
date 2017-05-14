@@ -605,4 +605,6 @@
     <string name="person_me">Ја</string>
     <string name="registration_poweredby">Покреће</string>
 
+    <string name="audio_duration_max">%1$s / %2$s</string>
+
     </resources>
