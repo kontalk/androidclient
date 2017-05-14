@@ -61,6 +61,7 @@ import org.kontalk.crypto.PersonalKey;
 import org.kontalk.message.AttachmentComponent;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.DefaultAttachmentComponent;
 import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.GroupComponent;
 import org.kontalk.message.ImageComponent;
@@ -633,12 +634,12 @@ public final class MessageUtils {
         // selective components detection
 
         if (checkAttachment) {
-
             @SuppressWarnings("unchecked")
             Class<AttachmentComponent>[] tryComponents = new Class[] {
                 ImageComponent.class,
                 VCardComponent.class,
                 AudioComponent.class,
+                DefaultAttachmentComponent.class,
             };
 
             for (Class<AttachmentComponent> klass : tryComponents) {
@@ -658,9 +659,7 @@ public final class MessageUtils {
                     // only one attachment is supported
                     break;
                 }
-
             }
-
         }
 
         values.put(Messages.BODY_CONTENT, content);
