@@ -571,6 +571,8 @@
 
     <string name="registration_poweredby">Powered by</string>
 
+    <string name="audio_duration_max">%1$s / %2$s</string>
+
     <!-- contact name, group subject -->
     <string name="notification_group_title">%1$s @ %2$s</string>
 

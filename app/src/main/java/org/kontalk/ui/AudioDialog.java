@@ -78,6 +78,9 @@ public class AudioDialog extends AlertDialog {
     private static final long MAX_AUDIO_DURATION = TimeUnit.MINUTES.toMillis(5);
     private static final int MAX_PROGRESS = 100;
 
+    static final String MAX_AUDIO_DURATION_TEXT = DateUtils
+        .formatElapsedTime(MAX_AUDIO_DURATION / 1000);
+
     private CircularSeekBar mProgressBar;
     ObjectAnimator mProgressBarAnimator;
     ImageView mImageButton;
@@ -484,7 +487,7 @@ public class AudioDialog extends AlertDialog {
                         }
                         else if (event.getAction() == android.view.MotionEvent.ACTION_MOVE && (mStatus == STATUS_PLAYING || mStatus == STATUS_PAUSED)) {
                             mPlayerSeekTo = (int) (progressBar.getProgress() / mTimeCircle);
-                            mTimeTxt.setText(DateUtils.formatElapsedTime(mPlayerSeekTo / 1000));
+                            setDurationText(mPlayerSeekTo);
                         }
                         return false;
                     }
@@ -498,7 +501,7 @@ public class AudioDialog extends AlertDialog {
             public void onAnimationUpdate(final ValueAnimator animation) {
                 progressBar.setProgress((Float) animation.getAnimatedValue());
                 long time = animation.getCurrentPlayTime();
-                mTimeTxt.setText(DateUtils.formatElapsedTime(time / 1000));
+                setDurationText(time);
             }
         });
         progressBar.setProgress(progress);
@@ -506,6 +509,15 @@ public class AudioDialog extends AlertDialog {
         if (progress > 0) {
             mProgressBarAnimator.setCurrentPlayTime((long) (progress * MAX_AUDIO_DURATION / 100));
         }
+    }
+
+    void setDurationText(long millis) {
+        long duration = mData.getPlayerDuration();
+        mTimeTxt.setText(mTimeTxt.getContext().getString(R.string.audio_duration_max,
+            DateUtils.formatElapsedTime(millis / 1000),
+            // recording or playing?
+            duration < 0 ? MAX_AUDIO_DURATION_TEXT :
+                DateUtils.formatElapsedTime(duration / 1000)));
     }
 
     public static boolean isSupported(Context context) {
