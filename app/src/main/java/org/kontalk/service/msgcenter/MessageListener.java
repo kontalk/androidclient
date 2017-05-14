@@ -58,6 +58,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.data.GroupInfo;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.DefaultAttachmentComponent;
 import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.GroupComponent;
 import org.kontalk.message.ImageComponent;
@@ -386,6 +387,12 @@ class MessageListener extends MessageCenterPacketListener {
                         else if (AudioComponent.supportsMimeType(mime)) {
                             msg.clearComponents();
                             attachment = new AudioComponent(mime, null, fetchUrl, length,
+                                encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+                        }
+
+                        else {
+                            msg.clearComponents();
+                            attachment = new DefaultAttachmentComponent(mime, null, fetchUrl, length,
                                 encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
                         }
 
