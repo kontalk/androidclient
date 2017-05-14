@@ -82,9 +82,12 @@ public class ComposerBar extends RelativeLayout implements
     private static final String TAG = ComposeMessage.TAG;
 
     private static final int MIN_RECORDING_TIME = 900;
-    private static final long MAX_RECORDING_TIME = TimeUnit.MINUTES.toMillis(2);
+    static final long MAX_RECORDING_TIME = TimeUnit.MINUTES.toMillis(2);
     private static final int AUDIO_RECORD_VIBRATION = 20;
     private static final int AUDIO_RECORD_ANIMATION = 300;
+
+    private static final String MAX_RECORDING_TIME_TEXT = DateUtils
+        .formatElapsedTime(MAX_RECORDING_TIME / 1000);
 
     private Context mContext;
 
@@ -105,28 +108,28 @@ public class ComposerBar extends RelativeLayout implements
     private ImageButton mEmojiButton;
     private EmojiconsView mEmojiView;
     private boolean mEmojiVisible;
-    private KeyboardAwareRelativeLayout mRootView;
+    KeyboardAwareRelativeLayout mRootView;
     private WindowManager.LayoutParams mWindowLayoutParams;
 
     // for PTT message
-    private Handler mHandler;
+    Handler mHandler;
     private Runnable mMediaPlayerUpdater;
-    private View mAudioButton;
-    private View mRecordLayout;
-    private View mSlideText;
+    View mAudioButton;
+    View mRecordLayout;
+    View mSlideText;
     private float mDraggingX = -1;
     private float mDistMove;
     private boolean mIsRecordingAudio;
     private TextView mRecordText;
     private File mRecordFile;
     private MediaRecorder mRecord;
-    private long startTime;
-    private long elapsedTime;
+    long startTime;
+    long elapsedTime;
     private boolean mCheckMove;
     private int mOrientation;
     private Vibrator mVibrator;
     // initialized in onCreate
-    private int mMoveThreshold;
+    int mMoveThreshold;
     private int mMoveOffset;
     private int mMoveOffset2;
 
@@ -430,12 +433,12 @@ public class ComposerBar extends RelativeLayout implements
         return mTextEntry.requestFocus(direction, previouslyFocusedRect);
     }
 
-    private void animateRecordFrame() {
+    void animateRecordFrame() {
         int screenWidth = SystemUtils.getDisplaySize(mContext).x;
 
         if (mIsRecordingAudio) {
             mRecordLayout.setVisibility(View.VISIBLE);
-            mRecordText.setText(DateUtils.formatElapsedTime(0));
+            setRecordText(0);
 
             FrameLayout.LayoutParams params =
                 (FrameLayout.LayoutParams) mSlideText.getLayoutParams();
@@ -543,7 +546,7 @@ public class ComposerBar extends RelativeLayout implements
         }
     }
 
-    private void stopRecording(boolean send) {
+    void stopRecording(boolean send) {
         mIsRecordingAudio = false;
         unlockScreen();
         enableTextEntry();
@@ -629,7 +632,7 @@ public class ComposerBar extends RelativeLayout implements
             @Override
             public void run() {
                 elapsedTime = SystemClock.uptimeMillis() - startTime;
-                mRecordText.setText(DateUtils.formatElapsedTime(elapsedTime / 1000));
+                setRecordText(elapsedTime);
                 mHandler.postDelayed(this, 100);
                 if (elapsedTime >= MAX_RECORDING_TIME) {
                     mAudioButton.setPressed(false);
@@ -639,6 +642,12 @@ public class ComposerBar extends RelativeLayout implements
             }
         };
         mHandler.postDelayed(mMediaPlayerUpdater, 100);
+    }
+
+    void setRecordText(long millis) {
+        mRecordText.setText(mContext.getString(R.string.audio_duration_max,
+            DateUtils.formatElapsedTime(millis / 1000),
+            MAX_RECORDING_TIME_TEXT));
     }
 
     private void submitSend() {
