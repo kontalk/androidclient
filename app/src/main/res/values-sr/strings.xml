@@ -38,7 +38,7 @@
   <string name="pref_title_network_uri">Ово ће надјачати аутоматско управљање списком сервера</string>
   <string name="number_validation_intro1">Унесите ваше име, изаберите кôд земље и унесите број вашег телефона. Додатна упутства су на следећем екрану.</string>
   <string name="number_validation_intro2">Ако на овом уређају не можете да примате СМС или позиве, унесите број који поседујете: придружићемо тај број овом уређају.</string>
-  <string name="code_validation_intro">Требало би ускоро да примите СМС или позив са овог броја:</string>
+  <string name="code_validation_intro">Требало би ускоро да примите СМС или позив.</string>
   <string name="code_validation_intro2">Испод унесите кôд који добијете односно чујете.</string>
   <string name="code_validation_intro_manual">Унесите кôд који сте добили. Знајте да кôд може бити употребљен само једном.</string>
   <string name="hint_validation_name">Ваше име</string>
@@ -358,7 +358,7 @@
     <string name="error_delete_message">Не могу да обришем поруку.</string>
     <string name="confirm_will_delete_messages">Изабране поруке ће бити обрисане.</string>
     <string name="title_user_exists">Корисник постоји</string>
-    <string name="button_validation_fallback">Нисте добили позив?</string>
+    <string name="button_validation_fallback">Ништа нисте добили?</string>
     <string name="title_nonetwork">Нема везе са интернетом</string>
     <string name="title_fallback">Имате проблема?</string>
     <string name="pref_help">Помоћ</string>
@@ -377,7 +377,7 @@
     </plurals>
 
 <string name="app_name_offline">Контак (ван везе)</string>
-    <string name="code_validation_intro_missed_call">Требало би ускоро да примите пропуштен позив са овог броја. <b>НЕ ЈАВЉАЈТЕ СЕ НА ПОЗИВ.</b></string>
+    <string name="code_validation_intro_missed_call">Требало би ускоро да примите пропуштен позив. <b>НЕ ЈАВЉАЈТЕ СЕ НА ПОЗИВ.</b></string>
     <string name="code_validation_intro2_missed_call">Унесите последње %d цифре броја који ће вас позвати.</string>
     <string name="title_confirm_cancel_registration">Отказати пријаву?</string>
     <string name="confirm_cancel_registration">Ако се вратите назад, почећете пријаву испочетка. Ако морате да се пребаците на другу апликацију, користите главно дугме уређаја.</string>
@@ -601,4 +601,8 @@
 
     <string name="delete_threads_groups_disclaimer">Историјат групних ћаскања ће бити обрисан само ако је опција изнад укључена.</string>
     <string name="create_group_disclaimer">Имајте на уму да се сви чланови морају међусобно познавати да би могли да ћаскају.</string>
+    <string name="reply">Одговори</string>
+    <string name="person_me">Ја</string>
+    <string name="registration_poweredby">Покреће</string>
+
     </resources>
