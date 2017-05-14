@@ -39,6 +39,7 @@ import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.os.Build;
 import android.support.v4.app.NotificationCompat.InboxStyle;
 import android.support.v4.app.NotificationCompat.Style;
 import android.support.v4.app.NotificationManagerCompat;
@@ -128,6 +129,7 @@ public class MessagingNotification {
 
     /** Notification action intents stuff. */
     public static final String ACTION_NOTIFICATION_DELETED = "org.kontalk.ACTION_NOTIFICATION_DELETED";
+    public static final String ACTION_NOTIFICATION_REPLY = "org.kontalk.ACTION_NOTIFICATION_REPLY";
     public static final String ACTION_NOTIFICATION_MARK_READ = "org.kontalk.ACTION_NOTIFICATION_MARK_READ";
 
     /** This class is not instanciable. */
@@ -435,6 +437,7 @@ public class MessagingNotification {
         final String groupJid;
         final String groupSubject;
 
+        final Set<String> allPeers = new HashSet<>();
         CharSequence lastContent;
 
         NotificationConversation(List<ConversationMessage> content, CharSequence lastContent, String groupJid, String groupSubject) {
@@ -442,6 +445,11 @@ public class MessagingNotification {
             this.lastContent = lastContent;
             this.groupJid = groupJid;
             this.groupSubject = groupSubject;
+        }
+
+        public void addContent(ConversationMessage message) {
+            this.content.add(message);
+            this.allPeers.add(message.peer);
         }
     }
 
@@ -580,7 +588,7 @@ public class MessagingNotification {
                 }
             }
 
-            conv.content.add(new NotificationConversation.ConversationMessage(peer, textContent, timestamp));
+            conv.addContent(new NotificationConversation.ConversationMessage(peer, textContent, timestamp));
             conv.lastContent = textContent;
         }
 
@@ -626,18 +634,21 @@ public class MessagingNotification {
                                 mContext.getString(R.string.group_untitled) : conv.groupSubject));
                     }
 
-                    // add person to notification
-                    Uri personUri = contact.getUri();
-                    if (personUri == null && contact.getNumber() != null) {
-                        // no contact uri available, try phone number lookup
-                        try {
-                            personUri = Uri.parse("tel:" + contact.getNumber());
+                    // add persons to notification
+                    for (String peer : conv.allPeers) {
+                        Contact lContact = Contact.findByUserId(mContext, peer);
+                        Uri personUri = lContact.getUri();
+                        if (personUri == null && lContact.getNumber() != null) {
+                            // no contact uri available, try phone number lookup
+                            try {
+                                personUri = Uri.parse("tel:" + lContact.getNumber());
+                            }
+                            catch (Exception ignored) {
+                            }
                         }
-                        catch (Exception ignored) {
-                        }
+                        if (personUri != null)
+                            mBuilder.addPerson(personUri.toString());
                     }
-                    if (personUri != null)
-                        mBuilder.addPerson(personUri.toString());
 
                     if (btext.length() > 0)
                         btext.append(", ");
@@ -682,12 +693,10 @@ public class MessagingNotification {
                 StringBuilder allContent = new StringBuilder();
                 CharSequence last = conv.lastContent;
 
-                Contact contact = null;
                 String name = null;
-
                 style = new NotificationCompat.MessagingStyle(mContext.getString(R.string.person_me));
                 for (NotificationConversation.ConversationMessage message : content) {
-                    contact = Contact.findByUserId(mContext, message.peer);
+                    Contact contact = Contact.findByUserId(mContext, message.peer);
                     name = contact.getDisplayName();
 
                     ((NotificationCompat.MessagingStyle) style)
@@ -695,7 +704,47 @@ public class MessagingNotification {
                     allContent.append(message);
                 }
 
-                // contact and name now contains data from the latest message
+                // name now contains data from the latest message
+
+                PendingIntent callPendingIntent = null;
+
+                // add people data
+                for (String peer : conv.allPeers) {
+                    Contact contact = Contact.findByUserId(mContext, peer);
+                    Uri personUri = contact.getUri();
+                    if (personUri == null && contact.getNumber() != null) {
+                        // no contact uri available, try phone number lookup
+                        try {
+                            personUri = Uri.parse("tel:" + contact.getNumber());
+                        }
+                        catch (Exception ignored) {
+                        }
+                    }
+                    if (personUri != null)
+                        mBuilder.addPerson(personUri.toString());
+
+                    // avatar (non-group)
+                    if (conv.groupJid == null) {
+                        Bitmap avatar = contact.getAvatarBitmap(mContext);
+                        if (avatar != null)
+                            mBuilder.setLargeIcon(avatar);
+
+                        // phone number for call intent
+                        String phoneNumber = contact.getNumber();
+                        if (phoneNumber != null) {
+                            Intent callIntent = SystemUtils.externalIntent(Intent.ACTION_CALL,
+                                Uri.parse("tel:" + phoneNumber));
+                            callPendingIntent = PendingIntent.getActivity(mContext, 0, callIntent, 0);
+                        }
+                    }
+                }
+
+                // group avatar
+                if (conv.groupJid != null) {
+                    mBuilder.setLargeIcon(MessageUtils
+                        .drawableToBitmap(ContextCompat
+                            .getDrawable(mContext, R.drawable.ic_default_group)));
+                }
 
                 // ticker
                 if (conv.groupJid != null) {
@@ -722,42 +771,6 @@ public class MessagingNotification {
                     mContext.getResources().getQuantityString(R.plurals.unread_messages, unread, unread)
                     : allContent;
 
-                PendingIntent callPendingIntent = null;
-
-                if (contact != null) {
-                    Uri personUri = contact.getUri();
-                    if (personUri == null && contact.getNumber() != null) {
-                        // no contact uri available, try phone number lookup
-                        try {
-                            personUri = Uri.parse("tel:" + contact.getNumber());
-                        }
-                        catch (Exception ignored) {
-                        }
-                    }
-                    if (personUri != null)
-                        mBuilder.addPerson(personUri.toString());
-
-                    // avatar
-                    if (conv.groupJid != null) {
-                        mBuilder.setLargeIcon(MessageUtils
-                            .drawableToBitmap(ContextCompat
-                                .getDrawable(mContext, R.drawable.ic_default_group)));
-                    }
-                    else {
-                        Bitmap avatar = contact.getAvatarBitmap(mContext);
-                        if (avatar != null)
-                            mBuilder.setLargeIcon(avatar);
-                    }
-
-                    // phone number for call intent
-                    String phoneNumber = contact.getNumber();
-                    if (phoneNumber != null) {
-                        Intent callIntent = SystemUtils.externalIntent(Intent.ACTION_CALL,
-                            Uri.parse("tel:" + phoneNumber));
-                        callPendingIntent = PendingIntent.getActivity(mContext, 0, callIntent, 0);
-                    }
-                }
-
                 // mark as read pending intent
                 // TODO this should also be used for messages from a single group
                 Intent markReadIntent = new Intent(ACTION_NOTIFICATION_MARK_READ,
@@ -765,8 +778,24 @@ public class MessagingNotification {
                 PendingIntent readPendingIntent = PendingIntent.getBroadcast(mContext, 0,
                     markReadIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    // pending intent will start a broadcast receiver
+                    Intent replyIntent = new Intent(ACTION_NOTIFICATION_REPLY, firstThreadUri,
+                        mContext, NotificationActionReceiver.class);
+                    PendingIntent replyPendingIntent = PendingIntent
+                        .getBroadcast(mContext, 0, replyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                    // reply action
+                    mBuilder.addAction(new android.support.v4.app.NotificationCompat
+                        .Action.Builder(R.drawable.ic_menu_reply, mContext.getString(R.string.reply), replyPendingIntent)
+                        .addRemoteInput(NotificationActionReceiver.buildReplyInput(mContext))
+                        .build()
+                    );
+                }
+
                 mBuilder.addAction(R.drawable.ic_menu_check, mContext.getString(R.string.mark_read), readPendingIntent);
-                mBuilder.addAction(R.drawable.ic_menu_call, mContext.getString(R.string.call), callPendingIntent);
+                if (callPendingIntent != null)
+                    mBuilder.addAction(R.drawable.ic_menu_call, mContext.getString(R.string.call), callPendingIntent);
             }
 
             mBuilder.setTicker(ticker);
