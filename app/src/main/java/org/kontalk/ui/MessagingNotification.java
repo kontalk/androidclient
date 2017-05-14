@@ -20,6 +20,8 @@ package org.kontalk.ui;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,13 +39,12 @@ import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.net.Uri;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationCompat.BigTextStyle;
 import android.support.v4.app.NotificationCompat.InboxStyle;
 import android.support.v4.app.NotificationCompat.Style;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.NotificationCompat;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -61,6 +62,7 @@ import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.NotificationActionReceiver;
+import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
@@ -266,7 +268,7 @@ public class MessagingNotification {
                 // store conversation id for intents
                 conversationIds.add(ContentUris.withAppendedId(Threads.CONTENT_URI, id));
 
-                ngen.addMessage(peer, mime, content, attMime, encrypted, groupJid, groupSubject);
+                ngen.addMessage(peer, mime, content, attMime, encrypted, timestamp, groupJid, groupSubject);
                 latestTimestamp = Math.max(latestTimestamp, timestamp);
             }
             c.close();
@@ -417,16 +419,26 @@ public class MessagingNotification {
     }
 
     private static final class NotificationConversation {
-        final String peer;
-        final CharSequence allContent;
+        static final class ConversationMessage {
+            final String peer;
+            final CharSequence content;
+            final long timestamp;
+
+            ConversationMessage(String peer, CharSequence content, long timestamp) {
+                this.peer = peer;
+                this.content = content;
+                this.timestamp = timestamp;
+            }
+        }
+
+        final List<ConversationMessage> content;
         final String groupJid;
         final String groupSubject;
 
         CharSequence lastContent;
 
-        NotificationConversation(String peer, CharSequence allContent, CharSequence lastContent, String groupJid, String groupSubject) {
-            this.peer = peer;
-            this.allContent = allContent;
+        NotificationConversation(List<ConversationMessage> content, CharSequence lastContent, String groupJid, String groupSubject) {
+            this.content = content;
             this.lastContent = lastContent;
             this.groupJid = groupJid;
             this.groupSubject = groupSubject;
@@ -454,7 +466,8 @@ public class MessagingNotification {
 
         // build the notification
         NotificationCompat.Builder builder = new NotificationCompat
-            .Builder(context.getApplicationContext())
+            .Builder(context.getApplicationContext());
+        builder
             .setAutoCancel(true)
             .setSmallIcon(R.drawable.ic_stat_notify)
             .setTicker(context.getString(R.string.title_invitation))
@@ -499,7 +512,8 @@ public class MessagingNotification {
 
         // build the notification
         NotificationCompat.Builder builder = new NotificationCompat
-            .Builder(context.getApplicationContext())
+            .Builder(context.getApplicationContext());
+        builder
             .setAutoCancel(true)
             .setSmallIcon(R.drawable.ic_stat_notify)
             .setTicker(context.getString(R.string.title_auth_error))
@@ -535,15 +549,14 @@ public class MessagingNotification {
             mConversations = new LinkedHashMap<>();
         }
 
-        void addMessage(String peer, String mime, byte[] content, String attMime, boolean encrypted, String groupJid, String groupSubject) {
+        void addMessage(String peer, String mime, byte[] content, String attMime, boolean encrypted, long timestamp,
+                String groupJid, String groupSubject) {
             String key = conversationKey(peer, groupJid);
             NotificationConversation conv = mConversations.get(key);
             if (conv == null) {
-                conv = new NotificationConversation(peer, new StringBuilder(), null, groupJid, groupSubject);
+                conv = new NotificationConversation(new LinkedList<NotificationConversation.ConversationMessage>(),
+                    null, groupJid, groupSubject);
                 mConversations.put(key, conv);
-            }
-            else {
-                ((StringBuilder) conv.allContent).append('\n');
             }
 
             String textContent;
@@ -567,25 +580,12 @@ public class MessagingNotification {
                 }
             }
 
-            ((StringBuilder) conv.allContent).append(textContent);
+            conv.content.add(new NotificationConversation.ConversationMessage(peer, textContent, timestamp));
             conv.lastContent = textContent;
         }
 
         private String conversationKey(String peer, String groupJid) {
-            return groupJid != null ? (peer + ":" + groupJid) : peer;
-        }
-
-        private int size() {
-            if (mConversations.size() == 1)
-                return 1;
-
-            // manual count is needed because we need to group chat groups (ehm)
-            Set<String> keys = new HashSet<>();
-            for (String key : mConversations.keySet()) {
-                String[] parsed = key.split(":", 2);
-                keys.add(parsed.length > 1 ? parsed[1] : parsed[0]);
-            }
-            return keys.size();
+            return groupJid != null ? groupJid : peer;
         }
 
         /**
@@ -593,27 +593,16 @@ public class MessagingNotification {
          * @return the number of conversations (i.e. threads) involved
          */
         int build(Account account, int unread, Uri firstThreadUri) {
-            int convCount = size();
+            int convCount = mConversations.size();
             Style style;
             CharSequence title, text, ticker;
 
             // more than one conversation - use InboxStyle
-            if (mConversations.size() > 1) {
-                // we are handling a notification for a single group
-                boolean singleGroup = convCount == 1;
-
+            if (convCount > 1) {
                 style = new InboxStyle();
 
-                if (!singleGroup) {
-                    // ticker: "X unread messages"
-                    ticker = mContext.getResources().getQuantityString(R.plurals.unread_messages, unread, unread);
-                }
-                else {
-                    // ticker: "X messages @ group"
-                    NotificationConversation conv = mConversations.values().iterator().next();
-                    String groupSubject = conv.groupSubject;
-                    ticker = mContext.getResources().getQuantityString(R.plurals.unread_messages_group, unread, unread, groupSubject);
-                }
+                // ticker: "X unread messages"
+                ticker = mContext.getResources().getQuantityString(R.plurals.unread_messages, unread, unread);
 
                 // title
                 title = ticker;
@@ -625,15 +614,16 @@ public class MessagingNotification {
                     NotificationConversation conv = mConversations.get(convId);
                     count++;
 
-                    Contact contact = Contact.findByUserId(mContext, conv.peer);
+                    // we'll take the last message and user who sent it
+                    String lastPeer = ((LinkedList<NotificationConversation.ConversationMessage>) conv.content)
+                        .getLast().peer;
+                    Contact contact = Contact.findByUserId(mContext, lastPeer);
                     String name = contact.getDisplayName();
 
                     if (conv.groupJid != null) {
-                        if (!singleGroup) {
-                            name = mContext.getResources().getString(R.string.notification_group_title,
-                                name, (TextUtils.isEmpty(conv.groupSubject) ?
-                                    mContext.getString(R.string.group_untitled) : conv.groupSubject));
-                        }
+                        name = mContext.getResources().getString(R.string.notification_group_title,
+                            name, (TextUtils.isEmpty(conv.groupSubject) ?
+                                mContext.getString(R.string.group_untitled) : conv.groupSubject));
                     }
 
                     // add person to notification
@@ -685,24 +675,35 @@ public class MessagingNotification {
 
                 ((InboxStyle) style).setSummaryText(summary);
             }
-            // one conversation, use BigTextStyle
+            // one conversation/one group, use MessagingStyle
             else {
                 NotificationConversation conv = mConversations.values().iterator().next();
-                String content = conv.allContent.toString();
+                List<NotificationConversation.ConversationMessage> content = conv.content;
+                StringBuilder allContent = new StringBuilder();
                 CharSequence last = conv.lastContent;
 
-                // big text content
-                style = new BigTextStyle();
-                ((BigTextStyle) style).bigText(content);
-                ((BigTextStyle) style).setSummaryText(account.name);
+                Contact contact = null;
+                String name = null;
+
+                style = new NotificationCompat.MessagingStyle(mContext.getString(R.string.person_me));
+                for (NotificationConversation.ConversationMessage message : content) {
+                    contact = Contact.findByUserId(mContext, message.peer);
+                    name = contact.getDisplayName();
+
+                    ((NotificationCompat.MessagingStyle) style)
+                        .addMessage(message.content, message.timestamp, name);
+                    allContent.append(message);
+                }
+
+                // contact and name now contains data from the latest message
 
                 // ticker
-                Contact contact = Contact.findByUserId(mContext, conv.peer);
-                String name = contact.getDisplayName();
-
                 if (conv.groupJid != null) {
                     name = mContext.getResources().getString(R.string.notification_group_title,
                         name, (TextUtils.isEmpty(conv.groupSubject) ?
+                            mContext.getString(R.string.group_untitled) : conv.groupSubject));
+                    ((NotificationCompat.MessagingStyle) style)
+                        .setConversationTitle((TextUtils.isEmpty(conv.groupSubject) ?
                             mContext.getString(R.string.group_untitled) : conv.groupSubject));
                 }
 
@@ -719,7 +720,7 @@ public class MessagingNotification {
                 // text
                 text = (unread > 1) ?
                     mContext.getResources().getQuantityString(R.plurals.unread_messages, unread, unread)
-                    : content;
+                    : allContent;
 
                 PendingIntent callPendingIntent = null;
 
@@ -737,9 +738,16 @@ public class MessagingNotification {
                         mBuilder.addPerson(personUri.toString());
 
                     // avatar
-                    Bitmap avatar = contact.getAvatarBitmap(mContext);
-                    if (avatar != null)
-                        mBuilder.setLargeIcon(avatar);
+                    if (conv.groupJid != null) {
+                        mBuilder.setLargeIcon(MessageUtils
+                            .drawableToBitmap(ContextCompat
+                                .getDrawable(mContext, R.drawable.ic_default_group)));
+                    }
+                    else {
+                        Bitmap avatar = contact.getAvatarBitmap(mContext);
+                        if (avatar != null)
+                            mBuilder.setLargeIcon(avatar);
+                    }
 
                     // phone number for call intent
                     String phoneNumber = contact.getNumber();
