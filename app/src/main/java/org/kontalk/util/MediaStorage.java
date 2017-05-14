@@ -82,11 +82,11 @@ public abstract class MediaStorage {
     private static final DateFormat sDateFormat =
         new SimpleDateFormat("yyyyMMdd_HHmmssSSS", Locale.US);
 
-    private static final int THUMBNAIL_WIDTH = 256;
-    private static final int THUMBNAIL_HEIGHT = 256;
+    private static final int THUMBNAIL_WIDTH = 512;
+    private static final int THUMBNAIL_HEIGHT = 512;
     public static final String THUMBNAIL_MIME = "image/png";
     public static final String THUMBNAIL_MIME_NETWORK = "image/jpeg";
-    public static final int THUMBNAIL_MIME_COMPRESSION = 60;
+    public static final int THUMBNAIL_MIME_COMPRESSION = 50;
 
     public static final String COMPRESS_MIME = "image/jpeg";
     private static final int COMPRESSION_QUALITY = 85;
@@ -150,30 +150,10 @@ public abstract class MediaStorage {
     }
 
     private static void cacheThumbnail(Context context, Uri media, FileOutputStream fout, boolean forNetwork) throws IOException {
-        ContentResolver cr = context.getContentResolver();
-        InputStream in = cr.openInputStream(media);
-        BitmapFactory.Options options = preloadBitmap(in, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT);
-        in.close();
-
-        // open again
-        in = cr.openInputStream(media);
-        Bitmap bitmap = BitmapFactory.decodeStream(in, null, options);
-        in.close();
-
-        Bitmap thumbnail = ThumbnailUtils
-            .extractThumbnail(bitmap, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT);
-        if (thumbnail != bitmap)
-            bitmap.recycle();
-
-        Bitmap rotatedThumbnail = bitmapOrientation(context, media, thumbnail);
-        if (rotatedThumbnail != thumbnail)
-            thumbnail.recycle();
-
-        // write down to file
-        rotatedThumbnail.compress(forNetwork ? Bitmap.CompressFormat.JPEG :
-            Bitmap.CompressFormat.PNG,
-            forNetwork ? THUMBNAIL_MIME_COMPRESSION : 0, fout);
-        rotatedThumbnail.recycle();
+        resizeImage(context, media, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT,
+                forNetwork ? Bitmap.CompressFormat.JPEG : Bitmap.CompressFormat.PNG,
+            forNetwork ? THUMBNAIL_MIME_COMPRESSION : 0,
+            fout);
     }
 
     /**
@@ -463,7 +443,29 @@ public abstract class MediaStorage {
     }
 
     public static File resizeImage(Context context, Uri uri, int maxWidth, int maxHeight, int quality)
-        throws IOException {
+            throws IOException {
+
+        FileOutputStream stream = null;
+        try {
+            final File file = getOutgoingPictureFile();
+            stream = new FileOutputStream(file);
+            resizeImage(context, uri, maxWidth, maxHeight,
+                Bitmap.CompressFormat.JPEG, quality, stream);
+            return file;
+        }
+        finally {
+            try {
+                stream.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
+    }
+
+    public static void resizeImage(Context context, Uri uri, int maxWidth, int maxHeight,
+            Bitmap.CompressFormat format, int quality, FileOutputStream output)
+            throws IOException {
 
         final int MAX_IMAGE_SIZE = 1200000; // 1.2MP
 
@@ -521,18 +523,18 @@ public abstract class MediaStorage {
         }
 
         if (bitmap == null) {
-            return null;
+            return;
         }
         float photoW = bitmap.getWidth();
         float photoH = bitmap.getHeight();
         if (photoW == 0 || photoH == 0) {
-            return null;
+            return;
         }
         float scaleFactor = Math.max(photoW / maxWidth, photoH / maxHeight);
         int w = (int) (photoW / scaleFactor);
         int h = (int) (photoH / scaleFactor);
         if (h == 0 || w == 0) {
-            return null;
+            return;
         }
 
         Bitmap scaledBitmap = null;
@@ -549,24 +551,10 @@ public abstract class MediaStorage {
         if (rotatedScaledBitmap != scaledBitmap)
             scaledBitmap.recycle();
 
-        final File compressedFile = getOutgoingPictureFile();
-
-        FileOutputStream stream = null;
-
         try {
-            stream = new FileOutputStream(compressedFile);
-            rotatedScaledBitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream);
-
-            return compressedFile;
+            rotatedScaledBitmap.compress(format, quality, output);
         }
         finally {
-            try {
-                stream.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-
             rotatedScaledBitmap.recycle();
         }
     }
