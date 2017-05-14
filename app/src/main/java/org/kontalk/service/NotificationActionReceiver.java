@@ -23,8 +23,13 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.v4.app.RemoteInput;
 
+import org.kontalk.Kontalk;
+import org.kontalk.R;
+import org.kontalk.data.Conversation;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.ui.MessagingNotification;
 
@@ -34,6 +39,8 @@ import org.kontalk.ui.MessagingNotification;
  * @author Daniele Ricci
  */
 public class NotificationActionReceiver extends BroadcastReceiver {
+
+    private static final String KEY_TEXT_REPLY = "key_text_reply";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -46,11 +53,37 @@ public class NotificationActionReceiver extends BroadcastReceiver {
                 MessagesProvider.markThreadAsOld(context, ContentUris.parseId((Uri) uri));
             MessagingNotification.delayedUpdateMessagesNotification(context, false);
         }
+        else if (MessagingNotification.ACTION_NOTIFICATION_REPLY.equals(action)) {
+            // mark threads as read
+            long threadId = ContentUris.parseId(intent.getData());
+            MessagesProvider.markThreadAsRead(context, threadId);
+
+            // send reply
+            Bundle result = RemoteInput.getResultsFromIntent(intent);
+            if (result != null) {
+                Conversation conv = Conversation.loadFromId(context, threadId);
+                String text = result.getString(KEY_TEXT_REPLY);
+                Kontalk.get(context).getMessagesController()
+                    .sendTextMessage(conv, text);
+            }
+
+            // TODO show notification with the reply for a short time
+            // https://developer.android.com/guide/topics/ui/notifiers/notifications.html#direct
+
+            MessagingNotification.delayedUpdateMessagesNotification(context, false);
+        }
         else if (MessagingNotification.ACTION_NOTIFICATION_MARK_READ.equals(action)) {
             // mark threads as read
             MessagesProvider.markThreadAsRead(context, ContentUris.parseId(intent.getData()));
             MessagingNotification.delayedUpdateMessagesNotification(context, false);
         }
+    }
+
+    public static RemoteInput buildReplyInput(Context context) {
+        String replyLabel = context.getString(R.string.reply);
+        return new RemoteInput.Builder(KEY_TEXT_REPLY)
+            .setLabel(replyLabel)
+            .build();
     }
 
 }
