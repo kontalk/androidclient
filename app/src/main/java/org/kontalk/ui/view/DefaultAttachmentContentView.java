@@ -28,33 +28,33 @@ import android.view.ViewGroup;
 
 import org.kontalk.R;
 import org.kontalk.message.CompositeMessage;
-import org.kontalk.message.VCardComponent;
+import org.kontalk.message.DefaultAttachmentComponent;
 import org.kontalk.util.Preferences;
 
 
 /**
- * Message component for {@link org.kontalk.message.VCardComponent}.
+ * Message component for {@link DefaultAttachmentComponent}.
  * @author Daniele Ricci
  */
-public class VCardContentView extends AppCompatTextView
-    implements MessageContentView<VCardComponent> {
+public class DefaultAttachmentContentView extends AppCompatTextView
+    implements MessageContentView<DefaultAttachmentComponent> {
 
-    private VCardComponent mComponent;
+    private DefaultAttachmentComponent mComponent;
 
-    public VCardContentView(Context context) {
+    public DefaultAttachmentContentView(Context context) {
         super(context);
     }
 
-    public VCardContentView(Context context, AttributeSet attrs) {
+    public DefaultAttachmentContentView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public VCardContentView(Context context, AttributeSet attrs, int defStyle) {
+    public DefaultAttachmentContentView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 
     @Override
-    public void bind(long id, VCardComponent component, Pattern highlight) {
+    public void bind(long id, DefaultAttachmentComponent component, Pattern highlight) {
         mComponent = component;
 
         Context context = getContext();
@@ -78,21 +78,21 @@ public class VCardContentView extends AppCompatTextView
     }
 
     @Override
-    public VCardComponent getComponent() {
+    public DefaultAttachmentComponent getComponent() {
         return mComponent;
     }
 
     @Override
     public int getPriority() {
-        return 7;
+        return 6;
     }
 
     private void clear() {
         mComponent = null;
     }
 
-    public static VCardContentView create(LayoutInflater inflater, ViewGroup parent) {
-        return (VCardContentView) inflater.inflate(R.layout.message_content_vcard,
+    public static DefaultAttachmentContentView create(LayoutInflater inflater, ViewGroup parent) {
+        return (DefaultAttachmentContentView) inflater.inflate(R.layout.message_content_default_att,
             parent, false);
     }
 

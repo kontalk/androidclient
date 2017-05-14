@@ -22,6 +22,7 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import org.kontalk.message.AudioComponent;
+import org.kontalk.message.DefaultAttachmentComponent;
 import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.message.MessageComponent;
@@ -62,6 +63,9 @@ public class MessageContentViewFactory {
         }
         else if (component instanceof VCardComponent) {
             view = (MessageContentView<T>) VCardContentView.create(inflater, parent);
+        }
+        else if (component instanceof DefaultAttachmentComponent) {
+            view = (MessageContentView<T>) DefaultAttachmentContentView.create(inflater, parent);
         }
         else if (component instanceof GroupCommandComponent) {
             view = (MessageContentView<T>) GroupContentView.create(inflater, parent);

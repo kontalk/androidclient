@@ -408,6 +408,12 @@ public class CompositeMessage {
                             attLength, attEncrypted, attSecurityFlags);
                 }
 
+                else {
+                    att = new DefaultAttachmentComponent(attMime,
+                            localUri, attFetch,
+                            attLength, attEncrypted, attSecurityFlags);
+                }
+
                 // TODO other type of attachments
 
                 if (att != null) {
@@ -516,7 +522,7 @@ public class CompositeMessage {
                 String ext = AudioComponent.getFileExtension(mime);
                 return MediaStorage.getIncomingAudioFile(timestamp, ext);
             }
-
+            // TODO maybe other file types?
         }
         return null;
     }
