@@ -604,4 +604,5 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
 
     <string name="msg_register_confirm_number1">Ověříme telefonní číslo:</string>
     <string name="msg_register_confirm_number2">Důkladně prosím zkontrolujte, že je číslo správné.</string>
+    <string name="code_validation_intro3">SMS nebo volání mohou přijít ze zahraničního čísla.</string>
     </resources>
