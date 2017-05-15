@@ -596,4 +596,6 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="reply">Antworten</string>
     <string name="msg_register_confirm_number1">Wir werden die Telefonnummer überprüfen:</string>
     <string name="msg_register_confirm_number2">Bitte überprüfen Sie, ob die Nummer korrekt ist.</string>
+    <string name="audio_duration_max">%1$s / %2$s</string>
+
     </resources>
