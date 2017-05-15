@@ -610,4 +610,12 @@
 	    <item quantity="other">%d人</item>
     </plurals>
 
-</resources>
+<string name="notify_text_decryption_error">加密已失败</string>
+    <string name="group_command_users_added">添加的用户：</string>
+    <string name="group_command_users_removed">移除的用户：</string>
+
+    <string name="group_info_menu_add_again">再次添加</string>
+
+    <string name="status_notsubscribed">不允许的/被屏蔽的</string>
+
+    </resources>

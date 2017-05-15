@@ -33,12 +33,12 @@
   <string name="menu_offline">Desconectarse</string>
   <string name="menu_online">Conectarse</string>
   <string name="menu_import_key">Importar clave</string>
-  <string name="pref_network_settings">Configuración de red</string>
+  <string name="pref_network_settings">Red</string>
   <string name="pref_network_uri">Dirección del servidor manual</string>
   <string name="pref_title_network_uri">Esto anulará la gestión automática de la lista de servidores</string>
   <string name="number_validation_intro1">Por favor, introduzca su nombre, elija su código de país y escriba su número de teléfono móvil. En la siguiente pantalla encontrará más instrucciones.</string>
   <string name="number_validation_intro2">Si no puede recibir SMS en este dispositivo, inserte un número que posea: asociaremos ese número a este dispositivo.</string>
-  <string name="code_validation_intro">Debería recibir un SMS o llamada desde este número en breve:</string>
+  <string name="code_validation_intro">Debería recibir un SMS o llamada a su número en breve.</string>
   <string name="code_validation_intro2">Por favor introduzca abajo el código que reciba o escuche.</string>
   <string name="code_validation_intro_manual">Por favor inserte el código de verificación que ha recibido. Por favor, tenga en cuenta que un código de verificación sólo puede usarse una vez.</string>
   <string name="hint_validation_name">Su nombre</string>
@@ -100,8 +100,8 @@
   <string name="pref_title_regenerate_keypair">Use esto en caso de que su clave personal haya sido comprometida</string>
   <string name="pref_regenerate_keypair_confirm">Se generará un nuevo par de claves y se asignarán a su cuenta. La clave antigua ya no será válida.</string>
   <string name="contacts_list_title">Elija un contacto</string>
-  <string name="pref_messaging_settings">Ajustes de mensajes</string>
-  <string name="pref_privacy_settings">Ajustes de privacidad</string>
+  <string name="pref_messaging_settings">Mensajería</string>
+  <string name="pref_privacy_settings">Privacidad</string>
   <string name="pref_encrypt">Cifrar mensajes</string>
   <string name="pref_encrypt_userdata">Cifrar los datos personales</string>
   <string name="pref_title_on_encrypt_userdata">El mensaje de estado solo será visible para quienes tengan su número de teléfono</string>
@@ -126,7 +126,7 @@
   <string name="hint_search_full">Buscar mensajes</string>
   <string name="hint_search_quickbox">Texto en sus mensajes</string>
   <string name="title_search">Buscar: \"%s\"</string>
-  <string name="pref_notification_settings">Configuración de notificaciones</string>
+  <string name="pref_notification_settings">Notificaciones</string>
   <string name="pref_enable_notifications">Notificaciones</string>
   <string name="pref_title_enable_notifications">Mostrar las notificaciones de mensajes en la barra de estado</string>
   <string name="pref_ringtone">Seleccionar tono</string>
@@ -180,7 +180,7 @@
   <string name="message_user_not_found">Este contacto parece no estar registrado en Kontalk. Puede intentar ponerse en contacto con el usuario de todas formas o enviarle un mensaje de invitación.</string>
   <string name="yes_user_not_found">Sí, póngame en contacto con el usuario de todas formas</string>
   <string name="no_user_not_found">Enviar una invitación</string>
-  <string name="pref_appearance_settings">Configuración del aspecto</string>
+  <string name="pref_appearance_settings">Aspecto</string>
   <string name="pref_font_size">Tamaño de la letra</string>
   <string name="menu_status">Estado</string>
   <string name="menu_attachment">Adjuntar</string>
@@ -347,7 +347,7 @@
   <string name="err_playing_audio">Error reproduciendo audio.</string>
   <string name="err_playing_sdcard">Error leyendo del almacenamiento externo.</string>
   <string name="slide_to_cancel">DESLIZAR PARA CANCELAR</string>
-  <string name="pref_media_settings">Archivos multimedia</string>
+  <string name="pref_media_settings">Multimedia</string>
   <string name="pref_image_resize">Redimensionar imágenes</string>
   <string name="err_server_invalid_format">Formato de dirección inválido.</string>
   <string name="err_no_contacts_app">No se encontró la aplicación de contactos.</string>
@@ -372,9 +372,9 @@
     <string name="hint_ptt">Mantenga el botón de micro pulsado para grabar.</string>
     <string name="err_audio_record_noaudio">No se ha grabado ningún audio.</string>
     <string name="msg_importing_key">Importando la clave personal…</string>
-    <string name="code_validation_intro_missed_call">En breves instantes tendrá una llamada perdida de este número. <b>POR FAVOR NO RESPONDA A LA LLAMADA.</b></string>
+    <string name="code_validation_intro_missed_call">En breves instantes tendrá una llamada perdida a su número. <b>POR FAVOR NO RESPONDA A LA LLAMADA.</b></string>
     <string name="code_validation_intro2_missed_call">Por favor, introduzca los últimos %d dígitos del número de la llamada perdida.</string>
-    <string name="button_validation_fallback">No ha recibido la llamada?</string>
+    <string name="button_validation_fallback">No ha recibido nada?</string>
     <string name="title_fallback">Tiene algún problema?</string>
     <string name="msg_fallback">Vamos a verificar su número de teléfono de otra manera.</string>
     <string name="menu_manual_verification">Ya tiene un código?</string>
@@ -588,5 +588,11 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
     <string name="notify_text_decryption_error">No se ha podido desencriptar</string>
     <string name="group_command_users_added">Usuarios añadidos:</string>
     <string name="group_command_users_removed">Usuarios eliminados:</string>
+
+    <string name="registration_poweredby">Impulsado por</string>
+
+    <string name="reply">Responder</string>
+    <string name="person_me">Yo</string>
+    <string name="audio_duration_max">%1$s / %2$s</string>
 
     </resources>

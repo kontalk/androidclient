@@ -33,12 +33,12 @@
   <string name="menu_offline">Vai offline</string>
   <string name="menu_online">Vai online</string>
   <string name="menu_import_key">Importa chiave</string>
-  <string name="pref_network_settings">Impostazioni di rete</string>
+  <string name="pref_network_settings">Rete</string>
   <string name="pref_network_uri">Indirizzo server manuale</string>
   <string name="pref_title_network_uri">In questo modo annullerai la gestione automatica dei server</string>
   <string name="number_validation_intro1">Inserisci il tuo nome, seleziona il tuo prefisso internazionale e inserisci il tuo numero di cellulare. Ti saranno fornite ulteriori istruzioni nella prossima schermata.</string>
   <string name="number_validation_intro2">Se non puoi ricevere SMS su questo dispositivo, inserisci un altro numero che possiedi: associeremo il numero a questo dispositivo.</string>
-  <string name="code_validation_intro">Dovresti ricevere un SMS o una chiamata da questo numero a breve:</string>
+  <string name="code_validation_intro">Dovresti ricevere un SMS o una chiamata al tuo numero a breve.</string>
   <string name="code_validation_intro2">Inserisci il codice che ricevi o senti qui sotto.</string>
   <string name="code_validation_intro_manual">Inserisci il codice di verifica che hai ricevuto. Ricorda che un codice di verifica può essere usato una volta sola.</string>
   <string name="hint_validation_name">Il tuo nome</string>
@@ -100,7 +100,7 @@
   <string name="pref_title_regenerate_keypair">Usalo se la tua chiave personale è stata compromessa</string>
   <string name="pref_regenerate_keypair_confirm">Una nuova coppia di chiavi sarà generata e assegnata al tuo account. La tua vecchia chiave sarà invalidata.</string>
   <string name="contacts_list_title">Scegli un contatto</string>
-  <string name="pref_messaging_settings">Impostazioni messaggi</string>
+  <string name="pref_messaging_settings">Messaggi</string>
   <string name="pref_privacy_settings">Privacy</string>
   <string name="pref_encrypt">Cifra messaggi</string>
   <string name="pref_encrypt_userdata">Cifra dati personali</string>
@@ -126,7 +126,7 @@
   <string name="hint_search_full">Cerca messaggi</string>
   <string name="hint_search_quickbox">Testo nei messaggi</string>
   <string name="title_search">Cerca: \"%s\"</string>
-  <string name="pref_notification_settings">Impostazioni notifiche</string>
+  <string name="pref_notification_settings">Notifiche</string>
   <string name="pref_enable_notifications">Notifiche</string>
   <string name="pref_title_enable_notifications">Visualizza notifiche messaggi nella barra di stato</string>
   <string name="pref_ringtone">Seleziona suoneria</string>
@@ -180,7 +180,7 @@
   <string name="message_user_not_found">Questo contatto sembra non essere registrato su Kontalk. Puoi provare a contattarlo ugualmente oppure puoi inviare un messaggio di invito.</string>
   <string name="yes_user_not_found">Sì, contatta ugualmente l\'utente</string>
   <string name="no_user_not_found">No, manda un invito</string>
-  <string name="pref_appearance_settings">Impostazioni aspetto</string>
+  <string name="pref_appearance_settings">Aspetto</string>
   <string name="pref_font_size">Dimensione testo</string>
   <string name="menu_status">Stato</string>
   <string name="menu_attachment">Allega</string>
@@ -347,7 +347,7 @@
   <string name="err_playing_audio">Impossibile riprodurre il file.</string>
   <string name="err_playing_sdcard">Errore durante la lettura dalla memoria esterna.</string>
   <string name="slide_to_cancel">SCORRI PER ANNULLARE</string>
-  <string name="pref_media_settings">Impostazioni messaggi multimediali</string>
+  <string name="pref_media_settings">Messaggi multimediali</string>
   <string name="pref_image_resize">Comprimi immagini</string>
   <string name="err_server_invalid_format">Formato indirizzo non valido.</string>
   <string name="err_no_contacts_app">Nessuna applicazione per i contatti trovata.</string>
@@ -373,9 +373,9 @@
     <string name="err_audio_record_noaudio">Nessun suono registrato.</string>
     <string name="msg_importing_key">Importazione chiave personale…</string>
     <string name="menu_manual_verification">Hai già un codice?</string>
-    <string name="code_validation_intro_missed_call">Dovresti ricevere a breve una chiamata persa da questo numero. <b>NON RISPONDERE ALLA CHIAMATA.</b></string>
+    <string name="code_validation_intro_missed_call">Dovresti ricevere a breve uno squillo al tuo numero. <b>NON RISPONDERE ALLA CHIAMATA.</b></string>
     <string name="code_validation_intro2_missed_call">Inserisci le ultime %d cifre del numero che ti chiamerà.</string>
-    <string name="button_validation_fallback">Non ricevi la chiamata?</string>
+    <string name="button_validation_fallback">Non ricevi nulla?</string>
     <string name="title_fallback">Problemi?</string>
     <string name="msg_fallback">Proveremo un altro modo per verificare il tuo numero di telefono.</string>
     <string name="confirm_will_delete_messages">I messaggi selezionati saranno eliminati.</string>
@@ -590,5 +590,11 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
     <string name="notify_text_decryption_error">Decifratura fallita</string>
     <string name="group_command_users_added">Utenti aggiunti:</string>
     <string name="group_command_users_removed">Utenti rimossi:</string>
+
+    <string name="registration_poweredby">Offerto da</string>
+
+    <string name="reply">Rispondi</string>
+    <string name="person_me">Io</string>
+    <string name="audio_duration_max">%1$s / %2$s</string>
 
     </resources>

@@ -33,12 +33,12 @@
   <string name="menu_offline">Offline gehen</string>
   <string name="menu_online">Online gehen</string>
   <string name="menu_import_key">Schlüssel importieren</string>
-  <string name="pref_network_settings">Netzwerkeinstellungen</string>
+  <string name="pref_network_settings">Netzwerk</string>
   <string name="pref_network_uri">Manuelle Serveradresse</string>
   <string name="pref_title_network_uri">Dies übergeht die automatische Verwaltung der Serverliste</string>
   <string name="number_validation_intro1">Bitte Namen und Mobilfunknummer eingeben sowie den Ländercode auswählen. Alles Weitere folgt im nächsten Schritt.</string>
   <string name="number_validation_intro2">Falls Sie auf diesem Gerät keine Anrufe oder SMS empfangen können, geben Sie eine Ihnen gehörende Tel.Nr. an: Wir werden diese Nummer dann mit diesem Gerät hier verbinden.</string>
-  <string name="code_validation_intro">Sie sollten in Kürze eine SMS oder einen Anruf von dieser Nummer erhalten:</string>
+  <string name="code_validation_intro">Sie sollten in Kürze eine SMS oder einen Anruf an Ihre Nummer erhalten.</string>
   <string name="code_validation_intro2">Fügen Sie unten bitte den Code ein, den Sie erhalten bzw. gehört haben.</string>
   <string name="code_validation_intro_manual">Bitte fügen Sie den Überprüfungs-Code ein, den Sie bekommen haben. Beachten Sie bitte, dass ein Überprüfungs-Code nur einmal verwendet werden kann.</string>
   <string name="hint_validation_name">Ihr Name</string>
@@ -100,8 +100,8 @@
   <string name="pref_title_regenerate_keypair">Antippen wenn ihr persönlicher Schlüssel kompromittiert wurde</string>
   <string name="pref_regenerate_keypair_confirm">Ein neues Schlüsselpaar wird erzeugt und Ihrem Account zugeordnet. Ihr alter Schlüssel ist danach ungültig.</string>
   <string name="contacts_list_title">Wählen Sie einen Kontakt</string>
-  <string name="pref_messaging_settings">Nachrichteneinstellungen</string>
-  <string name="pref_privacy_settings">Privatsphären-Einstellungen</string>
+  <string name="pref_messaging_settings">Nachrichten</string>
+  <string name="pref_privacy_settings">Privatsphäre</string>
   <string name="pref_encrypt">Nachrichten verschlüsseln</string>
   <string name="pref_encrypt_userdata">Persönliche Daten verbergen</string>
   <string name="pref_title_on_encrypt_userdata">Statusnachricht nur Kontakten anzeigen, die meine Telefonnummer im Adressbuch haben</string>
@@ -126,7 +126,7 @@
   <string name="hint_search_full">Nachrichten suchen</string>
   <string name="hint_search_quickbox">Text in Ihren Nachrichten</string>
   <string name="title_search">Suchen: \"%s\"</string>
-  <string name="pref_notification_settings">Benachrichtigungseinstellungen</string>
+  <string name="pref_notification_settings">Benachrichtigungen</string>
   <string name="pref_enable_notifications">Benachrichtigungen</string>
   <string name="pref_title_enable_notifications">Benachrichtigungen über neue Nachrichten in der Statusleiste anzeigen</string>
   <string name="pref_ringtone">Klingelton auswählen</string>
@@ -180,7 +180,7 @@
   <string name="message_user_not_found">Der Kontakt scheint nicht bei Kontalk registriert zu sein. Sie können trotzdem versuchen, den Nutzer zu kontaktieren oder ihm/ihr eine Einladung schicken.</string>
   <string name="yes_user_not_found">Nutzer trotzdem kontaktieren</string>
   <string name="no_user_not_found">Einladung schicken</string>
-  <string name="pref_appearance_settings">Darstellungseinstellungen</string>
+  <string name="pref_appearance_settings">Darstellung</string>
   <string name="pref_font_size">Schriftgröße</string>
   <string name="menu_status">Status</string>
   <string name="menu_attachment">Anhängen</string>
@@ -347,7 +347,7 @@
   <string name="err_playing_audio">Fehler beim Audio abspielen.</string>
   <string name="err_playing_sdcard">Fehler beim Lesen vom externen Speicher.</string>
   <string name="slide_to_cancel">WISCHEN UM ABZUBRECHEN</string>
-  <string name="pref_media_settings">Medieneinstellungen</string>
+  <string name="pref_media_settings">Medien</string>
   <string name="pref_image_resize">Bildgröße anpassen</string>
   <string name="err_server_invalid_format">Ungültiges Adressformat.</string>
   <string name="err_no_contacts_app">Keine Kontakte App gefunden.</string>
@@ -372,9 +372,9 @@
     <string name="err_custom_background">Beim setzen des Hintergrundes ist ein Fehler aufgetreten. Bitte versuchen Sie ein anderes Bild.</string>
     <string name="hint_ptt">Um Aufzunehmen das Mikrofon-Icon gedrückt halten.</string>
     <string name="msg_importing_key">Importiere persönlichen Schlüssel…</string>
-    <string name="button_validation_fallback">Keinen Anruf erhalten?</string>
+    <string name="button_validation_fallback">Nichts erhalten?</string>
     <string name="msg_fallback">Wir werden einen anderen Weg probieren, um Ihre Tel.Nr. zu überprüfen.</string>
-    <string name="code_validation_intro_missed_call">Sie sollten in Kürze einen verpassten Anruf von folgender Nummer vorfinden. <b>Bitte nehmen Sie den Anruf NICHT an.</b></string>
+    <string name="code_validation_intro_missed_call">Sie sollten in Kürze einen verpassten Anruf vorfinden. <b>BITTE NEHMEN SIE DEN ANRUF NICHT an.</b></string>
     <string name="code_validation_intro2_missed_call">Bitte fügen Sie die letzten %d Ziffern der Nummer ein, von der Sie angerufen wurden.</string>
     <string name="title_fallback">Haben Sie Probleme?</string>
     <string name="menu_manual_verification">Code bereits vorhanden?</string>
@@ -591,4 +591,7 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="group_command_users_added">Hinzugefügte Nutzer:</string>
     <string name="group_command_users_removed">Entfernte Nutzer:</string>
 
+    <string name="registration_poweredby">Unterstützt durch</string>
+
+    <string name="reply">Antworten</string>
     </resources>

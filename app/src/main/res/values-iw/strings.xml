@@ -36,14 +36,14 @@
     <string name="menu_online">התחבר</string>
     <string name="menu_import_key">יבא מפתח</string>
     <string name="menu_manual_verification">כבר יש לך קוד?</string>
-    <string name="pref_network_settings">הגדרות רשת</string>
+    <string name="pref_network_settings">רשת</string>
     <string name="pref_network_uri">כתובת שרת ידנית</string>
     <string name="pref_title_network_uri">הגדרה זו תעקוף ניהול אוטומטי של רשימת שרתים</string>
     <string name="number_validation_intro1">אנה הכנס את שמך, בחר את קוד המדינה שלך והכנס את מספר הטלפון הנייד שלך. הוראות נוספות במסך הבא.</string>
     <string name="number_validation_intro2">אם אינך מסוגל לקבל שיחות או הודעות SMS במכשיר הזה, הכנס מספר טלפון בבעלותך: אנחנו נקשר את המספר למכשיר.</string>
-    <string name="code_validation_intro">הודעת SMS או שיחה אמורה להתקבל ממספר זה בקרוב:</string>
+    <string name="code_validation_intro">הודעת SMS או שיחה אמורה להתקבל למספרך בקרוב.</string>
     <string name="code_validation_intro2">אנה הכנס את הקוד שקיבלת או שמעת.</string>
-    <string name="code_validation_intro_missed_call">מייד תתקבל שיחה שלא נענתה. <b>נא לא לענות לשיחה</b></string>
+    <string name="code_validation_intro_missed_call">מייד תקבל שיחה שלא נענתה. <b>נא לא לענות לשיחה</b></string>
     <string name="code_validation_intro2_missed_call">"אנה הכנס את  %d הספרות האחרונות של מספר הטלפון מהשיחה שהתקבלה."</string>
     <string name="code_validation_intro_callerid">הקש על הכפתור למטה וחייג שיחה שלא נענתה למספר הטלפון הנל. שים לב <b>שהשיחה חייבת להגיע מהטלפון אותו ברצונך לרשום</b>. לא תחוייב אם תנתק מייד לאחר הצלצול הראשון. זה יספק אותנו.</string>
     <string name="code_validation_intro2_callerid">לאחר סיום השיחה, חזור לכאן ולחץ על כפתור האימות למטה.</string>
@@ -113,8 +113,8 @@
     <string name="pref_title_regenerate_keypair">השתמש במקרה שהמפתח הפרטי שלך כבר לא בטוח</string>
     <string name="pref_regenerate_keypair_confirm">זוג חדש של מפתחות יווצר וישוייך לחשבונך. המפתח הישן יהפוך לא רלוונטי.</string>
     <string name="contacts_list_title">בחר איש קשר</string>
-    <string name="pref_messaging_settings">הגדרות הודעות</string>
-    <string name="pref_privacy_settings">הגדרות פרטיות</string>
+    <string name="pref_messaging_settings">הודעות</string>
+    <string name="pref_privacy_settings">פרטיות</string>
     <string name="pref_encrypt">הצפן הודעות</string>
     <string name="pref_encrypt_userdata">הצפן נתונים אישיים</string>
     <string name="pref_title_on_encrypt_userdata">הודעת סטטוס תיראה רק למשתמשים שמספר הטלפון שלך מופיע אצלם</string>
@@ -148,7 +148,7 @@
     <string name="hint_search_quickbox">טקסט בהודעות שלך</string>
     <string name="title_search">חיפוש: \"%s\"</string>
     <string name="text_search_results_empty">לא נמצאו הודעות.</string>
-    <string name="pref_notification_settings">הגדרות התראה</string>
+    <string name="pref_notification_settings">התראות</string>
     <string name="pref_enable_notifications">התראות</string>
     <string name="pref_enable_notification_led">נורת התראה</string>
     <string name="pref_notification_led_color">צבע נורת התראה</string>
@@ -176,7 +176,7 @@
     <string name="send_mime_not_supported">סוג קובץ לא נתמך.</string>
     <string name="button_validate">הרשם</string>
     <string name="button_validation_register">אמת</string>
-    <string name="button_validation_fallback">לא מקבל שיחה?</string>
+    <string name="button_validation_fallback">לא מקבל כלום?</string>
     <string name="button_validation_fallback_callerid">נסה דרך אחרת</string>
     <string name="notify_ticker_download_completed">הורדה הושלמה</string>
     <string name="notify_title_download_completed">הורדה הושלמה</string>
@@ -216,7 +216,7 @@
     <string name="message_user_not_found">לא נראה שאיש הקשר רשום ל Kontalk. אפשר לנסות ליצור קשר עם המשתמש בכל זאת או לשלוח הודעת הזמנה.</string>
     <string name="yes_user_not_found">צור קשר עם המשתמש בכל זאת</string>
     <string name="no_user_not_found">שלח הזמנה</string>
-    <string name="pref_appearance_settings">הגדרות מראה</string>
+    <string name="pref_appearance_settings">מראה</string>
     <string name="pref_font_size">גודל גופן</string>
     <string name="menu_status">סטטוס</string>
     <string name="menu_attachment">צרף</string>
@@ -472,7 +472,7 @@
     <string name="err_playing_sdcard">שגיאה בקריאה מהתקן אחסון חיצוני.</string>
     <string name="slide_to_cancel">החלק לביטול</string>
 
-    <string name="pref_media_settings">הגדרות מדיה</string>
+    <string name="pref_media_settings">מדיה</string>
     <string name="pref_image_resize">שנה גודל תמונות</string>
     <string name="pref_media_autodownload_threshold">סף להורדה אוטומטית</string>
     <string name="pref_title_media_autodownload_threshold">קבצים קטנים מגודל זה תמיד יורדו אוטומטית</string>
@@ -609,4 +609,6 @@
 	<item quantity="other">%d אנשים</item>
 </plurals>
 
-</resources>
+<string name="registration_poweredby">מונע על ידי</string>
+
+    </resources>

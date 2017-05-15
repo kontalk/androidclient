@@ -33,12 +33,12 @@
   <string name="menu_offline">Activa el mode fora de línia</string>
   <string name="menu_online">Activa el mode en línia</string>
   <string name="menu_import_key">Importa la clau</string>
-  <string name="pref_network_settings">Paràmetres de la xarxa</string>
+  <string name="pref_network_settings">Xarxa</string>
   <string name="pref_network_uri">Adreça del servidor (manual)</string>
   <string name="pref_title_network_uri">Això desactivarà la gestió automàtica de la llista de servidors</string>
   <string name="number_validation_intro1">Per favor, introduïu el nom, trieu el codi del país i escriviu el número de mòbil. A la següent pantalla hi haurà més instruccions.</string>
   <string name="number_validation_intro2">Si no podeu rebre SMS en aquest dispositiu, introduïu el número d\'un telèfon vostre: associarem el número a aquest dispositiu.</string>
-  <string name="code_validation_intro">Tot seguit hauríeu de rebre un SMS o una trucada des d\'aquest número:</string>
+  <string name="code_validation_intro">Tot seguit hauríeu de rebre un SMS o una trucada al seu número.</string>
   <string name="code_validation_intro2">Per favor escriviu a sota el codi que heu rebut o escoltat.</string>
   <string name="code_validation_intro_manual">Per favor, escriviu el codi de verificació que heu rebut. Recordeu que cada codi només es pot fer servir una vegada.</string>
   <string name="hint_validation_name">El vostre nom</string>
@@ -100,8 +100,8 @@
   <string name="pref_title_regenerate_keypair">Useu açò  en cas que la vostra clau personal s\'hagi vist compromesa</string>
   <string name="pref_regenerate_keypair_confirm">Es generarà una parella de claus nova i s\'assignarà al vostre compte. La clau antiga ja no serà vàlida.</string>
   <string name="contacts_list_title">Tria un contacte</string>
-  <string name="pref_messaging_settings">Configuració dels missatges</string>
-  <string name="pref_privacy_settings">Configuració de privadesa</string>
+  <string name="pref_messaging_settings">Missatgeria</string>
+  <string name="pref_privacy_settings">Privacitat</string>
   <string name="pref_encrypt">Xifra els missatges</string>
   <string name="pref_encrypt_userdata">Xifra les dades personals</string>
   <string name="pref_title_on_encrypt_userdata">Només veuran el voste missatge d\'estat els qui tinguen el vostre número de telèfon</string>
@@ -126,7 +126,7 @@
   <string name="hint_search_full">Cerca missatges</string>
   <string name="hint_search_quickbox">Text en els vostres missatges</string>
   <string name="title_search">Cerca: \"%s\"</string>
-  <string name="pref_notification_settings">Configuració de les notificacions</string>
+  <string name="pref_notification_settings">Notificacions</string>
   <string name="pref_enable_notifications">Notificacions</string>
   <string name="pref_title_enable_notifications">Mostra les notificacions en la barra d\'estat</string>
   <string name="pref_ringtone">Tria el so</string>
@@ -180,7 +180,7 @@
   <string name="message_user_not_found">Sembla que el contacte no està registrat a Kontalk. Podeu intentar contactar amb l\'usuari igualment o enviar-li un missatge d\'invitació.</string>
   <string name="yes_user_not_found">Contacta amb l\'usuari igualment</string>
   <string name="no_user_not_found">Envia invitació</string>
-  <string name="pref_appearance_settings">Configuració de l\'aparença</string>
+  <string name="pref_appearance_settings">Aparença</string>
   <string name="pref_font_size">Mida de la lletra</string>
   <string name="menu_status">Estat</string>
   <string name="menu_attachment">Adjunt</string>
@@ -347,7 +347,7 @@
   <string name="err_playing_audio">Error en reproduir l\'àudio.</string>
   <string name="err_playing_sdcard">Error en llegir de l\'emmagatzematge extern.</string>
   <string name="slide_to_cancel">Llisqueu per a cancel·lar</string>
-  <string name="pref_media_settings">Configuració multimèdia</string>
+  <string name="pref_media_settings">Multimèdia</string>
   <string name="pref_image_resize">Redimensiona les imatges</string>
   <string name="err_server_invalid_format">Format d\'adreça no vàlid.</string>
   <string name="err_no_contacts_app">No s\'ha trobat l\'app de gestió de contactes.</string>
@@ -372,9 +372,9 @@
     <string name="hint_ptt">Mantingui premut el botó de micro per gravar.</string>
     <string name="err_audio_record_noaudio">No s\'ha enregistrat cap àudio.</string>
     <string name="msg_importing_key">Important la clau personal…</string>
-    <string name="code_validation_intro_missed_call">En breu tindrà una trucada perduda d\'aquest número. <b>PER FAVOR NO RESPONGUI A LA TRUCADA.</b></string>
+    <string name="code_validation_intro_missed_call">En breu tindrà una trucada perduda al seu número. <b>PER FAVOR NO RESPONGUI A LA TRUCADA.</b></string>
     <string name="code_validation_intro2_missed_call">Si us plau, inseriu els últims %d dígits del número de la trucada perduda.</string>
-    <string name="button_validation_fallback">No ha rebut cap trucada?</string>
+    <string name="button_validation_fallback">No ha rebut res?</string>
     <string name="title_fallback">Hi ha algun problema?</string>
     <string name="msg_fallback">Intentarem verificar el seu número de telèfon d\'una altra manera.</string>
     <string name="menu_manual_verification">Ja té un codi?</string>
@@ -586,5 +586,11 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
     <string name="notify_text_decryption_error">No s\'ha pogut desxifrar</string>
     <string name="group_command_users_added">Usuaris afegits:</string>
     <string name="group_command_users_removed">Usuaris eliminats:</string>
+
+    <string name="registration_poweredby">Impulsat per</string>
+
+    <string name="reply">Respon</string>
+    <string name="person_me">Jo</string>
+    <string name="audio_duration_max">%1$s / %2$s</string>
 
     </resources>

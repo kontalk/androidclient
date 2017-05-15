@@ -30,7 +30,7 @@
   <string name="menu_settings">Configurações</string>
   <string name="menu_offline">Desconectar</string>
   <string name="menu_online">Conectar</string>
-  <string name="pref_network_settings">Configurações de rede</string>
+  <string name="pref_network_settings">Rede</string>
   <string name="pref_network_uri">Endereço manual do servidor</string>
   <string name="pref_title_network_uri">Isso vai sobrescrever a gestão automática da lista de servidores</string>
   <string name="number_validation_intro1">Por favor, digite o seu nome, selecione o código do seu país e entre com o número do seu telefone. Você verá mais instruções na próxima tela.</string>
@@ -94,8 +94,8 @@
   <string name="pref_regenerate_keypair">Regerar a chave pessoal</string>
   <string name="pref_title_regenerate_keypair">Utilize isto caso a sua chave pessoal tenha sido comprometida</string>
   <string name="contacts_list_title">Escolha um contato</string>
-  <string name="pref_messaging_settings">Configurações das mensagens</string>
-  <string name="pref_privacy_settings">Configurações de privacidade</string>
+  <string name="pref_messaging_settings">Mensagens</string>
+  <string name="pref_privacy_settings">Privacidade</string>
   <string name="pref_encrypt">Criptografar mensagens</string>
   <string name="pref_encrypt_userdata">Criptografar dados pessoais</string>
   <string name="pref_title_on_encrypt_userdata">A mensagem de status será visível apenas para quem tiver o seu número de telefone</string>
@@ -120,7 +120,7 @@
   <string name="hint_search_full">Pesquisar mensagens</string>
   <string name="hint_search_quickbox">Texto nas suas mensagens</string>
   <string name="title_search">Pesquisar: \"%s\"</string>
-  <string name="pref_notification_settings">Configurações de notificação</string>
+  <string name="pref_notification_settings">Notificações</string>
   <string name="pref_enable_notifications">Notificações</string>
   <string name="pref_title_enable_notifications">Exibir notificações de mensagens na barra de estado</string>
   <string name="pref_ringtone">Selecionar o toque</string>
@@ -174,7 +174,7 @@
   <string name="message_user_not_found">Aparentemente esse contato não está registrado no Kontalk. Você pode tentar contatá-lo mesmo assim ou enviar um convite.</string>
   <string name="yes_user_not_found">Contatar essa pessoa mesmo assim</string>
   <string name="no_user_not_found">Enviar o convite</string>
-  <string name="pref_appearance_settings">Configurações de aparência</string>
+  <string name="pref_appearance_settings">Aparência</string>
   <string name="pref_font_size">Tamanho da letra</string>
   <string name="menu_status">Status</string>
   <string name="menu_attachment">Anexar</string>
@@ -414,7 +414,7 @@
     <string name="err_playing_sdcard">Ocorreu um erro na leitura do armazenamento externo.</string>
     <string name="slide_to_cancel">DESLIZE PARA CANCELAR</string>
 
-    <string name="pref_media_settings">Configurações de mídia</string>
+    <string name="pref_media_settings">Mídia</string>
     <string name="pref_image_resize">Redimensionar as imagens</string>
 
     <string name="err_server_invalid_format">O formato do endereço é inválido.</string>
@@ -536,9 +536,9 @@
     <string name="group_command_text_part_kicked">Você foi removido desse grupo</string>
 
     <plurals name="unread_messages">
-        <item quantity="one">%d mensagens não lidas</item>
-        <item quantity="other">%d mensagens não lidas</item>
-    </plurals>
+	<item quantity="one">1 mensagem não lida</item>
+	<item quantity="other">%d mensagens não lidas</item>
+</plurals>
 
     <plurals name="unread_messages_group">
         <item quantity="one">%1$d mensagens @ %2$s</item>
@@ -594,5 +594,19 @@ Se desabilitada, você pode fazer ajustes finos no funcionamento da conexão do 
 
     <string name="pref_debug_log">Habilitar o relatório de depuração</string>
     <string name="pref_send_debug_log">Enviar o relatório de depuração</string>
+
+    <string name="notify_text_decryption_error">Falha na descriptografia</string>
+    <string name="menu_encryption">Criptografia</string>
+    <string name="title_disable_encryption">Desabilitar a criptografia para esta conversa?</string>
+    <string name="msg_disable_encryption">Todas as novas mensagens enviadas para essa conversa NÃO serão criptografadas.
+Desabilite a criptografia apenas se o seu contato não posuir uma chave pessoal.</string>
+    <string name="menu_disable_encryption">Desabilitar</string>
+
+    <string name="group_command_users_added">Usuários adicionados:</string>
+    <string name="group_command_users_removed">Usuários removidos:</string>
+
+    <string name="group_info_menu_add_again">Adicionar novamente</string>
+
+    <string name="status_notsubscribed">Não permitido/Bloqueado</string>
 
     </resources>
