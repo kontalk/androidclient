@@ -268,6 +268,12 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
         if (conv.getUnreadCount() > 0) {
             text = new SpannableString(text);
             ((Spannable) text).setSpan(STYLE_BOLD, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+            mSubjectView.setSingleLine(false);
+            mSubjectView.setMaxLines(3);
+        }
+        else {
+            mSubjectView.setSingleLine(true);
+            mSubjectView.setMaxLines(1);
         }
 
         mSubjectView.setText(text);

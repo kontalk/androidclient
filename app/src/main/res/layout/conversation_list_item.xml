@@ -59,6 +59,7 @@
         android:layout_alignWithParentIfMissing="true"
         android:layout_toStartOf="@+id/emblems"
         android:layout_toLeftOf="@+id/emblems"
+        android:paddingBottom="16dp"
         app:emojiconSize="@dimen/emoji_listitem_size"
         app:emojiconAlignment="baseline"
         android:ellipsize="marquee" />
