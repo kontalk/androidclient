@@ -79,6 +79,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.kontalk.BuildConfig;
@@ -105,6 +106,7 @@ import org.kontalk.ui.adapter.CountryCodesAdapter;
 import org.kontalk.ui.adapter.CountryCodesAdapter.CountryCode;
 import org.kontalk.ui.prefs.PreferencesActivity;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.ParameterRunnable;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
@@ -531,6 +533,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     private void enableControls(boolean enabled) {
+        mNameText.setEnabled(enabled);
         mValidateButton.setEnabled(enabled);
         mCountryCode.setEnabled(enabled);
         mPhone.setEnabled(enabled);
@@ -543,19 +546,21 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             .show();
     }
 
-    private boolean checkInput(boolean importing) {
-        String phoneStr;
+    private void checkInput(boolean importing, final ParameterRunnable<Boolean> callback) {
+        final String phoneStr;
 
         // check name first
         if (!importing) {
             mName = mNameText.getText().toString().trim();
             if (mName.length() == 0) {
                 error(R.string.msg_no_name);
-                return false;
+                callback.run(false);
+                return;
             }
         }
 
         String phoneInput = mPhone.getText().toString();
+        String phoneConfirm;
         // if the user entered a phone number use it even when importing for backward compatibility
         if (!importing || !phoneInput.isEmpty()){
             PhoneNumberUtil util = PhoneNumberUtil.getInstance();
@@ -582,7 +587,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 }
                 catch (NumberParseException e1) {
                     error(R.string.msg_invalid_number);
-                    return false;
+                    callback.run(false);
+                    return;
                 }
 
                 // check phone number format
@@ -590,37 +596,83 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 if (!PhoneNumberUtils.isWellFormedSmsAddress(phoneStr)) {
                     Log.i(TAG, "not a well formed SMS address");
                 }
+
+                // for the confirmation dialog
+                phoneConfirm = util.format(phone, PhoneNumberFormat.INTERNATIONAL);
             }
             else {
-                phoneStr = String.format(Locale.US, "+%d%s", cc.countryCode, mPhone.getText().toString());
+                phoneStr = phoneConfirm = String.format(Locale.US, "+%d%s", cc.countryCode, mPhone.getText().toString());
             }
 
             // phone is null - invalid number
             if (phoneStr == null) {
                 Toast.makeText(this, R.string.warn_invalid_number, Toast.LENGTH_SHORT)
                     .show();
-                return false;
+                callback.run(false);
+                return;
             }
 
             Log.v(TAG, "Using phone number to register: " + phoneStr);
-            mPhoneNumber = phoneStr;
+
+            // confirmation dialog only if not importing
+            if (!importing) {
+                MaterialDialog dialog = new MaterialDialog.Builder(this)
+                    .customView(R.layout.dialog_register_confirm, false)
+                    .positiveText(android.R.string.ok)
+                    .positiveColorRes(R.color.button_success)
+                    .negativeText(android.R.string.cancel)
+                    .onAny(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            switch (which) {
+                                case POSITIVE:
+                                    mPhoneNumber = phoneStr;
+                                    callback.run(true);
+                                    break;
+                                case NEGATIVE:
+                                    callback.run(false);
+                                    break;
+                            }
+                        }
+                    })
+                    .cancelListener(new OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            callback.run(false);
+                        }
+                    })
+                    .build();
+
+                TextView phoneTextView = (TextView) dialog.findViewById(R.id.bigtext);
+                phoneTextView.setText(phoneConfirm);
+
+                dialog.show();
+            }
+            else {
+                callback.run(true);
+            }
         }
         else {
             // we will use the data from the imported key
             mName = null;
             mPhoneNumber = null;
-        }
 
-        return true;
+            callback.run(true);
+        }
     }
 
-    void startValidation(boolean force, boolean fallback) {
+    void startValidation(final boolean force, final boolean fallback) {
         mForce = force;
         enableControls(false);
 
-        if (!checkInput(false) || !startValidationNormal(null, force, fallback, false)) {
-            enableControls(true);
-        }
+        checkInput(false, new ParameterRunnable<Boolean>() {
+            @Override
+            public void run(Boolean result) {
+                if (!result || !startValidationNormal(null, force, fallback, false)) {
+                    enableControls(true);
+                }
+            }
+        });
     }
 
     private boolean startValidationNormal(String manualServer, boolean force, boolean fallback, boolean testImport) {
@@ -670,25 +722,35 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     /** Opens manual validation window immediately. */
     public void validateCode() {
-        if (checkInput(false))
-            startValidationCode(REQUEST_VALIDATION_CODE, null, null, null, null);
+        checkInput(false, new ParameterRunnable<Boolean>() {
+            @Override
+            public void run(Boolean result) {
+                if (result)
+                    startValidationCode(REQUEST_VALIDATION_CODE, null, null, null, null);
+            }
+        });
     }
 
     /** Opens import keys from another device wizard. */
     private void importKey() {
-        if (checkInput(true)) {
-            // import keys -- number verification with server is still needed
-            // though because of key rollback protection
-            // TODO allow for manual validation too
+        checkInput(true, new ParameterRunnable<Boolean>() {
+            @Override
+            public void run(Boolean result) {
+                if (result) {
+                    // import keys -- number verification with server is still needed
+                    // though because of key rollback protection
+                    // TODO allow for manual validation too
 
-            // do not wait for the generated key
-            stopKeyReceiver();
+                    // do not wait for the generated key
+                    stopKeyReceiver();
 
-            new FileChooserDialog.Builder(NumberValidation.this)
-                .initialPath(PersonalKeyPack.DEFAULT_KEYPACK.getParent())
-                .mimeType(PersonalKeyPack.KEYPACK_MIME)
-                .show();
-        }
+                    new FileChooserDialog.Builder(NumberValidation.this)
+                        .initialPath(PersonalKeyPack.DEFAULT_KEYPACK.getParent())
+                        .mimeType(PersonalKeyPack.KEYPACK_MIME)
+                        .show();
+                }
+            }
+        });
     }
 
     private void importAskPassphrase(final ZipInputStream zip) {

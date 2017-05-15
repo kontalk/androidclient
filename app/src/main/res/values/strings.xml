@@ -192,6 +192,8 @@
     <string name="err_store_message_failed">Unable to store message to outbox.</string>
     <string name="msg_invalid_number">Please insert a valid phone number.</string>
     <string name="msg_invalid_cc">Please insert a valid country code.</string>
+    <string name="msg_register_confirm_number1">We will verify the phone number:</string>
+    <string name="msg_register_confirm_number2">Please double check that the number is correct.</string>
     <string name="title_invalid_code">Invalid code</string>
     <string name="msg_invalid_code">Please insert a valid code.</string>
     <string name="title_nonetwork">No internet connection</string>

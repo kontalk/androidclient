@@ -93,4 +93,9 @@
         <item name="android:layout_marginBottom">4dp</item>
     </style>
 
+    <style name="TextAppearance.RegisterConfirm.Phone" parent="android:TextAppearance">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">24sp</item>
+    </style>
+
 </resources>
