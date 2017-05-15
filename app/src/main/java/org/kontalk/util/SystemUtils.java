@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -46,6 +47,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
+import android.os.PowerManager;
 import android.provider.ContactsContract;
 import android.support.annotation.AttrRes;
 import android.support.annotation.ColorRes;
@@ -438,6 +440,82 @@ public final class SystemUtils {
         if (!context.getTheme().resolveAttribute(attrResId, value, true))
             throw new Resources.NotFoundException();
         return value.resourceId;
+    }
+
+    public static boolean isProximityWakelockSupported(Context context) {
+        PowerManager pwm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            return pwm.isWakeLockLevelSupported(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK);
+        }
+        else {
+            try {
+                Method m = pwm.getClass().getMethod("getSupportedWakeLockFlags");
+                int flags = (int) m.invoke(pwm);
+                return (flags & getProximityScreenOffFlag()) != 0x0;
+            }
+            catch (Exception e) {
+                return false;
+            }
+        }
+    }
+
+    private static int getProximityScreenOffFlag() {
+        try {
+            Field f = PowerManager.class.getField("PROXIMITY_SCREEN_OFF_WAKE_LOCK");
+            return f.getInt(null);
+        }
+        catch (Exception e) {
+            return 0;
+        }
+    }
+
+    public static PowerManager.WakeLock newProximityWakeLock(Context context, String tag) {
+        PowerManager pwm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        int flags;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            flags = PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK;
+        }
+        else {
+            flags = getProximityScreenOffFlag();
+        }
+
+        return pwm.newWakeLock(flags, tag);
+    }
+
+    public static void releaseProximityWakeLock(PowerManager.WakeLock wakeLock) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            wakeLock.release(PowerManager.RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY);
+        }
+        else {
+            // WARNING: terrible hacks ahead
+            int flags = 0;
+            try {
+                Field f = wakeLock.getClass().getField("RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY");
+                flags = f.getInt(null);
+            }
+            catch (Exception e) {
+                try {
+                    // try the older flag (should work down to level 9)
+                    Field f = wakeLock.getClass().getField("WAIT_FOR_PROXIMITY_NEGATIVE");
+                    flags = f.getInt(null);
+                }
+                catch (Exception ignored) {
+                }
+            }
+
+            if (flags > 0) {
+                try {
+                    Method m = wakeLock.getClass().getMethod("release", int.class);
+                    m.invoke(wakeLock, flags);
+                }
+                catch (Exception ignored) {
+                }
+            }
+            else {
+                // if all else fail...
+                wakeLock.release();
+            }
+        }
     }
 
 }

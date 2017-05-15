@@ -438,7 +438,7 @@ public class AudioDialog extends AlertDialog {
         // STATUS_PLAYING is used when restoring dialog
         if (mStatus == STATUS_PAUSED || mStatus == STATUS_PLAYING)
             mProgressBarAnimator.setCurrentPlayTime(mData.getPlayerPosition());
-        mData.startPlaying();
+        mData.startPlaying(false);
         mStatus = STATUS_PLAYING;
     }
 
@@ -512,7 +512,7 @@ public class AudioDialog extends AlertDialog {
     }
 
     void setDurationText(long millis) {
-        long duration = mData.getPlayerDuration();
+        long duration = (mStatus == STATUS_PLAYING) ? mData.getPlayerDuration() : -1;
         mTimeTxt.setText(mTimeTxt.getContext().getString(R.string.audio_duration_max,
             DateUtils.formatElapsedTime(millis / 1000),
             // recording or playing?
