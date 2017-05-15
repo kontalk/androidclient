@@ -580,4 +580,8 @@ http://kontalk.org/</string>
 
 <string name="registration_poweredby">Powered by</string>
 
+    <string name="reply">返信</string>
+    <string name="person_me">自分</string>
+    <string name="audio_duration_max">%1$s / %2$s</string>
+
     </resources>
