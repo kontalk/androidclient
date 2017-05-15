@@ -598,4 +598,5 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="msg_register_confirm_number2">Bitte überprüfen Sie, ob die Nummer korrekt ist.</string>
     <string name="audio_duration_max">%1$s / %2$s</string>
 
+    <string name="person_me">Ich</string>
     </resources>
