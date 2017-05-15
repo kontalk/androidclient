@@ -593,4 +593,8 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
 
     <string name="registration_poweredby">Offerto da</string>
 
+    <string name="reply">Rispondi</string>
+    <string name="person_me">Io</string>
+    <string name="audio_duration_max">%1$s / %2$s</string>
+
     </resources>
