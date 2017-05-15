@@ -591,4 +591,8 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
 
     <string name="registration_poweredby">Impulsado por</string>
 
+    <string name="reply">Responder</string>
+    <string name="person_me">Yo</string>
+    <string name="audio_duration_max">%1$s / %2$s</string>
+
     </resources>
