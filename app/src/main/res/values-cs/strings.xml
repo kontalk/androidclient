@@ -598,4 +598,8 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
 
     <string name="registration_poweredby">Poháněno</string>
 
+    <string name="reply">Odpovědět</string>
+    <string name="person_me">Já</string>
+    <string name="audio_duration_max">%1$s / %2$s</string>
+
     </resources>
