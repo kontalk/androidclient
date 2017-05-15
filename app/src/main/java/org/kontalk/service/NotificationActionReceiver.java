@@ -28,9 +28,11 @@ import android.os.Parcelable;
 import android.support.v4.app.RemoteInput;
 
 import org.kontalk.Kontalk;
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.MessagesProvider;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.ui.MessagingNotification;
 
 
@@ -62,9 +64,17 @@ public class NotificationActionReceiver extends BroadcastReceiver {
             Bundle result = RemoteInput.getResultsFromIntent(intent);
             if (result != null) {
                 Conversation conv = Conversation.loadFromId(context, threadId);
-                String text = result.getString(KEY_TEXT_REPLY);
-                Kontalk.get(context).getMessagesController()
-                    .sendTextMessage(conv, text);
+                CharSequence text = result.getCharSequence(KEY_TEXT_REPLY);
+                if (text != null) {
+                    Kontalk.get(context).getMessagesController()
+                        .sendTextMessage(conv, text.toString());
+                }
+                else {
+                    // it shouldn't happen, but you know, Android...
+                    Log.w(Kontalk.TAG, "Unable to use direct reply content");
+                    ReportingManager.logException(new UnsupportedOperationException
+                        ("direct reply content is null"));
+                }
             }
 
             // TODO show notification with the reply for a short time
