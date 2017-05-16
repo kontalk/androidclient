@@ -2095,7 +2095,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             view.prepare(audio.getPlayerDuration());
             audio.seekPlayerTo(view.getPosition());
             view.setProgressChangeListener(true);
-            audio.setOnCompletionListener(new AudioFragment.OnCompletionListener() {
+            audio.setListener(new AudioFragment.AudioFragmentListener() {
                 @Override
                 public void onCompletion(AudioFragment audio) {
                     stopMediaPlayerUpdater();
@@ -2109,6 +2109,13 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 @Override
                 public void onAudioFocusLost(AudioFragment audio) {
                     stopAllSounds();
+                }
+
+                @Override
+                public void onPause(AudioFragment audio) {
+                    view.pause();
+                    stopMediaPlayerUpdater();
+                    setAudioStatus(AudioContentView.STATUS_PAUSED);
                 }
             });
             return true;
@@ -2167,7 +2174,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         final AudioFragment audio = getAudioFragment();
         if (audio != null && audio.getMessageId() == messageId) {
             mAudioControl = view;
-            audio.setOnCompletionListener(new AudioFragment.OnCompletionListener() {
+            audio.setListener(new AudioFragment.AudioFragmentListener() {
                 @Override
                 public void onCompletion(AudioFragment audio) {
                     stopMediaPlayerUpdater();
@@ -2179,6 +2186,13 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 @Override
                 public void onAudioFocusLost(AudioFragment audio) {
                     stopAllSounds();
+                }
+
+                @Override
+                public void onPause(AudioFragment audio) {
+                    view.pause();
+                    stopMediaPlayerUpdater();
+                    setAudioStatus(AudioContentView.STATUS_PAUSED);
                 }
             });
 
@@ -2199,7 +2213,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         AudioFragment audio = getAudioFragment();
         if (audio != null && audio.getMessageId() == messageId) {
             mAudioControl = null;
-            audio.setOnCompletionListener(new AudioFragment.OnCompletionListener() {
+            audio.setListener(new AudioFragment.AudioFragmentListener() {
                 @Override
                 public void onCompletion(AudioFragment audio) {
                     audio.seekPlayerTo(0);
@@ -2209,6 +2223,11 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 @Override
                 public void onAudioFocusLost(AudioFragment audio) {
                     stopAllSounds();
+                }
+
+                @Override
+                public void onPause(AudioFragment audio) {
+                    setAudioStatus(AudioContentView.STATUS_PAUSED);
                 }
             });
 

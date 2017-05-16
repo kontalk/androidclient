@@ -56,7 +56,7 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
     /** Message id of the media currently being played. */
     private long mMessageId = -1;
 
-    private OnCompletionListener mOnCompletionListener;
+    private AudioFragmentListener mListener;
     private boolean mAudioFocus;
 
     /** Proximity wake lock. */
@@ -146,7 +146,7 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
         mPlayer.prepare();
     }
 
-    private void restartPlayback(boolean frontSpeaker) throws IOException {
+    private void restartPlayback(boolean frontSpeaker, boolean start) throws IOException {
         if (mPlayer != null && mLastDataSource != null) {
             // pause the listener
             mPlayer.setOnCompletionListener(null);
@@ -159,7 +159,8 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
             // restart playback from last position
             preparePlayer(mLastDataSource, frontSpeaker);
             mPlayer.seekTo(position);
-            mPlayer.start();
+            if (start)
+                mPlayer.start();
         }
     }
 
@@ -209,17 +210,20 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
         releaseAudioFocus();
     }
 
-    public void setOnCompletionListener(OnCompletionListener listener)
+    public void setListener(AudioFragmentListener listener)
     {
-        mOnCompletionListener = listener;
+        mListener = listener;
     }
 
-    interface OnCompletionListener {
+    interface AudioFragmentListener {
         /** Called on play completion. */
         void onCompletion(AudioFragment audio);
 
         /** Called when the app loses audio focus. */
         void onAudioFocusLost(AudioFragment audio);
+
+        /** Called when we pause without user intervention. */
+        void onPause(AudioFragment audio);
     }
 
     @Override
@@ -228,8 +232,8 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
         // release any audio focus
         releaseAudioFocus();
 
-        if (mOnCompletionListener != null) {
-            mOnCompletionListener.onCompletion(this);
+        if (mListener != null) {
+            mListener.onCompletion(this);
         }
     }
 
@@ -256,7 +260,7 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
         mPlayer = null;
         mRecorder = null;
         mStartTime = 0;
-        mOnCompletionListener = null;
+        mListener = null;
         releaseLock(true);
         releaseAudioFocus();
     }
@@ -273,11 +277,11 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
                     mProximityClosed = true;
                     try {
                         // restart playback from phone speaker
-                        restartPlayback(true);
+                        restartPlayback(true, true);
                     }
                     catch (IOException e) {
-                        if (mOnCompletionListener != null)
-                            mOnCompletionListener.onCompletion(this);
+                        if (mListener != null)
+                            mListener.onCompletion(this);
                     }
                 }
             }
@@ -286,11 +290,13 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
                     mProximityClosed = false;
                     try {
                         // restart playback from speaker
-                        restartPlayback(false);
+                        restartPlayback(false, false);
+                        if (mListener != null)
+                            mListener.onPause(this);
                     }
                     catch (IOException e) {
-                        if (mOnCompletionListener != null)
-                            mOnCompletionListener.onCompletion(this);
+                        if (mListener != null)
+                            mListener.onCompletion(this);
                     }
                 }
             }
@@ -373,9 +379,9 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
             focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT ||
             focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
             mAudioFocus = false;
-            if (mOnCompletionListener != null) {
+            if (mListener != null) {
                 // notify listener that we should stop playing now
-                mOnCompletionListener.onAudioFocusLost(AudioFragment.this);
+                mListener.onAudioFocusLost(AudioFragment.this);
             }
         }
     }

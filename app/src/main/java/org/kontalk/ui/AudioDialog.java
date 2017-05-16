@@ -167,7 +167,7 @@ public class AudioDialog extends AlertDialog {
         @SuppressLint("InflateParams")
         View v = inflater.inflate(R.layout.audio_dialog, null);
         setView(v);
-        mData.setOnCompletionListener(new AudioFragment.OnCompletionListener() {
+        mData.setListener(new AudioFragment.AudioFragmentListener() {
             @Override
             public void onCompletion(AudioFragment audio) {
                 mImageButton.setImageResource(R.drawable.play);
@@ -178,6 +178,13 @@ public class AudioDialog extends AlertDialog {
             @Override
             public void onAudioFocusLost(AudioFragment audio) {
                 pauseAudio();
+            }
+
+            @Override
+            public void onPause(AudioFragment audio) {
+                mImageButton.setImageResource(R.drawable.play);
+                mProgressBarAnimator.end();
+                mStatus = STATUS_PAUSED;
             }
         });
 
@@ -211,7 +218,7 @@ public class AudioDialog extends AlertDialog {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (mFile != null) {
-                    mData.setOnCompletionListener(null);
+                    mData.setListener(null);
                     mListener.onRecordingSuccessful(mFile);
                     mStatus = STATUS_SEND;
                 }
