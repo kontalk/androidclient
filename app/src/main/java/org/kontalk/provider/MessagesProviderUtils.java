@@ -44,6 +44,14 @@ import org.kontalk.util.Preferences;
  */
 public class MessagesProviderUtils {
 
+    private static final String[] LATEST_THREADS_PROJ = {
+        Threads._ID,
+        Threads.PEER,
+    };
+
+    public static final int LATEST_THREADS_COLUMN_ID = 0;
+    public static final int LATEST_THREADS_COLUMN_PEER = 1;
+
     private MessagesProviderUtils() {
     }
 
@@ -57,6 +65,13 @@ public class MessagesProviderUtils {
             b = true;
         c.close();
         return b;
+    }
+
+    public static Cursor getLatestThreads(Context context, boolean includeGroups, int limit) {
+        return context.getContentResolver().query(Threads.CONTENT_URI.buildUpon()
+                .appendQueryParameter("limit", String.valueOf(limit)).build(),
+            LATEST_THREADS_PROJ, includeGroups ? null : Groups.GROUP_JID + " IS NULL", null,
+            Threads.DEFAULT_SORT_ORDER);
     }
 
     /** Inserts a new outgoing text message. */

@@ -83,6 +83,12 @@
         <service android:name=".service.UploadService"/>
         <service android:name=".service.KeyPairGeneratorService"/>
         <service android:name=".service.MediaService"/>
+        <service android:name=".service.DirectShareTargetService"
+            android:permission="android.permission.BIND_CHOOSER_TARGET_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.chooser.ChooserTargetService" />
+            </intent-filter>
+        </service>
 
         <!-- Content providers -->
         <provider android:name=".provider.MessagesProvider"
@@ -187,6 +193,9 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="org.kontalk.ui.ConversationsActivity" />
+            <meta-data
+                android:name="android.service.chooser.chooser_target_service"
+                android:value="org.kontalk.service.DirectShareTargetService" />
         </activity>
 
         <activity android:name=".ui.prefs.PreferencesActivity"
