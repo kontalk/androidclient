@@ -376,6 +376,7 @@ public class Contact {
         mLastSeen = lastSeen;
     }
 
+    @NonNull
     private static Drawable generateRandomAvatar(Context context, Contact contact) {
         String letter = (contact.mName != null && contact.mName.length() > 0) ?
             contact.mName : contact.mJID;
@@ -443,13 +444,12 @@ public class Contact {
      * avatar generation.
      * @return a newly-allocated {@link Bitmap}
      */
+    @NonNull
     public synchronized Bitmap getAvatarBitmap(Context context) {
         Bitmap avatar = loadAvatarBitmap(context);
         if (avatar == null) {
             Drawable d = generateRandomAvatar(context, this);
-            if (d != null) {
-                avatar = MessageUtils.drawableToBitmap(d);
-            }
+            avatar = MessageUtils.drawableToBitmap(d);
         }
         return avatar;
     }

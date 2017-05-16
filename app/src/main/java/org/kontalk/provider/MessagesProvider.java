@@ -535,8 +535,10 @@ public class MessagesProvider extends ContentProvider {
                 throw new IllegalArgumentException("Unknown URI " + uri);
         }
 
+        String limit = uri.getQueryParameter("limit");
+
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor c = qb.query(db, projection, selection, selectionArgs, null, null, sortOrder);
+        Cursor c = qb.query(db, projection, selection, selectionArgs, null, null, sortOrder, limit);
 
         c.setNotificationUri(getContext().getContentResolver(), uri);
         return c;

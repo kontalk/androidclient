@@ -45,6 +45,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -672,7 +673,8 @@ public final class MessageUtils {
         values.put(Messages.SERVER_TIMESTAMP, msg.getServerTimestamp());
     }
 
-    public static Bitmap drawableToBitmap(Drawable drawable) {
+    @NonNull
+    public static Bitmap drawableToBitmap(@NonNull Drawable drawable) {
         Bitmap bitmap;
 
         if (drawable instanceof BitmapDrawable) {

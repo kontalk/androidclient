@@ -70,14 +70,17 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     public static final String EXTRA_MESSAGE = "org.kontalk.conversation.MESSAGE";
     /** Used with VIEW actions, highlight a {@link Pattern} in messages. */
     public static final String EXTRA_HIGHLIGHT = "org.kontalk.conversation.HIGHLIGHT";
+    /** Used with SEND actions sent via direct share. */
+    public static final String EXTRA_USERID = "org.kontalk.conversation.USERID";
     /** Used internally when reloading: does not trigger scroll-to-match. */
     static final String EXTRA_RELOADING = "org.kontalk.conversation.RELOADING";
     /** Set to true for showing the group chat on creation disclaimer. */
     static final String EXTRA_CREATING_GROUP = "org.kontalk.CREATING_GROUP";
 
-
     /** The SEND intent. */
     private Intent sendIntent;
+    /** The SEND intent from direct share. */
+    private Intent directSendIntent;
 
     AbstractComposeFragment mFragment;
 
@@ -291,14 +294,22 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
 
             // send external content
             else if (Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) {
-                sendIntent = intent;
                 String mime = intent.getType();
 
                 Log.i(TAG, "sending data to someone: " + mime);
-                chooseContact();
 
-                // onActivityResult will handle the rest
-                return null;
+                String userId = intent.getStringExtra(EXTRA_USERID);
+                if (userId != null) {
+                    handleSendResult(userId, intent);
+                    // we'll handle directSendIntent later
+                    return null;
+                }
+                else {
+                    sendIntent = intent;
+                    chooseContact();
+                    // onActivityResult will handle the rest
+                    return null;
+                }
             }
 
             // send to someone
@@ -350,30 +361,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
                 if (threadUri != null) {
                     Log.i(TAG, "composing message for conversation: " + threadUri);
                     String userId = threadUri.getLastPathSegment();
-                    Intent i = fromUserId(this, userId);
-                    if (i != null) {
-                        if (Kontalk.hasTwoPanesUI(this)) {
-                            // we need to go back to the main activity
-                            Intent startIntent = new Intent(getApplicationContext(), ConversationsActivity.class);
-                            startIntent.setAction(ACTION_VIEW_USERID);
-                            startIntent.setData(threadUri);
-                            startIntent.putExtra(ConversationsActivity.EXTRA_SEND_INTENT, sendIntent);
-                            startActivity(startIntent);
-                            finish();
-                        }
-                        else {
-                            onNewIntent(i);
-
-                            // process SEND intent if necessary
-                            if (sendIntent != null)
-                                processSendIntent();
-                        }
-                    }
-                    else {
-                        Toast.makeText(this, R.string.contact_not_registered, Toast.LENGTH_LONG)
-                            .show();
-                        finish();
-                    }
+                    handleSendResult(userId, null);
                 }
             }
             else {
@@ -383,6 +371,37 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
         }
         else {
             super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    private void handleSendResult(String userId, Intent directShareIntent) {
+        Intent i = fromUserId(this, userId);
+        if (i != null) {
+            if (Kontalk.hasTwoPanesUI(this)) {
+                // we need to go back to the main activity
+                Intent startIntent = new Intent(getApplicationContext(), ConversationsActivity.class);
+                startIntent.setAction(ACTION_VIEW_USERID);
+                startIntent.setData(Threads.getUri(userId));
+                startIntent.putExtra(ConversationsActivity.EXTRA_SEND_INTENT,
+                    directShareIntent != null ? directShareIntent : sendIntent);
+                startActivity(startIntent);
+                finish();
+            }
+            else {
+                onNewIntent(i);
+
+                // process SEND intent if necessary
+                if (sendIntent != null)
+                    processSendIntent();
+                // otherwise save direct share intent for later
+                else if (directShareIntent != null)
+                    directSendIntent = directShareIntent;
+            }
+        }
+        else {
+            Toast.makeText(this, R.string.contact_not_registered, Toast.LENGTH_LONG)
+                .show();
+            finish();
         }
     }
 
@@ -480,6 +499,15 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
         if (mFragment != null)
             out.putParcelable(Uri.class.getName(), Threads.getUri(mFragment.getUserId()));
         out.putBoolean("lostFocus", mLostFocus);
+    }
+
+    @Override
+    protected void onResumeFragments() {
+        super.onResumeFragments();
+        if (directSendIntent != null) {
+            SendIntentReceiver.processSendIntent(this, directSendIntent, mFragment);
+            directSendIntent = null;
+        }
     }
 
     @Override
