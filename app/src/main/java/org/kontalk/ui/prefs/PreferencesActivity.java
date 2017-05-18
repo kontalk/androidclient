@@ -120,6 +120,9 @@ public final class PreferencesActivity extends BasePreferencesActivity
             case R.xml.preferences_media:
                 fragment = new MediaFragment();
                 break;
+            case R.xml.preferences_maps:
+                fragment = new org.kontalk.ui.prefs.MapsFragment();
+                break;
             case R.xml.preferences_notification:
                 fragment = new NotificationFragment();
                 break;

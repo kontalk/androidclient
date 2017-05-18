@@ -28,6 +28,7 @@ allprojects {
         smackVersion = project(':client-common-java').smackVersion
         spongyCastleVersion = '1.54.0.0'
         appcompatVersion = '25.3.1'
+        anyMapsVersion = '631bf739cc'
         // Google will drop support for Android 2.3 after 10.0.x
         googlePlayServicesVersion = '10.0.1'
 

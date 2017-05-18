@@ -95,10 +95,12 @@
     </string-array>
 
     <string-array name="maps_provider_values" translatable="false">
+        <item>google</item>
         <item>osm</item>
     </string-array>
 
     <string-array name="maps_provider_labels">
+        <item>@string/pref_maps_google_label</item>
         <item>@string/pref_maps_osm_label</item>
     </string-array>
 

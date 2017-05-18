@@ -151,6 +151,12 @@ dependencies {
     compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'com.github.vlivanov:ListViewVariants:f606578467'
 
+    compile "com.github.kontalk.AnyMaps:anymaps-base:$anyMapsVersion"
+    compile "com.github.kontalk.AnyMaps:anymaps-osm:$anyMapsVersion"
+
+    googleplayCompile "com.github.kontalk.AnyMaps:anymaps-google:$anyMapsVersion"
+    googleplayCompile "com.google.android.gms:play-services-maps:$googlePlayServicesVersion"
+
     googleplayCompile "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
     googleplayCompile "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"
     googleplayCompile('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
@@ -185,4 +191,8 @@ else if (project.hasProperty('GOOGLE_PLAY_DEVELOPER_KEY_FILE')) {
         jsonFile = file(GOOGLE_PLAY_DEVELOPER_KEY_FILE)
         untrackOld = true
     }
+}
+
+configurations {
+    all*.exclude group: 'xpp3', module: 'xpp3'
 }

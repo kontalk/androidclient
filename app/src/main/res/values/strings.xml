@@ -286,6 +286,8 @@
     <string name="pref_wakeup_time_label_30m">30 minutes</string>
     <string name="pref_wakeup_time_label_1h">1 hour</string>
     <string name="pref_wakeup_time_label_3h">3 hours</string>
+    <string name="pref_maps_google_label">Google Maps</string>
+    <string name="pref_maps_osm_label">OpenStreetMap</string>
 
     <string name="pref_remove_prefix">Dial prefix</string>
     <string name="pref_change_passphrase">Change personal key password</string>
@@ -481,6 +483,9 @@
     <string name="pref_media_autodownload_label_never">Never</string>
     <string name="pref_media_autodownload_label_wifi">Only on Wi-Fi</string>
     <string name="pref_media_autodownload_label_always">Always</string>
+
+    <string name="pref_maps_settings">Maps</string>
+    <string name="pref_maps_service">Service provider</string>
 
     <string name="pref_on">On</string>
     <string name="pref_off">Off</string>
