@@ -37,6 +37,11 @@ public class LocationActivity extends ToolbarActivity {
 
         setupToolbar(true, true);
 
+        LocationFragment fragment = new LocationFragment();
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.container, fragment, fragment.getClass().getName()).commit();
     }
 
     @Override

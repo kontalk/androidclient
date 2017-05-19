@@ -19,8 +19,12 @@
 package org.kontalk.position;
 
 import android.content.Context;
+import android.widget.LinearLayout;
+
+import com.car2go.maps.MapContainerView;
 
 import org.kontalk.R;
+import org.kontalk.util.Preferences;
 
 /**
  * @author andreacappelli
@@ -32,5 +36,24 @@ public class PositionManager {
 
     public static String getDefaultMapsProvider(Context context) {
         return context.getString(R.string.pref_default_maps_google);
+    }
+
+    public static MapContainerView getMapView(Context context) {
+        String google = context.getString(R.string.pref_default_maps_google);
+        String osm = context.getString(R.string.pref_default_maps_osm);
+        MapContainerView mapView = null;
+        if  (Preferences.getMapsProvider(context).equals(google)) {
+            com.car2go.maps.google.MapView googleMapView = new com.car2go.maps.google.MapView(context);
+            googleMapView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT));
+            mapView = googleMapView;
+        } else if (Preferences.getMapsProvider(context).equals(osm)) {
+            com.car2go.maps.osm.MapView osmMapView = new com.car2go.maps.osm.MapView(context);
+            osmMapView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT));
+            mapView = osmMapView;
+        }
+
+        return mapView;
     }
 }

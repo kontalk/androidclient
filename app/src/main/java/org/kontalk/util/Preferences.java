@@ -35,6 +35,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.crypto.PersonalKey;
+import org.kontalk.position.PositionManager;
 import org.kontalk.provider.Keyring;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.msgcenter.MessageCenterService;
@@ -261,6 +262,10 @@ public final class Preferences {
             context.getResources().getString(R.string.pref_default_media_autodownload));
         return (size / 1024) < threshold || "always".equals(autodownload) ||
             ("wifi".equals(autodownload) && SystemUtils.isOnWifi(context));
+    }
+
+    public static String getMapsProvider(Context context) {
+        return getString("pref_maps_service", PositionManager.getDefaultMapsProvider(context));
     }
 
     public static boolean getContactsListVisited() {

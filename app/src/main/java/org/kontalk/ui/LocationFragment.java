@@ -24,8 +24,12 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+
+import com.car2go.maps.MapContainerView;
 
 import org.kontalk.R;
+import org.kontalk.position.PositionManager;
 
 /**
  * Location Activity
@@ -34,10 +38,18 @@ import org.kontalk.R;
 
 public class LocationFragment extends Fragment {
 
+    private LinearLayout mRootLayout;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_location, container, false);
+
+        mRootLayout = (LinearLayout) view.findViewById(R.id.root_view);
+
+        MapContainerView mapContainerView = PositionManager.getMapView(getActivity());
+
+        mRootLayout.addView(mapContainerView);
 
         return view;
     }
