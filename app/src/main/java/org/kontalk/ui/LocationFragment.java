@@ -44,15 +44,13 @@ public class LocationFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_location, container, false);
+        View view = inflater.inflate(PositionManager.getMapView(getContext()), container, false);
 
         mRootLayout = (LinearLayout) view.findViewById(R.id.root_view);
 
-        mMapContainerView = PositionManager.getMapView(getActivity());
+        mMapContainerView = (MapContainerView) view.findViewById(R.id.mapView);
 
         mMapContainerView.onCreate(savedInstanceState);
-
-        mRootLayout.addView(mMapContainerView);
 
         return view;
     }

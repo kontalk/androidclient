@@ -34,15 +34,13 @@ public class PositionManager {
         return context.getString(R.string.pref_default_maps_osm);
     }
 
-    public static MapContainerView getMapView(Context context) {
+    public static int getMapView(Context context) {
         String osm = context.getString(R.string.pref_default_maps_osm);
+        int layout = 0;
         if (Preferences.getMapsProvider(context).equals(osm)) {
-            com.car2go.maps.osm.MapView osmMapView = new com.car2go.maps.osm.MapView(context);
-            osmMapView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.MATCH_PARENT));
-            return osmMapView;
+            layout = R.layout.fragment_osm;
         }
 
-        return null;
+        return layout;
     }
 }
