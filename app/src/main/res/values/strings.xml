@@ -115,6 +115,7 @@
     <string name="pref_title_regenerate_keypair">Use this in case your personal key has been compromised</string>
     <string name="pref_regenerate_keypair_confirm">A new key pair will be generated and assigned to your account. Your old key will become invalid.</string>
     <string name="contacts_list_title">Choose a contact</string>
+    <string name="position_screen_title">Position</string>
     <string name="pref_messaging_settings">Messaging</string>
     <string name="pref_privacy_settings">Privacy</string>
     <string name="pref_encrypt">Encrypt messages</string>

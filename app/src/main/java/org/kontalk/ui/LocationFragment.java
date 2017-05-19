@@ -39,6 +39,7 @@ import org.kontalk.position.PositionManager;
 public class LocationFragment extends Fragment {
 
     private LinearLayout mRootLayout;
+    private MapContainerView mMapContainerView;
 
     @Nullable
     @Override
@@ -47,9 +48,11 @@ public class LocationFragment extends Fragment {
 
         mRootLayout = (LinearLayout) view.findViewById(R.id.root_view);
 
-        MapContainerView mapContainerView = PositionManager.getMapView(getActivity());
+        mMapContainerView = PositionManager.getMapView(getActivity());
 
-        mRootLayout.addView(mapContainerView);
+        mMapContainerView.onCreate(savedInstanceState);
+
+        mRootLayout.addView(mMapContainerView);
 
         return view;
     }
@@ -57,5 +60,35 @@ public class LocationFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mMapContainerView.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mMapContainerView.onResume();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mMapContainerView.onDestroy();
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        mMapContainerView.onLowMemory();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mMapContainerView.onSaveInstanceState(outState);
     }
 }

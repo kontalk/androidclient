@@ -192,7 +192,3 @@ else if (project.hasProperty('GOOGLE_PLAY_DEVELOPER_KEY_FILE')) {
         untrackOld = true
     }
 }
-
-configurations {
-    all*.exclude group: 'xpp3', module: 'xpp3'
-}

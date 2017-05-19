@@ -24,6 +24,7 @@ import org.kontalk.R;
 
 /**
  * Location Activity
+ *
  * @author andreacappelli
  * @version 1.0
  */
@@ -37,11 +38,13 @@ public class LocationActivity extends ToolbarActivity {
 
         setupToolbar(true, true);
 
-        LocationFragment fragment = new LocationFragment();
+        if (savedInstanceState == null) {
+            LocationFragment fragment = new LocationFragment();
 
-        getSupportFragmentManager()
-                .beginTransaction()
-                .add(R.id.container, fragment, fragment.getClass().getName()).commit();
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.container, fragment, fragment.getClass().getName()).commit();
+        }
     }
 
     @Override

@@ -18,82 +18,6 @@
 
 <resources>
 
-    <string-array name="vibrate_values" translatable="false">
-        <item>always</item>
-        <item>silent_only</item>
-        <item>never</item>
-    </string-array>
-
-    <string-array name="vibrate_labels">
-        <item>@string/pref_vibrate_label_always</item>
-        <item>@string/pref_vibrate_label_silent</item>
-        <item>@string/pref_vibrate_label_never</item>
-    </string-array>
-
-    <string-array name="fontsize_values" translatable="false">
-        <item>small</item>
-        <item>medium</item>
-        <item>large</item>
-    </string-array>
-
-    <string-array name="fontsize_labels">
-        <item>@string/pref_fontsize_label_small</item>
-        <item>@string/pref_fontsize_label_medium</item>
-        <item>@string/pref_fontsize_label_large</item>
-    </string-array>
-
-    <string-array name="balloons_values" translatable="false">
-        <item>hangout</item>
-        <item>silence</item>
-        <item>classic</item>
-        <item>old_classic</item>
-        <item>iphone</item>
-    </string-array>
-
-    <string-array name="balloons_labels">
-        <item>@string/pref_balloon_label_hangout</item>
-        <item>@string/pref_balloon_label_silence</item>
-        <item>@string/pref_balloon_label_classic</item>
-        <item>@string/pref_balloon_label_classic_old</item>
-        <item>@string/pref_balloon_label_iphone</item>
-    </string-array>
-
-    <string-array name="balloons_values_groups" translatable="false">
-        <item>hangout</item>
-        <item>silence</item>
-    </string-array>
-
-    <string-array name="balloons_labels_groups">
-        <item>@string/pref_balloon_label_hangout</item>
-        <item>@string/pref_balloon_label_silence</item>
-    </string-array>
-
-    <string-array name="text_enter_values" translatable="false">
-        <item>default</item>
-        <item>newline</item>
-        <item>newline_send</item>
-    </string-array>
-
-    <string-array name="text_enter_labels">
-        <item>@string/pref_text_enter_label_default</item>
-        <item>@string/pref_text_enter_label_newline</item>
-        <item>@string/pref_text_enter_label_newline_send</item>
-    </string-array>
-
-    <string-array name="image_resize_values" translatable="false">
-        <item>0</item>
-        <item>640</item>
-        <item>1024</item>
-        <item>1920</item>
-    </string-array>
-
-    <string-array name="image_resize_labels">
-        <item>@string/pref_image_resize_label_original</item>
-        <item>@string/pref_image_resize_label_small</item>
-        <item>@string/pref_image_resize_label_medium</item>
-        <item>@string/pref_image_resize_label_large</item>
-    </string-array>
-
     <string-array name="maps_provider_values" translatable="false">
         <item>google</item>
         <item>osm</item>
@@ -102,56 +26,6 @@
     <string-array name="maps_provider_labels">
         <item>@string/pref_maps_google_label</item>
         <item>@string/pref_maps_osm_label</item>
-    </string-array>
-
-    <string-array name="media_autodownload_values" translatable="false">
-        <item>never</item>
-        <item>wifi</item>
-        <item>always</item>
-    </string-array>
-
-    <string-array name="media_autodownload_labels">
-        <item>@string/pref_media_autodownload_label_never</item>
-        <item>@string/pref_media_autodownload_label_wifi</item>
-        <item>@string/pref_media_autodownload_label_always</item>
-    </string-array>
-
-    <string-array name="idle_time_values" translatable="false">
-        <item>0</item>
-        <item>300000</item>
-        <item>900000</item>
-        <item>1800000</item>
-        <item>3600000</item>
-    </string-array>
-
-    <string-array name="idle_time_labels">
-        <item>@string/pref_idle_time_label_never</item>
-        <item>@string/pref_idle_time_label_5m</item>
-        <item>@string/pref_idle_time_label_15m</item>
-        <item>@string/pref_idle_time_label_30m</item>
-        <item>@string/pref_idle_time_label_1h</item>
-    </string-array>
-
-    <string-array name="wakeup_time_values" translatable="false">
-        <item>300000</item>
-        <item>900000</item>
-        <item>1800000</item>
-        <item>3600000</item>
-        <item>10800000</item>
-    </string-array>
-
-    <string-array name="wakeup_time_labels">
-        <item>@string/pref_wakeup_time_label_5m</item>
-        <item>@string/pref_wakeup_time_label_15m</item>
-        <item>@string/pref_wakeup_time_label_30m</item>
-        <item>@string/pref_wakeup_time_label_1h</item>
-        <item>@string/pref_wakeup_time_label_3h</item>
-    </string-array>
-
-    <string-array name="iab_items" translatable="false">
-        <item>donation_1</item>
-        <item>donation_2</item>
-        <item>donation_5</item>
     </string-array>
 
 </resources>

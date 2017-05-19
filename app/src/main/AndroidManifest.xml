@@ -269,6 +269,7 @@
             android:label="@string/groupinfo_activity_title"/>
 
         <activity android:name=".ui.LocationActivity"
+            android:label="@string/position_screen_title"
             android:value="org.kontalk.ui.LocationActivity"/>
 
 

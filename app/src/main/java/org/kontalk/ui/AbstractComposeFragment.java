@@ -637,8 +637,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         view.findViewById(R.id.attach_location).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Toast.makeText(getContext(), R.string.msg_not_implemented, Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(getActivity(), LocationActivity.class));
+                selectPositionAttachment();
                 hideAttachmentView();
             }
         });
@@ -1068,6 +1067,10 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         // show dialog
         mAudioDialog = new AudioDialog(getActivity(), audio, this);
         mAudioDialog.show();
+    }
+
+    void selectPositionAttachment() {
+        startActivity(new Intent(getContext(), LocationActivity.class));
     }
 
     private AudioFragment getAudioFragment() {
