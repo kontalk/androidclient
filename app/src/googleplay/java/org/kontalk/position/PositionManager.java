@@ -19,9 +19,7 @@
 package org.kontalk.position;
 
 import android.content.Context;
-import android.widget.LinearLayout;
-
-import com.car2go.maps.MapContainerView;
+import android.support.v4.app.Fragment;
 
 import org.kontalk.R;
 import org.kontalk.util.Preferences;
@@ -38,16 +36,16 @@ public class PositionManager {
         return context.getString(R.string.pref_default_maps_google);
     }
 
-    public static int getMapView(Context context) {
+    public static Fragment getMapFragment(Context context) {
         String google = context.getString(R.string.pref_default_maps_google);
         String osm = context.getString(R.string.pref_default_maps_osm);
-        int layout = 0;
+        Fragment fragment = null;
         if  (Preferences.getMapsProvider(context).equals(google)) {
-            layout = R.layout.fragment_google;
+            fragment = new GoogleMapsFragment();
         } else if (Preferences.getMapsProvider(context).equals(osm)) {
-            layout = R.layout.fragment_osm;
+            fragment = new OsmFragment();
         }
 
-        return layout;
+        return fragment;
     }
 }

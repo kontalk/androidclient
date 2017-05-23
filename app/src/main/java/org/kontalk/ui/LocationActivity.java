@@ -19,8 +19,10 @@
 package org.kontalk.ui;
 
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 
 import org.kontalk.R;
+import org.kontalk.position.PositionManager;
 
 /**
  * Location Activity
@@ -39,7 +41,9 @@ public class LocationActivity extends ToolbarActivity {
         setupToolbar(true, true);
 
         if (savedInstanceState == null) {
-            LocationFragment fragment = new LocationFragment();
+            Fragment fragment = PositionManager.getMapFragment(this);
+            if (fragment == null)
+                finish();
 
             getSupportFragmentManager()
                     .beginTransaction()

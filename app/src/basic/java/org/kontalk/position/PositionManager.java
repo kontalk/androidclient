@@ -34,13 +34,13 @@ public class PositionManager {
         return context.getString(R.string.pref_default_maps_osm);
     }
 
-    public static int getMapView(Context context) {
+    public static Fragment getMapFragment(Context context) {
         String osm = context.getString(R.string.pref_default_maps_osm);
-        int layout = 0;
-        if (Preferences.getMapsProvider(context).equals(osm)) {
-            layout = R.layout.fragment_osm;
+        Fragment fragment = null;
+        if  (Preferences.getMapsProvider(context).equals(google)) {
+            fragment = new GoogleMapsFragment();
         }
 
-        return layout;
+        return fragment;
     }
 }

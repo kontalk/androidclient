@@ -130,6 +130,32 @@ public class MessagesProviderUtils {
         return context.getContentResolver().insert(Messages.CONTENT_URI, values);
     }
 
+    /** Inserts a new outgoing text message. */
+    public static Uri newOutgoingMessage(Context context, String msgId, String userId,
+                                         String text, double lat, double lon, boolean encrypted) {
+
+        byte[] bytes = text.getBytes();
+        ContentValues values = new ContentValues(11);
+        // must supply a message ID...
+        values.put(Messages.MESSAGE_ID, msgId);
+        values.put(Messages.PEER, userId);
+        values.put(Messages.BODY_MIME, TextComponent.MIME_TYPE);
+        values.put(Messages.BODY_CONTENT, bytes);
+        values.put(Messages.BODY_LENGTH, bytes.length);
+        values.put(Messages.UNREAD, false);
+        values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
+        values.put(Messages.TIMESTAMP, System.currentTimeMillis());
+        values.put(Messages.STATUS, Messages.STATUS_SENDING);
+        values.put(Messages.GEO_LATITUDE, Messages.GEO_LATITUDE);
+        values.put(Messages.GEO_LONGITUDE, Messages.GEO_LONGITUDE);
+        // of course outgoing messages are not encrypted in database
+        values.put(Messages.ENCRYPTED, false);
+        values.put(Threads.ENCRYPTION, encrypted);
+        values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+        return context.getContentResolver().insert(
+                Messages.CONTENT_URI, values);
+    }
+
     /** Returns the thread associated with the given message. */
     public static long getThreadByMessage(Context context, Uri message) {
         Cursor c = context.getContentResolver().query(message,

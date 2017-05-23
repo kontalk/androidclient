@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui;
+package org.kontalk.position;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -24,33 +24,30 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
-
-import com.car2go.maps.MapContainerView;
 
 import org.kontalk.R;
-import org.kontalk.position.PositionManager;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.views.MapView;
 
 /**
- * Location Activity
+ * OpenStreetMaps Fragment
  * @author andreacappelli
  */
 
-public class LocationFragment extends Fragment {
+public class OsmFragment extends Fragment {
 
-    private LinearLayout mRootLayout;
-    private MapContainerView mMapContainerView;
+    private MapView mMapView;
+
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(PositionManager.getMapView(getContext()), container, false);
+        View view = inflater.inflate(R.layout.fragment_osm, container, false);
 
-        mRootLayout = (LinearLayout) view.findViewById(R.id.root_view);
+        mMapView = ((MapView) view.findViewById(R.id.mapView));
 
-        mMapContainerView = (MapContainerView) view.findViewById(R.id.mapView);
-
-        mMapContainerView.onCreate(savedInstanceState);
+        mMapView.setTileSource(TileSourceFactory.MAPNIK);
+        mMapView.setMultiTouchControls(true);
 
         return view;
     }
@@ -58,35 +55,8 @@ public class LocationFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        mMapContainerView.onPause();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        mMapContainerView.onResume();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mMapContainerView.onDestroy();
-    }
-
-    @Override
-    public void onLowMemory() {
-        super.onLowMemory();
-        mMapContainerView.onLowMemory();
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        mMapContainerView.onSaveInstanceState(outState);
-    }
 }

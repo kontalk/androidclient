@@ -58,6 +58,7 @@ import android.database.Cursor;
 import android.database.MergeCursor;
 import android.database.sqlite.SQLiteDiskIOException;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -143,7 +144,8 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     private static final int SELECT_ATTACHMENT_OPENABLE = 1;
     private static final int SELECT_ATTACHMENT_CONTACT = 2;
     private static final int SELECT_ATTACHMENT_PHOTO = 3;
-    private static final int REQUEST_INVITE_USERS = 4;
+    private static final int SELECT_ATTACHMENT_LOCATION = 4;
+    private static final int REQUEST_INVITE_USERS = 5;
 
     // use this as base for request codes for child classes
     protected static final int REQUEST_FIRST_CHILD = 100;
@@ -692,6 +694,16 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         }
     }
 
+    @Override
+    public void sendLocationMessage(String message, double lat, double lon) {
+        if (!TextUtils.isEmpty(message)) {
+            offlineModeWarning();
+
+            // start thread
+            new TextMessageThread(message).start();
+        }
+    }
+
     private final class TextMessageThread extends Thread {
         private final String mText;
 
@@ -734,6 +746,61 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                         Toast.makeText(getActivity(),
                             R.string.err_store_message_failed,
                             Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        }
+    }
+
+    private final class LocationMessageThread extends Thread {
+        private final String mText;
+        private double mLatitude;
+        private double mLongitude;
+        private boolean mLocation;
+
+
+        LocationMessageThread(String text, double lat, double lon) {
+            mText = text;
+            mLatitude = lat;
+            mLongitude = lon;
+            mLocation = true;
+        }
+
+        @Override
+        public void run() {
+            try {
+                final Context context = getContext();
+                final Conversation conv = mConversation;
+                Uri newMsg = Kontalk.getMessagesController(context)
+                        .sendLocationMessage(conv, mText, mLatitude, mLongitude);
+
+                // update thread id from the inserted message
+                if (threadId <= 0) {
+                    threadId = MessagesProviderUtils.getThreadByMessage(context, newMsg);
+                    if (threadId > 0) {
+                        startQuery();
+                    }
+                    else {
+                        Log.v(TAG, "no data - cannot start query for this composer");
+                    }
+                }
+            }
+            catch (SQLiteDiskIOException e) {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getActivity(), R.string.error_store_outbox,
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+            catch (Exception e) {
+                ReportingManager.logException(e);
+                getActivity().runOnUiThread(new Runnable() {
+                    public void run() {
+                        Toast.makeText(getActivity(),
+                                R.string.err_store_message_failed,
+                                Toast.LENGTH_LONG).show();
                     }
                 });
             }
@@ -1070,7 +1137,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     }
 
     void selectPositionAttachment() {
-        startActivity(new Intent(getContext(), LocationActivity.class));
+        startActivityForResult(new Intent(getContext(), LocationActivity.class), SELECT_ATTACHMENT_LOCATION);
     }
 
     private AudioFragment getAudioFragment() {
@@ -1316,6 +1383,13 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                             Toast.LENGTH_LONG).show();
                     }
                 }
+            }
+        }
+        // user location
+        else if (requestCode == SELECT_ATTACHMENT_LOCATION) {
+            if (resultCode == Activity.RESULT_OK) {
+                Location location = data.getParcelableExtra("location");
+                new LocationMessageThread("Location", location.getLatitude(), location.getLongitude()).start();
             }
         }
         // invite user

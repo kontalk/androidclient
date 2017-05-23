@@ -16,38 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui.view;
+package org.kontalk.message;
 
-import android.net.Uri;
-
-import org.kontalk.message.MessageComponent;
-
+import org.kontalk.crypto.Coder;
 
 /**
- * Listeners for the composer bar.
+ * A location message component.
  * @author Daniele Ricci
+ * @author Andrea Cappelli
  */
-public interface ComposerListener {
+public class LocationComponent extends MessageComponent <Location> {
 
-    /** Sends a text message. */
-    void sendTextMessage(String message);
+    public LocationComponent(double lat, double lon) {
+        super(new Location(lat,lon), 0, false, Coder.SECURITY_CLEARTEXT);
+    }
 
-    void sendLocationMessage(String message, double lat, double lon);
+    public double getLatitude() {
+        return mContent.getLatitude();
+    }
 
-    /** Sends a binary message. */
-    void sendBinaryMessage(Uri uri, String mime, boolean media,
-        Class<? extends MessageComponent<?>> klass);
-
-    /**
-     * Sends a typing notification.
-     * @return true if the notification was sent
-     */
-    boolean sendTyping();
-
-    /** Asks the parent to stop all sounds. */
-    void stopAllSounds();
-
-    /** Text has been changed. */
-    void textChanged(CharSequence text);
-
+    public double getLongitude() {
+        return mContent.getLongitude();
+    }
 }

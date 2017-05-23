@@ -84,6 +84,8 @@ public class CompositeMessage {
         Messages.ATTACHMENT_LENGTH,
         Messages.ATTACHMENT_ENCRYPTED,
         Messages.ATTACHMENT_SECURITY_FLAGS,
+        Messages.GEO_LATITUDE,
+        Messages.GEO_LONGITUDE,
         Groups.GROUP_JID,
         Groups.SUBJECT,
         Groups.GROUP_TYPE,
@@ -111,10 +113,13 @@ public class CompositeMessage {
     public static final int COLUMN_ATTACHMENT_LENGTH = 17;
     public static final int COLUMN_ATTACHMENT_ENCRYPTED = 18;
     public static final int COLUMN_ATTACHMENT_SECURITY_FLAGS = 19;
-    public static final int COLUMN_GROUP_JID = 20;
-    public static final int COLUMN_GROUP_SUBJECT = 21;
-    public static final int COLUMN_GROUP_TYPE = 22;
-    public static final int COLUMN_GROUP_MEMBERSHIP = 23;
+    public static final int COLUMN_GEO_LATITUDE = 20;
+    public static final int COLUMN_GEO_LONGITUDE= 21;
+    public static final int COLUMN_GROUP_JID = 22;
+    public static final int COLUMN_GROUP_SUBJECT = 23;
+    public static final int COLUMN_GROUP_TYPE = 24;
+    public static final int COLUMN_GROUP_MEMBERSHIP = 25;
+
 
     public static final String MSG_ID = "org.kontalk.message.id";
     public static final String MSG_SERVER_ID = "org.kontalk.message.serverId";
@@ -421,6 +426,13 @@ public class CompositeMessage {
                     addComponent(att);
                 }
 
+            }
+
+            if (!c.isNull(COLUMN_GEO_LATITUDE)) {
+                double lat = c.getDouble(COLUMN_GEO_LATITUDE);
+                double lon = c.getDouble(COLUMN_GEO_LONGITUDE);
+                LocationComponent location = new LocationComponent(lat, lon);
+                addComponent(location);
             }
 
             // group information

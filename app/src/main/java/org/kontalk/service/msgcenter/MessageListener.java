@@ -50,6 +50,7 @@ import org.kontalk.client.GroupExtension;
 import org.kontalk.client.KontalkGroupManager;
 import org.kontalk.client.OpenPGPSignedMessage;
 import org.kontalk.client.OutOfBandData;
+import org.kontalk.client.UserLocation;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.DecryptException;
 import org.kontalk.crypto.PersonalKey;
@@ -62,6 +63,7 @@ import org.kontalk.message.DefaultAttachmentComponent;
 import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.GroupComponent;
 import org.kontalk.message.ImageComponent;
+import org.kontalk.message.LocationComponent;
 import org.kontalk.message.MessageComponent;
 import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
@@ -409,6 +411,12 @@ class MessageListener extends MessageCenterPacketListener {
                                     attachment.getClass(), mime)));
                         }
                         */
+                    }
+
+                    ExtensionElement _location = m.getExtension(UserLocation.ELEMENT_NAME, UserLocation.NAMESPACE);
+                    if (_location != null && _location instanceof UserLocation) {
+                        UserLocation location = (UserLocation) _location;
+                        msg.addComponent(new LocationComponent(location.getLatitude(), location.getLongitude()));
                     }
 
                     // group chat
