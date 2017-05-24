@@ -114,7 +114,7 @@ public class CompositeMessage {
     public static final int COLUMN_ATTACHMENT_ENCRYPTED = 18;
     public static final int COLUMN_ATTACHMENT_SECURITY_FLAGS = 19;
     public static final int COLUMN_GEO_LATITUDE = 20;
-    public static final int COLUMN_GEO_LONGITUDE= 21;
+    public static final int COLUMN_GEO_LONGITUDE = 21;
     public static final int COLUMN_GROUP_JID = 22;
     public static final int COLUMN_GROUP_SUBJECT = 23;
     public static final int COLUMN_GROUP_TYPE = 24;

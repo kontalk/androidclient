@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><!-- Kontalk Android client
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kontalk Android client
      Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
@@ -15,18 +16,19 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<org.kontalk.ui.view.LocationContentView xmlns:android="http://schemas.android.com/apk/res/android"
+<org.kontalk.ui.view.LocationContentView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <ImageView
         android:id="@+id/content"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"/>
 
     <TextView
         android:id="@+id/placeholder"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"/>
 
 </org.kontalk.ui.view.LocationContentView>

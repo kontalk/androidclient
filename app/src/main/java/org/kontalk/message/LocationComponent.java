@@ -18,17 +18,19 @@
 
 package org.kontalk.message;
 
+
 import org.kontalk.crypto.Coder;
 
 /**
  * A location message component.
+ *
  * @author Daniele Ricci
  * @author Andrea Cappelli
  */
-public class LocationComponent extends MessageComponent <Location> {
+public class LocationComponent extends MessageComponent<Location> {
 
     public LocationComponent(double lat, double lon) {
-        super(new Location(lat,lon), 0, false, Coder.SECURITY_CLEARTEXT);
+        super(new Location(lat, lon), 0, false, Coder.SECURITY_CLEARTEXT);
     }
 
     public double getLatitude() {

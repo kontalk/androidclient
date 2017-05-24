@@ -1,5 +1,5 @@
 /*
- * Kontalk client common library
+ * Kontalk Android client
  * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
@@ -18,13 +18,14 @@
 
 package org.kontalk.client;
 
+import java.io.IOException;
+
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.provider.ExtensionElementProvider;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
-import java.io.IOException;
 
 /**
  * XEP-0080: User Location

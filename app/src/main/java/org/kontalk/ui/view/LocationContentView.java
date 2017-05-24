@@ -1,10 +1,28 @@
+/*
+ * Kontalk Android client
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.kontalk.ui.view;
 
+import java.util.regex.Pattern;
+
+import com.bumptech.glide.Glide;
+
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
@@ -12,19 +30,10 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.kontalk.Log;
 import org.kontalk.R;
-import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.LocationComponent;
+import org.kontalk.position.GMStaticUrlBuilder;
 import org.kontalk.ui.ComposeMessage;
-import org.kontalk.util.MediaStorage;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.ref.WeakReference;
-import java.util.regex.Pattern;
 
 /**
  * @author andreacappelli
@@ -33,7 +42,7 @@ import java.util.regex.Pattern;
  */
 
 public class LocationContentView extends FrameLayout
-        implements MessageContentView<LocationComponent> {
+    implements MessageContentView<LocationComponent> {
     static final String TAG = ComposeMessage.TAG;
 
     private LocationComponent mComponent;
@@ -63,48 +72,21 @@ public class LocationContentView extends FrameLayout
     public void bind(long messageId, LocationComponent component, Pattern highlight) {
         mComponent = component;
 
-        Bitmap bitmap = getBitmap();
-        showBitmap(bitmap);
+        showMap();
     }
 
-    /** This method might be called from a thread other than the main thread. */
-    void showBitmap(Bitmap bitmap) {
-        // this method might be called from another thread
+    private void showMap() {
         final LocationComponent component = mComponent;
         if (component == null)
             return;
 
-        if (bitmap != null) {
-            mContent.setImageBitmap(bitmap);
-            mPlaceholder.setVisibility(GONE);
-            mContent.setVisibility(VISIBLE);
-        }
-        else {
-            String placeholder = CompositeMessage.getSampleTextContent("Position");
-            mPlaceholder.setText(placeholder);
-            TextContentView.setTextStyle(mPlaceholder);
-            mContent.setVisibility(GONE);
-            mPlaceholder.setVisibility(VISIBLE);
-        }
-    }
+        mPlaceholder.setVisibility(GONE);
+        mContent.setVisibility(VISIBLE);
 
-    private BitmapFactory.Options bitmapOptions() {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.RGB_565;
-        return options;
-    }
+        String imageURL = new GMStaticUrlBuilder().setCenter(mComponent.getLatitude(),
+            mComponent.getLongitude()).setMarker(mComponent.getLatitude(), mComponent.getLongitude()).toString();
 
-    Bitmap loadPreview(File previewFile) throws IOException {
-        InputStream in = new FileInputStream(previewFile);
-        BitmapFactory.Options options = bitmapOptions();
-        Bitmap bitmap = BitmapFactory.decodeStream(in, null, options);
-        in.close();
-        return bitmap;
-    }
-
-    private Bitmap getBitmap() {
-
-        return BitmapFactory.decodeResource(getContext().getResources(), R.drawable.attach_location);
+        Glide.with(getContext()).load(imageURL).into(mContent);
     }
 
     @Override
@@ -117,7 +99,9 @@ public class LocationContentView extends FrameLayout
         return mComponent;
     }
 
-    /** Image is always on top. */
+    /**
+     * Image is always on top.
+     */
     @Override
     public int getPriority() {
         return 1;
@@ -130,47 +114,7 @@ public class LocationContentView extends FrameLayout
 
     public static LocationContentView create(LayoutInflater inflater, ViewGroup parent) {
         return (LocationContentView) inflater.inflate(R.layout.message_content_location,
-                parent, false);
-    }
-
-    interface ThumbnailListener {
-        void onThumbnailGenerated(File previewFile);
-    }
-
-    final static class GenerateThumbnailTask extends AsyncTask<Void, Void, Boolean> {
-        private final Uri mLocalUri;
-        private final File mPreviewFile;
-        private final WeakReference<Context> mContext;
-        private final ImageContentView.ThumbnailListener mListener;
-
-        GenerateThumbnailTask(Context context, Uri localUri, File previewFile, ImageContentView.ThumbnailListener listener) {
-            mContext = new WeakReference<>(context);
-            mLocalUri = localUri;
-            mPreviewFile = previewFile;
-            mListener = listener;
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            Context context = mContext.get();
-            if (context != null) {
-                try {
-                    MediaStorage.cacheThumbnail(context, mLocalUri, mPreviewFile, false);
-                    return true;
-                }
-                catch (Exception e) {
-                    Log.e(TAG, "unable to generate thumbnail", e);
-                }
-            }
-            return false;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean result) {
-            if (result != null && result) {
-                mListener.onThumbnailGenerated(mPreviewFile);
-            }
-        }
+            parent, false);
     }
 
 }
