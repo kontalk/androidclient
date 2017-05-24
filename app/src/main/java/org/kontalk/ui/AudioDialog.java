@@ -186,6 +186,15 @@ public class AudioDialog extends AlertDialog {
                 mProgressBarAnimator.end();
                 mStatus = STATUS_PAUSED;
             }
+
+            @Override
+            public void onError(AudioFragment audio) {
+                mImageButton.setImageResource(R.drawable.play);
+                mProgressBarAnimator.end();
+                mStatus = STATUS_ENDED;
+                Toast.makeText(getContext(), R.string.err_playing_audio, Toast.LENGTH_LONG)
+                    .show();
+            }
         });
 
         v.findViewById(R.id.image_audio).setOnClickListener(new View.OnClickListener() {
