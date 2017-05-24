@@ -321,6 +321,7 @@
     <string name="attachment_file">File</string>
     <string name="attachment_vcard">Contact</string>
     <string name="attachment_location">Location</string>
+    <string name="notification_location">sent you a location</string>
 
     <string name="msg_not_implemented">Not implemented yet.</string>
 
