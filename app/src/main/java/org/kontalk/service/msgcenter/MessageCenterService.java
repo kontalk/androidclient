@@ -1894,6 +1894,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         // TODO Messages.ATTACHMENT_SECURITY_FLAGS,
                         Groups.GROUP_JID,
                         Groups.SUBJECT,
+                        Messages.GEO_LATITUDE,
+                        Messages.GEO_LONGITUDE,
                 },
                 filter.toString(), filterArgs,
                 Messages._ID);
@@ -2034,6 +2036,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 b.putLong("org.kontalk.message.length", attLength);
                 b.putInt("org.kontalk.message.compress", compress);
             }
+
+            if (!c.isNull(15)){
+                double lat = c.getDouble(15);
+                double lon = c.getDouble(16);
+                b.putDouble("org.kontalk.message.geo_lat", lat);
+                b.putDouble("org.kontalk.message.geo_lon", lon);
+            }
+
 
             Log.v(TAG, "resending pending message " + id);
             sendMessage(b);

@@ -146,8 +146,8 @@ public class MessagesProviderUtils {
         values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
         values.put(Messages.TIMESTAMP, System.currentTimeMillis());
         values.put(Messages.STATUS, Messages.STATUS_SENDING);
-        values.put(Messages.GEO_LATITUDE, Messages.GEO_LATITUDE);
-        values.put(Messages.GEO_LONGITUDE, Messages.GEO_LONGITUDE);
+        values.put(Messages.GEO_LATITUDE, lat);
+        values.put(Messages.GEO_LONGITUDE, lon);
         // of course outgoing messages are not encrypted in database
         values.put(Messages.ENCRYPTED, false);
         values.put(Threads.ENCRYPTION, encrypted);

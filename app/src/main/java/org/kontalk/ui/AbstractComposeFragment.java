@@ -696,12 +696,9 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     @Override
     public void sendLocationMessage(String message, double lat, double lon) {
-        if (!TextUtils.isEmpty(message)) {
-            offlineModeWarning();
-
-            // start thread
-            new TextMessageThread(message).start();
-        }
+        offlineModeWarning();
+        // start thread
+        new LocationMessageThread(message, lat, lon).start();
     }
 
     private final class TextMessageThread extends Thread {
@@ -1389,7 +1386,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         else if (requestCode == SELECT_ATTACHMENT_LOCATION) {
             if (resultCode == Activity.RESULT_OK) {
                 Location location = data.getParcelableExtra("location");
-                new LocationMessageThread("Location", location.getLatitude(), location.getLongitude()).start();
+                sendLocationMessage("Location", location.getLatitude(), location.getLongitude());
             }
         }
         // invite user

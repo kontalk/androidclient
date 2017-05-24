@@ -64,7 +64,7 @@ import java.util.Locale;
 public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
-    private final static String TAG = GoogleMapsFragment.class.getName();
+    private final static String TAG = GoogleMapsFragment.class.getSimpleName();
 
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;

@@ -36,9 +36,8 @@ import org.kontalk.position.GMStaticUrlBuilder;
 import org.kontalk.ui.ComposeMessage;
 
 /**
+ * Message component for {@link LocationComponent}.
  * @author andreacappelli
- * @version 1.0
- *          DATE: 23/05/17
  */
 
 public class LocationContentView extends FrameLayout
