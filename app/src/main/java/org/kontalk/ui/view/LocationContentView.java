@@ -33,6 +33,7 @@ import android.widget.TextView;
 import org.kontalk.R;
 import org.kontalk.message.LocationComponent;
 import org.kontalk.position.GMStaticUrlBuilder;
+import org.kontalk.position.PositionManager;
 import org.kontalk.ui.ComposeMessage;
 
 /**
@@ -82,8 +83,9 @@ public class LocationContentView extends FrameLayout
         mPlaceholder.setVisibility(GONE);
         mContent.setVisibility(VISIBLE);
 
-        String imageURL = new GMStaticUrlBuilder().setCenter(mComponent.getLatitude(),
-            mComponent.getLongitude()).setMarker(mComponent.getLatitude(), mComponent.getLongitude()).toString();
+        String imageURL = PositionManager.getStaticMapUrl(getContext(),
+            mComponent.getLatitude(), mComponent.getLongitude(), null,
+            200, 100, (int) getContext().getResources().getDisplayMetrics().density);
 
         Glide.with(getContext()).load(imageURL).into(mContent);
     }

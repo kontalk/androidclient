@@ -18,23 +18,7 @@
 
 package org.kontalk.position;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Location;
-import android.os.Build;
-import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
+import java.util.Locale;
 
 import com.car2go.maps.AnyMap;
 import com.car2go.maps.OnInterceptTouchEvent;
@@ -49,11 +33,35 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
+import com.nineoldandroids.view.ViewHelper;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.os.Build;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 import org.kontalk.Log;
 import org.kontalk.R;
-
-import java.util.Locale;
+import org.kontalk.data.Contact;
+import org.kontalk.ui.LocationActivity;
 
 /**
  * Google Maps Fragment
@@ -62,7 +70,7 @@ import java.util.Locale;
  */
 
 public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+    GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     private final static String TAG = GoogleMapsFragment.class.getSimpleName();
 
@@ -73,29 +81,41 @@ public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
     private AnyMap mGoogleMap;
 
     private Location mUserLocation;
+    private Location mMyLocation;
 
     private ImageView mMapPin;
     private FloatingActionButton mFabMyLocation;
 
-    private TextView mTextPosition;
+    private View mViewMyPosition;
+    private TextView mMyTextPosition;
+
+    private View mViewUserPosition;
+    private CircleImageView mUserAvatar;
+    private TextView mUserName;
+    private TextView mDistance;
 
     private AnimatorSet mAnimatorSet;
 
     private ImageView mImageSendPosition;
 
-    private static final long UPDATE_INTERVAL = 10 * 1000;  /* 10 secs */
-    private static final long FASTEST_INTERVAL = 2000; /* 2 sec */
+    private boolean mUserLocationMoved = false;
+
+    private static final long UPDATE_INTERVAL = 20 * 1000;  /* 20 secs */
+    private static final long FASTEST_INTERVAL = 4000; /* 4 sec */
 
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        setHasOptionsMenu(true);
+
         if (mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(getContext())
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .addApi(LocationServices.API)
-                    .build();
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
         }
     }
 
@@ -110,7 +130,13 @@ public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
 
         mImageSendPosition = (ImageView) view.findViewById(R.id.image_position);
 
-        mTextPosition = (TextView) view.findViewById(R.id.text_position);
+        mViewMyPosition = view.findViewById(R.id.my_position_container);
+        mMyTextPosition = (TextView) view.findViewById(R.id.my_position_text);
+
+        mViewUserPosition = view.findViewById(R.id.user_position_container);
+        mUserAvatar = (CircleImageView) view.findViewById(R.id.avatar);
+        mUserName = (TextView) view.findViewById(R.id.user_text_name);
+        mDistance = (TextView) view.findViewById(R.id.user_text_position);
 
         mFabMyLocation = (FloatingActionButton) view.findViewById(R.id.fab_my_position);
 
@@ -123,7 +149,7 @@ public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mUserLocation = new Location("network");
+        mMyLocation = new Location("network");
 
         mMapView.getMapAsync(this);
 
@@ -137,37 +163,34 @@ public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
                     mAnimatorSet = new AnimatorSet();
                     mAnimatorSet.setDuration(200);
                     mAnimatorSet.playTogether(
-                            ObjectAnimator.ofFloat(mMapPin, "scaleX", 1.0f, 1.2f),
-                            ObjectAnimator.ofFloat(mMapPin, "scaleY", 1.0f, 1.2f));
+                        ObjectAnimator.ofFloat(mMapPin, "scaleX", 1.0f, 1.2f),
+                        ObjectAnimator.ofFloat(mMapPin, "scaleY", 1.0f, 1.2f));
                     mAnimatorSet.start();
-                } else if (ev.getAction() == MotionEvent.ACTION_UP) {
+                }
+                else if (ev.getAction() == MotionEvent.ACTION_UP) {
                     if (mAnimatorSet != null) {
                         mAnimatorSet.cancel();
                     }
                     mAnimatorSet = new AnimatorSet();
                     mAnimatorSet.setDuration(200);
                     mAnimatorSet.playTogether(
-                            ObjectAnimator.ofFloat(mMapPin, "scaleX", 1.2f, 1.0f),
-                            ObjectAnimator.ofFloat(mMapPin, "scaleY", 1.2f, 1.0f));
+                        ObjectAnimator.ofFloat(mMapPin, "scaleX", 1.2f, 1.0f),
+                        ObjectAnimator.ofFloat(mMapPin, "scaleY", 1.2f, 1.0f));
                     mAnimatorSet.start();
                 }
                 if (ev.getAction() == MotionEvent.ACTION_MOVE) {
-                    /*if (!userLocationMoved) {
+                    if (!mUserLocationMoved) {
                         AnimatorSet animatorSet = new AnimatorSet();
                         animatorSet.setDuration(200);
-                        animatorSet.play(ObjectAnimator.ofFloat(locationButton, "alpha", 1.0f));
+                        animatorSet.play(ObjectAnimator.ofFloat(mFabMyLocation, "alpha", 1.0f));
                         animatorSet.start();
-                        userLocationMoved = true;
+                        mUserLocationMoved = true;
                     }
-                    if (googleMap != null && userLocation != null) {
-                        userLocation.setLatitude(googleMap.getCameraPosition().target.latitude);
-                        userLocation.setLongitude(googleMap.getCameraPosition().target.longitude);
-                    }
-                    adapter.setCustomLocation(userLocation);*/
-                    if (mGoogleMap != null && mUserLocation != null) {
-                        mUserLocation.setLatitude(mGoogleMap.getCameraPosition().target.latitude);
-                        mUserLocation.setLongitude(mGoogleMap.getCameraPosition().target.longitude);
-                        mTextPosition.setText(String.format(Locale.US, "(%f, %f)", mUserLocation.getLatitude(), mUserLocation.getLongitude()));
+
+                    if (mGoogleMap != null && mMyLocation != null) {
+                        mMyLocation.setLatitude(mGoogleMap.getCameraPosition().target.latitude);
+                        mMyLocation.setLongitude(mGoogleMap.getCameraPosition().target.longitude);
+                        mMyTextPosition.setText(String.format(Locale.US, "(%f, %f)", mMyLocation.getLatitude(), mMyLocation.getLongitude()));
                     }
                 }
             }
@@ -177,6 +200,12 @@ public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
             @Override
             public void onClick(View view) {
                 if (mGoogleMap != null && mGoogleApiClient.isConnected()) {
+                    AnimatorSet animatorSet = new AnimatorSet();
+                    animatorSet.setDuration(200);
+                    animatorSet.play(ObjectAnimator.ofFloat(mFabMyLocation, "alpha", 0.0f));
+                    animatorSet.start();
+
+                    mUserLocationMoved = false;
                     positionMarker(LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient));
                 }
             }
@@ -185,21 +214,34 @@ public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
         mImageSendPosition.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mUserLocation != null) {
+                if (mMyLocation != null) {
                     Intent intent = new Intent();
-                    intent.putExtra("location", mUserLocation);
+                    intent.putExtra("location", mMyLocation);
                     getActivity().setResult(Activity.RESULT_OK, intent);
                     getActivity().finish();
                 }
             }
         });
+
+        if (getArguments() != null && getArguments().getString(LocationActivity.EXTRA_USERID) != null) {
+            mViewUserPosition.setVisibility(View.VISIBLE);
+            mViewMyPosition.setVisibility(View.GONE);
+            String userId = getArguments().getString(LocationActivity.EXTRA_USERID);
+            Contact contact = Contact.findByUserId(getContext(), userId);
+            mUserLocation = getArguments().getParcelable(LocationActivity.EXTRA_USERPOSITION);
+            mUserAvatar.setImageDrawable(contact.getAvatar(getContext()));
+            mUserName.setText(contact.getDisplayName());
+        } else {
+            mViewUserPosition.setVisibility(View.GONE);
+            mViewMyPosition.setVisibility(View.VISIBLE);
+            ViewHelper.setAlpha(mFabMyLocation, 0.0f);
+        }
     }
 
     @Override
     public void onStart() {
         super.onStart();
         // Disconnecting the client invalidates it.
-
         mGoogleApiClient.connect();
     }
 
@@ -209,7 +251,7 @@ public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
 
         LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
 
-        if( mGoogleApiClient != null && mGoogleApiClient.isConnected() ) {
+        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
         }
     }
@@ -244,12 +286,36 @@ public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
         mMapView.onSaveInstanceState(outState);
     }
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.location_menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (super.onOptionsItemSelected(item))
+            return true;
+
+        switch (item.getItemId()) {
+            case R.id.map:
+                mGoogleMap.setMapType(AnyMap.Type.NORMAL);
+                return true;
+
+            case R.id.satellite:
+                mGoogleMap.setMapType(AnyMap.Type.SATELLITE);
+                return true;
+        }
+
+        return false;
+    }
+
     private void checkPermission() {
         if (Build.VERSION.SDK_INT >= 23) {
             if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                && ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(getActivity(),
-                        new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION}, 2);
+                    new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION}, 2);
             }
         }
     }
@@ -257,10 +323,12 @@ public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
     protected void startLocationUpdates() {
         // Create the location request
         mLocationRequest = LocationRequest.create()
-                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+            .setInterval(UPDATE_INTERVAL)
+            .setFastestInterval(FASTEST_INTERVAL);
         // Request location updates
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
-                mLocationRequest, this);
+            mLocationRequest, this);
     }
 
 
@@ -272,8 +340,8 @@ public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
             // Print current location if not null
             Log.d(TAG, "last location: " + lastLocation.toString());
             LatLng latLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
-            mUserLocation.setLatitude(lastLocation.getLatitude());
-            mUserLocation.setLongitude(lastLocation.getLongitude());
+            mMyLocation.setLatitude(lastLocation.getLatitude());
+            mMyLocation.setLongitude(lastLocation.getLongitude());
             if (mGoogleMap != null)
                 mGoogleMap.animateCamera(CameraUpdateFactory.getInstance().newLatLngZoom(latLng, 12));
         }
@@ -285,7 +353,8 @@ public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
     public void onConnectionSuspended(int i) {
         if (i == CAUSE_SERVICE_DISCONNECTED) {
             Log.d(TAG, "Disconnected. Please re-connect.");
-        } else if (i == CAUSE_NETWORK_LOST) {
+        }
+        else if (i == CAUSE_NETWORK_LOST) {
             Log.d(TAG, "Network lost. Please re-connect.");
         }
     }
@@ -316,13 +385,15 @@ public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
             return;
         }
 
-        mUserLocation = new Location(location);
+        if (!mUserLocationMoved) {
+            mMyLocation = new Location(location);
 
-        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+            LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
 
-        mGoogleMap.moveCamera(CameraUpdateFactory.getInstance().newLatLngZoom(latLng, 12));
+            mGoogleMap.moveCamera(CameraUpdateFactory.getInstance().newLatLngZoom(latLng, 12));
 
-        mTextPosition.setText(String.format(Locale.US, "(%f, %f)", location.getLatitude(), location.getLongitude()));
+            mMyTextPosition.setText(String.format(Locale.US, "(%f, %f)", location.getLatitude(), location.getLongitude()));
+        }
     }
 
 }

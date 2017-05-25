@@ -19,53 +19,42 @@
 package org.kontalk.position;
 
 /**
- * Download Google Static Map
- *
- * @author Daniele Ricci
- * @author Andrea Cappelli
+ * @author andreacappelli
  */
 
-public class GMStaticUrlBuilder {
-    private static final String URL = "http://maps.googleapis.com/maps/api/staticmap";
+public class OsmStaticUrlBuilder {
+
+    private static final String URL = "http://staticmap.openstreetmap.de/staticmap.php";
 
     private String mCenter;
     private int mZoom = 15;
     private String mSize = "600x300";
     private String mMarker;
-    private int mScale = 1;
 
-    public GMStaticUrlBuilder setCenter(double lat, double lon) {
+    public OsmStaticUrlBuilder setCenter(double lat, double lon) {
         mCenter = lat + "," + lon;
         return this;
     }
 
-    public GMStaticUrlBuilder setZoom(Integer zoom) {
+    public OsmStaticUrlBuilder setZoom(Integer zoom) {
         if (zoom != null)
             mZoom = zoom;
         return this;
     }
 
-    public GMStaticUrlBuilder setSize(int width, int height) {
+    public OsmStaticUrlBuilder setSize(int width, int height) {
         mSize = width + "x" + height;
         return this;
     }
 
-    public GMStaticUrlBuilder setMarker(double lat, double lon) {
+    public OsmStaticUrlBuilder setMarker(double lat, double lon) {
         StringBuilder marker = new StringBuilder();
 
-        marker.append("%7C")
-            .append(lat)
+        marker.append(lat)
             .append(',')
             .append(lon);
 
         mMarker = marker.toString();
-
-        return this;
-    }
-
-    public GMStaticUrlBuilder setscale(Integer scale) {
-        if (scale != null)
-            mScale = scale;
 
         return this;
     }
@@ -79,10 +68,10 @@ public class GMStaticUrlBuilder {
             .append(mZoom)
             .append("&size=")
             .append(mSize)
-            .append("&scale=")
-            .append(mScale)
             .append("&markers=")
             .append(mMarker)
+            .append(",ol-marker")
             .toString();
     }
+
 }

@@ -96,6 +96,7 @@ import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.ImageComponent;
+import org.kontalk.message.LocationComponent;
 import org.kontalk.message.MessageComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
@@ -893,6 +894,8 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
             AttachmentComponent attachment = msg.getComponent(AttachmentComponent.class);
 
+            LocationComponent location = msg.getComponent(LocationComponent.class);
+
             if (attachment != null && (attachment.getFetchUrl() != null || attachment.getLocalUri() != null)) {
 
                 // outgoing message or already fetched
@@ -936,6 +939,17 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
                     builder.show();
                 }
+            }
+
+            else if (location != null) {
+                String userId = item.getMessage().getSender();
+                Intent intent = new Intent(getActivity(), LocationActivity.class);
+                Location l = new Location("network");
+                l.setLatitude(location.getLatitude());
+                l.setLongitude(location.getLongitude());
+                intent.putExtra(LocationActivity.EXTRA_USERPOSITION, l);
+                intent.putExtra(LocationActivity.EXTRA_USERID, userId);
+                startActivity(intent);
             }
 
             else {

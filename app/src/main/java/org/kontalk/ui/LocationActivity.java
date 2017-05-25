@@ -33,6 +33,9 @@ import org.kontalk.position.PositionManager;
 
 public class LocationActivity extends ToolbarActivity {
 
+    public static final String EXTRA_USERID = "org.kontalk.location.USERID";
+    public static final String EXTRA_USERPOSITION = "org.kontalk.location.USERPOSITION";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,9 +44,14 @@ public class LocationActivity extends ToolbarActivity {
         setupToolbar(true, true);
 
         if (savedInstanceState == null) {
+            Bundle bundle = new Bundle();
+            bundle.putString(EXTRA_USERID, getIntent().getStringExtra(EXTRA_USERID));
+            bundle.putParcelable(EXTRA_USERPOSITION, getIntent().getParcelableExtra(EXTRA_USERPOSITION));
             Fragment fragment = PositionManager.getMapFragment(this);
             if (fragment == null)
                 finish();
+
+            fragment.setArguments(bundle);
 
             getSupportFragmentManager()
                     .beginTransaction()

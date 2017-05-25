@@ -323,6 +323,14 @@ public class CompositeMessage {
 
         else {
 
+            if (!c.isNull(COLUMN_GEO_LATITUDE)) {
+                double lat = c.getDouble(COLUMN_GEO_LATITUDE);
+                double lon = c.getDouble(COLUMN_GEO_LONGITUDE);
+                LocationComponent location = new LocationComponent(lat, lon);
+                addComponent(location);
+            }
+
+
             String mime = c.getString(COLUMN_BODY_MIME);
             String groupJid = c.getString(COLUMN_GROUP_JID);
             String groupSubject = c.getString(COLUMN_GROUP_SUBJECT);
@@ -335,8 +343,10 @@ public class CompositeMessage {
 
                 // text data
                 if (TextComponent.supportsMimeType(mime)) {
-                    TextComponent txt = new TextComponent(bodyText);
-                    addComponent(txt);
+                    if (!hasComponent(LocationComponent.class)) {
+                        TextComponent txt = new TextComponent(bodyText);
+                        addComponent(txt);
+                    }
                 }
 
                 // group command
@@ -426,13 +436,6 @@ public class CompositeMessage {
                     addComponent(att);
                 }
 
-            }
-
-            if (!c.isNull(COLUMN_GEO_LATITUDE)) {
-                double lat = c.getDouble(COLUMN_GEO_LATITUDE);
-                double lon = c.getDouble(COLUMN_GEO_LONGITUDE);
-                LocationComponent location = new LocationComponent(lat, lon);
-                addComponent(location);
             }
 
             // group information

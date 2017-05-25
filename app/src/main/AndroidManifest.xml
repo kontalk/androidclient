@@ -272,7 +272,12 @@
 
         <activity android:name=".ui.LocationActivity"
             android:label="@string/position_screen_title"
-            android:value="org.kontalk.ui.LocationActivity"/>
+            android:parentActivityName=".ui.ComposeMessage"
+            tools:targetApi="jelly_bean">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.kontalk.ui.ComposeMessage" />
+        </activity>
 
 
         <!--

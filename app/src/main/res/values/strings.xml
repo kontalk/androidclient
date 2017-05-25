@@ -323,6 +323,10 @@
     <string name="attachment_location">Location</string>
     <string name="notification_location">sent you a location</string>
 
+    <string name="menu_map">Map</string>
+    <string name="menu_satellite">Satellite</string>
+    <string name="menu_hybrid">Hybrid</string>
+
     <string name="msg_not_implemented">Not implemented yet.</string>
 
     <string name="chooser_send_picture">Send picture</string>

@@ -26,8 +26,6 @@ import org.kontalk.util.Preferences;
 
 /**
  * @author andreacappelli
- * @version 1.0
- *          DATE: 18/05/17
  */
 
 public class PositionManager {
@@ -47,5 +45,19 @@ public class PositionManager {
         }
 
         return fragment;
+    }
+
+    public static String getStaticMapUrl(Context context, double lat, double lon, Integer zoom, int width, int height, Integer scale) {
+        String google = context.getString(R.string.pref_default_maps_google);
+        String osm = context.getString(R.string.pref_default_maps_osm);
+        if  (Preferences.getMapsProvider(context).equals(google)) {
+            return new GMStaticUrlBuilder().setCenter(lat, lon).setZoom(zoom)
+                .setMarker(lat, lon).setSize(width, height).setscale(scale).toString();
+        } else if (Preferences.getMapsProvider(context).equals(osm)) {
+            return new OsmStaticUrlBuilder().setCenter(lat, lon).setZoom(zoom)
+                .setMarker(lat, lon).setSize(width, height).toString();
+        }
+
+        return null;
     }
 }
