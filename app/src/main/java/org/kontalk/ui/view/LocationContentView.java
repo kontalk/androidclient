@@ -32,7 +32,6 @@ import android.widget.TextView;
 
 import org.kontalk.R;
 import org.kontalk.message.LocationComponent;
-import org.kontalk.position.GMStaticUrlBuilder;
 import org.kontalk.position.PositionManager;
 import org.kontalk.ui.ComposeMessage;
 
