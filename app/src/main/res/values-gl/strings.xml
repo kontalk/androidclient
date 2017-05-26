@@ -611,4 +611,5 @@ Desactivar a cifraxe só se o contacto non ten unha chave persoal.</string>
     <string name="person_me">Eu</string>
     <string name="audio_duration_max">%1$s / %2$s</string>
 
+    <string name="code_validation_intro3">Ten en conta que os SMS ou a chamada poden provir dun número estranxeiro.</string>
     </resources>
