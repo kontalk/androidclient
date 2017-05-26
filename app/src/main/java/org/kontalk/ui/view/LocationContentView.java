@@ -20,9 +20,12 @@ package org.kontalk.ui.view;
 
 import java.util.regex.Pattern;
 
-import com.bumptech.glide.Glide;
-
 import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.RoundRectShape;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
@@ -30,10 +33,12 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.kontalk.GlideApp;
 import org.kontalk.R;
 import org.kontalk.message.LocationComponent;
 import org.kontalk.position.PositionManager;
 import org.kontalk.ui.ComposeMessage;
+import org.kontalk.util.CombinedDrawable;
 
 /**
  * Message component for {@link LocationComponent}.
@@ -83,10 +88,14 @@ public class LocationContentView extends FrameLayout
         mContent.setVisibility(VISIBLE);
 
         String imageURL = PositionManager.getStaticMapUrl(getContext(),
-            mComponent.getLatitude(), mComponent.getLongitude(), null,
+            mComponent.getLatitude(), mComponent.getLongitude(), 15,
             200, 100, (int) getContext().getResources().getDisplayMetrics().density);
 
-        Glide.with(getContext()).load(imageURL).into(mContent);
+        Drawable drawable = createRoundRectDrawableWithIcon(0, R.drawable.ic_pin);
+
+        mContent.setBackgroundDrawable(drawable);
+
+        GlideApp.with(getContext()).load(imageURL).into(mContent);
     }
 
     @Override
@@ -117,4 +126,13 @@ public class LocationContentView extends FrameLayout
             parent, false);
     }
 
+    public Drawable createRoundRectDrawableWithIcon(int rad, int iconRes) {
+        ShapeDrawable defaultDrawable = new ShapeDrawable(new RoundRectShape(new float[]{rad, rad, rad, rad, rad, rad, rad, rad}, null, null));
+        defaultDrawable.getPaint().setColor(ContextCompat.getColor(getContext(), R.color.map_placeholder_background));
+        Drawable drawable = getContext().getResources().getDrawable(iconRes).mutate();
+        DrawableCompat.setTint(drawable, ContextCompat.getColor(getContext(), R.color.app_primary));
+        CombinedDrawable combinedDrawable = new CombinedDrawable(defaultDrawable, drawable);
+
+        return combinedDrawable;
+    }
 }

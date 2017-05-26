@@ -62,4 +62,6 @@
 
     <color name="bg_default_contact">#bbbbbb</color>
 
+    <color name="map_placeholder_background">#552196F3</color>
+
 </resources>
