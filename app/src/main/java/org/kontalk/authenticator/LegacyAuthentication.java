@@ -80,7 +80,7 @@ public class LegacyAuthentication {
             ((Kontalk) context.getApplicationContext()).invalidatePersonalKey();
 
             // start key pair generation
-            MessageCenterService.regenerateKeyPair(context);
+            MessageCenterService.regenerateKeyPair(context, null);
         }
     }
 

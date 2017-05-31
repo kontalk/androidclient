@@ -133,11 +133,25 @@ public class MaintenanceFragment extends RootPreferenceFragment {
                         .onPositive(new MaterialDialog.SingleButtonCallback() {
                             @Override
                             public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                Context ctx = getActivity();
-                                Toast.makeText(ctx, R.string.msg_generating_keypair,
-                                    Toast.LENGTH_LONG).show();
+                                OnPassphraseChangedListener action = new OnPassphraseChangedListener() {
+                                    @Override
+                                    public void onPassphraseChanged(String passphrase) {
+                                        Context ctx = getContext();
+                                        Toast.makeText(ctx, R.string.msg_generating_keypair,
+                                            Toast.LENGTH_LONG).show();
 
-                                MessageCenterService.regenerateKeyPair(ctx.getApplicationContext());
+                                        MessageCenterService.regenerateKeyPair(ctx.getApplicationContext(), passphrase);
+                                    }
+                                };
+
+                                if (Authenticator.isUserPassphrase(getActivity())) {
+                                    // passphrase was set by the user before
+                                    // ask for a new one
+                                    askNewPassphrase(action);
+                                }
+                                else {
+                                    action.onPassphraseChanged(null);
+                                }
                             }
                         })
                         .show();
