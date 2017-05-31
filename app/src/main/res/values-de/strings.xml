@@ -40,7 +40,7 @@
   <string name="number_validation_intro2">Falls Sie auf diesem Gerät keine Anrufe oder SMS empfangen können, geben Sie eine Ihnen gehörende Tel.Nr. an: Wir werden diese Nummer dann mit diesem Gerät hier verbinden.</string>
   <string name="code_validation_intro">Sie sollten in Kürze eine SMS oder einen Anruf an Ihre Nummer erhalten.</string>
   <string name="code_validation_intro2">Fügen Sie unten bitte den Code ein, den Sie erhalten bzw. gehört haben.</string>
-  <string name="code_validation_intro_manual">Bitte fügen Sie den Überprüfungs-Code ein, den Sie bekommen haben. Beachten Sie bitte, dass ein Überprüfungs-Code nur einmal verwendet werden kann.</string>
+  <string name="code_validation_intro_manual">Bitte fügen Sie den Verifizierungs-Code ein, den Sie erhalten haben. Bitte beachten Sie, dass der Verifizierungs-Code nur einmal verwendet werden kann.</string>
   <string name="hint_validation_name">Ihr Name</string>
   <string name="hint_validation_number">Ihre Nummer</string>
   <string name="hint_validation_code">Überprüfungs-Code</string>
@@ -88,13 +88,13 @@
   <string name="security_label">Sicherheit:\u0020</string>
   <string name="size_label">Größe:\u0020</string>
   <string name="size_unknown">(unbekannt)</string>
-  <string name="title_file_info">Dateiinformationen</string>
+  <string name="title_file_info">Datei-Informationen</string>
   <string name="pref_restart_msgcenter">Nachrichtenzentrale neu starten</string>
-  <string name="pref_title_restart_msgcenter">Antippen wenn Kontalk nicht richtig arbeitet</string>
+  <string name="pref_title_restart_msgcenter">Antippen, wenn Kontalk nicht richtig funktioniert</string>
   <string name="pref_idle_time">Verbindung trennen wenn ungenutzt</string>
   <string name="pref_title_idle_time">Wartezeit bis Verbindungsabbruch bei Inaktivität</string>
   <string name="pref_wakeup_time">Verbindung zum Server wiederherstellen</string>
-  <string name="pref_title_wakeup_time">Wartezeit bis die Verbindung zum Server wieder hergestellt werden soll. Dies wird nur angewendet wenn Push-Benachrichtigungen nicht verfügbar sind oder eine sehr schlechte Netzwerkverbindung besteht.</string>
+  <string name="pref_title_wakeup_time">Wartezeit, bis die Verbindung zum Server nach Inaktivität wiederhergestellt wird. Diese Funktion wird nur verwendet, wenn Push-Benachrichtigungen nicht verfügbar sind oder die Netzwerkverbindung sehr schlecht ist.</string>
   <string name="pref_maintenance">Wartung</string>
   <string name="pref_regenerate_keypair">Persönlichen Schlüssel neu erzeugen</string>
   <string name="pref_title_regenerate_keypair">Antippen wenn ihr persönlicher Schlüssel kompromittiert wurde</string>
@@ -240,7 +240,7 @@
   <string name="pref_export_keypair">Persönlichen Schlüssel exportieren</string>
   <string name="msg_import_keypair">Kontalk wird Ihre Schlüssel aus %s ihres externen Speichers importieren. Stellen Sie sicher, dass die Datei existiert und ein gültiges exportiertes Schlüsselarchiv ist.</string>
   <string name="msg_import_keypair_complete">Import von persönlichem Schlüssel abgeschlossen.</string>
-  <string name="err_import_keypair_failed">Import von persönlichem Schlüssel fehlgeschlagen.</string>
+  <string name="err_import_keypair_failed">Import des persönlichen Schlüssels fehlgeschlagen.</string>
   <string name="title_passphrase">Passwort</string>
   <string name="msg_status_sending">Sende</string>
   <string name="msg_status_sent">Gesendet</string>
@@ -259,7 +259,7 @@
   <string name="hint_status_entry">Geben Sie hier Ihre Statusnachricht ein</string>
   <string name="header_recent_status">Kürzlich benutzte Statusnachrichten</string>
   <string name="title_offline_mode_warning">Offline-Modus</string>
-  <string name="message_offline_mode_warning">Im Offline-Modus kontaktiert Kontalk den Server nicht bis Sie wieder in den Online-Modus wechseln. Sie können weder Nachrichten senden noch empfangen und Sie werden anderen Nutzern als offline angezeigt.</string>
+  <string name="message_offline_mode_warning">Im Offline-Modus verbindet sich Kontalk nicht mit dem Server, bis Sie wieder in den Online-Modus wechseln. Sie können deshalb keine Nachrichten senden oder empfangen und werden anderen Nutzern als offline angezeigt.</string>
   <string name="warning_offline_mode">Offline-Modus ist aktiv. Nachrichten werden gesendet, wenn Sie wieder online sind.</string>
   <string name="going_offline">Gehe offline.</string>
   <string name="going_online">Gehe online.</string>
@@ -325,7 +325,7 @@
   <string name="msg_delete_account">Mit Ihrem Account werden auch alle Ihre Nachrichten gelöscht. Ihr Account auf dem Server wird nach ein paar Wochen automatisch gelöscht.</string>
   <string name="msg_delete_account_progress">Ihr Account wird gelöscht…</string>
   <string name="msg_user_blocked">Nutzer wurde blockiert.</string>
-  <string name="msg_user_unblocked">Nutzer wurde freigegeben.</string>
+  <string name="msg_user_unblocked">Nutzer wird nicht mehr blockiert.</string>
   <string name="msg_block_user_warning">Sie haben vor diesen Nutzer zu blockieren. Danach wird Ihnen dieser Nutzer keine Nachrichten mehr senden können bis Sie ihn/sie wieder freigeben. Dieser Nutzer wird Ihren Status oder letzte bekannte Anwesenheit nicht sehen können und auch Sie werden seinen Status nicht sehen. Es wird für Sie auch nicht möglich sein Nachrichten an ihn/sie zu senden.</string>
   <string name="msg_unblock_user_warning">Sie haben vor diesen Nutzer freizugeben. Das bedeutet, er/sie kann Ihnen Nachrichten senden und Ihren Status bzw. letzte bekannte Anwesenheit sehen.</string>
   <string name="notification_text_more">Antippen um mehr zu erfahren</string>
