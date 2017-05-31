@@ -51,9 +51,10 @@ import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_REGENERA
 class RegenerateKeyPairListener extends RegisterKeyPairListener {
     private BroadcastReceiver mKeyReceiver;
 
-    public RegenerateKeyPairListener(MessageCenterService instance) {
-        super(instance, null);
-        mPassphrase = getApplication().getCachedPassphrase();
+    public RegenerateKeyPairListener(MessageCenterService instance, String passphrase) {
+        super(instance, passphrase);
+        if (passphrase == null)
+            mPassphrase = getApplication().getCachedPassphrase();
     }
 
     public void run() throws CertificateException, SignatureException,
