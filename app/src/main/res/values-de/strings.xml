@@ -110,7 +110,7 @@
   <string name="pref_send_typing">\"Schreibt...\" -Benachrichtigung anzeigen</string>
   <string name="pref_hide_presence">Anwesenheit verbergen</string>
   <string name="pref_title_on_hide_presence">Sie werden anderen Nutzern als offline angezeigt</string>
-  <string name="pref_title_off_hide_presence">Andere Nutzer können sehen, wenn Sie online sind bzw. wann Sie es zuletzt waren</string>
+  <string name="pref_title_off_hide_presence">Andere Nutzer können sehen, wenn Sie online sind und wann Sie zuletzt verbunden waren</string>
   <string name="contact_not_registered">Der Kontakt ist offenbar nicht bei Kontalk registriert.</string>
   <string name="error_store_outbox">Nachricht kann nicht im Postausgang gespeichert werden. Eventuell ist Ihr Speicher voll?</string>
   <string name="decrypt_message">Nachricht entschlüsseln</string>
@@ -202,7 +202,7 @@
   <string name="pref_custom_background">Eigener Hintergrund</string>
   <string name="pref_background_uri">Hintergrund</string>
   <string name="pref_title_background_uri">Ein eigenes Hintergrundbild für Gespräche auswählen</string>
-  <string name="err_attachment_corrupted">Anhang kann nicht heruntergeladen werden. Nachricht möglicherweise defekt.</string>
+  <string name="err_attachment_corrupted">Anhang kann nicht heruntergeladen werden. Nachricht ist möglicherweise defekt.</string>
   <string name="serverlist_updating">Aktualisiere Serverliste…</string>
   <string name="serverlist_update_error">Die Serverliste kann nicht heruntergeladen werden. Bitte versuchen Sie es später noch einmal.</string>
   <string name="serverlist_update_nodata">Keine verfügbare Serverliste gefunden.</string>
@@ -342,7 +342,7 @@
   <string name="hint_record">Mikrofon antippen um die Aufnahme zu starten.</string>
   <string name="err_change_passphrase">Ändern den Passwortes für den persönlichen Schlüssel nicht möglich.</string>
   <string name="err_file_not_found">Datei nicht gefunden.</string>
-  <string name="err_audio_record">Fehler beim Start der Audioaufnahme.</string>
+  <string name="err_audio_record">Fehler beim Starten der Audioaufnahme.</string>
   <string name="err_audio_record_writing">Fehler beim Schreiben auf den externen Speicher.</string>
   <string name="err_playing_audio">Fehler beim Audio abspielen.</string>
   <string name="err_playing_sdcard">Fehler beim Lesen vom externen Speicher.</string>
@@ -363,12 +363,12 @@
 
     <string name="warning_older_version">Ihr Freund verwendet eine ältere Kontalk-Version. Es könnte sein, dass manche Funktionen nicht richtig arbeiten.</string>
     <string name="pref_help">Hilfe</string>
-    <string name="error_delete_thread">Es ist nicht möglich den Chat zu löschen.</string>
+    <string name="error_delete_thread">Es ist nicht möglich, den Chat zu löschen.</string>
     <string name="error_delete_message">Es ist nicht möglich die Nachricht zu löschen.</string>
     <string name="err_validation_nonetwork">Es ist keine Internetverbindung verfügbar. Kontalk benötigt aber eine aktive Internetverbindung, um zu funktionieren.</string>
     <string name="title_nonetwork">Keine Internetverbindung</string>
     <string name="err_import_keypair_uid_mismatch">Der importierte Schlüssel gehört nicht zu der von Ihnen angegebenen Nummer.</string>
-    <string name="err_audio_record_noaudio">Es wurde kein Audio aufgenommen.</string>
+    <string name="err_audio_record_noaudio">Es wurde keine Audio-Nachricht aufgenommen.</string>
     <string name="err_custom_background">Beim setzen des Hintergrundes ist ein Fehler aufgetreten. Bitte versuchen Sie ein anderes Bild.</string>
     <string name="hint_ptt">Zum Aufnehmen das Mikrofon-Icon gedrückt halten.</string>
     <string name="msg_importing_key">Importiere persönlichen Schlüssel…</string>
@@ -418,7 +418,7 @@
     <string name="warning_public_key_unknown">Persönlicher Schlüssel noch nicht überprüft</string>
     <string name="msg_public_key_unknown_warning">Bitte klären Sie mit dem Nutzer ob sein/ihr Fingerabdruck mit dem übereinstimmt, der im <b>Identität</b>-Dialog angezeigt wird. Anderenfalls könnte es sein, dass die Kommunikation kompromittiert wurde!</string>
 
-    <string name="title_public_key_unknown_warning">Persönlichen Schlüssel überprüfen</string>
+    <string name="title_public_key_unknown_warning">Persönlichen Schlüssel verifizieren</string>
     <string name="pref_enable_notification_led">Benachrichtigungs LED</string>
     <string name="pref_notification_led_color">Farbe Benachrichtigungs LED</string>
     <string name="seen_away_label">online</string>
@@ -531,9 +531,9 @@
 
     <string name="about_credits_contrib"><b>Mitwirkende</b></string>
     <string name="pref_push_notifications_disabled">Deaktiviert</string>
-    <string name="pref_push_notifications_title_default">Push-Benachrichtigungen sind eine serverunterstützte Technologie um Batterie zu sparen. Es betrifft die Echtzeitübergabe von Nachrichten nicht.
+    <string name="pref_push_notifications_title_default">Bei Push-Benachrichtigungen handelt es sich um eine serverunterstützte Technologie, um Batterieleistung zu sparen. Die Echtzeitübertragung von Nachrichten wird davon nicht beeinflusst.
 
-Wenn sie deaktiviert sind kann das Kontalk Verbindungsverhalten in den Netzwerkeinstellungen fein abgestimmt werden.</string>
+Wenn Push-Benachrichtigungen deaktiviert sind, kann das Kontalk-Verbindungsverhalten in den Netzwerkeinstellungen detailliert eingestellt werden.</string>
     <string name="pref_push_notifications_title_disabled">Push-Benachrichtigungsunterstützung wurde in diese Version nicht eingeschlossen.</string>
     <string name="pref_push_notifications_title_unavailable">Push-Benachrichtigungen werden von diesem Gerät nicht unterstützt.</string>
     <string name="pref_emoji_converter">Smileys in Grafiken umwandeln</string>
