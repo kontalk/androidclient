@@ -969,7 +969,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     break;
 
                 case ACTION_REGENERATE_KEYPAIR:
-                    doConnect = handleRegenerateKeyPair();
+                    doConnect = handleRegenerateKeyPair(intent);
                     break;
 
                 case ACTION_IMPORT_KEYPAIR:
@@ -1126,8 +1126,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_REGENERATE_KEYPAIR)
-    private boolean handleRegenerateKeyPair() {
-        beginKeyPairRegeneration();
+    private boolean handleRegenerateKeyPair(Intent intent) {
+        beginKeyPairRegeneration(intent.getStringExtra(EXTRA_PASSPHRASE));
         return true;
     }
 
@@ -2687,12 +2687,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 mUploadServices.get(0) : null;
     }
 
-    private void beginKeyPairRegeneration() {
+    private void beginKeyPairRegeneration(String passphrase) {
         if (mKeyPairRegenerator == null) {
             try {
                 // lock message center while doing this
                 hold(this, true);
-                mKeyPairRegenerator = new RegenerateKeyPairListener(this);
+                mKeyPairRegenerator = new RegenerateKeyPairListener(this, passphrase);
                 mKeyPairRegenerator.run();
             } catch (Exception e) {
                 Log.e(TAG, "unable to initiate keypair regeneration", e);
@@ -3149,9 +3149,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
-    public static void regenerateKeyPair(final Context context) {
+    public static void regenerateKeyPair(final Context context, String passphrase) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_REGENERATE_KEYPAIR);
+        i.putExtra(EXTRA_PASSPHRASE, passphrase);
         context.startService(i);
     }
 

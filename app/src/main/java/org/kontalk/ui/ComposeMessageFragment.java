@@ -478,6 +478,14 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                 if (!isAway && version == null && mVersionRequestId == null) {
                     requestVersion(jid);
                 }
+
+                // a new resource just connected, send typing information again
+                // (only if we already sent it in this session)
+                // FIXME this will always broadcast the message to all resources
+                if (mComposer.isComposeSent() && mComposer.isSendEnabled() &&
+                        Preferences.getSendTyping(context)) {
+                    sendTyping();
+                }
             }
             else if (type == Presence.Type.unavailable) {
                 /*

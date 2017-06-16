@@ -378,6 +378,10 @@ public class ComposerBar extends RelativeLayout implements
         }
     }
 
+    public boolean isSendEnabled() {
+        return mSendEnabled;
+    }
+
     public void setSendEnabled(boolean enabled) {
         mSendEnabled = enabled;
         doSetSendEnabled();

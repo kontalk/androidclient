@@ -45,7 +45,7 @@ import org.kontalk.util.SystemUtils;
  * of its parent activity.
  * @author Daniele Ricci
  */
-public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionListener,
+public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener,
         AudioManager.OnAudioFocusChangeListener, SensorEventListener {
 
     private MediaRecorder mRecorder;
@@ -127,6 +127,7 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
         if (mPlayer == null) {
             mPlayer = new MediaPlayer();
             mPlayer.setOnCompletionListener(this);
+            mPlayer.setOnErrorListener(this);
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -224,6 +225,9 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
 
         /** Called when we pause without user intervention. */
         void onPause(AudioFragment audio);
+
+        /** Called when an error occurs during playing. */
+        void onError(AudioFragment audio);
     }
 
     @Override
@@ -235,6 +239,21 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
         if (mListener != null) {
             mListener.onCompletion(this);
         }
+    }
+
+    @Override
+    public boolean onError(MediaPlayer mp, int what, int extra) {
+        resetPlayer();
+        if (mPlayer != null) {
+            mPlayer.release();
+            mPlayer = null;
+        }
+
+        if (mListener != null)
+            mListener.onError(this);
+
+        // returning true will avoid onCompletion from being called
+        return true;
     }
 
     public boolean isPlaying() {

@@ -2212,6 +2212,15 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                     stopMediaPlayerUpdater();
                     setAudioStatus(AudioContentView.STATUS_PAUSED);
                 }
+
+                @Override
+                public void onError(AudioFragment audio) {
+                    stopMediaPlayerUpdater();
+                    view.end();
+                    setAudioStatus(AudioContentView.STATUS_ENDED);
+                    Toast.makeText(getContext(), R.string.err_playing_audio, Toast.LENGTH_LONG)
+                        .show();
+                }
             });
             return true;
         }
@@ -2289,6 +2298,15 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                     stopMediaPlayerUpdater();
                     setAudioStatus(AudioContentView.STATUS_PAUSED);
                 }
+
+                @Override
+                public void onError(AudioFragment audio) {
+                    stopMediaPlayerUpdater();
+                    view.end();
+                    setAudioStatus(AudioContentView.STATUS_ENDED);
+                    Toast.makeText(getContext(), R.string.err_playing_audio, Toast.LENGTH_LONG)
+                        .show();
+                }
             });
 
             view.setProgressChangeListener(true);
@@ -2323,6 +2341,11 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 @Override
                 public void onPause(AudioFragment audio) {
                     setAudioStatus(AudioContentView.STATUS_PAUSED);
+                }
+
+                @Override
+                public void onError(AudioFragment audio) {
+                    setAudioStatus(AudioContentView.STATUS_ENDED);
                 }
             });
 
