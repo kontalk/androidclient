@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <item android:title="@string/menu_map" android:id="@+id/map"/>
-    <item android:title="@string/menu_satellite" android:id="@+id/satellite"/>
-
-</menu>

@@ -18,27 +18,24 @@
 
 package org.kontalk.position;
 
-import java.util.Locale;
-
+import com.amulyakhare.textdrawable.TextDrawable;
 import com.car2go.maps.AnyMap;
-import com.car2go.maps.OnInterceptTouchEvent;
 import com.car2go.maps.OnMapReadyCallback;
+import com.car2go.maps.google.BitmapDescriptorFactory;
 import com.car2go.maps.google.CameraUpdateFactory;
 import com.car2go.maps.google.MapView;
 import com.car2go.maps.model.LatLng;
+import com.car2go.maps.model.MarkerOptions;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.nineoldandroids.animation.AnimatorSet;
-import com.nineoldandroids.animation.ObjectAnimator;
-import com.nineoldandroids.view.ViewHelper;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -46,14 +43,14 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -61,18 +58,19 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.data.Contact;
-import org.kontalk.ui.LocationActivity;
+import org.kontalk.ui.PositionActivity;
+import org.kontalk.ui.ToolbarActivity;
 
 /**
- * Google Maps Fragment
+ * Position Google Maps fragment
  *
  * @author andreacappelli
  */
 
-public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
+public class PositionGoogleFragment extends Fragment implements OnMapReadyCallback,
     GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
-    private final static String TAG = GoogleMapsFragment.class.getSimpleName();
+    private final static String TAG = SendPositionGoogleFragment.class.getSimpleName();
 
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
@@ -80,28 +78,20 @@ public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
     private MapView mMapView;
     private AnyMap mGoogleMap;
 
+    private Position mPosition;
     private Location mUserLocation;
     private Location mMyLocation;
 
-    private ImageView mMapPin;
     private FloatingActionButton mFabMyLocation;
+    private FloatingActionButton mFabRoute;
 
-    private View mViewMyPosition;
-    private TextView mMyTextPosition;
-
-    private View mViewUserPosition;
+    private View mBottomView;
     private CircleImageView mUserAvatar;
     private TextView mUserName;
     private TextView mDistance;
 
-    private AnimatorSet mAnimatorSet;
-
-    private ImageView mImageSendPosition;
-
-    private boolean mUserLocationMoved = false;
-
     private static final long UPDATE_INTERVAL = 20 * 1000;  /* 20 secs */
-    private static final long FASTEST_INTERVAL = 4000; /* 4 sec */
+    private static final long FASTEST_INTERVAL = 4000; /* 4 secs */
 
 
     @Override
@@ -122,21 +112,16 @@ public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_google, container, false);
+        View view = inflater.inflate(R.layout.fragment_position_google, container, false);
 
         mMapView = ((MapView) view.findViewById(R.id.mapView));
 
-        mMapPin = (ImageView) view.findViewById(R.id.map_pin);
-
-        mImageSendPosition = (ImageView) view.findViewById(R.id.image_position);
-
-        mViewMyPosition = view.findViewById(R.id.my_position_container);
-        mMyTextPosition = (TextView) view.findViewById(R.id.my_position_text);
-
-        mViewUserPosition = view.findViewById(R.id.user_position_container);
+        mBottomView = view.findViewById(R.id.bottom_view);
         mUserAvatar = (CircleImageView) view.findViewById(R.id.avatar);
         mUserName = (TextView) view.findViewById(R.id.user_text_name);
         mDistance = (TextView) view.findViewById(R.id.user_text_position);
+
+        mFabRoute = (FloatingActionButton) view.findViewById(R.id.fab_route);
 
         mFabMyLocation = (FloatingActionButton) view.findViewById(R.id.fab_my_position);
 
@@ -146,51 +131,46 @@ public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         mMyLocation = new Location("network");
 
         mMapView.getMapAsync(this);
 
-        mMapView.setOnInterceptTouchEventListener(new OnInterceptTouchEvent() {
-            @Override
-            public void onInterceptTouchEvent(MotionEvent ev) {
-                if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-                    if (mAnimatorSet != null) {
-                        mAnimatorSet.cancel();
-                    }
-                    mAnimatorSet = new AnimatorSet();
-                    mAnimatorSet.setDuration(200);
-                    mAnimatorSet.playTogether(
-                        ObjectAnimator.ofFloat(mMapPin, "scaleX", 1.0f, 1.2f),
-                        ObjectAnimator.ofFloat(mMapPin, "scaleY", 1.0f, 1.2f));
-                    mAnimatorSet.start();
-                }
-                else if (ev.getAction() == MotionEvent.ACTION_UP) {
-                    if (mAnimatorSet != null) {
-                        mAnimatorSet.cancel();
-                    }
-                    mAnimatorSet = new AnimatorSet();
-                    mAnimatorSet.setDuration(200);
-                    mAnimatorSet.playTogether(
-                        ObjectAnimator.ofFloat(mMapPin, "scaleX", 1.2f, 1.0f),
-                        ObjectAnimator.ofFloat(mMapPin, "scaleY", 1.2f, 1.0f));
-                    mAnimatorSet.start();
-                }
-                if (ev.getAction() == MotionEvent.ACTION_MOVE) {
-                    if (!mUserLocationMoved) {
-                        AnimatorSet animatorSet = new AnimatorSet();
-                        animatorSet.setDuration(200);
-                        animatorSet.play(ObjectAnimator.ofFloat(mFabMyLocation, "alpha", 1.0f));
-                        animatorSet.start();
-                        mUserLocationMoved = true;
-                    }
+        String userId = getArguments().getString(PositionActivity.EXTRA_USERID);
 
-                    if (mGoogleMap != null && mMyLocation != null) {
-                        mMyLocation.setLatitude(mGoogleMap.getCameraPosition().target.latitude);
-                        mMyLocation.setLongitude(mGoogleMap.getCameraPosition().target.longitude);
-                        mMyTextPosition.setText(String.format(Locale.US, "(%f, %f)", mMyLocation.getLatitude(), mMyLocation.getLongitude()));
+        if (userId != null) {
+            Contact contact = Contact.findByUserId(getContext(), userId);
+            mUserAvatar.setImageDrawable(contact.getAvatar(getContext()));
+            mUserName.setText(contact.getDisplayName());
+        }
+        else {
+            mUserName.setText(R.string.your_position);
+            TextDrawable drawable = TextDrawable.builder()
+                .buildRound("Y", ContextCompat.getColor(getContext(), R.color.app_primary));
+            mUserAvatar.setImageDrawable(drawable);
+        }
+
+        mPosition = (Position) getArguments().getSerializable(PositionActivity.EXTRA_USERPOSITION);
+
+        if (!TextUtils.isEmpty(mPosition.getName())) {
+            ((ToolbarActivity) getActivity()).getSupportActionBar().setTitle(mPosition.getName());
+            ((ToolbarActivity) getActivity()).getSupportActionBar().setSubtitle(mPosition.getAddress());
+        }
+
+
+        mUserLocation = new Location("network");
+        mUserLocation.setLatitude(mPosition.getLatitude());
+        mUserLocation.setLongitude(mPosition.getLongitude());
+
+        mBottomView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mUserLocation != null) {
+                    LatLng latLng = new LatLng(mUserLocation.getLatitude(), mUserLocation.getLongitude());
+                    if (mGoogleMap != null) {
+                        mGoogleMap.animateCamera(CameraUpdateFactory.getInstance().newLatLngZoom(latLng, 12));
                     }
                 }
             }
@@ -199,43 +179,28 @@ public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
         mFabMyLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mGoogleMap != null && mGoogleApiClient.isConnected()) {
-                    AnimatorSet animatorSet = new AnimatorSet();
-                    animatorSet.setDuration(200);
-                    animatorSet.play(ObjectAnimator.ofFloat(mFabMyLocation, "alpha", 0.0f));
-                    animatorSet.start();
-
-                    mUserLocationMoved = false;
-                    positionMarker(LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient));
+                if (mMyLocation != null && mGoogleMap != null && mGoogleApiClient.isConnected()) {
+                    mGoogleMap.animateCamera(CameraUpdateFactory.getInstance().newLatLngZoom(new LatLng(mMyLocation.getLatitude(), mMyLocation.getLongitude()), 12));
                 }
             }
         });
 
-        mImageSendPosition.setOnClickListener(new View.OnClickListener() {
+        mFabRoute.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (mMyLocation != null) {
-                    Intent intent = new Intent();
-                    intent.putExtra("location", mMyLocation);
-                    getActivity().setResult(Activity.RESULT_OK, intent);
-                    getActivity().finish();
+                    try {
+                        double lat = mPosition.getLatitude();
+                        double lon = mPosition.getLongitude();
+                        startActivity(new Intent(android.content.Intent.ACTION_VIEW,
+                            Uri.parse("geo:" + lat + "," + lon + "?q=" + lat + "," + lon)));
+                    }
+                    catch (Exception e) {
+                        Log.e(TAG, e.getLocalizedMessage());
+                    }
                 }
             }
         });
-
-        if (getArguments() != null && getArguments().getString(LocationActivity.EXTRA_USERID) != null) {
-            mViewUserPosition.setVisibility(View.VISIBLE);
-            mViewMyPosition.setVisibility(View.GONE);
-            String userId = getArguments().getString(LocationActivity.EXTRA_USERID);
-            Contact contact = Contact.findByUserId(getContext(), userId);
-            mUserLocation = getArguments().getParcelable(LocationActivity.EXTRA_USERPOSITION);
-            mUserAvatar.setImageDrawable(contact.getAvatar(getContext()));
-            mUserName.setText(contact.getDisplayName());
-        } else {
-            mViewUserPosition.setVisibility(View.GONE);
-            mViewMyPosition.setVisibility(View.VISIBLE);
-            ViewHelper.setAlpha(mFabMyLocation, 0.0f);
-        }
     }
 
     @Override
@@ -266,6 +231,7 @@ public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
     public void onResume() {
         super.onResume();
         mMapView.onResume();
+
     }
 
     @Override
@@ -288,7 +254,8 @@ public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.location_menu, menu);
+        inflater.inflate(R.menu.position_menu, menu);
+
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -298,6 +265,18 @@ public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
             return true;
 
         switch (item.getItemId()) {
+            case R.id.menu_share: {
+                try {
+                    double lat = mPosition.getLatitude();
+                    double lon = mPosition.getLongitude();
+                    startActivity(new Intent(android.content.Intent.ACTION_VIEW,
+                        Uri.parse("geo:" + lat + "," + lon + "?q=" + lat + "," + lon)));
+                }
+                catch (Exception e) {
+                    Log.e(TAG, e.getLocalizedMessage());
+                }
+                break;
+            }
             case R.id.map:
                 mGoogleMap.setMapType(AnyMap.Type.NORMAL);
                 return true;
@@ -339,11 +318,8 @@ public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
         if (lastLocation != null) {
             // Print current location if not null
             Log.d(TAG, "last location: " + lastLocation.toString());
-            LatLng latLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
             mMyLocation.setLatitude(lastLocation.getLatitude());
             mMyLocation.setLongitude(lastLocation.getLongitude());
-            if (mGoogleMap != null)
-                mGoogleMap.animateCamera(CameraUpdateFactory.getInstance().newLatLngZoom(latLng, 12));
         }
         // Begin polling for new location updates.
         startLocationUpdates();
@@ -378,22 +354,35 @@ public class GoogleMapsFragment extends Fragment implements OnMapReadyCallback,
         anyMap.getUiSettings().setMyLocationButtonEnabled(false);
         anyMap.getUiSettings().setMapToolbarEnabled(false);
         anyMap.getUiSettings().setCompassEnabled(false);
+
+        if (mPosition != null) {
+            LatLng latLng = new LatLng(mUserLocation.getLatitude(), mUserLocation.getLongitude());
+            try {
+                mGoogleMap.addMarker(new MarkerOptions().position(latLng).icon(BitmapDescriptorFactory.getInstance().fromResource(R.drawable.ic_map_pin)));
+            }
+            catch (Exception e) {
+                Log.e(TAG, e.getLocalizedMessage());
+            }
+            mGoogleMap.moveCamera(CameraUpdateFactory.getInstance().newLatLngZoom(latLng, 12));
+        }
     }
 
     private void positionMarker(Location location) {
         if (location == null) {
             return;
         }
+        mMyLocation = new Location(location);
 
-        if (!mUserLocationMoved) {
-            mMyLocation = new Location(location);
-
-            LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-
-            mGoogleMap.moveCamera(CameraUpdateFactory.getInstance().newLatLngZoom(latLng, 12));
-
-            mMyTextPosition.setText(String.format(Locale.US, "(%f, %f)", location.getLatitude(), location.getLongitude()));
+        if (mUserLocation != null && mDistance != null) {
+            float distance = location.distanceTo(mUserLocation);
+            if (distance < 1000) {
+                mDistance.setText(getString(R.string.meters_away, (int) (distance)));
+            }
+            else {
+                mDistance.setText(getString(R.string.kilometers_away, distance / 1000.0f));
+            }
         }
     }
 
 }
+

@@ -321,7 +321,17 @@
     <string name="attachment_file">File</string>
     <string name="attachment_vcard">Contact</string>
     <string name="attachment_location">Location</string>
+
     <string name="notification_location">sent you a location</string>
+    <string name="location_no_result">No results</string>
+    <string name="places_nearby">Places nearby</string>
+    <string name="send_selected_location">Send selected location</string>
+    <string name="send_location">Send your current location</string>
+    <string name="accurate_to">Accurate to %1$s meters</string>
+    <string name="meters_away">%d m away</string>
+    <string name="kilometers_away">%.2f km away</string>
+    <string name="loading">Loading...</string>
+    <string name="your_position">You</string>
 
     <string name="menu_map">Map</string>
     <string name="menu_satellite">Satellite</string>

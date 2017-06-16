@@ -100,6 +100,8 @@ import org.kontalk.message.LocationComponent;
 import org.kontalk.message.MessageComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
+import org.kontalk.position.Position;
+import org.kontalk.position.PositionManager;
 import org.kontalk.provider.MessagesProviderUtils;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
@@ -943,12 +945,14 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
             else if (location != null) {
                 String userId = item.getMessage().getSender();
-                Intent intent = new Intent(getActivity(), LocationActivity.class);
-                Location l = new Location("network");
-                l.setLatitude(location.getLatitude());
-                l.setLongitude(location.getLongitude());
-                intent.putExtra(LocationActivity.EXTRA_USERPOSITION, l);
-                intent.putExtra(LocationActivity.EXTRA_USERID, userId);
+                if (item.getMessage().getSender() == null)
+                    userId = Authenticator.getSelfJID(getContext());
+
+                Intent intent = new Intent(getActivity(), PositionActivity.class);
+                Position p = new Position(location.getLatitude(), location.getLongitude(),
+                    "", "");
+                intent.putExtra(PositionActivity.EXTRA_USERPOSITION, p);
+                intent.putExtra(PositionActivity.EXTRA_USERID, userId);
                 startActivity(intent);
             }
 
@@ -1148,7 +1152,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     }
 
     void selectPositionAttachment() {
-        startActivityForResult(new Intent(getContext(), LocationActivity.class), SELECT_ATTACHMENT_LOCATION);
+        startActivityForResult(new Intent(getContext(), PositionActivity.class), SELECT_ATTACHMENT_LOCATION);
     }
 
     private AudioFragment getAudioFragment() {
@@ -1399,8 +1403,9 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         // user location
         else if (requestCode == SELECT_ATTACHMENT_LOCATION) {
             if (resultCode == Activity.RESULT_OK) {
-                Location location = data.getParcelableExtra("location");
-                sendLocationMessage("Location", location.getLatitude(), location.getLongitude());
+                Position position = (Position) data.getSerializableExtra("position");
+                String mapsUrl = PositionManager.getMapsUrl(getContext(), position.getLatitude(), position.getLongitude());
+                sendLocationMessage(mapsUrl, position.getLatitude(), position.getLongitude());
             }
         }
         // invite user

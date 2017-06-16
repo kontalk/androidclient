@@ -270,7 +270,7 @@
             android:theme="@style/Theme.Light.Dialog"
             android:label="@string/groupinfo_activity_title"/>
 
-        <activity android:name=".ui.LocationActivity"
+        <activity android:name=".ui.PositionActivity"
             android:label="@string/position_screen_title"
             android:parentActivityName=".ui.ComposeMessage"
             tools:targetApi="jelly_bean">
