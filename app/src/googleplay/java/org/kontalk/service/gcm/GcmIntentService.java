@@ -60,6 +60,9 @@ public class GcmIntentService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        // restarting from crash - ignore
+        if (intent == null)
+            return;
 
         if (ACTION_RETRY.equals(intent.getAction())) {
 

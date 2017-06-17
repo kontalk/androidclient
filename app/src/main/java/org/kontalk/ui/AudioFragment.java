@@ -356,6 +356,14 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
 
                 if (mProximitySensor != null) {
                     mSensorManager.unregisterListener(this, mProximitySensor);
+                    // listener will be unregistered so we must repeat some steps
+                    mProximityClosed = false;
+                    if (mPlayer != null) {
+                        mPlayer.reset();
+                        mPlayer.release();
+                        mPlayer = null;
+                        mMessageId = -1;
+                    }
                 }
             }
         }
