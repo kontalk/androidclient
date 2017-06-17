@@ -595,4 +595,6 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
     <string name="person_me">Yo</string>
     <string name="audio_duration_max">%1$s / %2$s</string>
 
+    <string name="msg_register_confirm_number1">Vamos a verificar el número de teléfono:</string>
+    <string name="msg_register_confirm_number2">Por favor, vuelva a compruebar que el número es correcto.</string>
     </resources>

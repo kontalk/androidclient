@@ -602,4 +602,6 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="person_me">Já</string>
     <string name="audio_duration_max">%1$s / %2$s</string>
 
+    <string name="msg_register_confirm_number1">Ověříme telefonní číslo:</string>
+    <string name="msg_register_confirm_number2">Důkladně prosím zkontrolujte, že je číslo správné.</string>
     </resources>

@@ -593,4 +593,6 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
     <string name="person_me">Jo</string>
     <string name="audio_duration_max">%1$s / %2$s</string>
 
+    <string name="msg_register_confirm_number1">Anem a verificar el número de telèfon:</string>
+    <string name="msg_register_confirm_number2">Si us plau, torni a comprovar que el número és correcte.</string>
     </resources>
