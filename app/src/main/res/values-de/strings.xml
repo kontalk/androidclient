@@ -110,7 +110,7 @@
   <string name="pref_send_typing">\"Schreibt...\" -Benachrichtigung anzeigen</string>
   <string name="pref_hide_presence">Anwesenheit verbergen</string>
   <string name="pref_title_on_hide_presence">Sie werden anderen Nutzern als offline angezeigt</string>
-  <string name="pref_title_off_hide_presence">Andere Nutzer können sehen, wenn Sie online sind und wann Sie zuletzt verbunden waren</string>
+  <string name="pref_title_off_hide_presence">"Andere Nutzer können sehen, wenn Sie online sind bzw.  wann Sie zuletzt verbunden waren"</string>
   <string name="contact_not_registered">Der Kontakt ist offenbar nicht bei Kontalk registriert.</string>
   <string name="error_store_outbox">Nachricht kann nicht im Postausgang gespeichert werden. Eventuell ist Ihr Speicher voll?</string>
   <string name="decrypt_message">Nachricht entschlüsseln</string>
