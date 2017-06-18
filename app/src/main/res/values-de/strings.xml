@@ -599,4 +599,5 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="audio_duration_max">%1$s / %2$s</string>
 
     <string name="person_me">Ich</string>
+    <string name="code_validation_intro3">Bitte beachten Sie, dass die SMS oder der Anruf von einer ausländischen Nummer kommen kann.</string>
     </resources>
