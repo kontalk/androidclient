@@ -18,23 +18,23 @@
 
 package org.kontalk.position.model;
 
-public class BeenHere{
-	private int lastCheckinExpiredAt;
+public class BeenHere {
+    private int lastCheckinExpiredAt;
 
-	public void setLastCheckinExpiredAt(int lastCheckinExpiredAt){
-		this.lastCheckinExpiredAt = lastCheckinExpiredAt;
-	}
+    public int getLastCheckinExpiredAt() {
+        return lastCheckinExpiredAt;
+    }
 
-	public int getLastCheckinExpiredAt(){
-		return lastCheckinExpiredAt;
-	}
+    public void setLastCheckinExpiredAt(int lastCheckinExpiredAt) {
+        this.lastCheckinExpiredAt = lastCheckinExpiredAt;
+    }
 
-	@Override
- 	public String toString(){
-		return 
-			"BeenHere{" + 
-			"lastCheckinExpiredAt = '" + lastCheckinExpiredAt + '\'' + 
-			"}";
-		}
+    @Override
+    public String toString() {
+        return
+            "BeenHere{" +
+                "lastCheckinExpiredAt = '" + lastCheckinExpiredAt + '\'' +
+                "}";
+    }
 }
 

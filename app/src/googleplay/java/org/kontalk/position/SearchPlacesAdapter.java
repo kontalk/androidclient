@@ -30,7 +30,6 @@ import android.location.Location;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 
 import org.kontalk.position.model.CategoriesItem;
 import org.kontalk.position.model.SearchResponse;
