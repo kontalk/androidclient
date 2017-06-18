@@ -263,7 +263,7 @@
     <string name="mykey_activity_title">A miña clave persoal</string>
     <string name="menu_import_key">Importa a clave</string>
     <string name="menu_manual_verification">Xa ten un código?</string>
-    <string name="code_validation_intro">Vostede debe recibir unha SMS ou unha chamada en breves momentos ó seu número:</string>
+    <string name="code_validation_intro">Vostede debe recibir unha SMS ou unha chamada en breves momentos ó seu número.</string>
     <string name="code_validation_intro2">Por favor inserir o código recibido ou escoite abaixo.</string>
     <string name="code_validation_intro_missed_call">Ou debe recibir unha chamada perdida ó seu número brevemente. <b>Por favor non respondea a chamada.</b></string>
     <string name="code_validation_intro2_missed_call">Introduza os últimos %d díxitos do número que lle chamará.</string>
@@ -604,5 +604,11 @@ Desactivar a cifraxe só se o contacto non ten unha chave persoal.</string>
     <string name="status_notsubscribed">Non permitido/Bloqueado</string>
 
     <string name="registration_poweredby">Impulsado por</string>
+
+    <string name="reply">Resposta</string>
+    <string name="msg_register_confirm_number1">Imos comprobar o número de teléfono:</string>
+    <string name="msg_register_confirm_number2">Por favor, asegúrese de que o número é correcto.</string>
+    <string name="person_me">Eu</string>
+    <string name="audio_duration_max">%1$s / %2$s</string>
 
     </resources>

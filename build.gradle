@@ -5,7 +5,7 @@ buildscript {
         maven { url 'https://maven.fabric.io/public' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.1'
+        classpath 'com.android.tools.build:gradle:2.3.3'
         classpath 'com.github.triplet.gradle:play-publisher:1.2.0'
         classpath 'io.fabric.tools:gradle:1.22.1'
     }
@@ -20,7 +20,7 @@ allprojects {
 
     evaluationDependsOn ":client-common-java"
     ext {
-        appVersionCode = 227
+        appVersionCode = 229
         appVersionName = '4.0.4-preview'
         targetSdkVersion = 22
         compileSdkVersion = 25

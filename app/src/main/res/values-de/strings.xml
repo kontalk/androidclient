@@ -40,7 +40,7 @@
   <string name="number_validation_intro2">Falls Sie auf diesem Gerät keine Anrufe oder SMS empfangen können, geben Sie eine Ihnen gehörende Tel.Nr. an: Wir werden diese Nummer dann mit diesem Gerät hier verbinden.</string>
   <string name="code_validation_intro">Sie sollten in Kürze eine SMS oder einen Anruf an Ihre Nummer erhalten.</string>
   <string name="code_validation_intro2">Fügen Sie unten bitte den Code ein, den Sie erhalten bzw. gehört haben.</string>
-  <string name="code_validation_intro_manual">Bitte fügen Sie den Überprüfungs-Code ein, den Sie bekommen haben. Beachten Sie bitte, dass ein Überprüfungs-Code nur einmal verwendet werden kann.</string>
+  <string name="code_validation_intro_manual">Bitte fügen Sie den Verifizierungs-Code ein, den Sie erhalten haben. Bitte beachten Sie, dass der Verifizierungs-Code nur einmal verwendet werden kann.</string>
   <string name="hint_validation_name">Ihr Name</string>
   <string name="hint_validation_number">Ihre Nummer</string>
   <string name="hint_validation_code">Überprüfungs-Code</string>
@@ -66,7 +66,7 @@
   <string name="only_one_account_supported">Es wird nur ein Kontalk-Account unterstützt.</string>
   <string name="hint_enter_text">Geben Sie hier Ihren Text ein</string>
   <string name="hint_type_to_compose">Zum Verfassen antippen</string>
-  <string name="hint_open_kbd_to_compose">Tastatur öffnen um eine Nachricht zu verfassen</string>
+  <string name="hint_open_kbd_to_compose">Tastatur öffnen, um eine Nachricht zu verfassen</string>
   <string name="view_image">Bild ansehen</string>
   <string name="title_message_options">Nachrichtenoptionen</string>
   <string name="menu_message_details">Details</string>
@@ -88,13 +88,13 @@
   <string name="security_label">Sicherheit:\u0020</string>
   <string name="size_label">Größe:\u0020</string>
   <string name="size_unknown">(unbekannt)</string>
-  <string name="title_file_info">Dateiinformationen</string>
+  <string name="title_file_info">Datei-Informationen</string>
   <string name="pref_restart_msgcenter">Nachrichtenzentrale neu starten</string>
-  <string name="pref_title_restart_msgcenter">Antippen wenn Kontalk nicht richtig arbeitet</string>
+  <string name="pref_title_restart_msgcenter">Antippen, wenn Kontalk nicht richtig funktioniert</string>
   <string name="pref_idle_time">Verbindung trennen wenn ungenutzt</string>
   <string name="pref_title_idle_time">Wartezeit bis Verbindungsabbruch bei Inaktivität</string>
   <string name="pref_wakeup_time">Verbindung zum Server wiederherstellen</string>
-  <string name="pref_title_wakeup_time">Wartezeit bis die Verbindung zum Server wieder hergestellt werden soll. Dies wird nur angewendet wenn Push-Benachrichtigungen nicht verfügbar sind oder eine sehr schlechte Netzwerkverbindung besteht.</string>
+  <string name="pref_title_wakeup_time">Wartezeit, bis die Verbindung zum Server nach Inaktivität wiederhergestellt wird. Diese Funktion wird nur verwendet, wenn Push-Benachrichtigungen nicht verfügbar sind oder die Netzwerkverbindung sehr schlecht ist.</string>
   <string name="pref_maintenance">Wartung</string>
   <string name="pref_regenerate_keypair">Persönlichen Schlüssel neu erzeugen</string>
   <string name="pref_title_regenerate_keypair">Antippen wenn ihr persönlicher Schlüssel kompromittiert wurde</string>
@@ -107,10 +107,10 @@
   <string name="pref_title_on_encrypt_userdata">Statusnachricht nur Kontakten anzeigen, die meine Telefonnummer im Adressbuch haben</string>
   <string name="pref_title_off_encrypt_userdata">Statusnachricht ist für jeden sichtbar</string>
   <string name="pref_auto_accept_subscriptions">Einladungen automatisch annehmen</string>
-  <string name="pref_send_typing">\"Schreibt...\" -Benachrichtigung senden</string>
+  <string name="pref_send_typing">\"Schreibt...\" -Benachrichtigung anzeigen</string>
   <string name="pref_hide_presence">Anwesenheit verbergen</string>
   <string name="pref_title_on_hide_presence">Sie werden anderen Nutzern als offline angezeigt</string>
-  <string name="pref_title_off_hide_presence">Andere Nutzer können sehen, wenn Sie online sind bzw. wann Sie es zuletzt waren</string>
+  <string name="pref_title_off_hide_presence">Andere Nutzer können sehen, wenn Sie online sind und wann Sie zuletzt verbunden waren</string>
   <string name="contact_not_registered">Der Kontakt ist offenbar nicht bei Kontalk registriert.</string>
   <string name="error_store_outbox">Nachricht kann nicht im Postausgang gespeichert werden. Eventuell ist Ihr Speicher voll?</string>
   <string name="decrypt_message">Nachricht entschlüsseln</string>
@@ -202,7 +202,7 @@
   <string name="pref_custom_background">Eigener Hintergrund</string>
   <string name="pref_background_uri">Hintergrund</string>
   <string name="pref_title_background_uri">Ein eigenes Hintergrundbild für Gespräche auswählen</string>
-  <string name="err_attachment_corrupted">Anhang kann nicht heruntergeladen werden. Nachricht möglicherweise defekt.</string>
+  <string name="err_attachment_corrupted">Anhang kann nicht heruntergeladen werden. Nachricht ist möglicherweise defekt.</string>
   <string name="serverlist_updating">Aktualisiere Serverliste…</string>
   <string name="serverlist_update_error">Die Serverliste kann nicht heruntergeladen werden. Bitte versuchen Sie es später noch einmal.</string>
   <string name="serverlist_update_nodata">Keine verfügbare Serverliste gefunden.</string>
@@ -210,7 +210,7 @@
   <string name="serverlist_update_offline">Offlinemodus ist aktiviert.</string>
   <string name="pref_vibrate_label_always">Immer</string>
   <string name="pref_vibrate_label_silent">Nur wenn stummgeschaltet</string>
-  <string name="pref_vibrate_label_never">Nie</string>
+  <string name="pref_vibrate_label_never">Niemals</string>
   <string name="pref_fontsize_label_small">Klein</string>
   <string name="pref_fontsize_label_medium">Mittel</string>
   <string name="pref_fontsize_label_large">Groß</string>
@@ -240,7 +240,7 @@
   <string name="pref_export_keypair">Persönlichen Schlüssel exportieren</string>
   <string name="msg_import_keypair">Kontalk wird Ihre Schlüssel aus %s ihres externen Speichers importieren. Stellen Sie sicher, dass die Datei existiert und ein gültiges exportiertes Schlüsselarchiv ist.</string>
   <string name="msg_import_keypair_complete">Import von persönlichem Schlüssel abgeschlossen.</string>
-  <string name="err_import_keypair_failed">Import von persönlichem Schlüssel fehlgeschlagen.</string>
+  <string name="err_import_keypair_failed">Import des persönlichen Schlüssels fehlgeschlagen.</string>
   <string name="title_passphrase">Passwort</string>
   <string name="msg_status_sending">Sende</string>
   <string name="msg_status_sent">Gesendet</string>
@@ -259,7 +259,7 @@
   <string name="hint_status_entry">Geben Sie hier Ihre Statusnachricht ein</string>
   <string name="header_recent_status">Kürzlich benutzte Statusnachrichten</string>
   <string name="title_offline_mode_warning">Offline-Modus</string>
-  <string name="message_offline_mode_warning">Im Offline-Modus kontaktiert Kontalk den Server nicht bis Sie wieder in den Online-Modus wechseln. Sie können weder Nachrichten senden noch empfangen und Sie werden anderen Nutzern als offline angezeigt.</string>
+  <string name="message_offline_mode_warning">Im Offline-Modus verbindet sich Kontalk nicht mit dem Server, bis Sie wieder in den Online-Modus wechseln. Sie können deshalb keine Nachrichten senden oder empfangen und werden anderen Nutzern als offline angezeigt.</string>
   <string name="warning_offline_mode">Offline-Modus ist aktiv. Nachrichten werden gesendet, wenn Sie wieder online sind.</string>
   <string name="going_offline">Gehe offline.</string>
   <string name="going_online">Gehe online.</string>
@@ -325,7 +325,7 @@
   <string name="msg_delete_account">Mit Ihrem Account werden auch alle Ihre Nachrichten gelöscht. Ihr Account auf dem Server wird nach ein paar Wochen automatisch gelöscht.</string>
   <string name="msg_delete_account_progress">Ihr Account wird gelöscht…</string>
   <string name="msg_user_blocked">Nutzer wurde blockiert.</string>
-  <string name="msg_user_unblocked">Nutzer wurde freigegeben.</string>
+  <string name="msg_user_unblocked">Nutzer wird nicht mehr blockiert.</string>
   <string name="msg_block_user_warning">Sie haben vor diesen Nutzer zu blockieren. Danach wird Ihnen dieser Nutzer keine Nachrichten mehr senden können bis Sie ihn/sie wieder freigeben. Dieser Nutzer wird Ihren Status oder letzte bekannte Anwesenheit nicht sehen können und auch Sie werden seinen Status nicht sehen. Es wird für Sie auch nicht möglich sein Nachrichten an ihn/sie zu senden.</string>
   <string name="msg_unblock_user_warning">Sie haben vor diesen Nutzer freizugeben. Das bedeutet, er/sie kann Ihnen Nachrichten senden und Ihren Status bzw. letzte bekannte Anwesenheit sehen.</string>
   <string name="notification_text_more">Antippen um mehr zu erfahren</string>
@@ -342,7 +342,7 @@
   <string name="hint_record">Mikrofon antippen um die Aufnahme zu starten.</string>
   <string name="err_change_passphrase">Ändern den Passwortes für den persönlichen Schlüssel nicht möglich.</string>
   <string name="err_file_not_found">Datei nicht gefunden.</string>
-  <string name="err_audio_record">Fehler beim Start der Audioaufnahme.</string>
+  <string name="err_audio_record">Fehler beim Starten der Audioaufnahme.</string>
   <string name="err_audio_record_writing">Fehler beim Schreiben auf den externen Speicher.</string>
   <string name="err_playing_audio">Fehler beim Audio abspielen.</string>
   <string name="err_playing_sdcard">Fehler beim Lesen vom externen Speicher.</string>
@@ -356,25 +356,25 @@
     <string name="about_credits_translators"><b>Übersetzer</b></string>
 
 <string name="about_credits_devteam"><b>Kontalk wird entwickelt von:</b></string>
-    <string name="warning_user_blocked">Sie blockieren diesen Nutzer.</string>
+    <string name="warning_user_blocked">Sie haben diesen Nutzer blockiert.</string>
 
     <string name="about_credits_gfx"><b>Grafiken/Icons</b></string>
     <string name="err_no_contact">Kontakt nicht gefunden.</string>
 
     <string name="warning_older_version">Ihr Freund verwendet eine ältere Kontalk-Version. Es könnte sein, dass manche Funktionen nicht richtig arbeiten.</string>
     <string name="pref_help">Hilfe</string>
-    <string name="error_delete_thread">Es ist nicht möglich den Chat zu löschen.</string>
+    <string name="error_delete_thread">Es ist nicht möglich, den Chat zu löschen.</string>
     <string name="error_delete_message">Es ist nicht möglich die Nachricht zu löschen.</string>
     <string name="err_validation_nonetwork">Es ist keine Internetverbindung verfügbar. Kontalk benötigt aber eine aktive Internetverbindung, um zu funktionieren.</string>
     <string name="title_nonetwork">Keine Internetverbindung</string>
     <string name="err_import_keypair_uid_mismatch">Der importierte Schlüssel gehört nicht zu der von Ihnen angegebenen Nummer.</string>
-    <string name="err_audio_record_noaudio">Es wurde kein Audio aufgenommen.</string>
+    <string name="err_audio_record_noaudio">Es wurde keine Audio-Nachricht aufgenommen.</string>
     <string name="err_custom_background">Beim setzen des Hintergrundes ist ein Fehler aufgetreten. Bitte versuchen Sie ein anderes Bild.</string>
-    <string name="hint_ptt">Um Aufzunehmen das Mikrofon-Icon gedrückt halten.</string>
+    <string name="hint_ptt">Zum Aufnehmen das Mikrofon-Icon gedrückt halten.</string>
     <string name="msg_importing_key">Importiere persönlichen Schlüssel…</string>
     <string name="button_validation_fallback">Nichts erhalten?</string>
     <string name="msg_fallback">Wir werden einen anderen Weg probieren, um Ihre Tel.Nr. zu überprüfen.</string>
-    <string name="code_validation_intro_missed_call">Sie sollten in Kürze einen verpassten Anruf vorfinden. <b>BITTE NEHMEN SIE DEN ANRUF NICHT an.</b></string>
+    <string name="code_validation_intro_missed_call">Sie sollten in Kürze einen verpassten Anruf angezeigt bekommen. <b>BITTE NEHMEN SIE DEN ANRUF NICHT AN.</b></string>
     <string name="code_validation_intro2_missed_call">Bitte fügen Sie die letzten %d Ziffern der Nummer ein, von der Sie angerufen wurden.</string>
     <string name="title_fallback">Haben Sie Probleme?</string>
     <string name="menu_manual_verification">Code bereits vorhanden?</string>
@@ -414,11 +414,11 @@
 
     <string name="warning_public_key_changed">Persönlicher Schlüssel wurde geändert</string>
     <string name="title_public_key_changed_warning">Persönlicher Schlüssel geändert</string>
-    <string name="msg_public_key_changed_warning">Bitte klären Sie mit dem Nutzer ob er/sie Kontalk neu installiert oder den Schlüssel absichtlich neu generiert hat. Anderenfalls könnte es sein, dass die Kommunikation kompromittiert wurde!</string>
+    <string name="msg_public_key_changed_warning">Bitte klären Sie mit dem/der Nutzer/in ab, ob er/sie Kontalk neu installiert oder den Schlüssel absichtlich neu generiert hat. Anderenfalls könnte es sein, dass die Kommunikation kompromittiert wurde!</string>
     <string name="warning_public_key_unknown">Persönlicher Schlüssel noch nicht überprüft</string>
     <string name="msg_public_key_unknown_warning">Bitte klären Sie mit dem Nutzer ob sein/ihr Fingerabdruck mit dem übereinstimmt, der im <b>Identität</b>-Dialog angezeigt wird. Anderenfalls könnte es sein, dass die Kommunikation kompromittiert wurde!</string>
 
-    <string name="title_public_key_unknown_warning">Persönlichen Schlüssel überprüfen</string>
+    <string name="title_public_key_unknown_warning">Persönlichen Schlüssel verifizieren</string>
     <string name="pref_enable_notification_led">Benachrichtigungs LED</string>
     <string name="pref_notification_led_color">Farbe Benachrichtigungs LED</string>
     <string name="seen_away_label">online</string>
@@ -531,9 +531,9 @@
 
     <string name="about_credits_contrib"><b>Mitwirkende</b></string>
     <string name="pref_push_notifications_disabled">Deaktiviert</string>
-    <string name="pref_push_notifications_title_default">Push-Benachrichtigungen sind eine serverunterstützte Technologie um Batterie zu sparen. Es betrifft die Echtzeitübergabe von Nachrichten nicht.
+    <string name="pref_push_notifications_title_default">Bei Push-Benachrichtigungen handelt es sich um eine serverunterstützte Technologie, um Batterieleistung zu sparen. Die Echtzeitübertragung von Nachrichten wird davon nicht beeinflusst.
 
-Wenn sie deaktiviert sind kann das Kontalk Verbindungsverhalten in den Netzwerkeinstellungen fein abgestimmt werden.</string>
+Wenn Push-Benachrichtigungen deaktiviert sind, kann das Kontalk-Verbindungsverhalten in den Netzwerkeinstellungen detailliert eingestellt werden.</string>
     <string name="pref_push_notifications_title_disabled">Push-Benachrichtigungsunterstützung wurde in diese Version nicht eingeschlossen.</string>
     <string name="pref_push_notifications_title_unavailable">Push-Benachrichtigungen werden von diesem Gerät nicht unterstützt.</string>
     <string name="pref_emoji_converter">Smileys in Grafiken umwandeln</string>
@@ -574,7 +574,7 @@ Wenn sie deaktiviert sind kann das Kontalk Verbindungsverhalten in den Netzwerke
     <string name="create_group_disclaimer">Bitte beachten: Die Mitglieder der Gruppe müssen einander bekannt sein um zu chatten.</string>
     <string name="check_dont_show_again">Nicht noch einmal zeigen</string>
 
-    <string name="pref_debug_log">Debugprotokollierung aktivieren</string>
+    <string name="pref_debug_log">Debug-Protokollierung aktivieren</string>
     <string name="pref_send_debug_log">Logdatei senden</string>
 
     <string name="menu_encryption">Verschlüsselung</string>
@@ -594,4 +594,9 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="registration_poweredby">Unterstützt durch</string>
 
     <string name="reply">Antworten</string>
+    <string name="msg_register_confirm_number1">Wir werden die Telefonnummer überprüfen:</string>
+    <string name="msg_register_confirm_number2">Bitte überprüfen Sie, ob die Nummer korrekt ist.</string>
+    <string name="audio_duration_max">%1$s / %2$s</string>
+
+    <string name="person_me">Ich</string>
     </resources>

@@ -615,7 +615,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             Log.v(TAG, "Using phone number to register: " + phoneStr);
 
             // confirmation dialog only if not importing
-            if (!importing) {
+            if (!importing && !mForce) {
                 MaterialDialog dialog = new MaterialDialog.Builder(this)
                     .customView(R.layout.dialog_register_confirm, false)
                     .positiveText(android.R.string.ok)

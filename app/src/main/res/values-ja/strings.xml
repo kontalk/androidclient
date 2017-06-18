@@ -580,4 +580,10 @@ http://kontalk.org/</string>
 
 <string name="registration_poweredby">Powered by</string>
 
+    <string name="reply">返信</string>
+    <string name="person_me">自分</string>
+    <string name="audio_duration_max">%1$s / %2$s</string>
+
+    <string name="msg_register_confirm_number1">電話番号を確認します:</string>
+    <string name="msg_register_confirm_number2">番号が正しいことを再度確認してください。</string>
     </resources>

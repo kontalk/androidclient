@@ -597,4 +597,6 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
     <string name="person_me">Io</string>
     <string name="audio_duration_max">%1$s / %2$s</string>
 
+    <string name="msg_register_confirm_number1">Verificheremo il numero di telefono:</string>
+    <string name="msg_register_confirm_number2">Controlla bene che il numero sia corretto.</string>
     </resources>
