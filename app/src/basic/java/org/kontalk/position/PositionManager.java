@@ -18,6 +18,8 @@
 
 package org.kontalk.position;
 
+import java.util.Locale;
+
 import android.content.Context;
 import android.support.v4.app.Fragment;
 
@@ -74,7 +76,7 @@ public class PositionManager {
         return null;
     }
 
-    public static String getMapsUrl(double lat, double lon) {
+    public static String getMapsUrl(Context context, double lat, double lon) {
         return String.format(Locale.US, "https://www.openstreetmap.org/#map=12/%1$,.2f/%1$,.2f", lat, lon);
     }
 }

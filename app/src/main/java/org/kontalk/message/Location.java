@@ -28,10 +28,15 @@ public class Location {
 
     private final double mLatitude;
     private final double mLongitude;
+    private final String mText;
+    private final String mStreet;
 
-    public Location(double lat, double lon) {
+
+    public Location(double lat, double lon, String text, String street) {
         mLatitude = lat;
         mLongitude = lon;
+        mText = text;
+        mStreet = street;
     }
 
     public double getLatitude() {
@@ -42,4 +47,11 @@ public class Location {
         return mLongitude;
     }
 
+    public String getText() {
+        return mText;
+    }
+
+    public String getStreet() {
+        return mStreet;
+    }
 }

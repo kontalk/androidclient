@@ -58,7 +58,6 @@ import android.database.Cursor;
 import android.database.MergeCursor;
 import android.database.sqlite.SQLiteDiskIOException;
 import android.graphics.drawable.Drawable;
-import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -127,21 +126,24 @@ import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
 
 /**
  * Abstract message composing fragment.
+ *
  * @author Daniele Ricci
  * @author Andrea Cappelli
  */
 public abstract class AbstractComposeFragment extends ActionModeListFragment implements
-        ComposerListener, View.OnLongClickListener,
-        // TODO these two interfaces should be handled by an inner class
-        AudioDialog.AudioDialogListener, AudioPlayerControl,
-        MultiChoiceModeListener {
+    ComposerListener, View.OnLongClickListener,
+    // TODO these two interfaces should be handled by an inner class
+    AudioDialog.AudioDialogListener, AudioPlayerControl,
+    MultiChoiceModeListener {
     static final String TAG = ComposeMessage.TAG;
 
     private static final int MESSAGE_LIST_QUERY_TOKEN = 8720;
     private static final int CONVERSATION_QUERY_TOKEN = 8721;
     private static final int MESSAGE_PAGE_QUERY_TOKEN = 8723;
 
-    /** How many messages to load per page. */
+    /**
+     * How many messages to load per page.
+     */
     private static final int MESSAGE_PAGE_SIZE = 1000;
 
     private static final int SELECT_ATTACHMENT_OPENABLE = 1;
@@ -177,29 +179,39 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     MessageListQueryHandler mQueryHandler;
     MessageListAdapter mListAdapter;
-    /** Header view for the list view: "previous messages" button. */
+    /**
+     * Header view for the list view: "previous messages" button.
+     */
     private View mHeaderView;
     private View mNextPageButton;
     private TextView mStatusText;
     private MenuItem mDeleteThreadMenu;
     private MenuItem mToggleEncryptionMenu;
 
-    /** The thread id. */
+    /**
+     * The thread id.
+     */
     long threadId = -1;
     protected Conversation mConversation;
     protected String mUserName;
 
-    /** Available resources. */
+    /**
+     * Available resources.
+     */
     protected Set<String> mAvailableResources = new HashSet<>();
 
-    /** Media player stuff. */
+    /**
+     * Media player stuff.
+     */
     private int mMediaPlayerStatus = AudioContentView.STATUS_IDLE;
     private Handler mHandler;
     private Runnable mMediaPlayerUpdater;
     private AudioContentViewControl mAudioControl;
     private AudioFragment mAudioFragment;
 
-    /** Audio recording dialog. */
+    /**
+     * Audio recording dialog.
+     */
     private AudioDialog mAudioDialog;
 
     private PeerObserver mPeerObserver;
@@ -213,7 +225,9 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     private int mCheckedItemCount;
 
-    /** Returns a new fragment instance from a picked contact. */
+    /**
+     * Returns a new fragment instance from a picked contact.
+     */
     public static AbstractComposeFragment fromUserId(Context context, String userId, boolean creatingGroup) {
         AbstractComposeFragment f = new ComposeMessageFragment();
         Conversation conv = Conversation.loadFromUserId(context, userId);
@@ -230,21 +244,25 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         return fromConversation(context, conv, creatingGroup);
     }
 
-    /** Returns a new fragment instance from a {@link Conversation} instance. */
+    /**
+     * Returns a new fragment instance from a {@link Conversation} instance.
+     */
     public static AbstractComposeFragment fromConversation(Context context,
-            Conversation conv, boolean creatingGroup) {
+        Conversation conv, boolean creatingGroup) {
         return fromConversation(context, conv.getThreadId(), conv.isGroupChat(), creatingGroup);
     }
 
-    /** Returns a new fragment instance from a thread ID. */
+    /**
+     * Returns a new fragment instance from a thread ID.
+     */
     private static AbstractComposeFragment fromConversation(Context context,
-            long threadId, boolean group, boolean creatingGroup) {
+        long threadId, boolean group, boolean creatingGroup) {
         AbstractComposeFragment f = group ?
             new GroupMessageFragment() : new ComposeMessageFragment();
         Bundle args = new Bundle();
         args.putString("action", ComposeMessage.ACTION_VIEW_CONVERSATION);
         args.putParcelable("data",
-                ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
+            ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
         args.putBoolean(ComposeMessage.EXTRA_CREATING_GROUP, creatingGroup);
         f.setArguments(args);
         return f;
@@ -311,7 +329,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+        Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.compose_message, container, false);
 
         mComposer = (ComposerBar) view.findViewById(R.id.composer_bar);
@@ -563,7 +581,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                     Context ctx = getActivity();
-                    for (int i = 0, c = getListView().getCount()+getListView().getHeaderViewsCount(); i < c; ++i) {
+                    for (int i = 0, c = getListView().getCount() + getListView().getHeaderViewsCount(); i < c; ++i) {
                         if (checked.get(i)) {
                             Cursor cursor = (Cursor) getListView().getItemAtPosition(i);
                             // skip group command messages
@@ -578,8 +596,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             .show();
     }
 
-    private void initAttachmentView()
-    {
+    private void initAttachmentView() {
         View view = getView();
 
         mAttachmentContainer = (AttachmentRevealFrameLayout) view.findViewById(R.id.attachment_container);
@@ -648,10 +665,12 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         });
     }
 
-    /** Sends out a binary message. */
+    /**
+     * Sends out a binary message.
+     */
     @Override
     public void sendBinaryMessage(Uri uri, String mime, boolean media,
-            Class<? extends MessageComponent<?>> klass) {
+        Class<? extends MessageComponent<?>> klass) {
         Log.v(TAG, "sending binary content: " + uri);
 
         try {
@@ -690,18 +709,18 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             getActivity().runOnUiThread(new Runnable() {
                 public void run() {
                     Toast.makeText(getActivity(),
-                            R.string.err_store_message_failed,
-                            Toast.LENGTH_LONG).show();
+                        R.string.err_store_message_failed,
+                        Toast.LENGTH_LONG).show();
                 }
             });
         }
     }
 
     @Override
-    public void sendLocationMessage(String message, double lat, double lon) {
+    public void sendLocationMessage(String message, double lat, double lon, String geoText, String geoStreet) {
         offlineModeWarning();
         // start thread
-        new LocationMessageThread(message, lat, lon).start();
+        new LocationMessageThread(message, lat, lon, geoText, geoStreet).start();
     }
 
     private final class TextMessageThread extends Thread {
@@ -754,15 +773,19 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     private final class LocationMessageThread extends Thread {
         private final String mText;
-        private double mLatitude;
-        private double mLongitude;
+        private final double mLatitude;
+        private final double mLongitude;
+        private final String mGeoText;
+        private final String mGeoStreet;
         private boolean mLocation;
 
 
-        LocationMessageThread(String text, double lat, double lon) {
+        LocationMessageThread(String text, double lat, double lon, String geoText, String geoStreet) {
             mText = text;
             mLatitude = lat;
             mLongitude = lon;
+            mGeoText = geoText;
+            mGeoStreet = geoStreet;
             mLocation = true;
         }
 
@@ -772,7 +795,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 final Context context = getContext();
                 final Conversation conv = mConversation;
                 Uri newMsg = Kontalk.getMessagesController(context)
-                        .sendLocationMessage(conv, mText, mLatitude, mLongitude);
+                    .sendLocationMessage(conv, mText, mLatitude, mLongitude, mGeoText, mGeoStreet);
 
                 // update thread id from the inserted message
                 if (threadId <= 0) {
@@ -790,7 +813,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                     @Override
                     public void run() {
                         Toast.makeText(getActivity(), R.string.error_store_outbox,
-                                Toast.LENGTH_LONG).show();
+                            Toast.LENGTH_LONG).show();
                     }
                 });
             }
@@ -799,15 +822,17 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 getActivity().runOnUiThread(new Runnable() {
                     public void run() {
                         Toast.makeText(getActivity(),
-                                R.string.err_store_message_failed,
-                                Toast.LENGTH_LONG).show();
+                            R.string.err_store_message_failed,
+                            Toast.LENGTH_LONG).show();
                     }
                 });
             }
         }
     }
 
-    /** Sends out the text message in the composing entry. */
+    /**
+     * Sends out the text message in the composing entry.
+     */
     @Override
     public void sendTextMessage(String message) {
         if (!TextUtils.isEmpty(message)) {
@@ -818,7 +843,9 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         }
     }
 
-    /** Sends an inactive chat state message. */
+    /**
+     * Sends an inactive chat state message.
+     */
     public abstract boolean sendInactive();
 
     protected abstract void onInflateOptionsMenu(Menu menu, MenuInflater inflater);
@@ -967,7 +994,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     private void startDownload(CompositeMessage msg) {
         AttachmentComponent attachment = msg
-                .getComponent(AttachmentComponent.class);
+            .getComponent(AttachmentComponent.class);
 
         if (attachment != null && attachment.getFetchUrl() != null) {
             DownloadService.start(getContext(), msg.getDatabaseId(),
@@ -1037,13 +1064,17 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         mAttachmentContainer.hide();
     }
 
-    /** Show or hide the attachment selector. */
+    /**
+     * Show or hide the attachment selector.
+     */
     private void toggleAttachmentView() {
         mComposer.forceHideKeyboard();
         mAttachmentContainer.toggle();
     }
 
-    /** Starts an activity for shooting a picture. */
+    /**
+     * Starts an activity for shooting a picture.
+     */
     void selectPhotoAttachment() {
         try {
             // check if camera is available
@@ -1075,7 +1106,9 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         }
     }
 
-    /** Starts an activity for picture attachment selection. */
+    /**
+     * Starts an activity for picture attachment selection.
+     */
     @TargetApi(Build.VERSION_CODES.KITKAT)
     void selectGalleryAttachment() {
         boolean useSAF = MediaStorage.isStorageAccessFrameworkAvailable();
@@ -1121,7 +1154,9 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
     }
 
-    /** Starts activity for a vCard attachment from a contact. */
+    /**
+     * Starts activity for a vCard attachment from a contact.
+     */
     void selectContactAttachment() {
         try {
             Intent i = SystemUtils.externalIntent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
@@ -1198,7 +1233,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     private void retryMessage(CompositeMessage msg) {
         MessageCenterService.retryMessage(getContext(), ContentUris.withAppendedId
-                (Messages.CONTENT_URI, msg.getDatabaseId()), mConversation.isEncryptionEnabled());
+            (Messages.CONTENT_URI, msg.getDatabaseId()), mConversation.isEncryptionEnabled());
     }
 
     void scrollToPosition(int position) {
@@ -1212,7 +1247,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     protected synchronized void startQuery() {
         Conversation.startQuery(mQueryHandler,
-                CONVERSATION_QUERY_TOKEN, threadId);
+            CONVERSATION_QUERY_TOKEN, threadId);
         // message list query will be started by query handler
     }
 
@@ -1241,10 +1276,14 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         MessageUtils.showMessageDetails(getActivity(), msg, getDecodedPeer(msg), getDecodedName(msg));
     }
 
-    /** Returns the phone number of the message sender, if available. */
+    /**
+     * Returns the phone number of the message sender, if available.
+     */
     protected abstract String getDecodedPeer(CompositeMessage msg);
 
-    /** Returns the display name of the message sender, if available. */
+    /**
+     * Returns the display name of the message sender, if available.
+     */
     protected abstract String getDecodedName(CompositeMessage msg);
 
     private void shareMessage(CompositeMessage msg) {
@@ -1299,7 +1338,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                         getActivity().sendBroadcast(mediaScanIntent);
                         mCurrentPhoto = null;
 
-                        uris = new Uri[] { uri };
+                        uris = new Uri[]{uri};
                     }
                 }
                 else {
@@ -1318,8 +1357,8 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                         }
                     }
                     else {
-                        uris = new Uri[] { data.getData() };
-                        mimes = new String[] { data.getType() };
+                        uris = new Uri[]{data.getData()};
+                        mimes = new String[]{data.getType()};
                     }
 
                     // SAF available, request persistable permissions
@@ -1332,7 +1371,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                     }
                 }
 
-                for (int i = 0 ; uris != null && i < uris.length; i++) {
+                for (int i = 0; uris != null && i < uris.length; i++) {
                     Uri uri = uris[i];
                     if (uri == null)
                         continue;
@@ -1341,7 +1380,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                         mimes[i] : null;
 
                     if (mime == null || mime.startsWith("*/")
-                            || mime.endsWith("/*")) {
+                        || mime.endsWith("/*")) {
                         mime = MediaStorage.getType(getActivity(), uri);
                         Log.v(TAG, "using detected mime type " + mime);
                     }
@@ -1373,7 +1412,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
                     // get lookup key
                     final Cursor c = getContext().getContentResolver()
-                        .query(uri, new String[] { Contacts.LOOKUP_KEY }, null, null, null);
+                        .query(uri, new String[]{Contacts.LOOKUP_KEY}, null, null, null);
                     if (c != null) {
                         try {
                             if (c.moveToFirst()) {
@@ -1405,7 +1444,8 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             if (resultCode == Activity.RESULT_OK) {
                 Position position = (Position) data.getSerializableExtra("position");
                 String mapsUrl = PositionManager.getMapsUrl(getContext(), position.getLatitude(), position.getLongitude());
-                sendLocationMessage(mapsUrl, position.getLatitude(), position.getLongitude());
+                sendLocationMessage(mapsUrl, position.getLatitude(), position.getLongitude(),
+                    position.getName(), position.getAddress());
             }
         }
         // invite user
@@ -1416,7 +1456,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 Uri threadUri = data.getData();
                 if (threadUri != null) {
                     String userId = threadUri.getLastPathSegment();
-                    addUsers(new String[] { userId });
+                    addUsers(new String[]{userId});
                 }
                 else if ((uris = data.getParcelableArrayListExtra("org.kontalk.contacts")) != null) {
                     String[] users = new String[uris.size()];
@@ -1448,10 +1488,14 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         out.putInt("mediaPlayerStatus", mMediaPlayerStatus);
     }
 
-    /** Handles ACTION_VIEW intents. */
+    /**
+     * Handles ACTION_VIEW intents.
+     */
     protected abstract void handleActionView(Uri uri);
 
-    /** Handles ACTION_VIEW_USERID intents: providing the user ID/JID. */
+    /**
+     * Handles ACTION_VIEW_USERID intents: providing the user ID/JID.
+     */
     protected abstract boolean handleActionViewConversation(Uri uri, Bundle args);
 
     private void processArguments(Bundle savedInstanceState) {
@@ -1551,14 +1595,14 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     public ComposeMessage getParentActivity() {
         Activity _activity = getActivity();
         return (_activity instanceof ComposeMessage) ? (ComposeMessage) _activity
-                : null;
+            : null;
     }
 
     void processStart() {
         ComposeMessage activity = getParentActivity();
         // opening for contact picker - do nothing
         if (threadId < 0 && activity != null
-                && activity.getSendIntent() != null)
+            && activity.getSendIntent() != null)
             return;
 
         if (mListAdapter == null) {
@@ -1566,14 +1610,14 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             Bundle args = getArguments();
             if (args != null) {
                 String highlightString = args
-                        .getString(ComposeMessage.EXTRA_HIGHLIGHT);
+                    .getString(ComposeMessage.EXTRA_HIGHLIGHT);
                 highlight = (highlightString == null) ? null : Pattern.compile(
-                        "\\b" + Pattern.quote(highlightString),
-                        Pattern.CASE_INSENSITIVE);
+                    "\\b" + Pattern.quote(highlightString),
+                    Pattern.CASE_INSENSITIVE);
             }
 
             mListAdapter = new MessageListAdapter(getActivity(), null,
-                    highlight, getListView(), this);
+                highlight, getListView(), this);
             mListAdapter.setOnContentChangedListener(mContentChangedListener);
             setListAdapter(mListAdapter);
         }
@@ -1589,7 +1633,9 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         }
     }
 
-    /** Called when the {@link Conversation} object has been created. */
+    /**
+     * Called when the {@link Conversation} object has been created.
+     */
     protected void onConversationCreated() {
         // restore any draft
         mComposer.restoreText(mConversation.getDraft());
@@ -1616,22 +1662,32 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         updateUI();
     }
 
-    /** Called when a presence is received. */
+    /**
+     * Called when a presence is received.
+     */
     protected abstract void onPresence(String jid, Presence.Type type,
         boolean removed, Presence.Mode mode, String fingerprint);
 
     protected abstract void onConnected();
 
-    /** Called when the roster has been loaded (ACTION_ROSTER). */
+    /**
+     * Called when the roster has been loaded (ACTION_ROSTER).
+     */
     protected abstract void onRosterLoaded();
 
-    /** Called when the contact starts typing. */
+    /**
+     * Called when the contact starts typing.
+     */
     protected abstract void onStartTyping(String jid);
 
-    /** Called when the contact stops typing. */
+    /**
+     * Called when the contact stops typing.
+     */
     protected abstract void onStopTyping(String jid);
 
-    /** Should return true if the contact is a user ID in the current context. */
+    /**
+     * Should return true if the contact is a user ID in the current context.
+     */
     protected abstract boolean isUserId(String jid);
 
     private void subscribePresence() {
@@ -1820,7 +1876,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             Uri uri = Threads.getUri(mConversation.getRecipient());
             mPeerObserver = new PeerObserver(getActivity(), mQueryHandler);
             getActivity().getContentResolver().registerContentObserver(uri,
-                    false, mPeerObserver);
+                false, mPeerObserver);
         }
     }
 
@@ -1931,8 +1987,8 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
             // no draft and no messages - delete conversation
             if (len == 0 && mConversation.getMessageCount() == 0 &&
-                    mConversation.getRequestStatus() != Threads.REQUEST_WAITING &&
-                    !mConversation.isGroupChat()) {
+                mConversation.getRequestStatus() != Threads.REQUEST_WAITING &&
+                !mConversation.isGroupChat()) {
 
                 mConversation.delete(false);
             }
@@ -1967,7 +2023,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
         if (len > 0) {
             Toast.makeText(getActivity(), R.string.msg_draft_saved,
-                    Toast.LENGTH_LONG).show();
+                Toast.LENGTH_LONG).show();
         }
 
         if (mComposer.isComposeSent()) {
@@ -2090,7 +2146,9 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         this.threadId = threadId;
     }
 
-    /** Returns the user id of this conversation. */
+    /**
+     * Returns the user id of this conversation.
+     */
     public abstract String getUserId();
 
     public void setTextEntry(CharSequence text) {
@@ -2392,7 +2450,9 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         }
     }
 
-    /** The conversation list query handler. */
+    /**
+     * The conversation list query handler.
+     */
     private static final class MessageListQueryHandler extends AsyncQueryHandler {
         private WeakReference<AbstractComposeFragment> mParent;
         private boolean mCancel;

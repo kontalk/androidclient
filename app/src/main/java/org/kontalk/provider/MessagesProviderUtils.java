@@ -130,9 +130,9 @@ public class MessagesProviderUtils {
         return context.getContentResolver().insert(Messages.CONTENT_URI, values);
     }
 
-    /** Inserts a new outgoing text message. */
+    /** Inserts a new outgoing location message. */
     public static Uri newOutgoingMessage(Context context, String msgId, String userId,
-                                         String text, double lat, double lon, boolean encrypted) {
+                                         String text, double lat, double lon, String geoText, String geoStreet, boolean encrypted) {
 
         byte[] bytes = text.getBytes();
         ContentValues values = new ContentValues(11);
@@ -148,6 +148,10 @@ public class MessagesProviderUtils {
         values.put(Messages.STATUS, Messages.STATUS_SENDING);
         values.put(Messages.GEO_LATITUDE, lat);
         values.put(Messages.GEO_LONGITUDE, lon);
+        if (geoText != null)
+            values.put(Messages.GEO_TEXT, geoText);
+        if (geoStreet != null)
+            values.put(Messages.GEO_STREET, geoStreet);
         // of course outgoing messages are not encrypted in database
         values.put(Messages.ENCRYPTED, false);
         values.put(Threads.ENCRYPTION, encrypted);

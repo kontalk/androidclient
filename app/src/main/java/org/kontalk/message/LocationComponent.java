@@ -29,8 +29,8 @@ import org.kontalk.crypto.Coder;
  */
 public class LocationComponent extends MessageComponent<Location> {
 
-    public LocationComponent(double lat, double lon) {
-        super(new Location(lat, lon), 0, false, Coder.SECURITY_CLEARTEXT);
+    public LocationComponent(double lat, double lon, String text, String street) {
+        super(new Location(lat, lon, text, street), 0, false, Coder.SECURITY_CLEARTEXT);
     }
 
     public double getLatitude() {
@@ -39,5 +39,13 @@ public class LocationComponent extends MessageComponent<Location> {
 
     public double getLongitude() {
         return mContent.getLongitude();
+    }
+
+    public String getText() {
+        return mContent.getText();
+    }
+
+    public String getStreet() {
+        return mContent.getStreet();
     }
 }

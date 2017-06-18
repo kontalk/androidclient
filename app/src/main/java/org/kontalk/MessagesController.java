@@ -24,6 +24,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDiskIOException;
 import android.net.Uri;
+import android.text.TextUtils;
 
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.Coder;
@@ -92,7 +93,8 @@ public class MessagesController {
         }
     }
 
-    public Uri sendLocationMessage(Conversation conv, String text, double lat, double lon) {
+    public Uri sendLocationMessage(Conversation conv, String text, double lat, double lon,
+        String geoText, String geoStreet) {
         boolean encrypted = MessageUtils.sendEncrypted(mContext, conv.isEncryptionEnabled());
 
         String msgId = MessageUtils.messageId();
@@ -100,16 +102,16 @@ public class MessagesController {
 
         // save to local storage
         Uri newMsg = MessagesProviderUtils.newOutgoingMessage(mContext,
-                msgId, userId, text, lat, lon, encrypted);
+                msgId, userId, text, lat, lon, geoText, geoStreet, encrypted);
         if (newMsg != null) {
             // send message!
             if (conv.isGroupChat()) {
                 MessageCenterService.sendGroupLocationMessage(mContext,
                         conv.getGroupJid(), conv.getGroupSubject(), conv.getGroupPeers(),
-                        text, lat, lon, encrypted, ContentUris.parseId(newMsg), msgId);
+                        text, lat, lon, geoText, geoStreet, encrypted, ContentUris.parseId(newMsg), msgId);
             } else {
                 MessageCenterService.sendLocationMessage(mContext, userId, text, lat, lon,
-                        encrypted, ContentUris.parseId(newMsg), msgId);
+                        geoText, geoStreet, encrypted, ContentUris.parseId(newMsg), msgId);
             }
 
             return newMsg;
@@ -205,6 +207,11 @@ public class MessagesController {
         if (loc != null) {
             values.put(MyMessages.Messages.GEO_LATITUDE, loc.getLatitude());
             values.put(MyMessages.Messages.GEO_LONGITUDE, loc.getLongitude());
+            if (!TextUtils.isEmpty(loc.getText()))
+                values.put(MyMessages.Messages.GEO_TEXT, loc.getText());
+            if (!TextUtils.isEmpty(loc.getStreet()))
+                values.put(MyMessages.Messages.GEO_STREET, loc.getStreet());
+
         }
 
         GroupComponent groupInfo = msg.getComponent(GroupComponent.class);

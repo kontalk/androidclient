@@ -139,6 +139,8 @@ public class MessagesProvider extends ContentProvider {
             //location data
             "geo_lat NUMBER, " +
             "geo_lon NUMBER, " +
+            "geo_text, " +
+            "geo_street, " +
 
             // whole content encrypted
             "encrypted INTEGER NOT NULL DEFAULT 0, " +
@@ -1659,6 +1661,8 @@ public class MessagesProvider extends ContentProvider {
 
         messagesProjectionMap.put(Messages.GEO_LATITUDE, Messages.GEO_LATITUDE);
         messagesProjectionMap.put(Messages.GEO_LONGITUDE, Messages.GEO_LONGITUDE);
+        messagesProjectionMap.put(Messages.GEO_TEXT, Messages.GEO_TEXT);
+        messagesProjectionMap.put(Messages.GEO_STREET, Messages.GEO_STREET);
 
         messagesProjectionMap.put(Messages.UNREAD, Messages.UNREAD);
         messagesProjectionMap.put(Messages.NEW, Messages.NEW);

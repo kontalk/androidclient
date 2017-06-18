@@ -31,6 +31,7 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.kontalk.GlideApp;
@@ -45,13 +46,15 @@ import org.kontalk.util.CombinedDrawable;
  * @author andreacappelli
  */
 
-public class LocationContentView extends FrameLayout
+public class LocationContentView extends RelativeLayout
     implements MessageContentView<LocationComponent> {
     static final String TAG = ComposeMessage.TAG;
 
     private LocationComponent mComponent;
     private ImageView mContent;
     private TextView mPlaceholder;
+    private TextView mName;
+    private TextView mAddress;
 
     public LocationContentView(Context context) {
         super(context);
@@ -70,6 +73,8 @@ public class LocationContentView extends FrameLayout
         super.onFinishInflate();
         mContent = (ImageView) findViewById(R.id.content);
         mPlaceholder = (TextView) findViewById(R.id.placeholder);
+        mName = (TextView) findViewById(R.id.name);
+        mAddress = (TextView) findViewById(R.id.address);
     }
 
     @Override
@@ -94,6 +99,16 @@ public class LocationContentView extends FrameLayout
         Drawable drawable = createRoundRectDrawableWithIcon(0, R.drawable.ic_pin);
 
         mContent.setBackgroundDrawable(drawable);
+
+        if (mComponent.getText() != null) {
+            mName.setVisibility(VISIBLE);
+            mName.setText(mComponent.getText());
+        }
+
+        if (mComponent.getStreet() != null) {
+            mAddress.setVisibility(VISIBLE);
+            mAddress.setText(mComponent.getStreet());
+        }
 
         GlideApp.with(getContext()).load(imageURL).into(mContent);
     }

@@ -93,6 +93,8 @@ public class MessagingNotification {
         Messages.ATTACHMENT_MIME,
         Messages.GEO_LATITUDE,
         Messages.GEO_LONGITUDE,
+        Messages.GEO_TEXT,
+        Messages.GEO_STREET,
         CommonColumns.ENCRYPTED,
         Groups.GROUP_JID,
         Groups.SUBJECT,
@@ -264,10 +266,10 @@ public class MessagingNotification {
                 String mime = c.getString(2);
                 byte[] content = c.getBlob(3);
                 String attMime = c.getString(4);
-                boolean encrypted = c.getInt(7) != 0;
-                String groupJid = c.getString(8);
-                String groupSubject = c.getString(9);
-                long timestamp = c.getLong(10);
+                boolean encrypted = c.getInt(9) != 0;
+                String groupJid = c.getString(10);
+                String groupSubject = c.getString(11);
+                long timestamp = c.getLong(12);
 
                 if (!c.isNull(5)) {
                     content = context.getString(R.string.notification_location).getBytes();

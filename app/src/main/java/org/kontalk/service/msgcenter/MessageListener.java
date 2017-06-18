@@ -416,7 +416,8 @@ class MessageListener extends MessageCenterPacketListener {
                     ExtensionElement _location = m.getExtension(UserLocation.ELEMENT_NAME, UserLocation.NAMESPACE);
                     if (_location != null && _location instanceof UserLocation) {
                         UserLocation location = (UserLocation) _location;
-                        msg.addComponent(new LocationComponent(location.getLatitude(), location.getLongitude()));
+                        msg.addComponent(new LocationComponent(location.getLatitude(),
+                            location.getLongitude(), location.getText(), location.getStreet()));
                     }
 
                     // group chat

@@ -117,6 +117,8 @@ public final class MyMessages {
 
         public static final String GEO_LATITUDE = "geo_lat";
         public static final String GEO_LONGITUDE = "geo_lon";
+        public static final String GEO_TEXT = "geo_text";
+        public static final String GEO_STREET = "geo_street";
 
         public static final String SECURITY_FLAGS = "security_flags";
 

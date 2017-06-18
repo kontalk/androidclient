@@ -86,6 +86,8 @@ public class CompositeMessage {
         Messages.ATTACHMENT_SECURITY_FLAGS,
         Messages.GEO_LATITUDE,
         Messages.GEO_LONGITUDE,
+        Messages.GEO_TEXT,
+        Messages.GEO_STREET,
         Groups.GROUP_JID,
         Groups.SUBJECT,
         Groups.GROUP_TYPE,
@@ -115,10 +117,12 @@ public class CompositeMessage {
     public static final int COLUMN_ATTACHMENT_SECURITY_FLAGS = 19;
     public static final int COLUMN_GEO_LATITUDE = 20;
     public static final int COLUMN_GEO_LONGITUDE = 21;
-    public static final int COLUMN_GROUP_JID = 22;
-    public static final int COLUMN_GROUP_SUBJECT = 23;
-    public static final int COLUMN_GROUP_TYPE = 24;
-    public static final int COLUMN_GROUP_MEMBERSHIP = 25;
+    public static final int COLUMN_GEO_TEXT = 22;
+    public static final int COLUMN_GEO_STREET = 23;
+    public static final int COLUMN_GROUP_JID = 24;
+    public static final int COLUMN_GROUP_SUBJECT = 25;
+    public static final int COLUMN_GROUP_TYPE = 26;
+    public static final int COLUMN_GROUP_MEMBERSHIP = 27;
 
 
     public static final String MSG_ID = "org.kontalk.message.id";
@@ -326,7 +330,10 @@ public class CompositeMessage {
             if (!c.isNull(COLUMN_GEO_LATITUDE)) {
                 double lat = c.getDouble(COLUMN_GEO_LATITUDE);
                 double lon = c.getDouble(COLUMN_GEO_LONGITUDE);
-                LocationComponent location = new LocationComponent(lat, lon);
+                String text = c.getString(COLUMN_GEO_TEXT);
+                String street = c.getString(COLUMN_GEO_STREET);
+
+                LocationComponent location = new LocationComponent(lat, lon, text, street);
                 addComponent(location);
             }
 
