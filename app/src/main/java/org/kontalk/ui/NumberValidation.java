@@ -69,6 +69,7 @@ import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Base64;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -675,6 +676,25 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         });
     }
 
+    @NumberValidator.BrandImageSize
+    private int getBrandImageSize() {
+        int density = getResources().getDisplayMetrics().densityDpi;
+        if (density <= DisplayMetrics.DENSITY_MEDIUM) {
+            return NumberValidator.BRAND_IMAGE_SMALL;
+        }
+        else if (density > DisplayMetrics.DENSITY_MEDIUM && density <= DisplayMetrics.DENSITY_HIGH) {
+            return NumberValidator.BRAND_IMAGE_MEDIUM;
+        }
+        else if (density > DisplayMetrics.DENSITY_HIGH && density <= DisplayMetrics.DENSITY_XXHIGH) {
+            return NumberValidator.BRAND_IMAGE_LARGE;
+        }
+        else if (density > DisplayMetrics.DENSITY_XXHIGH) {
+            return NumberValidator.BRAND_IMAGE_HD;
+        }
+
+        return NumberValidator.BRAND_IMAGE_MEDIUM;
+    }
+
     private boolean startValidationNormal(String manualServer, boolean force, boolean fallback, boolean testImport) {
         if (!SystemUtils.isNetworkConnectionAvailable(this)) {
             error(R.string.err_validation_nonetwork);
@@ -696,7 +716,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         boolean imported = (mImportedPrivateKey != null && mImportedPublicKey != null);
 
         mValidator = new NumberValidator(this, provider, mName, mPhoneNumber,
-            imported ? null : mKey, mPassphrase);
+            imported ? null : mKey, mPassphrase, getBrandImageSize());
         mValidator.setListener(this);
         mValidator.setForce(force);
         mValidator.setFallback(fallback);

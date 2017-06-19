@@ -22,12 +22,20 @@ import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.koushikdutta.async.future.FutureCallback;
+import com.koushikdutta.async.http.AsyncHttpClientMiddleware;
+import com.koushikdutta.async.http.AsyncSSLEngineConfigurator;
+import com.koushikdutta.async.http.AsyncSSLSocketMiddleware;
 import com.koushikdutta.ion.Ion;
 
 import android.content.Intent;
@@ -52,6 +60,7 @@ import org.kontalk.client.NumberValidator.NumberValidatorListener;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.KeyPairGeneratorService;
+import org.kontalk.util.InternalTrustStore;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
@@ -216,6 +225,37 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         final String brandLink = i.getStringExtra("brandLink");
         if (brandImage != null) {
             findViewById(R.id.brand_poweredby).setVisibility(View.VISIBLE);
+
+            // builtin keystore
+            // FIXME this is low-level Ion-related code that should go somewhere else
+            // I'm not moving it now because we'll soon drop Ion for Glide (new_position branch)
+            try {
+                TrustManagerFactory tmFactory = TrustManagerFactory
+                    .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                tmFactory.init(InternalTrustStore.getTrustStore(this));
+                TrustManager[] tm = tmFactory.getTrustManagers();
+
+                SSLContext sslContext = SSLContext.getInstance("TLS");
+                sslContext.init(null, tm, null);
+
+                AsyncSSLSocketMiddleware ssl = Ion.getDefault(this)
+                    .getHttpClient().getSSLSocketMiddleware();
+                ssl.setTrustManagers(tm);
+                ssl.setSSLContext(sslContext);
+                // this is needed for SNI (Ion/AndroidSync doesn't support it)
+                ssl.addEngineConfigurator(new AsyncSSLEngineConfigurator() {
+                    @Override
+                    public SSLEngine createEngine(SSLContext sslContext, String peerHost, int peerPort) {
+                        return sslContext.createSSLEngine(peerHost, peerPort);
+                    }
+
+                    @Override
+                    public void configureEngine(SSLEngine engine, AsyncHttpClientMiddleware.GetSocketData data, String host, int port) {
+                    }
+                });
+            }
+            catch (Exception e) {
+            }
 
             final ImageView brandView = (ImageView) findViewById(R.id.brand);
             brandView.setVisibility(View.VISIBLE);
