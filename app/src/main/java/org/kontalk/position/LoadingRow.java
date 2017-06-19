@@ -29,7 +29,6 @@ import android.widget.TextView;
 import me.zhanghai.android.materialprogressbar.MaterialProgressBar;
 
 import org.kontalk.R;
-import org.kontalk.util.ViewUtils;
 
 /**
  * Location loading row
@@ -37,27 +36,27 @@ import org.kontalk.util.ViewUtils;
  * @author andreacappelli
  */
 
-public class LocationLoadingRow extends FrameLayout {
+public class LoadingRow extends FrameLayout {
 
     private MaterialProgressBar mProgressBar;
     private TextView mText;
 
-    public LocationLoadingRow(Context context) {
+    public LoadingRow(Context context) {
         this(context, null);
     }
 
-    public LocationLoadingRow(Context context, AttributeSet attrs) {
+    public LoadingRow(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public LocationLoadingRow(Context context, AttributeSet attrs, int defStyleAttr) {
+    public LoadingRow(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
         init();
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public LocationLoadingRow(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public LoadingRow(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
 
         init();
@@ -71,11 +70,6 @@ public class LocationLoadingRow extends FrameLayout {
         mProgressBar = (MaterialProgressBar) findViewById(R.id.progress_bar);
         mText = (TextView) findViewById(R.id.text);
 
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec((int) (ViewUtils.dp(getContext(), 56) * 2.5f), MeasureSpec.EXACTLY));
     }
 
     public void setLoading(boolean value) {

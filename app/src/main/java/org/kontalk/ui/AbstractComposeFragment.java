@@ -1295,11 +1295,17 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                 attachment.getMime());
         }
 
-        else {
+        else if (msg.getComponent(TextComponent.class) != null) {
             TextComponent txt = msg.getComponent(TextComponent.class);
 
-            if (txt != null)
-                i = ComposeMessage.sendTextMessage(txt.getContent());
+            //if (txt != null)
+            i = ComposeMessage.sendTextMessage(txt.getContent());
+        } else if (msg.getComponent(LocationComponent.class) != null) {
+            LocationComponent location = msg.getComponent(LocationComponent.class);
+            i = new Intent(android.content.Intent.ACTION_VIEW,
+                Uri.parse("geo:" + location.getLatitude() + ","
+                    + location.getLongitude() + "?q="
+                    + location.getLatitude() + "," + location.getLongitude()));
         }
 
         if (i != null)

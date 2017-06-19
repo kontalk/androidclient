@@ -30,6 +30,7 @@ import android.location.Location;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import org.kontalk.position.model.CategoriesItem;
 import org.kontalk.position.model.SearchResponse;
@@ -45,6 +46,7 @@ public class SearchPlacesAdapter extends RecyclerView.Adapter<SearchPlacesAdapte
 
     private final static int LOCATION = 0;
     private final static int LOADING = 1;
+    private final static int NO_RESULT = 2;
 
     private Context mContext;
     private List<VenuesItem> mList = new ArrayList<>();
@@ -67,10 +69,12 @@ public class SearchPlacesAdapter extends RecyclerView.Adapter<SearchPlacesAdapte
     public SearchPlacesAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = null;
         switch (viewType) {
-            case LOADING: {
-                LocationLoadingRow locationLoadingRow = new LocationLoadingRow(mContext, true);
-                locationLoadingRow.setEnabled(false);
-                view = locationLoadingRow;
+            case LOADING:
+            case NO_RESULT: {
+                LoadingRow loadingRow = new LoadingRow(mContext);
+                loadingRow.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                loadingRow.setEnabled(false);
+                view = loadingRow;
                 break;
             }
             case LOCATION: {
@@ -86,7 +90,11 @@ public class SearchPlacesAdapter extends RecyclerView.Adapter<SearchPlacesAdapte
     public void onBindViewHolder(SearchPlacesAdapter.ViewHolder holder, int position) {
         switch (holder.getItemViewType()) {
             case LOADING: {
-                ((LocationLoadingRow) holder.itemView).setLoading(true);
+                ((LoadingRow) holder.itemView).setLoading(true);
+                break;
+            }
+            case NO_RESULT: {
+                ((LoadingRow) holder.itemView).setLoading(false);
                 break;
             }
             case LOCATION: {
@@ -119,7 +127,7 @@ public class SearchPlacesAdapter extends RecyclerView.Adapter<SearchPlacesAdapte
 
     @Override
     public int getItemCount() {
-        if (mSearching)
+        if (mList == null || mList.isEmpty())
             return 1;
         return mList.size();
     }
@@ -128,6 +136,10 @@ public class SearchPlacesAdapter extends RecyclerView.Adapter<SearchPlacesAdapte
     public int getItemViewType(int position) {
         if (mSearching)
             return LOADING;
+
+        if (mList == null || mList.isEmpty())
+            return NO_RESULT;
+
         return LOCATION;
     }
 
