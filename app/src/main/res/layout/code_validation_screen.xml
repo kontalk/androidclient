@@ -53,6 +53,7 @@
                 android:layout_height="match_parent"
                 android:paddingLeft="20dip"
                 android:paddingRight="20dip"
+                android:layout_marginBottom="10dp"
                 android:gravity="center"
                 android:visibility="gone"
                 android:text="@string/registration_poweredby" />
