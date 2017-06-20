@@ -22,26 +22,21 @@ import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
-import com.koushikdutta.async.future.FutureCallback;
-import com.koushikdutta.async.http.AsyncHttpClientMiddleware;
-import com.koushikdutta.async.http.AsyncSSLEngineConfigurator;
-import com.koushikdutta.async.http.AsyncSSLSocketMiddleware;
-import com.koushikdutta.ion.Ion;
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
+import android.support.annotation.Nullable;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -60,6 +55,7 @@ import org.kontalk.client.NumberValidator.NumberValidatorListener;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.KeyPairGeneratorService;
+import org.kontalk.util.GlideApp;
 import org.kontalk.util.InternalTrustStore;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
@@ -69,8 +65,6 @@ import org.kontalk.util.SystemUtils;
 public class CodeValidation extends AccountAuthenticatorActionBarActivity
         implements NumberValidatorListener {
     private static final String TAG = NumberValidation.TAG;
-
-    private boolean sIonInitialized;
 
     private EditText mCode;
     private Button mButton;
@@ -236,58 +230,44 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         if (brandImage != null) {
             findViewById(R.id.brand_poweredby).setVisibility(View.VISIBLE);
 
-            // builtin keystore
-            // FIXME this is low-level Ion-related code that should go somewhere else
-            // I'm not moving it now because we'll soon drop Ion for Glide (new_position branch)
-            if (!sIonInitialized) {
-                sIonInitialized = true;
-                try {
-                    TrustManagerFactory tmFactory = TrustManagerFactory
-                        .getInstance(TrustManagerFactory.getDefaultAlgorithm());
-                    tmFactory.init(InternalTrustStore.getTrustStore(this));
-                    TrustManager[] tm = tmFactory.getTrustManagers();
-
-                    SSLContext sslContext = SSLContext.getInstance("TLS");
-                    sslContext.init(null, tm, null);
-
-                    AsyncSSLSocketMiddleware ssl = Ion.getDefault(this)
-                        .getHttpClient().getSSLSocketMiddleware();
-                    ssl.setTrustManagers(tm);
-                    ssl.setSSLContext(sslContext);
-                    // this is needed for SNI (Ion/AndroidSync doesn't support it)
-                    ssl.addEngineConfigurator(new AsyncSSLEngineConfigurator() {
-                        @Override
-                        public SSLEngine createEngine(SSLContext sslContext, String peerHost, int peerPort) {
-                            return sslContext.createSSLEngine(peerHost, peerPort);
-                        }
-
-                        @Override
-                        public void configureEngine(SSLEngine engine, AsyncHttpClientMiddleware.GetSocketData data, String host, int port) {
-                        }
-                    });
-                }
-                catch (Exception e) {
-                }
+            // we should use our builtin keystore
+            try {
+                InternalTrustStore.initUrlConnections(this);
+            }
+            catch (Exception e) {
+                Log.w(TAG, "unable to initialize internal trust store", e);
             }
 
+            final View brandParent = findViewById(R.id.brand_parent);
+            brandParent.setVisibility(View.VISIBLE);
+            final ProgressBar brandProgress = (ProgressBar) findViewById(R.id.brand_loading);
+            brandProgress.setVisibility(View.VISIBLE);
             final ImageView brandView = (ImageView) findViewById(R.id.brand);
             brandView.setVisibility(View.VISIBLE);
-            Ion.with(brandView)
-                .placeholder(R.drawable.progress_ring)
-                .animateLoad(R.anim.rotate_indeterminate)
-                .animateIn(0)
+
+            GlideApp.with(this)
                 .load(brandImage)
-                .setCallback(new FutureCallback<ImageView>() {
+                .listener(new RequestListener<Drawable>() {
                     @Override
-                    public void onCompleted(Exception e, ImageView result) {
-                        if (e != null && brandLink != null) {
-                            brandView.setVisibility(View.GONE);
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                        brandParent.setVisibility(View.GONE);
+                        brandView.setVisibility(View.GONE);
+                        brandProgress.setVisibility(View.GONE);
+                        if (brandLink != null) {
                             TextView brandTextView = (TextView) findViewById(R.id.brand_text);
                             brandTextView.setText(brandLink);
                             brandTextView.setVisibility(View.VISIBLE);
                         }
+                        return true;
                     }
-                });
+
+                    @Override
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                        brandProgress.setVisibility(View.GONE);
+                        return false;
+                    }
+                })
+                .into(brandView);
 
             if (brandLink != null) {
                 brandView.setContentDescription(brandLink);

@@ -58,15 +58,30 @@
                 android:visibility="gone"
                 android:text="@string/registration_poweredby" />
 
-            <!-- content description will be added at runtime -->
-            <ImageView
-                android:id="@+id/brand"
+            <FrameLayout android:id="@+id/brand_parent"
                 android:layout_width="match_parent"
                 android:layout_height="80dp"
-                android:layout_marginBottom="10dp"
-                android:visibility="gone"
-                android:scaleType="fitCenter"
-                tools:ignore="ContentDescription"/>
+                android:visibility="gone">
+
+                <!-- content description will be added at runtime -->
+                <ImageView
+                    android:id="@+id/brand"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginBottom="10dp"
+                    android:visibility="gone"
+                    android:scaleType="fitCenter"
+                    tools:ignore="ContentDescription"/>
+
+                <ProgressBar
+                    android:id="@+id/brand_loading"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginBottom="10dp"
+                    android:indeterminate="true"
+                    android:visibility="gone"/>
+
+            </FrameLayout>
 
             <TextView
                 style="?android:attr/textAppearanceLarge"
