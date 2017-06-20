@@ -136,6 +136,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         else {
             String challenge = i.getStringExtra("challenge");
             String sender = i.getStringExtra("sender");
+            boolean canFallback = i.getBooleanExtra("canFallback", false);
 
             final TextView phoneText = (TextView) findViewById(R.id.code_validation_phone);
             String formattedPhone;
@@ -154,8 +155,10 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 textId1 = getText(R.string.code_validation_intro_missed_call);
                 textId2 = getString(R.string.code_validation_intro2_missed_call,
                     NumberValidator.getChallengeLength(sender));
-                mFallbackButton.setText(R.string.button_validation_fallback);
-                mFallbackButton.setVisibility(View.VISIBLE);
+                if (canFallback) {
+                    mFallbackButton.setText(R.string.button_validation_fallback);
+                    mFallbackButton.setVisibility(View.VISIBLE);
+                }
                 // show sender label and hide call button
                 phoneText.setText(formattedPhone);
                 phoneText.setVisibility(View.VISIBLE);
@@ -166,8 +169,10 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 // user-initiated missed call
                 textId1 = getText(R.string.code_validation_intro_callerid);
                 textId2 = getText(R.string.code_validation_intro2_callerid);
-                mFallbackButton.setText(R.string.button_validation_fallback_callerid);
-                mFallbackButton.setVisibility(View.VISIBLE);
+                if (canFallback) {
+                    mFallbackButton.setText(R.string.button_validation_fallback_callerid);
+                    mFallbackButton.setVisibility(View.VISIBLE);
+                }
                 // show call button and hide sender label
                 mCallButton.setText(sender);
                 mCallButton.setVisibility(View.VISIBLE);
@@ -178,7 +183,10 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 // PIN code
                 textId1 = getText(R.string.code_validation_intro);
                 textId2 = getText(R.string.code_validation_intro2);
-                mFallbackButton.setVisibility(View.GONE);
+                if (canFallback) {
+                    mFallbackButton.setText(R.string.button_validation_fallback);
+                    mFallbackButton.setVisibility(View.VISIBLE);
+                }
                 // show sender label and hide call button
                 phoneText.setText(formattedPhone);
                 phoneText.setVisibility(View.VISIBLE);
@@ -372,7 +380,6 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         new MaterialDialog.Builder(this)
             .title(R.string.title_fallback)
             .content(R.string.msg_fallback)
-            .icon(ContextCompat.getDrawable(this, android.R.drawable.ic_dialog_info))
             .positiveText(android.R.string.ok)
             .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
@@ -469,7 +476,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
-    public void onValidationRequested(NumberValidator v, String sender, String challenge, String brandImage, String brandLink) {
+    public void onValidationRequested(NumberValidator v, String sender, String challenge, String brandImage, String brandLink, boolean canFallback) {
         // not used.
     }
 

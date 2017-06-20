@@ -327,6 +327,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                                 // ok! message will be sent
                                 String smsFrom = null, challenge = null,
                                     brandLink = null;
+                                boolean canFallback = false;
                                 List<FormField> iter = response.getFields();
                                 for (FormField field : iter) {
                                     String fieldName = field.getVariable();
@@ -339,6 +340,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                                     else if ("brand-link".equals(fieldName)) {
                                         brandLink = field.getValues().get(0);
                                     }
+                                    else if ("can-fallback".equals(fieldName) && field.getType() == FormField.Type.bool) {
+                                        String val = field.getValues().get(0);
+                                        canFallback = "1".equals(val) || "true".equalsIgnoreCase(val) || "yes".equalsIgnoreCase(val);
+                                    }
                                 }
 
                                 // brand image needs some more complex logic
@@ -348,7 +353,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                                     Log.d(TAG, "using sender id: " + smsFrom + ", challenge: " + challenge);
                                     mServerChallenge = challenge;
                                     mListener.onValidationRequested(NumberValidator.this,
-                                        smsFrom, challenge, brandImage, brandLink);
+                                        smsFrom, challenge, brandImage, brandLink, canFallback);
 
                                     // prevent error handling
                                     return;
@@ -726,7 +731,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         void onServerCheckFailed(NumberValidator v);
 
         /** Called on confirmation that the validation SMS is being sent. */
-        void onValidationRequested(NumberValidator v, String sender, String challenge, String brandImage, String brandLink);
+        void onValidationRequested(NumberValidator v, String sender, String challenge, String brandImage, String brandLink, boolean canFallback);
 
         /** Called if phone number validation failed. */
         void onValidationFailed(NumberValidator v, int reason);
