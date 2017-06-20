@@ -70,6 +70,8 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         implements NumberValidatorListener {
     private static final String TAG = NumberValidation.TAG;
 
+    private boolean sIonInitialized;
+
     private EditText mCode;
     private Button mButton;
     private Button mFallbackButton;
@@ -237,32 +239,35 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
             // builtin keystore
             // FIXME this is low-level Ion-related code that should go somewhere else
             // I'm not moving it now because we'll soon drop Ion for Glide (new_position branch)
-            try {
-                TrustManagerFactory tmFactory = TrustManagerFactory
-                    .getInstance(TrustManagerFactory.getDefaultAlgorithm());
-                tmFactory.init(InternalTrustStore.getTrustStore(this));
-                TrustManager[] tm = tmFactory.getTrustManagers();
+            if (!sIonInitialized) {
+                sIonInitialized = true;
+                try {
+                    TrustManagerFactory tmFactory = TrustManagerFactory
+                        .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                    tmFactory.init(InternalTrustStore.getTrustStore(this));
+                    TrustManager[] tm = tmFactory.getTrustManagers();
 
-                SSLContext sslContext = SSLContext.getInstance("TLS");
-                sslContext.init(null, tm, null);
+                    SSLContext sslContext = SSLContext.getInstance("TLS");
+                    sslContext.init(null, tm, null);
 
-                AsyncSSLSocketMiddleware ssl = Ion.getDefault(this)
-                    .getHttpClient().getSSLSocketMiddleware();
-                ssl.setTrustManagers(tm);
-                ssl.setSSLContext(sslContext);
-                // this is needed for SNI (Ion/AndroidSync doesn't support it)
-                ssl.addEngineConfigurator(new AsyncSSLEngineConfigurator() {
-                    @Override
-                    public SSLEngine createEngine(SSLContext sslContext, String peerHost, int peerPort) {
-                        return sslContext.createSSLEngine(peerHost, peerPort);
-                    }
+                    AsyncSSLSocketMiddleware ssl = Ion.getDefault(this)
+                        .getHttpClient().getSSLSocketMiddleware();
+                    ssl.setTrustManagers(tm);
+                    ssl.setSSLContext(sslContext);
+                    // this is needed for SNI (Ion/AndroidSync doesn't support it)
+                    ssl.addEngineConfigurator(new AsyncSSLEngineConfigurator() {
+                        @Override
+                        public SSLEngine createEngine(SSLContext sslContext, String peerHost, int peerPort) {
+                            return sslContext.createSSLEngine(peerHost, peerPort);
+                        }
 
-                    @Override
-                    public void configureEngine(SSLEngine engine, AsyncHttpClientMiddleware.GetSocketData data, String host, int port) {
-                    }
-                });
-            }
-            catch (Exception e) {
+                        @Override
+                        public void configureEngine(SSLEngine engine, AsyncHttpClientMiddleware.GetSocketData data, String host, int port) {
+                        }
+                    });
+                }
+                catch (Exception e) {
+                }
             }
 
             final ImageView brandView = (ImageView) findViewById(R.id.brand);
