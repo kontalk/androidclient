@@ -57,6 +57,7 @@ import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.MergeCursor;
 import android.database.sqlite.SQLiteDiskIOException;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;

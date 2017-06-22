@@ -1730,6 +1730,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Messages.ATTACHMENT_LOCAL_URI,
                 Messages.ATTACHMENT_FETCH_URL,
                 Messages.ATTACHMENT_PREVIEW_PATH,
+                Messages.ATTACHMENT_WIDTH,
+                Messages.ATTACHMENT_HEIGHT,
                 Messages.ATTACHMENT_LENGTH,
                 Messages.ATTACHMENT_COMPRESS,
                 // TODO Messages.ATTACHMENT_SECURITY_FLAGS,
@@ -1821,6 +1823,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Messages.ATTACHMENT_LOCAL_URI,
                 Messages.ATTACHMENT_FETCH_URL,
                 Messages.ATTACHMENT_PREVIEW_PATH,
+                Messages.ATTACHMENT_WIDTH,
+                Messages.ATTACHMENT_HEIGHT,
                 Messages.ATTACHMENT_LENGTH,
                 Messages.ATTACHMENT_COMPRESS,
                 // TODO Messages.ATTACHMENT_SECURITY_FLAGS,
@@ -1854,12 +1858,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             String attFileUri = c.getString(8);
             String attFetchUrl = c.getString(9);
             String attPreviewPath = c.getString(10);
-            long attLength = c.getLong(11);
-            int compress = c.getInt(12);
+            int width = c.getInt(11);
+            int height = c.getInt(12);
+            long attLength = c.getLong(13);
+            int compress = c.getInt(14);
             // TODO int attSecurityFlags = c.getInt(13);
 
-            String groupJid = c.getString(13); // 14
-            String groupSubject = c.getString(14); // 15
+            String groupJid = c.getString(15); // 14
+            String groupSubject = c.getString(16); // 15
 
             if (pendingGroupCommandThreads.contains(threadId)) {
                 Log.v(TAG, "group message for pending group command - delaying");
@@ -1963,6 +1969,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 b.putString("org.kontalk.message.fetch.url", attFetchUrl);
                 b.putString("org.kontalk.message.preview.uri", attFileUri);
                 b.putString("org.kontalk.message.preview.path", attPreviewPath);
+                b.putInt("org.kontalk.message.width", width);
+                b.putInt("org.kontalk.message.height", height);
             }
             // check if the message contains some large file to be sent
             else if (attFileUri != null) {
@@ -1971,6 +1979,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 b.putString("org.kontalk.message.preview.path", attPreviewPath);
                 b.putLong("org.kontalk.message.length", attLength);
                 b.putInt("org.kontalk.message.compress", compress);
+                b.putInt("org.kontalk.message.width", width);
+                b.putInt("org.kontalk.message.height", height);
             }
 
             Log.v(TAG, "resending pending message " + id);
@@ -2323,6 +2333,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         final boolean encrypt = data.getBoolean("org.kontalk.message.encrypt");
         final String mime = data.getString("org.kontalk.message.mime");
+        final int width = data.getInt("org.kontalk.message.width");
+        final int height = data.getInt("org.kontalk.message.height");
         String _mediaUri = data.getString("org.kontalk.message.media.uri");
         if (_mediaUri != null) {
             // take the first available upload service :)
@@ -2375,6 +2387,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         i.putExtra(UploadService.EXTRA_DATABASE_ID, msgId);
                         i.putExtra(UploadService.EXTRA_MESSAGE_ID, id);
                         i.putExtra(UploadService.EXTRA_MIME, mime);
+                        i.putExtra(UploadService.EXTRA_WIDTH, width);
+                        i.putExtra(UploadService.EXTRA_HEIGHT, height);
                         // this will be used only for out of band data
                         i.putExtra(UploadService.EXTRA_ENCRYPT, encrypt);
                         i.putExtra(UploadService.EXTRA_PREVIEW_PATH, previewPath);
@@ -2502,7 +2516,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 if (fetchUrl != null) {
                     // in this case we will need the length too
                     long length = data.getLong("org.kontalk.message.length");
-                    m.addExtension(new OutOfBandData(fetchUrl, mime, length, encrypt));
+                    m.addExtension(new OutOfBandData(fetchUrl, mime, width, height, length, encrypt));
                 }
 
                 if (encrypt) {
@@ -2955,7 +2969,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static void sendGroupUploadedMedia(final Context context, String groupJid, String[] to,
-        String mime, Uri localUri, long length, String previewPath, String fetchUrl,
+        String mime, Uri localUri, int width, int height, long length, String previewPath, String fetchUrl,
         boolean encrypt, long msgId, String packetId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
@@ -2965,6 +2979,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.group.jid", groupJid);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.preview.uri", localUri.toString());
+        i.putExtra("org.kontalk.message.width", width);
+        i.putExtra("org.kontalk.message.height", height);
         i.putExtra("org.kontalk.message.length", length);
         i.putExtra("org.kontalk.message.preview.path", previewPath);
         i.putExtra("org.kontalk.message.body", fetchUrl);
@@ -2975,7 +2991,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static void sendUploadedMedia(final Context context, String to,
-            String mime, Uri localUri, long length, String previewPath, String fetchUrl,
+            String mime, Uri localUri, int width, int height, long length, String previewPath, String fetchUrl,
             boolean encrypt, long msgId, String packetId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
@@ -2984,6 +3000,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.mime", mime);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.preview.uri", localUri.toString());
+        i.putExtra("org.kontalk.message.width", width);
+        i.putExtra("org.kontalk.message.height", height);
         i.putExtra("org.kontalk.message.length", length);
         i.putExtra("org.kontalk.message.preview.path", previewPath);
         i.putExtra("org.kontalk.message.body", fetchUrl);

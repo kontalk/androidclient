@@ -18,6 +18,7 @@
 
 package org.kontalk;
 
+import java.io.File;
 import java.io.IOException;
 
 import android.content.ContentUris;
@@ -25,6 +26,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDiskIOException;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 
 import org.kontalk.authenticator.Authenticator;

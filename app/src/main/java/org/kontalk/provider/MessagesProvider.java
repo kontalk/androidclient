@@ -131,6 +131,8 @@ public class MessagesProvider extends ContentProvider {
             "att_preview_path TEXT," +
             "att_fetch_url TEXT," +
             "att_local_uri TEXT," +
+            "att_width INTEGER NOT NULL DEFAULT 0," +
+            "att_height INTEGER NOT NULL DEFAULT 0," +
             "att_length INTEGER NOT NULL DEFAULT 0," +
             "att_compress INTEGER NOT NULL DEFAULT 0," +
             "att_encrypted INTEGER NOT NULL DEFAULT 0," +
@@ -1650,6 +1652,8 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages.ATTACHMENT_PREVIEW_PATH, Messages.ATTACHMENT_PREVIEW_PATH);
         messagesProjectionMap.put(Messages.ATTACHMENT_FETCH_URL, Messages.ATTACHMENT_FETCH_URL);
         messagesProjectionMap.put(Messages.ATTACHMENT_LOCAL_URI, Messages.ATTACHMENT_LOCAL_URI);
+        messagesProjectionMap.put(Messages.ATTACHMENT_WIDTH, Messages.ATTACHMENT_WIDTH);
+        messagesProjectionMap.put(Messages.ATTACHMENT_HEIGHT, Messages.ATTACHMENT_HEIGHT);
         messagesProjectionMap.put(Messages.ATTACHMENT_LENGTH, Messages.ATTACHMENT_LENGTH);
         messagesProjectionMap.put(Messages.ATTACHMENT_COMPRESS, Messages.ATTACHMENT_COMPRESS);
         messagesProjectionMap.put(Messages.ATTACHMENT_ENCRYPTED, Messages.ATTACHMENT_ENCRYPTED);

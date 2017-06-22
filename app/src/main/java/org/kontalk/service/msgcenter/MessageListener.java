@@ -327,6 +327,8 @@ class MessageListener extends MessageCenterPacketListener {
                         OutOfBandData media = (OutOfBandData) _media;
                         String mime = media.getMime();
                         String fetchUrl = media.getUrl();
+                        int width = media.getWidth();
+                        int height = media.getHeight();
                         long length = media.getLength();
                         boolean encrypted = media.isEncrypted();
 
@@ -373,7 +375,8 @@ class MessageListener extends MessageCenterPacketListener {
 
                             msg.clearComponents();
                             // cleartext only for now
-                            attachment = new ImageComponent(mime, previewFile, null, fetchUrl, length,
+                            attachment = new ImageComponent(mime, previewFile, null, fetchUrl, width,
+                                height, length,
                                 encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
                         }
 

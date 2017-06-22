@@ -161,10 +161,12 @@ public class MessagesProviderUtils {
      * Fills a media message with preview file and local uri, for use e.g.
      * after compressing. Also updates the message status to SENDING.
      */
-    public static int updateMedia(Context context, long id, String previewFile, Uri localUri, long length) {
+    public static int updateMedia(Context context, long id, String previewFile, Uri localUri, int width, int height, long length) {
         ContentValues values = new ContentValues(3);
         values.put(Messages.ATTACHMENT_PREVIEW_PATH, previewFile);
         values.put(Messages.ATTACHMENT_LOCAL_URI, localUri.toString());
+        values.put(Messages.ATTACHMENT_WIDTH, width);
+        values.put(Messages.ATTACHMENT_HEIGHT, height);
         values.put(Messages.ATTACHMENT_LENGTH, length);
         values.put(Messages.STATUS, Messages.STATUS_SENDING);
         return context.getContentResolver().update(ContentUris

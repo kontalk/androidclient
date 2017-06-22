@@ -23,6 +23,7 @@ import java.io.File;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -74,6 +75,9 @@ public class MediaService extends IntentService {
             long length;
 
             int compress = 0;
+            int width = 0;
+            int height = 0;
+
             // FIXME hard-coded to ImageComponent (how about videos?)
             if (ImageComponent.supportsMimeType(mime)) {
                 compress = Preferences.getImageCompression(this);
@@ -98,9 +102,15 @@ public class MediaService extends IntentService {
                 length = MediaStorage.getLength(this, uri);
             }
 
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(new File(uri.getPath()).getAbsolutePath(), options);
+            width = options.outWidth;
+            height = options.outHeight;
+
             MessagesProviderUtils.updateMedia(this, databaseId,
                 previewFile != null ? previewFile.toString() : null,
-                uri, length);
+                uri, width, height, length);
 
             MessageCenterService.sendMedia(this, databaseId);
         }

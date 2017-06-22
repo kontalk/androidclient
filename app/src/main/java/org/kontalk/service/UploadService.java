@@ -55,37 +55,63 @@ import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_UPLOAD_ERROR;
 /**
  * Attachment upload service.
  * TODO implement multiple concurrent uploads
+ *
  * @author Daniele Ricci
  */
 public class UploadService extends IntentService implements ProgressListener {
     private static final String TAG = MessageCenterService.TAG;
 
-    /** A map to avoid duplicate uploads. */
+    /**
+     * A map to avoid duplicate uploads.
+     */
     private static final Map<String, Long> queue = new LinkedHashMap<>();
 
     public static final String ACTION_UPLOAD = "org.kontalk.action.UPLOAD";
     public static final String ACTION_UPLOAD_ABORT = "org.kontalk.action.UPLOAD_ABORT";
 
-    /** Message database ID. Use with ACTION_UPLOAD. */
+    /**
+     * Message database ID. Use with ACTION_UPLOAD.
+     */
     public static final String EXTRA_DATABASE_ID = "org.kontalk.upload.DATABASE_ID";
-    /** Message ID. Use with ACTION_UPLOAD. */
+    /**
+     * Message ID. Use with ACTION_UPLOAD.
+     */
     public static final String EXTRA_MESSAGE_ID = "org.kontalk.upload.MESSAGE_ID";
-    /** URL to post to. Use with ACTION_UPLOAD. */
+    /**
+     * URL to post to. Use with ACTION_UPLOAD.
+     */
     public static final String EXTRA_POST_URL = "org.kontalk.upload.POST_URL";
-    /** URL to fetch from. Use with ACTION_UPLOAD. */
+    /**
+     * URL to fetch from. Use with ACTION_UPLOAD.
+     */
     public static final String EXTRA_GET_URL = "org.kontalk.upload.GET_URL";
-    /** User(s) to send to. */
+    /**
+     * User(s) to send to.
+     */
     public static final String EXTRA_USER = "org.kontalk.upload.USER";
-    /** Group JID. */
+    /**
+     * Group JID.
+     */
     public static final String EXTRA_GROUP = "org.kontalk.upload.GROUP";
-    /** Media MIME type. */
+    /**
+     * Media MIME type.
+     */
     public static final String EXTRA_MIME = "org.kontalk.upload.MIME";
-    /** Preview file path. */
+    /**
+     * Preview file path.
+     */
     public static final String EXTRA_PREVIEW_PATH = "org.kontalk.upload.PREVIEW_PATH";
-    /** Encryption flag. */
+    /**
+     * Encryption flag.
+     */
     public static final String EXTRA_ENCRYPT = "org.kontalk.upload.ENCRYPT";
-    /** Delete local file after sending attempt. */
+    /**
+     * Delete local file after sending attempt.
+     */
     public static final String EXTRA_DELETE_ORIGINAL = "org.kontalk.upload.DELETE_ORIGINAL";
+
+    public static final String EXTRA_WIDTH = "org.kontalk.upload.WIDTH";
+    public static final String EXTRA_HEIGHT = "org.kontalk.upload.HEIGHT";
     // Intent data is the local file Uri
 
     private ProgressNotificationBuilder mNotificationBuilder;
@@ -154,12 +180,16 @@ public class UploadService extends IntentService implements ProgressListener {
         // group JID
         String groupJid = intent.getStringExtra(EXTRA_GROUP);
         // user(s) to send message to
+
+        int width = intent.getIntExtra(EXTRA_WIDTH, 0);
+        int height = intent.getIntExtra(EXTRA_HEIGHT, 0);
+
         String[] to;
         if (groupJid != null) {
             to = intent.getStringArrayExtra(EXTRA_USER);
         }
         else {
-            to = new String[] { intent.getStringExtra(EXTRA_USER) };
+            to = new String[]{intent.getStringExtra(EXTRA_USER)};
         }
         // media mime type
         String mime = intent.getStringExtra(EXTRA_MIME);
@@ -201,11 +231,11 @@ public class UploadService extends IntentService implements ProgressListener {
             // send message with fetch url to server
             if (groupJid != null) {
                 MessageCenterService.sendGroupUploadedMedia(this, groupJid, to,
-                    mime, file, length, previewPath, mediaUrl, encrypt, databaseId, msgId);
+                    mime, file, width, height, length, previewPath, mediaUrl, encrypt, databaseId, msgId);
             }
             else {
-                MessageCenterService.sendUploadedMedia(this, to[0], mime, file, length,
-                    previewPath, mediaUrl, encrypt, databaseId, msgId);
+                MessageCenterService.sendUploadedMedia(this, to[0], mime, file,
+                    width, height, length, previewPath, mediaUrl, encrypt, databaseId, msgId);
             }
 
             // end operations
@@ -231,7 +261,7 @@ public class UploadService extends IntentService implements ProgressListener {
         ni.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         // FIXME this intent should actually open the ComposeMessage activity
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
-                NOTIFICATION_ID_UPLOADING, ni, 0);
+            NOTIFICATION_ID_UPLOADING, ni, 0);
 
         if (mNotificationBuilder == null) {
             mNotificationBuilder = new ProgressNotificationBuilder(getApplicationContext(),

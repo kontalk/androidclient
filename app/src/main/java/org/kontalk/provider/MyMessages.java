@@ -110,6 +110,8 @@ public final class MyMessages {
         public static final String ATTACHMENT_PREVIEW_PATH = "att_preview_path";
         public static final String ATTACHMENT_FETCH_URL = "att_fetch_url";
         public static final String ATTACHMENT_LOCAL_URI = "att_local_uri";
+        public static final String ATTACHMENT_WIDTH = "att_width";
+        public static final String ATTACHMENT_HEIGHT = "att_height";
         public static final String ATTACHMENT_LENGTH = "att_length";
         public static final String ATTACHMENT_COMPRESS = "att_compress";
         public static final String ATTACHMENT_ENCRYPTED = "att_encrypted";

@@ -33,6 +33,9 @@ import org.kontalk.util.MediaStorage;
  */
 public class ImageComponent extends AttachmentComponent {
 
+    private int mWidth;
+    private int mHeight;
+
     private static final String[][] MIME_TYPES = {
         { "image/png", "png" },
         { "image/jpeg", "jpg" },
@@ -41,8 +44,18 @@ public class ImageComponent extends AttachmentComponent {
         { "image/jpg", "jpg" }
     };
 
-    public ImageComponent(String mime, File previewFile, Uri localUri, String fetchUrl, long length, boolean encrypted, int securityFlags) {
+    public ImageComponent(String mime, File previewFile, Uri localUri, String fetchUrl, int width, int height, long length, boolean encrypted, int securityFlags) {
         super(mime, previewFile, localUri, fetchUrl, length, encrypted, securityFlags);
+        mWidth = width;
+        mHeight = height;
+    }
+
+    public int getWidth() {
+        return mWidth;
+    }
+
+    public int getHeight() {
+        return mHeight;
     }
 
     public static boolean supportsMimeType(String mime) {

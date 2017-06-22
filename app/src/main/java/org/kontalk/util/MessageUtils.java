@@ -653,6 +653,12 @@ public final class MessageUtils {
                     values.put(Messages.ATTACHMENT_ENCRYPTED, att.isEncrypted());
                     values.put(Messages.ATTACHMENT_SECURITY_FLAGS, att.getSecurityFlags());
 
+                    if (msg.getComponent(ImageComponent.class) != null ) {
+                        ImageComponent imageComponent = msg.getComponent(ImageComponent.class);
+                        values.put(Messages.ATTACHMENT_WIDTH, imageComponent.getWidth());
+                        values.put(Messages.ATTACHMENT_HEIGHT, imageComponent.getHeight());
+                    }
+
                     File previewFile = att.getPreviewFile();
                     if (previewFile != null)
                         values.put(Messages.ATTACHMENT_PREVIEW_PATH, previewFile.getAbsolutePath());

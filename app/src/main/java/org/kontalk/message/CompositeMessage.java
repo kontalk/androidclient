@@ -81,6 +81,8 @@ public class CompositeMessage {
         Messages.ATTACHMENT_PREVIEW_PATH,
         Messages.ATTACHMENT_LOCAL_URI,
         Messages.ATTACHMENT_FETCH_URL,
+        Messages.ATTACHMENT_WIDTH,
+        Messages.ATTACHMENT_HEIGHT,
         Messages.ATTACHMENT_LENGTH,
         Messages.ATTACHMENT_ENCRYPTED,
         Messages.ATTACHMENT_SECURITY_FLAGS,
@@ -108,13 +110,15 @@ public class CompositeMessage {
     public static final int COLUMN_ATTACHMENT_PREVIEW_PATH = 14;
     public static final int COLUMN_ATTACHMENT_LOCAL_URI = 15;
     public static final int COLUMN_ATTACHMENT_FETCH_URL = 16;
-    public static final int COLUMN_ATTACHMENT_LENGTH = 17;
-    public static final int COLUMN_ATTACHMENT_ENCRYPTED = 18;
-    public static final int COLUMN_ATTACHMENT_SECURITY_FLAGS = 19;
-    public static final int COLUMN_GROUP_JID = 20;
-    public static final int COLUMN_GROUP_SUBJECT = 21;
-    public static final int COLUMN_GROUP_TYPE = 22;
-    public static final int COLUMN_GROUP_MEMBERSHIP = 23;
+    public static final int COLUMN_ATTACHMENT_WIDTH = 17;
+    public static final int COLUMN_ATTACHMENT_HEIGHT = 18;
+    public static final int COLUMN_ATTACHMENT_LENGTH = 19;
+    public static final int COLUMN_ATTACHMENT_ENCRYPTED = 20;
+    public static final int COLUMN_ATTACHMENT_SECURITY_FLAGS = 21;
+    public static final int COLUMN_GROUP_JID = 22;
+    public static final int COLUMN_GROUP_SUBJECT = 23;
+    public static final int COLUMN_GROUP_TYPE = 24;
+    public static final int COLUMN_GROUP_MEMBERSHIP = 25;
 
     public static final String MSG_ID = "org.kontalk.message.id";
     public static final String MSG_SERVER_ID = "org.kontalk.message.serverId";
@@ -126,6 +130,8 @@ public class CompositeMessage {
     public static final String MSG_TIMESTAMP = "org.kontalk.message.timestamp";
     public static final String MSG_ENCRYPTED = "org.kontalk.message.encrypted";
     public static final String MSG_COMPRESS = "org.kontalk.message.compress";
+    /*public static final String MSG_WIDTH = "org.kontalk.message.width";
+    public static final String MSG_HEiGHT = "org.kontalk.message.height";*/
 
     private static final int SUFFIX_LENGTH = "Component".length();
 
@@ -382,6 +388,8 @@ public class CompositeMessage {
                 String attPreview = c.getString(COLUMN_ATTACHMENT_PREVIEW_PATH);
                 String attLocal = c.getString(COLUMN_ATTACHMENT_LOCAL_URI);
                 String attFetch = c.getString(COLUMN_ATTACHMENT_FETCH_URL);
+                int attWidth = c.getInt(COLUMN_ATTACHMENT_WIDTH);
+                int attHeight = c.getInt(COLUMN_ATTACHMENT_HEIGHT);
                 long attLength = c.getLong(COLUMN_ATTACHMENT_LENGTH);
                 boolean attEncrypted = c.getInt(COLUMN_ATTACHMENT_ENCRYPTED) > 0;
                 int attSecurityFlags = c.getInt(COLUMN_ATTACHMENT_SECURITY_FLAGS);
@@ -392,7 +400,7 @@ public class CompositeMessage {
 
                 if (ImageComponent.supportsMimeType(attMime)) {
                     att = new ImageComponent(attMime, previewFile,
-                            localUri, attFetch, attLength,
+                            localUri, attFetch, attWidth, attHeight, attLength,
                             attEncrypted, attSecurityFlags);
                 }
 
