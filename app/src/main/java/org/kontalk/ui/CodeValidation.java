@@ -174,6 +174,8 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 mCallButton.setVisibility(View.VISIBLE);
                 phoneText.setVisibility(View.GONE);
                 mCode.setVisibility(View.GONE);
+                // the incoming foreign number notice doesn't apply in this case
+                findViewById(R.id.code_validation_intro3).setVisibility(View.GONE);
             }
             else {
                 // PIN code

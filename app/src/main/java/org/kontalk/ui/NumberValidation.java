@@ -423,11 +423,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                     }
 
                     // no key, key pair generation started
-                    else if (BuildConfig.DEBUG) {
-                        Toast.makeText(NumberValidation.this,
-                            R.string.msg_generating_keypair,
-                            Toast.LENGTH_LONG).show();
-                    }
                 }
             };
 

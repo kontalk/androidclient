@@ -165,6 +165,15 @@
                 android:visibility="gone"
                 android:text="@string/button_validation_fallback" />
 
+            <TextView
+                android:id="@+id/code_validation_intro3"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingLeft="20dip"
+                android:paddingRight="20dip"
+                android:paddingTop="10dip"
+                android:text="@string/code_validation_intro3" />
+
             <!--
             <TextView
                 android:id="@+id/brand_poweredby"
