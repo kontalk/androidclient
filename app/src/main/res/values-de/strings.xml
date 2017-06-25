@@ -43,7 +43,7 @@
   <string name="code_validation_intro_manual">Bitte fügen Sie den Verifizierungs-Code ein, den Sie erhalten haben. Bitte beachten Sie, dass der Verifizierungs-Code nur einmal verwendet werden kann.</string>
   <string name="hint_validation_name">Ihr Name</string>
   <string name="hint_validation_number">Ihre Nummer</string>
-  <string name="hint_validation_code">Überprüfungs-Code</string>
+  <string name="hint_validation_code">Verifizierungs-Code</string>
   <string name="warn_invalid_number">Bitte eine gültige Tel.Nr. eingeben.</string>
   <string name="msg_validating_phone">Registrierung anfordern…</string>
   <string name="msg_initializing">Anmeldung am Kontalk-Netzwerk…</string>
