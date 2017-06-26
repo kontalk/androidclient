@@ -597,5 +597,5 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
 
     <string name="msg_register_confirm_number1">Vamos a verificar el número de teléfono:</string>
     <string name="msg_register_confirm_number2">Por favor, vuelva a compruebar que el número es correcto.</string>
-    <string name="code_validation_intro3">Tenga en cuenta que el SMS o llamada pueden provenir de un número extranjero.</string>
+    <string name="code_validation_intro3">Tenga en cuenta que el SMS o llamada puede provenir de un número extranjero.</string>
     </resources>
