@@ -616,7 +616,7 @@ public final class Preferences {
         String phoneNumber, PersonalKey key, String passphrase,
         byte[] importedPublicKey, byte[] importedPrivateKey, String serverUri,
         String sender, String challenge, String brandImage, String brandLink,
-        boolean force, Map<String, Keyring.TrustedFingerprint> trustedKeys) {
+        boolean canFallback, boolean force, Map<String, Keyring.TrustedFingerprint> trustedKeys) {
 
         ByteArrayOutputStream trustedKeysOut = null;
         if (trustedKeys != null) {
@@ -654,6 +654,7 @@ public final class Preferences {
             .putString("registration_challenge", challenge)
             .putString("registration_brandimage", brandImage)
             .putString("registration_brandlink", brandLink)
+            .putBoolean("registration_canfallback", canFallback)
             .putBoolean("registration_force", force)
             .putString("registration_trustedkeys", trustedKeysOut != null ?
                 Base64.encodeToString(trustedKeysOut.toByteArray(), Base64.NO_WRAP) : null)
@@ -684,6 +685,7 @@ public final class Preferences {
             p.challenge = getString("registration_challenge", null);
             p.brandImage = getString("registration_brandimage", null);
             p.brandLink = getString("registration_brandlink", null);
+            p.canFallback = getBoolean("registration_canfallback", false);
             p.force = getBoolean("registration_force", false);
 
             String trustedKeys = getString("registration_trustedkeys", null);
@@ -724,6 +726,7 @@ public final class Preferences {
             .remove("registration_challenge")
             .remove("registration_brandimage")
             .remove("registration_brandlink")
+            .remove("registration_canfallback")
             .remove("registration_force")
             .remove("registration_trustedkeys")
             .apply();
@@ -741,6 +744,7 @@ public final class Preferences {
         public String challenge;
         public String brandImage;
         public String brandLink;
+        public boolean canFallback;
         public boolean force;
         public Map<String, Keyring.TrustedFingerprint> trustedKeys;
     }

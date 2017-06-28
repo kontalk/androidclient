@@ -69,6 +69,7 @@ import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Base64;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -408,7 +409,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             syncCountryCodeSelector();
 
             startValidationCode(REQUEST_MANUAL_VALIDATION, saved.sender,
-                saved.brandImage, saved.brandLink, saved.challenge, saved.server, false);
+                saved.brandImage, saved.brandLink, saved.challenge, saved.canFallback, saved.server, false);
         }
 
         if (mKey == null) {
@@ -422,11 +423,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                     }
 
                     // no key, key pair generation started
-                    else if (BuildConfig.DEBUG) {
-                        Toast.makeText(NumberValidation.this,
-                            R.string.msg_generating_keypair,
-                            Toast.LENGTH_LONG).show();
-                    }
                 }
             };
 
@@ -675,6 +671,25 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         });
     }
 
+    @NumberValidator.BrandImageSize
+    private int getBrandImageSize() {
+        int density = getResources().getDisplayMetrics().densityDpi;
+        if (density <= DisplayMetrics.DENSITY_MEDIUM) {
+            return NumberValidator.BRAND_IMAGE_SMALL;
+        }
+        else if (density > DisplayMetrics.DENSITY_MEDIUM && density <= DisplayMetrics.DENSITY_HIGH) {
+            return NumberValidator.BRAND_IMAGE_MEDIUM;
+        }
+        else if (density > DisplayMetrics.DENSITY_HIGH && density <= DisplayMetrics.DENSITY_XXHIGH) {
+            return NumberValidator.BRAND_IMAGE_LARGE;
+        }
+        else if (density > DisplayMetrics.DENSITY_XXHIGH) {
+            return NumberValidator.BRAND_IMAGE_HD;
+        }
+
+        return NumberValidator.BRAND_IMAGE_MEDIUM;
+    }
+
     private boolean startValidationNormal(String manualServer, boolean force, boolean fallback, boolean testImport) {
         if (!SystemUtils.isNetworkConnectionAvailable(this)) {
             error(R.string.err_validation_nonetwork);
@@ -696,7 +711,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         boolean imported = (mImportedPrivateKey != null && mImportedPublicKey != null);
 
         mValidator = new NumberValidator(this, provider, mName, mPhoneNumber,
-            imported ? null : mKey, mPassphrase);
+            imported ? null : mKey, mPassphrase, getBrandImageSize());
         mValidator.setListener(this);
         mValidator.setForce(force);
         mValidator.setFallback(fallback);
@@ -726,7 +741,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             @Override
             public void run(Boolean result) {
                 if (result)
-                    startValidationCode(REQUEST_VALIDATION_CODE, null, null, null, null);
+                    startValidationCode(REQUEST_VALIDATION_CODE, null, null, null, null, false);
             }
         });
     }
@@ -1166,9 +1181,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
-    public void onValidationRequested(NumberValidator v, String sender, String challenge, String brandImage, String brandLink) {
+    public void onValidationRequested(NumberValidator v, String sender, String challenge, String brandImage, String brandLink, boolean canFallback) {
         Log.d(TAG, "validation has been requested, requesting validation code to user");
-        proceedManual(sender, challenge, brandImage, brandLink);
+        proceedManual(sender, challenge, brandImage, brandLink, canFallback);
     }
 
     void userExistsWarning() {
@@ -1200,22 +1215,22 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     /** Proceeds to the next step in manual validation. */
-    private void proceedManual(final String sender, final String challenge, final String brandImage, final String brandLink) {
+    private void proceedManual(final String sender, final String challenge, final String brandImage, final String brandLink, final boolean canFallback) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 abortProgress(true);
-                startValidationCode(REQUEST_MANUAL_VALIDATION, sender, challenge, brandImage, brandLink);
+                startValidationCode(REQUEST_MANUAL_VALIDATION, sender, challenge, brandImage, brandLink, canFallback);
             }
         });
     }
 
-    void startValidationCode(int requestCode, String sender, String challenge, String brandImage, String brandLink) {
-        startValidationCode(requestCode, sender, challenge, brandImage, brandLink, null, true);
+    void startValidationCode(int requestCode, String sender, String challenge, String brandImage, String brandLink, boolean canFallback) {
+        startValidationCode(requestCode, sender, challenge, brandImage, brandLink, canFallback, null, true);
     }
 
     private void startValidationCode(int requestCode, String sender, String challenge,
-            String brandImage, String brandLink, EndpointServer server, boolean saveProgress) {
+            String brandImage, String brandLink, boolean canFallback, EndpointServer server, boolean saveProgress) {
         // validator might be null if we are skipping verification code request
         String serverUri = null;
         if (server != null)
@@ -1229,7 +1244,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 mName, mPhoneNumber, mKey, mPassphrase,
                 mImportedPublicKey, mImportedPrivateKey,
                 serverUri, sender, challenge, brandImage, brandLink,
-                mForce, mTrustedKeys);
+                canFallback, mForce, mTrustedKeys);
         }
 
         Intent i = new Intent(NumberValidation.this, CodeValidation.class);
@@ -1244,6 +1259,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         i.putExtra("server", serverUri);
         i.putExtra("sender", sender);
         i.putExtra("challenge", challenge);
+        i.putExtra("canFallback", canFallback);
         i.putExtra(KeyPairGeneratorService.EXTRA_KEY, mKey);
         i.putExtra("brandImage", brandImage);
         i.putExtra("brandLink", brandLink);

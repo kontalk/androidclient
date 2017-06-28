@@ -19,11 +19,14 @@
 package org.kontalk.client;
 
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -53,6 +56,8 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Base64;
@@ -92,6 +97,31 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     public static final int ERROR_THROTTLING = 1;
     public static final int ERROR_USER_EXISTS = 2;
 
+    // constants for choosing a brand image size
+    public static final int BRAND_IMAGE_VECTOR = 0;
+    public static final int BRAND_IMAGE_SMALL = 1;
+    public static final int BRAND_IMAGE_MEDIUM = 2;
+    public static final int BRAND_IMAGE_LARGE = 3;
+    public static final int BRAND_IMAGE_HD = 4;
+
+    private static final List<String> BRAND_IMAGE_SIZES = Arrays.asList(
+        "brand-image-vector",
+        "brand-image-small",
+        "brand-image-medium",
+        "brand-image-large",
+        "brand-image-hd"
+    );
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({
+        BRAND_IMAGE_VECTOR,
+        BRAND_IMAGE_SMALL,
+        BRAND_IMAGE_MEDIUM,
+        BRAND_IMAGE_LARGE,
+        BRAND_IMAGE_HD
+    })
+    public @interface BrandImageSize {}
+
     // from Kontalk server code
     /** Challenge the user with a verification PIN sent through a SMS or a told through a phone call. */
     public static final String CHALLENGE_PIN = "pin";
@@ -113,6 +143,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     PGPKeyPairRing mKeyRing;
     private X509Certificate mBridgeCert;
     private String mPassphrase;
+    private int mBrandImageSize;
     private final Object mKeyLock = new Object();
 
     private byte[] mImportedPrivateKey;
@@ -133,15 +164,21 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     Handler mInternalHandler;
 
     /** This will used to store the server-indicated challenge. */
-    private String mServerChallenge;
+    String mServerChallenge;
 
     public NumberValidator(Context context, EndpointServer.EndpointServerProvider serverProvider,
         String name, String phone, PersonalKey key, String passphrase) {
+        this(context, serverProvider, name, phone, key, passphrase, BRAND_IMAGE_VECTOR);
+    }
+
+    public NumberValidator(Context context, EndpointServer.EndpointServerProvider serverProvider,
+        String name, String phone, PersonalKey key, String passphrase, @BrandImageSize int brandImageSize) {
         mServerProvider = serverProvider;
         mName = name;
         mPhone = phone;
         mKey = key;
         mPassphrase = passphrase;
+        mBrandImageSize = brandImageSize;
 
         mConnector = new XMPPConnectionHelper(context.getApplicationContext(), mServerProvider.next(), true);
         mConnector.setRetryEnabled(false);
@@ -289,7 +326,8 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                             if (response != null) {
                                 // ok! message will be sent
                                 String smsFrom = null, challenge = null,
-                                    brandImage = null, brandLink = null;
+                                    brandLink = null;
+                                boolean canFallback = false;
                                 List<FormField> iter = response.getFields();
                                 for (FormField field : iter) {
                                     String fieldName = field.getVariable();
@@ -299,19 +337,23 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                                     else if ("challenge".equals(fieldName)) {
                                         challenge = field.getValues().get(0);
                                     }
-                                    else if ("brand-image".equals(fieldName)) {
-                                        brandImage = field.getValues().get(0);
-                                    }
                                     else if ("brand-link".equals(fieldName)) {
                                         brandLink = field.getValues().get(0);
                                     }
+                                    else if ("can-fallback".equals(fieldName) && field.getType() == FormField.Type.bool) {
+                                        String val = field.getValues().get(0);
+                                        canFallback = "1".equals(val) || "true".equalsIgnoreCase(val) || "yes".equalsIgnoreCase(val);
+                                    }
                                 }
+
+                                // brand image needs some more complex logic
+                                final String brandImage = getBrandImageField(response);
 
                                 if (smsFrom != null) {
                                     Log.d(TAG, "using sender id: " + smsFrom + ", challenge: " + challenge);
                                     mServerChallenge = challenge;
                                     mListener.onValidationRequested(NumberValidator.this,
-                                        smsFrom, challenge, brandImage, brandLink);
+                                        smsFrom, challenge, brandImage, brandLink, canFallback);
 
                                     // prevent error handling
                                     return;
@@ -622,6 +664,61 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         return iq;
     }
 
+    /**
+     * Finds the appropriate brand image form field from the response to use.
+     * @param form the response form
+     * @return a brand image URL, or null if none was found
+     */
+    @SuppressWarnings("WeakerAccess")
+    @Nullable
+    String getBrandImageField(DataForm form) {
+        // logic could be optimized, but it does its job.
+        // Besides, it's a one-time method.
+        String preferredSize = getBrandImageAttributeName(mBrandImageSize);
+        String result = findField(form, preferredSize);
+
+        if (result == null) {
+            // preferred attribute not found, look for other ones from the smaller ones
+            for (int i = mBrandImageSize - 1; i > BRAND_IMAGE_VECTOR; i--) {
+                String size = getBrandImageAttributeName(i);
+                result = findField(form, size);
+            }
+        }
+
+        if (result == null) {
+            // no smaller size found, try a bigger one
+            for (int i = mBrandImageSize + 1; i <= BRAND_IMAGE_HD; i++) {
+                String size = getBrandImageAttributeName(i);
+                result = findField(form, size);
+            }
+        }
+
+        // nothing was found if result is still null
+        return result;
+    }
+
+    private String findField(DataForm form, String name) {
+        FormField field = form.getField(name);
+        if (field != null) {
+            List<String> values = field.getValues();
+            if (values != null && values.size() > 0) {
+                String value = values.get(0);
+                return value != null && value.trim().length() > 0 ?
+                    value : null;
+            }
+        }
+        return null;
+    }
+
+    private String getBrandImageAttributeName(int size) {
+        try {
+            return BRAND_IMAGE_SIZES.get(size);
+        }
+        catch (IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException("invalid brand image size: " + size);
+        }
+    }
+
     public synchronized void setListener(NumberValidatorListener listener) {
         mListener = listener;
     }
@@ -634,7 +731,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         void onServerCheckFailed(NumberValidator v);
 
         /** Called on confirmation that the validation SMS is being sent. */
-        void onValidationRequested(NumberValidator v, String sender, String challenge, String brandImage, String brandLink);
+        void onValidationRequested(NumberValidator v, String sender, String challenge, String brandImage, String brandLink, boolean canFallback);
 
         /** Called if phone number validation failed. */
         void onValidationFailed(NumberValidator v, int reason);

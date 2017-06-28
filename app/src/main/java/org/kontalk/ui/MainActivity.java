@@ -39,7 +39,6 @@ import android.text.InputType;
 import android.widget.CompoundButton;
 import android.widget.Toast;
 
-import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
@@ -188,11 +187,6 @@ public abstract class MainActivity extends ToolbarActivity {
                 @Override
                 public void onInput(MaterialDialog dialog, CharSequence input) {
                     // no key pair found, generate a new one
-                    if (BuildConfig.DEBUG) {
-                        Toast.makeText(MainActivity.this,
-                            R.string.msg_generating_keypair, Toast.LENGTH_LONG).show();
-                    }
-
                     String name = input.toString();
 
                     // upgrade account

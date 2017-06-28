@@ -24,16 +24,19 @@ import java.util.Map;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
-import com.koushikdutta.async.future.FutureCallback;
-import com.koushikdutta.ion.Ion;
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
+import android.support.annotation.Nullable;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -52,6 +55,8 @@ import org.kontalk.client.NumberValidator.NumberValidatorListener;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.KeyPairGeneratorService;
+import org.kontalk.util.GlideApp;
+import org.kontalk.util.InternalTrustStore;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
@@ -127,6 +132,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         else {
             String challenge = i.getStringExtra("challenge");
             String sender = i.getStringExtra("sender");
+            boolean canFallback = i.getBooleanExtra("canFallback", false);
 
             final TextView phoneText = (TextView) findViewById(R.id.code_validation_phone);
             String formattedPhone;
@@ -145,8 +151,10 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 textId1 = getText(R.string.code_validation_intro_missed_call);
                 textId2 = getString(R.string.code_validation_intro2_missed_call,
                     NumberValidator.getChallengeLength(sender));
-                mFallbackButton.setText(R.string.button_validation_fallback);
-                mFallbackButton.setVisibility(View.VISIBLE);
+                if (canFallback) {
+                    mFallbackButton.setText(R.string.button_validation_fallback);
+                    mFallbackButton.setVisibility(View.VISIBLE);
+                }
                 // show sender label and hide call button
                 phoneText.setText(formattedPhone);
                 phoneText.setVisibility(View.VISIBLE);
@@ -157,19 +165,26 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 // user-initiated missed call
                 textId1 = getText(R.string.code_validation_intro_callerid);
                 textId2 = getText(R.string.code_validation_intro2_callerid);
-                mFallbackButton.setText(R.string.button_validation_fallback_callerid);
-                mFallbackButton.setVisibility(View.VISIBLE);
+                if (canFallback) {
+                    mFallbackButton.setText(R.string.button_validation_fallback_callerid);
+                    mFallbackButton.setVisibility(View.VISIBLE);
+                }
                 // show call button and hide sender label
                 mCallButton.setText(sender);
                 mCallButton.setVisibility(View.VISIBLE);
                 phoneText.setVisibility(View.GONE);
                 mCode.setVisibility(View.GONE);
+                // the incoming foreign number notice doesn't apply in this case
+                findViewById(R.id.code_validation_intro3).setVisibility(View.GONE);
             }
             else {
                 // PIN code
                 textId1 = getText(R.string.code_validation_intro);
                 textId2 = getText(R.string.code_validation_intro2);
-                mFallbackButton.setVisibility(View.GONE);
+                if (canFallback) {
+                    mFallbackButton.setText(R.string.button_validation_fallback);
+                    mFallbackButton.setVisibility(View.VISIBLE);
+                }
                 // show sender label and hide call button
                 phoneText.setText(formattedPhone);
                 phoneText.setVisibility(View.VISIBLE);
@@ -217,24 +232,44 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         if (brandImage != null) {
             findViewById(R.id.brand_poweredby).setVisibility(View.VISIBLE);
 
+            // we should use our builtin keystore
+            try {
+                InternalTrustStore.initUrlConnections(this);
+            }
+            catch (Exception e) {
+                Log.w(TAG, "unable to initialize internal trust store", e);
+            }
+
+            final View brandParent = findViewById(R.id.brand_parent);
+            brandParent.setVisibility(View.VISIBLE);
+            final ProgressBar brandProgress = (ProgressBar) findViewById(R.id.brand_loading);
+            brandProgress.setVisibility(View.VISIBLE);
             final ImageView brandView = (ImageView) findViewById(R.id.brand);
             brandView.setVisibility(View.VISIBLE);
-            Ion.with(brandView)
-                .placeholder(R.drawable.progress_ring)
-                .animateLoad(R.anim.rotate_indeterminate)
-                .animateIn(0)
+
+            GlideApp.with(this)
                 .load(brandImage)
-                .setCallback(new FutureCallback<ImageView>() {
+                .listener(new RequestListener<Drawable>() {
                     @Override
-                    public void onCompleted(Exception e, ImageView result) {
-                        if (e != null && brandLink != null) {
-                            brandView.setVisibility(View.GONE);
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                        brandParent.setVisibility(View.GONE);
+                        brandView.setVisibility(View.GONE);
+                        brandProgress.setVisibility(View.GONE);
+                        if (brandLink != null) {
                             TextView brandTextView = (TextView) findViewById(R.id.brand_text);
                             brandTextView.setText(brandLink);
                             brandTextView.setVisibility(View.VISIBLE);
                         }
+                        return true;
                     }
-                });
+
+                    @Override
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                        brandProgress.setVisibility(View.GONE);
+                        return false;
+                    }
+                })
+                .into(brandView);
 
             if (brandLink != null) {
                 brandView.setContentDescription(brandLink);
@@ -332,7 +367,6 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         new MaterialDialog.Builder(this)
             .title(R.string.title_fallback)
             .content(R.string.msg_fallback)
-            .icon(ContextCompat.getDrawable(this, android.R.drawable.ic_dialog_info))
             .positiveText(android.R.string.ok)
             .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
@@ -429,7 +463,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
-    public void onValidationRequested(NumberValidator v, String sender, String challenge, String brandImage, String brandLink) {
+    public void onValidationRequested(NumberValidator v, String sender, String challenge, String brandImage, String brandLink, boolean canFallback) {
         // not used.
     }
 
