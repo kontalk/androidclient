@@ -20,4 +20,4 @@ deploy:
   provider: script
   script: ./gradlew publish
   on:
-    branch: release/4.0
+    tags: true
