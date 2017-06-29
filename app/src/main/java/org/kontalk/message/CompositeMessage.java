@@ -477,6 +477,19 @@ public class CompositeMessage {
         return msg;
     }
 
+    /** Holder for message delete information. */
+    public static final class DeleteMessageHolder {
+        long id;
+
+        public DeleteMessageHolder(Cursor cursor) {
+            id = cursor.getLong(COLUMN_ID);
+        }
+    }
+
+    public static void deleteFromCursor(Context context, DeleteMessageHolder holder) {
+        MessagesProviderUtils.deleteMessage(context, holder.id);
+    }
+
     public static void deleteFromCursor(Context context, Cursor cursor) {
         MessagesProviderUtils.deleteMessage(context, cursor.getLong(COLUMN_ID));
     }

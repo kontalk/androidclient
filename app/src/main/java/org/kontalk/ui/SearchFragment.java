@@ -71,7 +71,8 @@ public class SearchFragment extends ListFragment {
         Activity parent = getActivity();
         if (parent != null) {
             mCursor = SearchItem.query(parent, mQuery);
-            getActivity().startManagingCursor(mCursor);
+            if (mCursor != null)
+                getActivity().startManagingCursor(mCursor);
 
             mListAdapter = new SearchListAdapter(parent, mCursor);
             // TODO mListAdapter.setOnContentChangedListener(mContentChangedListener);
