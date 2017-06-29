@@ -188,8 +188,8 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             .negativeText(android.R.string.cancel)
             .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
-                public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
-                    setPrivacy(PRIVACY_BLOCK);
+                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                    setPrivacy(dialog.getContext(), PRIVACY_BLOCK);
                 }
             })
             .show();
@@ -204,8 +204,8 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             .negativeText(android.R.string.cancel)
             .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
-                public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
-                    setPrivacy(PRIVACY_UNBLOCK);
+                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                    setPrivacy(dialog.getContext(), PRIVACY_UNBLOCK);
                 }
             })
             .show();
@@ -678,7 +678,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                         else
                             action = PRIVACY_REJECT;
 
-                        setPrivacy(action);
+                        setPrivacy(v.getContext(), action);
                     }
                 };
 
@@ -703,7 +703,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             mInvitationBar.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
-    void setPrivacy(int action) {
+    void setPrivacy(@NonNull Context ctx, int action) {
         int status;
 
         switch (action) {
@@ -723,8 +723,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             default:
                 return;
         }
-
-        Context ctx = getActivity();
 
         // temporarly disable peer observer because the next call will write to the threads table
         unregisterPeerObserver();
@@ -891,11 +889,11 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                         switch (which) {
                             case POSITIVE:
                                 // trust new key
-                                trustKeyChange(null);
+                                trustKeyChange(dialog.getContext(), null);
                                 break;
                             case NEGATIVE:
                                 // block user immediately
-                                setPrivacy(PRIVACY_BLOCK);
+                                setPrivacy(dialog.getContext(), PRIVACY_BLOCK);
                                 break;
                         }
                     }
@@ -905,12 +903,12 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         builder.show();
     }
 
-    void trustKeyChange(String fingerprint) {
+    void trustKeyChange(@NonNull Context context, String fingerprint) {
         // mark current key as trusted
         if (fingerprint == null)
             fingerprint = getContact().getFingerprint();
-        Kontalk.getMessagesController(getContext())
-            .setTrustLevelAndRetryMessages(getContext(), mUserJID, fingerprint, MyUsers.Keys.TRUST_VERIFIED);
+        Kontalk.getMessagesController(context)
+            .setTrustLevelAndRetryMessages(context, mUserJID, fingerprint, MyUsers.Keys.TRUST_VERIFIED);
         // reload contact
         invalidateContact();
     }
@@ -937,7 +935,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                                         // hide warning bar
                                         hideWarning();
                                         // trust new key
-                                        trustKeyChange((String) data[0]);
+                                        trustKeyChange(dialog.getContext(), (String) data[0]);
                                         break;
                                     case NEUTRAL:
                                         showIdentityDialog(false, dialogTitleId);
@@ -946,7 +944,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                                         // hide warning bar
                                         hideWarning();
                                         // block user immediately
-                                        setPrivacy(PRIVACY_BLOCK);
+                                        setPrivacy(dialog.getContext(), PRIVACY_BLOCK);
                                         break;
                                 }
                             }
