@@ -191,7 +191,7 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
     }
 
     public void pausePlaying() {
-        if (mPlayer != null) {
+        if (mPlayer != null && mPlayer.isPlaying()) {
             mPlayer.pause();
             // paused, release lock
             releaseLock(true);
@@ -292,32 +292,40 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor == mProximitySensor) {
             if (isNearToSensor(event.values[0])) {
-                if (!mProximityClosed) {
-                    mProximityClosed = true;
-                    try {
-                        // restart playback from phone speaker
-                        restartPlayback(true, true);
-                    }
-                    catch (IOException e) {
-                        if (mListener != null)
-                            mListener.onCompletion(this);
-                    }
-                }
+                proximityNear();
             }
             else {
-                if (mProximityClosed) {
-                    mProximityClosed = false;
-                    try {
-                        // restart playback from speaker
-                        restartPlayback(false, false);
-                        if (mListener != null)
-                            mListener.onPause(this);
-                    }
-                    catch (IOException e) {
-                        if (mListener != null)
-                            mListener.onCompletion(this);
-                    }
-                }
+                proximityFar();
+            }
+        }
+    }
+
+    private void proximityNear() {
+        if (!mProximityClosed) {
+            mProximityClosed = true;
+            try {
+                // restart playback from phone speaker
+                restartPlayback(true, true);
+            }
+            catch (IOException e) {
+                if (mListener != null)
+                    mListener.onCompletion(this);
+            }
+        }
+    }
+
+    private void proximityFar() {
+        if (mProximityClosed) {
+            mProximityClosed = false;
+            try {
+                // restart playback from speaker
+                restartPlayback(false, false);
+                if (mListener != null)
+                    mListener.onPause(this);
+            }
+            catch (IOException e) {
+                if (mListener != null)
+                    mListener.onCompletion(this);
             }
         }
     }
@@ -356,14 +364,8 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
 
                 if (mProximitySensor != null) {
                     mSensorManager.unregisterListener(this, mProximitySensor);
-                    // listener will be unregistered so we must repeat some steps
-                    mProximityClosed = false;
-                    if (mPlayer != null) {
-                        mPlayer.reset();
-                        mPlayer.release();
-                        mPlayer = null;
-                        mMessageId = -1;
-                    }
+                    // listener will be unregistered so we must do some manual steps
+                    proximityFar();
                 }
             }
         }
