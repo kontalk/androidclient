@@ -1419,7 +1419,7 @@ public class MessagesProvider extends ContentProvider {
                 setThreadContent(new byte[0], TextComponent.MIME_TYPE, null, null, v);
             }
             rc = db.update(TABLE_THREADS, v, Threads._ID + "=" + threadId, null);
-            if (rc > 0 && notifications != null) {
+            if (notifications != null) {
                 notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
                 notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
             }
