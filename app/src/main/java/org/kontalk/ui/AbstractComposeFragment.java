@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -550,21 +551,26 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     }
 
     private void deleteSelectedMessages(final SparseBooleanArray checked) {
-        new MaterialDialog.Builder(getActivity())
+        final List<CompositeMessage.DeleteMessageHolder> list = new LinkedList<>();
+        for (int i = 0, c = getListView().getCount()+getListView().getHeaderViewsCount(); i < c; ++i) {
+            if (checked.get(i)) {
+                Cursor cursor = (Cursor) getListView().getItemAtPosition(i);
+                // skip group command messages
+                if (!GroupCommandComponent.isCursor(cursor))
+                    list.add(new CompositeMessage.DeleteMessageHolder(cursor));
+            }
+        }
+
+        new MaterialDialog.Builder(getContext())
             .content(R.string.confirm_will_delete_messages)
             .positiveText(android.R.string.ok)
             .positiveColorRes(R.color.button_danger)
             .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                    Context ctx = getActivity();
-                    for (int i = 0, c = getListView().getCount()+getListView().getHeaderViewsCount(); i < c; ++i) {
-                        if (checked.get(i)) {
-                            Cursor cursor = (Cursor) getListView().getItemAtPosition(i);
-                            // skip group command messages
-                            if (!GroupCommandComponent.isCursor(cursor))
-                                CompositeMessage.deleteFromCursor(ctx, cursor);
-                        }
+                    Context ctx = dialog.getContext();
+                    for (CompositeMessage.DeleteMessageHolder item : list) {
+                        CompositeMessage.deleteFromCursor(ctx, item);
                     }
                     mListAdapter.notifyDataSetChanged();
                 }

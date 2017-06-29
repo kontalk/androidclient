@@ -18,6 +18,9 @@
 
 package org.kontalk.ui;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.akalipetis.fragment.ActionModeListFragment;
@@ -271,16 +274,18 @@ public class ConversationListFragment extends ActionModeListFragment
         return true;
     }
 
-    private void deleteSelectedThreads(final SparseBooleanArray checked) {
+    private void deleteSelectedThreads(SparseBooleanArray checked) {
         boolean addGroupCheckbox = false;
         int checkedCount = 0;
+        final List<Conversation.DeleteThreadHolder> list = new LinkedList<>();
         for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
             if (checked.get(i)) {
                 checkedCount++;
-                if (!addGroupCheckbox && Conversation.isGroup((Cursor) mListAdapter.getItem(i),
-                        MyMessages.Groups.MEMBERSHIP_MEMBER)) {
+                Cursor item = (Cursor) mListAdapter.getItem(i);
+                if (!addGroupCheckbox && Conversation.isGroup(item, MyMessages.Groups.MEMBERSHIP_MEMBER)) {
                     addGroupCheckbox = true;
                 }
+                list.add(new Conversation.DeleteThreadHolder(item));
             }
         }
 
@@ -295,18 +300,16 @@ public class ConversationListFragment extends ActionModeListFragment
                     Context ctx = getContext();
                     boolean promptCheckBoxChecked = false;
                     if (hasGroupCheckbox) {
-                        CheckBox promptCheckbox = (CheckBox) dialog.getCustomView().findViewById(R.id.promptCheckbox);
+                        CheckBox promptCheckbox = (CheckBox) dialog
+                            .getCustomView().findViewById(R.id.promptCheckbox);
                         promptCheckBoxChecked = promptCheckbox.isChecked();
                     }
 
-                    for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
-                        if (checked.get(i)) {
-                            Cursor cursor = (Cursor) mListAdapter.getItem(i);
-                            boolean hasLeftGroup = Conversation.isGroup(cursor, MyMessages.Groups.MEMBERSHIP_PARTED) ||
-                                Conversation.isGroup(cursor, MyMessages.Groups.MEMBERSHIP_KICKED);
-                            Conversation.deleteFromCursor(ctx, cursor,
-                                hasGroupCheckbox ? promptCheckBoxChecked : hasLeftGroup);
-                        }
+                    for (Conversation.DeleteThreadHolder item : list) {
+                        boolean hasLeftGroup = Conversation.isGroup(item, MyMessages.Groups.MEMBERSHIP_PARTED) ||
+                            Conversation.isGroup(item, MyMessages.Groups.MEMBERSHIP_KICKED);
+                        Conversation.deleteFromCursor(ctx, item,
+                            hasGroupCheckbox ? promptCheckBoxChecked : hasLeftGroup);
                     }
                     mListAdapter.notifyDataSetChanged();
                 }

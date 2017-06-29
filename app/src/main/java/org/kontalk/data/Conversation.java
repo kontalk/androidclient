@@ -188,8 +188,38 @@ public class Conversation {
         return cursor.getString(COLUMN_PEER);
     }
 
+    /** Holder for thread delete information. */
+    public static final class DeleteThreadHolder {
+        long id;
+        String groupJid;
+        String groupType;
+        int groupMembership;
+        boolean encrypted;
+
+        public DeleteThreadHolder(Cursor cursor) {
+            id = cursor.getLong(COLUMN_ID);
+            groupJid = cursor.getString(COLUMN_GROUP_JID);
+            groupType = cursor.getString(COLUMN_GROUP_TYPE);
+            groupMembership = cursor.getInt(COLUMN_GROUP_MEMBERSHIP);
+            encrypted = cursor.getInt(COLUMN_ENCRYPTED) != 0;
+        }
+    }
+
     public static boolean isGroup(Cursor cursor, int requiredMembership) {
         return cursor.getString(COLUMN_GROUP_JID) != null && cursor.getInt(COLUMN_GROUP_MEMBERSHIP) == requiredMembership;
+    }
+
+    public static boolean isGroup(DeleteThreadHolder holder, int requiredMembership) {
+        return holder.groupJid != null && holder.groupMembership == requiredMembership;
+    }
+
+    public static void deleteFromCursor(Context context, DeleteThreadHolder holder, boolean leaveGroup) {
+        String[] groupPeers = null;
+        if (holder.groupJid != null) {
+            groupPeers = loadGroupPeersInternal(context, holder.groupJid);
+        }
+        boolean encrypted = MessageUtils.sendEncrypted(context, holder.encrypted);
+        deleteInternal(context, holder.id, holder.groupJid, groupPeers, holder.groupType, leaveGroup, encrypted);
     }
 
     public static void deleteFromCursor(Context context, Cursor cursor, boolean leaveGroup) {
