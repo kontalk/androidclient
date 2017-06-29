@@ -20,9 +20,11 @@ package org.kontalk.data;
 
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Messages.Fulltext;
+import org.kontalk.reporting.ReportingManager;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteException;
 
 
 /**
@@ -81,9 +83,15 @@ public class SearchItem {
     }
 
     public static Cursor query(Context context, String query) {
-        // TODO enhanced queries?
-        return context.getContentResolver().query(Fulltext.CONTENT_URI
+        try {
+            // TODO enhanced queries?
+            return context.getContentResolver().query(Fulltext.CONTENT_URI
                     .buildUpon().appendQueryParameter("pattern", query + "*").build(),
                 SEARCH_PROJECTION, null, null, null);
+        }
+        catch (SQLiteException e) {
+            ReportingManager.logException(e);
+            return null;
+        }
     }
 }
