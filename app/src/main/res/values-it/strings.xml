@@ -442,7 +442,6 @@
     <string name="title_huawei_protected_apps">Huawei App Protette</string>
     <string name="msg_huawei_protected_apps">Kontalk richiede di essere abilitata come app protetta per funzionare.</string>
     <string name="btn_huawei_protected_apps">App protette</string>
-    <string name="check_do_not_show_again">Non mostrare più</string>
 
     <string name="chooser_error_no_browser">Nessun browser trovato per aprire il link.</string>
     <string name="menu_invite_group">Aggiungi utenti</string>
@@ -572,7 +571,7 @@ Se disattivate, il comportamento delle connessioni di Kontalk può essere config
     <string name="delete_threads_groups_disclaimer">Per i gruppi solo la cronologia dei messaggi sarà cancellata a meno che la spunta sopra sia selezionata.</string>
 
     <string name="create_group_disclaimer">Ricordati che in un gruppo tutti gli utenti devono conoscersi per chattare.</string>
-    <string name="check_dont_show_again">Non mostrare di nuovo</string>
+    <string name="check_dont_show_again">Non mostrare più</string>
 
     <string name="pref_debug_log">Abilita debug log</string>
     <string name="pref_send_debug_log">Invia debug log</string>

@@ -509,7 +509,6 @@ http://kontalk.org/</string>
     <string name="title_huawei_protected_apps">Huawei 保護アプリ</string>
     <string name="msg_huawei_protected_apps">Kontalk が正常に機能するには、保護されたアプリで有効にする必要があります。</string>
     <string name="btn_huawei_protected_apps">保護されたアプリ</string>
-    <string name="check_do_not_show_again">今後表示しない</string>
 
     <string name="status_label">"ステータス: "</string>
     <string name="trust_unknown">未確認</string>

@@ -441,7 +441,6 @@
     <string name="title_huawei_protected_apps">Huawei-beschermde apps</string>
     <string name="msg_huawei_protected_apps">Kontalk moet in Beschermde apps geactiveerd zijn voor correcte werking.</string>
     <string name="btn_huawei_protected_apps">Beschermde apps</string>
-    <string name="check_do_not_show_again">Niet opnieuw tonen</string>
 
     <string name="chooser_error_no_browser">Geen browser beschikbaar om deze link mee te openen.</string>
     <string name="menu_invite_group">Gebruikers toevoegen</string>

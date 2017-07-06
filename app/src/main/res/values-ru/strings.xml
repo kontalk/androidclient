@@ -479,7 +479,6 @@
     <string name="title_huawei_protected_apps">Приложения, защищённые Huawei</string>
     <string name="msg_huawei_protected_apps">Контaлк требует, чтобы он был включён в список Защищённых Приложений, чтобы функционировать правильно.</string>
     <string name="btn_huawei_protected_apps">Защищённые Приложения</string>
-    <string name="check_do_not_show_again">Не показывать снова</string>
 
     <string name="status_label">"Статус: "</string>
     <string name="trust_unknown">Не подтверждён</string>

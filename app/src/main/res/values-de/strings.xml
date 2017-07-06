@@ -441,7 +441,6 @@
 
     <string name="title_huawei_protected_apps">Huawei Geschützte Apps</string>
     <string name="btn_huawei_protected_apps">Geschützte Apps</string>
-    <string name="check_do_not_show_again">Nicht noch einmal anzeigen</string>
 
     <string name="msg_huawei_protected_apps">Kontalk muss in den Systemeinstellungen unter Geschützte Apps markiert werden, um richtig zu funktionieren.</string>
     <string name="chooser_error_no_browser">Kein Browser verfügbar um den Link zu öffnen.</string>
