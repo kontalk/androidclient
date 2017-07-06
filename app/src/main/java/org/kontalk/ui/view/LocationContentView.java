@@ -33,7 +33,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import org.kontalk.GlideApp;
+import org.kontalk.util.GlideApp;
 import org.kontalk.R;
 import org.kontalk.message.LocationComponent;
 import org.kontalk.position.PositionManager;

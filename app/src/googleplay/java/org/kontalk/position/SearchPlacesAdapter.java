@@ -18,20 +18,27 @@
 
 package org.kontalk.position;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.koushikdutta.async.future.FutureCallback;
-import com.koushikdutta.ion.Ion;
-import com.koushikdutta.ion.Response;
+import com.google.gson.Gson;
 
 import android.content.Context;
 import android.location.Location;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Response;
+
+import org.kontalk.Log;
 import org.kontalk.position.model.CategoriesItem;
 import org.kontalk.position.model.SearchResponse;
 import org.kontalk.position.model.VenuesItem;
@@ -43,6 +50,8 @@ import org.kontalk.position.model.VenuesItem;
  */
 
 public class SearchPlacesAdapter extends RecyclerView.Adapter<SearchPlacesAdapter.ViewHolder> {
+
+    static final String TAG = SearchPlacesAdapter.class.getSimpleName();
 
     private final static int LOCATION = 0;
     private final static int LOADING = 1;
@@ -179,7 +188,7 @@ public class SearchPlacesAdapter extends RecyclerView.Adapter<SearchPlacesAdapte
 
         if (mSearching) {
             mSearching = false;
-            Ion.getDefault(mContext).cancelAll();
+            new OkHttpClient().dispatcher().cancelAll();
         }
 
         mSearching = true;
@@ -187,18 +196,34 @@ public class SearchPlacesAdapter extends RecyclerView.Adapter<SearchPlacesAdapte
         notifyDataSetChanged();
 
         PlacesRestClient.getPlacesByQuery(mContext, location.getLatitude(), location.getLongitude(),
-            query, new FutureCallback<Response<SearchResponse>>() {
+            query, new Callback() {
                 @Override
-                public void onCompleted(Exception e, Response<SearchResponse> result) {
+                public void onFailure(Call call, IOException e) {
                     mSearching = false;
-                    if (e != null) {
-                        mList.clear();
-                        notifyDataSetChanged();
-                        return;
-                    }
+                    mList.clear();
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            notifyDataSetChanged();
+                        }
+                    });
+                    Log.e(TAG, e.getLocalizedMessage());
+                }
 
-                    mList = result.getResult().getResponse().getVenues();
-                    notifyDataSetChanged();
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    mSearching = false;
+                    if (response.body() != null) {
+                        Gson gson = new Gson();
+                        SearchResponse searchResponse = gson.fromJson(response.body().string(), SearchResponse.class);
+                        mList = searchResponse.getResponse().getVenues();
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                notifyDataSetChanged();
+                            }
+                        });
+                    }
                 }
             });
     }

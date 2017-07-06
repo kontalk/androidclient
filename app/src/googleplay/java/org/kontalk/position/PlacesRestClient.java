@@ -21,14 +21,12 @@ package org.kontalk.position;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import com.koushikdutta.async.future.FutureCallback;
-import com.koushikdutta.ion.Ion;
-import com.koushikdutta.ion.Response;
-
 import android.content.Context;
-import android.util.Log;
 
-import org.kontalk.position.model.SearchResponse;
+import okhttp3.Callback;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 
 /**
  * Foursquare Venues rest client
@@ -42,33 +40,47 @@ public class PlacesRestClient {
     private final static String CLIENT_ID = "P2LJNVUONE1PPJSUYCEWEFB5LNV5S1ESRNFDNX15OQRXEF42";
     private final static String CLIENT_SECRET = "VKZJKBW5ZSMQTTW4ITNJXRM4D5G4V0HWACVEPKSPTCVKNI2I";
 
-    public static void getPlacesByLocation(Context context, double lat, double lon, int limit, FutureCallback<Response<SearchResponse>> callback) {
+    public static void getPlacesByLocation(Context context, double lat, double lon, int limit, Callback callback) {
         Date date = new Date();
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
         format.format(date);
-        Ion.with(context)
-            .load("https://api.foursquare.com/v2/venues/search")
-            .addQuery("v", format.format(date))
-            .addQuery("ll", String.valueOf(lat + "," + lon))
-            .addQuery("limit", String.valueOf(limit))
-            .addQuery("client_id", CLIENT_ID)
-            .addQuery("client_secret", CLIENT_SECRET)
-            .setLogging(TAG, Log.VERBOSE)
-            .as(SearchResponse.class).withResponse().setCallback(callback);
+
+        OkHttpClient client = new OkHttpClient();
+        HttpUrl.Builder urlBuilder = HttpUrl.parse("https://api.foursquare.com/v2/venues/search").newBuilder();
+        urlBuilder.addQueryParameter("v", format.format(date));
+        urlBuilder.addQueryParameter("ll", String.valueOf(lat + "," + lon));
+        urlBuilder.addQueryParameter("limit", String.valueOf(limit));
+        urlBuilder.addQueryParameter("client_id", CLIENT_ID);
+        urlBuilder.addQueryParameter("client_secret", CLIENT_SECRET);
+
+        String url = urlBuilder.build().toString();
+
+        Request request = new Request.Builder()
+            .url(url)
+            .build();
+
+        client.newCall(request).enqueue(callback);
     }
 
-    public static void getPlacesByQuery(Context context, double lat, double lon, String query, FutureCallback<Response<SearchResponse>> callback) {
+    public static void getPlacesByQuery(Context context, double lat, double lon, String query, Callback callback) {
         Date date = new Date();
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
         format.format(date);
-        Ion.with(context)
-            .load("https://api.foursquare.com/v2/venues/search")
-            .addQuery("v", format.format(date))
-            .addQuery("ll", String.valueOf(lat + "," + lon))
-            .addQuery("query", query)
-            .addQuery("client_id", CLIENT_ID)
-            .addQuery("client_secret", CLIENT_SECRET)
-            .setLogging(TAG, Log.VERBOSE)
-            .as(SearchResponse.class).withResponse().setCallback(callback);
+
+        OkHttpClient client = new OkHttpClient();
+        HttpUrl.Builder urlBuilder = HttpUrl.parse("https://api.foursquare.com/v2/venues/search").newBuilder();
+        urlBuilder.addQueryParameter("v", format.format(date));
+        urlBuilder.addQueryParameter("ll", String.valueOf(lat + "," + lon));
+        urlBuilder.addQueryParameter("query", query);
+        urlBuilder.addQueryParameter("client_id", CLIENT_ID);
+        urlBuilder.addQueryParameter("client_secret", CLIENT_SECRET);
+
+        String url = urlBuilder.build().toString();
+
+        Request request = new Request.Builder()
+            .url(url)
+            .build();
+
+        client.newCall(request).enqueue(callback);
     }
 }
