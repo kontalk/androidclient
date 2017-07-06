@@ -464,7 +464,6 @@
     <string name="title_huawei_protected_apps">Aplicativos Protegidos do Huawei</string>
     <string name="msg_huawei_protected_apps">É necessário habilitar o Kontalk nos Aplicativos Protegidos para que ele possa funcionar corretamente.</string>
     <string name="btn_huawei_protected_apps">Aplicativos Protegidos</string>
-    <string name="check_do_not_show_again">Não exibir novamente</string>
 
     <string name="menu_invite_group">Adicionar usuários</string>
     <string name="menu_set_group_subject">Definir o assunto do grupo</string>

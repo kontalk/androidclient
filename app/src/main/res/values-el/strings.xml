@@ -456,7 +456,6 @@
     <string name="title_huawei_protected_apps">Προστατευμένες Εφαρμογές Huawei</string>
     <string name="msg_huawei_protected_apps">Η Kontalk πρέπει να είναι ενεργοποιημένη στις Προστατευμένες Εφαρμογές για να λειτουργεί κανονικά.</string>
     <string name="btn_huawei_protected_apps">Προστατευμένες Εφαρμογές</string>
-    <string name="check_do_not_show_again">Να μην εμφανιστεί ξανά</string>
 
     <plurals name="group_people">
 	<item quantity="one">1 άτομο</item>

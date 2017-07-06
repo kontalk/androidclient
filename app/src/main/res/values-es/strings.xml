@@ -441,7 +441,6 @@
     <string name="title_huawei_protected_apps">Aplicaciones de Huawei protegidas</string>
     <string name="msg_huawei_protected_apps">Kontalk necesita tener habilitadas las aplicaciones protegidas para funcionar correctamente.</string>
     <string name="btn_huawei_protected_apps">Aplicaciones protegidas</string>
-    <string name="check_do_not_show_again">No mostrar de nuevo</string>
 
     <string name="chooser_error_no_browser">No hay ningún navegador disponible para abrir el enlace.</string>
     <string name="menu_invite_group">Añadir usuarios</string>

@@ -443,7 +443,6 @@
     <string name="title_huawei_protected_apps">Huawei Chráněné aplikace</string>
     <string name="msg_huawei_protected_apps">Aby správně fungoval, Kontalk vyžaduje zařazení do Chráněných aplikacích.</string>
     <string name="btn_huawei_protected_apps">Chráněné aplikace</string>
-    <string name="check_do_not_show_again">Příště nezobrazovat</string>
 
     <string name="menu_invite_group">Přidat uživatele</string>
     <string name="menu_set_group_subject">Nastavit předmět skupiny</string>
