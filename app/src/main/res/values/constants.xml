@@ -34,4 +34,7 @@
     <string name="devteam" translatable="false">Kontalk devteam</string>
     <string name="help_url" translatable="false">https://github.com/kontalk/androidclient/wiki</string>
     <string name="help_import_key" translatable="false">https://github.com/kontalk/androidclient/wiki/Export-personal-key-to-another-device</string>
+    <!-- Unfortunately there is no authoritative documentation on this -->
+    <string name="help_huawei_protected_apps">https://android.stackexchange.com/a/152662/155232</string>
+    <string name="help_doze_whitelist" translatable="false">https://github.com/kontalk/androidclient/wiki/Battery-optimization-mode</string>
 </resources>

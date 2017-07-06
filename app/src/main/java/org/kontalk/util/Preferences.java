@@ -555,6 +555,16 @@ public final class Preferences {
             .commit();
     }
 
+    public static boolean isSkipDozeMode() {
+        return getBoolean("skip_doze_mode", false);
+    }
+
+    public static boolean setSkipDozeMode(boolean value) {
+        return sPreferences.edit()
+            .putBoolean("skip_doze_mode", value)
+            .commit();
+    }
+
     public static boolean isSkipHuaweiProtectedApps() {
         return getBoolean("huawei_skip_protected_apps", false);
     }

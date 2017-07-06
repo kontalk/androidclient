@@ -31,9 +31,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.InputType;
 import android.widget.CompoundButton;
@@ -74,8 +78,61 @@ public abstract class MainActivity extends ToolbarActivity {
         return true;
     }
 
+    /**
+     * To be called at the end of subclasses' {@link #onCreate}.
+     * @return true if the method handled the situation, false otherwise
+     */
     protected boolean afterOnCreate() {
-        return !xmppUpgrade() && !checkPassword() && ifHuaweiAlert();
+        return !xmppUpgrade() && !checkPassword() && (ifHuaweiAlert() || ifDozeAlert());
+    }
+
+    private boolean ifDozeAlert() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+            return false;
+
+        boolean skipMessage = Preferences.isSkipDozeMode();
+        if (!skipMessage) {
+            PowerManager pwm = (PowerManager) getSystemService(POWER_SERVICE);
+            if (!pwm.isIgnoringBatteryOptimizations(getPackageName())) {
+                new MaterialDialog.Builder(this)
+                    .title(R.string.title_doze_mode)
+                    .content(R.string.msg_doze_mode)
+                    .positiveText(R.string.btn_request_doze_mode_whitelist)
+                    .neutralText(R.string.learn_more)
+                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+                        @RequiresApi(Build.VERSION_CODES.M)
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            requestDozeModeWhitelist();
+                        }
+                    })
+                    .onNeutral(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            SystemUtils.openURL(dialog.getContext(), getString(R.string.help_doze_whitelist));
+                        }
+                    })
+                    .checkBoxPromptRes(R.string.check_dont_show_again, false, new CompoundButton.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                            Preferences.setSkipDozeMode(isChecked);
+                        }
+                    })
+                    .show();
+
+                return true;
+            }
+            else {
+                Preferences.setSkipDozeMode(true);
+            }
+        }
+        return false;
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    void requestDozeModeWhitelist() {
+        startActivity(new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+            Uri.parse("package:" + getPackageName())));
     }
 
     // http://stackoverflow.com/a/35220476/1045199
@@ -85,22 +142,27 @@ public abstract class MainActivity extends ToolbarActivity {
             Intent intent = new Intent();
             intent.setClassName("com.huawei.systemmanager", "com.huawei.systemmanager.optimize.process.ProtectActivity");
             if (SystemUtils.isCallable(this, intent)) {
-                new CheckboxAlertDialog.Builder(this)
-                    .checkboxText(R.string.check_do_not_show_again)
-                    .onCheckboxChanged(new CompoundButton.OnCheckedChangeListener() {
-                        @Override
-                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                            Preferences.setSkipHuaweiProtectedApps(isChecked);
-                        }
-                    })
+                new MaterialDialog.Builder(this)
                     .title(R.string.title_huawei_protected_apps)
                     .content(R.string.msg_huawei_protected_apps)
                     .positiveText(R.string.btn_huawei_protected_apps)
-                    .negativeText(android.R.string.cancel)
+                    .neutralText(R.string.learn_more)
                     .onPositive(new MaterialDialog.SingleButtonCallback() {
                         @Override
                         public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                             startHuaweiProtectedApps();
+                        }
+                    })
+                    .onNeutral(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            SystemUtils.openURL(dialog.getContext(), getString(R.string.help_huawei_protected_apps));
+                        }
+                    })
+                    .checkBoxPromptRes(R.string.check_dont_show_again, false, new CompoundButton.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                            Preferences.setSkipHuaweiProtectedApps(isChecked);
                         }
                     })
                     .show();
