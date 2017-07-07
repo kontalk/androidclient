@@ -35,7 +35,7 @@
   <string name="pref_title_network_uri">Isso vai sobrescrever a gestão automática da lista de servidores</string>
   <string name="number_validation_intro1">Por favor, digite o seu nome, selecione o código do seu país e entre com o número do seu telefone. Você verá mais instruções na próxima tela.</string>
   <string name="number_validation_intro2">Caso não seja possível receber chamadas ou SMS nesse aparelho, digite um número de telefone que pertença a você: nós associaremos esse número a esse aparelho.</string>
-  <string name="code_validation_intro">Você deverá receber um SMS ou uma chamada telefônica desse número em breve:</string>
+  <string name="code_validation_intro">Você deverá receber um SMS ou uma chamada telefônica em breve.</string>
   <string name="code_validation_intro2">Por favor digite o código que você recebeu.</string>
   <string name="hint_validation_name">Seu nome</string>
   <string name="hint_validation_number">Seu número</string>
@@ -253,7 +253,7 @@
 <string name="app_name_offline">Kontalk (desconectado)</string>
     <string name="mykey_activity_title">Minha chave pessoal</string>
     <string name="menu_import_key">Importar chave</string>
-    <string name="code_validation_intro_missed_call">Você verá uma chamada não atendida desse número em breve <b>POR FAVOR, NÃO ATENDA A CHAMADA.</b></string>
+    <string name="code_validation_intro_missed_call">Você verá uma chamada não atendida em breve. <b>POR FAVOR, NÃO ATENDA A CHAMADA.</b></string>
     <string name="code_validation_intro2_missed_call">Por favor, insira os últimos %d dígitos do número que ligará para você.</string>
     <string name="menu_manual_verification">Já tem um código?</string>
     <string name="code_validation_intro_manual">Por favor, digite o código de verificação que você recebeu. Esse código só poderá ser utilizado uma vez.</string>
@@ -269,7 +269,7 @@
     <string name="title_user_exists">O usuário já existe</string>
     <string name="err_validation_nonetwork">Não existe nenhuma conexão com a Internet disponível. Kontalk necessita de uma conexão ativa com a Internet para funcionar.</string>
     <string name="err_validation_user_exists"><b>O número que você está usando já está registrado na Kontalk.</b> Caso você tenha registrado outro dispositivo ele será retirado da Kontalk, caso você prossiga. Por favor, consulte nossa documentação para ver como copiar sua conta de um dispositivo para o outro. Selecione OK caso queira continuar mesmo assim.</string>
-    <string name="button_validation_fallback">Não recebeu nenhuma ligação?</string>
+    <string name="button_validation_fallback">Não está recebendo nada?</string>
     <string name="title_nonetwork">Nenhuma conexão com a Internet</string>
     <string name="title_fallback">Está tendo problemas?</string>
     <string name="msg_fallback">Nós tentaremos outra maneira de verificar o seu número de telefone.</string>
@@ -607,5 +607,18 @@ Desabilite a criptografia apenas se o seu contato não posuir uma chave pessoal.
     <string name="group_info_menu_add_again">Adicionar novamente</string>
 
     <string name="status_notsubscribed">Não permitido/Bloqueado</string>
+
+    <string name="code_validation_intro3">Um detalhe, o SMS ou a ligação podem se originar de um telefone estrangeiro.</string>
+    <string name="reply">Responder</string>
+    <string name="msg_register_confirm_number1">Nós verificaremos o número do telefone:</string>
+    <string name="msg_register_confirm_number2">Por favor, verifique se o número está correto.</string>
+    <string name="person_me">Eu</string>
+    <string name="title_doze_mode">Otimização de bateria</string>
+    <string name="msg_doze_mode">Para o Kontalk funcionar corretamente ele deve estar nas exceções de otimização de bateria. Nós prometemos que não iremos drenar a sua bateria.</string>
+    <string name="registration_poweredby">Oferecido por</string>
+
+    <string name="audio_duration_max">%1$s / %2$s</string>
+
+    <string name="btn_request_doze_mode_whitelist">Solicitar permissão</string>
 
     </resources>
