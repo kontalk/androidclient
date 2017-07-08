@@ -1,8 +1,8 @@
-Group chats are here! Help us improve and fix bugs by reporting them on GitHub or discussing them on our new forum: https://forum.kontalk.org
+This release features our new registration provider kindly offered by https://JMP.Chat
+Help us improve and fix bugs by reporting them on GitHub or discussing them on our forum: https://forum.kontalk.org
 
-* audio recording limit is now 2m on PTT and 5m on audio dialog
-* improve app navigation
-* improve battery saving in offline mode
-* fix crash on tablets
-* fix crash while recording PTT audio
-* many bugfixes
+* NEW: reply directly from notification (Android 7 and later)
+* NEW: support for direct share (Android 6 and later)
+* NEW: listen to audio messages directly from the phone speaker
+* image thumbnails now respect original image ratio
+* many other bugfixes and minor improvements

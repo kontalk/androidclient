@@ -1,5 +1,27 @@
 # Change Log
 
+## [4.0.4] - 2017-07-08
+### Changed
+- Reply directly from notification (#774)
+- Improve notifications (#774)
+- Receive any type of file (#697)
+- Show max time of recording (#932)
+- Image thumbnails respects original image ratio (#662)
+- Show up to three line of preview for unread conversations (#888)
+- Listen audio messages from phone speaker (#858)
+- Direct share (#820)
+- Support for Doze mode (#1030)
+
+### Fixed
+- Duck music when playing audio messages (#967)
+- Handle no SIM card scenario (#998)
+- Fix exchange images with other XMPP clients (#861)
+- Workaround Android bug in encryption (#972)
+- Fix clock sync issues (#813)
+- Fix photo orientation issue (#927)
+- Fix crash when deleting messages (#1005)
+- Fix crash during search (#1011)
+
 ## [4.0.3] - 2017-04-22
 ### Fixed
 - Fix crash on playing audio (#995)
