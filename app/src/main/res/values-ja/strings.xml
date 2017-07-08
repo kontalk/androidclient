@@ -586,4 +586,8 @@ http://kontalk.org/</string>
     <string name="msg_register_confirm_number1">電話番号を確認します:</string>
     <string name="msg_register_confirm_number2">番号が正しいことを再度確認してください。</string>
     <string name="code_validation_intro3">SMSや電話は、外国の番号から発信される可能性があります。</string>
+    <string name="title_doze_mode">バッテリー最適化</string>
+    <string name="msg_doze_mode">Kontalk は、正しく機能するためにバッテリー最適化からホワイトリストに登録する必要があります。 お使いのバッテリーを消耗しないことを約束します。</string>
+    <string name="btn_request_doze_mode_whitelist">アクセス許可の要求</string>
+
     </resources>
