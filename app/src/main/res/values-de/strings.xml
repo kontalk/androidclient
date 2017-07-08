@@ -601,6 +601,6 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="code_validation_intro3">Bitte beachten Sie, dass die SMS oder der Anruf von einer ausländischen Nummer kommen kann.</string>
     <string name="title_doze_mode">Akku-Optimierung</string>
     <string name="msg_doze_mode">Kontalk muss von der Akku-Optimierung ausgenommen werden um richtig zu funktionieren. Wir versprechen, dass wir Ihren Akku nicht unnötig belasten werden.</string>
-    <string name="btn_request_doze_mode_whitelist">Berechigung Anfordern</string>
+    <string name="btn_request_doze_mode_whitelist">Berechtigung anfordern</string>
 
     </resources>
