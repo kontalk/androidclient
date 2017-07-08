@@ -587,4 +587,10 @@
 
     <string name="status_notsubscribed">Δεν έχει επιτραπεί/Μπλοκαρισμένος/η</string>
 
+    <string name="code_validation_intro3">Σημειώστε ότι μπορεί να παραλάβετε μήνυμα SMS ή τηλεφώνημα από άγνωστο αριθμό.</string>
+    <string name="reply">Απάντηση</string>
+    <string name="msg_register_confirm_number1">Θα επιβεβαιώσουμε τον αριθμό τηλεφώνου:</string>
+    <string name="msg_register_confirm_number2">Παρακαλώ ελέγξτε ότι ο αριθμός είναι σωστός.</string>
+    <string name="person_me">Εγώ</string>
+    <string name="title_doze_mode">Βελτιστοποίηση μπαταρίας</string>
     </resources>
