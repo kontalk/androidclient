@@ -1,8 +1,8 @@
-Finalmente con le chat di gruppo! Aiutaci a migliorarla e correggere bug segnalandoli su GitHub o discutendoli sul nostro nuovo forum: https://forum.kontalk.org
+Questa versione è supportata dal servizio di registrazione offerto da https://JMP.Chat
+Aiutaci a migliorarla e correggere bug segnalandoli su GitHub o discutendoli sul nostro forum!
 
-* limite registrazione audio ora a 2m in PTT e 5m in allegato audio
-* miglioramento navigazione in app
-* miglioramento consumo batteria in modalità offline
-* corretto crash su tablet
-* corretto crash messaggi vocali
-* svariate altre correzioni
+* rispondi direttamente dalla notifica (Android 7+)
+* supporto per condivisione diretta (Android 6+)
+* ascolta i messaggi vocali direttamente dallo speaker del telefono
+* le miniature delle foto ora rispettano il rapporto di grandezza originale
+* svariate altre correzioni e miglioramenti
