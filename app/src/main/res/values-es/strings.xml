@@ -441,7 +441,6 @@
     <string name="title_huawei_protected_apps">Aplicaciones de Huawei protegidas</string>
     <string name="msg_huawei_protected_apps">Kontalk necesita tener habilitadas las aplicaciones protegidas para funcionar correctamente.</string>
     <string name="btn_huawei_protected_apps">Aplicaciones protegidas</string>
-    <string name="check_do_not_show_again">No mostrar de nuevo</string>
 
     <string name="chooser_error_no_browser">No hay ningún navegador disponible para abrir el enlace.</string>
     <string name="menu_invite_group">Añadir usuarios</string>
@@ -597,4 +596,9 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
 
     <string name="msg_register_confirm_number1">Vamos a verificar el número de teléfono:</string>
     <string name="msg_register_confirm_number2">Por favor, vuelva a compruebar que el número es correcto.</string>
+    <string name="code_validation_intro3">Tenga en cuenta que el SMS o llamada puede provenir de un número extranjero.</string>
+    <string name="title_doze_mode">Optimización de la batería</string>
+    <string name="msg_doze_mode">Kontalk necesita ser incluido en la lista de apps de optimización de la batería para funcionar correctamente. Prometemos que no vamos a agotar su batería.</string>
+    <string name="btn_request_doze_mode_whitelist">Solicite permisos</string>
+
     </resources>

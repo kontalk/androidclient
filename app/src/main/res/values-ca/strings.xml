@@ -441,7 +441,6 @@
     <string name="title_huawei_protected_apps">Aplicacions de Huawei Protegides</string>
     <string name="msg_huawei_protected_apps">"Kontalk necessita habilitar les aplicacions amb protecció  per funcionar correctament."</string>
     <string name="btn_huawei_protected_apps">Aplicacions protegides</string>
-    <string name="check_do_not_show_again">No mostrar de nou</string>
 
     <string name="chooser_error_no_browser">No hi ha cap navegador disponible per obrir l\'enllaç.</string>
     <string name="menu_invite_group">Afegeix usuaris</string>
@@ -595,4 +594,5 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
 
     <string name="msg_register_confirm_number1">Anem a verificar el número de telèfon:</string>
     <string name="msg_register_confirm_number2">Si us plau, torni a comprovar que el número és correcte.</string>
+    <string name="code_validation_intro3">Tingueu present que el SMS o trucada pot provenir d\'un número estranger.</string>
     </resources>

@@ -443,7 +443,6 @@
     <string name="title_huawei_protected_apps">Huawei заштићене апликације</string>
     <string name="msg_huawei_protected_apps">Контак мора бити омогућен у Заштићеним апликацијама да би исправно функционисао.</string>
     <string name="btn_huawei_protected_apps">Заштићене апликације</string>
-    <string name="check_do_not_show_again">Не приказуј поново</string>
 
     <string name="chooser_error_no_browser">Нема прегледача за отварање везе.</string>
     <string name="menu_invite_group">Додај кориснике</string>

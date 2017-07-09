@@ -459,7 +459,6 @@
     <string name="title_huawei_protected_apps">Aplicacións de Huawei Protexidas</string>
     <string name="msg_huawei_protected_apps">Kontalk necesita ter habilitadas as aplicacións protexidas para funcionar correctamente.</string>
     <string name="btn_huawei_protected_apps">Aplicacións protexidas</string>
-    <string name="check_do_not_show_again">Non mostrar de novo</string>
 
     <string name="chooser_error_no_browser">Non hai ningún navegador disponible para abrir a ligazón.</string>
     <string name="menu_invite_group">Engadir usuarios</string>
@@ -611,4 +610,5 @@ Desactivar a cifraxe só se o contacto non ten unha chave persoal.</string>
     <string name="person_me">Eu</string>
     <string name="audio_duration_max">%1$s / %2$s</string>
 
+    <string name="code_validation_intro3">Ten en conta que os SMS ou a chamada poden provir dun número estranxeiro.</string>
     </resources>

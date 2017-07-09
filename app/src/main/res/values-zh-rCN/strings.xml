@@ -493,7 +493,6 @@
     <string name="title_huawei_protected_apps">华为受保护的APP</string>
     <string name="msg_huawei_protected_apps">Kontalk需要在“被保护的APP”里中启用以正常工作。</string>
     <string name="btn_huawei_protected_apps">被保护的APP</string>
-    <string name="check_do_not_show_again">不再显示</string>
 
     <plurals name="unread_messages">
 	<item quantity="other">1条未读消息</item>

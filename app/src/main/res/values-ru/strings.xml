@@ -33,12 +33,12 @@
   <string name="menu_offline">Перейти в оффлайн</string>
   <string name="menu_online">Перейти в онлайн</string>
   <string name="menu_import_key">Импорт ключа</string>
-  <string name="pref_network_settings">Сетевые параметры</string>
+  <string name="pref_network_settings">Сеть</string>
   <string name="pref_network_uri">Задать сервер вручную</string>
   <string name="pref_title_network_uri">Данная опция заменит автоматическое управление списком серверов</string>
   <string name="number_validation_intro1">Пожалуйста, введите ваше имя, выберите код страны и заполните поле номера вашего сотового телефона. Дальнейшие инструкции будут предоставлены на следующем экране.</string>
   <string name="number_validation_intro2">Если это устройство не имеет возможности приема SMS, укажите работоспособный номер телефона — этот номер будет привязан к данному устройству.</string>
-  <string name="code_validation_intro">Вы вскоре должны получить SMS или звонок с этого номера:</string>
+  <string name="code_validation_intro">Вы вскоре должны получить СМС или звонок на Ваш номер.</string>
   <string name="code_validation_intro2">Пожалуйста, введите код, который вы получили или услышали.</string>
   <string name="code_validation_intro_manual">Пожалуйста, введите полученный проверочный код. Имейте в виду, что код может быть использован только один раз.</string>
   <string name="hint_validation_name">Ваше имя</string>
@@ -100,8 +100,8 @@
   <string name="pref_title_regenerate_keypair">Используйте если ваш личный ключ был скомпрометирован</string>
   <string name="pref_regenerate_keypair_confirm">Новая ключевая пара будет сгенерирована и присвоена вашему аккаунту. Старая станет недействительна.</string>
   <string name="contacts_list_title">Выбрать контакт</string>
-  <string name="pref_messaging_settings">Параметры сообщений</string>
-  <string name="pref_privacy_settings">Параметры приватности</string>
+  <string name="pref_messaging_settings">Сообщения</string>
+  <string name="pref_privacy_settings">Конфиденциальность</string>
   <string name="pref_encrypt">Шифровать сообщения</string>
   <string name="pref_encrypt_userdata">Зашифровать личные данные</string>
   <string name="pref_title_on_encrypt_userdata">Статусное сообщение будет видно только тем пользователям, у которых есть ваш номер телефона</string>
@@ -126,7 +126,7 @@
   <string name="hint_search_full">Поиск сообщений</string>
   <string name="hint_search_quickbox">Текст в сообщениях</string>
   <string name="title_search">Поиск: \"%s\"</string>
-  <string name="pref_notification_settings">Параметры уведомлений</string>
+  <string name="pref_notification_settings">Уведомления</string>
   <string name="pref_enable_notifications">Уведомления</string>
   <string name="pref_title_enable_notifications">Показывать уведомления о сообщениях в строке состояния</string>
   <string name="pref_ringtone">Выбрать звуковой сигнал</string>
@@ -137,7 +137,7 @@
   <string name="err_authentication_failed">Проверочный код отклонен. Аутентификация не удалась.</string>
   <string name="err_validation_failed">Ошибка проверки номера телефона.</string>
   <string name="err_validation_retry_later">Слишком много попыток. Пожалуйста, повторите через несколько минут.</string>
-  <string name="msg_validation_canceled">Проверка отменена. Вы всё равно можете получить SMS.</string>
+  <string name="msg_validation_canceled">Проверка отменена. Вы всё равно можете получить СМС.</string>
   <string name="err_validation_error">Произошла ошибка при проверке. Пожалуйста, попробуйте позже.</string>
   <string name="err_validation_network_error">Невозможно подключиться к серверу. Пожалуйста, попробуйте позже.</string>
   <string name="err_validation_server_not_supported">Выбранный сервер не поддерживает регистрацию. Пожалуйста, укажите другой на экране настроек.</string>
@@ -180,7 +180,7 @@
   <string name="message_user_not_found">Контакт скорее всего не зарегистрирован в Kontalk. Вы всё равно можете попробовать связаться с пользователем или отправить ему пригласительное сообщение.</string>
   <string name="yes_user_not_found">Все равно соединиться с пользователем</string>
   <string name="no_user_not_found">Отправить приглашение</string>
-  <string name="pref_appearance_settings">Параметры отображения</string>
+  <string name="pref_appearance_settings">Внешний вид</string>
   <string name="pref_font_size">Размер шрифта</string>
   <string name="menu_status">Статус</string>
   <string name="menu_attachment">Вложить</string>
@@ -347,7 +347,7 @@
   <string name="err_playing_audio">Ошибка воспроизведения аудио.</string>
   <string name="err_playing_sdcard">Ошибка чтения из внешней памяти.</string>
   <string name="slide_to_cancel">ПРОВЕДИТЕ ДЛЯ ОТМЕНЫ</string>
-  <string name="pref_media_settings">Параметры медиа</string>
+  <string name="pref_media_settings">Медиа</string>
   <string name="pref_image_resize">Изменение размера изображений</string>
   <string name="err_server_invalid_format">Неверный формат адреса.</string>
   <string name="err_no_contacts_app">Приложение контактов не найдено.</string>
@@ -372,14 +372,14 @@
     <string name="hint_ptt">Нажмите и удерживайте на микрофоне для записи.</string>
     <string name="err_audio_record_noaudio">Аудио не было записано.</string>
     <string name="menu_manual_verification">Код уже есть?</string>
-    <string name="code_validation_intro_missed_call">Скоро вам позвонят с этого номера. <b>ПОЖАЛУЙСТА, НЕ ОТВЕЧАЙТЕ НА ЗВОНОК.</b></string>
+    <string name="code_validation_intro_missed_call">Скоро у Вас отобразится пропущенный вызов. <b>ПОЖАЛУЙСТА, НЕ ОТВЕЧАЙТЕ НА ЗВОНОК.</b></string>
     <string name="code_validation_intro2_missed_call">Пожалуйста, введите последние %d цифры номера, с которого будет звонок.</string>
     <string name="msg_importing_key">Импорт личного ключа…</string>
     <string name="title_confirm_cancel_registration">Отменить регистрацию?</string>
     <string name="pref_enable_notification_led">Световой индикатор</string>
     <string name="pref_notification_led_color">Цвет светового индикатора</string>
     <string name="confirm_will_delete_messages">Выделенные сообщения будут удалены.</string>
-    <string name="button_validation_fallback">Не получили звонок?</string>
+    <string name="button_validation_fallback">Ничего не получали?</string>
     <string name="seen_away_label">онлайн</string>
     <string name="pref_title_custom_background">Выберите изображение с помощью настройки ниже</string>
     <string name="pref_balloon_label_hangout">Hangout</string>
@@ -479,7 +479,6 @@
     <string name="title_huawei_protected_apps">Приложения, защищённые Huawei</string>
     <string name="msg_huawei_protected_apps">Контaлк требует, чтобы он был включён в список Защищённых Приложений, чтобы функционировать правильно.</string>
     <string name="btn_huawei_protected_apps">Защищённые Приложения</string>
-    <string name="check_do_not_show_again">Не показывать снова</string>
 
     <string name="status_label">"Статус: "</string>
     <string name="trust_unknown">Не подтверждён</string>
@@ -495,7 +494,7 @@
 	<item quantity="one">+%d ещё</item>
 	<item quantity="few">+%d ещё</item>
 	<item quantity="many">+%d ещё</item>
-	<item quantity="other"/>
+	<item quantity="other"></item>
 </plurals>
 
     <plurals name="group_people">
@@ -589,5 +588,14 @@
     <string name="notify_text_decryption_error">Дешифровка не сработала</string>
     <string name="group_command_users_added">Добавленные пользователи:</string>
     <string name="group_command_users_removed">Удалённые пользователи:</string>
+
+    <string name="code_validation_intro3">Имейте в виду, что СМС или вызов могут быть международными.</string>
+    <string name="reply">Ответить</string>
+    <string name="msg_register_confirm_number1">Мы проверим телефонный номер:</string>
+    <string name="msg_register_confirm_number2">Пожалуйста, убедитесь, что номер правильный.</string>
+    <string name="person_me">Я</string>
+    <string name="registration_poweredby">От</string>
+
+    <string name="audio_duration_max">%1$s / %2$s</string>
 
     </resources>
