@@ -494,7 +494,7 @@
 	<item quantity="one">+%d ещё</item>
 	<item quantity="few">+%d ещё</item>
 	<item quantity="many">+%d ещё</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
 
     <plurals name="group_people">
@@ -597,5 +597,9 @@
     <string name="registration_poweredby">От</string>
 
     <string name="audio_duration_max">%1$s / %2$s</string>
+
+    <string name="title_doze_mode">Оптимизация батареи</string>
+    <string name="msg_doze_mode">Kontalk требует добавление себя в белый список оптимизации батареи, чтобы работать правильно. Мы обещаем, что он не сожрёт Вашу батарею.</string>
+    <string name="btn_request_doze_mode_whitelist">Запросить разрешение</string>
 
     </resources>
