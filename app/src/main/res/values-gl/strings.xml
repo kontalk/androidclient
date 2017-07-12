@@ -611,4 +611,8 @@ Desactivar a cifraxe só se o contacto non ten unha chave persoal.</string>
     <string name="audio_duration_max">%1$s / %2$s</string>
 
     <string name="code_validation_intro3">Ten en conta que os SMS ou a chamada poden provir dun número estranxeiro.</string>
+    <string name="title_doze_mode">Optimización da batería</string>
+    <string name="msg_doze_mode">O Kontalk necesita estar na lista branca da optimización da batería para funcionar correctamente. Prometemos que non esgotaremos a batería.</string>
+    <string name="btn_request_doze_mode_whitelist">Solicitude de permiso</string>
+
     </resources>
