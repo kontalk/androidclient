@@ -34,12 +34,12 @@
     <string name="menu_online">进入在线</string>
     <string name="menu_import_key">导入密匙</string>
     <string name="menu_manual_verification">已经获取到验证码？</string>
-    <string name="pref_network_settings">网络设置</string>
+    <string name="pref_network_settings">网络</string>
     <string name="pref_network_uri">手动设置服务器地址</string>
     <string name="pref_title_network_uri">这将会覆盖服务器列表的自动管理</string>
     <string name="number_validation_intro1">请输入你的用户名，选择你的国家代码并输入手机号码。下一个屏幕将提供更多的指示。</string>
     <string name="number_validation_intro2">如果你无法在该设备上收到通话或者短信验证，请输入你拥有的手机号码：我们能帮助你将该号码关联到此设备。</string>
-    <string name="code_validation_intro">你应该能马上从该号码收到短信或者来电：</string>
+    <string name="code_validation_intro">你应该能马上从该号码收到短信或者来电。</string>
     <string name="code_validation_intro2">请在下面输入你收到或者听到的代码。</string>
     <string name="code_validation_intro_missed_call">你应该能马上从该号码收到一个未接来电。<b>请不要接听该来电。</b></string>
     <string name="code_validation_intro2_missed_call">请输入将与你通话的最后%d个数字的号码。</string>
@@ -106,8 +106,8 @@
     <string name="pref_title_regenerate_keypair">假定你的个人密匙被泄露后使用</string>
     <string name="pref_regenerate_keypair_confirm">一个新的密匙对将会生成并被分配到你的账户。你的旧密匙将会失效。</string>
     <string name="contacts_list_title">选择联系人</string>
-    <string name="pref_messaging_settings">消息设置</string>
-    <string name="pref_privacy_settings">隐私设置</string>
+    <string name="pref_messaging_settings">消息</string>
+    <string name="pref_privacy_settings">隐私</string>
     <string name="pref_encrypt">加密消息</string>
     <string name="pref_encrypt_userdata">加密个人数据</string>
     <string name="pref_title_on_encrypt_userdata">仅当用户拥有你的手机号码时，才显示状态信息</string>
@@ -134,7 +134,7 @@
     <string name="hint_search_full">搜索消息</string>
     <string name="hint_search_quickbox">你消息中的文本</string>
     <string name="title_search">搜索：\"%s\"</string>
-    <string name="pref_notification_settings">提醒设置</string>
+    <string name="pref_notification_settings">消息提醒</string>
     <string name="pref_enable_notifications">提醒</string>
     <string name="pref_title_enable_notifications">状态栏显示消息提醒</string>
     <string name="pref_ringtone">选择铃声</string>
@@ -159,7 +159,7 @@
     <string name="send_mime_not_supported">不支持的文件类型。</string>
     <string name="button_validate">注册</string>
     <string name="button_validation_register">验证</string>
-    <string name="button_validation_fallback">未收到来电？</string>
+    <string name="button_validation_fallback">未收到任何信息或来电？</string>
     <string name="notify_ticker_download_completed">下载完成</string>
     <string name="notify_title_download_completed">下载完成</string>
     <string name="notify_text_download_completed">附件下载完成</string>
@@ -196,7 +196,7 @@
     <string name="message_user_not_found">联系人看起来并没有在Kontalk上注册。然而你可以试着与用户联系或者发送给他/她邀请信息。</string>
     <string name="yes_user_not_found">不管怎样都联系用户</string>
     <string name="no_user_not_found">发送邀请</string>
-    <string name="pref_appearance_settings">外观设置</string>
+    <string name="pref_appearance_settings">外观</string>
     <string name="pref_font_size">字体大小</string>
     <string name="menu_status">状态</string>
     <string name="menu_attachment">附件</string>
@@ -408,7 +408,7 @@
     <string name="err_playing_sdcard">从外置存储器读取时发生错误。</string>
     <string name="slide_to_cancel">滑动取消</string>
 
-    <string name="pref_media_settings">媒体设置</string>
+    <string name="pref_media_settings">媒体</string>
     <string name="pref_image_resize">调整图像尺寸</string>
 
     <string name="err_server_invalid_format">无效的地址格式。</string>
@@ -616,5 +616,18 @@
     <string name="group_info_menu_add_again">再次添加</string>
 
     <string name="status_notsubscribed">不允许的/被屏蔽的</string>
+
+    <string name="code_validation_intro3">请注意该信息或者来电可能来自一个海外号码。</string>
+    <string name="reply">回复</string>
+    <string name="msg_register_confirm_number1">我们将会验证手机号：</string>
+    <string name="msg_register_confirm_number2">请再次检查该号码是否正确。</string>
+    <string name="person_me">我</string>
+    <string name="title_doze_mode">电池优化</string>
+    <string name="msg_doze_mode">为使电池优化功能正常工作，Kontalk需要被列入白名单。我们保证不会吃光你的电量。</string>
+    <string name="btn_request_doze_mode_whitelist">请求权限</string>
+
+    <string name="registration_poweredby">技术提供由</string>
+
+    <string name="audio_duration_max">%1$s / %2$s</string>
 
     </resources>
