@@ -70,7 +70,7 @@ import org.jivesoftware.smackx.iqlast.packet.LastActivity;
 import org.jivesoftware.smackx.iqversion.VersionManager;
 import org.jivesoftware.smackx.iqversion.packet.Version;
 import org.jivesoftware.smackx.ping.PingFailedListener;
-import org.jivesoftware.smackx.ping.PingManagerV2;
+import org.jivesoftware.smackx.ping.PingManager;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 import org.jxmpp.util.XmppStringUtils;
@@ -801,7 +801,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             AndroidAdaptiveServerPingManager
                 .getInstanceFor(mConnection, this)
                 .setEnabled(false);
-            PingManagerV2.getInstanceFor(mConnection)
+            PingManager.getInstanceFor(mConnection)
                 .unregisterPingFailedListener(mPingFailedListener);
             // this is because of NetworkOnMainThreadException
             new DisconnectThread(mConnection).start();
@@ -1104,7 +1104,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // acquire a wake lock
             mPingLock.acquire();
             final XMPPConnection connection = mConnection;
-            final PingManagerV2 pingManager = PingManagerV2.getInstanceFor(connection);
+            final PingManager pingManager = PingManager.getInstanceFor(connection);
             final WakeLock pingLock = mPingLock;
             Async.go(new Runnable() {
                 @Override
@@ -1513,7 +1513,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
             }
         };
-        PingManagerV2 pingManager = PingManagerV2.getInstanceFor(connection);
+        PingManager pingManager = PingManager.getInstanceFor(connection);
         pingManager.registerPingFailedListener(mPingFailedListener);
         pingManager.setPingInterval(0);
 
@@ -1684,7 +1684,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (!isConnected()) return false;
 
         try {
-            return PingManagerV2.getInstanceFor(mConnection)
+            return PingManager.getInstanceFor(mConnection)
                 .pingMyServer(false, FAST_PING_TIMEOUT);
         }
         catch (NotConnectedException e) {
