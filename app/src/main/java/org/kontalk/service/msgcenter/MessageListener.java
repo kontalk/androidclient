@@ -31,6 +31,8 @@ import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
+import org.jxmpp.jid.Jid;
+import org.jxmpp.stringprep.XmppStringprepException;
 import org.jxmpp.util.XmppStringUtils;
 
 import android.content.ContentResolver;
@@ -70,6 +72,7 @@ import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MessagesProviderUtils;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.group.KontalkGroupController;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
@@ -112,7 +115,7 @@ class MessageListener extends MessageCenterPacketListener {
                     ext.getType() == GroupExtension.Type.PART ||
                     ext.getType() == GroupExtension.Type.SET) {
                 GroupCommandComponent groupCmd = new GroupCommandComponent(ext,
-                    XmppStringUtils.parseBareJid(packet.getFrom()),
+                    packet.getFrom().asBareJid().toString(),
                     Authenticator.getSelfJID(getContext()));
                 msg.addComponent(groupCmd);
             }
@@ -150,33 +153,39 @@ class MessageListener extends MessageCenterPacketListener {
         return false;
     }
 
+    private boolean isValidMember(GroupExtension ext, Jid from) {
+        return MessagesProviderUtils.isGroupMember(getContext(),
+            ext.getJID(), XmppStringUtils.parseBareJid(from.toString()));
+    }
+
+    @Deprecated
     private boolean isValidMember(GroupExtension ext, String from) {
         return MessagesProviderUtils.isGroupMember(getContext(),
             ext.getJID(), XmppStringUtils.parseBareJid(from));
     }
 
     @Override
-    public void processPacket(Stanza packet) throws SmackException.NotConnectedException {
+    public void processStanza(Stanza packet) throws SmackException.NotConnectedException {
         Map<String, Long> waitingReceipt = getWaitingReceiptList();
 
         org.jivesoftware.smack.packet.Message m = (org.jivesoftware.smack.packet.Message) packet;
 
         if (m.getType() == org.jivesoftware.smack.packet.Message.Type.chat) {
             Intent i = new Intent(ACTION_MESSAGE);
-            String from = m.getFrom();
+            Jid from = m.getFrom();
 
             // check if there is a composing notification
             ExtensionElement _chatstate = m.getExtension("http://jabber.org/protocol/chatstates");
             ChatStateExtension chatstate = null;
             if (_chatstate != null) {
                 chatstate = (ChatStateExtension) _chatstate;
-                Contact.setTyping(from, chatstate.getChatState() == ChatState.composing);
+                Contact.setTyping(from.toString(), chatstate.getChatState() == ChatState.composing);
 
                 i.putExtra("org.kontalk.message.chatState", chatstate.getElementName());
             }
 
-            i.putExtra(EXTRA_FROM, from);
-            i.putExtra(EXTRA_TO, m.getTo());
+            i.putExtra(EXTRA_FROM, from.toString());
+            i.putExtra(EXTRA_TO, m.getTo().toString());
             sendBroadcast(i);
 
             // non-active chat states are not to be processed as messages
@@ -237,7 +246,7 @@ class MessageListener extends MessageCenterPacketListener {
                         getContext(),
                         msgId,
                         serverTimestamp,
-                        from,
+                        from.toString(),
                         false,
                         Coder.SECURITY_CLEARTEXT
                     );
@@ -412,8 +421,18 @@ class MessageListener extends MessageCenterPacketListener {
                     }
 
                     // group chat
-                    KontalkGroupManager.KontalkGroup group = KontalkGroupManager
-                        .getInstanceFor(getConnection()).getGroup(m);
+                    KontalkGroupManager.KontalkGroup group;
+                    try {
+                        group = KontalkGroupManager
+                            .getInstanceFor(getConnection()).getGroup(m);
+                    }
+                    catch (XmppStringprepException e) {
+                        Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+                        // report it because it's a big deal
+                        ReportingManager.logException(e);
+                        return;
+
+                    }
                     if (group != null && !processGroupMessage(group, m, msg)) {
                         // invalid group command
                         Log.w(TAG, "invalid or unauthorized group command");
@@ -491,7 +510,7 @@ class MessageListener extends MessageCenterPacketListener {
         resumeSmAck();
     }
 
-    private void sendReceipt(Uri msgUri, String msgId, String from, Map<String, Long> waitingReceipt) {
+    private void sendReceipt(Uri msgUri, String msgId, Jid from, Map<String, Long> waitingReceipt) {
         DeliveryReceipt receipt = new DeliveryReceipt(msgId);
         org.jivesoftware.smack.packet.Message ack =
             new org.jivesoftware.smack.packet.Message(from,

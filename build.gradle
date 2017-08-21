@@ -27,8 +27,9 @@ allprojects {
         buildToolsVersion = '26.0.1'
         smackVersion = project(':client-common-java').smackVersion
         spongyCastleVersion = '1.54.0.0'
+        // Google dropped support for Android API level < 14 starting 26.0.0
         appcompatVersion = '25.3.1'
-        // Google will drop support for Android 2.3 after 10.0.x
+        // Google dropped support for Android 2.3 starting 10.0.x
         googlePlayServicesVersion = '10.0.1'
 
         travisBuild = System.getenv("TRAVIS") == "true"

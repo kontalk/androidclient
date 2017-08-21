@@ -137,8 +137,8 @@ class RegenerateKeyPairListener extends RegisterKeyPairListener {
     }
 
     @Override
-    public void processPacket(Stanza packet) {
-        super.processPacket(packet);
+    public void processStanza(Stanza packet) {
+        super.processStanza(packet);
 
         // we are done here
         endKeyPairRegeneration();

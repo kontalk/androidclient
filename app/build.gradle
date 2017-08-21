@@ -137,8 +137,10 @@ dependencies {
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'com.google.zxing:core:3.3.0'
     compile 'com.segment.backo:backo:1.0.0'
+    compile "org.igniterealtime.smack:smack-tcp:$smackVersion"
     compile "org.igniterealtime.smack:smack-experimental:$smackVersion"
     compile ("org.igniterealtime.smack:smack-android:$smackVersion") {
+        // exclude smack-omemo due to bad packaging
         exclude module: 'smack-omemo'
         exclude module: 'smack-omemo-signal'
     }
@@ -158,7 +160,7 @@ dependencies {
     googleplayCompile "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
     googleplayCompile "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"
     googleplayCompile('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
-        transitive = true;
+        transitive = true
     }
 
     testCompile 'junit:junit:4.12'

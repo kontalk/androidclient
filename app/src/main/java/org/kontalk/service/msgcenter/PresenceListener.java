@@ -27,7 +27,9 @@ import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.roster.RosterEntry;
 import org.jivesoftware.smack.roster.packet.RosterPacket;
+import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.delay.packet.DelayInformation;
+import org.jxmpp.jid.util.JidUtil;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPPublicKey;
@@ -91,7 +93,7 @@ class PresenceListener extends MessageCenterPacketListener {
                 // just to ensure it's valid data
                 PGP.readPublicKeyring(keydata);
 
-                String jid = XmppStringUtils.parseBareJid(p.getFrom());
+                String jid = p.getFrom().asBareJid().toString();
                 // store key to users table
                 Keyring.setKey(getContext(), jid, keydata, MyUsers.Keys.TRUST_VERIFIED);
             }
@@ -110,7 +112,7 @@ class PresenceListener extends MessageCenterPacketListener {
     }
 
     @Override
-    public void processPacket(Stanza packet) {
+    public void processStanza(Stanza packet) {
         try {
             Presence p = (Presence) packet;
 
@@ -137,7 +139,7 @@ class PresenceListener extends MessageCenterPacketListener {
             else if (p.getType() == Presence.Type.available || p.getType() == Presence.Type.unavailable) {
                 if (p.getType() == Presence.Type.unavailable) {
                     // clear contact volatile state and cached data
-                    Contact.invalidateData(p.getFrom());
+                    Contact.invalidateData(p.getFrom().toString());
                 }
 
                 handlePresence(p);
@@ -150,7 +152,7 @@ class PresenceListener extends MessageCenterPacketListener {
     }
 
     private void handleSubscribe(Presence p)
-            throws NotConnectedException, IOException, PGPException {
+            throws NotConnectedException, IOException, PGPException, InterruptedException {
 
         Context ctx = getContext();
 
@@ -175,7 +177,7 @@ class PresenceListener extends MessageCenterPacketListener {
              * 3. user will either accept or refuse
              */
 
-            String from = XmppStringUtils.parseBareJid(p.getFrom());
+            String from = p.getFrom().asBareJid().toString();
 
             // extract public key
             String name = null;
@@ -239,7 +241,7 @@ class PresenceListener extends MessageCenterPacketListener {
     }
 
     private void handleSubscribed(Presence p) {
-        String from = XmppStringUtils.parseBareJid(p.getFrom());
+        String from = p.getFrom().asBareJid().toString();
 
         // save last seen (if any)
         DelayInformation delay = p.getExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE);
@@ -262,8 +264,8 @@ class PresenceListener extends MessageCenterPacketListener {
         i.putExtra(EXTRA_TYPE, Presence.Type.subscribed.name());
         i.putExtra(EXTRA_PACKET_ID, p.getStanzaId());
 
-        i.putExtra(EXTRA_FROM, p.getFrom());
-        i.putExtra(EXTRA_TO, p.getTo());
+        i.putExtra(EXTRA_FROM, StringUtils.maybeToString(p.getFrom().toString()));
+        i.putExtra(EXTRA_TO, StringUtils.maybeToString(p.getTo().toString()));
 
         sendBroadcast(i);
 
@@ -281,7 +283,7 @@ class PresenceListener extends MessageCenterPacketListener {
                 String newFingerprint = PublicKeyPresence.getFingerprint(p);
                 if (newFingerprint != null) {
                     boolean requestKey = false;
-                    String jid = XmppStringUtils.parseBareJid(p.getFrom());
+                    String jid = p.getFrom().asBareJid().toString();
                     PGPPublicKeyRing pubRing = Keyring.getPublicKey(getContext(),
                         jid, MyUsers.Keys.TRUST_UNKNOWN);
                     if (pubRing != null) {
@@ -312,14 +314,14 @@ class PresenceListener extends MessageCenterPacketListener {
         i.putExtra(EXTRA_TYPE, type != null ? type.name() : Presence.Type.available.name());
         i.putExtra(EXTRA_PACKET_ID, p.getStanzaId());
 
-        i.putExtra(EXTRA_FROM, p.getFrom());
-        i.putExtra(EXTRA_TO, p.getTo());
+        i.putExtra(EXTRA_FROM, StringUtils.maybeToString(p.getFrom().toString()));
+        i.putExtra(EXTRA_TO, StringUtils.maybeToString(p.getTo()));
         i.putExtra(EXTRA_STATUS, p.getStatus());
         Presence.Mode mode = p.getMode();
         i.putExtra(EXTRA_SHOW, mode != null ? mode.name() : Presence.Mode.available.name());
         i.putExtra(EXTRA_PRIORITY, p.getPriority());
 
-        String jid = XmppStringUtils.parseBareJid(p.getFrom());
+        String jid = p.getFrom().asBareJid().toString();
 
         long timestamp;
         DelayInformation delay = p.getExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE);
@@ -359,7 +361,7 @@ class PresenceListener extends MessageCenterPacketListener {
 
     @SuppressWarnings("WeakerAccess")
     int updateUsersDatabase(Presence p) {
-        String jid = XmppStringUtils.parseBareJid(p.getFrom());
+        String jid = p.getFrom().asBareJid().toString();
 
         ContentValues values = new ContentValues(4);
         values.put(Users.REGISTERED, 1);

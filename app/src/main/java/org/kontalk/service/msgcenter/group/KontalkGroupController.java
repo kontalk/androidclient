@@ -25,6 +25,7 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.sm.StreamManagementException;
+import org.jxmpp.stringprep.XmppStringprepException;
 
 import android.net.Uri;
 
@@ -62,8 +63,17 @@ public class KontalkGroupController implements GroupController<Message> {
     @Override
     public Message beforeEncryption(GroupCommand command, Stanza packet) {
         String groupJid = command.getGroupJid();
-        KontalkGroupManager.KontalkGroup group = KontalkGroupManager.getInstanceFor(mConnection)
-            .getGroup(groupJid);
+        KontalkGroupManager.KontalkGroup group;
+        try {
+            group = KontalkGroupManager.getInstanceFor(mConnection)
+                .getGroup(groupJid);
+        }
+        catch (XmppStringprepException e) {
+            Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+            // report it because it's a big deal
+            ReportingManager.logException(e);
+            return null;
+        }
 
         if (packet == null)
             packet = new Message();
@@ -115,8 +125,17 @@ public class KontalkGroupController implements GroupController<Message> {
             throw new IllegalArgumentException("invalid command");
 
         String groupJid = command.getGroupJid();
-        KontalkGroupManager.KontalkGroup group = KontalkGroupManager.getInstanceFor(mConnection)
-            .getGroup(groupJid);
+        KontalkGroupManager.KontalkGroup group;
+        try {
+            group = KontalkGroupManager.getInstanceFor(mConnection)
+                .getGroup(groupJid);
+        }
+        catch (XmppStringprepException e) {
+            Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+            // report it because it's a big deal
+            ReportingManager.logException(e);
+            return null;
+        }
 
         if (command instanceof PartCommand) {
             try {
@@ -152,8 +171,16 @@ public class KontalkGroupController implements GroupController<Message> {
             }
         }
 
-        KontalkGroupCommand cmd = (KontalkGroupCommand) command;
-        group.addRouteExtension(cmd.getMembers(), packet);
+        try {
+            KontalkGroupCommand cmd = (KontalkGroupCommand) command;
+            group.addRouteExtension(cmd.getMembers(), packet);
+        }
+        catch (XmppStringprepException e) {
+            Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+            // report it because it's a big deal
+            ReportingManager.logException(e);
+            return null;
+        }
         return (Message) packet;
     }
 

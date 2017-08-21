@@ -27,6 +27,8 @@ import java.security.cert.CertificateException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.jxmpp.jid.BareJid;
+import org.jxmpp.jid.Jid;
 import org.spongycastle.bcpg.HashAlgorithmTags;
 import org.spongycastle.openpgp.PGPEncryptedData;
 import org.spongycastle.openpgp.PGPException;
@@ -122,6 +124,12 @@ public class Authenticator extends AbstractAccountAuthenticator {
             XMPPUtils.createLocalJID(ctx, MessageUtils.sha1(name)) : null;
     }
 
+    public static boolean isSelfJID(Context ctx, BareJid jid) {
+        String self = getSelfJID(ctx);
+        return self != null && jid.equals(self);
+    }
+
+    @Deprecated
     public static boolean isSelfJID(Context ctx, String bareJid) {
         String jid = getSelfJID(ctx);
         return jid != null && jid.equalsIgnoreCase(bareJid);

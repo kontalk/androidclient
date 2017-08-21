@@ -73,6 +73,10 @@ import org.jivesoftware.smackx.ping.PingFailedListener;
 import org.jivesoftware.smackx.ping.PingManager;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
+import org.jxmpp.jid.BareJid;
+import org.jxmpp.jid.Jid;
+import org.jxmpp.jid.impl.JidCreate;
+import org.jxmpp.stringprep.XmppStringprepException;
 import org.jxmpp.util.XmppStringUtils;
 
 import android.accounts.Account;
@@ -135,6 +139,7 @@ import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Requests;
 import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.UsersProvider;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.UploadService;
 import org.kontalk.service.XMPPConnectionHelper;
@@ -173,6 +178,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     @Override
                     protected void log(String logMessage) {
                         Log.d("SMACK", logMessage);
+                    }
+
+                    @Override
+                    protected void log(String logMessage, Throwable throwable) {
+                        Log.d("SMACK", logMessage, throwable);
                     }
                 };
             }
@@ -643,6 +653,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // create the roster store
         mRosterStore = new SQLiteRosterStore(this);
+        // this will trigger create/upgrade
+        mRosterStore.getWritableDatabase();
 
         // create the global wake lock
         PowerManager pwr = (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -710,6 +722,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             catch (NotConnectedException e) {
                 // ignored
                 Log.v(TAG, "not connected. Dropping packet " + packet);
+            }
+            catch (InterruptedException e) {
+                // ignored
+                Log.v(TAG, "interrupted. Dropping packet " + packet);
             }
         }
     }
@@ -803,9 +819,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 .setEnabled(false);
             PingManager.getInstanceFor(mConnection)
                 .unregisterPingFailedListener(mPingFailedListener);
+            mPingFailedListener = null;
             // this is because of NetworkOnMainThreadException
             new DisconnectThread(mConnection).start();
             mConnection = null;
+        }
+
+        if (mUploadServices != null) {
+            mUploadServices.clear();
+            mUploadServices = null;
         }
 
         // clear cached data from contacts
@@ -1124,6 +1146,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     catch (NotConnectedException e) {
                         // ignored
                     }
+                    catch (InterruptedException e) {
+                        // ignored
+                    }
                     finally {
                         // release the wake lock
                         if (pingLock != null)
@@ -1186,7 +1211,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (mRosterStore != null) {
             final String to = intent.getStringExtra(EXTRA_TO);
 
-            RosterPacket.Item entry = mRosterStore.getEntry(to);
+            RosterPacket.Item entry;
+            try {
+                entry = mRosterStore.getEntry(JidCreate.from(to));
+            }
+            catch (XmppStringprepException e) {
+                Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+                // report it because it's a big deal
+                ReportingManager.logException(e);
+                return false;
+            }
             if (entry != null) {
                 final String id = intent.getStringExtra(EXTRA_PACKET_ID);
 
@@ -1232,7 +1266,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     queueTask(new Runnable() {
                         @Override
                         public void run() {
-                            broadcastPresence(roster, to, id);
+                            try {
+                                broadcastPresence(roster, JidCreate.bareFrom(to), id);
+                            }
+                            catch (XmppStringprepException e) {
+                                Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+                                // report it because it's a big deal
+                                ReportingManager.logException(e);
+                                throw new IllegalArgumentException(e);
+                            }
                         }
                     });
                 }
@@ -1310,7 +1352,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 // request our own public key (odd eh?)
                 PublicKeyPublish p = new PublicKeyPublish();
                 p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
-                p.setTo(XmppStringUtils.parseBareJid(mConnection.getUser()));
+                p.setTo(mConnection.getUser().asBareJid());
                 sendPacket(p);
             }
         }
@@ -1326,7 +1368,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             StanzaFilter filter = new StanzaIdFilter(p.getStanzaId());
             // TODO cache the listener (it shouldn't change)
             mConnection.addAsyncStanzaListener(new StanzaListener() {
-                public void processPacket(Stanza packet) throws NotConnectedException {
+                public void processStanza(Stanza packet) throws NotConnectedException {
                     Intent i = new Intent(ACTION_SERVERLIST);
                     List<String> _items = ((ServerlistCommand.ServerlistCommandData) packet)
                         .getItems();
@@ -1334,7 +1376,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         String[] items = new String[_items.size()];
                         _items.toArray(items);
 
-                        i.putExtra(EXTRA_FROM, packet.getFrom());
+                        i.putExtra(EXTRA_FROM, packet.getFrom().toString());
                         i.putExtra(EXTRA_JIDLIST, items);
                     }
                     mLocalBroadcastManager.sendBroadcast(i);
@@ -1375,9 +1417,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     @CommandHandler(name = ACTION_VERSION)
     private boolean handleVersion(Intent intent) {
         if (isConnected()) {
-            Version version = new Version(intent.getStringExtra(EXTRA_TO));
-            version.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
-            sendPacket(version);
+            try {
+                Version version = new Version(JidCreate.from(intent.getStringExtra(EXTRA_TO)));
+                version.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
+                sendPacket(version);
+            }
+            catch (XmppStringprepException e) {
+                Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+                // report it because it's a big deal
+                ReportingManager.logException(e);
+            }
         }
         return false;
     }
@@ -1496,6 +1545,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     });
                 }
             }
+
+            @Override
+            public void onRosterLoadingFailed(Exception exception) {
+                // ignored for know
+                Log.d(TAG, "error loading roster", exception);
+            }
         });
         roster.setRosterStore(mRosterStore);
 
@@ -1585,8 +1640,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             public void run() {
                 final XMPPConnection conn = mConnection;
                 if (conn != null && conn.isConnected()) {
-                    String jid = conn.getServiceName();
-                    if (Keyring.getPublicKey(MessageCenterService.this, jid, MyUsers.Keys.TRUST_UNKNOWN) == null) {
+                    Jid jid = conn.getServiceName();
+                    if (Keyring.getPublicKey(MessageCenterService.this, jid.toString(), MyUsers.Keys.TRUST_UNKNOWN) == null) {
                         PublicKeyPublish pub = new PublicKeyPublish();
                         pub.setTo(jid);
                         sendPacket(pub, false);
@@ -1644,6 +1699,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     catch (NotConnectedException e) {
                         return;
                     }
+                    catch (InterruptedException e) {
+                        return;
+                    }
                 }
 
                 sendPresence(Presence.Mode.available);
@@ -1664,6 +1722,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         ClientStateIndicationManager.inactive(connection);
                     }
                     catch (NotConnectedException e) {
+                        cancelIdleAlarm();
+                        return;
+                    }
+                    catch (InterruptedException e) {
                         cancelIdleAlarm();
                         return;
                     }
@@ -1688,6 +1750,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 .pingMyServer(false, FAST_PING_TIMEOUT);
         }
         catch (NotConnectedException e) {
+            return false;
+        }
+        catch (InterruptedException e) {
             return false;
         }
     }
@@ -2057,36 +2122,50 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return roster != null && roster.isLoaded();
     }
 
-    RosterEntry getRosterEntry(String jid) {
+    RosterEntry getRosterEntry(BareJid jid) {
         Roster roster = getRoster();
         return (roster != null) ? roster.getEntry(jid) : null;
     }
 
-    private boolean isAuthorized(String jid) {
+    @Deprecated
+    RosterEntry getRosterEntry(String jid) throws XmppStringprepException {
+        return getRosterEntry(JidCreate.bareFrom(jid));
+    }
+
+    private boolean isAuthorized(BareJid jid) {
         if (Authenticator.isSelfJID(this, jid))
             return true;
         RosterEntry entry = getRosterEntry(jid);
         return entry != null && isAuthorized(entry);
     }
 
+    @Deprecated
+    private boolean isAuthorized(String jid) throws XmppStringprepException {
+        BareJid bareJid = JidCreate.bareFrom(jid);
+        if (Authenticator.isSelfJID(this, bareJid))
+            return true;
+        RosterEntry entry = getRosterEntry(bareJid);
+        return entry != null && isAuthorized(entry);
+    }
+
     private boolean isAuthorized(RosterEntry entry) {
-        return (isRosterEntrySubscribed(entry) || Authenticator.isSelfJID(this, entry.getUser()));
+        return (isRosterEntrySubscribed(entry) || Authenticator.isSelfJID(this, entry.getJid()));
     }
 
     private boolean isRosterEntrySubscribed(RosterEntry entry) {
         return (entry != null && (entry.getType() == RosterPacket.ItemType.to || entry.getType() == RosterPacket.ItemType.both) &&
-            entry.getStatus() != RosterPacket.ItemStatus.SUBSCRIPTION_PENDING);
+            !entry.isSubscriptionPending());
     }
 
     private void broadcastPresence(Roster roster, RosterEntry entry, String id) {
-        broadcastPresence(roster, entry, entry.getUser(), id);
+        broadcastPresence(roster, entry, entry.getJid(), id);
     }
 
-    void broadcastPresence(Roster roster, String jid, String id) {
+    void broadcastPresence(Roster roster, BareJid jid, String id) {
         broadcastPresence(roster, roster.getEntry(jid), jid, id);
     }
 
-    private void broadcastPresence(Roster roster, RosterEntry entry, String jid, String id) {
+    private void broadcastPresence(Roster roster, RosterEntry entry, BareJid jid, String id) {
         // this method might be called async
         final LocalBroadcastManager lbm = mLocalBroadcastManager;
         if (lbm == null)
@@ -2102,7 +2181,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         else {
             // null type indicates no roster entry found or not authorized
             i = new Intent(ACTION_PRESENCE);
-            i.putExtra(EXTRA_FROM, jid);
+            i.putExtra(EXTRA_FROM, jid.toString());
         }
 
         // to keep track of request-reply
@@ -2192,7 +2271,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // setup packet filter for response
         StanzaFilter filter = new StanzaIdFilter(p.getStanzaId());
         StanzaListener listener = new StanzaListener() {
-            public void processPacket(Stanza packet) {
+            public void processStanza(Stanza packet) {
 
                 if (packet instanceof IQ && ((IQ) packet).getType() == IQ.Type.result) {
                     UsersProvider.setBlockStatus(MessageCenterService.this,
@@ -2222,7 +2301,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // listen for response (TODO cache the listener, it shouldn't change)
         StanzaFilter idFilter = new StanzaIdFilter(packetId);
         mConnection.addAsyncStanzaListener(new StanzaListener() {
-            public void processPacket(Stanza packet) {
+            public void processStanza(Stanza packet) {
                 // we don't need this listener anymore
                 mConnection.removeAsyncStanzaListener(this);
 
@@ -2275,8 +2354,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // check if we can send messages even with some members with no subscriptipn
             if (!group.canSendWithNoSubscription()) {
                 for (String jid : toGroup) {
-                    if (!isAuthorized(jid)) {
-                        Log.i(TAG, "not subscribed to " + jid + ", not sending group message");
+                    try {
+                        BareJid bareJid = JidCreate.bareFrom(jid);
+                        if (!isAuthorized(bareJid)) {
+                            Log.i(TAG, "not subscribed to " + jid + ", not sending group message");
+                            return;
+                        }
+                    }
+                    catch (XmppStringprepException e) {
+                        Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+                        // report it because it's a big deal
+                        ReportingManager.logException(e);
                         return;
                     }
                 }
@@ -2288,7 +2376,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             convJid = to;
         }
 
-        if (group == null && !isAuthorized(to)) {
+        Jid toJid = null;
+        try {
+            toJid = JidCreate.from(to);
+        }
+        catch (XmppStringprepException e) {
+            Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+            // report it because it's a big deal
+            ReportingManager.logException(e);
+            return;
+        }
+
+        if (group == null && !isAuthorized(toJid.asBareJid())) {
             Log.i(TAG, "not subscribed to " + to + ", not sending message");
             // warn user: message will not be sent
             if (!retrying && MessagingNotification.isPaused(to)) {
@@ -3197,11 +3296,19 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private void sendPushRegistration(final String regId) {
         IQ iq = PushRegistration.register(DEFAULT_PUSH_PROVIDER, regId);
-        iq.setTo("push@" + mServer.getNetwork());
+        try {
+            iq.setTo(JidCreate.from("push", mServer.getNetwork(), null));
+        }
+        catch (XmppStringprepException e) {
+            Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+            // report it because it's a big deal
+            ReportingManager.logException(e);
+            return;
+        }
         try {
             mConnection.sendIqWithResponseCallback(iq, new StanzaListener() {
                 @Override
-                public void processPacket(Stanza packet) throws NotConnectedException {
+                public void processStanza(Stanza packet) throws NotConnectedException {
                     if (mPushService != null)
                         mPushService.setRegisteredOnServer(regId != null);
                 }
@@ -3210,21 +3317,35 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         catch (NotConnectedException e) {
             // ignored
         }
+        catch (InterruptedException e) {
+            // ignored
+        }
     }
 
     private void sendPushUnregistration() {
         IQ iq = PushRegistration.unregister(DEFAULT_PUSH_PROVIDER);
-        iq.setTo("push@" + mServer.getNetwork());
+        try {
+            iq.setTo(JidCreate.from("push", mServer.getNetwork(), null));
+        }
+        catch (XmppStringprepException e) {
+            Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+            // report it because it's a big deal
+            ReportingManager.logException(e);
+            return;
+        }
         try {
             mConnection.sendIqWithResponseCallback(iq, new StanzaListener() {
                 @Override
-                public void processPacket(Stanza packet) throws NotConnectedException {
+                public void processStanza(Stanza packet) throws NotConnectedException {
                     if (mPushService != null)
                         mPushService.setRegisteredOnServer(false);
                 }
             });
         }
         catch (NotConnectedException e) {
+            // ignored
+        }
+        catch (InterruptedException e) {
             // ignored
         }
     }

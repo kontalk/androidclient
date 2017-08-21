@@ -53,7 +53,7 @@ public class GroupCommandAckListener extends MessageCenterPacketListener {
     }
 
     @Override
-    public void processPacket(Stanza packet) throws SmackException.NotConnectedException {
+    public void processStanza(Stanza packet) throws SmackException.NotConnectedException {
         GroupExtension.Type type = mExtension.getType();
 
         switch (type) {

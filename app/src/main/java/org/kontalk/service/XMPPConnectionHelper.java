@@ -140,14 +140,14 @@ public class XMPPConnectionHelper extends Thread {
 
     public void connectOnce(PersonalKey key, boolean forceLogin) throws XMPPException, SmackException,
             PGPException, KeyStoreException, NoSuchProviderException,
-            NoSuchAlgorithmException, CertificateException, IOException {
+            NoSuchAlgorithmException, CertificateException, IOException, InterruptedException {
 
         connectOnce(key, null, forceLogin);
     }
 
     private void connectOnce(PersonalKey key, String token, boolean forceLogin) throws XMPPException,
             SmackException, PGPException, IOException, KeyStoreException,
-            NoSuchProviderException, NoSuchAlgorithmException, CertificateException {
+            NoSuchProviderException, NoSuchAlgorithmException, CertificateException, InterruptedException {
 
         Log.d(TAG, "using server " + mServer.toString());
 

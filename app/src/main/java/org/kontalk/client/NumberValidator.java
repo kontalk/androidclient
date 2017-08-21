@@ -314,7 +314,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
                 // setup listener for form response
                 conn.addAsyncStanzaListener(new StanzaListener() {
-                    public void processPacket(Stanza packet) {
+                    public void processStanza(Stanza packet) {
                         int reason = 0;
                         IQ iq = (IQ) packet;
 
@@ -437,7 +437,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
                 XMPPConnection conn = mConnector.getConnection();
                 conn.addAsyncStanzaListener(new StanzaListener() {
-                    public void processPacket(Stanza packet) {
+                    public void processStanza(Stanza packet) {
                         IQ iq = (IQ) packet;
                         if (iq.getType() == IQ.Type.result) {
                             DataForm response = iq.getExtension("x", "jabber:x:data");
@@ -579,7 +579,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private void initConnection() throws XMPPException, SmackException,
             PGPException, KeyStoreException, NoSuchProviderException,
             NoSuchAlgorithmException, CertificateException,
-            IOException {
+            IOException, InterruptedException {
 
         if (!mConnector.isConnected() || mConnector.isServerDirty()) {
             mConnector.setListener(this);

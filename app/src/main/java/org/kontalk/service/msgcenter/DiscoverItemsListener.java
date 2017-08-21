@@ -39,7 +39,7 @@ class DiscoverItemsListener extends MessageCenterPacketListener {
     }
 
     @Override
-    public void processPacket(Stanza packet) {
+    public void processStanza(Stanza packet) {
         XMPPConnection conn = getConnection();
 
         // we don't need this listener anymore

@@ -25,6 +25,9 @@ import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.roster.RosterEntry;
+import org.jxmpp.jid.BareJid;
+import org.jxmpp.jid.Jid;
+import org.jxmpp.stringprep.XmppStringprepException;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -79,7 +82,17 @@ abstract class MessageCenterPacketListener implements StanzaListener {
         return (instance != null) ? instance.mMyUsername : null;
     }
 
-    protected RosterEntry getRosterEntry(String jid) {
+    protected RosterEntry getRosterEntry(Jid jid) {
+        return getRosterEntry(jid.asBareJid());
+    }
+
+    protected RosterEntry getRosterEntry(BareJid jid) {
+        MessageCenterService instance = mInstance.get();
+        return (instance != null) ? instance.getRosterEntry(jid) : null;
+    }
+
+    @Deprecated
+    protected RosterEntry getRosterEntry(String jid) throws XmppStringprepException {
         MessageCenterService instance = mInstance.get();
         return (instance != null) ? instance.getRosterEntry(jid) : null;
     }
@@ -235,6 +248,9 @@ abstract class MessageCenterPacketListener implements StanzaListener {
                 instance.mConnection.resumeSmAck();
             }
             catch (SmackException ignored) {
+                // we don't really care
+            }
+            catch (InterruptedException e) {
                 // we don't really care
             }
         }
