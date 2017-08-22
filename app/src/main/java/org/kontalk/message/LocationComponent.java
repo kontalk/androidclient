@@ -29,6 +29,8 @@ import org.kontalk.crypto.Coder;
  */
 public class LocationComponent extends MessageComponent<Location> {
 
+    public static final String MIME_TYPE = "text/plain+geoloc";
+
     public LocationComponent(double lat, double lon, String text, String street) {
         super(new Location(lat, lon, text, street), 0, false, Coder.SECURITY_CLEARTEXT);
     }
@@ -48,4 +50,9 @@ public class LocationComponent extends MessageComponent<Location> {
     public String getStreet() {
         return mContent.getStreet();
     }
+
+    public static boolean supportsMimeType(String mime) {
+        return MIME_TYPE.equalsIgnoreCase(mime);
+    }
+
 }

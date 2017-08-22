@@ -130,6 +130,7 @@ import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.GroupCommandComponent;
+import org.kontalk.message.LocationComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MessagesProviderUtils;
@@ -3230,7 +3231,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.packetId", packetId);
-        i.putExtra("org.kontalk.message.mime", TextComponent.MIME_TYPE);
+        i.putExtra("org.kontalk.message.mime", LocationComponent.MIME_TYPE);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.body", text);
         i.putExtra("org.kontalk.message.geo_lat", lat);
@@ -3256,7 +3257,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.packetId", packetId);
-        i.putExtra("org.kontalk.message.mime", TextComponent.MIME_TYPE);
+        i.putExtra("org.kontalk.message.mime", LocationComponent.MIME_TYPE);
         i.putExtra("org.kontalk.message.group.jid", groupJid);
         i.putExtra("org.kontalk.message.group.subject", groupSubject);
         i.putExtra("org.kontalk.message.to", to);

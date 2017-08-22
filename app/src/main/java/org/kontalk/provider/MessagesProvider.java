@@ -44,6 +44,7 @@ import android.support.annotation.VisibleForTesting;
 import org.kontalk.BuildConfig;
 import org.kontalk.Log;
 import org.kontalk.message.GroupCommandComponent;
+import org.kontalk.message.LocationComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Groups;
@@ -760,7 +761,9 @@ public class MessagesProvider extends ContentProvider {
             // use body data if there is indeed a mime
             if (bodyMime != null) {
                 mime = bodyMime;
-                content = new String(bodyContent);
+                // do not include content for location messages
+                content = !LocationComponent.supportsMimeType(mime) ?
+                        new String(bodyContent) : null;
             }
             // no mime and no data, nothing to do
             else {

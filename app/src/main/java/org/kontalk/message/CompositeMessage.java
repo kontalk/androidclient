@@ -34,6 +34,7 @@ import android.net.Uri;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
+import org.kontalk.BuildConfig;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.GroupExtension;
 import org.kontalk.data.GroupInfo;
@@ -61,6 +62,7 @@ public class CompositeMessage {
         ImageComponent.class,
         AudioComponent.class,
         VCardComponent.class,
+        LocationComponent.class,
     };
 
     private static final String[] MESSAGE_LIST_PROJECTION = {
@@ -327,17 +329,6 @@ public class CompositeMessage {
 
         else {
 
-            if (!c.isNull(COLUMN_GEO_LATITUDE)) {
-                double lat = c.getDouble(COLUMN_GEO_LATITUDE);
-                double lon = c.getDouble(COLUMN_GEO_LONGITUDE);
-                String text = c.getString(COLUMN_GEO_TEXT);
-                String street = c.getString(COLUMN_GEO_STREET);
-
-                LocationComponent location = new LocationComponent(lat, lon, text, street);
-                addComponent(location);
-            }
-
-
             String mime = c.getString(COLUMN_BODY_MIME);
             String groupJid = c.getString(COLUMN_GROUP_JID);
             String groupSubject = c.getString(COLUMN_GROUP_SUBJECT);
@@ -350,10 +341,18 @@ public class CompositeMessage {
 
                 // text data
                 if (TextComponent.supportsMimeType(mime)) {
-                    if (!hasComponent(LocationComponent.class)) {
-                        TextComponent txt = new TextComponent(bodyText);
-                        addComponent(txt);
-                    }
+                    TextComponent txt = new TextComponent(bodyText);
+                    addComponent(txt);
+                }
+
+                else if (LocationComponent.supportsMimeType(mime)) {
+                    double lat = c.getDouble(COLUMN_GEO_LATITUDE);
+                    double lon = c.getDouble(COLUMN_GEO_LONGITUDE);
+                    String text = c.getString(COLUMN_GEO_TEXT);
+                    String street = c.getString(COLUMN_GEO_STREET);
+
+                    LocationComponent location = new LocationComponent(lat, lon, text, street);
+                    addComponent(location);
                 }
 
                 // group command
@@ -408,7 +407,7 @@ public class CompositeMessage {
                 boolean attEncrypted = c.getInt(COLUMN_ATTACHMENT_ENCRYPTED) > 0;
                 int attSecurityFlags = c.getInt(COLUMN_ATTACHMENT_SECURITY_FLAGS);
 
-                AttachmentComponent att = null;
+                AttachmentComponent att;
                 File previewFile = (attPreview != null) ? new File(attPreview) : null;
                 Uri localUri = (attLocal != null) ? Uri.parse(attLocal) : null;
 
@@ -513,13 +512,14 @@ public class CompositeMessage {
         Class<AttachmentComponent> klass = getSupportingComponent(mime);
         if (klass != null) {
             String cname = klass.getSimpleName();
-            return cname.substring(0, cname.length() - SUFFIX_LENGTH) +
-                ": " + mime;
+            String text = cname.substring(0, cname.length() - SUFFIX_LENGTH);
+            return BuildConfig.DEBUG ? (text + ": " + mime) : text;
         }
 
         // no supporting component - return mime
         // TODO i18n
-        return "Unknown: " + mime;
+        String text = "Unknown";
+        return BuildConfig.DEBUG ? (text + ": " + mime) : text;
     }
 
     private static Class<AttachmentComponent> getSupportingComponent(String mime) {

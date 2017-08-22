@@ -202,16 +202,15 @@ public class MessagesController {
         values.put(MyMessages.Messages.DIRECTION, MyMessages.Messages.DIRECTION_IN);
         values.put(MyMessages.Messages.TIMESTAMP, System.currentTimeMillis());
 
-        LocationComponent loc = (LocationComponent) msg.getComponent(LocationComponent.class);
-
+        LocationComponent loc = msg.getComponent(LocationComponent.class);
         if (loc != null) {
+            values.put(MyMessages.Messages.BODY_MIME, LocationComponent.MIME_TYPE);
             values.put(MyMessages.Messages.GEO_LATITUDE, loc.getLatitude());
             values.put(MyMessages.Messages.GEO_LONGITUDE, loc.getLongitude());
             if (!TextUtils.isEmpty(loc.getText()))
                 values.put(MyMessages.Messages.GEO_TEXT, loc.getText());
             if (!TextUtils.isEmpty(loc.getStreet()))
                 values.put(MyMessages.Messages.GEO_STREET, loc.getStreet());
-
         }
 
         GroupComponent groupInfo = msg.getComponent(GroupComponent.class);

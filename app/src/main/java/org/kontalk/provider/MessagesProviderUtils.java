@@ -29,6 +29,7 @@ import android.database.Cursor;
 import android.net.Uri;
 
 import org.kontalk.crypto.Coder;
+import org.kontalk.message.LocationComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
@@ -139,7 +140,7 @@ public class MessagesProviderUtils {
         // must supply a message ID...
         values.put(Messages.MESSAGE_ID, msgId);
         values.put(Messages.PEER, userId);
-        values.put(Messages.BODY_MIME, TextComponent.MIME_TYPE);
+        values.put(Messages.BODY_MIME, LocationComponent.MIME_TYPE);
         values.put(Messages.BODY_CONTENT, bytes);
         values.put(Messages.BODY_LENGTH, bytes.length);
         values.put(Messages.UNREAD, false);
