@@ -36,14 +36,14 @@ class PushDiscoverItemsListener extends MessageCenterPacketListener {
     }
 
     @Override
-    public void processPacket(Stanza packet) {
+    public void processStanza(Stanza packet) {
         // we don't need this listener anymore
         getConnection().removeAsyncStanzaListener(this);
 
         DiscoverItems query = (DiscoverItems) packet;
         List<DiscoverItems.Item> items = query.getItems();
         for (DiscoverItems.Item item : items) {
-            String jid = item.getEntityID();
+            String jid = item.getEntityID().toString();
             // google push notifications
             if (("gcm.push." + getServer().getNetwork()).equals(jid)) {
                 String senderId = item.getNode();

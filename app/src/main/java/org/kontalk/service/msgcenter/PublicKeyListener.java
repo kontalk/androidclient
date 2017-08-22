@@ -20,7 +20,7 @@ package org.kontalk.service.msgcenter;
 
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Stanza;
-import org.jxmpp.util.XmppStringUtils;
+import org.jxmpp.jid.BareJid;
 
 import android.content.Intent;
 
@@ -55,14 +55,14 @@ class PublicKeyListener extends MessageCenterPacketListener {
     }
 
     @Override
-    public void processPacket(Stanza packet) {
+    public void processStanza(Stanza packet) {
         PublicKeyPublish p = (PublicKeyPublish) packet;
 
         if (p.getType() == IQ.Type.result) {
             byte[] _publicKey = p.getPublicKey();
 
             if (_publicKey != null) {
-                String from = XmppStringUtils.parseBareJid(p.getFrom());
+                BareJid from = p.getFrom().asBareJid();
                 boolean selfJid = Authenticator.isSelfJID(getContext(), from);
 
                 // is this our key?
@@ -95,8 +95,8 @@ class PublicKeyListener extends MessageCenterPacketListener {
                 // broadcast key update
                 Intent i = new Intent(ACTION_PUBLICKEY);
                 i.putExtra(EXTRA_PACKET_ID, id);
-                i.putExtra(EXTRA_FROM, p.getFrom());
-                i.putExtra(EXTRA_TO, p.getTo());
+                i.putExtra(EXTRA_FROM, p.getFrom().toString());
+                i.putExtra(EXTRA_TO, p.getTo().toString());
                 i.putExtra(EXTRA_PUBLIC_KEY, _publicKey);
                 sendBroadcast(i);
 
@@ -105,10 +105,10 @@ class PublicKeyListener extends MessageCenterPacketListener {
                 if (!SyncAdapter.getIQPacketId().equals(id) || !SyncAdapter.isActive(getContext())) {
 
                     // updating server key
-                    if (XmppStringUtils.parseDomain(from).equals(from)) {
+                    if (from.isDomainBareJid()) {
                         Log.v("pubkey", "Updating server key for " + from);
                         try {
-                            Keyring.setKey(getContext(), from, _publicKey);
+                            Keyring.setKey(getContext(), from.toString(), _publicKey);
                         }
                         catch (Exception e) {
                             // TODO warn user
@@ -119,16 +119,16 @@ class PublicKeyListener extends MessageCenterPacketListener {
                     else {
                         try {
                             Log.v("pubkey", "Updating key for " + from);
-                            Keyring.setKey(getContext(), from, _publicKey,
+                            Keyring.setKey(getContext(), from.toString(), _publicKey,
                                 selfJid ? MyUsers.Keys.TRUST_VERIFIED : -1);
 
                             // update display name with uid (if empty)
-                            PGPUserID keyUid = PGP.parseUserId(_publicKey, getConnection().getServiceName());
+                            PGPUserID keyUid = PGP.parseUserId(_publicKey, getConnection().getServiceName().toString());
                             if (keyUid != null && keyUid.getName() != null)
-                                UsersProvider.updateDisplayNameIfEmpty(getContext(), from, keyUid.getName());
+                                UsersProvider.updateDisplayNameIfEmpty(getContext(), from.toString(), keyUid.getName());
 
                             // invalidate cache for this user
-                            Contact.invalidate(from);
+                            Contact.invalidate(from.toString());
                         }
                         catch (Exception e) {
                             // TODO warn user

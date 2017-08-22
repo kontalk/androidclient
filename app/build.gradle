@@ -134,20 +134,25 @@ dependencies {
     compile "com.madgag.spongycastle:pkix:$spongyCastleVersion"
     compile "com.madgag.spongycastle:pg:$spongyCastleVersion"
     compile 'info.guardianproject.netcipher:netcipher:1.2.1'
-    compile 'com.googlecode.libphonenumber:libphonenumber:8.5.1'
+    compile 'com.googlecode.libphonenumber:libphonenumber:8.7.1'
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'com.google.zxing:core:3.3.0'
     compile 'com.segment.backo:backo:1.0.0'
+    compile "org.igniterealtime.smack:smack-tcp:$smackVersion"
     compile "org.igniterealtime.smack:smack-experimental:$smackVersion"
-    compile "org.igniterealtime.smack:smack-android:$smackVersion"
+    compile ("org.igniterealtime.smack:smack-android:$smackVersion") {
+        // exclude smack-omemo due to bad packaging
+        exclude module: 'smack-omemo'
+        exclude module: 'smack-omemo-signal'
+    }
     compile 'com.github.machinarius:preferencefragment:0.1.1'
     // MaterialDialogs stopped supporting API < 13 from version 0.9.1.0
     compile 'com.afollestad.material-dialogs:core:0.9.0.2'
     compile 'com.afollestad.material-dialogs:commons:0.9.0.2'
     compile 'com.github.castorflex.smoothprogressbar:library:1.1.0'
     compile 'com.nispok:snackbar:2.11.0'
-    compile 'com.github.bumptech.glide:glide:4.0.0-RC0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.0.0-RC0'
+    compile 'com.github.bumptech.glide:glide:4.0.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.0.0'
     compile 'com.github.instacart.truetime-android:library:3.0'
     compile 'com.github.daniele-athome:FloatingActionButton:b976d71658'
     compile 'de.hdodenhof:circleimageview:2.1.0'
@@ -166,7 +171,7 @@ dependencies {
     googleplayCompile "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
     googleplayCompile "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"
     googleplayCompile('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
-        transitive = true;
+        transitive = true
     }
 
     testCompile 'junit:junit:4.12'

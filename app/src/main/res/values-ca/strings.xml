@@ -595,4 +595,8 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
     <string name="msg_register_confirm_number1">Anem a verificar el número de telèfon:</string>
     <string name="msg_register_confirm_number2">Si us plau, torni a comprovar que el número és correcte.</string>
     <string name="code_validation_intro3">Tingueu present que el SMS o trucada pot provenir d\'un número estranger.</string>
+    <string name="title_doze_mode">Optimització de la bateria</string>
+    <string name="msg_doze_mode">És necessari que Kontalk estigui inclòs a la llista d\'apps d\'optimització de la bateria per funcionar correctament. Ens comprometem a no esgotar la bateria.</string>
+    <string name="btn_request_doze_mode_whitelist">Sol·licitud de permís</string>
+
     </resources>

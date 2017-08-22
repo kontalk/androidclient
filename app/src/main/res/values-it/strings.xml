@@ -599,4 +599,8 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
     <string name="msg_register_confirm_number1">Verificheremo il numero di telefono:</string>
     <string name="msg_register_confirm_number2">Controlla bene che il numero sia corretto.</string>
     <string name="code_validation_intro3">Il messaggio o la chiamata potrebbero provenire dall\'estero.</string>
+    <string name="title_doze_mode">Ottimizzazione batteria</string>
+    <string name="msg_doze_mode">Kontalk richiede di essere escluso dalle ottimizzazioni della batteria per funzionare. Promettiamo di non consumarti tutta la batteria.</string>
+    <string name="btn_request_doze_mode_whitelist">Richiedi permesso</string>
+
     </resources>

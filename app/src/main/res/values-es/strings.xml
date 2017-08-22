@@ -360,7 +360,7 @@
     <string name="warning_user_blocked">Has bloqueado a este usuario.</string>
 
     <string name="about_credits_devteam"><b>Kontalk ha sido posible gracias a:</b></string>
-    <string name="about_credits_gfx"><b>Gráficos/Iconos</b></string>
+    <string name="about_credits_gfx"><b>Gráficos/iconos</b></string>
     <string name="about_credits_translators"><b>Traductores</b></string>
 
 <string name="error_delete_thread">No es posible eliminar la conversación.</string>
@@ -392,7 +392,7 @@
     <string name="confirm_cancel_registration">Si utiliza el botón de volver atrás tendrá que hacer el registro partiendo de cero. Si necesita alternar con otra aplicación, utilice el botón de Inicio.</string>
     <string name="app_name_offline">Kontalk (desconectado)</string>
     <string name="err_import_keypair_read">No es posible leer la clave personal del almacenamiento externo.</string>
-    <string name="attachment_camera">Cámara fotográfica</string>
+    <string name="attachment_camera">Cámara</string>
     <string name="attachment_video">Vídeo</string>
     <string name="attachment_file">Archivo</string>
     <string name="attachment_vcard">Contacto</string>
@@ -400,7 +400,7 @@
 
     <string name="msg_not_implemented">Aún no está implementado.</string>
 
-    <string name="chooser_error_no_camera_app">No se dispone de aplicación de cámara fotográfica.</string>
+    <string name="chooser_error_no_camera_app">No hay aplicación de cámara fotográfica.</string>
 
     <string name="err_keypair_export_write">No se puede escribir la clave personal en el almacenamiento externo.</string>
     <string name="err_keypair_export_other">No se puede exportar la clave personal.</string>
@@ -434,7 +434,7 @@
     <string name="pref_media_autodownload_label_always">Siempre</string>
 
     <string name="text_search_results_empty">No se han encontrado mensajes.</string>
-    <string name="chooser_error_no_gallery_app">No hay aplicaciones de galería disponibles.</string>
+    <string name="chooser_error_no_gallery_app">No hay aplicación de galería disponible.</string>
 
     <string name="learn_more">Aprender más</string>
 
@@ -510,7 +510,7 @@
     <string name="group_command_text_part_kicked">Has sido eliminado de este grupo</string>
     <string name="err_invalid_passphrase">Contraseña incorrecta. Reinicia la aplicación para volver a intentarlo.</string>
 
-    <string name="title_passphrase_request">Contraseña de la clave personal</string>
+    <string name="title_passphrase_request">Contraseña de la clave de cifrado personal</string>
     <string name="pref_balloon_label_silence">Silencio</string>
     <plurals name="unread_messages">
 	<item quantity="one">%d mensaje no leído</item>
@@ -544,7 +544,7 @@ Cuando están deshabilitadas, el comportamiento de la conexión de Kontalk puede
     <string name="pref_title_reporting">Incluir informe de fallos</string>
 
     <string name="button_refuse">Rechazar</string>
-    <string name="code_validation_intro_callerid">Toque el botón de abajo y haga una llamada perdida a ese número de teléfono.Tenga en cuenta que <b>1 la llamada debe hacerse desde el número de teléfono que se está registrando </b>2. La llamada es gratuita si cuelga en cuanto escuche el primer timbre. Será suficiente para nosotros.</string>
+    <string name="code_validation_intro_callerid">Toca el botón de abajo y haga una llamada perdida a ese número de teléfono. Ten en cuenta que <b>la llamada debe hacerse desde el número de teléfono que se está registrando</b>. La llamada es gratuita si cuelgas en cuanto escuches el primer timbre. Será suficiente para nosotros.</string>
     <string name="menu_group_info">Información del grupo</string>
     <string name="button_private_chat">Chat privado</string>
     <string name="menu_sticky">Favorito</string>
@@ -599,6 +599,6 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
     <string name="code_validation_intro3">Tenga en cuenta que el SMS o llamada puede provenir de un número extranjero.</string>
     <string name="title_doze_mode">Optimización de la batería</string>
     <string name="msg_doze_mode">Kontalk necesita ser incluido en la lista de apps de optimización de la batería para funcionar correctamente. Prometemos que no vamos a agotar su batería.</string>
-    <string name="btn_request_doze_mode_whitelist">Solicite permisos</string>
+    <string name="btn_request_doze_mode_whitelist">Solicitud de permiso</string>
 
     </resources>

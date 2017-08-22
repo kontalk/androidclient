@@ -181,7 +181,7 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener imple
     }
 
     @Override
-    public void processPacket(Stanza packet) {
+    public void processStanza(Stanza packet) {
         IQ iq = (IQ) packet;
         if (iq.getType() == IQ.Type.result) {
             DataForm response = iq.getExtension("x", "jabber:x:data");

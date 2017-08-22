@@ -45,7 +45,7 @@ class DiscoverInfoListener extends MessageCenterPacketListener {
     }
 
     @Override
-    public void processPacket(Stanza packet) {
+    public void processStanza(Stanza packet) {
         XMPPConnection conn = getConnection();
         EndpointServer server = getServer();
 
@@ -83,7 +83,7 @@ class DiscoverInfoListener extends MessageCenterPacketListener {
              */
             else if (HTTPFileUpload.NAMESPACE.equals(feat.getVar())) {
                 Log.d(MessageCenterService.TAG, "got upload service: " + packet.getFrom());
-                addUploadService(new HTTPFileUploadService(conn, packet.getFrom()), 0);
+                addUploadService(new HTTPFileUploadService(conn, packet.getFrom().asBareJid()), 0);
                 // resend pending messages
                 resendPendingMessages(true, false);
             }

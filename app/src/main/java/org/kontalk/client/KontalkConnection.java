@@ -42,6 +42,7 @@ import org.jivesoftware.smack.sm.predicates.ForMatchingPredicateOrAfterXStanzas;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
+import org.jxmpp.stringprep.XmppStringprepException;
 
 import android.annotation.SuppressLint;
 
@@ -61,14 +62,14 @@ public class KontalkConnection extends XMPPTCPConnection {
 
     public KontalkConnection(String resource, EndpointServer server, boolean secure,
         boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken)
-            throws XMPPException {
+        throws XMPPException, XmppStringprepException {
 
         this(resource, server, secure, null, null, acceptAnyCertificate, trustStore, legacyAuthToken);
     }
 
     public KontalkConnection(String resource, EndpointServer server, boolean secure,
             PrivateKey privateKey, X509Certificate bridgeCert,
-            boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken) throws XMPPException {
+            boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken) throws XMPPException, XmppStringprepException {
 
         super(buildConfiguration(resource, server, secure,
             privateKey, bridgeCert, acceptAnyCertificate, trustStore, legacyAuthToken));
@@ -86,7 +87,7 @@ public class KontalkConnection extends XMPPTCPConnection {
 
     private static XMPPTCPConnectionConfiguration buildConfiguration(String resource,
         EndpointServer server, boolean secure, PrivateKey privateKey, X509Certificate bridgeCert,
-        boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken) {
+        boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken) throws XmppStringprepException {
         XMPPTCPConnectionConfiguration.Builder builder =
             XMPPTCPConnectionConfiguration.builder();
 
@@ -94,7 +95,7 @@ public class KontalkConnection extends XMPPTCPConnection {
             // connection parameters
             .setHost(server.getHost())
             .setPort(secure ? server.getSecurePort() : server.getPort())
-            .setServiceName(server.getNetwork())
+            .setXmppDomain(server.getNetwork())
             .setResource(resource)
             // the dummy value is not actually used
             .setUsernameAndPassword(null, legacyAuthToken != null ? legacyAuthToken : "dummy")
@@ -193,7 +194,23 @@ public class KontalkConnection extends XMPPTCPConnection {
     }
 
     @Override
-    protected void processPacket(Stanza packet) throws InterruptedException {
+    public void disconnect() {
+        super.disconnect();
+        // destroy any debugger to avoid connection leaks
+        // since we are not going to use the connection anymore...
+        debugger = null;
+    }
+
+    @Override
+    public synchronized void instantShutdown() {
+        super.instantShutdown();
+        // destroy any debugger to avoid connection leaks
+        // since we are not going to use the connection anymore...
+        debugger = null;
+    }
+
+    @Override
+    protected void processStanza(Stanza packet) throws InterruptedException {
         if (packet instanceof Message) {
             /*
              * We are receiving a message. Suspend SM ack replies because we
@@ -202,7 +219,11 @@ public class KontalkConnection extends XMPPTCPConnection {
              */
             suspendSmAck();
         }
-        super.processPacket(packet);
+        super.processStanza(packet);
+    }
+
+    public EndpointServer getServer() {
+        return mServer;
     }
 
     /**

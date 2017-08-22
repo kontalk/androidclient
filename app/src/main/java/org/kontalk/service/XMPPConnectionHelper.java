@@ -120,6 +120,11 @@ public class XMPPConnectionHelper extends Thread {
             .build();
     }
 
+    public XMPPConnectionHelper(Context context, EndpointServer server, boolean limited, KontalkConnection reuseConnection) {
+        this(context, server, limited);
+        mConn = reuseConnection;
+    }
+
     public void setListener(ConnectionHelperListener listener) {
         mListener = listener;
     }
@@ -140,14 +145,14 @@ public class XMPPConnectionHelper extends Thread {
 
     public void connectOnce(PersonalKey key, boolean forceLogin) throws XMPPException, SmackException,
             PGPException, KeyStoreException, NoSuchProviderException,
-            NoSuchAlgorithmException, CertificateException, IOException {
+            NoSuchAlgorithmException, CertificateException, IOException, InterruptedException {
 
         connectOnce(key, null, forceLogin);
     }
 
     private void connectOnce(PersonalKey key, String token, boolean forceLogin) throws XMPPException,
             SmackException, PGPException, IOException, KeyStoreException,
-            NoSuchProviderException, NoSuchAlgorithmException, CertificateException {
+            NoSuchProviderException, NoSuchAlgorithmException, CertificateException, InterruptedException {
 
         Log.d(TAG, "using server " + mServer.toString());
 
@@ -163,7 +168,7 @@ public class XMPPConnectionHelper extends Thread {
         }
 
         // recreate connection if closed
-        if (mConn == null || !mConn.isConnected()) {
+        if (mConn == null) {
 
             KeyStore trustStore = null;
             boolean acceptAnyCertificate = Preferences.getAcceptAnyCertificate(mContext);
@@ -268,8 +273,6 @@ public class XMPPConnectionHelper extends Thread {
                     if (mConn != null) {
                         // forcibly close connection, no matter what
                         mConn.instantShutdown();
-                        // EXTERMINATE!!
-                        mConn = null;
                     }
 
                     // SASL: not authorized

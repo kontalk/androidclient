@@ -26,6 +26,9 @@ import java.util.StringTokenizer;
 
 import org.jivesoftware.smack.roster.packet.RosterPacket;
 import org.jivesoftware.smack.roster.rosterstore.RosterStore;
+import org.jxmpp.jid.Jid;
+import org.jxmpp.jid.impl.JidCreate;
+import org.jxmpp.stringprep.XmppStringprepException;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -45,7 +48,7 @@ import org.kontalk.util.Preferences;
  */
 public class SQLiteRosterStore extends SQLiteOpenHelper implements RosterStore {
 
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     private static final String DATABASE_NAME = "roster.db";
 
     private static final String TABLE_ROSTER = "roster";
@@ -53,12 +56,18 @@ public class SQLiteRosterStore extends SQLiteOpenHelper implements RosterStore {
         "jid TEXT NOT NULL PRIMARY KEY," +
         "name TEXT NOT NULL," +
         "type TEXT NOT NULL," +
-        "status TEXT,"+
+        "pending BOOLEAN NOT NULL,"+
+        "approved BOOLEAN NOT NULL,"+
         "groups TEXT"+
         ")";
 
     private static final String SCHEMA_ROSTER =
         "CREATE TABLE " + TABLE_ROSTER + " " + CREATE_TABLE_ROSTER;
+
+    private static final String[] SCHEMA_UPGRADE = {
+        "DROP TABLE roster",
+        SCHEMA_ROSTER,
+    };
 
     private final Context mContext;
 
@@ -73,11 +82,15 @@ public class SQLiteRosterStore extends SQLiteOpenHelper implements RosterStore {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(SCHEMA_ROSTER);
+        setRosterVersion("");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // this is the first version
+        for (String sql : SCHEMA_UPGRADE) {
+            db.execSQL(sql);
+        }
+        setRosterVersion("");
     }
 
     public void onDestroy() {
@@ -87,25 +100,20 @@ public class SQLiteRosterStore extends SQLiteOpenHelper implements RosterStore {
     private SQLiteStatement prepareInsert(SQLiteDatabase db, RosterPacket.Item item) {
         if (mInsertStatement == null) {
             mInsertStatement = db.compileStatement("INSERT INTO " + TABLE_ROSTER +
-                " VALUES(?, ?, ?, ?, ?)");
+                " VALUES(?, ?, ?, ?, ?, ?)");
         }
         else {
             mInsertStatement.clearBindings();
         }
 
         int i = 0;
-        mInsertStatement.bindString(++i, item.getUser());
+        mInsertStatement.bindString(++i, item.getJid().toString());
         mInsertStatement.bindString(++i, item.getName());
         mInsertStatement.bindString(++i, item.getItemType() != null ?
             item.getItemType().toString() : RosterPacket.ItemType.none.toString());
+        mInsertStatement.bindLong(++i, item.isSubscriptionPending() ? 1 : 0);
+        mInsertStatement.bindLong(++i, item.isApproved() ? 1 : 0);
 
-        RosterPacket.ItemStatus status = item.getItemStatus();
-        if (status != null) {
-            mInsertStatement.bindString(++i, status.toString());
-        }
-        else {
-            mInsertStatement.bindNull(++i);
-        }
 
         Set<String> groups = item.getGroupNames();
         if (groups != null) {
@@ -119,7 +127,7 @@ public class SQLiteRosterStore extends SQLiteOpenHelper implements RosterStore {
     }
 
     @Override
-    public Collection<RosterPacket.Item> getEntries() {
+    public List<RosterPacket.Item> getEntries() {
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = null;
         try {
@@ -138,6 +146,9 @@ public class SQLiteRosterStore extends SQLiteOpenHelper implements RosterStore {
         catch (SQLiteException e) {
             return null;
         }
+        catch (XmppStringprepException e) {
+            return null;
+        }
         finally {
             if (c != null) {
                 c.close();
@@ -145,20 +156,22 @@ public class SQLiteRosterStore extends SQLiteOpenHelper implements RosterStore {
         }
     }
 
-    private RosterPacket.Item fromCursor(Cursor c) {
+    private RosterPacket.Item fromCursor(Cursor c) throws XmppStringprepException {
         String user = c.getString(0);
         String name = c.getString(1);
-        RosterPacket.Item item = new RosterPacket.Item(user, name);
+        RosterPacket.Item item = new RosterPacket.Item(JidCreate.bareFrom(user), name);
         String type = c.getString(2);
         if (type == null)
             type = RosterPacket.ItemType.none.toString();
         item.setItemType(RosterPacket.ItemType.valueOf(type));
 
-        String status = c.getString(3);
-        if (status != null)
-            item.setItemStatus(RosterPacket.ItemStatus.fromString(status));
+        boolean pending = c.getInt(3) != 0;
+        item.setSubscriptionPending(pending);
 
-        String groups = c.getString(4);
+        boolean approved = c.getInt(4) != 0;
+        item.setApproved(approved);
+
+        String groups = c.getString(5);
         if (groups != null) {
             StringTokenizer tokenizer = new StringTokenizer(groups, ",");
             while (tokenizer.hasMoreTokens()) {
@@ -170,18 +183,21 @@ public class SQLiteRosterStore extends SQLiteOpenHelper implements RosterStore {
     }
 
     @Override
-    public RosterPacket.Item getEntry(String bareJid) {
+    public RosterPacket.Item getEntry(Jid bareJid) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = null;
         try {
             c = db.query(TABLE_ROSTER, null,
-                "jid = ?", new String[] { bareJid },
+                "jid = ?", new String[] { bareJid.toString() },
                 null, null, null);
             if (c != null && c.moveToFirst()) {
                 return fromCursor(c);
             }
         }
         catch (SQLiteException e) {
+            return null;
+        }
+        catch (XmppStringprepException e) {
             return null;
         }
         finally {
@@ -219,6 +235,28 @@ public class SQLiteRosterStore extends SQLiteOpenHelper implements RosterStore {
     }
 
     @Override
+    public void resetStore() {
+        SQLiteDatabase db = getWritableDatabase();
+
+        beginTransaction(db);
+        boolean success = false;
+
+        try {
+            db.execSQL("DELETE FROM " + TABLE_ROSTER);
+
+            success = setTransactionSuccessful(db);
+            if (success) {
+                setRosterVersion("");
+            }
+        }
+        catch (SQLiteException ignored) {
+        }
+        finally {
+            endTransaction(db, success);
+        }
+    }
+
+    @Override
     public boolean resetEntries(Collection<RosterPacket.Item> items, String version) {
         SQLiteDatabase db = getWritableDatabase();
 
@@ -247,10 +285,10 @@ public class SQLiteRosterStore extends SQLiteOpenHelper implements RosterStore {
     }
 
     @Override
-    public boolean removeEntry(String bareJid, String version) {
+    public boolean removeEntry(Jid bareJid, String version) {
         SQLiteDatabase db = getWritableDatabase();
         try {
-            db.delete(TABLE_ROSTER, "jid = ?", new String[]{bareJid});
+            db.delete(TABLE_ROSTER, "jid = ?", new String[]{bareJid.toString()});
             return setRosterVersion(version);
         }
         catch (SQLiteException e) {

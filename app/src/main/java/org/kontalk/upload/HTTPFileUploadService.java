@@ -18,10 +18,13 @@
 
 package org.kontalk.upload;
 
+import java.lang.ref.WeakReference;
+
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.Stanza;
+import org.jxmpp.jid.BareJid;
 
 import org.kontalk.client.HTTPFileUpload;
 import org.kontalk.service.msgcenter.IUploadService;
@@ -33,12 +36,16 @@ import org.kontalk.service.msgcenter.IUploadService;
  */
 public class HTTPFileUploadService implements IUploadService {
 
-    private final XMPPConnection mConnection;
-    private final String mService;
+    private final WeakReference<XMPPConnection> mConnection;
+    private final BareJid mService;
 
-    public HTTPFileUploadService(XMPPConnection connection, String service) {
-        mConnection = connection;
+    public HTTPFileUploadService(XMPPConnection connection, BareJid service) {
+        mConnection = new WeakReference<>(connection);
         mService = service;
+    }
+
+    protected final XMPPConnection connection() {
+        return mConnection.get();
     }
 
     @Override
@@ -51,9 +58,9 @@ public class HTTPFileUploadService implements IUploadService {
         HTTPFileUpload.Request request = new HTTPFileUpload.Request(filename, size, mime);
         request.setTo(mService);
         try {
-            mConnection.sendIqWithResponseCallback(request, new StanzaListener() {
+            connection().sendIqWithResponseCallback(request, new StanzaListener() {
                 @Override
-                public void processPacket(Stanza packet) throws SmackException.NotConnectedException {
+                public void processStanza(Stanza packet) throws SmackException.NotConnectedException {
                     if (packet instanceof HTTPFileUpload.Slot) {
                         HTTPFileUpload.Slot slot = (HTTPFileUpload.Slot) packet;
                         callback.callback(slot.getPutUrl(), slot.getGetUrl());
@@ -62,6 +69,9 @@ public class HTTPFileUploadService implements IUploadService {
             });
         }
         catch (SmackException.NotConnectedException e) {
+            // ignored
+        }
+        catch (InterruptedException e) {
             // ignored
         }
     }

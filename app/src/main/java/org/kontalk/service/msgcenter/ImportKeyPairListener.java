@@ -81,8 +81,8 @@ class ImportKeyPairListener extends RegisterKeyPairListener {
     // TODO
 
     @Override
-    public void processPacket(Stanza packet) {
-        super.processPacket(packet);
+    public void processStanza(Stanza packet) {
+        super.processStanza(packet);
 
         // we are done here
         endKeyPairImport();
