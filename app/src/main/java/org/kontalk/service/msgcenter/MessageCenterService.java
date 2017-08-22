@@ -807,8 +807,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // abort connection helper (if any)
         if (mHelper != null) {
             // this is because of NetworkOnMainThreadException
-            new AbortThread(mHelper).start();
+            AbortThread abortThread = new AbortThread(mHelper);
+            abortThread.start();
             mHelper = null;
+            try {
+                abortThread.join();
+            }
+            catch (InterruptedException ignored) {
+            }
         }
 
         // disconnect from server (if any)
@@ -821,8 +827,20 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 .unregisterPingFailedListener(mPingFailedListener);
             mPingFailedListener = null;
             // this is because of NetworkOnMainThreadException
-            new DisconnectThread(mConnection).start();
-            mConnection = null;
+            DisconnectThread disconnectThread = new DisconnectThread(mConnection);
+            disconnectThread.start();
+            try {
+                // we must wait for the connection to actually close
+                disconnectThread.join(500);
+                if (disconnectThread.isAlive())
+                    mConnection.instantShutdown();
+            }
+            catch (InterruptedException ignored) {
+            }
+
+            // clear the connection only if we are quitting
+            if (!restarting)
+                mConnection = null;
         }
 
         if (mUploadServices != null) {
@@ -852,6 +870,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         public void run() {
             try {
                 mHelper.shutdown();
+                mHelper.interrupt();
             }
             catch (Exception e) {
                 // ignored
@@ -1441,9 +1460,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     /** Creates a connection to server if needed. */
     private synchronized void createConnection() {
-        if (mConnection == null && mHelper == null) {
-            mConnection = null;
-
+        // connection is null or disconnected and no helper is currently running
+        if ((mConnection == null || !mConnection.isConnected()) && mHelper == null) {
             // acquire the wakelock
             mWakeLock.acquire();
 
@@ -1465,7 +1483,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // get server from preferences
             mServer = Preferences.getEndpointServer(this);
 
-            mHelper = new XMPPConnectionHelper(this, mServer, false);
+            if (mConnection == null) {
+                mHelper = new XMPPConnectionHelper(this, mServer, false);
+            }
+            else {
+                // reuse connection if the server is the same
+                KontalkConnection reuseConnection = mServer.equals(mConnection.getServer()) ?
+                        mConnection : null;
+                mHelper = new XMPPConnectionHelper(this, mServer, false, reuseConnection);
+            }
+
             mHelper.setListener(this);
             mHelper.start();
         }
@@ -1604,6 +1631,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // add message ack listener
         if (mConnection.isSmEnabled()) {
+            // FIXME ack listener recreated everytime
+            mConnection.removeAllStanzaAcknowledgedListeners();
             mConnection.addStanzaAcknowledgedListener(new MessageAckListener(this));
         }
         else {

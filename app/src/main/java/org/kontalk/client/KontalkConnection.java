@@ -222,6 +222,10 @@ public class KontalkConnection extends XMPPTCPConnection {
         super.processStanza(packet);
     }
 
+    public EndpointServer getServer() {
+        return mServer;
+    }
+
     /**
      * A custom ack predicate that allows ack after a message with a delivery
      * receipt, a receipt request or a body, or after 5 stanzas.

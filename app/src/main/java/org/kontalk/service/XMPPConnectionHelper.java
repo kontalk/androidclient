@@ -120,6 +120,11 @@ public class XMPPConnectionHelper extends Thread {
             .build();
     }
 
+    public XMPPConnectionHelper(Context context, EndpointServer server, boolean limited, KontalkConnection reuseConnection) {
+        this(context, server, limited);
+        mConn = reuseConnection;
+    }
+
     public void setListener(ConnectionHelperListener listener) {
         mListener = listener;
     }
@@ -163,7 +168,7 @@ public class XMPPConnectionHelper extends Thread {
         }
 
         // recreate connection if closed
-        if (mConn == null || !mConn.isConnected()) {
+        if (mConn == null) {
 
             KeyStore trustStore = null;
             boolean acceptAnyCertificate = Preferences.getAcceptAnyCertificate(mContext);
@@ -268,8 +273,6 @@ public class XMPPConnectionHelper extends Thread {
                     if (mConn != null) {
                         // forcibly close connection, no matter what
                         mConn.instantShutdown();
-                        // EXTERMINATE!!
-                        mConn = null;
                     }
 
                     // SASL: not authorized

@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.jxmpp.jid.BareJid;
-import org.jxmpp.jid.Jid;
 import org.spongycastle.bcpg.HashAlgorithmTags;
 import org.spongycastle.openpgp.PGPEncryptedData;
 import org.spongycastle.openpgp.PGPException;
