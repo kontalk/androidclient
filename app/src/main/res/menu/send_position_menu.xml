@@ -9,11 +9,14 @@
         app:actionViewClass="android.support.v7.widget.SearchView"
         app:showAsAction="collapseActionView|ifRoom"/>
 
-    <item
-        android:id="@+id/map"
-        android:title="@string/menu_map"/>
-    <item
-        android:id="@+id/satellite"
-        android:title="@string/menu_satellite"/>
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/map"
+            android:title="@string/menu_map"
+            android:checked="true"/>
+        <item
+            android:id="@+id/satellite"
+            android:title="@string/menu_satellite"/>
+    </group>
 
 </menu>

@@ -8,11 +8,14 @@
         android:title="@string/share"
         app:showAsAction="always"/>
 
-    <item
-        android:id="@+id/map"
-        android:title="@string/menu_map"/>
-    <item
-        android:id="@+id/satellite"
-        android:title="@string/menu_satellite"/>
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/map"
+            android:title="@string/menu_map"
+            android:checked="true"/>
+        <item
+            android:id="@+id/satellite"
+            android:title="@string/menu_satellite"/>
+    </group>
 
 </menu>

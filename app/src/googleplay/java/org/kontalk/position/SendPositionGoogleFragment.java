@@ -33,6 +33,7 @@ import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
 import com.nineoldandroids.view.ViewHelper;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -63,12 +64,12 @@ import org.kontalk.R;
 import org.kontalk.util.RecyclerItemClickListener;
 import org.kontalk.util.ViewUtils;
 
+
 /**
  * Send Position Google Maps Fragment
  *
- * @author andreacappelli
+ * @author Andrea Cappelli
  */
-
 public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCallback,
     GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
@@ -79,7 +80,7 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
 
     private FrameLayout mMapViewClip;
     private MapView mMapView;
-    private AnyMap mGoogleMap;
+    private AnyMap mMap;
 
     private Location mUserLocation;
     private Location mMyLocation;
@@ -123,6 +124,7 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
         }
     }
 
+    @SuppressLint("WrongViewCast")
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -192,9 +194,9 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
                         mUserLocationMoved = true;
                     }
 
-                    if (mGoogleMap != null && mMyLocation != null) {
-                        mUserLocation.setLatitude(mGoogleMap.getCameraPosition().target.latitude);
-                        mUserLocation.setLongitude(mGoogleMap.getCameraPosition().target.longitude);
+                    if (mMap != null && mMyLocation != null) {
+                        mUserLocation.setLatitude(mMap.getCameraPosition().target.latitude);
+                        mUserLocation.setLongitude(mMap.getCameraPosition().target.longitude);
                     }
 
                     mAdapter.setCustomLocation(mUserLocation);
@@ -205,14 +207,14 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
         mFabMyLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mMyLocation != null && mGoogleMap != null && mGoogleApiClient.isConnected()) {
+                if (mMyLocation != null && mMap != null && mGoogleApiClient.isConnected()) {
                     AnimatorSet animatorSet = new AnimatorSet();
                     animatorSet.setDuration(200);
                     animatorSet.play(ObjectAnimator.ofFloat(mFabMyLocation, "alpha", 0.0f));
                     animatorSet.start();
                     mAdapter.setCustomLocation(null);
                     mUserLocationMoved = false;
-                    mGoogleMap.animateCamera(CameraUpdateFactory.getInstance().newLatLngZoom(new LatLng(mMyLocation.getLatitude(), mMyLocation.getLongitude()), 12));
+                    mMap.animateCamera(CameraUpdateFactory.getInstance().newLatLngZoom(new LatLng(mMyLocation.getLatitude(), mMyLocation.getLongitude()), 12));
                 }
             }
         });
@@ -386,11 +388,17 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
 
         switch (item.getItemId()) {
             case R.id.map:
-                mGoogleMap.setMapType(AnyMap.Type.NORMAL);
+                if (!item.isChecked()) {
+                    item.setChecked(true);
+                    mMap.setMapType(AnyMap.Type.NORMAL);
+                }
                 return true;
 
             case R.id.satellite:
-                mGoogleMap.setMapType(AnyMap.Type.SATELLITE);
+                if (!item.isChecked()) {
+                    item.setChecked(true);
+                    mMap.setMapType(AnyMap.Type.SATELLITE);
+                }
                 return true;
         }
 
@@ -429,8 +437,8 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
             LatLng latLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
             mMyLocation.setLatitude(lastLocation.getLatitude());
             mMyLocation.setLongitude(lastLocation.getLongitude());
-            if (mGoogleMap != null)
-                mGoogleMap.animateCamera(CameraUpdateFactory.getInstance().newLatLngZoom(latLng, 12));
+            if (mMap != null)
+                mMap.animateCamera(CameraUpdateFactory.getInstance().newLatLngZoom(latLng, 12));
         }
         // Begin polling for new location updates.
         startLocationUpdates();
@@ -453,14 +461,14 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
 
     @Override
     public void onLocationChanged(Location location) {
-        if (mGoogleMap != null) {
+        if (mMap != null) {
             positionMarker(location);
         }
     }
 
     @Override
     public void onMapReady(final AnyMap anyMap) {
-        mGoogleMap = anyMap;
+        mMap = anyMap;
         anyMap.setMyLocationEnabled(true);
         anyMap.getUiSettings().setMyLocationButtonEnabled(false);
         anyMap.getUiSettings().setMapToolbarEnabled(false);
@@ -485,7 +493,7 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
 
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
 
-            mGoogleMap.moveCamera(CameraUpdateFactory.getInstance().newLatLngZoom(latLng, 12));
+            mMap.moveCamera(CameraUpdateFactory.getInstance().newLatLngZoom(latLng, 12));
 
         }
     }
@@ -506,8 +514,8 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
             layoutParams = (FrameLayout.LayoutParams) mMapView.getLayoutParams();
             if (layoutParams != null) {
                 layoutParams.height = mOverScrollHeight + ViewUtils.dp(getContext(), 10);
-                if (mGoogleMap != null) {
-                    mGoogleMap.setPadding(0, 0, 0, ViewUtils.dp(getContext(), 10));
+                if (mMap != null) {
+                    mMap.setPadding(0, 0, 0, ViewUtils.dp(getContext(), 10));
                 }
                 mMapView.setLayoutParams(layoutParams);
             }
@@ -566,8 +574,8 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
                 layoutParams = (FrameLayout.LayoutParams) mMapView.getLayoutParams();
                 if (layoutParams != null && layoutParams.height != mOverScrollHeight + ViewUtils.dp(getContext(), 10)) {
                     layoutParams.height = mOverScrollHeight + ViewUtils.dp(getContext(), 10);
-                    if (mGoogleMap != null) {
-                        mGoogleMap.setPadding(0, 0, 0, ViewUtils.dp(getContext(), 10));
+                    if (mMap != null) {
+                        mMap.setPadding(0, 0, 0, ViewUtils.dp(getContext(), 10));
                     }
                     mMapView.setLayoutParams(layoutParams);
                 }

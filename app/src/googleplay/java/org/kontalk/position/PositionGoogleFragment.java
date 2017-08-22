@@ -61,12 +61,12 @@ import org.kontalk.data.Contact;
 import org.kontalk.ui.PositionActivity;
 import org.kontalk.ui.ToolbarActivity;
 
+
 /**
  * Position Google Maps fragment
  *
- * @author andreacappelli
+ * @author Andrea Cappelli
  */
-
 public class PositionGoogleFragment extends Fragment implements OnMapReadyCallback,
     GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
@@ -76,7 +76,7 @@ public class PositionGoogleFragment extends Fragment implements OnMapReadyCallba
     private LocationRequest mLocationRequest;
 
     private MapView mMapView;
-    private AnyMap mGoogleMap;
+    private AnyMap mMap;
 
     private Position mPosition;
     private Location mUserLocation;
@@ -169,8 +169,8 @@ public class PositionGoogleFragment extends Fragment implements OnMapReadyCallba
             public void onClick(View view) {
                 if (mUserLocation != null) {
                     LatLng latLng = new LatLng(mUserLocation.getLatitude(), mUserLocation.getLongitude());
-                    if (mGoogleMap != null) {
-                        mGoogleMap.animateCamera(CameraUpdateFactory.getInstance().newLatLngZoom(latLng, 12));
+                    if (mMap != null) {
+                        mMap.animateCamera(CameraUpdateFactory.getInstance().newLatLngZoom(latLng, 12));
                     }
                 }
             }
@@ -179,8 +179,8 @@ public class PositionGoogleFragment extends Fragment implements OnMapReadyCallba
         mFabMyLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mMyLocation != null && mGoogleMap != null && mGoogleApiClient.isConnected()) {
-                    mGoogleMap.animateCamera(CameraUpdateFactory.getInstance().newLatLngZoom(new LatLng(mMyLocation.getLatitude(), mMyLocation.getLongitude()), 12));
+                if (mMyLocation != null && mMap != null && mGoogleApiClient.isConnected()) {
+                    mMap.animateCamera(CameraUpdateFactory.getInstance().newLatLngZoom(new LatLng(mMyLocation.getLatitude(), mMyLocation.getLongitude()), 12));
                 }
             }
         });
@@ -278,11 +278,17 @@ public class PositionGoogleFragment extends Fragment implements OnMapReadyCallba
                 break;
             }
             case R.id.map:
-                mGoogleMap.setMapType(AnyMap.Type.NORMAL);
+                if (!item.isChecked()) {
+                    item.setChecked(true);
+                    mMap.setMapType(AnyMap.Type.NORMAL);
+                }
                 return true;
 
             case R.id.satellite:
-                mGoogleMap.setMapType(AnyMap.Type.SATELLITE);
+                if (!item.isChecked()) {
+                    item.setChecked(true);
+                    mMap.setMapType(AnyMap.Type.SATELLITE);
+                }
                 return true;
         }
 
@@ -342,14 +348,14 @@ public class PositionGoogleFragment extends Fragment implements OnMapReadyCallba
 
     @Override
     public void onLocationChanged(Location location) {
-        if (mGoogleMap != null) {
+        if (mMap != null) {
             positionMarker(location);
         }
     }
 
     @Override
     public void onMapReady(final AnyMap anyMap) {
-        mGoogleMap = anyMap;
+        mMap = anyMap;
         anyMap.setMyLocationEnabled(true);
         anyMap.getUiSettings().setMyLocationButtonEnabled(false);
         anyMap.getUiSettings().setMapToolbarEnabled(false);
@@ -358,12 +364,12 @@ public class PositionGoogleFragment extends Fragment implements OnMapReadyCallba
         if (mPosition != null) {
             LatLng latLng = new LatLng(mUserLocation.getLatitude(), mUserLocation.getLongitude());
             try {
-                mGoogleMap.addMarker(new MarkerOptions().position(latLng).icon(BitmapDescriptorFactory.getInstance().fromResource(R.drawable.ic_map_pin)));
+                mMap.addMarker(new MarkerOptions().position(latLng).icon(BitmapDescriptorFactory.getInstance().fromResource(R.drawable.ic_map_pin)));
             }
             catch (Exception e) {
                 Log.e(TAG, e.getLocalizedMessage());
             }
-            mGoogleMap.moveCamera(CameraUpdateFactory.getInstance().newLatLngZoom(latLng, 12));
+            mMap.moveCamera(CameraUpdateFactory.getInstance().newLatLngZoom(latLng, 12));
         }
     }
 
