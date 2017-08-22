@@ -101,7 +101,7 @@ public class MessagesProvider extends ContentProvider {
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     static class DatabaseHelper extends SQLiteOpenHelper {
         @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-        static final int DATABASE_VERSION = 12;
+        static final int DATABASE_VERSION = 13;
         @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
         static final String DATABASE_NAME = "messages.db";
 
@@ -136,11 +136,11 @@ public class MessagesProvider extends ContentProvider {
             "att_encrypted INTEGER NOT NULL DEFAULT 0," +
             "att_security_flags INTEGER NOT NULL DEFAULT 0," +
 
-            //location data
-            "geo_lat NUMBER, " +
-            "geo_lon NUMBER, " +
-            "geo_text, " +
-            "geo_street, " +
+            // location data
+            "geo_lat NUMBER," +
+            "geo_lon NUMBER," +
+            "geo_text TEXT," +
+            "geo_street TEXT," +
 
             // whole content encrypted
             "encrypted INTEGER NOT NULL DEFAULT 0, " +
@@ -369,6 +369,13 @@ public class MessagesProvider extends ContentProvider {
         private static final String SCHEMA_UPGRADE_V11 =
             "ALTER TABLE threads ADD COLUMN encryption INTEGER NOT NULL DEFAULT 1";
 
+        private static final String[] SCHEMA_UPGRADE_V12 = {
+            "ALTER TABLE messages ADD COLUMN geo_lat NUMBER",
+            "ALTER TABLE messages ADD COLUMN geo_lon NUMBER",
+            "ALTER TABLE messages ADD COLUMN geo_text TEXT",
+            "ALTER TABLE messages ADD COLUMN geo_street TEXT",
+        };
+
         private Context mContext;
 
         protected DatabaseHelper(Context context) {
@@ -417,6 +424,11 @@ public class MessagesProvider extends ContentProvider {
                     // fall through
                 case 11:
                     db.execSQL(SCHEMA_UPGRADE_V11);
+                    // fall through
+                case 12:
+                    for (String sql : SCHEMA_UPGRADE_V12) {
+                        db.execSQL(sql);
+                    }
             }
         }
     }
