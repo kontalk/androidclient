@@ -502,7 +502,7 @@
     <string name="pref_media_autodownload_label_wifi">Only on Wi-Fi</string>
     <string name="pref_media_autodownload_label_always">Always</string>
 
-    <string name="pref_maps_settings">Maps</string>
+    <string name="pref_location_settings">Location</string>
     <string name="pref_maps_service">Service provider</string>
 
     <string name="pref_on">On</string>

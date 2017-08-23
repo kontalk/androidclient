@@ -20,10 +20,10 @@ package org.kontalk.position;
 
 import java.io.Serializable;
 
-/**
- * @author andreacappelli
- */
 
+/**
+ * @author Andrea Cappelli
+ */
 public class Position implements Serializable {
 
     private double mLatitude;

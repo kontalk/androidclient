@@ -38,8 +38,8 @@
         android:persistent="false"
         android:layout="@layout/md_preference_custom"/>
 
-    <Preference android:key="pref_maps_settings"
-        android:title="@string/pref_maps_settings"
+    <Preference android:key="pref_location_settings"
+        android:title="@string/pref_location_settings"
         android:persistent="false"
         android:layout="@layout/md_preference_custom"/>
 

@@ -18,10 +18,10 @@
 
 package org.kontalk.position;
 
-/**
- * @author andreacappelli
- */
 
+/**
+ * @author Andrea Cappelli
+ */
 public class OsmStaticUrlBuilder {
 
     private static final String URL = "http://staticmap.openstreetmap.de/staticmap.php";

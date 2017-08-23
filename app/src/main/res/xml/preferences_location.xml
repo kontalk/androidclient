@@ -23,6 +23,7 @@
         android:title="@string/pref_maps_service"
         android:summary="%s"
         android:entries="@array/maps_provider_labels"
-        android:entryValues="@array/maps_provider_values" />
+        android:entryValues="@array/maps_provider_values"
+        android:defaultValue="@string/pref_default_maps_service" />
 
 </PreferenceScreen>

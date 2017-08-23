@@ -18,13 +18,13 @@
 
 package org.kontalk.position;
 
+
 /**
  * Download Google Static Map
  *
  * @author Daniele Ricci
  * @author Andrea Cappelli
  */
-
 public class GMStaticUrlBuilder {
     private static final String URL = "http://maps.googleapis.com/maps/api/staticmap";
 
@@ -63,7 +63,7 @@ public class GMStaticUrlBuilder {
         return this;
     }
 
-    public GMStaticUrlBuilder setscale(Integer scale) {
+    public GMStaticUrlBuilder setScale(Integer scale) {
         if (scale != null)
             mScale = scale;
 

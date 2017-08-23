@@ -18,12 +18,9 @@
 
 package org.kontalk.position;
 
-import java.util.Locale;
-
 import android.content.Context;
 import android.support.v4.app.Fragment;
 
-import org.kontalk.R;
 import org.kontalk.util.Preferences;
 
 /**
@@ -31,19 +28,16 @@ import org.kontalk.util.Preferences;
  */
 
 public class PositionManager {
-
-    public static String getDefaultMapsProvider(Context context) {
-        return context.getString(R.string.pref_default_maps_google);
-    }
+    private static final String PROVIDER_GOOGLE = "google";
+    private static final String PROVIDER_OSM = "osm";
 
     public static Fragment getSendPositionFragment(Context context) {
-        String google = context.getString(R.string.pref_default_maps_google);
-        String osm = context.getString(R.string.pref_default_maps_osm);
+        String provider = Preferences.getMapsProvider(context);
         Fragment fragment = null;
-        if (Preferences.getMapsProvider(context).equals(google)) {
+        if (PROVIDER_GOOGLE.equals(provider)) {
             fragment = new SendPositionGoogleFragment();
         }
-        else if (Preferences.getMapsProvider(context).equals(osm)) {
+        else if (PROVIDER_OSM.equals(provider)) {
             fragment = new SendPositionOsmFragment();
         }
 
@@ -51,13 +45,12 @@ public class PositionManager {
     }
 
     public static Fragment getPositionFragment(Context context) {
-        String google = context.getString(R.string.pref_default_maps_google);
-        String osm = context.getString(R.string.pref_default_maps_osm);
+        String provider = Preferences.getMapsProvider(context);
         Fragment fragment = null;
-        if (Preferences.getMapsProvider(context).equals(google)) {
+        if (PROVIDER_GOOGLE.equals(provider)) {
             fragment = new PositionGoogleFragment();
         }
-        else if (Preferences.getMapsProvider(context).equals(osm)) {
+        else if (PROVIDER_OSM.equals(provider)) {
             fragment = new PositionOsmFragment();
         }
 
@@ -65,13 +58,12 @@ public class PositionManager {
     }
 
     public static String getStaticMapUrl(Context context, double lat, double lon, Integer zoom, int width, int height, Integer scale) {
-        String google = context.getString(R.string.pref_default_maps_google);
-        String osm = context.getString(R.string.pref_default_maps_osm);
-        if (Preferences.getMapsProvider(context).equals(google)) {
+        String provider = Preferences.getMapsProvider(context);
+        if (PROVIDER_GOOGLE.equals(provider)) {
             return new GMStaticUrlBuilder().setCenter(lat, lon).setZoom(zoom)
-                .setMarker(lat, lon).setSize(width, height).setscale(scale).toString();
+                .setMarker(lat, lon).setSize(width, height).setScale(scale).toString();
         }
-        else if (Preferences.getMapsProvider(context).equals(osm)) {
+        else if (PROVIDER_OSM.equals(provider)) {
             return new OsmStaticUrlBuilder().setCenter(lat, lon).setZoom(zoom)
                 .setMarker(lat, lon).setSize(width, height).toString();
         }
@@ -80,14 +72,13 @@ public class PositionManager {
     }
 
     public static String getMapsUrl(Context context, double lat, double lon) {
-        String google = context.getString(R.string.pref_default_maps_google);
-        String osm = context.getString(R.string.pref_default_maps_osm);
-        if (Preferences.getMapsProvider(context).equals(google)) {
-            return String.format(Locale.US, "http://maps.google.com/?ll=%1$,.2f,%2$,.2f&q=%1$,.2f,%2$,.2f", lat, lon);
+        String provider = Preferences.getMapsProvider(context);
+        if (PROVIDER_GOOGLE.equals(provider)) {
+            return GMapsUrlBuilder.build(lat, lon);
         }
-        else if (Preferences.getMapsProvider(context).equals(osm)) {
-            return String.format(Locale.US, "https://www.openstreetmap.org/#map=12/%1$,.2f/%1$,.2f", lat, lon);
+        else if (PROVIDER_OSM.equals(provider)) {
+            return OsmUrlBuilder.build(lat, lon);
         }
-        return "Location";
+        return null;
     }
 }

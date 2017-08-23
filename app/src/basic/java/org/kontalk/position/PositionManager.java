@@ -18,65 +18,33 @@
 
 package org.kontalk.position;
 
-import java.util.Locale;
-
 import android.content.Context;
 import android.support.v4.app.Fragment;
 
-import org.kontalk.R;
-import org.kontalk.util.Preferences;
 
 /**
- * @author andreacappelli
+ * @author Andrea Cappelli
  */
-
 public class PositionManager {
 
-    public static String getDefaultMapsProvider(Context context) {
-        return context.getString(R.string.pref_default_maps_osm);
-    }
-
     public static Fragment getMapFragment(Context context) {
-        String osm = context.getString(R.string.pref_default_maps_osm);
-        Fragment fragment = null;
-        if (Preferences.getMapsProvider(context).equals(osm)) {
-            fragment = new SendPositionOsmFragment();
-        }
-
-        return fragment;
+        return new SendPositionOsmFragment();
     }
 
     public static Fragment getSendPositionFragment(Context context) {
-        String osm = context.getString(R.string.pref_default_maps_osm);
-        Fragment fragment = null;
-        if (Preferences.getMapsProvider(context).equals(osm)) {
-            fragment = new SendPositionOsmFragment();
-        }
-
-        return fragment;
+        return new SendPositionOsmFragment();
     }
 
     public static Fragment getPositionFragment(Context context) {
-        String osm = context.getString(R.string.pref_default_maps_osm);
-        Fragment fragment = null;
-        if (Preferences.getMapsProvider(context).equals(osm)) {
-            fragment = new PositionOsmFragment();
-        }
-
-        return fragment;
+        return new PositionOsmFragment();
     }
 
     public static String getStaticMapUrl(Context context, double lat, double lon, Integer zoom, int width, int height, Integer scale) {
-        String osm = context.getString(R.string.pref_default_maps_osm);
-        if (Preferences.getMapsProvider(context).equals(osm)) {
-            return new OsmStaticUrlBuilder().setCenter(lat, lon).setZoom(zoom)
+        return new OsmStaticUrlBuilder().setCenter(lat, lon).setZoom(zoom)
                 .setMarker(lat, lon).setSize(width, height).toString();
-        }
-
-        return null;
     }
 
     public static String getMapsUrl(Context context, double lat, double lon) {
-        return String.format(Locale.US, "https://www.openstreetmap.org/#map=12/%1$,.2f/%1$,.2f", lat, lon);
+        return OsmUrlBuilder.build(lat, lon);
     }
 }
