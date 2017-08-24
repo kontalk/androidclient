@@ -610,4 +610,15 @@
 
 <string name="registration_poweredby">מונע על ידי</string>
 
+    <string name="code_validation_intro3">אנה שים לב שהודעת ה SMS או השיחה יכולים להגיע ממספר זר.</string>
+    <string name="reply">השב</string>
+    <string name="msg_register_confirm_number1">אנו נאמת את מספר הטלפון:</string>
+    <string name="msg_register_confirm_number2">אנה בדוק שוב שמספר הטלפון נכון.</string>
+    <string name="person_me">אני</string>
+    <string name="title_doze_mode">אופטמיזציית סוללה</string>
+    <string name="msg_doze_mode">יש צורך להכניס את Kontalk לרשימת ההחרגה מאופטימיזציית סוללה על מנת להבטיח תפקוד תקין. אנו מבטיחים לא להשתולל על הסוללה.</string>
+    <string name="btn_request_doze_mode_whitelist">בקש אישור</string>
+
+    <string name="audio_duration_max">%1$s / %2$s</string>
+
     </resources>
