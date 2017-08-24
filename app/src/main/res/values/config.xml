@@ -45,8 +45,8 @@
     <string name="pref_default_media_autodownload">wifi</string>
     <integer name="pref_default_media_autodownload_threshold">100</integer>
 
-    <string name="pref_default_maps_google">google</string>
-    <string name="pref_default_maps_osm">osm</string>
+    <!-- location settings defaults -->
+    <string name="pref_default_maps_service">osm</string>
 
     <!-- notification settings defaults -->
     <bool name="pref_default_enable_notifications">true</bool>

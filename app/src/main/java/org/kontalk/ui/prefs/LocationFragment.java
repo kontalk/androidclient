@@ -19,30 +19,21 @@
 package org.kontalk.ui.prefs;
 
 import android.os.Bundle;
-import android.preference.ListPreference;
 
-import org.kontalk.Kontalk;
 import org.kontalk.R;
-import org.kontalk.position.PositionManager;
+
 
 /**
- * @author andreacappelli
+ * @author Andrea Cappelli
  */
-
-public class MapsFragment extends RootPreferenceFragment {
-    static final String TAG = Kontalk.TAG;
+public class LocationFragment extends RootPreferenceFragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         // Load the preferences from an XML resource
-        addPreferencesFromResource(R.xml.preferences_maps);
-
-        final ListPreference serviceProvider = (ListPreference) findPreference("pref_maps_service");
-
-        if (serviceProvider.getValue() == null)
-            serviceProvider.setValue(PositionManager.getDefaultMapsProvider(getActivity()));
+        addPreferencesFromResource(R.xml.preferences_location);
     }
 
     @Override
@@ -50,6 +41,6 @@ public class MapsFragment extends RootPreferenceFragment {
         super.onResume();
 
         ((PreferencesActivity) getActivity()).getSupportActionBar()
-                .setTitle(R.string.pref_maps_settings);
+                .setTitle(R.string.pref_location_settings);
     }
 }
