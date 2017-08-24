@@ -38,7 +38,7 @@
             android:layout_width="24dp"
             android:layout_height="42dp"
             android:layout_centerInParent="true"
-            android:src="@drawable/ic_map_pin"/>
+            android:src="@drawable/ic_map_pin_google"/>
 
         <ImageView
             android:id="@+id/pin_x"
