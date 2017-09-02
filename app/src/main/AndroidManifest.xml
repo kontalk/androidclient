@@ -95,11 +95,13 @@
 
         <!-- Content providers -->
         <provider android:name=".provider.MessagesProvider"
-            android:exported="false"
+            android:exported="true"
+            android:permission="android.permission.BIND_CHOOSER_TARGET_SERVICE"
             android:authorities="${applicationId}.messages"/>
 
         <provider android:name=".provider.UsersProvider"
-            android:exported="false"
+            android:exported="true"
+            android:permission="android.permission.BIND_CHOOSER_TARGET_SERVICE"
             android:authorities="${applicationId}.users"/>
 
         <!-- Broadcast receivers -->
