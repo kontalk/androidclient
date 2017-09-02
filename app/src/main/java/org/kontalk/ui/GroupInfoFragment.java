@@ -208,9 +208,9 @@ public class GroupInfoFragment extends ActionModeListFragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.group_info, container, false);
 
-        mTitle = (TextView) view.findViewById(R.id.title);
+        mTitle = view.findViewById(R.id.title);
 
-        mSetSubject = (Button) view.findViewById(R.id.btn_change_title);
+        mSetSubject = view.findViewById(R.id.btn_change_title);
         mSetSubject.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -228,14 +228,14 @@ public class GroupInfoFragment extends ActionModeListFragment
                     .show();
             }
         });
-        mLeave = (Button) view.findViewById(R.id.btn_leave);
+        mLeave = view.findViewById(R.id.btn_leave);
         mLeave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 confirmLeave();
             }
         });
-        mIgnoreAll = (Button) view.findViewById(R.id.btn_ignore_all);
+        mIgnoreAll = view.findViewById(R.id.btn_ignore_all);
         mIgnoreAll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -257,6 +257,12 @@ public class GroupInfoFragment extends ActionModeListFragment
         });
 
         return view;
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        updateUI();
     }
 
     @Override
