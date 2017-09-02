@@ -118,9 +118,8 @@ public class PositionGoogleFragment extends PositionAbstractFragment implements
     public void onStop() {
         super.onStop();
 
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-
         if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
             mGoogleApiClient.disconnect();
         }
     }
