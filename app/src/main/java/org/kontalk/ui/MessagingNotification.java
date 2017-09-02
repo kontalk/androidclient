@@ -91,6 +91,10 @@ public class MessagingNotification {
         Messages.BODY_MIME,
         Messages.BODY_CONTENT,
         Messages.ATTACHMENT_MIME,
+        Messages.GEO_LATITUDE,
+        Messages.GEO_LONGITUDE,
+        Messages.GEO_TEXT,
+        Messages.GEO_STREET,
         CommonColumns.ENCRYPTED,
         Groups.GROUP_JID,
         Groups.SUBJECT,
@@ -262,10 +266,14 @@ public class MessagingNotification {
                 String mime = c.getString(2);
                 byte[] content = c.getBlob(3);
                 String attMime = c.getString(4);
-                boolean encrypted = c.getInt(5) != 0;
-                String groupJid = c.getString(6);
-                String groupSubject = c.getString(7);
-                long timestamp = c.getLong(8);
+                boolean encrypted = c.getInt(9) != 0;
+                String groupJid = c.getString(10);
+                String groupSubject = c.getString(11);
+                long timestamp = c.getLong(12);
+
+                if (!c.isNull(5)) {
+                    content = context.getString(R.string.notification_location).getBytes();
+                }
 
                 // store conversation id for intents
                 conversationIds.add(ContentUris.withAppendedId(Threads.CONTENT_URI, id));
@@ -307,6 +315,10 @@ public class MessagingNotification {
                 String content = c.getString(3);
                 boolean encrypted = c.getInt(4) != 0;
 
+                if (!c.isNull(5)) {
+                    content = context.getString(R.string.notification_location);
+                }
+
                 if (encrypted) {
                     content = context.getString(R.string.text_encrypted);
                 }
@@ -330,14 +342,14 @@ public class MessagingNotification {
                     threadId,
                     peer,
                     content,
-                    c.getInt(5),
+                    c.getInt(7),
                     // group data
-                    c.getString(6),
-                    c.getString(7)
+                    c.getString(8),
+                    c.getString(9)
                 );
                 // actually we don't need to check for max since conversations were selected
                 // in timestamp order, but whatever...
-                latestTimestamp = Math.max(latestTimestamp, c.getLong(8));
+                latestTimestamp = Math.max(latestTimestamp, c.getLong(10));
                 conversationIds.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
             }
             c.close();

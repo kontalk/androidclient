@@ -120,6 +120,9 @@ public final class PreferencesActivity extends BasePreferencesActivity
             case R.xml.preferences_media:
                 fragment = new MediaFragment();
                 break;
+            case R.xml.preferences_location:
+                fragment = new LocationFragment();
+                break;
             case R.xml.preferences_notification:
                 fragment = new NotificationFragment();
                 break;

@@ -34,6 +34,7 @@ import android.net.Uri;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
+import org.kontalk.BuildConfig;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.GroupExtension;
 import org.kontalk.data.GroupInfo;
@@ -61,6 +62,7 @@ public class CompositeMessage {
         ImageComponent.class,
         AudioComponent.class,
         VCardComponent.class,
+        LocationComponent.class,
     };
 
     private static final String[] MESSAGE_LIST_PROJECTION = {
@@ -84,6 +86,10 @@ public class CompositeMessage {
         Messages.ATTACHMENT_LENGTH,
         Messages.ATTACHMENT_ENCRYPTED,
         Messages.ATTACHMENT_SECURITY_FLAGS,
+        Messages.GEO_LATITUDE,
+        Messages.GEO_LONGITUDE,
+        Messages.GEO_TEXT,
+        Messages.GEO_STREET,
         Groups.GROUP_JID,
         Groups.SUBJECT,
         Groups.GROUP_TYPE,
@@ -111,10 +117,15 @@ public class CompositeMessage {
     public static final int COLUMN_ATTACHMENT_LENGTH = 17;
     public static final int COLUMN_ATTACHMENT_ENCRYPTED = 18;
     public static final int COLUMN_ATTACHMENT_SECURITY_FLAGS = 19;
-    public static final int COLUMN_GROUP_JID = 20;
-    public static final int COLUMN_GROUP_SUBJECT = 21;
-    public static final int COLUMN_GROUP_TYPE = 22;
-    public static final int COLUMN_GROUP_MEMBERSHIP = 23;
+    public static final int COLUMN_GEO_LATITUDE = 20;
+    public static final int COLUMN_GEO_LONGITUDE = 21;
+    public static final int COLUMN_GEO_TEXT = 22;
+    public static final int COLUMN_GEO_STREET = 23;
+    public static final int COLUMN_GROUP_JID = 24;
+    public static final int COLUMN_GROUP_SUBJECT = 25;
+    public static final int COLUMN_GROUP_TYPE = 26;
+    public static final int COLUMN_GROUP_MEMBERSHIP = 27;
+
 
     public static final String MSG_ID = "org.kontalk.message.id";
     public static final String MSG_SERVER_ID = "org.kontalk.message.serverId";
@@ -334,6 +345,16 @@ public class CompositeMessage {
                     addComponent(txt);
                 }
 
+                else if (LocationComponent.supportsMimeType(mime)) {
+                    double lat = c.getDouble(COLUMN_GEO_LATITUDE);
+                    double lon = c.getDouble(COLUMN_GEO_LONGITUDE);
+                    String text = c.getString(COLUMN_GEO_TEXT);
+                    String street = c.getString(COLUMN_GEO_STREET);
+
+                    LocationComponent location = new LocationComponent(lat, lon, text, street);
+                    addComponent(location);
+                }
+
                 // group command
                 else if (GroupCommandComponent.supportsMimeType(mime)) {
                     String groupId = XmppStringUtils.parseLocalpart(groupJid);
@@ -386,7 +407,7 @@ public class CompositeMessage {
                 boolean attEncrypted = c.getInt(COLUMN_ATTACHMENT_ENCRYPTED) > 0;
                 int attSecurityFlags = c.getInt(COLUMN_ATTACHMENT_SECURITY_FLAGS);
 
-                AttachmentComponent att = null;
+                AttachmentComponent att;
                 File previewFile = (attPreview != null) ? new File(attPreview) : null;
                 Uri localUri = (attLocal != null) ? Uri.parse(attLocal) : null;
 
@@ -491,13 +512,14 @@ public class CompositeMessage {
         Class<AttachmentComponent> klass = getSupportingComponent(mime);
         if (klass != null) {
             String cname = klass.getSimpleName();
-            return cname.substring(0, cname.length() - SUFFIX_LENGTH) +
-                ": " + mime;
+            String text = cname.substring(0, cname.length() - SUFFIX_LENGTH);
+            return BuildConfig.DEBUG ? (text + ": " + mime) : text;
         }
 
         // no supporting component - return mime
         // TODO i18n
-        return "Unknown: " + mime;
+        String text = "Unknown";
+        return BuildConfig.DEBUG ? (text + ": " + mime) : text;
     }
 
     private static Class<AttachmentComponent> getSupportingComponent(String mime) {

@@ -38,6 +38,11 @@
         android:persistent="false"
         android:layout="@layout/md_preference_custom"/>
 
+    <Preference android:key="pref_location_settings"
+        android:title="@string/pref_location_settings"
+        android:persistent="false"
+        android:layout="@layout/md_preference_custom"/>
+
     <Preference android:key="pref_notification_settings"
         android:title="@string/pref_notification_settings"
         android:persistent="false"

@@ -51,6 +51,7 @@ import org.kontalk.util.SystemUtils;
  * This class doesn't need to be configured: it hides all the logic of picking
  * a random server, connecting to it, downloading the server list and saving it
  * in the application cache. Finally, it restarts the message center.
+ *
  * @author Daniele Ricci
  */
 public class ServerListUpdater extends BroadcastReceiver {
@@ -190,7 +191,9 @@ public class ServerListUpdater extends BroadcastReceiver {
         file.delete();
     }
 
-    /** The path to the locally cached downloaded server list. */
+    /**
+     * The path to the locally cached downloaded server list.
+     */
     private static File getCachedListFile(Context context) {
         return new File(context.getCacheDir(), "serverlist.properties");
     }
@@ -249,7 +252,9 @@ public class ServerListUpdater extends BroadcastReceiver {
         }
     }
 
-    /** Returns (and loads if necessary) the current server list. */
+    /**
+     * Returns (and loads if necessary) the current server list.
+     */
     public static ServerList getCurrentList(Context context) {
         if (sCurrentList != null)
             return sCurrentList;
@@ -274,15 +279,30 @@ public class ServerListUpdater extends BroadcastReceiver {
     }
 
     public interface UpdaterListener {
-        /** Called if either the cached list or the built-in list cannot be loaded.*/
+        /**
+         * Called if either the cached list or the built-in list cannot be loaded.
+         */
         void noData();
-        /** Called when network is not available. */
+
+        /**
+         * Called when network is not available.
+         */
         void networkNotAvailable();
-        /** Called when offline mode is active. */
+
+        /**
+         * Called when offline mode is active.
+         */
         void offlineModeEnabled();
-        /** Called if an error occurs during update. */
+
+        /**
+         * Called if an error occurs during update.
+         */
+
         void error(Throwable e);
-        /** Called when list update has finished. */
+
+        /**
+         * Called when list update has finished.
+         */
         void updated(ServerList list);
     }
 }

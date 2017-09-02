@@ -89,6 +89,7 @@
     <string name="title_message_details">Message details</string>
     <string name="message_type_label">Type:\u0020</string>
     <string name="text_message">Text message</string>
+    <string name="location_message">Location message</string>
     <string name="image_message">Image message</string>
     <string name="audio_message">Audio message</string>
     <string name="from_label">From:\u0020</string>
@@ -116,6 +117,7 @@
     <string name="pref_title_regenerate_keypair">Use this in case your personal key has been compromised</string>
     <string name="pref_regenerate_keypair_confirm">A new key pair will be generated and assigned to your account. Your old key will become invalid.</string>
     <string name="contacts_list_title">Choose a contact</string>
+    <string name="position_screen_title">Position</string>
     <string name="pref_messaging_settings">Messaging</string>
     <string name="pref_privacy_settings">Privacy</string>
     <string name="pref_encrypt">Encrypt messages</string>
@@ -287,6 +289,8 @@
     <string name="pref_wakeup_time_label_30m">30 minutes</string>
     <string name="pref_wakeup_time_label_1h">1 hour</string>
     <string name="pref_wakeup_time_label_3h">3 hours</string>
+    <string name="pref_maps_google_label">Google Maps</string>
+    <string name="pref_maps_osm_label">OpenStreetMap</string>
 
     <string name="pref_remove_prefix">Dial prefix</string>
     <string name="pref_change_passphrase">Change personal key password</string>
@@ -319,6 +323,24 @@
     <string name="attachment_file">File</string>
     <string name="attachment_vcard">Contact</string>
     <string name="attachment_location">Location</string>
+
+    <string name="notification_location">sent you a location</string>
+    <string name="location_no_result">No results</string>
+    <string name="places_nearby">Places nearby</string>
+    <string name="send_selected_location">Send selected location</string>
+    <string name="send_location">Send your current location</string>
+    <string name="accurate_to">Accurate to %1$s meters</string>
+    <string name="meters_away">%d m away</string>
+    <string name="kilometers_away">%.2f km away</string>
+    <string name="loading">Loading…</string>
+    <string name="your_position">You</string>
+    <string name="err_googlemaps_fallback_osm">Google Maps is not available, falling back to OpenStreetMap.</string>
+    <string name="err_location_no_providers">No location providers available. Current location will not be available.</string>
+
+    <string name="menu_open_map">Open in maps</string>
+    <string name="menu_map">Map</string>
+    <string name="menu_satellite">Satellite</string>
+    <string name="menu_hybrid">Hybrid</string>
 
     <string name="msg_not_implemented">Not implemented yet.</string>
 
@@ -482,6 +504,9 @@
     <string name="pref_media_autodownload_label_never">Never</string>
     <string name="pref_media_autodownload_label_wifi">Only on Wi-Fi</string>
     <string name="pref_media_autodownload_label_always">Always</string>
+
+    <string name="pref_location_settings">Location</string>
+    <string name="pref_maps_service">Service provider</string>
 
     <string name="pref_on">On</string>
     <string name="pref_off">Off</string>

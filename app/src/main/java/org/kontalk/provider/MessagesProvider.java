@@ -44,6 +44,7 @@ import android.support.annotation.VisibleForTesting;
 import org.kontalk.BuildConfig;
 import org.kontalk.Log;
 import org.kontalk.message.GroupCommandComponent;
+import org.kontalk.message.LocationComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Groups;
@@ -101,7 +102,7 @@ public class MessagesProvider extends ContentProvider {
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     static class DatabaseHelper extends SQLiteOpenHelper {
         @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-        static final int DATABASE_VERSION = 12;
+        static final int DATABASE_VERSION = 13;
         @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
         static final String DATABASE_NAME = "messages.db";
 
@@ -136,7 +137,11 @@ public class MessagesProvider extends ContentProvider {
             "att_encrypted INTEGER NOT NULL DEFAULT 0," +
             "att_security_flags INTEGER NOT NULL DEFAULT 0," +
 
-            // TODO geo_lat, geo_lon, ...
+            // location data
+            "geo_lat NUMBER," +
+            "geo_lon NUMBER," +
+            "geo_text TEXT," +
+            "geo_street TEXT," +
 
             // whole content encrypted
             "encrypted INTEGER NOT NULL DEFAULT 0, " +
@@ -365,6 +370,13 @@ public class MessagesProvider extends ContentProvider {
         private static final String SCHEMA_UPGRADE_V11 =
             "ALTER TABLE threads ADD COLUMN encryption INTEGER NOT NULL DEFAULT 1";
 
+        private static final String[] SCHEMA_UPGRADE_V12 = {
+            "ALTER TABLE messages ADD COLUMN geo_lat NUMBER",
+            "ALTER TABLE messages ADD COLUMN geo_lon NUMBER",
+            "ALTER TABLE messages ADD COLUMN geo_text TEXT",
+            "ALTER TABLE messages ADD COLUMN geo_street TEXT",
+        };
+
         private Context mContext;
 
         protected DatabaseHelper(Context context) {
@@ -413,6 +425,11 @@ public class MessagesProvider extends ContentProvider {
                     // fall through
                 case 11:
                     db.execSQL(SCHEMA_UPGRADE_V11);
+                    // fall through
+                case 12:
+                    for (String sql : SCHEMA_UPGRADE_V12) {
+                        db.execSQL(sql);
+                    }
             }
         }
     }
@@ -744,7 +761,9 @@ public class MessagesProvider extends ContentProvider {
             // use body data if there is indeed a mime
             if (bodyMime != null) {
                 mime = bodyMime;
-                content = new String(bodyContent);
+                // do not include content for location messages
+                content = !LocationComponent.supportsMimeType(mime) ?
+                        new String(bodyContent) : null;
             }
             // no mime and no data, nothing to do
             else {
@@ -1654,6 +1673,11 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages.ATTACHMENT_COMPRESS, Messages.ATTACHMENT_COMPRESS);
         messagesProjectionMap.put(Messages.ATTACHMENT_ENCRYPTED, Messages.ATTACHMENT_ENCRYPTED);
         messagesProjectionMap.put(Messages.ATTACHMENT_SECURITY_FLAGS, Messages.ATTACHMENT_SECURITY_FLAGS);
+
+        messagesProjectionMap.put(Messages.GEO_LATITUDE, Messages.GEO_LATITUDE);
+        messagesProjectionMap.put(Messages.GEO_LONGITUDE, Messages.GEO_LONGITUDE);
+        messagesProjectionMap.put(Messages.GEO_TEXT, Messages.GEO_TEXT);
+        messagesProjectionMap.put(Messages.GEO_STREET, Messages.GEO_STREET);
 
         messagesProjectionMap.put(Messages.UNREAD, Messages.UNREAD);
         messagesProjectionMap.put(Messages.NEW, Messages.NEW);
