@@ -21,7 +21,6 @@ package org.kontalk.service.msgcenter;
 import java.lang.ref.WeakReference;
 import java.util.Map;
 
-import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.roster.RosterEntry;
