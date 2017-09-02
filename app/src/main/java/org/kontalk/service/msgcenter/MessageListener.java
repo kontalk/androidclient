@@ -514,9 +514,6 @@ class MessageListener extends MessageCenterPacketListener {
                 }
             }
         }
-
-        // we saved the message, restore SM ack
-        resumeSmAck();
     }
 
     private void sendReceipt(Uri msgUri, String msgId, Jid from, Map<String, Long> waitingReceipt) {

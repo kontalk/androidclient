@@ -139,13 +139,15 @@ public class KontalkGroupCommands {
             new String[] { MyMessages.Messages._ID },
             MyMessages.Messages.THREAD_ID + "=" + threadId + " AND " +
                 MyMessages.Messages.BODY_MIME + "=? AND " +
-                MyMessages.Messages.BODY_CONTENT + " LIKE ? AND " +
+                "(" + MyMessages.Messages.BODY_CONTENT + " LIKE ? OR " +
+                MyMessages.Messages.BODY_CONTENT + " LIKE ?) AND " +
                 MyMessages.Messages.STATUS + " IN (" +
                     MyMessages.Messages.STATUS_SENT + ", " + MyMessages.Messages.STATUS_RECEIVED + "," +
                     MyMessages.Messages.STATUS_INCOMING + ", " + MyMessages.Messages.STATUS_CONFIRMED + ")",
             new String[] {
                 GroupCommandComponent.MIME_TYPE,
-                GroupCommandComponent.COMMAND_CREATE + ":%"
+                GroupCommandComponent.COMMAND_CREATE + ":%",
+                GroupCommandComponent.COMMAND_ADD + ":%"
             },
             null);
         try {
