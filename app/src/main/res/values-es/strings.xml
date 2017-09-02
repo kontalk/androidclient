@@ -544,7 +544,7 @@ Cuando están deshabilitadas, el comportamiento de la conexión de Kontalk puede
     <string name="pref_title_reporting">Incluir informe de fallos</string>
 
     <string name="button_refuse">Rechazar</string>
-    <string name="code_validation_intro_callerid">Toca el botón de abajo y haga una llamada perdida a ese número de teléfono. Ten en cuenta que <b>la llamada debe hacerse desde el número de teléfono que se está registrando</b>. La llamada es gratuita si cuelgas en cuanto escuches el primer timbre. Será suficiente para nosotros.</string>
+    <string name="code_validation_intro_callerid">Toque el botón de abajo y haga una llamada perdida a ese número de teléfono. Tenga en cuenta que <b>la llamada debe hacerse desde el número de teléfono que se está registrando</b>. La llamada es gratuita si cuelga en cuanto escuche el primer timbre. Será suficiente para nosotros.</string>
     <string name="menu_group_info">Información del grupo</string>
     <string name="button_private_chat">Chat privado</string>
     <string name="menu_sticky">Favorito</string>
