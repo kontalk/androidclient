@@ -40,7 +40,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.zip.ZipInputStream;
 
-import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.StanzaListener;
@@ -829,14 +828,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // this is because of NetworkOnMainThreadException
             DisconnectThread disconnectThread = new DisconnectThread(mConnection);
             disconnectThread.start();
-            try {
-                // we must wait for the connection to actually close
-                disconnectThread.join(500);
-                if (disconnectThread.isAlive())
-                    mConnection.instantShutdown();
-            }
-            catch (InterruptedException ignored) {
-            }
+            disconnectThread.joinTimeout(500);
 
             // clear the connection only if we are quitting
             if (!restarting)
@@ -879,9 +871,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private static final class DisconnectThread extends Thread {
-        private final AbstractXMPPConnection mConn;
+        private final KontalkConnection mConn;
 
-        public DisconnectThread(AbstractXMPPConnection conn) {
+        public DisconnectThread(KontalkConnection conn) {
             mConn = conn;
         }
 
@@ -893,6 +885,20 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             catch (Exception e) {
                 // ignored
             }
+        }
+
+        public void joinTimeout(long millis) {
+            try {
+                // we must wait for the connection to actually close
+                join(millis);
+                // this won't send the last sm ack, preventing another interruptable zone
+                mConn.suspendSmAck();
+                interrupt();
+            }
+            catch (InterruptedException ignored) {
+            }
+            if (mConn.isConnected())
+                mConn.instantShutdown();
         }
     }
 
