@@ -269,7 +269,7 @@ public abstract class PositionAbstractFragment extends Fragment implements OnMap
         if (mPosition != null) {
             LatLng latLng = new LatLng(mUserLocation.getLatitude(), mUserLocation.getLongitude());
             try {
-                mMap.addMarker(new MarkerOptions().position(latLng).icon(createMarkerBitmap()));
+                mMap.addMarker(new MarkerOptions().position(latLng).anchor(0.5f, 1).icon(createMarkerBitmap()));
             }
             catch (Exception e) {
                 Log.e(TAG, "error adding position marker", e);
