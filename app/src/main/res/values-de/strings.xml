@@ -603,4 +603,30 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="msg_doze_mode">Kontalk muss von der Akku-Optimierung ausgenommen werden um richtig zu funktionieren. Wir versprechen, dass wir Ihren Akku nicht unnötig belasten werden.</string>
     <string name="btn_request_doze_mode_whitelist">Berechtigung anfordern</string>
 
+    <string name="location_message">Standortnachricht</string>
+    <string name="position_screen_title">Standort</string>
+    <string name="pref_maps_google_label">Google Maps</string>
+    <string name="pref_maps_osm_label">OpenStreetMap</string>
+
+    <string name="notification_location">sendete Ihnen einen Standort</string>
+    <string name="location_no_result">Keine Ergebnisse</string>
+    <string name="places_nearby">Orte in der Nähe</string>
+    <string name="send_selected_location">Ausgewählten Standort senden</string>
+    <string name="send_location">Ihren aktuellen Standort senden</string>
+    <string name="accurate_to">Bis auf %1$s Meter genau</string>
+    <string name="meters_away">%d m entfernt</string>
+    <string name="kilometers_away">%.2f km entfernt</string>
+    <string name="loading">Lade…</string>
+    <string name="your_position">Sie</string>
+    <string name="err_googlemaps_fallback_osm">Google Maps nicht verfügbar, Anzeige über OpenStreetMap.</string>
+    <string name="err_location_no_providers">Der aktuelle Standort kann nicht ermittelt werden. Kein Standortdienst verfügbar.</string>
+
+    <string name="menu_open_map">Karte öffnen</string>
+    <string name="menu_map">Karte</string>
+    <string name="menu_satellite">Satellit</string>
+    <string name="menu_hybrid">Hybrid</string>
+
+    <string name="pref_location_settings">Standort</string>
+    <string name="pref_maps_service">Kartendienst</string>
+
     </resources>
