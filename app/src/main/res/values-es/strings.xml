@@ -601,4 +601,24 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
     <string name="msg_doze_mode">Kontalk necesita ser incluido en la lista de apps de optimización de la batería para funcionar correctamente. Prometemos que no vamos a agotar su batería.</string>
     <string name="btn_request_doze_mode_whitelist">Solicitud de permiso</string>
 
+    <string name="location_message">Mensaje de ubicación</string>
+    <string name="position_screen_title">Posición</string>
+    <string name="pref_maps_google_label">Google Maps</string>
+    <string name="pref_maps_osm_label">OpenStreetMap</string>
+
+    <string name="notification_location">Se le envió una ubicación</string>
+    <string name="location_no_result">Sin resultados</string>
+    <string name="places_nearby">Lugares cercanos</string>
+    <string name="send_selected_location">Enviar ubicación seleccionada</string>
+    <string name="send_location">Enviar su actual ubicación</string>
+    <string name="accurate_to">Precisión de %1$s metros</string>
+    <string name="meters_away">A %d m de distancia</string>
+    <string name="kilometers_away">A %.2f km de distancia</string>
+    <string name="loading">Cargando…</string>
+    <string name="your_position">Su</string>
+    <string name="err_googlemaps_fallback_osm">Google Maps no está disponible, volviendo a OpenStreetMap.</string>
+    <string name="err_location_no_providers">No hay proveedores de localización disponibles. La ubicación actual no estará disponible.</string>
+
+    <string name="menu_open_map">Abrir en Maps</string>
+    <string name="menu_map">Mapas</string>
     </resources>
