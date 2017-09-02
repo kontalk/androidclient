@@ -621,4 +621,10 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
 
     <string name="menu_open_map">Abrir en Maps</string>
     <string name="menu_map">Mapas</string>
+    <string name="menu_satellite">Satélite</string>
+    <string name="menu_hybrid">Híbrido</string>
+
+    <string name="pref_location_settings">Ubicación</string>
+    <string name="pref_maps_service">Proveedor de servicio</string>
+
     </resources>
