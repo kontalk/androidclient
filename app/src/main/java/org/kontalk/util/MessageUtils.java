@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -33,7 +32,7 @@ import java.util.TimeZone;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import org.jivesoftware.smack.util.StringUtils;
-import org.kontalk.message.LocationComponent;
+import org.spongycastle.jcajce.provider.digest.SHA1;
 import org.spongycastle.openpgp.PGPException;
 
 import android.content.ContentValues;
@@ -67,6 +66,7 @@ import org.kontalk.message.DefaultAttachmentComponent;
 import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.GroupComponent;
 import org.kontalk.message.ImageComponent;
+import org.kontalk.message.LocationComponent;
 import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
@@ -230,18 +230,11 @@ public final class MessageUtils {
 
     /** TODO move somewhere else */
     public static String sha1(String text) {
-        try {
-            MessageDigest md;
-            md = MessageDigest.getInstance("SHA-1");
-            md.update(text.getBytes(), 0, text.length());
-            byte[] sha1hash = md.digest();
+        MessageDigest md = new SHA1.Digest();
+        md.update(text.getBytes(), 0, text.length());
+        byte[] sha1hash = md.digest();
 
-            return bytesToHex(sha1hash);
-        }
-        catch (NoSuchAlgorithmException e) {
-            // no SHA-1?? WWWHHHHAAAAAATTTT???!?!?!?!?!
-            throw new RuntimeException("no SHA-1 available. What the crap of a device do you have?");
-        }
+        return bytesToHex(sha1hash);
     }
 
     public static ByteArrayInOutStream readFully(InputStream in, long maxSize) throws IOException {
