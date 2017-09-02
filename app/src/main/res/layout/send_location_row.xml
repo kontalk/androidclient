@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kontalk Android client
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <FrameLayout
+        android:id="@+id/container_image"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/circular_drawable_primary"
+        android:layout_marginTop="13dp"
+        android:layout_marginLeft="17dp"
+        android:layout_marginStart="17dp">
+
+        <ImageView
+            android:id="@+id/image"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_pin"
+            android:padding="8dp"
+            android:layout_gravity="center"/>
+
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="21dp"
+        android:layout_marginStart="21dp"
+        android:layout_marginTop="12dp"
+        android:layout_toEndOf="@+id/container_image"
+        android:layout_toRightOf="@+id/container_image"
+        android:textColor="@color/app_primary_dark"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        />
+
+    <TextView
+        android:id="@+id/accurate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/title"
+        android:layout_marginLeft="21dp"
+        android:layout_marginStart="21dp"
+        android:layout_marginTop="4dp"
+        android:layout_toEndOf="@+id/container_image"
+        android:layout_toRightOf="@+id/container_image"
+        android:textSize="14sp"/>
+
+</merge>

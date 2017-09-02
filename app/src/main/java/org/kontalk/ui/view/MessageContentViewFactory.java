@@ -25,6 +25,7 @@ import org.kontalk.message.AudioComponent;
 import org.kontalk.message.DefaultAttachmentComponent;
 import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.ImageComponent;
+import org.kontalk.message.LocationComponent;
 import org.kontalk.message.MessageComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
@@ -69,6 +70,9 @@ public class MessageContentViewFactory {
         }
         else if (component instanceof GroupCommandComponent) {
             view = (MessageContentView<T>) GroupContentView.create(inflater, parent);
+        }
+        else if (component instanceof LocationComponent) {
+            view = (MessageContentView<T>) LocationContentView.create(inflater, parent);
         }
 
         if (view != null)

@@ -29,6 +29,7 @@ allprojects {
         spongyCastleVersion = '1.54.0.0'
         // Google dropped support for Android API level < 14 starting 26.0.0
         appcompatVersion = '25.3.1'
+        anyMapsVersion = '9de9d15b22'
         // Google dropped support for Android 2.3 starting 10.0.x
         googlePlayServicesVersion = '10.0.1'
 

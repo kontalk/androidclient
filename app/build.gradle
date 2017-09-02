@@ -127,6 +127,7 @@ dependencies {
     compile "com.android.support:design:$appcompatVersion"
     compile "com.android.support:gridlayout-v7:$appcompatVersion"
     compile "com.android.support:exifinterface:$appcompatVersion"
+    compile "com.android.support:recyclerview-v7:$appcompatVersion"
 
     compile "com.madgag.spongycastle:core:$spongyCastleVersion"
     compile "com.madgag.spongycastle:prov:$spongyCastleVersion"
@@ -156,6 +157,16 @@ dependencies {
     compile 'com.github.daniele-athome:FloatingActionButton:b976d71658'
     compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'com.github.vlivanov:ListViewVariants:f606578467'
+
+    compile 'com.google.code.gson:gson:2.8.1'
+    compile 'com.squareup.okhttp3:okhttp:3.8.1'
+
+    compile "com.github.kontalk.AnyMaps:anymaps-base:$anyMapsVersion"
+    compile "com.github.kontalk.AnyMaps:anymaps-osm:$anyMapsVersion"
+
+    googleplayCompile "com.github.kontalk.AnyMaps:anymaps-google:$anyMapsVersion"
+    googleplayCompile "com.google.android.gms:play-services-maps:$googlePlayServicesVersion"
+    googleplayCompile "com.google.android.gms:play-services-location:$googlePlayServicesVersion"
 
     googleplayCompile "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
     googleplayCompile "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"

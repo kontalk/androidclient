@@ -29,16 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.kontalk.Kontalk;
-import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.EndpointServer;
-import org.kontalk.client.ServerList;
-import org.kontalk.crypto.PersonalKey;
-import org.kontalk.provider.Keyring;
-import org.kontalk.service.ServerListUpdater;
-import org.kontalk.service.msgcenter.MessageCenterService;
-
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
@@ -60,6 +50,16 @@ import android.text.TextUtils;
 import android.util.Base64;
 import android.view.Display;
 import android.view.WindowManager;
+
+import org.kontalk.Kontalk;
+import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
+import org.kontalk.client.EndpointServer;
+import org.kontalk.client.ServerList;
+import org.kontalk.crypto.PersonalKey;
+import org.kontalk.provider.Keyring;
+import org.kontalk.service.ServerListUpdater;
+import org.kontalk.service.msgcenter.MessageCenterService;
 
 
 /**
@@ -261,6 +261,11 @@ public final class Preferences {
             context.getResources().getString(R.string.pref_default_media_autodownload));
         return (size / 1024) < threshold || "always".equals(autodownload) ||
             ("wifi".equals(autodownload) && SystemUtils.isOnWifi(context));
+    }
+
+    public static String getMapsProvider(Context context) {
+        return getString("pref_maps_service", context.getResources()
+            .getString(R.string.pref_default_maps_service));
     }
 
     public static boolean getContactsListVisited() {

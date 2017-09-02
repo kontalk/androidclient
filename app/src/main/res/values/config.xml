@@ -45,6 +45,9 @@
     <string name="pref_default_media_autodownload">wifi</string>
     <integer name="pref_default_media_autodownload_threshold">100</integer>
 
+    <!-- location settings defaults -->
+    <string name="pref_default_maps_service">osm</string>
+
     <!-- notification settings defaults -->
     <bool name="pref_default_enable_notifications">true</bool>
     <string name="pref_default_ringtone">content://settings/system/notification_sound</string>

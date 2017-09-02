@@ -115,6 +115,11 @@ public final class MyMessages {
         public static final String ATTACHMENT_ENCRYPTED = "att_encrypted";
         public static final String ATTACHMENT_SECURITY_FLAGS = "att_security_flags";
 
+        public static final String GEO_LATITUDE = "geo_lat";
+        public static final String GEO_LONGITUDE = "geo_lon";
+        public static final String GEO_TEXT = "geo_text";
+        public static final String GEO_STREET = "geo_street";
+
         public static final String SECURITY_FLAGS = "security_flags";
 
         // not DESC here because the listview is reverse-stacked

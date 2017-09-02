@@ -33,6 +33,7 @@ import java.util.TimeZone;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import org.jivesoftware.smack.util.StringUtils;
+import org.kontalk.message.LocationComponent;
 import org.spongycastle.openpgp.PGPException;
 
 import android.content.ContentValues;
@@ -329,6 +330,11 @@ public final class MessageUtils {
         details.append(res.getString(R.string.message_type_label));
 
         int resId = R.string.text_message;
+
+        if (msg.hasComponent(LocationComponent.class)) {
+            resId = R.string.location_message;
+        }
+
         AttachmentComponent attachment = msg
                 .getComponent(AttachmentComponent.class);
 

@@ -90,6 +90,7 @@ public final class PreferencesFragment extends RootPreferenceFragment {
         setupPreferences("pref_messaging_settings", R.xml.preferences_messaging);
         setupPreferences("pref_appearance_settings", R.xml.preferences_appearance);
         setupPreferences("pref_media_settings", R.xml.preferences_media);
+        setupPreferences("pref_location_settings", R.xml.preferences_location);
         setupPreferences("pref_notification_settings", R.xml.preferences_notification);
         setupPreferences("pref_maintenance_settings", R.xml.preferences_maintenance);
     }

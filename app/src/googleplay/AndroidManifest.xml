@@ -48,5 +48,9 @@
         <meta-data android:name="io.fabric.ApiKey"
             android:value="36ec6f9595f46111eed2e417d098e598d045b90c" />
 
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDwaCo60RpTZGSItEJznAwXd5tolLZijc4"/>
+
     </application>
 </manifest>

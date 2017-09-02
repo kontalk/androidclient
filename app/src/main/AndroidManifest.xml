@@ -46,11 +46,15 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
     <uses-permission android:name="${applicationId}.permission.NOTIFICATION_ACTION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
     <!-- device features will never be mandatory -->
     <uses-feature android:name="android.hardware.telephony" android:required="false"/>
     <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
     <uses-feature android:name="android.hardware.microphone" android:required="false"/>
+    <uses-feature android:name="android.hardware.location.network" android:required="false"/>
+    <uses-feature android:name="android.hardware.location.gps" android:required="false"/>
 
     <application android:name=".Kontalk"
         android:label="@string/app_name"
@@ -270,6 +274,16 @@
         <activity android:name=".ui.GroupInfoDialog"
             android:theme="@style/Theme.Light.Dialog"
             android:label="@string/groupinfo_activity_title"/>
+
+        <activity android:name=".ui.PositionActivity"
+            android:label="@string/position_screen_title"
+            android:parentActivityName=".ui.ComposeMessage"
+            tools:targetApi="jelly_bean">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.kontalk.ui.ComposeMessage" />
+        </activity>
+
 
         <!--
         <activity android:name=".ui.QuickReplyActivity"

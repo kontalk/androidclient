@@ -32,6 +32,8 @@ public interface ComposerListener {
     /** Sends a text message. */
     void sendTextMessage(String message);
 
+    void sendLocationMessage(String message, double lat, double lon, String geoText, String geoStreet);
+
     /** Sends a binary message. */
     void sendBinaryMessage(Uri uri, String mime, boolean media,
         Class<? extends MessageComponent<?>> klass);
