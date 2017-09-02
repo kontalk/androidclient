@@ -102,7 +102,7 @@ public class MessagesProvider extends ContentProvider {
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     static class DatabaseHelper extends SQLiteOpenHelper {
         @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-        static final int DATABASE_VERSION = 13;
+        static final int DATABASE_VERSION = 14;
         @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
         static final String DATABASE_NAME = "messages.db";
 
@@ -377,6 +377,10 @@ public class MessagesProvider extends ContentProvider {
             "ALTER TABLE messages ADD COLUMN geo_street TEXT",
         };
 
+        private static final String[] SCHEMA_UPGRADE_V13 = {
+            "DELETE FROM messages WHERE thread_id < 0",
+        };
+
         private Context mContext;
 
         protected DatabaseHelper(Context context) {
@@ -428,6 +432,11 @@ public class MessagesProvider extends ContentProvider {
                     // fall through
                 case 12:
                     for (String sql : SCHEMA_UPGRADE_V12) {
+                        db.execSQL(sql);
+                    }
+                    // fall through
+                case 13:
+                    for (String sql : SCHEMA_UPGRADE_V13) {
                         db.execSQL(sql);
                     }
             }
