@@ -18,9 +18,14 @@
 
 package org.kontalk.position;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+
 import android.content.Context;
 import android.support.v4.app.Fragment;
+import android.widget.Toast;
 
+import org.kontalk.R;
 import org.kontalk.util.Preferences;
 
 /**
@@ -35,7 +40,14 @@ public class PositionManager {
         String provider = Preferences.getMapsProvider(context);
         Fragment fragment = null;
         if (PROVIDER_GOOGLE.equals(provider)) {
-            fragment = new SendPositionGoogleFragment();
+            if (isGoogleMapsAvailable(context)) {
+                fragment = new SendPositionGoogleFragment();
+            }
+            else {
+                Toast.makeText(context, R.string.err_googlemaps_fallback_osm,
+                    Toast.LENGTH_LONG).show();
+                fragment = new SendPositionOsmFragment();
+            }
         }
         else if (PROVIDER_OSM.equals(provider)) {
             fragment = new SendPositionOsmFragment();
@@ -48,7 +60,14 @@ public class PositionManager {
         String provider = Preferences.getMapsProvider(context);
         Fragment fragment = null;
         if (PROVIDER_GOOGLE.equals(provider)) {
-            fragment = new PositionGoogleFragment();
+            if (isGoogleMapsAvailable(context)) {
+                fragment = new PositionGoogleFragment();
+            }
+            else {
+                Toast.makeText(context, R.string.err_googlemaps_fallback_osm,
+                    Toast.LENGTH_LONG).show();
+                fragment = new PositionOsmFragment();
+            }
         }
         else if (PROVIDER_OSM.equals(provider)) {
             fragment = new PositionOsmFragment();
@@ -80,5 +99,12 @@ public class PositionManager {
             return OsmUrlBuilder.build(lat, lon);
         }
         return null;
+    }
+
+    private static boolean isGoogleMapsAvailable(Context context) {
+        int status = GoogleApiAvailability.getInstance()
+            .isGooglePlayServicesAvailable(context);
+        return status == ConnectionResult.SUCCESS ||
+            status == ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED;
     }
 }

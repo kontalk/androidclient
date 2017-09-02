@@ -33,6 +33,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import org.kontalk.R;
 
@@ -93,8 +94,26 @@ public class PositionOsmFragment extends PositionAbstractFragment implements Loc
     @Override
     public void onResume() {
         super.onResume();
-        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-        mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+        boolean hasProvider = false;
+        try {
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+            hasProvider = true;
+        }
+        catch (IllegalArgumentException e) {
+            // no gps available
+        }
+        try {
+            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+            hasProvider = true;
+        }
+        catch (IllegalArgumentException e) {
+            // no network location available
+        }
+
+        if (!hasProvider) {
+            Toast.makeText(getContext(), R.string.err_location_no_providers,
+                Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override

@@ -332,8 +332,10 @@
     <string name="accurate_to">Accurate to %1$s meters</string>
     <string name="meters_away">%d m away</string>
     <string name="kilometers_away">%.2f km away</string>
-    <string name="loading">Loading...</string>
+    <string name="loading">Loading…</string>
     <string name="your_position">You</string>
+    <string name="err_googlemaps_fallback_osm">Google Maps is not available, falling back to OpenStreetMap.</string>
+    <string name="err_location_no_providers">No location providers available. Current location will not be available.</string>
 
     <string name="menu_map">Map</string>
     <string name="menu_satellite">Satellite</string>
