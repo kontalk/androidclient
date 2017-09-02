@@ -29,6 +29,8 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -62,6 +64,13 @@ public class PositionOsmFragment extends PositionAbstractFragment implements Loc
         MapsConfiguration.getInstance().initialize(getContext());
 
         return view;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        // OSM doesn't have satellite
+        menu.removeItem(R.id.satellite);
     }
 
     @Override

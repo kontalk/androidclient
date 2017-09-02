@@ -52,7 +52,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 
 import org.kontalk.Log;
 import org.kontalk.R;
@@ -70,22 +69,21 @@ public class SendPositionOsmFragment extends Fragment implements OnMapReadyCallb
 
     private LocationManager mLocationManager;
 
-    private RelativeLayout mMapViewClip;
     private MapView mMapView;
-    private AnyMap mMap;
+    AnyMap mMap;
 
-    private Location mUserLocation;
-    private Location mMyLocation;
+    Location mUserLocation;
+    Location mMyLocation;
 
-    private ImageView mMapPin;
-    private ImageView mPinX;
-    private FloatingActionButton mFabMyLocation;
+    ImageView mMapPin;
+    ImageView mPinX;
+    FloatingActionButton mFabMyLocation;
 
     private SendLocationRow mSendLocationRow;
 
-    private AnimatorSet mAnimatorSet;
+    AnimatorSet mAnimatorSet;
 
-    private boolean mUserLocationMoved = false;
+    boolean mUserLocationMoved = false;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -100,17 +98,15 @@ public class SendPositionOsmFragment extends Fragment implements OnMapReadyCallb
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_send_position_osm, container, false);
 
-        mMapView = (MapView) view.findViewById(R.id.mapView);
+        mMapView = view.findViewById(R.id.mapView);
 
-        mMapViewClip = (RelativeLayout) view.findViewById(R.id.mapview_clip);
-
-        mMapPin = (ImageView) view.findViewById(R.id.map_pin);
-        mPinX = (ImageView) view.findViewById(R.id.pin_x);
+        mMapPin = view.findViewById(R.id.map_pin);
+        mPinX = view.findViewById(R.id.pin_x);
         ViewHelper.setAlpha(mPinX, 0.0f);
 
-        mSendLocationRow = (SendLocationRow) view.findViewById(R.id.send_location);
+        mSendLocationRow = view.findViewById(R.id.send_location);
 
-        mFabMyLocation = (FloatingActionButton) view.findViewById(R.id.fab_my_position);
+        mFabMyLocation = view.findViewById(R.id.fab_my_position);
 
         mMapView.onCreate(savedInstanceState);
 
@@ -239,6 +235,8 @@ public class SendPositionOsmFragment extends Fragment implements OnMapReadyCallb
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.send_position_menu, menu);
         menu.removeItem(R.id.menu_search);
+        // OSM doesn't have satellite
+        menu.removeItem(R.id.satellite);
 
         super.onCreateOptionsMenu(menu, inflater);
     }

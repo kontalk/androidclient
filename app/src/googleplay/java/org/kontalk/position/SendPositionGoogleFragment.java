@@ -75,35 +75,31 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
 
     private final static String TAG = SendPositionGoogleFragment.class.getSimpleName();
 
-    private GoogleApiClient mGoogleApiClient;
-    private LocationRequest mLocationRequest;
+    GoogleApiClient mGoogleApiClient;
 
-    private FrameLayout mMapViewClip;
+    FrameLayout mMapViewClip;
     private MapView mMapView;
-    private AnyMap mMap;
+    AnyMap mMap;
 
-    private Location mUserLocation;
-    private Location mMyLocation;
+    Location mUserLocation;
+    Location mMyLocation;
 
-    private ImageView mMapPin;
-    private ImageView mPinX;
-    private FloatingActionButton mFabMyLocation;
+    ImageView mMapPin;
+    ImageView mPinX;
+    FloatingActionButton mFabMyLocation;
 
-    private AnimatorSet mAnimatorSet;
+    AnimatorSet mAnimatorSet;
 
-    private RecyclerView mRecyclerView;
-    private RecyclerView mSearchRecyclerView;
-    private LinearLayoutManager mRecyclerViewLayoutManager;
-    private LinearLayoutManager mSearchRecyclerViewLayoutManager;
-    private SearchPlacesAdapter mSearchAdapter;
-    private PlacesAdapter mAdapter;
+    RecyclerView mRecyclerView;
+    RecyclerView mSearchRecyclerView;
+    LinearLayoutManager mRecyclerViewLayoutManager;
+    SearchPlacesAdapter mSearchAdapter;
+    PlacesAdapter mAdapter;
 
-    private boolean mUserLocationMoved = false;
+    boolean mUserLocationMoved = false;
 
     private int mOverScrollHeight;
-    private int mMarkerTop;
-
-    private SearchView mSearchView;
+    int mMarkerTop;
 
     private static final long UPDATE_INTERVAL = 20 * 1000;  /* 20 secs */
     private static final long FASTEST_INTERVAL = 4000; /* 4 secs */
@@ -130,18 +126,18 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_send_position_google, container, false);
 
-        mMapViewClip = (FrameLayout) view.findViewById(R.id.mapview_clip);
+        mMapViewClip = view.findViewById(R.id.mapview_clip);
 
-        mMapView = ((MapView) view.findViewById(R.id.mapView));
+        mMapView = view.findViewById(R.id.mapView);
 
-        mMapPin = (ImageView) view.findViewById(R.id.map_pin);
-        mPinX = (ImageView) view.findViewById(R.id.pin_x);
+        mMapPin = view.findViewById(R.id.map_pin);
+        mPinX = view.findViewById(R.id.pin_x);
         ViewHelper.setAlpha(mPinX, 0.0f);
 
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
-        mSearchRecyclerView = (RecyclerView) view.findViewById(R.id.search_recyclerView);
+        mRecyclerView = view.findViewById(R.id.recyclerView);
+        mSearchRecyclerView = view.findViewById(R.id.search_recyclerView);
 
-        mFabMyLocation = (FloatingActionButton) view.findViewById(R.id.fab_my_position);
+        mFabMyLocation = view.findViewById(R.id.fab_my_position);
 
         mMapView.onCreate(savedInstanceState);
 
@@ -223,12 +219,12 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
         mSearchAdapter = new SearchPlacesAdapter(getContext());
 
         mRecyclerViewLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
-        mSearchRecyclerViewLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
+        LinearLayoutManager searchRecyclerViewLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
 
         mRecyclerView.setLayoutManager(mRecyclerViewLayoutManager);
         mRecyclerView.setAdapter(mAdapter);
 
-        mSearchRecyclerView.setLayoutManager(mSearchRecyclerViewLayoutManager);
+        mSearchRecyclerView.setLayoutManager(searchRecyclerViewLayoutManager);
         mSearchRecyclerView.setAdapter(mSearchAdapter);
 
         mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getContext(), new RecyclerItemClickListener.OnItemClickListener() {
@@ -364,8 +360,8 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
                 return true;
             }
         });
-        mSearchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 mSearchAdapter.searchPlacesWithQuery(query, mUserLocation);
@@ -417,13 +413,13 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
 
     protected void startLocationUpdates() {
         // Create the location request
-        mLocationRequest = LocationRequest.create()
+        LocationRequest locationRequest = LocationRequest.create()
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
             .setInterval(UPDATE_INTERVAL)
             .setFastestInterval(FASTEST_INTERVAL);
         // Request location updates
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
-            mLocationRequest, this);
+            locationRequest, this);
     }
 
 
@@ -498,7 +494,7 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
         }
     }
 
-    private void prepareLayout(final boolean resume) {
+    void prepareLayout(final boolean resume) {
         if (mRecyclerView != null) {
             int viewHeight = getView().getMeasuredHeight();
             if (viewHeight == 0) {
@@ -539,7 +535,7 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
         }
     }
 
-    private void updateClipView(int firstVisibleItem) {
+    void updateClipView(int firstVisibleItem) {
         if (firstVisibleItem == RecyclerView.NO_POSITION) {
             return;
         }
