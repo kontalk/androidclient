@@ -294,7 +294,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         list.addHeaderView(mHeaderView, null, false);
 
         // set custom background (if any)
-        ImageView background = (ImageView) getView().findViewById(R.id.background);
+        ImageView background = getView().findViewById(R.id.background);
         Drawable bg = Preferences.getConversationBackground(getActivity());
         if (bg != null) {
             background.setScaleType(ImageView.ScaleType.CENTER_CROP);
@@ -333,11 +333,11 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
         Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.compose_message, container, false);
 
-        mComposer = (ComposerBar) view.findViewById(R.id.composer_bar);
+        mComposer = view.findViewById(R.id.composer_bar);
         mComposer.setComposerListener(this);
 
         // footer (for tablet presence status)
-        mStatusText = (TextView) view.findViewById(R.id.status_text);
+        mStatusText = view.findViewById(R.id.status_text);
 
         mComposer.setRootView(view);
 
@@ -605,7 +605,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     private void initAttachmentView() {
         View view = getView();
 
-        mAttachmentContainer = (AttachmentRevealFrameLayout) view.findViewById(R.id.attachment_container);
+        mAttachmentContainer = view.findViewById(R.id.attachment_container);
 
         View.OnClickListener hideAttachmentListener = new View.OnClickListener() {
             @Override
@@ -2065,12 +2065,12 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
     public void onStop() {
         super.onStop();
         unregisterPeerObserver();
-        stopQuery();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        stopQuery();
         if (mComposer != null) {
             mComposer.onDestroy();
         }
