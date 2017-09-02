@@ -430,8 +430,8 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
                     TextComponent text = msg.getComponent(TextComponent.class);
 
                     // sharing media messages has no purpose if media file hasn't been
-                    // retrieved yet
-                    if (text != null || attachment == null || attachment.getLocalUri() != null)
+                    // retrieved yet; also exclude location messages for now because they're unsupported
+                    if ((text != null || attachment == null || attachment.getLocalUri() != null) && !msg.hasComponent(LocationComponent.class))
                         shareMenu.setVisible(true);
 
                     // non-empty text: copy text to clipboard
