@@ -87,9 +87,10 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     @Override
     protected void updateUI() {
         super.updateUI();
-        if (mInviteGroupMenu != null) {
+        Context context;
+        if (mInviteGroupMenu != null && (context = getContext()) != null) {
             boolean visible;
-            String myUser = Authenticator.getSelfJID(getContext());
+            String myUser = Authenticator.getSelfJID(context);
 
             // menu items requiring ownership and membership
             visible = KontalkGroupManager.KontalkGroup
