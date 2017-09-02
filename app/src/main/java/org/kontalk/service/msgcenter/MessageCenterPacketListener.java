@@ -241,19 +241,4 @@ abstract class MessageCenterPacketListener implements StanzaListener {
             instance.endKeyPairImport();
     }
 
-    protected void resumeSmAck() {
-        MessageCenterService instance = mInstance.get();
-        if (instance != null && instance.mConnection != null) {
-            try {
-                instance.mConnection.resumeSmAck();
-            }
-            catch (SmackException ignored) {
-                // we don't really care
-            }
-            catch (InterruptedException e) {
-                // we don't really care
-            }
-        }
-    }
-
 }

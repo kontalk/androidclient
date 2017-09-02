@@ -34,6 +34,7 @@ import javax.net.ssl.X509TrustManager;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.SASLAuthentication;
+import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.StanzaFilter;
 import org.jivesoftware.smack.packet.Message;
@@ -211,7 +212,8 @@ public class KontalkConnection extends XMPPTCPConnection {
 
     @Override
     protected void processStanza(Stanza packet) throws InterruptedException {
-        if (packet instanceof Message) {
+        boolean isMessage = packet instanceof Message;
+        if (isMessage) {
             /*
              * We are receiving a message. Suspend SM ack replies because we
              * want to wait for our message listener to be invoked and have time
@@ -219,7 +221,17 @@ public class KontalkConnection extends XMPPTCPConnection {
              */
             suspendSmAck();
         }
+
         super.processStanza(packet);
+
+        if (isMessage) {
+            /* Resume SM ack replies now. */
+            try {
+                resumeSmAck();
+            }
+            catch (SmackException ignored) {
+            }
+        }
     }
 
     public EndpointServer getServer() {
