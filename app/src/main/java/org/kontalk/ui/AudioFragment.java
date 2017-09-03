@@ -33,10 +33,10 @@ import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.PowerManager;
 import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 
+import org.kontalk.util.ProximityScreenLocker;
 import org.kontalk.util.SystemUtils;
 
 
@@ -60,7 +60,7 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
     private boolean mAudioFocus;
 
     /** Proximity wake lock. */
-    private PowerManager.WakeLock mProximityLock;
+    private ProximityScreenLocker mProximityLock;
 
     private SensorManager mSensorManager;
     private Sensor mProximitySensor;
@@ -291,6 +291,10 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor == mProximitySensor) {
+            if (mProximityLock instanceof SensorEventListener) {
+                ((SensorEventListener) mProximityLock).onSensorChanged(event);
+            }
+
             if (isNearToSensor(event.values[0])) {
                 proximityNear();
             }
@@ -308,8 +312,7 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
                 restartPlayback(true, true);
             }
             catch (IOException e) {
-                if (mListener != null)
-                    mListener.onCompletion(this);
+                onCompletion(mPlayer);
             }
         }
     }
@@ -320,18 +323,24 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
             try {
                 // restart playback from speaker
                 restartPlayback(false, false);
+                // paused, release lock
+                releaseLock(true);
+                releaseAudioFocus();
+
                 if (mListener != null)
                     mListener.onPause(this);
             }
             catch (IOException e) {
-                if (mListener != null)
-                    mListener.onCompletion(this);
+                onCompletion(mPlayer);
             }
         }
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        if (mProximityLock instanceof SensorEventListener) {
+            ((SensorEventListener) mProximityLock).onAccuracyChanged(sensor, accuracy);
+        }
     }
 
     private void acquireLock(boolean playing) {
@@ -339,9 +348,9 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
         if (a != null) {
             SystemUtils.acquireScreenOn(a);
 
-            if (playing && SystemUtils.isProximityWakelockSupported(a)) {
+            if (playing) {
                 if (mProximityLock == null) {
-                    mProximityLock = SystemUtils.newProximityWakeLock(a, "ListenProximity");
+                    mProximityLock = SystemUtils.createProximityScreenLocker(a);
                     mProximityLock.acquire();
 
                     if (mProximitySensor != null) {
@@ -359,7 +368,7 @@ public class AudioFragment extends Fragment implements MediaPlayer.OnCompletionL
             SystemUtils.releaseScreenOn(a);
 
             if (playing && mProximityLock != null) {
-                SystemUtils.releaseProximityWakeLock(mProximityLock);
+                mProximityLock.release(false);
                 mProximityLock = null;
 
                 if (mProximitySensor != null) {

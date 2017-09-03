@@ -23,6 +23,7 @@ task checkstyle(type: Checkstyle){
         '**/KeyboardAwareRelativeLayout.java', '**/FrameLayoutFixed.java',
         '**/AbsListViewScrollDetector.java', '**/NoCacheMiniDnsResolver.java',
         '**/XMPPTCPConnection.java',
+        '**/ProximityScreenLocker*.java',
         'main/java/com/**', 'main/java/io/**', 'main/java/cn/**'
     def configProps = ['baseDir': projectDir.absolutePath]
     configProperties configProps
