@@ -18,6 +18,8 @@
 
 package org.kontalk.position;
 
+import com.bumptech.glide.Glide;
+
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -30,21 +32,21 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.kontalk.R;
-import org.kontalk.util.GlideApp;
 import org.kontalk.util.ViewUtils;
+
 
 /**
  * Location row
- *
- * @author andreacappelli
+ * @author Andrea Cappelli
  */
-
 public class LocationRow extends RelativeLayout {
 
     private ImageView mImageView;
     private TextView mNameTextView;
     private TextView mAddressTextView;
     private boolean mNeedDivider;
+
+    private Paint mLinePaint;
 
     public LocationRow(Context context) {
         this(context, null);
@@ -72,9 +74,9 @@ public class LocationRow extends RelativeLayout {
 
         setBackgroundColor(ContextCompat.getColor(getContext(), android.R.color.white));
 
-        mImageView = (ImageView) findViewById(R.id.image);
-        mNameTextView = (TextView) findViewById(R.id.name_text);
-        mAddressTextView = (TextView) findViewById(R.id.address_text);
+        mImageView = findViewById(R.id.image);
+        mNameTextView = findViewById(R.id.name_text);
+        mAddressTextView = findViewById(R.id.address_text);
 
     }
 
@@ -85,7 +87,7 @@ public class LocationRow extends RelativeLayout {
 
     public void setLocation(String iconUrl, String nameText, String addressText, boolean needDivider) {
         mNeedDivider = needDivider;
-        GlideApp.with(getContext()).load(iconUrl).into(mImageView);
+        Glide.with(getContext()).load(iconUrl).into(mImageView);
         mNameTextView.setText(nameText);
         mAddressTextView.setText(addressText);
     }
@@ -93,10 +95,12 @@ public class LocationRow extends RelativeLayout {
     @Override
     protected void onDraw(Canvas canvas) {
         if (mNeedDivider) {
-            Paint paint = new Paint();
-            paint.setStrokeWidth(1);
-            paint.setColor(ContextCompat.getColor(getContext(), R.color.divider));
-            canvas.drawLine(ViewUtils.dp(getContext(), 72), getHeight() - 1, getWidth(), getHeight() - 1, paint);
+            if (mLinePaint == null) {
+                mLinePaint = new Paint();
+                mLinePaint.setStrokeWidth(1);
+                mLinePaint.setColor(ContextCompat.getColor(getContext(), R.color.divider));
+            }
+            canvas.drawLine(ViewUtils.dp(getContext(), 72), getHeight() - 1, getWidth(), getHeight() - 1, mLinePaint);
         }
     }
 
