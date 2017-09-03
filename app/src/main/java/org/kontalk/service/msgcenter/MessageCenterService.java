@@ -3533,7 +3533,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private void sendPushRegistration(final String regId) {
         IQ iq = PushRegistration.register(DEFAULT_PUSH_PROVIDER, regId);
         try {
-            iq.setTo(JidCreate.from("push", mServer.getNetwork(), null));
+            iq.setTo(JidCreate.from("push", mServer.getNetwork(), ""));
         }
         catch (XmppStringprepException e) {
             Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
@@ -3561,7 +3561,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private void sendPushUnregistration() {
         IQ iq = PushRegistration.unregister(DEFAULT_PUSH_PROVIDER);
         try {
-            iq.setTo(JidCreate.from("push", mServer.getNetwork(), null));
+            iq.setTo(JidCreate.from("push", mServer.getNetwork(), ""));
         }
         catch (XmppStringprepException e) {
             Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
