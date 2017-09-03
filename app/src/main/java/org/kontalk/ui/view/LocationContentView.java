@@ -20,6 +20,8 @@ package org.kontalk.ui.view;
 
 import java.util.regex.Pattern;
 
+import com.bumptech.glide.Glide;
+
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.ShapeDrawable;
@@ -33,7 +35,6 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import org.kontalk.util.GlideApp;
 import org.kontalk.R;
 import org.kontalk.message.LocationComponent;
 import org.kontalk.position.PositionManager;
@@ -109,7 +110,7 @@ public class LocationContentView extends RelativeLayout
             mAddress.setText(mComponent.getStreet());
         }
 
-        GlideApp.with(getContext()).load(imageURL).into(mContent);
+        Glide.with(getContext()).load(imageURL).into(mContent);
     }
 
     @Override

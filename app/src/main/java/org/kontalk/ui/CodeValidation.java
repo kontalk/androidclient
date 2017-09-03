@@ -24,8 +24,8 @@ import java.util.Map;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.google.i18n.phonenumbers.NumberParseException;
@@ -33,10 +33,8 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -55,7 +53,6 @@ import org.kontalk.client.NumberValidator.NumberValidatorListener;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.KeyPairGeneratorService;
-import org.kontalk.util.GlideApp;
 import org.kontalk.util.InternalTrustStore;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
@@ -247,11 +244,12 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
             final ImageView brandView = (ImageView) findViewById(R.id.brand);
             brandView.setVisibility(View.VISIBLE);
 
-            GlideApp.with(this)
+            Glide.with(this)
                 .load(brandImage)
-                .listener(new RequestListener<Drawable>() {
+                .listener(new RequestListener<String, GlideDrawable>() {
+
                     @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                    public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
                         brandParent.setVisibility(View.GONE);
                         brandView.setVisibility(View.GONE);
                         brandProgress.setVisibility(View.GONE);
@@ -264,7 +262,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                     }
 
                     @Override
-                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                    public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
                         brandProgress.setVisibility(View.GONE);
                         return false;
                     }

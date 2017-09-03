@@ -18,6 +18,8 @@
 
 package org.kontalk.position;
 
+import com.bumptech.glide.Glide;
+
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -30,7 +32,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.kontalk.R;
-import org.kontalk.util.GlideApp;
 import org.kontalk.util.ViewUtils;
 
 /**
@@ -85,7 +86,7 @@ public class LocationRow extends RelativeLayout {
 
     public void setLocation(String iconUrl, String nameText, String addressText, boolean needDivider) {
         mNeedDivider = needDivider;
-        GlideApp.with(getContext()).load(iconUrl).into(mImageView);
+        Glide.with(getContext()).load(iconUrl).into(mImageView);
         mNameTextView.setText(nameText);
         mAddressTextView.setText(addressText);
     }
