@@ -608,4 +608,30 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="msg_doze_mode">Kontalk musí být zařazen v seznamu povolených aplikací v nastavení Optimalizace spotřeby, aby správně fungoval. Slibujeme, že vaši baterii nevycucáme.</string>
     <string name="btn_request_doze_mode_whitelist">Požadavek na oprávnění</string>
 
+    <string name="location_message">Polohová zpráva</string>
+    <string name="position_screen_title">Poloha</string>
+    <string name="pref_maps_google_label">Google Maps</string>
+    <string name="pref_maps_osm_label">OpenStreetMap</string>
+
+    <string name="notification_location">vám poslal polohu</string>
+    <string name="location_no_result">Žádné výsledky</string>
+    <string name="places_nearby">Místa blízko</string>
+    <string name="send_selected_location">Poslat vybranou polohu</string>
+    <string name="send_location">Poslat vaši současnou polohu</string>
+    <string name="accurate_to">Přesnost do %1$s metrů</string>
+    <string name="meters_away">%d m daleko</string>
+    <string name="kilometers_away">%.2f km daleko</string>
+    <string name="loading">Načítám…</string>
+    <string name="your_position">Vy</string>
+    <string name="err_googlemaps_fallback_osm">Google Maps nejsou dostupné, vracím se na OpenStreetMap.</string>
+    <string name="err_location_no_providers">Nejsou dostupní žádní poskytovatelé polohy. Současná poloha není dostupná.</string>
+
+    <string name="menu_open_map">Otevřít v mapě</string>
+    <string name="menu_map">Mapa</string>
+    <string name="menu_satellite">Satelitní</string>
+    <string name="menu_hybrid">Hybridní</string>
+
+    <string name="pref_location_settings">Poloha</string>
+    <string name="pref_maps_service">Poskytovatel služby</string>
+
     </resources>
