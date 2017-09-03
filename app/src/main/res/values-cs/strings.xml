@@ -610,8 +610,8 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
 
     <string name="location_message">Polohová zpráva</string>
     <string name="position_screen_title">Poloha</string>
-    <string name="pref_maps_google_label">Google Maps</string>
-    <string name="pref_maps_osm_label">OpenStreetMap</string>
+    <string name="pref_maps_google_label">Google Mapy</string>
+    <string name="pref_maps_osm_label">OpenStreetMapy</string>
 
     <string name="notification_location">vám poslal polohu</string>
     <string name="location_no_result">Žádné výsledky</string>
