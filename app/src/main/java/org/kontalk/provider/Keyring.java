@@ -200,8 +200,9 @@ public class Keyring {
 
     private static Cursor queryLatestWithMinimumTrustLevel(Context context, String jid, int trustLevel, String... columns) {
         return context.getContentResolver().query(MyUsers.Keys.getUri(jid), columns,
-            MyUsers.Keys.TRUST_LEVEL + " >= " + trustLevel,
-            null, MyUsers.Keys.TIMESTAMP + " DESC");
+            MyUsers.Keys.TRUST_LEVEL + " >= " + trustLevel + " AND "+
+            MyUsers.Keys.FINGERPRINT + " <> ?",
+            new String[] { VALUE_AUTOTRUST }, MyUsers.Keys.TIMESTAMP + " DESC");
     }
 
     private static int getAutoTrustedLevel(Context context, String jid) {
