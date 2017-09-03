@@ -31,6 +31,7 @@ import org.spongycastle.openpgp.PGPPublicKeyRing;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 
 import org.kontalk.client.EndpointServer;
@@ -45,6 +46,13 @@ import org.kontalk.crypto.PersonalKey;
  * @author Daniele Ricci
  */
 public class Keyring {
+
+    /**
+     * Special value used in the fingerprint column so the first key that comes
+     * in is automatically trusted.
+     */
+    @VisibleForTesting
+    static final String VALUE_AUTOTRUST = "<autotrust>";
 
     private Keyring() {
     }
@@ -88,12 +96,24 @@ public class Keyring {
         PGPPublicKey pk = PGP.getMasterKey(keydata);
         String fingerprint = PGP.getFingerprint(pk);
         Date date = pk.getCreationTime();
+
+        int autoTrustedLevel = getAutoTrustedLevel(context, jid);
+
         ContentValues values = new ContentValues(3);
         values.put(MyUsers.Keys.PUBLIC_KEY, keydata);
         values.put(MyUsers.Keys.TIMESTAMP, date.getTime());
-        if (trustLevel >= 0)
+        if (trustLevel >= 0) {
             values.put(MyUsers.Keys.TRUST_LEVEL, trustLevel);
+        }
+        else if (autoTrustedLevel >= 0) {
+            values.put(MyUsers.Keys.TRUST_LEVEL, autoTrustedLevel);
+        }
         context.getContentResolver().insert(MyUsers.Keys.getUri(jid, fingerprint), values);
+
+        if (autoTrustedLevel >= 0) {
+            // delete the autotrust entry
+            context.getContentResolver().delete(MyUsers.Keys.getUri(jid, VALUE_AUTOTRUST), null, null);
+        }
     }
 
     /** Updates the fingerprint and the date (for fingerprint in presence). */
@@ -117,6 +137,12 @@ public class Keyring {
         ContentValues values = new ContentValues(1);
         values.put(MyUsers.Keys.TRUST_LEVEL, trustLevel);
         context.getContentResolver().insert(MyUsers.Keys.getUri(jid, fingerprint), values);
+    }
+
+    public static void setAutoTrustLevel(Context context, String jid, int trustLevel) {
+        ContentValues values = new ContentValues(1);
+        values.put(MyUsers.Keys.TRUST_LEVEL, trustLevel);
+        context.getContentResolver().insert(MyUsers.Keys.getUri(jid, VALUE_AUTOTRUST), values);
     }
 
     /**
@@ -178,6 +204,19 @@ public class Keyring {
             null, MyUsers.Keys.TIMESTAMP + " DESC");
     }
 
+    private static int getAutoTrustedLevel(Context context, String jid) {
+        int result = -1;
+        Cursor c = context.getContentResolver().query(MyUsers.Keys.getUri(jid),
+            new String[] { MyUsers.Keys.TRUST_LEVEL },
+            MyUsers.Keys.FINGERPRINT + " = ?",
+            new String[] { VALUE_AUTOTRUST }, null);
+        if (c != null && c.moveToNext()) {
+            result = c.getInt(0);
+            c.close();
+        }
+        return result;
+    }
+
     /** Sets the trusted keys, deleting all previous entries. */
     public static int setTrustedKeys(Context context, Map<String, TrustedFingerprint> trustedKeys) {
         ContentValues[] values = new ContentValues[trustedKeys.size()];
@@ -198,7 +237,9 @@ public class Keyring {
             MyUsers.Keys.JID,
             MyUsers.Keys.FINGERPRINT,
             MyUsers.Keys.TRUST_LEVEL,
-        }, null, null, null);
+        },
+            MyUsers.Keys.FINGERPRINT + " <> ?", new String[] { VALUE_AUTOTRUST },
+            null);
 
         Map<String, TrustedFingerprint> list = new HashMap<>(c.getCount());
         while (c.moveToNext()) {

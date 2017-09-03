@@ -248,6 +248,10 @@ class PresenceListener extends MessageCenterPacketListener {
         }
 
         if (Keyring.getPublicKey(getContext(), from, MyUsers.Keys.TRUST_UNKNOWN) == null) {
+            // autotrust the key we are about to request
+            // but set the trust level to ignored because we didn't really verify it
+            Keyring.setAutoTrustLevel(getContext(), from, MyUsers.Keys.TRUST_IGNORED);
+
             // public key not found
             // assuming the user has allowed us, request it
 

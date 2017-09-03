@@ -1006,9 +1006,27 @@ public class UsersProvider extends ContentProvider {
         }
     }
 
+    private int deleteKeys(String userId, String fingerprint, String selection, String[] selectionArgs) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        selection = DatabaseUtilsCompat.concatenateWhere(selection, Keys.JID + "=?");
+        selection = DatabaseUtilsCompat.concatenateWhere(selection, Keys.FINGERPRINT + "=?");
+        selectionArgs = DatabaseUtilsCompat.appendSelectionArgs(selectionArgs, new String[] { userId, fingerprint });
+        return db.delete(TABLE_KEYS, selection, selectionArgs);
+    }
+
     @Override
     public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
-        throw new SQLException("delete not supported.");
+        int match = sUriMatcher.match(uri);
+        switch (match) {
+            case KEYS_JID_FINGERPRINT:
+                List<String> segs = uri.getPathSegments();
+                String userId = segs.get(1);
+                String fingerprint = segs.get(2);
+                return deleteKeys(userId, fingerprint, selection, selectionArgs);
+
+            default:
+                throw new IllegalArgumentException("Unknown URI " + uri);
+        }
     }
 
     // avoid recreating the same object over and over
