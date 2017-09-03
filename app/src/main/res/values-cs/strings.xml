@@ -634,4 +634,6 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="pref_location_settings">Poloha</string>
     <string name="pref_maps_service">Poskytovatel služby</string>
 
+    <string name="msg_location_disabled">Potřebujeme přístup k poloze. Zvolte OK pro přechod do nastavení a povolte ho.</string>
+
     </resources>
