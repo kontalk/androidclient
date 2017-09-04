@@ -599,4 +599,22 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
     <string name="msg_doze_mode">És necessari que Kontalk estigui inclòs a la llista d\'apps d\'optimització de la bateria per funcionar correctament. Ens comprometem a no esgotar la bateria.</string>
     <string name="btn_request_doze_mode_whitelist">Sol·licitud de permís</string>
 
+    <string name="location_message">Missatge d\'ubicació</string>
+    <string name="position_screen_title">Posició</string>
+    <string name="pref_maps_google_label">Google Maps</string>
+    <string name="pref_maps_osm_label">OpenStreetMap</string>
+
+    <string name="notification_location">Se li ha enviat una ubicació</string>
+    <string name="location_no_result">Cap resultat</string>
+    <string name="places_nearby">Llocs propers</string>
+    <string name="send_selected_location">Envia ubicació seleccionada</string>
+    <string name="send_location">Envia la seva ubicació actual</string>
+    <string name="accurate_to">Precisió de %1$s metres</string>
+    <string name="meters_away">A %d m de distància</string>
+    <string name="kilometers_away">A %.2f km de distància</string>
+    <string name="loading">Carregant…</string>
+    <string name="your_position">La seva</string>
+    <string name="err_googlemaps_fallback_osm">Google Maps no està disponible, tornant a OpenStreetMap.</string>
+    <string name="err_location_no_providers">Cap proveïdor d\'ubicació disponible. La ubicació actual no estarà disponible.</string>
+
     </resources>
