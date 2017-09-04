@@ -608,7 +608,7 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="pref_maps_google_label">Google Maps</string>
     <string name="pref_maps_osm_label">OpenStreetMap</string>
 
-    <string name="notification_location">sendete Ihnen einen Standort</string>
+    <string name="notification_location">hat Ihnen einen Standort gesendet</string>
     <string name="location_no_result">Keine Ergebnisse</string>
     <string name="places_nearby">Orte in der Nähe</string>
     <string name="send_selected_location">Ausgewählten Standort senden</string>
