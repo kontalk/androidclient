@@ -625,4 +625,6 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
     <string name="pref_location_settings">Ubicació</string>
     <string name="pref_maps_service">Proveïdor de servei</string>
 
+    <string name="msg_location_disabled">Necessitem accés a la ubicació. Premi OK per anar a configuració i habilitar-lo.</string>
+
     </resources>
