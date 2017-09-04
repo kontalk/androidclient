@@ -610,7 +610,7 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
     <string name="location_no_result">Sin resultados</string>
     <string name="places_nearby">Lugares cercanos</string>
     <string name="send_selected_location">Enviar ubicación seleccionada</string>
-    <string name="send_location">Enviar su actual ubicación</string>
+    <string name="send_location">Enviar su ubicación actual</string>
     <string name="accurate_to">Precisión de %1$s metros</string>
     <string name="meters_away">A %d m de distancia</string>
     <string name="kilometers_away">A %.2f km de distancia</string>
@@ -620,7 +620,7 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
     <string name="err_location_no_providers">No hay proveedores de localización disponibles. La ubicación actual no estará disponible.</string>
 
     <string name="menu_open_map">Abrir en Maps</string>
-    <string name="menu_map">Mapas</string>
+    <string name="menu_map">Mapa</string>
     <string name="menu_satellite">Satélite</string>
     <string name="menu_hybrid">Híbrido</string>
 
