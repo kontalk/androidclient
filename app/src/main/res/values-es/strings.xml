@@ -627,4 +627,6 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
     <string name="pref_location_settings">Ubicación</string>
     <string name="pref_maps_service">Proveedor de servicio</string>
 
+    <string name="msg_location_disabled">Necesitamos acceder a la ubicación. Elige OK para ir a la configuración y habilitarle.</string>
+
     </resources>
