@@ -618,7 +618,7 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
     <string name="err_location_no_providers">Cap proveïdor d\'ubicació disponible. La ubicació actual no estarà disponible.</string>
 
     <string name="menu_open_map">Obre en Maps</string>
-    <string name="menu_map">Mapes</string>
+    <string name="menu_map">Mapa</string>
     <string name="menu_satellite">Satèl·lit</string>
     <string name="menu_hybrid">Híbrid</string>
 
