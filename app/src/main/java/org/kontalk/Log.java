@@ -63,6 +63,10 @@ public final class Log {
         return sLogFile;
     }
 
+    private static boolean isDebug() {
+        return BuildConfig.DEBUG || sLogFileWriter != null;
+    }
+
     private static String buildLog(String tag, int level, String msg) {
         String strLevel;
         switch (level) {
@@ -120,7 +124,7 @@ public final class Log {
      * @param msg The message you would like logged.
      */
     public static int v(String tag, String msg) {
-        if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.VERBOSE)) {
+        if (isDebug() || android.util.Log.isLoggable(tag(tag), android.util.Log.VERBOSE)) {
             log(tag, android.util.Log.VERBOSE, msg);
             return android.util.Log.v(tag(tag), msg);
         }
@@ -135,7 +139,7 @@ public final class Log {
      * @param tr An exception to log
      */
     public static int v(String tag, String msg, Throwable tr) {
-        if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.VERBOSE)) {
+        if (isDebug() || android.util.Log.isLoggable(tag(tag), android.util.Log.VERBOSE)) {
             log(tag, android.util.Log.VERBOSE, msg);
             log(tag, android.util.Log.VERBOSE, tr);
             return android.util.Log.v(tag(tag), msg, tr);
@@ -151,7 +155,7 @@ public final class Log {
      * @param args Arguments for formatting the message.
      */
     public static int v(String tag, String fmt, Object... args) {
-        if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.VERBOSE)) {
+        if (isDebug() || android.util.Log.isLoggable(tag(tag), android.util.Log.VERBOSE)) {
             String msg = String.format(fmt, args);
             log(tag, android.util.Log.VERBOSE, msg);
             return android.util.Log.v(tag(tag), msg);
@@ -166,7 +170,7 @@ public final class Log {
      * @param msg The message you would like logged.
      */
     public static int d(String tag, String msg) {
-        if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.DEBUG)) {
+        if (isDebug() || android.util.Log.isLoggable(tag(tag), android.util.Log.DEBUG)) {
             log(tag, android.util.Log.DEBUG, msg);
             return android.util.Log.d(tag(tag), msg);
         }
@@ -181,7 +185,7 @@ public final class Log {
      * @param tr An exception to log
      */
     public static int d(String tag, String msg, Throwable tr) {
-        if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.DEBUG)) {
+        if (isDebug() || android.util.Log.isLoggable(tag(tag), android.util.Log.DEBUG)) {
             log(tag, android.util.Log.DEBUG, msg);
             log(tag, android.util.Log.DEBUG, tr);
             return android.util.Log.d(tag(tag), msg, tr);
@@ -197,7 +201,7 @@ public final class Log {
      * @param args Arguments for formatting the message.
      */
     public static int d(String tag, String fmt, Object... args) {
-        if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.DEBUG)) {
+        if (isDebug() || android.util.Log.isLoggable(tag(tag), android.util.Log.DEBUG)) {
             String msg = String.format(fmt, args);
             log(tag, android.util.Log.DEBUG, msg);
             return android.util.Log.d(tag(tag), msg);
@@ -212,7 +216,7 @@ public final class Log {
      * @param msg The message you would like logged.
      */
     public static int i(String tag, String msg) {
-        if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.INFO)) {
+        if (isDebug() || android.util.Log.isLoggable(tag(tag), android.util.Log.INFO)) {
             log(tag, android.util.Log.INFO, msg);
             return android.util.Log.i(tag(tag), msg);
         }
@@ -227,7 +231,7 @@ public final class Log {
      * @param tr An exception to log
      */
     public static int i(String tag, String msg, Throwable tr) {
-        if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.INFO)) {
+        if (isDebug() || android.util.Log.isLoggable(tag(tag), android.util.Log.INFO)) {
             log(tag, android.util.Log.INFO, msg);
             log(tag, android.util.Log.INFO, tr);
             return android.util.Log.i(tag(tag), msg, tr);
@@ -243,7 +247,7 @@ public final class Log {
      * @param args Arguments for formatting the message.
      */
     public static int i(String tag, String fmt, Object... args) {
-        if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.INFO)) {
+        if (isDebug() || android.util.Log.isLoggable(tag(tag), android.util.Log.INFO)) {
             String msg = String.format(fmt, args);
             log(tag, android.util.Log.INFO, msg);
             return android.util.Log.i(tag(tag), msg);
@@ -258,7 +262,7 @@ public final class Log {
      * @param msg The message you would like logged.
      */
     public static int w(String tag, String msg) {
-        if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.WARN)) {
+        if (isDebug() || android.util.Log.isLoggable(tag(tag), android.util.Log.WARN)) {
             log(tag, android.util.Log.WARN, msg);
             return android.util.Log.w(tag(tag), msg);
         }
@@ -273,7 +277,7 @@ public final class Log {
      * @param tr An exception to log
      */
     public static int w(String tag, String msg, Throwable tr) {
-        if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.WARN)) {
+        if (isDebug() || android.util.Log.isLoggable(tag(tag), android.util.Log.WARN)) {
             log(tag, android.util.Log.WARN, msg);
             log(tag, android.util.Log.WARN, tr);
             return android.util.Log.w(tag(tag), msg, tr);
@@ -289,7 +293,7 @@ public final class Log {
      * @param args Arguments for formatting the message.
      */
     public static int w(String tag, String fmt, Object... args) {
-        if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.WARN)) {
+        if (isDebug() || android.util.Log.isLoggable(tag(tag), android.util.Log.WARN)) {
             String msg = String.format(fmt, args);
             log(tag, android.util.Log.WARN, msg);
             return android.util.Log.w(tag(tag), msg);
@@ -304,7 +308,7 @@ public final class Log {
      * @param tr An exception to log
      */
     public static int w(String tag, Throwable tr) {
-        if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.WARN)) {
+        if (isDebug() || android.util.Log.isLoggable(tag(tag), android.util.Log.WARN)) {
             log(tag, android.util.Log.WARN, tr);
             return android.util.Log.w(tag(tag), tr);
         }
@@ -318,7 +322,7 @@ public final class Log {
      * @param msg The message you would like logged.
      */
     public static int e(String tag, String msg) {
-        if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.ERROR)) {
+        if (isDebug() || android.util.Log.isLoggable(tag(tag), android.util.Log.ERROR)) {
             log(tag, android.util.Log.ERROR, msg);
             return android.util.Log.e(tag(tag), msg);
         }
@@ -333,7 +337,7 @@ public final class Log {
      * @param tr An exception to log
      */
     public static int e(String tag, String msg, Throwable tr) {
-        if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.ERROR)) {
+        if (isDebug() || android.util.Log.isLoggable(tag(tag), android.util.Log.ERROR)) {
             log(tag, android.util.Log.ERROR, msg);
             log(tag, android.util.Log.ERROR, tr);
             return android.util.Log.e(tag(tag), msg, tr);
@@ -349,7 +353,7 @@ public final class Log {
      * @param args Arguments for formatting the message.
      */
     public static int e(String tag, String fmt, Object... args) {
-        if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.ERROR)) {
+        if (isDebug() || android.util.Log.isLoggable(tag(tag), android.util.Log.ERROR)) {
             String msg = String.format(fmt, args);
             log(tag, android.util.Log.ERROR, msg);
             return android.util.Log.e(tag(tag), msg);
