@@ -603,4 +603,28 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
     <string name="msg_doze_mode">Kontalk richiede di essere escluso dalle ottimizzazioni della batteria per funzionare. Promettiamo di non consumarti tutta la batteria.</string>
     <string name="btn_request_doze_mode_whitelist">Richiedi permesso</string>
 
+    <string name="location_message">Posizione</string>
+    <string name="position_screen_title">Posizione</string>
+    <string name="pref_maps_google_label">Google Maps</string>
+    <string name="pref_maps_osm_label">OpenStreetMap</string>
+
+    <string name="notification_location">ti ha inviato una posizione</string>
+    <string name="location_no_result">Nessun risultato</string>
+    <string name="places_nearby">Posti vicini</string>
+    <string name="send_selected_location">Invia posizione selezionata</string>
+    <string name="send_location">Invia posizione attuale</string>
+    <string name="accurate_to">Precisa a %1$s metri</string>
+    <string name="meters_away">Distanza %d metri</string>
+    <string name="kilometers_away">Distanza %.2f km</string>
+    <string name="loading">Caricamento…</string>
+    <string name="your_position">Tu</string>
+    <string name="err_googlemaps_fallback_osm">Google Maps non è disponibile, utilizzo OpenStreetMap.</string>
+    <string name="err_location_no_providers">Nessun servizio di geolocalizzazione disponibile. Non sarà possibile ottenere la posizione attuale.</string>
+
+    <string name="menu_open_map">Apri in mappe</string>
+    <string name="menu_map">Mappa</string>
+    <string name="menu_satellite">Satellite</string>
+    <string name="pref_location_settings">Posizione</string>
+    <string name="pref_maps_service">Servizio mappe</string>
+
     </resources>
