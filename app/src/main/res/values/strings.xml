@@ -340,7 +340,6 @@
     <string name="menu_open_map">Open in maps</string>
     <string name="menu_map">Map</string>
     <string name="menu_satellite">Satellite</string>
-    <string name="menu_hybrid">Hybrid</string>
 
     <string name="msg_not_implemented">Not implemented yet.</string>
 
