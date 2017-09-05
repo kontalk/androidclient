@@ -20,6 +20,8 @@ package org.kontalk.position;
 
 import java.util.Locale;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.car2go.maps.AnyMap;
 import com.car2go.maps.OnInterceptTouchEvent;
 import com.car2go.maps.OnMapReadyCallback;
@@ -40,6 +42,8 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -175,7 +179,7 @@ public class SendPositionOsmFragment extends Fragment implements OnMapReadyCallb
         mFabMyLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mMyLocation != null && mMap != null) {
+                if (mMyLocation != null && mMap != null && isLocationEnabled()) {
                     AnimatorSet animatorSet = new AnimatorSet();
                     animatorSet.setDuration(200);
                     animatorSet.play(ObjectAnimator.ofFloat(mFabMyLocation, "alpha", 0.0f));
@@ -199,6 +203,30 @@ public class SendPositionOsmFragment extends Fragment implements OnMapReadyCallb
         });
     }
 
+    protected boolean isLocationEnabled() {
+        if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) &&
+            !mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            needLocation();
+            return false;
+        }
+        return true;
+    }
+
+    private void needLocation() {
+        new MaterialDialog.Builder(getContext())
+            .content(R.string.msg_location_disabled)
+            .positiveText(android.R.string.ok)
+            .negativeText(android.R.string.cancel)
+            .onPositive(new MaterialDialog.SingleButtonCallback() {
+                @Override
+                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                    Intent locationSettings = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    startActivity(locationSettings);
+                }
+            })
+            .show();
+    }
+
     @Override
     public void onPause() {
         super.onPause();
@@ -210,6 +238,10 @@ public class SendPositionOsmFragment extends Fragment implements OnMapReadyCallb
     public void onResume() {
         super.onResume();
         mMapView.onResume();
+
+        // this will trigger a dialog to ask for location
+        isLocationEnabled();
+
         boolean hasProvider = false;
         try {
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);

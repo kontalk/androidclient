@@ -18,15 +18,20 @@
 
 package org.kontalk.position;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.car2go.maps.CameraUpdateFactory;
 import com.car2go.maps.model.BitmapDescriptor;
 import com.car2go.maps.osm.BitmapDescriptorFactory;
 import com.car2go.maps.osm.MapsConfiguration;
 
 import android.content.Context;
+import android.content.Intent;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -83,6 +88,31 @@ public class PositionOsmFragment extends PositionAbstractFragment implements Loc
     protected BitmapDescriptor createMarkerBitmap() {
         // TODO OSM should have its own pin icon
         return BitmapDescriptorFactory.getInstance().fromResource(R.drawable.ic_map_pin_google);
+    }
+
+    @Override
+    protected boolean isLocationEnabled() {
+        if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) &&
+            !mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            needLocation();
+            return false;
+        }
+        return true;
+    }
+
+    private void needLocation() {
+        new MaterialDialog.Builder(getContext())
+            .content(R.string.msg_location_disabled)
+            .positiveText(android.R.string.ok)
+            .negativeText(android.R.string.cancel)
+            .onPositive(new MaterialDialog.SingleButtonCallback() {
+                @Override
+                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                    Intent locationSettings = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    startActivity(locationSettings);
+                }
+            })
+        .show();
     }
 
     @Override

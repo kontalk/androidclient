@@ -124,6 +124,12 @@ public class PositionGoogleFragment extends PositionAbstractFragment implements
         }
     }
 
+    @Override
+    protected boolean isLocationEnabled() {
+        // TODO
+        return true;
+    }
+
     private void startLocationUpdates() {
         // Create the location request
         LocationRequest locationRequest = LocationRequest.create()

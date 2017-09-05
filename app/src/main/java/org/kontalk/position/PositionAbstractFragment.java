@@ -150,7 +150,7 @@ public abstract class PositionAbstractFragment extends Fragment implements OnMap
         mFabMyLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mMyLocation != null && mMap != null) {
+                if (mMyLocation != null && mMap != null && isLocationEnabled()) {
                     mMap.animateCamera(getCameraUpdateFactory().newLatLngZoom(new LatLng(mMyLocation.getLatitude(), mMyLocation.getLongitude()), DEFAULT_ZOOM));
                 }
             }
@@ -173,6 +173,8 @@ public abstract class PositionAbstractFragment extends Fragment implements OnMap
             }
         });
     }
+
+    protected abstract boolean isLocationEnabled();
 
     @Override
     public void onPause() {

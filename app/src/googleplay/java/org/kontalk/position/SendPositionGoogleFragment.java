@@ -203,7 +203,7 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
         mFabMyLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mMyLocation != null && mMap != null && mGoogleApiClient.isConnected()) {
+                if (mMyLocation != null && mMap != null && mGoogleApiClient.isConnected() && isLocationEnabled()) {
                     AnimatorSet animatorSet = new AnimatorSet();
                     animatorSet.setDuration(200);
                     animatorSet.play(ObjectAnimator.ofFloat(mFabMyLocation, "alpha", 0.0f));
@@ -278,6 +278,11 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
         }));
 
         ViewHelper.setAlpha(mFabMyLocation, 0.0f);
+    }
+
+    protected boolean isLocationEnabled() {
+        // TODO
+        return true;
     }
 
     @Override
