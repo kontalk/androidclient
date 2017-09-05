@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 
 import android.content.Context;
+import android.os.Build;
 
 import org.kontalk.util.Preferences;
 import org.kontalk.util.RotatingFileWriter;
@@ -107,6 +108,11 @@ public final class Log {
         }
     }
 
+    private static String tag(String tag) {
+        return (Build.VERSION.SDK_INT <= Build.VERSION_CODES.N && tag.length() > 23) ?
+                tag.substring(0, 23) : tag;
+    }
+
     /**
      * Send a {@link android.util.Log#VERBOSE} log message.
      * @param tag Used to identify the source of a log message.  It usually identifies
@@ -116,7 +122,7 @@ public final class Log {
     public static int v(String tag, String msg) {
         if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.VERBOSE)) {
             log(tag, android.util.Log.VERBOSE, msg);
-            return android.util.Log.v(tag, msg);
+            return android.util.Log.v(tag(tag), msg);
         }
         return 0;
     }
@@ -132,7 +138,7 @@ public final class Log {
         if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.VERBOSE)) {
             log(tag, android.util.Log.VERBOSE, msg);
             log(tag, android.util.Log.VERBOSE, tr);
-            return android.util.Log.v(tag, msg, tr);
+            return android.util.Log.v(tag(tag), msg, tr);
         }
         return 0;
     }
@@ -148,7 +154,7 @@ public final class Log {
         if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.VERBOSE)) {
             String msg = String.format(fmt, args);
             log(tag, android.util.Log.VERBOSE, msg);
-            return android.util.Log.v(tag, msg);
+            return android.util.Log.v(tag(tag), msg);
         }
         return 0;
     }
@@ -162,7 +168,7 @@ public final class Log {
     public static int d(String tag, String msg) {
         if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.DEBUG)) {
             log(tag, android.util.Log.DEBUG, msg);
-            return android.util.Log.d(tag, msg);
+            return android.util.Log.d(tag(tag), msg);
         }
         return 0;
     }
@@ -178,7 +184,7 @@ public final class Log {
         if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.DEBUG)) {
             log(tag, android.util.Log.DEBUG, msg);
             log(tag, android.util.Log.DEBUG, tr);
-            return android.util.Log.d(tag, msg, tr);
+            return android.util.Log.d(tag(tag), msg, tr);
         }
         return 0;
     }
@@ -194,7 +200,7 @@ public final class Log {
         if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.DEBUG)) {
             String msg = String.format(fmt, args);
             log(tag, android.util.Log.DEBUG, msg);
-            return android.util.Log.d(tag, msg);
+            return android.util.Log.d(tag(tag), msg);
         }
         return 0;
     }
@@ -208,7 +214,7 @@ public final class Log {
     public static int i(String tag, String msg) {
         if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.INFO)) {
             log(tag, android.util.Log.INFO, msg);
-            return android.util.Log.i(tag, msg);
+            return android.util.Log.i(tag(tag), msg);
         }
         return 0;
     }
@@ -224,7 +230,7 @@ public final class Log {
         if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.INFO)) {
             log(tag, android.util.Log.INFO, msg);
             log(tag, android.util.Log.INFO, tr);
-            return android.util.Log.i(tag, msg, tr);
+            return android.util.Log.i(tag(tag), msg, tr);
         }
         return 0;
     }
@@ -240,7 +246,7 @@ public final class Log {
         if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.INFO)) {
             String msg = String.format(fmt, args);
             log(tag, android.util.Log.INFO, msg);
-            return android.util.Log.i(tag, msg);
+            return android.util.Log.i(tag(tag), msg);
         }
         return 0;
     }
@@ -254,7 +260,7 @@ public final class Log {
     public static int w(String tag, String msg) {
         if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.WARN)) {
             log(tag, android.util.Log.WARN, msg);
-            return android.util.Log.w(tag, msg);
+            return android.util.Log.w(tag(tag), msg);
         }
         return 0;
     }
@@ -270,7 +276,7 @@ public final class Log {
         if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.WARN)) {
             log(tag, android.util.Log.WARN, msg);
             log(tag, android.util.Log.WARN, tr);
-            return android.util.Log.w(tag, msg, tr);
+            return android.util.Log.w(tag(tag), msg, tr);
         }
         return 0;
     }
@@ -286,7 +292,7 @@ public final class Log {
         if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.WARN)) {
             String msg = String.format(fmt, args);
             log(tag, android.util.Log.WARN, msg);
-            return android.util.Log.w(tag, msg);
+            return android.util.Log.w(tag(tag), msg);
         }
         return 0;
     }
@@ -300,7 +306,7 @@ public final class Log {
     public static int w(String tag, Throwable tr) {
         if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.WARN)) {
             log(tag, android.util.Log.WARN, tr);
-            return android.util.Log.w(tag, tr);
+            return android.util.Log.w(tag(tag), tr);
         }
         return 0;
     }
@@ -314,7 +320,7 @@ public final class Log {
     public static int e(String tag, String msg) {
         if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.ERROR)) {
             log(tag, android.util.Log.ERROR, msg);
-            return android.util.Log.e(tag, msg);
+            return android.util.Log.e(tag(tag), msg);
         }
         return 0;
     }
@@ -330,7 +336,7 @@ public final class Log {
         if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.ERROR)) {
             log(tag, android.util.Log.ERROR, msg);
             log(tag, android.util.Log.ERROR, tr);
-            return android.util.Log.e(tag, msg, tr);
+            return android.util.Log.e(tag(tag), msg, tr);
         }
         return 0;
     }
@@ -346,7 +352,7 @@ public final class Log {
         if (BuildConfig.DEBUG || android.util.Log.isLoggable(tag, android.util.Log.ERROR)) {
             String msg = String.format(fmt, args);
             log(tag, android.util.Log.ERROR, msg);
-            return android.util.Log.e(tag, msg);
+            return android.util.Log.e(tag(tag), msg);
         }
         return 0;
     }
