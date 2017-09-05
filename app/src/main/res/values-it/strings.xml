@@ -627,4 +627,6 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
     <string name="pref_location_settings">Posizione</string>
     <string name="pref_maps_service">Servizio mappe</string>
 
+    <string name="msg_location_disabled">Serve l\'accesso alla posizione. Scegli OK e ti porteremo alle impostazioni per attivarla.</string>
+
     </resources>
