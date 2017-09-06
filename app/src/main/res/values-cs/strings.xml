@@ -636,4 +636,5 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
 
     <string name="msg_location_disabled">Potřebujeme přístup k poloze. Zvolte OK pro přechod do nastavení a povolte ho.</string>
 
+    <string name="err_location_access_unknown_error">Nepodařilo se vyžádat aktivaci polohovacích služeb.</string>
     </resources>
