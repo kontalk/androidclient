@@ -629,4 +629,5 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
 
     <string name="msg_location_disabled">Serve l\'accesso alla posizione. Scegli OK e ti porteremo alle impostazioni per attivarla.</string>
 
+    <string name="err_location_access_unknown_error">Impossibile richiedere l\'attivazione dei servizi di posizione.</string>
     </resources>
