@@ -627,4 +627,5 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
 
     <string name="msg_location_disabled">Necessitem accés a la ubicació. Premi OK per anar a configuració i habilitar-lo.</string>
 
+    <string name="err_location_access_unknown_error">No es poden activar els serveis d\'ubicació.</string>
     </resources>
