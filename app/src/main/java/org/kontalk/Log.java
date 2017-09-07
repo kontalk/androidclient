@@ -113,8 +113,8 @@ public final class Log {
 
     private static String makeTag(String tag) {
         // does not work even on Android > 7.0
-        // return (Build.VERSION.SDK_INT <= Build.VERSION_CODES.N && makeTag.length() > 23) ? makeTag.substring(0, 23) : makeTag;
-        return tag.substring(0, 23);
+        // return (Build.VERSION.SDK_INT <= Build.VERSION_CODES.N && tag.length() > 23) ? tag.substring(0, 23) : tag;
+        return tag.length() > 23 ? tag.substring(0, 23) : tag;
     }
 
     /**
