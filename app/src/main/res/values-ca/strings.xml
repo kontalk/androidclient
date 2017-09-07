@@ -628,4 +628,6 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
     <string name="msg_location_disabled">Necessitem accés a la ubicació. Premi OK per anar a configuració i habilitar-lo.</string>
 
     <string name="err_location_access_unknown_error">No es poden activar els serveis d\'ubicació.</string>
+    <string name="msg_request_doze_failed_manual">Sisplau marqueu Kontalk com a no optimitzat a la pantalla següent.</string>
+
     </resources>
