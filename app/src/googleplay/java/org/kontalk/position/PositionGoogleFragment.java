@@ -24,10 +24,19 @@ import com.car2go.maps.google.MapsConfiguration;
 import com.car2go.maps.model.BitmapDescriptor;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.content.IntentSender;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -37,6 +46,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import org.kontalk.Log;
 import org.kontalk.R;
@@ -49,14 +59,18 @@ import org.kontalk.ui.ToolbarActivity;
  * @author Andrea Cappelli
  */
 public class PositionGoogleFragment extends PositionAbstractFragment implements
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, ResultCallback<LocationSettingsResult> {
 
     private final static String TAG = SendPositionGoogleFragment.class.getSimpleName();
+    private static final int REQUEST_LOCATION = 1;
 
     private GoogleApiClient mGoogleApiClient;
 
     private static final long UPDATE_INTERVAL = 20 * 1000;  /* 20 secs */
     private static final long FASTEST_INTERVAL = 4000; /* 4 secs */
+    private LocationRequest mLocationRequest;
+    /** This will be non-null if we were unable to obtain a location. */
+    private Status mLastStatus;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -126,24 +140,33 @@ public class PositionGoogleFragment extends PositionAbstractFragment implements
 
     @Override
     protected boolean isLocationEnabled() {
-        // TODO
+        if (mLastStatus != null) {
+            if (mLastStatus.hasResolution()) {
+                try {
+                    startIntentSenderForResult(mLastStatus.getResolution().getIntentSender(),
+                        REQUEST_LOCATION, null, 0, 0, 0, null);
+                }
+                catch (IntentSender.SendIntentException e) {
+                    Toast.makeText(getContext(), R.string.err_location_access_unknown_error,
+                        Toast.LENGTH_LONG).show();
+                }
+            }
+            else if (mLastStatus.getStatusCode() == LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE) {
+                // no location no party!
+                Toast.makeText(getContext(), R.string.err_location_access_unknown_error,
+                    Toast.LENGTH_LONG).show();
+            }
+            return false;
+        }
         return true;
     }
 
     private void startLocationUpdates() {
-        // Create the location request
-        LocationRequest locationRequest = LocationRequest.create()
-            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-            .setInterval(UPDATE_INTERVAL)
-            .setFastestInterval(FASTEST_INTERVAL);
-        // Request location updates
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
-            locationRequest, this);
+            mLocationRequest, this);
     }
 
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
+    private void requestAndPollLastLocation() {
         Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         // Note that this can be NULL if last location isn't already known.
         if (lastLocation != null) {
@@ -154,6 +177,32 @@ public class PositionGoogleFragment extends PositionAbstractFragment implements
         }
         // Begin polling for new location updates.
         startLocationUpdates();
+    }
+
+    @Override
+    public void onResult(@NonNull LocationSettingsResult result) {
+        if (result.getStatus().isSuccess()) {
+            requestAndPollLastLocation();
+        }
+        else {
+            mLastStatus = result.getStatus();
+        }
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        // this will be our location request
+        mLocationRequest = LocationRequest.create()
+            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+            .setInterval(UPDATE_INTERVAL)
+            .setFastestInterval(FASTEST_INTERVAL);
+
+        // check for location settings now
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+            .addLocationRequest(mLocationRequest);
+        PendingResult<LocationSettingsResult> pendingResult = LocationServices
+            .SettingsApi.checkLocationSettings(mGoogleApiClient, builder.build());
+        pendingResult.setResultCallback(this);
     }
 
     @Override
@@ -170,5 +219,12 @@ public class PositionGoogleFragment extends PositionAbstractFragment implements
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_LOCATION && resultCode == Activity.RESULT_OK) {
+            mLastStatus = null;
+            requestAndPollLastLocation();
+        }
+    }
 }
 
