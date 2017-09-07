@@ -630,4 +630,6 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
     <string name="msg_location_disabled">Necesitamos acceder a la ubicación. Elige OK para ir a la configuración y habilitarle.</string>
 
     <string name="err_location_access_unknown_error">No es posible activar los servicios de ubicación.</string>
+    <string name="msg_request_doze_failed_manual">Por favor marque Kontalk como no optimizado en la siguiente pantalla.</string>
+
     </resources>
