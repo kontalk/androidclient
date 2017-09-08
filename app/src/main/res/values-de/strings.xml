@@ -631,5 +631,5 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
 
     <string name="msg_location_disabled">Kontalk benötigt Standortzugriff. Wählen Sie OK um zu den Einstellungen zu gehen und ihn zu aktivieren.</string>
 
-    <string name="err_location_access_unknown_error">Nicht möglich, Standortdienste zu aktivieren.</string>
+    <string name="err_location_access_unknown_error">Nicht möglich Standortdienste zu aktivieren.</string>
     </resources>
