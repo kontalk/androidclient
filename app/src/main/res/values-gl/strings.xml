@@ -615,4 +615,31 @@ Desactivar a cifraxe só se o contacto non ten unha chave persoal.</string>
     <string name="msg_doze_mode">O Kontalk necesita estar na lista branca da optimización da batería para funcionar correctamente. Prometemos que non esgotaremos a batería.</string>
     <string name="btn_request_doze_mode_whitelist">Solicitude de permiso</string>
 
+    <string name="location_message">Mensaxe de situación</string>
+    <string name="position_screen_title">Posición</string>
+    <string name="pref_maps_google_label">Google Maps</string>
+    <string name="pref_maps_osm_label">OpenStreetMap</string>
+
+    <string name="notification_location">enviouche unha ubicación</string>
+    <string name="location_no_result">Sen resultados</string>
+    <string name="places_nearby">Lugares próximos</string>
+    <string name="send_selected_location">Enviar a ubicación seleccionada</string>
+    <string name="send_location">Envía a túa ubicación actual</string>
+    <string name="accurate_to">Preciso para %1$s metros</string>
+    <string name="meters_away">%d m de distancia</string>
+    <string name="kilometers_away">%.2f km de distancia</string>
+    <string name="loading">Cargando …</string>
+    <string name="your_position">Vostede</string>
+    <string name="err_googlemaps_fallback_osm">Google Maps non está dispoñible, indo de volta a OpenStreetMap.</string>
+    <string name="err_location_no_providers">Non hai provedores de localización dispoñibles. A ubicación actual non estará dispoñible.</string>
+    <string name="err_location_access_unknown_error">Non se pode solicitar a activación de servizos de localización.</string>
+    <string name="msg_location_disabled">Necesitamos acceso á localización. Escolla OK para ir á configuración e habilitalo.</string>
+
+    <string name="menu_open_map">Abre en mapas</string>
+    <string name="menu_map">Mapa</string>
+    <string name="menu_satellite">Satélite</string>
+
+    <string name="pref_location_settings">Localización</string>
+    <string name="pref_maps_service">Proveedor de servizos</string>
+
     </resources>
