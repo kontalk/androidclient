@@ -1,5 +1,22 @@
 # Change Log
 
+## [4.1.0-beta1] - 2017-09-10
+### Changed
+- Location sharing (#1004, #1027, #1062)
+- Update to Smack 4.2.1 (#957)
+- Autotrust (as in verification ignored) first key after an invitation (#866)
+- Reuse connection object (#327, #956)
+- Remember scrolling position (#853, #938)
+
+### Fixed
+- Fix memory leak (#1022, #1046)
+- Proximity wake lock workaround for some devices (#1043)
+- Downgrade Glide to version 3 for compatibility with Android 2 (#1047)
+- Fix crash in direct share (#1050)
+- Cleanup leftovers of abandoned groups (#1051)
+- Use Bouncy Castle SHA-1 implementation (#1052)
+- Fix crash on Android prior to Nougat (#1060, #1064)
+
 ## [4.0.4] - 2017-07-08
 ### Changed
 - Reply directly from notification (#774)
