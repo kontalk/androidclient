@@ -195,22 +195,6 @@ public class KontalkConnection extends XMPPTCPConnection {
     }
 
     @Override
-    public void disconnect() {
-        super.disconnect();
-        // destroy any debugger to avoid connection leaks
-        // since we are not going to use the connection anymore...
-        debugger = null;
-    }
-
-    @Override
-    public synchronized void instantShutdown() {
-        super.instantShutdown();
-        // destroy any debugger to avoid connection leaks
-        // since we are not going to use the connection anymore...
-        debugger = null;
-    }
-
-    @Override
     protected void processStanza(Stanza packet) throws InterruptedException {
         boolean isMessage = packet instanceof Message;
         if (isMessage) {
