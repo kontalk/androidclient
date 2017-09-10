@@ -3,13 +3,10 @@ buildscript {
     repositories {
         jcenter()
         maven { url 'https://maven.fabric.io/public' }
-        // for latest gradle-play-publisher
-        maven { url 'https://jitpack.io' }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:2.3.3'
-        //classpath 'com.github.triplet.gradle:play-publisher:1.2.0'
-        classpath 'com.github.Triple-T:gradle-play-publisher:8cda31a5d0'
+        classpath 'com.github.triplet.gradle:play-publisher:1.2.0'
         classpath 'io.fabric.tools:gradle:1.22.1'
     }
 }
