@@ -621,4 +621,9 @@ Desabilite a criptografia apenas se o seu contato não posuir uma chave pessoal.
 
     <string name="btn_request_doze_mode_whitelist">Solicitar permissão</string>
 
+    <string name="location_message">Imagem de localização</string>
+    <string name="position_screen_title">Posição</string>
+    <string name="pref_maps_google_label">Google Maps</string>
+    <string name="pref_maps_osm_label">OpenStreetMap</string>
+
     </resources>
