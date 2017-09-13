@@ -97,7 +97,7 @@
     <string name="size_label">"Størrelse: "</string>
     <string name="size_unknown">(ukjent)</string>
     <string name="title_file_info">Filinformasjon</string>
-    <string name="pref_restart_msgcenter">Start meldingssenter på ny</string>
+    <string name="pref_restart_msgcenter">Start meldingssenter på nytt</string>
     <string name="pref_title_restart_msgcenter">Bruk dette bare hvis Kontalk ikke virker som det skal</string>
     <string name="pref_idle_time">Koble fra ved lediggang</string>
     <string name="pref_title_idle_time">Tidsforløp for frakobling ved lediggang</string>
@@ -197,7 +197,7 @@
     <string name="vcard_message">vCard-melding</string>
     <string name="open_file">Åpne fil</string>
     <string name="open_audio">Spill lydfil</string>
-    <string name="msg_msgcenter_restarted">Meldingssenter startet på ny.</string>
+    <string name="msg_msgcenter_restarted">Meldingssenter startet på nytt.</string>
     <string name="downloading_attachment">Laster ned vedlegg…</string>
     <string name="decrypting_attachment">Dekrypterer vedlegg…</string>
     <string name="attachment_download">Vedlegg nedlastet</string>
@@ -519,7 +519,7 @@
 </plurals>
 
 <string name="err_import_keypair_read">Kunne ikke lese personlig nøkkel fra eksternt lagringsmedium.</string>
-    <string name="err_invalid_passphrase">Feil passord. Start programmet på ny eller prøv noe annet.</string>
+    <string name="err_invalid_passphrase">Feil passord. Start programmet på nytt eller prøv noe annet.</string>
 
     <string name="pref_balloons">Draktvalg for sludresnakkeboble</string>
     <string name="pref_balloons_groups">Draktvalg for gruppesludresnakkeboble</string>
