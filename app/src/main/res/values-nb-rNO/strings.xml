@@ -651,4 +651,6 @@ Bare skru av kryptering hvis din kontakt ikke har en personlig nøkkel.</string>
 
     <string name="audio_duration_max">%1$s / %2$s</string>
 
+    <string name="msg_request_doze_failed_manual">Merk Kontalk som \"Ikke optimisert\" på neste skjerm.</string>
+
     </resources>
