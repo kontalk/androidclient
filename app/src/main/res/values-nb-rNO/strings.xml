@@ -36,12 +36,12 @@
     <string name="menu_online">Bytt til tilkoblet modus</string>
     <string name="menu_import_key">Importer nøkkel</string>
     <string name="menu_manual_verification">Har du allerede en kode?</string>
-    <string name="pref_network_settings">Nettverksinnstillinger</string>
+    <string name="pref_network_settings">Nettverk</string>
     <string name="pref_network_uri">Manuell tjeneradresse</string>
     <string name="pref_title_network_uri">Dette overstyrer automatisk behandling av tjenerlisten</string>
     <string name="number_validation_intro1">Skriv inn navnet ditt, landskode og mobiltelefonnummer. Ytterligere instruksjoner vil følge på neste skjerm.</string>
     <string name="number_validation_intro2">Hvis du ikke kan motta telefonsamtaler eller SMS på denne enheten, skriv inn et telefonnummer du eier: vi tilskriver nummeret denne enheten.</string>
-    <string name="code_validation_intro">Du burde motta en SMS eller en samtale fra dette nummeret snart:</string>
+    <string name="code_validation_intro">Du burde motta en SMS eller en kort samtale til ditt nummer.</string>
     <string name="code_validation_intro2">Skriv inn koden du mottar eller hører nedenfor.</string>
     <string name="code_validation_intro_missed_call">Et tapt anrop bør snart komme til syne. <b>IKKE BESVAR DENNE SAMTALEN.</b></string>
     <string name="code_validation_intro2_missed_call">Skriv inn de siste %d tegnene i nummeret du ble oppringt fra.</string>
@@ -104,11 +104,11 @@
     <string name="pref_wakeup_time">Koble til tjeneren igjen</string>
     <string name="pref_maintenance">Vedlikehold</string>
     <string name="pref_regenerate_keypair">Generer en personlig nøkkel igjen</string>
-    <string name="pref_title_regenerate_keypair">Bru dette i fall din personlige nøkkel har falt i gale hender</string>
+    <string name="pref_title_regenerate_keypair">Bruk dette i fall din personlige nøkkel har falt i gale hender</string>
     <string name="pref_regenerate_keypair_confirm">Et nytt nøkkelpar vil bli opprettet og tildelt din konto. Din gamle nøkkel vil bli ugyldig.</string>
     <string name="contacts_list_title">Velg en kontakt</string>
-    <string name="pref_messaging_settings">Meldingsinnstillinger</string>
-    <string name="pref_privacy_settings">Personvernsinnstillinger</string>
+    <string name="pref_messaging_settings">Meldingsforsendelse</string>
+    <string name="pref_privacy_settings">Personvern</string>
     <string name="pref_encrypt">Krypter meldinger</string>
     <string name="pref_encrypt_userdata">Krypter personlig data</string>
     <string name="pref_title_on_encrypt_userdata">Statusmelding vil kun være synlig for brukere som har ditt telefonnummer</string>
@@ -149,7 +149,7 @@
     <string name="msg_initializing">Registrerer på Kontalk-nettverket…</string>
     <string name="contact_not_registered">Kontakten synes ikke å være registrert på Kontalk.</string>
     <string name="hint_search_full">Søk i meldinger</string>
-    <string name="pref_notification_settings">Merknadsinnstillinger</string>
+    <string name="pref_notification_settings">Merknader</string>
     <string name="pref_enable_notifications">Merknader</string>
     <string name="pref_enable_notification_led">Merknads-LED</string>
     <string name="pref_notification_led_color">Farge på merknads-LED</string>
@@ -159,7 +159,7 @@
     <string name="msg_validation_canceled">Bekreftelse avbrutt. Det kan hende du mottar en SMS uansett.</string>
     <string name="err_validation_network_error">Kunne ikke koble til tjener. Prøv igjen senere.</string>
     <string name="err_validation_server_not_supported">Valgt tjener støtter ikke registrering. Sett opp en annen en i innstillingene.</string>
-    <string name="button_validation_fallback">Mottar du ingen samtale?</string>
+    <string name="button_validation_fallback">Mottok du ikke noe?</string>
     <string name="button_validation_fallback_callerid">Prøv på annet vis</string>
     <string name="notify_text_download_completed">Nedlasting av vedlegg fullført</string>
     <string name="notify_ticker_download_error">Nedlasting mislyktes</string>
@@ -352,7 +352,7 @@
     <string name="notify_ticker_external_storage">Eksternt lagringsmedie ikke tilgjengelig</string>
     <string name="notify_text_external_storage">Kunne ikke skrive til eksternt lagringsmedie.</string>
     <string name="message_user_not_found">Kontakten synes å være registrert på Kontalk. Du kan kontakte brukeren likevel, eller sende vedkommende en invitasjonsmelding.</string>
-    <string name="pref_appearance_settings">Utseendeinnstillinger</string>
+    <string name="pref_appearance_settings">Utseende</string>
     <string name="invitation_sent_label">ventende invitasjon</string>
     <string name="pref_custom_background">Egendefinert bakgrunn</string>
     <string name="pref_title_background_uri">Sett et egendefinert bakgrunnsbilde</string>
@@ -403,7 +403,7 @@
     <string name="err_audio_record_noaudio">Tok ikke opp noe lyd.</string>
     <string name="err_playing_audio">Feil i avspilling av lyd.</string>
     <string name="err_playing_sdcard">Feil under lesing fra eksternt lagringsmedie.</string>
-    <string name="pref_media_settings">Mediainnstillinger</string>
+    <string name="pref_media_settings">Media</string>
     <string name="pref_image_resize">Redimensjoner bilder</string>
     <string name="pref_media_autodownload_threshold">Automatisk nedlastingsavgrensning</string>
     <string name="pref_title_media_autodownload_threshold">Filer mindre enn denne størrelsen vil alltid bli lastet ned automatisk</string>
@@ -604,5 +604,51 @@ Bare skru av kryptering hvis din kontakt ikke har en personlig nøkkel.</string>
     <string name="menu_disable_encryption">Skru av</string>
 
     <string name="group_info_menu_add_again">Legg til igjen</string>
+
+    <string name="code_validation_intro3">Merk deg at SMS eller samtale kan komme fra et utenlandsk nummer.</string>
+    <string name="reply">Svar</string>
+    <string name="location_message">Posisjonsmelding</string>
+    <string name="position_screen_title">Posisjon</string>
+    <string name="notify_text_decryption_error">Dekryptering mislyktes</string>
+    <string name="msg_register_confirm_number1">Vi vil bekrefte telefonnummeret:</string>
+    <string name="msg_register_confirm_number2">Dobbeltsjekk at nummeret er riktig.</string>
+    <string name="person_me">Meg</string>
+    <string name="pref_maps_google_label">Google Maps</string>
+    <string name="pref_maps_osm_label">OpenStreetMap</string>
+
+    <string name="notification_location">sendte deg en posisjon</string>
+    <string name="location_no_result">Ingen resultater</string>
+    <string name="places_nearby">Plasser i nærheten</string>
+    <string name="send_selected_location">Send valgt posisjon</string>
+    <string name="send_location">Send din nåværende posisjon</string>
+    <string name="accurate_to">Nøyaktig innenfor %1$s meter</string>
+    <string name="meters_away">%d m unna</string>
+    <string name="kilometers_away">%.2f km unna</string>
+    <string name="loading">Laster…</string>
+    <string name="your_position">Deg</string>
+    <string name="err_googlemaps_fallback_osm">Google Maps er ikke tilgjengelig, faller tilbake til OpenStreetMap.</string>
+    <string name="err_location_no_providers">Ingen posisjonstilbydere tilgjengelig, Nåværende posisjon vil ikke være tilgjengelig.</string>
+    <string name="err_location_access_unknown_error">Kunne ikke spørre om å slå på posisjonstjenester.</string>
+    <string name="msg_location_disabled">Vi trenger tilgang til posisjon. Velg OK og gå til innstillingene og skru det på.</string>
+
+    <string name="menu_open_map">Åpne i kart</string>
+    <string name="menu_map">Kart</string>
+    <string name="menu_satellite">Satelitt</string>
+
+    <string name="pref_location_settings">Posisjon</string>
+    <string name="pref_maps_service">Tjenestetilbyder</string>
+
+    <string name="group_command_users_added">Brukere lagt til:</string>
+    <string name="group_command_users_removed">Brukere fjernet:</string>
+
+    <string name="title_doze_mode">Batterioptimisering</string>
+    <string name="msg_doze_mode">Kontalk behøver unntak fra batterioptimisering for å fungere ordentlig. Vi lover å ikke herje batteriet ditt.</string>
+    <string name="btn_request_doze_mode_whitelist">Forespør tilgang</string>
+
+    <string name="status_notsubscribed">Ikke tillatt/blokkert</string>
+
+    <string name="registration_poweredby">Drevet av</string>
+
+    <string name="audio_duration_max">%1$s / %2$s</string>
 
     </resources>
