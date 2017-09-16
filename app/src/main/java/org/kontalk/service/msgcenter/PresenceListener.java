@@ -256,10 +256,13 @@ class PresenceListener extends MessageCenterPacketListener {
             // assuming the user has allowed us, request it
 
             PublicKeyPublish pkey = new PublicKeyPublish();
-            pkey.setTo(from);
+            pkey.setTo(p.getFrom().asBareJid());
 
             sendPacket(pkey);
         }
+
+        // invalidate cached contact
+        Contact.invalidate(from);
 
         // send a broadcast
         Intent i = new Intent(ACTION_SUBSCRIBED);
