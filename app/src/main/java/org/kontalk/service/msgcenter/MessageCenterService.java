@@ -1394,7 +1394,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 String show = intent.getStringExtra(EXTRA_SHOW);
                 Presence p = new Presence(type != null ? Presence.Type.valueOf(type) : Presence.Type.available);
                 p.setStanzaId(id);
-                p.setTo(to);
                 if (intent.hasExtra(EXTRA_PRIORITY))
                     p.setPriority(intent.getIntExtra(EXTRA_PRIORITY, 0));
                 String status = intent.getStringExtra(EXTRA_STATUS);
