@@ -191,9 +191,13 @@ public class PositionGoogleFragment extends PositionAbstractFragment implements
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
+        requestLocation(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
+
+    private void requestLocation(int accuracy) {
         // this will be our location request
         mLocationRequest = LocationRequest.create()
-            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+            .setPriority(accuracy)
             .setInterval(UPDATE_INTERVAL)
             .setFastestInterval(FASTEST_INTERVAL);
 
@@ -221,9 +225,18 @@ public class PositionGoogleFragment extends PositionAbstractFragment implements
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_LOCATION && resultCode == Activity.RESULT_OK) {
+        if (requestCode == REQUEST_LOCATION) {
             mLastStatus = null;
-            requestAndPollLastLocation();
+
+            switch (resultCode) {
+                case Activity.RESULT_OK:
+                    requestAndPollLastLocation();
+                    break;
+                case Activity.RESULT_CANCELED:
+                    // try again with low power (i.e. network only)
+                    requestLocation(LocationRequest.PRIORITY_LOW_POWER);
+                    break;
+            }
         }
     }
 }
