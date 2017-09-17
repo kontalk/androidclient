@@ -620,4 +620,31 @@ Desgaitu enkriptatzea zure kontaktuak gako pertsonalik ez badu bakarrik.</string
 
 <string name="delete_threads_groups_disclaimer">Talde txatak txat historiatik ezabatuko dira, goiko kontrol-laukiak hautatuta ez badago behintzat.</string>
     <string name="create_group_disclaimer">Mesedez gogoratu taldekide guztiek elkar ezagutu behar dutela txateatu ahal izateko.</string>
+    <string name="location_message">Kokaleku mezua</string>
+    <string name="position_screen_title">Posizioa</string>
+    <string name="pref_maps_google_label">Google Maps</string>
+    <string name="pref_maps_osm_label">OpenStreetMap</string>
+
+    <string name="notification_location">Kokaleku bat bidali zaizu</string>
+    <string name="location_no_result">Emaitzarik ez</string>
+    <string name="places_nearby">Hurbileko lekuak</string>
+    <string name="send_selected_location">Bidali hautatutako kokalekua</string>
+    <string name="send_location">Bidali zure uneko kokalekua</string>
+    <string name="accurate_to">%1$s metroko zehaztasuna</string>
+    <string name="meters_away">%d m-ra</string>
+    <string name="kilometers_away">%.2f km-ra</string>
+    <string name="loading">Kargatzen…</string>
+    <string name="your_position">Zu</string>
+    <string name="err_googlemaps_fallback_osm">Google Maps ez dago erabilgarri, OpenStreetMap-era itzultzen da.</string>
+    <string name="err_location_no_providers">Kokaleku-hornitzailerik ez erabilgarri. Uneko kokalekua ez da erabilgarri egongo.</string>
+    <string name="err_location_access_unknown_error">Ezin dira kokaleku zerbitzuak aktibatu.</string>
+    <string name="msg_location_disabled">Kokalekura sarbidea behar dugu. Aukeratu Ados ezarpenetara joan eta gaitzeko.</string>
+
+    <string name="menu_open_map">Ireki mapetan</string>
+    <string name="menu_map">Mapa</string>
+    <string name="menu_satellite">Satelitea</string>
+
+    <string name="pref_location_settings">Kokalekua</string>
+    <string name="pref_maps_service">Zerbitzu-hornitzailea</string>
+
     </resources>
