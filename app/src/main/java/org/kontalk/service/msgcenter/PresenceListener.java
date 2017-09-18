@@ -40,7 +40,6 @@ import android.content.Intent;
 
 import org.kontalk.Log;
 import org.kontalk.client.PublicKeyPresence;
-import org.kontalk.client.PublicKeyPublish;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PGPUserID;
 import org.kontalk.data.Contact;
@@ -54,7 +53,6 @@ import org.kontalk.ui.MessagingNotification;
 import org.kontalk.util.Preferences;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_PRESENCE;
-import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_SUBSCRIBED;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FINGERPRINT;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
@@ -121,13 +119,6 @@ class PresenceListener extends MessageCenterPacketListener {
 
             }
 
-            // presence subscription response
-            else if (p.getType() == Presence.Type.subscribed) {
-
-                handleSubscribed(p);
-
-            }
-
             /*
             else if (p.getType() == Presence.Type.unsubscribed) {
                 // TODO can this even happen?
@@ -149,6 +140,10 @@ class PresenceListener extends MessageCenterPacketListener {
         }
     }
 
+    /**
+     * @deprecated We should use a {@link org.jivesoftware.smack.roster.SubscribeListener}.
+     */
+    @Deprecated
     private void handleSubscribe(Presence p)
             throws NotConnectedException, IOException, PGPException, InterruptedException {
 
@@ -236,46 +231,6 @@ class PresenceListener extends MessageCenterPacketListener {
         RosterEntry entry = getRosterEntry(p.getFrom());
         return (entry != null && (entry.getType() == RosterPacket.ItemType.to ||
             entry.getType() == RosterPacket.ItemType.both));
-    }
-
-    private void handleSubscribed(Presence p) {
-        String from = p.getFrom().asBareJid().toString();
-
-        // save last seen (if any)
-        DelayInformation delay = p.getExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE);
-        if (delay != null) {
-            UsersProvider.setLastSeen(getContext(), from, delay.getStamp().getTime());
-        }
-
-        if (Keyring.getPublicKey(getContext(), from, MyUsers.Keys.TRUST_UNKNOWN) == null) {
-            // autotrust the key we are about to request
-            // but set the trust level to ignored because we didn't really verify it
-            Keyring.setAutoTrustLevel(getContext(), from, MyUsers.Keys.TRUST_IGNORED);
-
-            // public key not found
-            // assuming the user has allowed us, request it
-
-            PublicKeyPublish pkey = new PublicKeyPublish();
-            pkey.setTo(p.getFrom().asBareJid());
-
-            sendPacket(pkey);
-        }
-
-        // invalidate cached contact
-        Contact.invalidate(from);
-
-        // send a broadcast
-        Intent i = new Intent(ACTION_SUBSCRIBED);
-        i.putExtra(EXTRA_TYPE, Presence.Type.subscribed.name());
-        i.putExtra(EXTRA_PACKET_ID, p.getStanzaId());
-
-        i.putExtra(EXTRA_FROM, StringUtils.maybeToString(p.getFrom().toString()));
-        i.putExtra(EXTRA_TO, StringUtils.maybeToString(p.getTo().toString()));
-
-        sendBroadcast(i);
-
-        // send any pending messages now
-        resendPending(false, true, from);
     }
 
     private void handlePresence(final Presence p) {
