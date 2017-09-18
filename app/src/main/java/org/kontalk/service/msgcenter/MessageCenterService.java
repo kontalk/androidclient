@@ -55,7 +55,6 @@ import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.roster.RosterEntry;
-import org.jivesoftware.smack.roster.RosterLoadedListener;
 import org.jivesoftware.smack.roster.packet.RosterPacket;
 import org.jivesoftware.smack.util.Async;
 import org.jivesoftware.smack.util.StringUtils;
@@ -1644,35 +1643,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         final VersionManager verMgr = VersionManager.getInstanceFor(connection);
         verMgr.setVersion(getString(R.string.app_name), SystemUtils.getVersionFullName(this));
 
-        // setup roster
+        // setup presence and roster listener
+        PresenceListener presenceListener = new PresenceListener(this);
+        RosterListener rosterListener = new RosterListener(this, presenceListener);
         Roster roster = getRoster();
-        roster.addRosterLoadedListener(new RosterLoadedListener() {
-            @Override
-            public void onRosterLoaded(Roster roster) {
-                final Handler handler = mHandler;
-                if (handler != null) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            // send pending subscription replies
-                            sendPendingSubscriptionReplies();
-                            // resend failed and pending messages
-                            resendPendingMessages(false, false);
-                            // resend failed and pending received receipts
-                            resendPendingReceipts();
-                            // roster has been loaded
-                            broadcast(ACTION_ROSTER_LOADED);
-                        }
-                    });
-                }
-            }
-
-            @Override
-            public void onRosterLoadingFailed(Exception exception) {
-                // ignored for know
-                Log.d(TAG, "error loading roster", exception);
-            }
-        });
+        roster.addRosterLoadedListener(rosterListener);
+        roster.addRosterListener(rosterListener);
         roster.setRosterStore(mRosterStore);
 
         // enable ping manager
@@ -1696,7 +1672,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         StanzaFilter filter;
 
         filter = new StanzaTypeFilter(Presence.class);
-        connection.addAsyncStanzaListener(new PresenceListener(this), filter);
+        connection.addAsyncStanzaListener(presenceListener, filter);
 
         filter = new StanzaTypeFilter(RosterMatch.class);
         connection.addAsyncStanzaListener(new RosterMatchListener(this), filter);
