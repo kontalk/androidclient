@@ -621,4 +621,31 @@
 
     <string name="audio_duration_max">%1$s / %2$s</string>
 
+    <string name="location_message">הודעת מיקום</string>
+    <string name="position_screen_title">מיקום</string>
+    <string name="pref_maps_google_label">Google Maps</string>
+    <string name="pref_maps_osm_label">OpenStreetMap</string>
+
+    <string name="notification_location">שלח לך מיקום</string>
+    <string name="location_no_result">אין תוצאות</string>
+    <string name="places_nearby">מקומות קרובים</string>
+    <string name="send_selected_location">שלח מיקום נבחר</string>
+    <string name="send_location">שלח מיקום נוכחי</string>
+    <string name="accurate_to">מדויק לכדי %1$s מטרים</string>
+    <string name="meters_away">במרחק %d מטר</string>
+    <string name="kilometers_away">במרחק %.2f ק\"מ</string>
+    <string name="loading">טוען…</string>
+    <string name="your_position">אתה</string>
+    <string name="err_googlemaps_fallback_osm">Google Maps לא זמין, חוזר לברירת המחדל OpenStreetMap.</string>
+    <string name="err_location_no_providers">אין ספקי מיקום זמינים. מיקום נוכחי לא יהיה זמין.</string>
+    <string name="err_location_access_unknown_error">לא ניתן לבקש הפעלת שירותי מיקום.</string>
+    <string name="msg_location_disabled">אנו צריכים גישה למיקום. מחר OK על מנת להגיע להגדרות ולאפשר זאת.</string>
+
+    <string name="menu_open_map">פתח במפות</string>
+    <string name="menu_map">מפה</string>
+    <string name="menu_satellite">לוויין</string>
+
+    <string name="pref_location_settings">מיקום</string>
+    <string name="pref_maps_service">ספק שירות</string>
+
     </resources>
