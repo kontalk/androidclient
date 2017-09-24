@@ -39,6 +39,7 @@ import org.jivesoftware.smack.sasl.SASLError;
 import org.jivesoftware.smack.sasl.SASLErrorException;
 import org.spongycastle.openpgp.PGPException;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.provider.Settings;
 
@@ -335,6 +336,7 @@ public class XMPPConnectionHelper extends Thread {
         mConnecting = false;
     }
 
+    @SuppressLint("HardwareIds")
     private static String getResource(Context context) {
         return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
     }

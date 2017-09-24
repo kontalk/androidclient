@@ -687,7 +687,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             MessageCenterService service = s.get();
             if (service != null) {
                 removeMessages(MSG_INACTIVE);
-                service.inactive();
+                if (service.isConnected())
+                    service.inactive();
             }
         }
 
