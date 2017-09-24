@@ -967,7 +967,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 mConn.disconnect();
             }
             catch (Exception e) {
-                // ignored
+                mConn.instantShutdown();
             }
         }
 
@@ -981,8 +981,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
             catch (InterruptedException ignored) {
             }
-            if (mConn.isConnected())
-                mConn.instantShutdown();
         }
     }
 
