@@ -21,6 +21,7 @@ package org.kontalk.client;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
@@ -79,7 +80,7 @@ public class ClientHTTPConnection {
     private final PrivateKey mPrivateKey;
     private final X509Certificate mCertificate;
 
-    private HttpsURLConnection currentRequest;
+    private HttpURLConnection currentRequest;
     private final static int CONNECT_TIMEOUT = 15000;
     private final static int READ_TIMEOUT = 40000;
 
@@ -106,8 +107,8 @@ public class ClientHTTPConnection {
      * @param url URL to download
      * @return the request object
      */
-    private HttpsURLConnection prepareURLDownload(String url, boolean acceptAnyCertificate) throws IOException {
-        HttpsURLConnection conn = (HttpsURLConnection) new URL(url).openConnection();
+    private HttpURLConnection prepareURLDownload(String url, boolean acceptAnyCertificate) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
         try {
             setupClient(conn, acceptAnyCertificate);
         }
@@ -123,7 +124,7 @@ public class ClientHTTPConnection {
 
     @SuppressWarnings("deprecation")
     @SuppressLint("AllowAllHostnameVerifier")
-    private void setupClient(HttpsURLConnection conn, boolean acceptAnyCertificate)
+    private void setupClient(HttpURLConnection conn, boolean acceptAnyCertificate)
             throws CertificateException, UnrecoverableKeyException,
             NoSuchAlgorithmException, KeyStoreException,
             KeyManagementException, NoSuchProviderException,
@@ -134,10 +135,12 @@ public class ClientHTTPConnection {
         conn.setConnectTimeout(CONNECT_TIMEOUT);
         conn.setReadTimeout(READ_TIMEOUT);
         conn.setDoInput(true);
-        conn.setSSLSocketFactory(setupSSLSocketFactory(mContext,
-            mPrivateKey, mCertificate, acceptAnyCertificate));
-        if (acceptAnyCertificate)
-            conn.setHostnameVerifier(new AllowAllHostnameVerifier());
+        if (conn instanceof HttpsURLConnection) {
+            ((HttpsURLConnection) conn).setSSLSocketFactory(setupSSLSocketFactory(mContext,
+                mPrivateKey, mCertificate, acceptAnyCertificate));
+            if (acceptAnyCertificate)
+                ((HttpsURLConnection) conn).setHostnameVerifier(new AllowAllHostnameVerifier());
+        }
     }
 
     public static SSLSocketFactory setupSSLSocketFactory(Context context,
