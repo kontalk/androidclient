@@ -687,7 +687,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             MessageCenterService service = s.get();
             if (service != null) {
                 removeMessages(MSG_INACTIVE);
-                service.inactive();
+                if (service.isConnected())
+                    service.inactive();
             }
         }
 
@@ -967,7 +968,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 mConn.disconnect();
             }
             catch (Exception e) {
-                // ignored
+                mConn.instantShutdown();
             }
         }
 
@@ -981,8 +982,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
             catch (InterruptedException ignored) {
             }
-            if (mConn.isConnected())
-                mConn.instantShutdown();
         }
     }
 
