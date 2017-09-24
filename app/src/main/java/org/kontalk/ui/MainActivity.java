@@ -26,6 +26,7 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Dialog;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -131,8 +132,14 @@ public abstract class MainActivity extends ToolbarActivity {
 
     @RequiresApi(Build.VERSION_CODES.M)
     void requestDozeModeWhitelist() {
-        startActivity(new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
-            Uri.parse("package:" + getPackageName())));
+        try {
+            startActivity(new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                Uri.parse("package:" + getPackageName())));
+        }
+        catch (ActivityNotFoundException e) {
+            Toast.makeText(this, R.string.msg_request_doze_failed_manual, Toast.LENGTH_LONG).show();
+            startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
+        }
     }
 
     // http://stackoverflow.com/a/35220476/1045199

@@ -578,6 +578,7 @@
     <string name="title_doze_mode">Battery optimization</string>
     <string name="msg_doze_mode">Kontalk requires to be whitelisted from battery optimization to function properly. We promise we won\'t hog your battery.</string>
     <string name="btn_request_doze_mode_whitelist">Request permission</string>
+    <string name="msg_request_doze_failed_manual">Please mark Kontalk as not optimized in the next screen.</string>
 
     <string name="status_label">Status:\u0020</string>
     <string name="trust_unknown">Not verified</string>
