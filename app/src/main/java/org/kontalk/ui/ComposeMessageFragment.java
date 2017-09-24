@@ -665,7 +665,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         if (visible) {
 
             if (mInvitationBar == null) {
-                mInvitationBar = (ViewGroup) getView().findViewById(R.id.invitation_bar);
+                mInvitationBar = getView().findViewById(R.id.invitation_bar);
 
                 // setup listeners and show button bar
                 View.OnClickListener listener = new View.OnClickListener() {
