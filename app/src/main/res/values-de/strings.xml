@@ -363,7 +363,7 @@
 
     <string name="warning_older_version">Ihr Freund verwendet eine ältere Kontalk-Version. Es könnte sein, dass manche Funktionen nicht richtig arbeiten.</string>
     <string name="pref_help">Hilfe</string>
-    <string name="error_delete_thread">Es ist nicht möglich, den Chat zu löschen.</string>
+    <string name="error_delete_thread">Chat kann nicht gelöscht werden.</string>
     <string name="error_delete_message">Es ist nicht möglich die Nachricht zu löschen.</string>
     <string name="err_validation_nonetwork">Es ist keine Internetverbindung verfügbar. Kontalk benötigt aber eine aktive Internetverbindung, um zu funktionieren.</string>
     <string name="title_nonetwork">Keine Internetverbindung</string>
