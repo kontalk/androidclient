@@ -626,4 +626,28 @@ Desabilite a criptografia apenas se o seu contato não posuir uma chave pessoal.
     <string name="pref_maps_google_label">Google Maps</string>
     <string name="pref_maps_osm_label">OpenStreetMap</string>
 
+    <string name="notification_location">enviou uma localização para você</string>
+    <string name="location_no_result">Nenhum resultado</string>
+    <string name="places_nearby">Locais próximos</string>
+    <string name="send_selected_location">Enviar a localização selecionada</string>
+    <string name="send_location">Enviar sua localização atual</string>
+    <string name="accurate_to">Precisão de %1$s metros</string>
+    <string name="meters_away">distante %d m</string>
+    <string name="kilometers_away">distante %.2f km</string>
+    <string name="loading">Carregando…</string>
+    <string name="your_position">Você</string>
+    <string name="err_googlemaps_fallback_osm">O Google Maps não está disponível, utilizando o OpenStreetMap no lugar.</string>
+    <string name="err_location_no_providers">Não existe nenhuma fonte de localização. A localização atual não estará disponível.</string>
+    <string name="err_location_access_unknown_error">Não foi possível solicitar a ativação de serviços de localização.</string>
+    <string name="msg_location_disabled">É necessário acessar a localização. Pressione OK para ir às configurações e habilitá-la.</string>
+
+    <string name="menu_open_map">Abrir no Maps</string>
+    <string name="menu_map">Mapa</string>
+    <string name="menu_satellite">Satélite</string>
+
+    <string name="pref_location_settings">Localização</string>
+    <string name="pref_maps_service">Provedor de serviço</string>
+
+    <string name="msg_request_doze_failed_manual">Por favor, marque o Kontalk como não otimizado, na próxima tela.</string>
+
     </resources>
