@@ -47,7 +47,6 @@ import org.jxmpp.stringprep.XmppStringprepException;
 
 import android.annotation.SuppressLint;
 
-import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.authenticator.LegacyAuthentication;
@@ -111,7 +110,7 @@ public class KontalkConnection extends XMPPTCPConnection {
             // disable session initiation
             .setLegacySessionDisabled(true)
             // enable debugging
-            .setDebuggerEnabled(BuildConfig.DEBUG);
+            .setDebuggerEnabled(Log.isDebug());
 
         // setup SSL
         setupSSL(builder, secure, privateKey, bridgeCert, acceptAnyCertificate, trustStore);

@@ -62,7 +62,7 @@ public final class Log {
         return sLogFile;
     }
 
-    private static boolean isDebug() {
+    public static boolean isDebug() {
         return BuildConfig.DEBUG || sLogFileWriter != null;
     }
 
