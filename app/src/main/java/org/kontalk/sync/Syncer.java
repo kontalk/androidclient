@@ -55,7 +55,6 @@ import android.provider.ContactsContract.RawContacts;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 
-import org.kontalk.BuildConfig;
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
@@ -785,7 +784,7 @@ public class Syncer {
 
     private void addContact(Account account, String username, String phone, String jid,
             List<ContentProviderOperation> operations, int index) {
-        if (BuildConfig.DEBUG) {
+        if (Log.isDebug()) {
             Log.d(TAG, "adding contact \"" + username + "\" <" + phone + ">");
         }
 
@@ -800,7 +799,7 @@ public class Syncer {
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     private void addProfile(Account account, String username, String phone, String jid,
             List<ContentProviderOperation> operations, int index) {
-        if (BuildConfig.DEBUG) {
+        if (Log.isDebug()) {
             Log.d(TAG, "adding profile \"" + username + "\" <" + phone + ">");
         }
 

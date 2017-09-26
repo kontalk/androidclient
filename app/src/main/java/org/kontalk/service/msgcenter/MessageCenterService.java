@@ -104,7 +104,6 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.widget.Toast;
 
-import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
@@ -170,7 +169,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String TAG = MessageCenterService.class.getSimpleName();
 
     static {
-        SmackConfiguration.DEBUG = BuildConfig.DEBUG;
+        SmackConfiguration.DEBUG = Log.isDebug();
         // we need our own debugger factory because of our internal logging system
         SmackConfiguration.setDebuggerFactory(new SmackDebuggerFactory() {
             @Override

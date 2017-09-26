@@ -20,7 +20,7 @@ package org.kontalk.ui;
 
 import java.util.Arrays;
 
-import org.kontalk.BuildConfig;
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.billing.BillingResult;
 import org.kontalk.billing.BillingServiceManager;
@@ -191,7 +191,7 @@ public class DonationFragment extends Fragment implements OnClickListener {
     private void setupGoogle(final Dialog progress) {
         if (mBillingService == null) {
             mBillingService = BillingServiceManager.getInstance(getActivity());
-            mBillingService.enableDebugLogging(BuildConfig.DEBUG);
+            mBillingService.enableDebugLogging(Log.isDebug());
 
             mBillingService.startSetup(new OnBillingSetupFinishedListener() {
                 public void onSetupFinished(BillingResult result) {

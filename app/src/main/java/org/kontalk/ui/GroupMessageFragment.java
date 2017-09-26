@@ -43,7 +43,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
@@ -393,7 +392,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         if (context == null)
             return;
 
-        if (BuildConfig.DEBUG) {
+        if (Log.isDebug()) {
             Log.d(TAG, "group member presence from " + jid + " (type=" + type + ", fingerprint=" + fingerprint + ")");
         }
 
