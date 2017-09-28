@@ -1,5 +1,9 @@
 # Change Log
 
+## [4.1.0-beta3] - 2017-09-28
+### Fixed
+- Fix group creation issue (#1067)
+
 ## [4.1.0-beta2] - 2017-09-26
 ### Changed
 - Support for plain HTTP download URLs (#1071)
