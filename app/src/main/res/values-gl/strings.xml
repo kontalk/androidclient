@@ -642,4 +642,6 @@ Desactivar a cifraxe só se o contacto non ten unha chave persoal.</string>
     <string name="pref_location_settings">Localización</string>
     <string name="pref_maps_service">Proveedor de servizos</string>
 
+    <string name="msg_request_doze_failed_manual">Marque Kontalk como non optimizado na seguiente pantalla.</string>
+
     </resources>
