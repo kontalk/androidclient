@@ -1,5 +1,15 @@
 # Change Log
 
+## [4.1.0-beta2] - 2017-09-26
+### Changed
+- Support for plain HTTP download URLs (#1071)
+
+### Fixed
+- Workaround for Samsung devices not adhereing to battery optimization API (#1037)
+- Fixed regression on status update (#1068)
+- Allow use of location when precise location (GPS) is off (#1069)
+- Fix inactive state request sent before authentication (#1070)
+
 ## [4.1.0-beta1] - 2017-09-10
 ### Changed
 - Location sharing (#1004, #1027, #1062)
