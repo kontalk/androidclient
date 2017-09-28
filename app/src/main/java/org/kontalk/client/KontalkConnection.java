@@ -18,6 +18,8 @@
 
 package org.kontalk.client;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
@@ -91,9 +93,22 @@ public class KontalkConnection extends XMPPTCPConnection {
         XMPPTCPConnectionConfiguration.Builder builder =
             XMPPTCPConnectionConfiguration.builder();
 
+        String host = server.getHost();
+        InetAddress inetAddress = null;
+        if (host != null) {
+            try {
+                inetAddress = InetAddress.getByName(host);
+            }
+            catch (UnknownHostException e) {
+                Log.w(TAG, "unable to resolve host " + host + ", will try again during connect", e);
+            }
+        }
+
         builder
             // connection parameters
-            .setHost(server.getHost())
+            .setHostAddress(inetAddress)
+            // try a last time through Smack
+            .setHost(inetAddress != null ? null : host)
             .setPort(secure ? server.getSecurePort() : server.getPort())
             .setXmppDomain(server.getNetwork())
             .setResource(resource)
