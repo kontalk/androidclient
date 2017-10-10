@@ -602,4 +602,33 @@
     <string name="msg_doze_mode">Kontalk требует добавление себя в белый список оптимизации батареи, чтобы работать правильно. Мы обещаем, что он не сожрёт Вашу батарею.</string>
     <string name="btn_request_doze_mode_whitelist">Запросить разрешение</string>
 
+    <string name="location_message">Сообщение о местоположении</string>
+    <string name="position_screen_title">Расположение</string>
+    <string name="pref_maps_google_label">Карты Google</string>
+    <string name="pref_maps_osm_label">OpenStreetMap</string>
+
+    <string name="notification_location">отправил местоположение</string>
+    <string name="location_no_result">Нет результатов</string>
+    <string name="places_nearby">Места рядом</string>
+    <string name="send_selected_location">Отправить выбранное местоположение</string>
+    <string name="send_location">Отправить текущее местоположение</string>
+    <string name="accurate_to">Точность до %1$s м</string>
+    <string name="meters_away">на удалении %d м</string>
+    <string name="kilometers_away">на удалении %.2f км</string>
+    <string name="loading">Загрузка…</string>
+    <string name="your_position">Вы</string>
+    <string name="err_googlemaps_fallback_osm">Карты Google недоступны, возврат к OpenStreetMap.</string>
+    <string name="err_location_no_providers">Провайдеры местоположения недоступны. Текущее местоположение не может быть определено.</string>
+    <string name="err_location_access_unknown_error">Невозможно запросить активацию служб местоположения.</string>
+    <string name="msg_location_disabled">Необходим доступ к местоположению. Выберите ОК для перехода в настройки и включения функции.</string>
+
+    <string name="menu_open_map">Открыть в картах</string>
+    <string name="menu_map">Карта</string>
+    <string name="menu_satellite">Спутник</string>
+
+    <string name="pref_location_settings">Местоположение</string>
+    <string name="pref_maps_service">Провайдер службы</string>
+
+    <string name="msg_request_doze_failed_manual">Пожалуйста, на следующем экране отметьте, что Kontalk не оптимизирован.</string>
+
     </resources>
