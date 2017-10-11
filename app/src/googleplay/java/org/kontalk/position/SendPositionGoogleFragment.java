@@ -82,7 +82,6 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
     GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, ResultCallback<LocationSettingsResult> {
 
     private final static String TAG = SendPositionGoogleFragment.class.getSimpleName();
-    private static final int REQUEST_LOCATION = 1;
 
     GoogleApiClient mGoogleApiClient;
 
@@ -216,7 +215,7 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
         mFabMyLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mMyLocation != null && mMap != null && mGoogleApiClient.isConnected() && isLocationEnabled()) {
+                if (mMyLocation != null && mMap != null && mGoogleApiClient.isConnected() && isLocationEnabled(LocationRequest.PRIORITY_HIGH_ACCURACY)) {
                     AnimatorSet animatorSet = new AnimatorSet();
                     animatorSet.setDuration(200);
                     animatorSet.play(ObjectAnimator.ofFloat(mFabMyLocation, "alpha", 0.0f));
@@ -293,12 +292,12 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
         ViewHelper.setAlpha(mFabMyLocation, 0.0f);
     }
 
-    protected boolean isLocationEnabled() {
+    protected boolean isLocationEnabled(int requestId) {
         if (mLastStatus != null) {
             if (mLastStatus.hasResolution()) {
                 try {
                     startIntentSenderForResult(mLastStatus.getResolution().getIntentSender(),
-                        REQUEST_LOCATION, null, 0, 0, 0, null);
+                        requestId, null, 0, 0, 0, null);
                 }
                 catch (IntentSender.SendIntentException e) {
                     Toast.makeText(getContext(), R.string.err_location_access_unknown_error,
@@ -474,7 +473,7 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
         else {
             mLastStatus = result.getStatus();
             // this will trigger the location services dialog
-            isLocationEnabled();
+            isLocationEnabled(mLocationRequest.getPriority());
         }
     }
 
@@ -515,7 +514,7 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_LOCATION) {
+        if (requestCode == LocationRequest.PRIORITY_HIGH_ACCURACY || requestCode == LocationRequest.PRIORITY_LOW_POWER) {
             mLastStatus = null;
 
             switch (resultCode) {
@@ -523,8 +522,10 @@ public class SendPositionGoogleFragment extends Fragment implements OnMapReadyCa
                     requestAndPollLastLocation();
                     break;
                 case Activity.RESULT_CANCELED:
-                    // try again with low power (i.e. network only)
-                    requestLocation(LocationRequest.PRIORITY_LOW_POWER);
+                    if (requestCode == LocationRequest.PRIORITY_HIGH_ACCURACY) {
+                        // try again with low power (i.e. network only)
+                        requestLocation(LocationRequest.PRIORITY_LOW_POWER);
+                    }
                     break;
             }
         }
