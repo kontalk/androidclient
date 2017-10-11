@@ -60,7 +60,7 @@ import org.kontalk.ui.PositionActivity;
 public abstract class PositionAbstractFragment extends Fragment implements OnMapReadyCallback {
     final static String TAG = PositionAbstractFragment.class.getSimpleName();
 
-    private final static int DEFAULT_ZOOM = 12;
+    final static int DEFAULT_ZOOM = 12;
 
     private MapContainerView mMapView;
     protected AnyMap mMap;
