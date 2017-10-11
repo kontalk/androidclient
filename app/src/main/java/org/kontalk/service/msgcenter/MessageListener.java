@@ -352,7 +352,7 @@ class MessageListener extends MessageCenterPacketListener {
                             String filename = null;
 
                             if (ImageComponent.supportsMimeType(previewMime)) {
-                                filename = ImageComponent.buildMediaFilename(msgId, previewMime);
+                                filename = ImageComponent.buildMediaFilename(previewMime);
                             }
 
                             try {
@@ -378,7 +378,7 @@ class MessageListener extends MessageCenterPacketListener {
                             if (previewFile == null) {
                                 // no bits of binary, generate a filename anyway so the thumbnail will be generated
                                 // from the original file once downloaded
-                                String filename = ImageComponent.buildMediaFilename(msgId, mime);
+                                String filename = ImageComponent.buildMediaFilename(mime);
                                 previewFile = MediaStorage.getInternalMediaFile(getContext(), filename);
                             }
 

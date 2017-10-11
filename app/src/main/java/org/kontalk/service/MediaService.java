@@ -79,7 +79,7 @@ public class MediaService extends IntentService {
                 compress = Preferences.getImageCompression(this);
 
                 // generate thumbnail
-                String filename = ImageComponent.buildMediaFilename(msgId, MediaStorage.THUMBNAIL_MIME_NETWORK);
+                String filename = ImageComponent.buildMediaFilename(MediaStorage.THUMBNAIL_MIME_NETWORK);
                 previewFile = MediaStorage.cacheThumbnail(this, uri, filename, true);
             }
 
