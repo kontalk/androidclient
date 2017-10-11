@@ -32,27 +32,22 @@ import android.database.sqlite.SQLiteException;
  * @author Daniele Ricci
  */
 public class SearchItem {
-    public static final String[] SEARCH_PROJECTION = {
+    private static final String[] SEARCH_PROJECTION = {
         Fulltext._ID + " AS " + Messages._ID,
         Fulltext.THREAD_ID,
         Fulltext.CONTENT
     };
 
-    protected final long mId;
-    protected final long mThreadId;
-    protected String mUserId;
-    protected final String mText;
-    protected Contact mContact;
+    private final long mId;
+    private final long mThreadId;
+    private final String mText;
+    private final Conversation mConversation;
 
     private SearchItem(Context context, long id, long threadId, String text) {
         mId = id;
         mThreadId = threadId;
         mText = text;
-        Conversation conv = Conversation.loadFromId(context, threadId);
-        if (conv != null) {
-            mUserId = conv.getRecipient();
-            mContact = conv.getContact();
-        }
+        mConversation = Conversation.loadFromId(context, threadId);
     }
 
     public long getMessageId() {
@@ -63,16 +58,26 @@ public class SearchItem {
         return mThreadId;
     }
 
-    public String getUserId() {
-        return mUserId;
+    public String getUserDisplayName() {
+        if (mConversation != null) {
+            if (mConversation.isGroupChat()) {
+                return mConversation.getGroupSubject();
+            }
+            else {
+                final Contact contact = mConversation.getContact();
+                String name;
+                if (contact != null)
+                    name = contact.getName() + " <" + contact.getNumber() + ">";
+                else
+                    name = mConversation.getRecipient();
+                return name;
+            }
+        }
+        return null;
     }
 
     public String getText() {
         return mText;
-    }
-
-    public Contact getContact() {
-        return mContact;
     }
 
     public static SearchItem fromCursor(Context context, Cursor cursor) {
