@@ -18,44 +18,30 @@
 
 package org.kontalk.position;
 
-import java.util.Locale;
-
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.car2go.maps.AnyMap;
-import com.car2go.maps.OnInterceptTouchEvent;
-import com.car2go.maps.OnMapReadyCallback;
 import com.car2go.maps.model.LatLng;
 import com.car2go.maps.osm.CameraUpdateFactory;
-import com.car2go.maps.osm.MapView;
 import com.car2go.maps.osm.MapsConfiguration;
 import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
-import com.nineoldandroids.view.ViewHelper;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import org.kontalk.Log;
@@ -68,52 +54,30 @@ import org.kontalk.util.ViewUtils;
  *
  * @author Andrea Cappelli
  */
-public class SendPositionOsmFragment extends Fragment implements OnMapReadyCallback, LocationListener {
+public class SendPositionOsmFragment extends SendPositionAbstractFragment implements LocationListener {
 
     private final static String TAG = SendPositionOsmFragment.class.getSimpleName();
 
     private LocationManager mLocationManager;
 
-    private MapView mMapView;
-    AnyMap mMap;
-
-    Location mUserLocation;
-    Location mMyLocation;
-
-    ImageView mMapPin;
-    ImageView mPinX;
-    FloatingActionButton mFabMyLocation;
-
-    private SendLocationRow mSendLocationRow;
-
-    AnimatorSet mAnimatorSet;
-
-    boolean mUserLocationMoved = false;
+    private AnimatorSet mAnimatorSet;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
 
         mLocationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+    }
+
+    @Override
+    protected View onInflateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_send_position_osm, container, false);
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_send_position_osm, container, false);
-
-        mMapView = view.findViewById(R.id.mapView);
-
-        mMapPin = view.findViewById(R.id.map_pin);
-        mPinX = view.findViewById(R.id.pin_x);
-        ViewHelper.setAlpha(mPinX, 0.0f);
-
-        mSendLocationRow = view.findViewById(R.id.send_location);
-
-        mFabMyLocation = view.findViewById(R.id.fab_my_position);
-
-        mMapView.onCreate(savedInstanceState);
+        View view = super.onCreateView(inflater, container, savedInstanceState);
 
         MapsConfiguration.getInstance().initialize(getContext());
 
@@ -121,86 +85,60 @@ public class SendPositionOsmFragment extends Fragment implements OnMapReadyCallb
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    protected boolean isPlacesEnabled() {
+        return false;
+    }
 
-        mUserLocation = new Location("network");
-        mUserLocation.setLatitude(41.8508384);
-        mUserLocation.setLongitude(11.9545216);
+    @Override
+    protected void onFabClicked(Location location) {
+        setGpsPosition(location);
+    }
 
-        mMyLocation = new Location("network");
+    @Override
+    protected CameraUpdateFactory getCameraUpdateFactory() {
+        return com.car2go.maps.osm.CameraUpdateFactory.getInstance();
+    }
 
-        mMapView.getMapAsync(this);
-
-        mMapView.setOnInterceptTouchEventListener(new OnInterceptTouchEvent() {
-            @Override
-            public void onInterceptTouchEvent(MotionEvent ev) {
-                if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-                    if (mAnimatorSet != null) {
-                        mAnimatorSet.cancel();
-                    }
-                    mAnimatorSet = new AnimatorSet();
-                    mAnimatorSet.setDuration(200);
-                    mAnimatorSet.playTogether(
-                        ObjectAnimator.ofFloat(mMapPin, "translationY", -ViewUtils.dp(getContext(), 10)),
-                        ObjectAnimator.ofFloat(mPinX, "alpha", 1.0f));
-                    mAnimatorSet.start();
-                }
-                else if (ev.getAction() == MotionEvent.ACTION_UP) {
-                    if (mAnimatorSet != null) {
-                        mAnimatorSet.cancel();
-                    }
-                    mAnimatorSet = new AnimatorSet();
-                    mAnimatorSet.setDuration(200);
-                    mAnimatorSet.playTogether(
-                        ObjectAnimator.ofFloat(mMapPin, "translationY", 0),
-                        ObjectAnimator.ofFloat(mPinX, "alpha", 0.0f));
-                    mAnimatorSet.start();
-                }
-                if (ev.getAction() == MotionEvent.ACTION_MOVE) {
-                    if (!mUserLocationMoved) {
-                        AnimatorSet animatorSet = new AnimatorSet();
-                        animatorSet.setDuration(200);
-                        animatorSet.play(ObjectAnimator.ofFloat(mFabMyLocation, "alpha", 1.0f));
-                        animatorSet.start();
-                        mUserLocationMoved = true;
-                    }
-
-                    if (mMap != null && mMyLocation != null) {
-                        mUserLocation.setLatitude(mMap.getCameraPosition().target.latitude);
-                        mUserLocation.setLongitude(mMap.getCameraPosition().target.longitude);
-                    }
-
-                    setCustomLocation(mUserLocation);
-                }
+    @Override
+    protected void onMapTouchEvent(MotionEvent ev) {
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            if (mAnimatorSet != null) {
+                mAnimatorSet.cancel();
             }
-        });
-
-        mFabMyLocation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mMyLocation != null && mMap != null && isLocationEnabled()) {
-                    AnimatorSet animatorSet = new AnimatorSet();
-                    animatorSet.setDuration(200);
-                    animatorSet.play(ObjectAnimator.ofFloat(mFabMyLocation, "alpha", 0.0f));
-                    animatorSet.start();
-                    setGpsPosition(mMyLocation);
-                    mUserLocationMoved = false;
-                    mMap.animateCamera(CameraUpdateFactory.getInstance().newLatLngZoom(new LatLng(mMyLocation.getLatitude(), mMyLocation.getLongitude()), 16));
-                }
+            mAnimatorSet = new AnimatorSet();
+            mAnimatorSet.setDuration(200);
+            mAnimatorSet.playTogether(
+                ObjectAnimator.ofFloat(mMapPin, "translationY", -ViewUtils.dp(getContext(), 10)),
+                ObjectAnimator.ofFloat(mPinX, "alpha", 1.0f));
+            mAnimatorSet.start();
+        }
+        else if (ev.getAction() == MotionEvent.ACTION_UP) {
+            if (mAnimatorSet != null) {
+                mAnimatorSet.cancel();
             }
-        });
-
-        mSendLocationRow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Position position = new Position(mUserLocation.getLatitude(), mUserLocation.getLongitude());
-                Intent intent = new Intent();
-                intent.putExtra("position", position);
-                getActivity().setResult(Activity.RESULT_OK, intent);
-                getActivity().finish();
+            mAnimatorSet = new AnimatorSet();
+            mAnimatorSet.setDuration(200);
+            mAnimatorSet.playTogether(
+                ObjectAnimator.ofFloat(mMapPin, "translationY", 0),
+                ObjectAnimator.ofFloat(mPinX, "alpha", 0.0f));
+            mAnimatorSet.start();
+        }
+        if (ev.getAction() == MotionEvent.ACTION_MOVE) {
+            if (!mUserLocationMoved) {
+                AnimatorSet animatorSet = new AnimatorSet();
+                animatorSet.setDuration(200);
+                animatorSet.play(ObjectAnimator.ofFloat(mFabMyLocation, "alpha", 1.0f));
+                animatorSet.start();
+                mUserLocationMoved = true;
             }
-        });
+
+            if (mMap != null && mMyLocation != null) {
+                mUserLocation.setLatitude(mMap.getCameraPosition().target.latitude);
+                mUserLocation.setLongitude(mMap.getCameraPosition().target.longitude);
+            }
+
+            setCustomLocation(mUserLocation);
+        }
     }
 
     protected boolean isLocationEnabled() {
@@ -230,14 +168,12 @@ public class SendPositionOsmFragment extends Fragment implements OnMapReadyCallb
     @Override
     public void onPause() {
         super.onPause();
-        mMapView.onPause();
         mLocationManager.removeUpdates(this);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        mMapView.onResume();
 
         // this will trigger a dialog to ask for location
         isLocationEnabled();
@@ -265,72 +201,10 @@ public class SendPositionOsmFragment extends Fragment implements OnMapReadyCallb
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mMapView.onDestroy();
-    }
-
-    @Override
-    public void onLowMemory() {
-        super.onLowMemory();
-        mMapView.onLowMemory();
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        mMapView.onSaveInstanceState(outState);
-    }
-
-    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.send_position_menu, menu);
-        menu.removeItem(R.id.menu_search);
+        super.onCreateOptionsMenu(menu, inflater);
         // OSM doesn't have satellite
         menu.removeItem(R.id.satellite);
-
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (super.onOptionsItemSelected(item))
-            return true;
-
-        switch (item.getItemId()) {
-            case R.id.map:
-                if (!item.isChecked()) {
-                    item.setChecked(true);
-                    mMap.setMapType(AnyMap.Type.NORMAL);
-                }
-                return true;
-
-            case R.id.satellite:
-                if (!item.isChecked()) {
-                    item.setChecked(true);
-                    mMap.setMapType(AnyMap.Type.SATELLITE);
-                }
-                return true;
-        }
-
-        return false;
-    }
-
-    private void checkPermission() {
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(getActivity(),
-                    new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION}, 2);
-            }
-        }
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        if (mMap != null) {
-            positionMarker(location);
-        }
     }
 
     @Override
@@ -350,11 +224,7 @@ public class SendPositionOsmFragment extends Fragment implements OnMapReadyCallb
 
     @Override
     public void onMapReady(final AnyMap anyMap) {
-        mMap = anyMap;
-        anyMap.setMyLocationEnabled(true);
-        anyMap.getUiSettings().setMyLocationButtonEnabled(false);
-        anyMap.getUiSettings().setMapToolbarEnabled(false);
-        anyMap.getUiSettings().setCompassEnabled(false);
+        super.onMapReady(anyMap);
 
         Location lastLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         // Note that this can be NULL if last location isn't already known.
@@ -367,33 +237,5 @@ public class SendPositionOsmFragment extends Fragment implements OnMapReadyCallb
             if (mMap != null)
                 mMap.animateCamera(CameraUpdateFactory.getInstance().newLatLngZoom(latLng, 16));
         }
-    }
-
-    private void positionMarker(Location location) {
-        if (location == null) {
-            return;
-        }
-        mMyLocation = new Location(location);
-
-        setGpsPosition(mMyLocation);
-
-        if (!mUserLocationMoved) {
-            mUserLocation = new Location(location);
-
-            LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-
-            mMap.moveCamera(CameraUpdateFactory.getInstance().newLatLngZoom(latLng, 16));
-
-        }
-    }
-
-    public void setCustomLocation(Location location) {
-        mSendLocationRow.setText(getString(R.string.send_selected_location),
-            String.format(Locale.US, "(%f, %f)", location.getLatitude(), location.getLongitude()));
-    }
-
-    public void setGpsPosition(Location location) {
-        mSendLocationRow.setText(getString(R.string.send_location),
-            getString(R.string.accurate_to, String.valueOf((int) location.getAccuracy())));
     }
 }
