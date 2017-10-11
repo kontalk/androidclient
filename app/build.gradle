@@ -135,7 +135,7 @@ dependencies {
     compile "com.madgag.spongycastle:pkix:$spongyCastleVersion"
     compile "com.madgag.spongycastle:pg:$spongyCastleVersion"
     compile 'info.guardianproject.netcipher:netcipher:1.2.1'
-    compile 'com.googlecode.libphonenumber:libphonenumber:8.8.1'
+    compile 'com.googlecode.libphonenumber:libphonenumber:8.8.3'
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'com.google.zxing:core:3.3.0'
     compile 'com.segment.backo:backo:1.0.0'
@@ -171,7 +171,7 @@ dependencies {
 
     googleplayCompile "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
     googleplayCompile "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"
-    googleplayCompile('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
+    googleplayCompile('com.crashlytics.sdk.android:crashlytics:2.7.0@aar') {
         transitive = true
     }
 
