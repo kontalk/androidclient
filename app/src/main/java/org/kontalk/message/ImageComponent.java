@@ -20,6 +20,8 @@ package org.kontalk.message;
 
 import java.io.File;
 
+import org.jivesoftware.smack.util.StringUtils;
+
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -72,8 +74,8 @@ public class ImageComponent extends AttachmentComponent {
     protected void populateFromCursor(Context context, Cursor c) {
     }
 
-    public static String buildMediaFilename(String id, String mime) {
-        return "image" + id.substring(id.length() - 5) + "." + getFileExtension(mime);
+    public static String buildMediaFilename(String mime) {
+        return "image" + StringUtils.randomString(5) + "." + getFileExtension(mime);
     }
 
     /** Returns the file extension from the mime type. */
