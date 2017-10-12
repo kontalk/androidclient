@@ -491,10 +491,10 @@
     <string name="notification_group_title">%1$s @ %2$s</string>
 
     <plurals name="notification_more">
-	<item quantity="one">+%d ещё</item>
+	<item quantity="one">+1 ещё</item>
 	<item quantity="few">+%d ещё</item>
 	<item quantity="many">+%d ещё</item>
-	<item quantity="other"/>
+	<item quantity="other"></item>
 </plurals>
 
     <plurals name="group_people">
@@ -516,11 +516,11 @@
     <string name="button_private_chat">Приватная беседа</string>
 
     <plurals name="confirm_will_delete_threads">
-        <item quantity="one" tools:ignore="ImpliedQuantity">Выбраннй чат будет удалена.</item>
-        <item quantity="few">Выбранные чаты будут удалены.</item>
-        <item quantity="many">Выбранные чаты будут удалены.</item>
-        <item quantity="other"/>
-    </plurals>
+	<item quantity="one">Выбранный чат будет удалён.</item>
+	<item quantity="few">Выбранные чаты будут удалены.</item>
+	<item quantity="many">Выбранные чаты будут удалены.</item>
+	<item quantity="other"/>
+</plurals>
 
 <string name="code_validation_intro_callerid">Нажмите на кнопку ниже и отправьте пропущенный вызов на этот номер. Пожалуйста, имейте в виду: <b>вызов должен быть совершен с Вашего зарегистрированного телефонного номера</b>. Вызов будет бесплатным, если Вы повесите трубку как только услышите первый сигнал. Этого для нас будет достаточно.</string>
     <string name="code_validation_intro2_callerid">После закрытия вызова, вернитесь сюда и нажмите кнопку верификации ниже.</string>
@@ -601,5 +601,34 @@
     <string name="title_doze_mode">Оптимизация батареи</string>
     <string name="msg_doze_mode">Kontalk требует добавление себя в белый список оптимизации батареи, чтобы работать правильно. Мы обещаем, что он не сожрёт Вашу батарею.</string>
     <string name="btn_request_doze_mode_whitelist">Запросить разрешение</string>
+
+    <string name="location_message">Сообщение о местоположении</string>
+    <string name="position_screen_title">Расположение</string>
+    <string name="pref_maps_google_label">Карты Google</string>
+    <string name="pref_maps_osm_label">OpenStreetMap</string>
+
+    <string name="notification_location">отправил местоположение</string>
+    <string name="location_no_result">Нет результатов</string>
+    <string name="places_nearby">Места рядом</string>
+    <string name="send_selected_location">Отправить выбранное местоположение</string>
+    <string name="send_location">Отправить текущее местоположение</string>
+    <string name="accurate_to">Точность до %1$s м</string>
+    <string name="meters_away">на удалении %d м</string>
+    <string name="kilometers_away">на удалении %.2f км</string>
+    <string name="loading">Загрузка…</string>
+    <string name="your_position">Вы</string>
+    <string name="err_googlemaps_fallback_osm">Карты Google недоступны, возврат к OpenStreetMap.</string>
+    <string name="err_location_no_providers">Провайдеры местоположения недоступны. Текущее местоположение не может быть определено.</string>
+    <string name="err_location_access_unknown_error">Невозможно запросить активацию служб местоположения.</string>
+    <string name="msg_location_disabled">Необходим доступ к местоположению. Выберите ОК для перехода в настройки и включения функции.</string>
+
+    <string name="menu_open_map">Открыть в картах</string>
+    <string name="menu_map">Карта</string>
+    <string name="menu_satellite">Спутник</string>
+
+    <string name="pref_location_settings">Местоположение</string>
+    <string name="pref_maps_service">Провайдер службы</string>
+
+    <string name="msg_request_doze_failed_manual">Пожалуйста, на следующем экране отметьте, что Kontalk не оптимизирован.</string>
 
     </resources>
