@@ -352,6 +352,8 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                                 if (smsFrom != null) {
                                     Log.d(TAG, "using sender id: " + smsFrom + ", challenge: " + challenge);
                                     mServerChallenge = challenge;
+                                    ReportingManager.logRegister(challenge);
+
                                     mListener.onValidationRequested(NumberValidator.this,
                                         smsFrom, challenge, brandImage, brandLink, canFallback);
 
