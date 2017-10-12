@@ -50,9 +50,10 @@ import org.kontalk.position.model.VenuesItem;
  * @author andreacappelli
  */
 
-public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.ViewHolder> {
+public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.ViewHolder>
+        implements IPlacesAdapter {
 
-    static final String TAG = PlacesAdapter.class.getSimpleName();
+    private static final String TAG = PlacesAdapter.class.getSimpleName();
 
     private final static int EMPTY = 0;
     private final static int SEND_LOCATION = 1;

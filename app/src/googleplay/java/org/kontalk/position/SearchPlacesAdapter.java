@@ -49,9 +49,10 @@ import org.kontalk.position.model.VenuesItem;
  * @author andreacappelli
  */
 
-public class SearchPlacesAdapter extends RecyclerView.Adapter<SearchPlacesAdapter.ViewHolder> {
+public class SearchPlacesAdapter extends RecyclerView.Adapter<SearchPlacesAdapter.ViewHolder>
+        implements ISearchPlacesAdapter {
 
-    static final String TAG = SearchPlacesAdapter.class.getSimpleName();
+    private static final String TAG = SearchPlacesAdapter.class.getSimpleName();
 
     private final static int LOCATION = 0;
     private final static int LOADING = 1;

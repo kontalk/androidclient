@@ -20,6 +20,7 @@ package org.kontalk.position;
 
 import android.content.Context;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.RecyclerView;
 
 
 /**
@@ -46,5 +47,13 @@ public class PositionManager {
 
     public static String getMapsUrl(Context context, double lat, double lon) {
         return OsmUrlBuilder.build(lat, lon);
+    }
+
+    public static RecyclerView.Adapter<?> createSearchPlacesAdapter(Context context) {
+        return null;
+    }
+
+    public static RecyclerView.Adapter<?> createPlacesAdapter(Context context) {
+        return null;
     }
 }
