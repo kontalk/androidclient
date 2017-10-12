@@ -39,6 +39,9 @@ public class ReportingManager {
     public static void logException(Throwable exception) {
     }
 
+    public static void logRegister(String method) {
+    }
+
     public static void logSignUp(String method) {
     }
 

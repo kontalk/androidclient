@@ -20,6 +20,7 @@ package org.kontalk.reporting;
 
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.CustomEvent;
 import com.crashlytics.android.answers.SignUpEvent;
 
 import android.content.Context;
@@ -58,6 +59,16 @@ public class ReportingManager {
     public static void logException(Throwable exception) {
         if (!BuildConfig.DEBUG && sEnabled)
             Crashlytics.logException(exception);
+    }
+
+    /**
+     * Logs a registration attempt.
+     * @param method the challenge being used
+     */
+    public static void logRegister(String method) {
+        if (!BuildConfig.DEBUG && sEnabled)
+            Answers.getInstance().logCustom(new CustomEvent("Register")
+                .putCustomAttribute("Method", method));
     }
 
     public static void logSignUp(String method) {
