@@ -23,6 +23,7 @@ import com.google.android.gms.common.GoogleApiAvailability;
 
 import android.content.Context;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.RecyclerView;
 import android.widget.Toast;
 
 import org.kontalk.R;
@@ -107,4 +108,13 @@ public class PositionManager {
         return status == ConnectionResult.SUCCESS ||
             status == ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED;
     }
+
+    public static RecyclerView.Adapter<?> createSearchPlacesAdapter(Context context) {
+        return new SearchPlacesAdapter(context);
+    }
+
+    public static RecyclerView.Adapter<?> createPlacesAdapter(Context context) {
+        return new PlacesAdapter(context);
+    }
+
 }

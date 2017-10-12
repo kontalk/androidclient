@@ -30,6 +30,7 @@ import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
 import com.nineoldandroids.view.ViewHelper;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.location.Location;
@@ -78,8 +79,8 @@ public abstract class SendPositionAbstractFragment extends Fragment implements O
     RecyclerView mRecyclerView;
     RecyclerView mSearchRecyclerView;
     LinearLayoutManager mRecyclerViewLayoutManager;
-    SearchPlacesAdapter mSearchAdapter;
-    PlacesAdapter mAdapter;
+    RecyclerView.Adapter<?> mSearchAdapter;
+    RecyclerView.Adapter<?> mAdapter;
 
     private SendLocationRow mSendLocationRow;
 
@@ -96,6 +97,7 @@ public abstract class SendPositionAbstractFragment extends Fragment implements O
 
     protected abstract View onInflateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState);
 
+    @SuppressLint("WrongViewCast")
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -156,7 +158,7 @@ public abstract class SendPositionAbstractFragment extends Fragment implements O
                     animatorSet.start();
                     onFabClicked(mMyLocation);
                     if (mAdapter != null) {
-                        mAdapter.setCustomLocation(null);
+                        ((IPlacesAdapter) mAdapter).setCustomLocation(null);
                     }
                     mUserLocationMoved = false;
                     mMap.animateCamera(getCameraUpdateFactory().newLatLngZoom(new LatLng(mMyLocation.getLatitude(), mMyLocation.getLongitude()), PositionAbstractFragment.DEFAULT_ZOOM));
@@ -165,8 +167,8 @@ public abstract class SendPositionAbstractFragment extends Fragment implements O
         });
 
         if (isPlacesEnabled()) {
-            mAdapter = new PlacesAdapter(getContext());
-            mSearchAdapter = new SearchPlacesAdapter(getContext());
+            mAdapter = PositionManager.createPlacesAdapter(getContext());
+            mSearchAdapter = PositionManager.createSearchPlacesAdapter(getContext());
 
             mRecyclerViewLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
             LinearLayoutManager searchRecyclerViewLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
@@ -188,7 +190,7 @@ public abstract class SendPositionAbstractFragment extends Fragment implements O
                         getActivity().finish();
                     }
                     else {
-                        Position item = mAdapter.getVenuesItem(position);
+                        Position item = ((IPlacesAdapter) mAdapter).getVenuesItem(position);
                         if (item != null) {
                             Intent intent = new Intent();
                             intent.putExtra("position", item);
@@ -217,7 +219,7 @@ public abstract class SendPositionAbstractFragment extends Fragment implements O
             mSearchRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getContext(), new RecyclerItemClickListener.OnItemClickListener() {
                 @Override
                 public void onItemClick(View view, int position) {
-                    Position item = mSearchAdapter.getVenuesItem(position);
+                    Position item = ((ISearchPlacesAdapter) mSearchAdapter).getVenuesItem(position);
                     if (item != null) {
                         Intent intent = new Intent();
                         intent.putExtra("position", item);
@@ -306,7 +308,7 @@ public abstract class SendPositionAbstractFragment extends Fragment implements O
                 public boolean onMenuItemActionCollapse(MenuItem item) {
                     mRecyclerView.setVisibility(View.VISIBLE);
                     mMapViewClip.setVisibility(View.VISIBLE);
-                    mSearchAdapter.searchPlacesWithQuery(null, null);
+                    ((ISearchPlacesAdapter) mSearchAdapter).searchPlacesWithQuery(null, null);
                     mSearchRecyclerView.setVisibility(View.GONE);
                     return true;
                 }
@@ -315,7 +317,7 @@ public abstract class SendPositionAbstractFragment extends Fragment implements O
             searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                 @Override
                 public boolean onQueryTextSubmit(String query) {
-                    mSearchAdapter.searchPlacesWithQuery(query, mUserLocation);
+                    ((ISearchPlacesAdapter) mSearchAdapter).searchPlacesWithQuery(query, mUserLocation);
                     return false;
                 }
 
@@ -367,8 +369,8 @@ public abstract class SendPositionAbstractFragment extends Fragment implements O
 
     protected void setGpsPosition(Location location) {
         if (isPlacesEnabled()) {
-            mAdapter.searchPlaces(mMyLocation);
-            mAdapter.setGpsPosition(mMyLocation);
+            ((IPlacesAdapter) mAdapter).searchPlaces(mMyLocation);
+            ((IPlacesAdapter) mAdapter).setGpsPosition(mMyLocation);
         }
         else {
             mSendLocationRow.setText(getString(R.string.send_location),
@@ -378,7 +380,7 @@ public abstract class SendPositionAbstractFragment extends Fragment implements O
 
     protected void setCustomLocation(Location location) {
         if (isPlacesEnabled()) {
-            mAdapter.setCustomLocation(location);
+            ((IPlacesAdapter) mAdapter).setCustomLocation(location);
         }
         else {
             mSendLocationRow.setText(getString(R.string.send_selected_location),
@@ -425,7 +427,7 @@ public abstract class SendPositionAbstractFragment extends Fragment implements O
             layoutParams.height = mOverScrollHeight;
             mMapViewClip.setLayoutParams(layoutParams);
 
-            mAdapter.setOverScrollHeight(mOverScrollHeight);
+            ((IPlacesAdapter) mAdapter).setOverScrollHeight(mOverScrollHeight);
             layoutParams = (FrameLayout.LayoutParams) mMapView.getLayoutParams();
             if (layoutParams != null) {
                 layoutParams.height = mOverScrollHeight + ViewUtils.dp(getContext(), 10);
