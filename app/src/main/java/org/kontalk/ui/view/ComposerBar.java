@@ -68,6 +68,7 @@ import org.kontalk.message.AudioComponent;
 import org.kontalk.ui.AudioDialog;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.util.MediaStorage;
+import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
@@ -207,13 +208,15 @@ public class ComposerBar extends RelativeLayout implements
                     mListener.textChanged(s);
 
                 // convert ascii to emojis if preference set
-                /* FIXME doesn't work yet because of issues with Emojicon
                 if (Preferences.getEmojiConverter(mContext)) {
                     mTextEntry.removeTextChangedListener(this);
-                    MessageUtils.convertSmileys(s);
+                    if (MessageUtils.convertSmileys(s)) {
+                        // restart IME to solve problems with deleting emojis
+                        InputMethodManager imm = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.restartInput(mTextEntry);
+                    }
                     mTextEntry.addTextChangedListener(this);
                 }
-                */
             }
         });
         mTextEntry.setOnEditorActionListener(new TextView.OnEditorActionListener() {
