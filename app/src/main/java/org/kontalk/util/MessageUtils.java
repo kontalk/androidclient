@@ -88,11 +88,38 @@ public final class MessageUtils {
     private static Map<String, String> sEmojiConverterMap = new HashMap<>();
 
     static {
+        //http://apps.timwhitlock.info/emoji/tables/unicode
+        //http://unicode.org/emoji/charts/full-emoji-list.html
+        //use this to get UTF-16 from UTF-32: http://www.fileformat.info/info/unicode/char/search.htm
+        //you have to use UTF-16 here!
         sEmojiConverterMap.put(":)", "\uD83D\uDE42");
         sEmojiConverterMap.put(":-)", "\uD83D\uDE42");
         sEmojiConverterMap.put(":(", "\uD83D\uDE41");
         sEmojiConverterMap.put(":-(", "\uD83D\uDE41");
         sEmojiConverterMap.put(":'(", "\uD83D\uDE22");
+        sEmojiConverterMap.put("<3", "\u0000\u2764");
+        sEmojiConverterMap.put(";-)", "\uD83D\uDE09");
+        sEmojiConverterMap.put(";)", "\uD83D\uDE09");
+        sEmojiConverterMap.put(":p", "\uD83D\uDE1B");
+        sEmojiConverterMap.put(":P", "\uD83D\uDE1B");
+        sEmojiConverterMap.put(":b", "\uD83D\uDE1B");
+        sEmojiConverterMap.put(";p", "\uD83D\uDE1C");
+        sEmojiConverterMap.put(";P", "\uD83D\uDE1C");
+        sEmojiConverterMap.put(";b", "\uD83D\uDE1C");
+        sEmojiConverterMap.put("xp", "\uD83D\uDE1D");
+        sEmojiConverterMap.put("xP", "\uD83D\uDE1D");
+        sEmojiConverterMap.put("xb", "\uD83D\uDE1D");
+        sEmojiConverterMap.put("Xp", "\uD83D\uDE1D");
+        sEmojiConverterMap.put("XP", "\uD83D\uDE1D");
+        sEmojiConverterMap.put("Xb", "\uD83D\uDE1D");
+        sEmojiConverterMap.put("B)", "\uD83D\uDE0E");
+        sEmojiConverterMap.put(":/", "\uD83D\uDE15");
+        sEmojiConverterMap.put(":\\", "\uD83D\uDE15");
+        sEmojiConverterMap.put(":|", "\uD83D\uDE10");
+        sEmojiConverterMap.put(":o", "\uD83D\uDE2E");
+        sEmojiConverterMap.put(":O", "\uD83D\uDE2E");
+        sEmojiConverterMap.put(";(", "\uD83D\uDE20");
+        sEmojiConverterMap.put(";-(", "\uD83D\uDE20");
     }
 
     public static final int MILLISECONDS_IN_DAY = 86400000;
@@ -708,17 +735,59 @@ public final class MessageUtils {
         return text;
     }
 
-    public static void convertSmileys(Editable input) {
+    // checks for ASCII-smileys and replace them
+    public static boolean convertSmileys(Editable input) {
+        boolean converted = false;
         for (String key : sEmojiConverterMap.keySet()) {
-            replaceEditable(input, key, sEmojiConverterMap.get(key));
+            // order of arguments of OR is essential here!
+            converted = replaceEditable(input, key, sEmojiConverterMap.get(key)) || converted;
         }
+        return converted;
+    }
+    
+    // actual replacement ASCII -> UTF-16 if necessary
+    private static boolean replaceEditable(Editable text, String in, String out) {
+        boolean replaced = false;
+        int notReplaced = 0;
+        for (int position = text.toString().indexOf(in); position >= 0; position = text.toString().indexOf(in)){
+
+            // check if there are symbols that should not be converted, e.g. in "http://" or "experte"
+            // if only these last, exit the loop
+            if (notReplaced > 0){
+                position = ordinalIndexOf(text.toString(), " " + in, notReplaced) + 1;
+                if (position < 1){
+                    break;
+                }
+            }
+            // emoji at beginning is okay, emoji with other char than space in front is not okay
+            if (position > 0 && text.charAt(position - 1) > 32 && text.charAt(position - 1) < 255) {
+                notReplaced++;
+                continue;
+            }
+            text.replace(position, position + in.length(), out);
+            replaced = true;
+        }
+        return replaced;
     }
 
-    private static void replaceEditable(Editable text, String in, String out) {
-        int position = text.toString().indexOf(in);
-        if (position >= 0) {
-            text.replace(position, position + in.length(), out);
+    //can't find such a function in java api, so take it from StringUtils.java
+    public static int ordinalIndexOf(String str, String searchStr, int ordinal) {
+        if (str == null || searchStr == null || ordinal <= 0) {
+            return -1;
         }
+        if (searchStr.length() == 0) {
+            return 0;
+        }
+        int found = 0;
+        int index = -1;
+        do {
+            index = str.indexOf(searchStr, index + 1);
+            if (index < 0) {
+                return index;
+            }
+            found++;
+        } while (found < ordinal);
+        return index;
     }
 
     public static boolean sendEncrypted(Context context, boolean chatEncryptionEnabled) {
