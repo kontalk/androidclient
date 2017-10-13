@@ -1,0 +1,19 @@
+root = true
+
+# Unix-style newlines with a newline ending every file
+[*]
+end_of_line = lf
+insert_final_newline = true
+
+# UTF-8, 4 spaces indentation and no trailing spaces
+[*.{java,xml,gradle}]
+charset = utf-8
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+
+# Opening curly brackets on the same line
+# Spaces around operators (a + b)
+[*.java]
+curly_bracket_next_line = false
+spaces_around_operators = true
