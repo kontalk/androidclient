@@ -24,7 +24,7 @@ allprojects {
         appVersionName = '4.1.0-beta4'
         targetSdkVersion = 22
         compileSdkVersion = 26
-        buildToolsVersion = '26.0.1'
+        buildToolsVersion = '26.0.2'
         smackVersion = project(':client-common-java').smackVersion
         spongyCastleVersion = '1.54.0.0'
         // Google dropped support for Android API level < 14 starting 26.0.0
