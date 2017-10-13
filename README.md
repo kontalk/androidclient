@@ -27,7 +27,7 @@ Developers and users can discuss about Kontalk through:
 
 ### Contribute
 
-Please refer to [our wiki](https://github.com/kontalk/androidclient/wiki) to know how to contribute to Kontalk.
+Please refer to our [contribution guidelines](CONTRIBUTING.md) to know how to contribute to Kontalk.
 
 
 ### Translations
