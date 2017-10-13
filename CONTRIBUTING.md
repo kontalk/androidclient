@@ -25,8 +25,8 @@ accepted more quickly:
 * Give it a `./gradlew :app:checkstyle` to be sure everything is nice
 
 If you don't know what patch to contribute, you may start by looking at
-issues labeled with [help wanted](//github.com/kontalk/androidclient/labels/help wanted)
-or [good first issue](//github.com/kontalk/androidclient/labels/good first issue).
+issues labeled with [help wanted](//github.com/kontalk/androidclient/labels/help%20wanted)
+or [good first issue](//github.com/kontalk/androidclient/labels/good%20first%20issue).
 
 ## Translating
 
