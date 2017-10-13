@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipInputStream;
 
-import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.folderselector.FileChooserDialog;
 import com.google.i18n.phonenumbers.NumberParseException;
@@ -69,7 +69,7 @@ import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Base64;
-import android.util.Log;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -80,10 +80,12 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
@@ -95,14 +97,17 @@ import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyImporter;
 import org.kontalk.crypto.PersonalKeyPack;
 import org.kontalk.crypto.X509Bridge;
-import org.kontalk.provider.UsersProvider;
+import org.kontalk.provider.Keyring;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
 import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.adapter.CountryCodesAdapter;
 import org.kontalk.ui.adapter.CountryCodesAdapter.CountryCode;
+import org.kontalk.ui.prefs.PreferencesActivity;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.ParameterRunnable;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
@@ -122,6 +127,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public static final String PARAM_PUBLICKEY = "org.kontalk.publickey";
     public static final String PARAM_PRIVATEKEY = "org.kontalk.privatekey";
     public static final String PARAM_SERVER_URI = "org.kontalk.server";
+    public static final String PARAM_CHALLENGE = "org.kontalk.challenge";
     public static final String PARAM_TRUSTED_KEYS = "org.kontalk.trustedkeys";
 
     private AccountManager mAccountManager;
@@ -131,26 +137,26 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private Button mValidateButton;
     private MaterialDialog mProgress;
     private CharSequence mProgressMessage;
-    private NumberValidator mValidator;
-    private Handler mHandler;
+    NumberValidator mValidator;
+    Handler mHandler;
 
     private String mPhoneNumber;
     private String mName;
 
-    private PersonalKey mKey;
+    PersonalKey mKey;
     private String mPassphrase;
     private byte[] mImportedPublicKey;
     private byte[] mImportedPrivateKey;
-    private Map<String, String> mTrustedKeys;
+    Map<String, Keyring.TrustedFingerprint> mTrustedKeys;
     private boolean mForce;
 
     private LocalBroadcastManager lbm;
 
     /** Will be true when resuming for a fallback registration. */
     private boolean mClearState;
-    private boolean mFromInternal;
+    boolean mFromInternal;
     /** Runnable for delaying initial manual sync starter. */
-    private Runnable mSyncStart;
+    Runnable mSyncStart;
     private boolean mSyncing;
 
     private KeyGeneratorReceiver mKeyReceiver;
@@ -163,6 +169,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         /** @deprecated Use saved instance state. */
         @Deprecated
         boolean syncing;
+
+        RetainData() {
+        }
     }
 
     /**
@@ -193,14 +202,14 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             // ignored
         }
 
-        return new HashSet<String>();
+        return new HashSet<>();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.number_validation);
-        setupToolbar(false);
+        setupToolbar(false, false);
 
         mAccountManager = AccountManager.get(this);
         mHandler = new Handler();
@@ -216,7 +225,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         mValidateButton = (Button) findViewById(R.id.button_validate);
 
         // populate country codes
-        final CountryCodesAdapter ccList = new CountryCodesAdapter(this, R.layout.country_item, R.layout.country_dropdown_item);
+        final CountryCodesAdapter ccList = new CountryCodesAdapter(this,
+                android.R.layout.simple_list_item_1,
+                android.R.layout.simple_spinner_dropdown_item);
         PhoneNumberUtil util = PhoneNumberUtil.getInstance();
         Set<String> ccSet = getSupportedRegions(util);
         for (String cc : ccSet)
@@ -250,11 +261,14 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         }
         else {
             final TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-            final String regionCode = tm.getSimCountryIso().toUpperCase(Locale.US);
-            CountryCode cc = new CountryCode();
-            cc.regionCode = regionCode;
-            cc.countryCode = util.getCountryCodeForRegion(regionCode);
-            mCountryCode.setSelection(ccList.getPositionForId(cc));
+            String country = tm.getSimCountryIso();
+            if (country != null) {
+                final String regionCode = country.toUpperCase(Locale.US);
+                CountryCode cc = new CountryCode();
+                cc.regionCode = regionCode;
+                cc.countryCode = util.getCountryCodeForRegion(regionCode);
+                mCountryCode.setSelection(ccList.getPositionForId(cc));
+            }
         }
 
         // listener for autoselecting country code from typed phone number
@@ -294,6 +308,12 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         }
     }
 
+    /** Not used. */
+    @Override
+    protected boolean isNormalUpNavigation() {
+        return false;
+    }
+
     @Override
     protected void onSaveInstanceState(Bundle state) {
         super.onSaveInstanceState(state);
@@ -331,6 +351,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.number_validation_menu, menu);
+        menu.findItem(R.id.menu_manual_verification).setVisible(BuildConfig.DEBUG);
         return true;
     }
 
@@ -361,16 +382,16 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
         Preferences.RegistrationProgress saved = null;
         if (mClearState) {
-            Preferences.clearRegistrationProgress(this);
+            Preferences.clearRegistrationProgress();
             mClearState = false;
         }
         else {
             try {
-                saved = Preferences.getRegistrationProgress(this);
+                saved = Preferences.getRegistrationProgress();
             }
             catch (Exception e) {
                 Log.w(TAG, "unable to restore registration progress");
-                Preferences.clearRegistrationProgress(this);
+                Preferences.clearRegistrationProgress();
             }
         }
         if (saved != null) {
@@ -380,13 +401,15 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mPassphrase = saved.passphrase;
             mImportedPublicKey = saved.importedPublicKey;
             mImportedPrivateKey = saved.importedPrivateKey;
+            mTrustedKeys = saved.trustedKeys;
 
             // update UI
             mNameText.setText(mName);
             mPhone.setText(mPhoneNumber);
             syncCountryCodeSelector();
 
-            startValidationCode(REQUEST_MANUAL_VALIDATION, saved.sender, saved.server, false);
+            startValidationCode(REQUEST_MANUAL_VALIDATION, saved.sender,
+                saved.brandImage, saved.brandLink, saved.challenge, saved.canFallback, saved.server, false);
         }
 
         if (mKey == null) {
@@ -400,11 +423,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                     }
 
                     // no key, key pair generation started
-                    else if (BuildConfig.DEBUG) {
-                        Toast.makeText(NumberValidation.this,
-                            R.string.msg_generating_keypair,
-                            Toast.LENGTH_LONG).show();
-                    }
                 }
             };
 
@@ -455,11 +473,17 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_MANUAL_VALIDATION) {
             if (resultCode == RESULT_OK) {
+                Map<String, Keyring.TrustedFingerprint> trustedKeys = null;
+                Map<String, String> keys = (HashMap) data.getSerializableExtra(PARAM_TRUSTED_KEYS);
+                if (keys != null) {
+                    trustedKeys = Keyring.fromTrustedFingerprintMap(keys);
+                }
                 finishLogin(data.getStringExtra(PARAM_SERVER_URI),
+                    data.getStringExtra(PARAM_CHALLENGE),
                     data.getByteArrayExtra(PARAM_PRIVATEKEY),
                     data.getByteArrayExtra(PARAM_PUBLICKEY),
                     true,
-                    (HashMap) data.getSerializableExtra(PARAM_TRUSTED_KEYS));
+                    trustedKeys);
             }
             else if (resultCode == RESULT_FALLBACK) {
                 mClearState = true;
@@ -468,7 +492,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         }
     }
 
-    private void keepScreenOn(boolean active) {
+    void keepScreenOn(boolean active) {
         if (active)
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         else
@@ -483,7 +507,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     /** Sync country code with text entered by the user, if possible. */
-    private void syncCountryCodeSelector() {
+    void syncCountryCodeSelector() {
         try {
             PhoneNumberUtil util = PhoneNumberUtil.getInstance();
             CountryCode cc = (CountryCode) mCountryCode.getSelectedItem();
@@ -505,92 +529,165 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     private void enableControls(boolean enabled) {
+        mNameText.setEnabled(enabled);
         mValidateButton.setEnabled(enabled);
         mCountryCode.setEnabled(enabled);
         mPhone.setEnabled(enabled);
     }
 
     private void error(int message) {
-        new AlertDialogWrapper.Builder(this)
-            .setMessage(message)
-            .setPositiveButton(android.R.string.ok, null)
+        new MaterialDialog.Builder(this)
+            .content(message)
+            .positiveText(android.R.string.ok)
             .show();
     }
 
-    private boolean checkInput(boolean importing) {
-        mPhoneNumber = null;
-        String phoneStr = null;
+    private void checkInput(boolean importing, final ParameterRunnable<Boolean> callback) {
+        final String phoneStr;
 
         // check name first
         if (!importing) {
             mName = mNameText.getText().toString().trim();
             if (mName.length() == 0) {
                 error(R.string.msg_no_name);
-                return false;
+                callback.run(false);
+                return;
             }
         }
-        else {
-            // we will use the one in the imported key
-            mName = null;
-        }
 
-        PhoneNumberUtil util = PhoneNumberUtil.getInstance();
-        CountryCode cc = (CountryCode) mCountryCode.getSelectedItem();
-        if (!BuildConfig.DEBUG) {
-            PhoneNumber phone;
-            try {
-                phone = util.parse(mPhone.getText().toString(), cc.regionCode);
-                // autoselect correct country if user entered country code too
-                if (phone.hasCountryCode()) {
-                    CountryCode ccLookup = new CountryCode();
-                    ccLookup.regionCode = util.getRegionCodeForNumber(phone);
-                    ccLookup.countryCode = phone.getCountryCode();
-                    int position = ((CountryCodesAdapter) mCountryCode.getAdapter()).getPositionForId(ccLookup);
-                    if (position >= 0) {
-                        mCountryCode.setSelection(position);
-                        cc = (CountryCode) mCountryCode.getItemAtPosition(position);
+        String phoneInput = mPhone.getText().toString();
+        String phoneConfirm;
+        // if the user entered a phone number use it even when importing for backward compatibility
+        if (!importing || !phoneInput.isEmpty()){
+            PhoneNumberUtil util = PhoneNumberUtil.getInstance();
+            CountryCode cc = (CountryCode) mCountryCode.getSelectedItem();
+            if (!BuildConfig.DEBUG) {
+                PhoneNumber phone;
+                try {
+                    phone = util.parse(phoneInput, cc.regionCode);
+                    // autoselect correct country if user entered country code too
+                    if (phone.hasCountryCode()) {
+                        CountryCode ccLookup = new CountryCode();
+                        ccLookup.regionCode = util.getRegionCodeForNumber(phone);
+                        ccLookup.countryCode = phone.getCountryCode();
+                        int position = ((CountryCodesAdapter) mCountryCode.getAdapter()).getPositionForId(ccLookup);
+                        if (position >= 0) {
+                            mCountryCode.setSelection(position);
+                            cc = (CountryCode) mCountryCode.getItemAtPosition(position);
+                        }
                     }
+                    // handle special cases
+                    NumberValidator.handleSpecialCases(phone);
+                    if (!util.isValidNumberForRegion(phone, cc.regionCode) && !NumberValidator.isSpecialNumber(phone))
+                        throw new NumberParseException(ErrorType.INVALID_COUNTRY_CODE, "invalid number for region " + cc.regionCode);
                 }
-                if (!util.isValidNumberForRegion(phone, cc.regionCode)) {
-                    throw new NumberParseException(ErrorType.INVALID_COUNTRY_CODE, "invalid number for region " + cc.regionCode);
+                catch (NumberParseException e1) {
+                    error(R.string.msg_invalid_number);
+                    callback.run(false);
+                    return;
                 }
-            }
-            catch (NumberParseException e1) {
-                error(R.string.msg_invalid_number);
-                return false;
-            }
 
-            // check phone number format
-            if (phone != null) {
+                // check phone number format
                 phoneStr = util.format(phone, PhoneNumberFormat.E164);
                 if (!PhoneNumberUtils.isWellFormedSmsAddress(phoneStr)) {
                     Log.i(TAG, "not a well formed SMS address");
                 }
+
+                // for the confirmation dialog
+                phoneConfirm = util.format(phone, PhoneNumberFormat.INTERNATIONAL);
+            }
+            else {
+                phoneStr = phoneConfirm = String.format(Locale.US, "+%d%s", cc.countryCode, mPhone.getText().toString());
+            }
+
+            // phone is null - invalid number
+            if (phoneStr == null) {
+                Toast.makeText(this, R.string.warn_invalid_number, Toast.LENGTH_SHORT)
+                    .show();
+                callback.run(false);
+                return;
+            }
+
+            Log.v(TAG, "Using phone number to register: " + phoneStr);
+
+            // confirmation dialog only if not importing
+            if (!importing && !mForce) {
+                MaterialDialog dialog = new MaterialDialog.Builder(this)
+                    .customView(R.layout.dialog_register_confirm, false)
+                    .positiveText(android.R.string.ok)
+                    .positiveColorRes(R.color.button_success)
+                    .negativeText(android.R.string.cancel)
+                    .onAny(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            switch (which) {
+                                case POSITIVE:
+                                    mPhoneNumber = phoneStr;
+                                    callback.run(true);
+                                    break;
+                                case NEGATIVE:
+                                    callback.run(false);
+                                    break;
+                            }
+                        }
+                    })
+                    .cancelListener(new OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            callback.run(false);
+                        }
+                    })
+                    .build();
+
+                TextView phoneTextView = (TextView) dialog.findViewById(R.id.bigtext);
+                phoneTextView.setText(phoneConfirm);
+
+                dialog.show();
+            }
+            else {
+                callback.run(true);
             }
         }
         else {
-            phoneStr = String.format(Locale.US, "+%d%s", cc.countryCode, mPhone.getText().toString());
-        }
+            // we will use the data from the imported key
+            mName = null;
+            mPhoneNumber = null;
 
-        // phone is null - invalid number
-        if (phoneStr == null) {
-            Toast.makeText(this, R.string.warn_invalid_number, Toast.LENGTH_SHORT)
-                .show();
-            return false;
+            callback.run(true);
         }
-
-        Log.v(TAG, "Using phone number to register: " + phoneStr);
-        mPhoneNumber = phoneStr;
-        return true;
     }
 
-    private void startValidation(boolean force, boolean fallback) {
+    void startValidation(final boolean force, final boolean fallback) {
         mForce = force;
         enableControls(false);
 
-        if (!checkInput(false) || !startValidationNormal(null, force, fallback, false)) {
-            enableControls(true);
+        checkInput(false, new ParameterRunnable<Boolean>() {
+            @Override
+            public void run(Boolean result) {
+                if (!result || !startValidationNormal(null, force, fallback, false)) {
+                    enableControls(true);
+                }
+            }
+        });
+    }
+
+    @NumberValidator.BrandImageSize
+    private int getBrandImageSize() {
+        int density = getResources().getDisplayMetrics().densityDpi;
+        if (density <= DisplayMetrics.DENSITY_MEDIUM) {
+            return NumberValidator.BRAND_IMAGE_SMALL;
         }
+        else if (density > DisplayMetrics.DENSITY_MEDIUM && density <= DisplayMetrics.DENSITY_HIGH) {
+            return NumberValidator.BRAND_IMAGE_MEDIUM;
+        }
+        else if (density > DisplayMetrics.DENSITY_HIGH && density <= DisplayMetrics.DENSITY_XXHIGH) {
+            return NumberValidator.BRAND_IMAGE_LARGE;
+        }
+        else if (density > DisplayMetrics.DENSITY_XXHIGH) {
+            return NumberValidator.BRAND_IMAGE_HD;
+        }
+
+        return NumberValidator.BRAND_IMAGE_MEDIUM;
     }
 
     private boolean startValidationNormal(String manualServer, boolean force, boolean fallback, boolean testImport) {
@@ -614,7 +711,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         boolean imported = (mImportedPrivateKey != null && mImportedPublicKey != null);
 
         mValidator = new NumberValidator(this, provider, mName, mPhoneNumber,
-            imported ? null : mKey, mPassphrase);
+            imported ? null : mKey, mPassphrase, getBrandImageSize());
         mValidator.setListener(this);
         mValidator.setForce(force);
         mValidator.setFallback(fallback);
@@ -640,25 +737,35 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     /** Opens manual validation window immediately. */
     public void validateCode() {
-        if (checkInput(false))
-            startValidationCode(REQUEST_VALIDATION_CODE, null);
+        checkInput(false, new ParameterRunnable<Boolean>() {
+            @Override
+            public void run(Boolean result) {
+                if (result)
+                    startValidationCode(REQUEST_VALIDATION_CODE, null, null, null, null, false);
+            }
+        });
     }
 
     /** Opens import keys from another device wizard. */
     private void importKey() {
-        if (checkInput(true)) {
-            // import keys -- number verification with server is still needed
-            // though because of key rollback protection
-            // TODO allow for manual validation too
+        checkInput(true, new ParameterRunnable<Boolean>() {
+            @Override
+            public void run(Boolean result) {
+                if (result) {
+                    // import keys -- number verification with server is still needed
+                    // though because of key rollback protection
+                    // TODO allow for manual validation too
 
-            // do not wait for the generated key
-            stopKeyReceiver();
+                    // do not wait for the generated key
+                    stopKeyReceiver();
 
-            new FileChooserDialog.Builder(NumberValidation.this)
-                .initialPath(PersonalKeyPack.DEFAULT_KEYPACK.getParent())
-                .mimeType(PersonalKeyPack.KEYPACK_MIME)
-                .show();
-        }
+                    new FileChooserDialog.Builder(NumberValidation.this)
+                        .initialPath(PersonalKeyPack.DEFAULT_KEYPACK.getParent())
+                        .mimeType(PersonalKeyPack.KEYPACK_MIME)
+                        .show();
+                }
+            }
+        });
     }
 
     private void importAskPassphrase(final ZipInputStream zip) {
@@ -671,9 +778,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                     startImport(zip, dialog.getInputEditText().getText().toString());
                 }
             })
-            .callback(new MaterialDialog.ButtonCallback() {
+            .onNegative(new MaterialDialog.SingleButtonCallback() {
                 @Override
-                public void onNegative(MaterialDialog dialog) {
+                public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
                     try {
                         zip.close();
                     }
@@ -697,6 +804,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         }
         catch (Exception e) {
             Log.e(TAG, "error importing keys", e);
+            ReportingManager.logException(e);
             mImportedPublicKey = mImportedPrivateKey = null;
             mTrustedKeys = null;
 
@@ -715,21 +823,21 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
-    public void onFileSelection(@NonNull File file) {
+    public void onFileSelection(@NonNull FileChooserDialog fileChooserDialog, @NonNull File file) {
         try {
             startImport(new FileInputStream(file));
         }
         catch (FileNotFoundException e) {
-            Log.e(PreferencesFragment.TAG, "error importing keys", e);
+            Log.e(TAG, "error importing keys", e);
             Toast.makeText(this,
                 R.string.err_import_keypair_read,
                 Toast.LENGTH_LONG).show();
         }
     }
 
-    private void startImport(ZipInputStream zip, String passphrase) {
+    void startImport(ZipInputStream zip, String passphrase) {
         PersonalKeyImporter importer = null;
-        String manualServer = Preferences.getServerURI(this);
+        String manualServer = Preferences.getServerURI();
 
         try {
             importer = new PersonalKeyImporter(zip, passphrase);
@@ -746,6 +854,19 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             PGPUserID uid = PGPUserID.parse(uidStr);
             if (uid == null)
                 throw new PGPException("malformed user ID: " + uidStr);
+
+            Map<String, String> accountInfo = importer.getAccountInfo();
+            if (accountInfo != null) {
+                String phoneNumber = accountInfo.get("phoneNumber");
+                if (!TextUtils.isEmpty(phoneNumber)) {
+                    mPhoneNumber = phoneNumber;
+                }
+            }
+
+            if (mPhoneNumber == null) {
+                Toast.makeText(this, R.string.warn_invalid_number, Toast.LENGTH_SHORT).show();
+                return;
+            }
 
             // check that uid matches phone number
             String email = uid.getEmail();
@@ -768,6 +889,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             catch (Exception e) {
                 // this is not a critical error so we can just ignore it
                 Log.w(TAG, "unable to load trusted keys from key pack", e);
+                ReportingManager.logException(e);
             }
         }
 
@@ -783,6 +905,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
         catch (Exception e) {
             Log.e(TAG, "error importing keys", e);
+            ReportingManager.logException(e);
             mImportedPublicKey = mImportedPrivateKey = null;
             mTrustedKeys = null;
             mName = null;
@@ -895,7 +1018,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         }
     }
 
-    private void delayedSync() {
+    void delayedSync() {
         mSyncing = true;
         mSyncStart = new Runnable() {
             public void run() {
@@ -935,7 +1058,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             @Override
             public void run() {
                 abort(true);
-                finishLogin(v.getServer().toString(), privateKey, publicKey, false, mTrustedKeys);
+                finishLogin(v.getServer().toString(), v.getServerChallenge(), privateKey, publicKey, false, mTrustedKeys);
             }
         });
     }
@@ -962,7 +1085,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         setProgressMessage(getString(R.string.msg_initializing));
     }
 
-    protected void finishLogin(final String serverUri, final byte[] privateKeyData, final byte[] publicKeyData, boolean updateKey, Map<String, String> trustedKeys) {
+    protected void finishLogin(final String serverUri, final String challenge,
+            final byte[] privateKeyData, final byte[] publicKeyData, boolean updateKey,
+            Map<String, Keyring.TrustedFingerprint> trustedKeys) {
         Log.v(TAG, "finishing login");
         statusInitializing();
 
@@ -977,10 +1102,11 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             }
         }
 
-        completeLogin(serverUri, privateKeyData, publicKeyData, trustedKeys);
+        completeLogin(serverUri, challenge, privateKeyData, publicKeyData, trustedKeys);
     }
 
-    private void completeLogin(String serverUri, byte[] privateKeyData, byte[] publicKeyData, Map<String, String> trustedKeys) {
+    private void completeLogin(String serverUri, String challenge,
+            byte[] privateKeyData, byte[] publicKeyData, Map<String, Keyring.TrustedFingerprint> trustedKeys) {
         // generate the bridge certificate
         byte[] bridgeCertData;
         try {
@@ -997,7 +1123,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         // procedure will continue in removeAccount callback
         mAccountManager.removeAccount(account,
             new AccountRemovalCallback(this, account, mPassphrase,
-                privateKeyData, publicKeyData, bridgeCertData, mName, serverUri, trustedKeys),
+                privateKeyData, publicKeyData, bridgeCertData,
+                mName, serverUri, challenge, trustedKeys),
             mHandler);
     }
 
@@ -1054,40 +1181,56 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
-    public void onValidationRequested(NumberValidator v, String sender) {
+    public void onValidationRequested(NumberValidator v, String sender, String challenge, String brandImage, String brandLink, boolean canFallback) {
         Log.d(TAG, "validation has been requested, requesting validation code to user");
-        proceedManual(sender);
+        proceedManual(sender, challenge, brandImage, brandLink, canFallback);
     }
 
-    private void userExistsWarning() {
-        new AlertDialogWrapper.Builder(this)
-            .setMessage(R.string.err_validation_user_exists)
-            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+    void userExistsWarning() {
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(this)
+            .content(R.string.err_validation_user_exists)
+            .positiveText(android.R.string.ok)
+            .positiveColorRes(R.color.button_danger)
+            .negativeText(android.R.string.cancel)
+            .neutralText(R.string.learn_more)
+            .onAny(new MaterialDialog.SingleButtonCallback() {
                 @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    startValidation(true, false);
+                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                    switch (which) {
+                        case POSITIVE:
+                            startValidation(true, false);
+                            break;
+                        case NEUTRAL:
+                            SystemUtils.openURL(NumberValidation.this,
+                                getString(R.string.help_import_key));
+                            break;
+                    }
                 }
-            })
-            .setNegativeButton(android.R.string.cancel, null)
-            .show();
+            });
+        try {
+            builder.show();
+        }
+        catch (MaterialDialog.DialogException ignored) {
+        }
     }
 
     /** Proceeds to the next step in manual validation. */
-    private void proceedManual(final String sender) {
+    private void proceedManual(final String sender, final String challenge, final String brandImage, final String brandLink, final boolean canFallback) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 abortProgress(true);
-                startValidationCode(REQUEST_MANUAL_VALIDATION, sender);
+                startValidationCode(REQUEST_MANUAL_VALIDATION, sender, challenge, brandImage, brandLink, canFallback);
             }
         });
     }
 
-    private void startValidationCode(int requestCode, String sender) {
-        startValidationCode(requestCode, sender, null, true);
+    void startValidationCode(int requestCode, String sender, String challenge, String brandImage, String brandLink, boolean canFallback) {
+        startValidationCode(requestCode, sender, challenge, brandImage, brandLink, canFallback, null, true);
     }
 
-    private void startValidationCode(int requestCode, String sender, EndpointServer server, boolean saveProgress) {
+    private void startValidationCode(int requestCode, String sender, String challenge,
+            String brandImage, String brandLink, boolean canFallback, EndpointServer server, boolean saveProgress) {
         // validator might be null if we are skipping verification code request
         String serverUri = null;
         if (server != null)
@@ -1097,10 +1240,11 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
         // save state to preferences
         if (saveProgress) {
-            Preferences.saveRegistrationProgress(this,
+            Preferences.saveRegistrationProgress(
                 mName, mPhoneNumber, mKey, mPassphrase,
                 mImportedPublicKey, mImportedPrivateKey,
-                serverUri, sender, mForce, mTrustedKeys);
+                serverUri, sender, challenge, brandImage, brandLink,
+                canFallback, mForce, mTrustedKeys);
         }
 
         Intent i = new Intent(NumberValidation.this, CodeValidation.class);
@@ -1111,10 +1255,14 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         i.putExtra("passphrase", mPassphrase);
         i.putExtra("importedPublicKey", mImportedPublicKey);
         i.putExtra("importedPrivateKey", mImportedPrivateKey);
-        i.putExtra("trustedKeys", (HashMap) mTrustedKeys);
+        i.putExtra("trustedKeys", mTrustedKeys != null ? (HashMap) Keyring.toTrustedFingerprintMap(mTrustedKeys) : null);
         i.putExtra("server", serverUri);
         i.putExtra("sender", sender);
+        i.putExtra("challenge", challenge);
+        i.putExtra("canFallback", canFallback);
         i.putExtra(KeyPairGeneratorService.EXTRA_KEY, mKey);
+        i.putExtra("brandImage", brandImage);
+        i.putExtra("brandLink", brandLink);
 
         startActivityForResult(i, REQUEST_MANUAL_VALIDATION);
     }
@@ -1128,12 +1276,14 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         private final byte[] bridgeCertData;
         private final String name;
         private final String serverUri;
-        private final Map<String, String> trustedKeys;
+        private final String challenge;
+        private final Map<String, Keyring.TrustedFingerprint> trustedKeys;
 
-        public AccountRemovalCallback(NumberValidation activity, Account account,
-                String passphrase, byte[] privateKeyData, byte[] publicKeyData,
-                byte[] bridgeCertData, String name, String serverUri, Map<String, String> trustedKeys) {
-            this.a = new WeakReference<NumberValidation>(activity);
+        AccountRemovalCallback(NumberValidation activity, Account account,
+            String passphrase, byte[] privateKeyData, byte[] publicKeyData,
+            byte[] bridgeCertData, String name, String serverUri, String challenge,
+            Map<String, Keyring.TrustedFingerprint> trustedKeys) {
+            this.a = new WeakReference<>(activity);
             this.account = account;
             this.passphrase = passphrase;
             this.privateKeyData = privateKeyData;
@@ -1141,6 +1291,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             this.bridgeCertData = bridgeCertData;
             this.name = name;
             this.serverUri = serverUri;
+            this.challenge = challenge;
             this.trustedKeys = trustedKeys;
         }
 
@@ -1150,7 +1301,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             if (ctx != null) {
                 // store trusted keys
                 if (trustedKeys != null) {
-                    UsersProvider.setTrustedKeys(ctx, trustedKeys);
+                    Keyring.setTrustedKeys(ctx, trustedKeys);
                 }
 
                 AccountManager am = (AccountManager) ctx
@@ -1185,6 +1336,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
                 ctx.setAccountAuthenticatorResult(intent.getExtras());
                 ctx.setResult(RESULT_OK, intent);
+
+                ReportingManager.logSignUp(challenge);
 
                 // manual sync starter
                 ctx.delayedSync();

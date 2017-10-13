@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
 
 package org.kontalk.client;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
@@ -31,8 +33,10 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.SASLAuthentication;
+import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.StanzaFilter;
 import org.jivesoftware.smack.packet.Message;
@@ -41,11 +45,12 @@ import org.jivesoftware.smack.sm.predicates.ForMatchingPredicateOrAfterXStanzas;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
+import org.jxmpp.stringprep.XmppStringprepException;
 
-import android.util.Log;
+import android.annotation.SuppressLint;
 
-import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
+import org.kontalk.Log;
 import org.kontalk.authenticator.LegacyAuthentication;
 
 
@@ -59,14 +64,14 @@ public class KontalkConnection extends XMPPTCPConnection {
 
     public KontalkConnection(String resource, EndpointServer server, boolean secure,
         boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken)
-            throws XMPPException {
+        throws XMPPException, XmppStringprepException {
 
         this(resource, server, secure, null, null, acceptAnyCertificate, trustStore, legacyAuthToken);
     }
 
     public KontalkConnection(String resource, EndpointServer server, boolean secure,
             PrivateKey privateKey, X509Certificate bridgeCert,
-            boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken) throws XMPPException {
+            boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken) throws XMPPException, XmppStringprepException {
 
         super(buildConfiguration(resource, server, secure,
             privateKey, bridgeCert, acceptAnyCertificate, trustStore, legacyAuthToken));
@@ -84,15 +89,28 @@ public class KontalkConnection extends XMPPTCPConnection {
 
     private static XMPPTCPConnectionConfiguration buildConfiguration(String resource,
         EndpointServer server, boolean secure, PrivateKey privateKey, X509Certificate bridgeCert,
-        boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken) {
+        boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken) throws XmppStringprepException {
         XMPPTCPConnectionConfiguration.Builder builder =
             XMPPTCPConnectionConfiguration.builder();
 
+        String host = server.getHost();
+        InetAddress inetAddress = null;
+        if (host != null) {
+            try {
+                inetAddress = InetAddress.getByName(host);
+            }
+            catch (UnknownHostException e) {
+                Log.w(TAG, "unable to resolve host " + host + ", will try again during connect", e);
+            }
+        }
+
         builder
             // connection parameters
-            .setHost(server.getHost())
+            .setHostAddress(inetAddress)
+            // try a last time through Smack
+            .setHost(inetAddress != null ? null : host)
             .setPort(secure ? server.getSecurePort() : server.getPort())
-            .setServiceName(server.getNetwork())
+            .setXmppDomain(server.getNetwork())
             .setResource(resource)
             // the dummy value is not actually used
             .setUsernameAndPassword(null, legacyAuthToken != null ? legacyAuthToken : "dummy")
@@ -107,7 +125,7 @@ public class KontalkConnection extends XMPPTCPConnection {
             // disable session initiation
             .setLegacySessionDisabled(true)
             // enable debugging
-            .setDebuggerEnabled(BuildConfig.DEBUG);
+            .setDebuggerEnabled(Log.isDebug());
 
         // setup SSL
         setupSSL(builder, secure, privateKey, bridgeCert, acceptAnyCertificate, trustStore);
@@ -115,9 +133,10 @@ public class KontalkConnection extends XMPPTCPConnection {
         return builder.build();
     }
 
+    @SuppressLint("AllowAllHostnameVerifier")
     private static void setupSSL(XMPPTCPConnectionConfiguration.Builder builder,
-        boolean direct, PrivateKey privateKey, X509Certificate bridgeCert,
-        boolean acceptAnyCertificate, KeyStore trustStore) {
+                                 boolean direct, PrivateKey privateKey, X509Certificate bridgeCert,
+                                 boolean acceptAnyCertificate, KeyStore trustStore) {
         try {
             SSLContext ctx = SSLContext.getInstance("TLS");
 
@@ -152,17 +171,20 @@ public class KontalkConnection extends XMPPTCPConnection {
                             return null;
                         }
 
+                        @SuppressLint("TrustAllX509TrustManager")
                         @Override
                         public void checkServerTrusted(X509Certificate[] chain, String authType)
                             throws CertificateException {
                         }
 
+                        @SuppressLint("TrustAllX509TrustManager")
                         @Override
                         public void checkClientTrusted(X509Certificate[] chain, String authType)
                             throws CertificateException {
                         }
                     }
                 };
+                builder.setHostnameVerifier(new AllowAllHostnameVerifier());
             }
 
             else {
@@ -187,8 +209,9 @@ public class KontalkConnection extends XMPPTCPConnection {
     }
 
     @Override
-    protected void processPacket(Stanza packet) throws InterruptedException {
-        if (packet instanceof Message) {
+    protected void processStanza(Stanza packet) throws InterruptedException {
+        boolean isMessage = packet instanceof Message;
+        if (isMessage) {
             /*
              * We are receiving a message. Suspend SM ack replies because we
              * want to wait for our message listener to be invoked and have time
@@ -196,7 +219,21 @@ public class KontalkConnection extends XMPPTCPConnection {
              */
             suspendSmAck();
         }
-        super.processPacket(packet);
+
+        super.processStanza(packet);
+
+        if (isMessage) {
+            /* Resume SM ack replies now. */
+            try {
+                resumeSmAck();
+            }
+            catch (SmackException ignored) {
+            }
+        }
+    }
+
+    public EndpointServer getServer() {
+        return mServer;
     }
 
     /**

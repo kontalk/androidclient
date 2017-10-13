@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2011 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@ package org.kontalk.ui.view;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.view.ViewHelper;
@@ -32,6 +33,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.graphics.Rect;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
@@ -44,7 +46,6 @@ import android.text.InputType;
 import android.text.TextWatcher;
 import android.text.format.DateUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -61,11 +62,13 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.ui.AudioDialog;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.util.MediaStorage;
+import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
@@ -80,19 +83,23 @@ public class ComposerBar extends RelativeLayout implements
     private static final String TAG = ComposeMessage.TAG;
 
     private static final int MIN_RECORDING_TIME = 900;
-    private static final int MAX_RECORDING_TIME = 60000;
+    static final long MAX_RECORDING_TIME = TimeUnit.MINUTES.toMillis(2);
     private static final int AUDIO_RECORD_VIBRATION = 20;
     private static final int AUDIO_RECORD_ANIMATION = 300;
+
+    private static final String MAX_RECORDING_TIME_TEXT = DateUtils
+        .formatElapsedTime(MAX_RECORDING_TIME / 1000);
 
     private Context mContext;
 
     // for the text entry
+    private boolean mSendEnabled = true;
     private EditText mTextEntry;
     private View mSendButton;
     private ComposerListener mListener;
     private TextWatcher mChatStateListener;
 
-    boolean mEnterSend;
+    private boolean mEnterSend;
 
     /** Used during audio recording to restore focus status of the text entry. */
     private boolean mTextEntryFocus;
@@ -102,28 +109,28 @@ public class ComposerBar extends RelativeLayout implements
     private ImageButton mEmojiButton;
     private EmojiconsView mEmojiView;
     private boolean mEmojiVisible;
-    private KeyboardAwareRelativeLayout mRootView;
+    KeyboardAwareRelativeLayout mRootView;
     private WindowManager.LayoutParams mWindowLayoutParams;
 
     // for PTT message
-    private Handler mHandler;
+    Handler mHandler;
     private Runnable mMediaPlayerUpdater;
-    private View mAudioButton;
-    private View mRecordLayout;
-    private View mSlideText;
+    View mAudioButton;
+    View mRecordLayout;
+    View mSlideText;
     private float mDraggingX = -1;
     private float mDistMove;
     private boolean mIsRecordingAudio;
     private TextView mRecordText;
     private File mRecordFile;
     private MediaRecorder mRecord;
-    private long startTime;
-    private long elapsedTime;
+    long startTime;
+    long elapsedTime;
     private boolean mCheckMove;
     private int mOrientation;
     private Vibrator mVibrator;
     // initialized in onCreate
-    private int mMoveThreshold;
+    int mMoveThreshold;
     private int mMoveOffset;
     private int mMoveOffset2;
 
@@ -194,15 +201,27 @@ public class ComposerBar extends RelativeLayout implements
                     mAudioButton.setVisibility(textPresent ? View.INVISIBLE : View.VISIBLE);
                     mSendButton.setVisibility(textPresent ? View.VISIBLE : View.INVISIBLE);
                 }
-                mSendButton.setEnabled(textPresent);
+                // audio button should already be disabled if needed
+                mSendButton.setEnabled(textPresent && mSendEnabled);
 
                 if (mListener != null)
                     mListener.textChanged(s);
+
+                // convert ascii to emojis if preference set
+                if (Preferences.getEmojiConverter(mContext)) {
+                    mTextEntry.removeTextChangedListener(this);
+                    if (MessageUtils.convertSmileys(s)) {
+                        // restart IME to solve problems with deleting emojis
+                        InputMethodManager imm = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.restartInput(mTextEntry);
+                    }
+                    mTextEntry.addTextChangedListener(this);
+                }
             }
         });
         mTextEntry.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_SEND) {
+                if (actionId == EditorInfo.IME_ACTION_SEND && mSendEnabled) {
                     if (!mEnterSend) {
                         InputMethodManager imm = (InputMethodManager) mContext
                             .getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -216,7 +235,7 @@ public class ComposerBar extends RelativeLayout implements
         });
         mChatStateListener = new TextWatcher() {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (Preferences.getSendTyping(mContext)) {
+                if (mSendEnabled && Preferences.getSendTyping(mContext)) {
                     // send typing notification if necessary
                     if (!mComposeSent && mListener.sendTyping()) {
                         mComposeSent = true;
@@ -288,10 +307,11 @@ public class ComposerBar extends RelativeLayout implements
                         animateRecordFrame();
                         mAudioButton.getParent().requestDisallowInterceptTouchEvent(true);
                     }
-                    else if ((motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) && !mCheckMove) {
+                    else if ((motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) &&
+                            !mCheckMove && mIsRecordingAudio) {
                         if (mOrientation == SystemUtils.getDisplayRotation(mContext)) {
                             mDraggingX = -1;
-                            stopRecording(true);
+                            stopRecording(motionEvent.getAction() == MotionEvent.ACTION_UP);
                             animateRecordFrame();
                         }
                     }
@@ -351,12 +371,29 @@ public class ComposerBar extends RelativeLayout implements
                 toggleEmojiDrawer();
             }
         });
+
+        doSetSendEnabled();
     }
 
     public void onPause() {
         if (mIsRecordingAudio) {
             abortRecording();
         }
+    }
+
+    public boolean isSendEnabled() {
+        return mSendEnabled;
+    }
+
+    public void setSendEnabled(boolean enabled) {
+        mSendEnabled = enabled;
+        doSetSendEnabled();
+    }
+
+    private void doSetSendEnabled() {
+        mSendButton.setEnabled(mSendEnabled);
+        if (mAudioButton != null)
+            mAudioButton.setEnabled(mSendEnabled);
     }
 
     public void setRootView(View rootView) {
@@ -398,12 +435,17 @@ public class ComposerBar extends RelativeLayout implements
             mTextEntry.requestFocus();
     }
 
-    private void animateRecordFrame() {
+    @Override
+    public boolean requestFocus(int direction, Rect previouslyFocusedRect) {
+        return mTextEntry.requestFocus(direction, previouslyFocusedRect);
+    }
+
+    void animateRecordFrame() {
         int screenWidth = SystemUtils.getDisplaySize(mContext).x;
 
         if (mIsRecordingAudio) {
             mRecordLayout.setVisibility(View.VISIBLE);
-            mRecordText.setText(DateUtils.formatElapsedTime(0));
+            setRecordText(0);
 
             FrameLayout.LayoutParams params =
                 (FrameLayout.LayoutParams) mSlideText.getLayoutParams();
@@ -482,11 +524,11 @@ public class ComposerBar extends RelativeLayout implements
         }
 
         mRecord = new MediaRecorder();
-        mRecord.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mRecord.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mRecord.setOutputFile(mRecordFile.getAbsolutePath());
-        mRecord.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
         try {
+            mRecord.setAudioSource(MediaRecorder.AudioSource.MIC);
+            mRecord.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+            mRecord.setOutputFile(mRecordFile.getAbsolutePath());
+            mRecord.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
             mVibrator.vibrate(AUDIO_RECORD_VIBRATION);
             startTimer();
             mRecord.prepare();
@@ -511,7 +553,7 @@ public class ComposerBar extends RelativeLayout implements
         }
     }
 
-    private void stopRecording(boolean send) {
+    void stopRecording(boolean send) {
         mIsRecordingAudio = false;
         unlockScreen();
         enableTextEntry();
@@ -530,7 +572,7 @@ public class ComposerBar extends RelativeLayout implements
                 mRecord.stop();
                 if (canSend) {
                     mListener.sendBinaryMessage(Uri.fromFile(mRecordFile),
-                        AudioDialog.DEFAULT_MIME, true, AudioComponent.class);
+                        AudioDialog.DEFAULT_MIME, false, AudioComponent.class);
                 }
                 else if (send) {
                     Toast.makeText(mContext, R.string.hint_ptt,
@@ -597,7 +639,7 @@ public class ComposerBar extends RelativeLayout implements
             @Override
             public void run() {
                 elapsedTime = SystemClock.uptimeMillis() - startTime;
-                mRecordText.setText(DateUtils.formatElapsedTime(elapsedTime / 1000));
+                setRecordText(elapsedTime);
                 mHandler.postDelayed(this, 100);
                 if (elapsedTime >= MAX_RECORDING_TIME) {
                     mAudioButton.setPressed(false);
@@ -607,6 +649,12 @@ public class ComposerBar extends RelativeLayout implements
             }
         };
         mHandler.postDelayed(mMediaPlayerUpdater, 100);
+    }
+
+    void setRecordText(long millis) {
+        mRecordText.setText(mContext.getString(R.string.audio_duration_max,
+            DateUtils.formatElapsedTime(millis / 1000),
+            MAX_RECORDING_TIME_TEXT));
     }
 
     private void submitSend() {
@@ -703,7 +751,7 @@ public class ComposerBar extends RelativeLayout implements
             // TODO mEmojiButton.setImageResource(R.drawable.ic_msg_panel_hide);
         }
 
-        mEmojiButton.setImageResource(R.drawable.ic_keyboard_dark);
+        mEmojiButton.setImageResource(R.drawable.ic_keyboard);
     }
 
     private void hideEmojiDrawer() {
@@ -723,7 +771,7 @@ public class ComposerBar extends RelativeLayout implements
             wm.removeViewImmediate(mEmojiView);
         }
 
-        mEmojiButton.setImageResource(R.drawable.ic_emoji_dark);
+        mEmojiButton.setImageResource(R.drawable.ic_emoji);
         mRootView.setPadding(0, 0, 0, 0);
         mEmojiVisible = false;
     }

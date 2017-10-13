@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2011 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,8 @@ public interface ComposerListener {
 
     /** Sends a text message. */
     void sendTextMessage(String message);
+
+    void sendLocationMessage(String message, double lat, double lon, String geoText, String geoStreet);
 
     /** Sends a binary message. */
     void sendBinaryMessage(Uri uri, String mime, boolean media,

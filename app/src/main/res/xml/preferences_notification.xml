@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kontalk Android client
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBoxPreference android:key="pref_enable_notifications"
+        android:summary="@string/pref_title_enable_notifications"
+        android:title="@string/pref_enable_notifications"
+        android:defaultValue="@bool/pref_default_enable_notifications"
+        android:layout="@layout/md_preference_custom"/>
+    <Preference android:key="pref_ringtone"
+        android:dependency="pref_enable_notifications"
+        android:title="@string/pref_ringtone"
+        android:defaultValue="@string/pref_default_ringtone"
+        android:layout="@layout/md_preference_custom"/>
+    <com.afollestad.materialdialogs.prefs.MaterialListPreference
+        android:key="pref_vibrate"
+        android:dependency="pref_enable_notifications"
+        android:title="@string/pref_vibrate"
+        android:summary="@string/pref_title_vibrate"
+        android:entries="@array/vibrate_labels"
+        android:entryValues="@array/vibrate_values"
+        android:defaultValue="@string/pref_default_vibrate"/>
+    <CheckBoxPreference android:key="pref_enable_notification_led"
+        android:title="@string/pref_enable_notification_led"
+        android:dependency="pref_enable_notifications"
+        android:defaultValue="@bool/pref_default_enable_notification_led"
+        android:layout="@layout/md_preference_custom"/>
+    <Preference android:key="pref_notification_led_color"
+        android:dependency="pref_enable_notification_led"
+        android:title="@string/pref_notification_led_color"
+        android:defaultValue="@integer/pref_default_notification_led_color"
+        android:layout="@layout/md_preference_custom"/>
+
+</PreferenceScreen>

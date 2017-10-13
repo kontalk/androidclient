@@ -1,0 +1,6 @@
+This release features our new registration provider kindly offered by https://JMP.Chat
+Help us improve and fix bugs by reporting them on GitHub or discussing them on our forum: https://forum.kontalk.org
+
+* NEW: location sharing
+* fix memory leak leading to crash
+* many other bugfixes and minor improvements

@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,6 +39,8 @@ import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.util.io.pem.PemObject;
 import org.spongycastle.util.io.pem.PemWriter;
 
+import org.kontalk.provider.Keyring;
+
 
 /**
  * Exporter for a personal key.
@@ -46,7 +48,8 @@ import org.spongycastle.util.io.pem.PemWriter;
  */
 public class PersonalKeyExporter implements PersonalKeyPack {
 
-    public void save(byte[] privateKey, byte[] publicKey, OutputStream dest, String passphrase, String exportPassphrase, byte[] bridgeCert, Map<String, String> trustedKeys)
+    public void save(byte[] privateKey, byte[] publicKey, OutputStream dest, String passphrase, String exportPassphrase, byte[] bridgeCert,
+                     Map<String, Keyring.TrustedFingerprint> trustedKeys, String phoneNumber)
         throws PGPException, IOException, CertificateException, NoSuchProviderException, KeyStoreException, NoSuchAlgorithmException {
 
         // put everything in a zip file
@@ -115,11 +118,19 @@ public class PersonalKeyExporter implements PersonalKeyPack {
         if (trustedKeys != null) {
             // export trusted keys
             Properties prop = new Properties();
-            prop.putAll(trustedKeys);
+            for (Map.Entry<String, Keyring.TrustedFingerprint> tk : trustedKeys.entrySet())
+                prop.put(tk.getKey(), tk.getValue().toString());
             zip.putNextEntry(new ZipEntry(TRUSTED_KEYS_FILENAME));
             prop.store(zip, null);
             zip.closeEntry();
         }
+
+        // export account info
+        Properties info = new Properties();
+        info.setProperty("phoneNumber", phoneNumber);
+        zip.putNextEntry(new ZipEntry(ACCOUNT_INFO_FILENAME));
+        info.store(zip, null);
+        zip.closeEntry();
 
         // finalize the zip file
         zip.close();

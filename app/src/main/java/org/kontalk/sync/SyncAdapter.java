@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,11 +18,6 @@
 
 package org.kontalk.sync;
 
-import org.kontalk.authenticator.Authenticator;
-import org.kontalk.provider.UsersProvider;
-import org.kontalk.service.msgcenter.MessageCenterService;
-import org.kontalk.util.Preferences;
-
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;
 import android.content.AbstractThreadedSyncAdapter;
@@ -35,7 +30,12 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.ContactsContract;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
+
+import org.kontalk.Log;
+import org.kontalk.authenticator.Authenticator;
+import org.kontalk.provider.UsersProvider;
+import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.util.Preferences;
 
 
 /**
@@ -75,7 +75,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             boolean force = extras.getBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, false);
 
             // do not start if offline
-            if (Preferences.getOfflineMode(mContext)) {
+            if (Preferences.getOfflineMode()) {
                 Log.d(TAG, "not requesting sync - offline mode");
                 return;
             }
@@ -87,7 +87,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             }
 
             if (!force) {
-                if (isThrottling(mContext)) {
+                if (isThrottling()) {
                     Log.d(TAG, "not starting sync - throttling");
                     // TEST do not delay - syncResult.delayUntil = (long) diff;
                     return;
@@ -96,14 +96,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
             Log.i(TAG, "sync started (authority=" + authority + ")");
             // avoid other syncs to get scheduled in the meanwhile
-            Preferences.setLastSyncTimestamp(mContext, System.currentTimeMillis());
+            Preferences.setLastSyncTimestamp(System.currentTimeMillis());
 
             ContentProviderClient usersProvider = getContext().getContentResolver()
                 .acquireContentProviderClient(UsersProvider.AUTHORITY);
 
             try {
                 // hold a reference to the message center while syncing
-                MessageCenterService.hold(mContext);
+                MessageCenterService.hold(mContext, true);
                 // start sync
                 mSyncer = new Syncer(mContext);
                 mSyncer.performSync(mContext, account, authority,
@@ -117,9 +117,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 MessageCenterService.release(mContext);
                 // release user provider
                 usersProvider.release();
+
+                Preferences.setLastSyncTimestamp(System.currentTimeMillis());
                 // some stats :)
                 long endTime = SystemClock.elapsedRealtime();
-                Preferences.setLastSyncTimestamp(mContext, endTime);
                 Log.d(TAG, String.format("sync took %.5f seconds",
                     ((float) (endTime - startTime)) / 1000));
             }
@@ -141,13 +142,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
      * @return true if the sync has been actually requested to the system.
      */
     public static boolean requestSync(Context context, boolean force) {
-        if (!force && isThrottling(context)) {
+        if (!force && isThrottling()) {
             Log.d(TAG, "not requesting sync - throttling");
             return false;
         }
 
         // do not start if offline
-        if (Preferences.getOfflineMode(context)) {
+        if (Preferences.getOfflineMode()) {
             Log.d(TAG, "not requesting sync - offline mode");
             return false;
         }
@@ -162,8 +163,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         return true;
     }
 
-    public static boolean isThrottling(Context context) {
-        long lastSync = Preferences.getLastSyncTimestamp(context);
+    public static boolean isThrottling() {
+        long lastSync = Preferences.getLastSyncTimestamp();
         float diff = (System.currentTimeMillis() - lastSync) / 1000;
         return (lastSync >= 0 && diff < MAX_SYNC_DELAY);
     }

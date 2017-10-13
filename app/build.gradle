@@ -1,5 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'checkstyle'
+apply plugin: 'com.github.triplet.play'
+apply plugin: 'io.fabric'
 
 check.dependsOn 'checkstyle'
 
@@ -10,6 +12,7 @@ task checkstyle(type: Checkstyle){
     exclude 'main/java/org/kontalk/util/ThumbnailUtils.java',
         'main/java/org/kontalk/crypto/PRNGFixes.java',
         'main/java/org/kontalk/ui/AccountAuthenticatorActionBarActivity.java',
+        'main/java/org/kontalk/ui/prefs/TextMessagePreference.java',
         'main/java/org/kontalk/billing/*.java',
         '*/java/org/kontalk/billing/GoogleBillingService.java',
         '*/java/org/kontalk/billing/Inventory.java',
@@ -20,30 +23,46 @@ task checkstyle(type: Checkstyle){
         '**/KeyboardAwareRelativeLayout.java', '**/FrameLayoutFixed.java',
         '**/AbsListViewScrollDetector.java', '**/NoCacheMiniDnsResolver.java',
         '**/XMPPTCPConnection.java',
-        'main/java/com/**'
+        '**/ProximityScreenLocker*.java',
+        'main/java/com/**', 'main/java/io/**', 'main/java/cn/**'
     def configProps = ['baseDir': projectDir.absolutePath]
     configProperties configProps
     classpath = files()
 }
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion '23.0.2'
+    compileSdkVersion project.compileSdkVersion
+    buildToolsVersion project.buildToolsVersion
 
     defaultConfig {
         applicationId "org.kontalk"
-        versionCode 81
-        versionName "3.1.3-preview"
-        targetSdkVersion 22
+        versionCode project.appVersionCode
+        versionName project.appVersionName
+        targetSdkVersion project.targetSdkVersion
         minSdkVersion 9
-        resConfigs "en", "de", "fr", "it", "es", "ca", "cs", "el", "fa", "gl", "ja", "nl", "pt", "ru", "sr", "zh-rCN"
+        resConfigs "en", "de", "fr", "it", "es", "ca", "cs", "el", "fa", "gl", "ja", "nl", "pt", "pt-rBR", "ru", "sr", "zh-rCN", "ar", "hi", "tr", "nb-rNO"
         resValue "string", "application_id", applicationId
         resValue "string", "account_type", applicationId + '.account'
         buildConfigField "String", "ACCOUNT_TYPE", '"' + applicationId + '.account"'
+        vectorDrawables.useSupportLibrary = true
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
-    if (project.hasProperty('RELEASE_STORE_FILE')) {
-        signingConfigs {
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+
+    signingConfigs {
+        if (travisBuild) {
+            release {
+                storeFile rootProject.file('dist/release.keystore')
+                storePassword System.getenv("RELEASE_STORE_PASSWORD")
+                keyAlias System.getenv("RELEASE_KEY_ALIAS")
+                keyPassword System.getenv("RELEASE_KEY_PASSWORD")
+            }
+        }
+        else if (project.hasProperty('RELEASE_STORE_FILE')) {
             release {
                 storeFile file(RELEASE_STORE_FILE)
                 storePassword RELEASE_STORE_PASSWORD
@@ -56,8 +75,9 @@ android {
     buildTypes {
         release {
             minifyEnabled true
-            proguardFile 'proguard.cfg'
-            if (project.hasProperty('RELEASE_STORE_FILE'))
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
+            if (project.hasProperty('RELEASE_STORE_FILE') || travisBuild)
                 signingConfig signingConfigs.release
         }
         debug {
@@ -66,8 +86,16 @@ android {
             resValue "string", "account_type", defaultConfig.applicationId + '.debug.account'
             buildConfigField "String", "ACCOUNT_TYPE", '"' + defaultConfig.applicationId + '.debug.account"'
             minifyEnabled true
-            proguardFile 'proguard.cfg'
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
+            testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg', 'proguard-test.cfg'
+            ext.enableCrashlytics = false
         }
+    }
+
+    dexOptions {
+        // skip pre-dexing when running on Travis CI or when disabled via -Dpre-dex=false.
+        preDexLibraries = preDexEnabled && !travisBuild
     }
 
     lintOptions {
@@ -81,6 +109,7 @@ android {
 
     productFlavors {
         basic {
+            ext.enableCrashlytics = false
         }
         googleplay {
         }
@@ -93,40 +122,85 @@ dependencies {
         exclude group: 'net.sf.kxml'
     }
     compile project(':emojicon:library')
-    compile (project(':CircularReveal:circualreveal')) {
-        transitive = true;
-    }
 
     compile "com.android.support:appcompat-v7:$appcompatVersion"
 
     compile "com.android.support:design:$appcompatVersion"
     compile "com.android.support:gridlayout-v7:$appcompatVersion"
+    compile "com.android.support:exifinterface:$appcompatVersion"
+    compile "com.android.support:recyclerview-v7:$appcompatVersion"
 
     compile "com.madgag.spongycastle:core:$spongyCastleVersion"
     compile "com.madgag.spongycastle:prov:$spongyCastleVersion"
     compile "com.madgag.spongycastle:pkix:$spongyCastleVersion"
     compile "com.madgag.spongycastle:pg:$spongyCastleVersion"
-    compile 'info.guardianproject.netcipher:netcipher:1.2'
-    compile 'com.googlecode.libphonenumber:libphonenumber:7.2.2'
+    compile 'info.guardianproject.netcipher:netcipher:1.2.1'
+    compile 'com.googlecode.libphonenumber:libphonenumber:8.8.3'
     compile 'com.nineoldandroids:library:2.4.0'
-    compile 'com.google.zxing:core:3.2.1'
+    compile 'com.google.zxing:core:3.3.0'
     compile 'com.segment.backo:backo:1.0.0'
+    compile "org.igniterealtime.smack:smack-tcp:$smackVersion"
     compile "org.igniterealtime.smack:smack-experimental:$smackVersion"
-    compile "org.igniterealtime.smack:smack-android-extensions:$smackVersion"
+    compile ("org.igniterealtime.smack:smack-android:$smackVersion") {
+        // exclude smack-omemo due to bad packaging
+        exclude module: 'smack-omemo'
+        exclude module: 'smack-omemo-signal'
+    }
     compile 'com.github.machinarius:preferencefragment:0.1.1'
-    compile('com.github.afollestad.material-dialogs:core:0.8.5.3@aar') {
-        transitive = true
-    }
-    compile('com.github.afollestad.material-dialogs:commons:0.8.5.3@aar') {
-        transitive = true
-    }
+    // MaterialDialogs stopped supporting API < 13 from version 0.9.1.0
+    compile 'com.afollestad.material-dialogs:core:0.9.0.2'
+    compile 'com.afollestad.material-dialogs:commons:0.9.0.2'
     compile 'com.github.castorflex.smoothprogressbar:library:1.1.0'
     compile 'com.nispok:snackbar:2.11.0'
-    compile 'de.hdodenhof:circleimageview:2.0.0'
+    // Glide 4 requires API level 14
+    compile 'com.github.bumptech.glide:glide:3.8.0'
+    compile 'com.github.instacart.truetime-android:library:3.0'
+    compile 'com.github.daniele-athome:FloatingActionButton:b976d71658'
+    compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'com.github.vlivanov:ListViewVariants:f606578467'
+
+    compile 'com.google.code.gson:gson:2.8.1'
+    compile 'com.squareup.okhttp3:okhttp:3.8.1'
+
+    compile "com.github.kontalk.AnyMaps:anymaps-base:$anyMapsVersion"
+    compile "com.github.kontalk.AnyMaps:anymaps-osm:$anyMapsVersion"
+
+    googleplayCompile "com.github.kontalk.AnyMaps:anymaps-google:$anyMapsVersion"
+    googleplayCompile "com.google.android.gms:play-services-maps:$googlePlayServicesVersion"
+    googleplayCompile "com.google.android.gms:play-services-location:$googlePlayServicesVersion"
 
     googleplayCompile "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
     googleplayCompile "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"
+    googleplayCompile('com.crashlytics.sdk.android:crashlytics:2.7.0@aar') {
+        transitive = true
+    }
 
-    testCompile 'junit:junit:4.+'
+    testCompile 'junit:junit:4.12'
+    androidTestCompile 'com.android.support.test:runner:0.5'
+    androidTestCompile 'com.android.support.test:rules:0.5'
+    androidTestCompile "com.android.support:support-annotations:$appcompatVersion"
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.2'
+    androidTestCompile 'com.android.support.test.espresso:espresso-intents:2.2.2'
+    androidTestCompile 'com.jayway.android.robotium:robotium-solo:5.6.3'
+}
+
+if (travisBuild) {
+    play {
+        track = 'alpha'
+        jsonFile = rootProject.file('dist/googleplay-developer-key.json')
+        untrackOld = true
+    }
+
+    task publish(dependsOn: ['publishGoogleplayRelease']) {
+        group = 'Kontalk'
+        description = 'Publish to Google Play alpha channel'
+    }
+    publish.dependsOn 'testGoogleplayReleaseUnitTest'
+}
+else if (project.hasProperty('GOOGLE_PLAY_DEVELOPER_KEY_FILE')) {
+    play {
+        track = 'beta'
+        jsonFile = file(GOOGLE_PLAY_DEVELOPER_KEY_FILE)
+        untrackOld = true
+    }
 }

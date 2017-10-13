@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
 
 package org.kontalk.ui.view;
 
+import java.util.List;
+
 import org.kontalk.data.Contact;
 import org.kontalk.ui.ContactsListFragment;
 
@@ -29,6 +31,12 @@ import org.kontalk.ui.ContactsListFragment;
 public interface ContactPickerListener {
 
     /** Called when a contact has been selected from a {@link org.kontalk.ui.ContactsListFragment}. */
-    public void onContactSelected(ContactsListFragment fragment, Contact contact);
+    void onContactSelected(ContactsListFragment fragment, Contact contact);
+
+    /**
+     * Called when one or more contacts have been selected from a
+     * {@link org.kontalk.ui.ContactsListFragment}.
+     */
+    void onContactsSelected(ContactsListFragment fragment, List<Contact> contacts);
 
 }

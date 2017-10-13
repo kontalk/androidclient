@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,10 +23,10 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.SystemClock;
-import android.util.Log;
+import org.kontalk.Log;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import org.kontalk.Kontalk;
@@ -156,7 +156,7 @@ public class GcmPushService implements IPushService {
 
     @Override
     public boolean isServiceAvailable() {
-        int status = GooglePlayServicesUtil
+        int status = GoogleApiAvailability.getInstance()
             .isGooglePlayServicesAvailable(mContext);
         return status == ConnectionResult.SUCCESS ||
             status == ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED;
@@ -206,7 +206,7 @@ public class GcmPushService implements IPushService {
         // since the existing regID is not guaranteed to work with the new
         // app version.
         int registeredVersion = prefs.getInt(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
-        int currentVersion = SystemUtils.getVersionCode(mContext);
+        int currentVersion = SystemUtils.getVersionCode();
         if (registeredVersion != currentVersion) {
             Log.i(TAG, "App version changed.");
             return "";
@@ -268,7 +268,7 @@ public class GcmPushService implements IPushService {
 
     private void storeRegistrationId(String regId) {
         final SharedPreferences prefs = getGCMPreferences(mContext);
-        int appVersion = SystemUtils.getVersionCode(mContext);
+        int appVersion = SystemUtils.getVersionCode();
         prefs.edit()
             .putString(PROPERTY_REG_ID, regId)
             .putInt(PROPERTY_APP_VERSION, appVersion)

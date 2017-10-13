@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,14 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.sasl.SASLError;
 import org.jivesoftware.smack.sasl.SASLErrorException;
+import org.spongycastle.openpgp.PGPException;
+
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.provider.Settings;
+
 import org.kontalk.Kontalk;
+import org.kontalk.Log;
 import org.kontalk.authenticator.LegacyAuthentication;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
@@ -48,11 +55,6 @@ import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.PGPKeyPairRingProvider;
 import org.kontalk.util.InternalTrustStore;
 import org.kontalk.util.Preferences;
-import org.spongycastle.openpgp.PGPException;
-
-import android.content.Context;
-import android.provider.Settings;
-import android.util.Log;
 
 
 /**
@@ -119,6 +121,11 @@ public class XMPPConnectionHelper extends Thread {
             .build();
     }
 
+    public XMPPConnectionHelper(Context context, EndpointServer server, boolean limited, KontalkConnection reuseConnection) {
+        this(context, server, limited);
+        mConn = reuseConnection;
+    }
+
     public void setListener(ConnectionHelperListener listener) {
         mListener = listener;
     }
@@ -139,14 +146,14 @@ public class XMPPConnectionHelper extends Thread {
 
     public void connectOnce(PersonalKey key, boolean forceLogin) throws XMPPException, SmackException,
             PGPException, KeyStoreException, NoSuchProviderException,
-            NoSuchAlgorithmException, CertificateException, IOException {
+            NoSuchAlgorithmException, CertificateException, IOException, InterruptedException {
 
         connectOnce(key, null, forceLogin);
     }
 
     private void connectOnce(PersonalKey key, String token, boolean forceLogin) throws XMPPException,
             SmackException, PGPException, IOException, KeyStoreException,
-            NoSuchProviderException, NoSuchAlgorithmException, CertificateException {
+            NoSuchProviderException, NoSuchAlgorithmException, CertificateException, InterruptedException {
 
         Log.d(TAG, "using server " + mServer.toString());
 
@@ -162,7 +169,7 @@ public class XMPPConnectionHelper extends Thread {
         }
 
         // recreate connection if closed
-        if (mConn == null || !mConn.isConnected()) {
+        if (mConn == null) {
 
             KeyStore trustStore = null;
             boolean acceptAnyCertificate = Preferences.getAcceptAnyCertificate(mContext);
@@ -267,8 +274,6 @@ public class XMPPConnectionHelper extends Thread {
                     if (mConn != null) {
                         // forcibly close connection, no matter what
                         mConn.instantShutdown();
-                        // EXTERMINATE!!
-                        mConn = null;
                     }
 
                     // SASL: not authorized
@@ -331,6 +336,7 @@ public class XMPPConnectionHelper extends Thread {
         mConnecting = false;
     }
 
+    @SuppressLint("HardwareIds")
     private static String getResource(Context context) {
         return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
     }

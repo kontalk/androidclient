@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,8 +35,10 @@ public class StepTimer {
     /** Delay accumulator. */
     private long mDelay;
 
+    /** The delay for the step in milliseconds. */
     public StepTimer(long delay) {
         mMinDelay = delay;
+        reset();
     }
 
     public void reset() {

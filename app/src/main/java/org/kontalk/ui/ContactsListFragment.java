@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,16 +24,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.kontalk.R;
-import org.kontalk.data.Contact;
-import org.kontalk.message.TextComponent;
-import org.kontalk.sync.SyncAdapter;
-import org.kontalk.ui.adapter.ContactsListAdapter;
-import org.kontalk.ui.view.ContactPickerListener;
-import org.kontalk.ui.view.ContactsListItem;
-import org.kontalk.util.RunnableBroadcastReceiver;
-import org.kontalk.util.SystemUtils;
-
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -44,26 +35,35 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
-import android.support.v4.app.Fragment;
+import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import lb.library.PinnedHeaderListView;
 
+import org.kontalk.R;
+import org.kontalk.data.Contact;
+import org.kontalk.message.TextComponent;
+import org.kontalk.sync.SyncAdapter;
+import org.kontalk.ui.adapter.ContactsListAdapter;
+import org.kontalk.ui.view.ContactPickerListener;
+import org.kontalk.ui.view.ContactsListItem;
+import org.kontalk.util.RunnableBroadcastReceiver;
+import org.kontalk.util.SystemUtils;
+
 
 /** Contacts list selection fragment. */
-public class ContactsListFragment extends Fragment implements
+public class ContactsListFragment extends ListFragment implements
         ContactsListAdapter.OnContentChangedListener,
-        SwipeRefreshLayout.OnRefreshListener,
         ContactsSyncer {
 
     private Cursor mCursor;
@@ -77,7 +77,7 @@ public class ContactsListFragment extends Fragment implements
 
     private MenuItem mSyncButton;
 
-    private PinnedHeaderListView mList;
+    private boolean mMultiselect;
 
     private final RunnableBroadcastReceiver.ActionRunnable mPostSyncAction =
             new RunnableBroadcastReceiver.ActionRunnable() {
@@ -92,10 +92,30 @@ public class ContactsListFragment extends Fragment implements
         }
     };
 
+    public static ContactsListFragment newInstance(boolean multiselect) {
+        ContactsListFragment f = new ContactsListFragment();
+        Bundle args = new Bundle();
+        args.putBoolean("multiselect", multiselect);
+        f.setArguments(args);
+        return f;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        if (savedInstanceState == null) {
+            mMultiselect = getArguments().getBoolean("multiselect", false);
+        }
+        else {
+            mMultiselect = savedInstanceState.getBoolean("multiselect", false);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("multiselect", mMultiselect);
     }
 
     @Override
@@ -103,45 +123,22 @@ public class ContactsListFragment extends Fragment implements
         return inflater.inflate(R.layout.contacts_list, container, false);
     }
 
+    // lint bug: for setChoiceMode which is actually available in API level 9
+    @SuppressLint("NewApi")
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mList = (PinnedHeaderListView) view.findViewById(android.R.id.list);
+        PinnedHeaderListView list = (PinnedHeaderListView) getListView();
 
         View pinnedHeaderView = LayoutInflater.from(view.getContext())
-            .inflate(R.layout.pinned_header_listview_side_header, mList, false);
-        mList.setPinnedHeaderView(pinnedHeaderView);
-        mList.setEmptyView(view.findViewById(android.R.id.empty));
+            .inflate(R.layout.pinned_header_listview_side_header, list, false);
+        list.setPinnedHeaderView(pinnedHeaderView);
+        list.setEmptyView(view.findViewById(android.R.id.empty));
+        list.setChoiceMode(mMultiselect ? ListView.CHOICE_MODE_MULTIPLE : ListView.CHOICE_MODE_NONE);
 
         mRefresher = (SwipeRefreshLayout) view.findViewById(R.id.refresher);
-        mRefresher.setOnRefreshListener(this);
-
-        // http://nlopez.io/swiperefreshlayout-with-listview-done-right/
-        mList.setOnScrollListener(new AbsListView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-            }
-
-            @Override
-            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                ((PinnedHeaderListView) view).configureHeaderView(firstVisibleItem);
-                int topRowVerticalPosition =
-                        (view == null || view.getChildCount() == 0) ?
-                                0 : view.getChildAt(0).getTop();
-                mRefresher.setEnabled(firstVisibleItem == 0 && topRowVerticalPosition >= 0);
-            }
-        });
-
-        mList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                ContactPickerListener parent = (ContactPickerListener) getActivity();
-
-                if (parent != null)
-                    parent.onContactSelected(ContactsListFragment.this, ((ContactsListItem) view).getContact());
-            }
-        });
+        mRefresher.setEnabled(false);
     }
 
     @Override
@@ -150,12 +147,14 @@ public class ContactsListFragment extends Fragment implements
 
         Activity parent = getActivity();
 
-        mListAdapter = new ContactsListAdapter(parent, mList);
+        mListAdapter = new ContactsListAdapter(parent, getListView());
         mListAdapter.setPinnedHeader(parent);
-        mList.setEnableHeaderTransparencyChanges(true);
+        PinnedHeaderListView list = (PinnedHeaderListView) getListView();
+        list.setEnableHeaderTransparencyChanges(false);
+        list.setOnScrollListener(mListAdapter);
 
         mListAdapter.setOnContentChangedListener(this);
-        mList.setAdapter(mListAdapter);
+        setListAdapter(mListAdapter);
 
         mHandler = new Handler();
         mBroadcastManager = LocalBroadcastManager.getInstance(parent);
@@ -163,13 +162,7 @@ public class ContactsListFragment extends Fragment implements
         // retain current sync state to hide the refresh button and start indeterminate progress
         registerSyncReceiver();
         if (SyncAdapter.isActive(parent)) {
-            // workaround for https://code.google.com/p/android/issues/detail?id=77712
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    setSyncing(true);
-                }
-            });
+            setSyncing(true);
         }
     }
 
@@ -207,7 +200,11 @@ public class ContactsListFragment extends Fragment implements
 
         Context ctx = getActivity();
         if (ctx != null)
-            mSyncButton.setVisible(!SyncAdapter.isActive(getActivity()));
+            mSyncButton.setVisible(!SyncAdapter.isActive(getActivity()) && !mMultiselect);
+
+        // multiselect mode needs the confirm action
+        menu.findItem(R.id.menu_compose).setVisible(mMultiselect);
+        menu.findItem(R.id.menu_invite).setVisible(!mMultiselect);
 
         super.onCreateOptionsMenu(menu, inflater);
     }
@@ -215,6 +212,12 @@ public class ContactsListFragment extends Fragment implements
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.menu_compose:
+                // using clone because listview returns its original copy
+                openSelectedContacts(SystemUtils
+                    .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
+                return true;
+
             case R.id.menu_refresh:
                 startSync(true);
                 return true;
@@ -225,6 +228,31 @@ public class ContactsListFragment extends Fragment implements
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void openSelectedContacts(SparseBooleanArray checked) {
+        List<Contact> selected = new ArrayList<>(checked.size());
+        for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
+            if (checked.get(i)) {
+                Cursor cursor = (Cursor) mListAdapter.getItem(i);
+                Contact contact = Contact.fromUsersCursor(getContext(), cursor);
+                selected.add(contact);
+            }
+        }
+        ContactPickerListener parent = (ContactPickerListener) getActivity();
+        if (parent != null) {
+            parent.onContactsSelected(this, selected);
+        }
+    }
+
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        if (!mMultiselect) {
+            ContactPickerListener parent = (ContactPickerListener) getActivity();
+            if (parent != null) {
+                parent.onContactSelected(this, ((ContactsListItem) v).getContact());
+            }
+        }
     }
 
     @Override
@@ -243,12 +271,7 @@ public class ContactsListFragment extends Fragment implements
     public void setSyncing(boolean syncing) {
         mRefresher.setRefreshing(syncing);
         if (mSyncButton != null)
-            mSyncButton.setVisible(!syncing);
-    }
-
-    @Override
-    public void onRefresh() {
-        startSync(true);
+            mSyncButton.setVisible(!syncing && !mMultiselect);
     }
 
     private void registerSyncReceiver() {
@@ -263,8 +286,11 @@ public class ContactsListFragment extends Fragment implements
     }
 
     public void startQuery() {
-        mCursor = Contact.queryContacts(getActivity());
-        mListAdapter.changeCursor(mCursor);
+        final Context context = getContext();
+        if (context != null) {
+            mCursor = Contact.queryContacts(context);
+            mListAdapter.changeCursor(mCursor);
+        }
     }
 
     @Override
@@ -274,14 +300,14 @@ public class ContactsListFragment extends Fragment implements
 
     private void startInvite() {
         Context ctx = getActivity();
-        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        Intent shareIntent = SystemUtils.externalIntent(Intent.ACTION_SEND);
         shareIntent.setType(TextComponent.MIME_TYPE);
         shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.text_invite_message));
 
         List<ResolveInfo> resInfo = ctx.getPackageManager().queryIntentActivities(shareIntent, 0);
         // having size=1 means that we are the only handlers
         if (resInfo != null && resInfo.size() > 1) {
-            List<Intent> targets = new ArrayList<Intent>();
+            List<Intent> targets = new ArrayList<>();
 
             for (ResolveInfo resolveInfo : resInfo) {
                 String packageName = resolveInfo.activityInfo.packageName;
@@ -293,36 +319,38 @@ public class ContactsListFragment extends Fragment implements
                         .setPackage(packageName)
                         .setComponent(new ComponentName(
                             packageName, resolveInfo.activityInfo.name))
-                        .putExtra("org.kontalk.invite.label", resolveInfo.loadLabel(ctx.getPackageManager()));
+                        .putExtra("org.kontalk.invite.label", resolveInfo.activityInfo.loadLabel(ctx.getPackageManager()));
 
                     targets.add(targetShareIntent);
                 }
             }
 
-            // initial intents are added before of the main intent, so we remove the last one here
-            Intent chooser = Intent.createChooser(targets.remove(targets.size() - 1), getString(R.string.menu_invite));
-            Collections.sort(targets, new DisplayNameComparator());
-            // remove custom extras
-            for (Intent intent : targets)
-                intent.removeExtra("org.kontalk.invite.label");
+            if (targets.size() > 0) {
+                // initial intents are added before the main intent, so we remove the last one here
+                Intent chooser = Intent.createChooser(targets.remove(targets.size() - 1), getString(R.string.menu_invite));
+                if (targets.size() > 0) {
+                    Collections.sort(targets, new DisplayNameComparator());
+                    // remove custom extras
+                    for (Intent intent : targets)
+                        intent.removeExtra("org.kontalk.invite.label");
 
-            Parcelable[] extraIntents = new Parcelable[targets.size()];
-            targets.toArray(extraIntents);
-            chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
+                    Parcelable[] extraIntents = targets.toArray(new Parcelable[targets.size()]);
+                    chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
+                }
 
-            startActivity(chooser);
+                startActivity(chooser);
+                return;
+            }
         }
 
-        else {
-            // no activity to handle invitation
-            Toast.makeText(ctx, R.string.warn_invite_no_app,
-                Toast.LENGTH_SHORT).show();
-        }
+        // no activity to handle invitation
+        Toast.makeText(ctx, R.string.warn_invite_no_app,
+            Toast.LENGTH_SHORT).show();
     }
 
-    public static class DisplayNameComparator implements
+    static class DisplayNameComparator implements
         Comparator<Intent> {
-        public DisplayNameComparator() {
+        DisplayNameComparator() {
             mCollator.setStrength(Collator.PRIMARY);
         }
 

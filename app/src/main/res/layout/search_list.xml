@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -16,10 +16,20 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<ListView android:id="@android:id/list" xmlns:android="http://schemas.android.com/apk/res/android"
-    style="?android:attr/listViewStyle"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:drawSelectorOnTop="false"
-    android:scrollbarStyle="insideOverlay"
-    android:fadingEdgeLength="16dip" />
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <ListView android:id="@android:id/list"
+        style="?android:attr/listViewStyle"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:drawSelectorOnTop="false"
+        android:scrollbarStyle="insideOverlay"
+        android:fadingEdgeLength="16dip" />
+    <TextView android:id="@android:id/empty"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/text_search_results_empty" />
+</FrameLayout>

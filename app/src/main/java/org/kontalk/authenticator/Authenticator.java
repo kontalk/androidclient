@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
+import org.jxmpp.jid.BareJid;
 import org.spongycastle.bcpg.HashAlgorithmTags;
 import org.spongycastle.openpgp.PGPEncryptedData;
 import org.spongycastle.openpgp.PGPException;
@@ -45,9 +47,13 @@ import android.accounts.Account;
 import android.accounts.AccountAuthenticatorResponse;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
+import android.accounts.AuthenticatorException;
 import android.accounts.NetworkErrorException;
+import android.accounts.OperationCanceledException;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -60,7 +66,8 @@ import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyExporter;
-import org.kontalk.provider.UsersProvider;
+import org.kontalk.provider.Keyring;
+import org.kontalk.ui.MainActivity;
 import org.kontalk.ui.NumberValidation;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.XMPPUtils;
@@ -86,7 +93,8 @@ public class Authenticator extends AbstractAccountAuthenticator {
     @Deprecated
     public static final String DATA_AUTHTOKEN = "org.kontalk.token";
 
-    private final Context mContext;
+    @SuppressWarnings("WeakerAccess")
+    final Context mContext;
     private final Handler mHandler;
 
     public Authenticator(Context context) {
@@ -109,11 +117,21 @@ public class Authenticator extends AbstractAccountAuthenticator {
         return (acc != null) ? acc.name : null;
     }
 
-    public static boolean isSelfJID(Context ctx, String bareJid) {
+    public static String getSelfJID(Context ctx) {
         String name = getDefaultAccountName(ctx);
-        return name != null &&
-            XMPPUtils.createLocalJID(ctx, MessageUtils.sha1(name))
-                .equalsIgnoreCase(bareJid);
+        return (name != null) ?
+            XMPPUtils.createLocalJID(ctx, MessageUtils.sha1(name)) : null;
+    }
+
+    public static boolean isSelfJID(Context ctx, BareJid jid) {
+        String self = getSelfJID(ctx);
+        return self != null && jid.equals(self);
+    }
+
+    @Deprecated
+    public static boolean isSelfJID(Context ctx, String bareJid) {
+        String jid = getSelfJID(ctx);
+        return jid != null && jid.equalsIgnoreCase(bareJid);
     }
 
     public static String getDefaultDisplayName(Context context) {
@@ -188,10 +206,10 @@ public class Authenticator extends AbstractAccountAuthenticator {
         byte[] publicKey = Base64.decode(pubKeyData, Base64.DEFAULT);
 
         // trusted keys
-        Map<String, String> trustedKeys = UsersProvider.getTrustedKeys(ctx);
+        Map<String, Keyring.TrustedFingerprint> trustedKeys = Keyring.getTrustedKeys(ctx);
 
         PersonalKeyExporter exp = new PersonalKeyExporter();
-        exp.save(privateKey, publicKey, dest, passphrase, exportPassphrase, bridgeCert, trustedKeys);
+        exp.save(privateKey, publicKey, dest, passphrase, exportPassphrase, bridgeCert, trustedKeys, acc.name);
     }
 
     public static byte[] getPrivateKeyExportData(Context ctx, String passphrase, String exportPassphrase)
@@ -276,6 +294,14 @@ public class Authenticator extends AbstractAccountAuthenticator {
         am.setPassword(acc, newPassphrase);
     }
 
+    public static void setPassphrase(Context ctx, String passphrase, boolean fromUser) {
+        AccountManager am = AccountManager.get(ctx);
+        Account acc = getDefaultAccount(am);
+        am.setUserData(acc, DATA_USER_PASSPHRASE, String.valueOf(fromUser));
+        // replace password for account
+        am.setPassword(acc, passphrase);
+    }
+
     public static boolean isUserPassphrase(Context ctx) {
         AccountManager am = AccountManager.get(ctx);
         Account acc = getDefaultAccount(am);
@@ -284,7 +310,39 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
     public static void removeDefaultAccount(Context ctx, AccountManagerCallback<Boolean> callback) {
         AccountManager am = AccountManager.get(ctx);
-        am.removeAccount(getDefaultAccount(am), callback, null);
+        Account account = getDefaultAccount(am);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            final boolean result = am.removeAccountExplicitly(account);
+            callback.run(new AccountManagerFuture<Boolean>() {
+                @Override
+                public boolean cancel(boolean mayInterruptIfRunning) {
+                    return false;
+                }
+
+                @Override
+                public boolean isCancelled() {
+                    return false;
+                }
+
+                @Override
+                public boolean isDone() {
+                    return true;
+                }
+
+                @Override
+                public Boolean getResult() throws OperationCanceledException, IOException, AuthenticatorException {
+                    return result;
+                }
+
+                @Override
+                public Boolean getResult(long timeout, TimeUnit unit) throws OperationCanceledException, IOException, AuthenticatorException {
+                    return result;
+                }
+            });
+        }
+        else {
+            am.removeAccount(getDefaultAccount(am), callback, null);
+        }
     }
 
     @Override
@@ -315,19 +373,17 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
     /**
      * System is requesting to confirm our credentials - this usually means that
-     * something has changed (e.g. new SIM card), so we simply delete the
-     * account for safety.
+     * something has changed (e.g. new SIM card). We request the user to insert
+     * his/her personal key passphrase - which might not have been set, in that
+     * case that's unfortunate because it's an unrecoverable situation.
      */
     @Override
     public Bundle confirmCredentials(AccountAuthenticatorResponse response,
             Account account, Bundle options) throws NetworkErrorException {
 
-        // remove account
-        AccountManager man = AccountManager.get(mContext);
-        man.removeAccount(account, null, null);
-
         final Bundle bundle = new Bundle();
-        bundle.putBoolean(AccountManager.KEY_BOOLEAN_RESULT, false);
+        bundle.putParcelable(AccountManager.KEY_INTENT,
+            MainActivity.passwordRequest(mContext));
         return bundle;
     }
 

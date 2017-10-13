@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,14 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.EndpointServer;
-import org.kontalk.client.ServerList;
-import org.kontalk.crypto.PersonalKey;
-import org.kontalk.service.ServerListUpdater;
-import org.kontalk.service.msgcenter.MessageCenterService;
-
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -52,10 +45,21 @@ import android.net.Uri;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
+import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.view.Display;
 import android.view.WindowManager;
+
+import org.kontalk.Kontalk;
+import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
+import org.kontalk.client.EndpointServer;
+import org.kontalk.client.ServerList;
+import org.kontalk.crypto.PersonalKey;
+import org.kontalk.provider.Keyring;
+import org.kontalk.service.ServerListUpdater;
+import org.kontalk.service.msgcenter.MessageCenterService;
 
 
 /**
@@ -67,13 +71,15 @@ public final class Preferences {
     private static SharedPreferences sPreferences;
     private static Drawable sCustomBackground;
     private static String sBalloonTheme;
+    private static String sBalloonGroupsTheme;
 
+    @SuppressLint("CommitPrefEdits")
     public static void init(Context context) {
         sPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 
         // set the new default theme if this is the first upgrade
         String newTheme = context.getString(R.string.pref_default_balloons);
-        if (!getBooleanOnce(context, "has_new_theme." + newTheme))
+        if (!getBooleanOnce("has_new_theme." + newTheme))
             sPreferences.edit().putString("pref_balloons", newTheme)
                 .commit();
     }
@@ -86,22 +92,26 @@ public final class Preferences {
         sBalloonTheme = balloonTheme;
     }
 
+    public static void setCachedBalloonGroupsTheme(String balloonTheme) {
+        sBalloonGroupsTheme = balloonTheme;
+    }
+
     public static void updateServerListLastUpdate(Preference pref, ServerList list) {
         Context context = pref.getContext();
         String timestamp = MessageUtils.formatTimeStampString(context, list.getDate().getTime(), true);
         pref.setSummary(context.getString(R.string.server_list_last_update, timestamp));
     }
 
-    private static String getString(Context context, String key, String defaultValue) {
+    private static String getString(String key, String defaultValue) {
         return sPreferences.getString(key, defaultValue);
     }
 
-    private static int getInt(Context context, String key, int defaultValue) {
+    private static int getInt(String key, int defaultValue) {
         return sPreferences.getInt(key, defaultValue);
     }
 
-    private static int getIntMinValue(Context context, String key, int minValue, int defaultValue) {
-        String val = getString(context, key, null);
+    private static int getIntMinValue(String key, int minValue, int defaultValue) {
+        String val = getString(key, null);
         int nval;
         try {
             nval = Integer.valueOf(val);
@@ -112,41 +122,43 @@ public final class Preferences {
         return (nval < minValue) ? minValue : nval;
     }
 
-    private static long getLong(Context context, String key, long defaultValue) {
+    private static long getLong(String key, long defaultValue) {
         return sPreferences.getLong(key, defaultValue);
     }
 
     /** Retrieves a long and if >= 0 it sets it to -1. */
-    private static long getLongOnce(Context context, String key) {
+    @SuppressLint("CommitPrefEdits")
+    private static long getLongOnce(String key) {
         long value = sPreferences.getLong(key, -1);
         if (value >= 0)
             sPreferences.edit().putLong(key, -1).commit();
         return value;
     }
 
-    private static boolean getBoolean(Context context, String key, boolean defaultValue) {
+    private static boolean getBoolean(String key, boolean defaultValue) {
         return sPreferences.getBoolean(key, defaultValue);
     }
 
     /** Retrieve a boolean and if false set it to true. */
-    private static boolean getBooleanOnce(Context context, String key) {
+    @SuppressLint("CommitPrefEdits")
+    private static boolean getBooleanOnce(String key) {
         boolean value = sPreferences.getBoolean(key, false);
         if (!value)
             sPreferences.edit().putBoolean(key, true).commit();
         return value;
     }
 
-    public static boolean setRingtone(Context context, String uri) {
+    public static boolean setRingtone(String uri) {
         return sPreferences.edit()
             .putString("pref_ringtone", uri)
             .commit();
     }
 
-    public static String getServerURI(Context context) {
-        return getString(context, "pref_network_uri", null);
+    public static String getServerURI() {
+        return getString("pref_network_uri", null);
     }
 
-    public static boolean setServerURI(Context context, String serverURI) {
+    public static boolean setServerURI(String serverURI) {
         return sPreferences.edit()
             .putString("pref_network_uri", serverURI)
             .commit();
@@ -154,7 +166,7 @@ public final class Preferences {
 
     /** Returns a random server from the cached list or the user-defined server. */
     public static EndpointServer getEndpointServer(Context context) {
-        String customUri = getServerURI(context);
+        String customUri = getServerURI();
         if (!TextUtils.isEmpty(customUri)) {
             try {
                 return new EndpointServer(customUri);
@@ -170,7 +182,7 @@ public final class Preferences {
 
     /** Returns a server provider reflecting the current settings. */
     public static EndpointServer.EndpointServerProvider getEndpointServerProvider(Context context) {
-        final String customUri = getServerURI(context);
+        final String customUri = getServerURI();
         if (!TextUtils.isEmpty(customUri)) {
             return new EndpointServer.SingleServerProvider(customUri);
         }
@@ -181,124 +193,153 @@ public final class Preferences {
     }
 
     public static boolean getEncryptionEnabled(Context context) {
-        return getBoolean(context, "pref_encrypt", context
+        return getBoolean("pref_encrypt", context
             .getResources().getBoolean(R.bool.pref_default_encrypt));
     }
 
     public static boolean getSyncSIMContacts(Context context) {
-        return getBoolean(context, "pref_sync_sim_contacts", context
+        return getBoolean("pref_sync_sim_contacts", context
             .getResources().getBoolean(R.bool.pref_default_sync_sim_contacts));
     }
 
     public static boolean getSyncInvisibleContacts(Context context) {
-        return getBoolean(context, "pref_sync_invisible_contacts", context
+        return getBoolean("pref_sync_invisible_contacts", context
             .getResources().getBoolean(R.bool.pref_default_sync_invisible_contacts));
     }
 
     public static boolean getAutoAcceptSubscriptions(Context context) {
-        return getBoolean(context, "pref_auto_accept_subscriptions", context
+        return getBoolean("pref_auto_accept_subscriptions", context
             .getResources().getBoolean(R.bool.pref_default_auto_accept_subscriptions));
     }
 
     public static boolean getPushNotificationsEnabled(Context context) {
-        return getBoolean(context, "pref_push_notifications", context
+        return getBoolean("pref_push_notifications", context
             .getResources().getBoolean(R.bool.pref_default_push_notifications));
     }
 
     public static boolean getNotificationsEnabled(Context context) {
-        return getBoolean(context, "pref_enable_notifications", context
+        return getBoolean("pref_enable_notifications", context
             .getResources().getBoolean(R.bool.pref_default_enable_notifications));
     }
 
     public static String getNotificationVibrate(Context context) {
-        return getString(context, "pref_vibrate", context
+        return getString("pref_vibrate", context
             .getString(R.string.pref_default_vibrate));
     }
 
     public static String getNotificationRingtone(Context context) {
-        return getString(context, "pref_ringtone", context
+        return getString("pref_ringtone", context
             .getString(R.string.pref_default_ringtone));
     }
 
     public static boolean getNotificationLED(Context context) {
-        return getBoolean(context, "pref_enable_notification_led",
+        return getBoolean("pref_enable_notification_led",
             context.getResources().getBoolean(R.bool.pref_default_enable_notification_led));
     }
 
     public static int getNotificationLEDColor(Context context) {
-        return getInt(context, "pref_notification_led_color",
+        return getInt("pref_notification_led_color",
             context.getResources().getInteger(R.integer.pref_default_notification_led_color));
     }
 
-    public static boolean setNotificationLEDColor(Context context, int color) {
+    public static boolean setNotificationLEDColor(int color) {
         return sPreferences.edit()
             .putInt("pref_notification_led_color", color)
             .commit();
     }
 
     public static int getImageCompression(Context context) {
-        return Integer.parseInt(getString(context, "pref_image_resize", String
+        return Integer.parseInt(getString("pref_image_resize", String
             .valueOf(context.getResources().getInteger(R.integer.pref_default_image_resize))));
     }
 
-    public static boolean setLastCountryCode(Context context, int countryCode) {
-        return sPreferences.edit()
-            .putInt("pref_countrycode", countryCode)
-            .commit();
+    /** Returns true if, as per settings, we can autodownload a file of the given size. */
+    public static boolean canAutodownloadMedia(Context context, long size) {
+        int threshold = Integer.parseInt(getString("pref_media_autodownload_threshold", String
+            .valueOf(context.getResources().getInteger(R.integer.pref_default_media_autodownload_threshold))));
+        String autodownload = getString("pref_media_autodownload",
+            context.getResources().getString(R.string.pref_default_media_autodownload));
+        return (size / 1024) < threshold || "always".equals(autodownload) ||
+            ("wifi".equals(autodownload) && SystemUtils.isOnWifi(context));
     }
 
-    public static int getLastCountryCode(Context context) {
-        return getInt(context, "pref_countrycode", 0);
+    public static String getMapsProvider(Context context) {
+        return getString("pref_maps_service", context.getResources()
+            .getString(R.string.pref_default_maps_service));
     }
 
-    public static boolean getContactsListVisited(Context context) {
-        return getBooleanOnce(context, "pref_contacts_visited");
+    public static boolean getContactsListVisited() {
+        return getBooleanOnce("pref_contacts_visited");
     }
 
-    public static long getLastSyncTimestamp(Context context) {
-        return getLong(context, "pref_last_sync", -1);
+    public static boolean getGroupChatCreateDisclaimer() {
+        return getBoolean("pref_create_group_disclaimer", true);
     }
 
-    public static boolean setLastSyncTimestamp(Context context, long timestamp) {
+    public static void setGroupChatCreateDisclaimer() {
+        sPreferences.edit()
+            .putBoolean("pref_create_group_disclaimer", false)
+            .apply();
+    }
+
+    public static long getLastSyncTimestamp() {
+        return getLong("pref_last_sync", -1);
+    }
+
+    public static boolean setLastSyncTimestamp(long timestamp) {
         return sPreferences.edit()
             .putLong("pref_last_sync", timestamp)
             .commit();
     }
 
-    public static boolean setLastPushNotification(Context context, long timestamp) {
+    public static boolean setLastPushNotification(long timestamp) {
         return sPreferences.edit()
             .putLong("pref_last_push_notification", timestamp)
             .commit();
     }
 
-    public static long getLastPushNotification(Context context) {
-        return getLongOnce(context, "pref_last_push_notification");
+    public static long getLastPushNotification() {
+        return getLongOnce("pref_last_push_notification");
     }
 
     /** TODO cache value */
     public static String getFontSize(Context context) {
-        return getString(context, "pref_font_size", context
+        return getString("pref_font_size", context
             .getString(R.string.pref_default_font_size));
     }
 
     public static String getBalloonTheme(Context context) {
         if (sBalloonTheme == null)
-            sBalloonTheme = getString(context, "pref_balloons", context
+            sBalloonTheme = getString("pref_balloons", context
                 .getString(R.string.pref_default_balloons));
         return sBalloonTheme;
     }
 
-    public static String getStatusMessage(Context context) {
-        return getString(context, "pref_status_message", null);
+    public static String getBalloonGroupsTheme(Context context) {
+        if (sBalloonGroupsTheme == null)
+            sBalloonGroupsTheme = getString("pref_balloons_groups", context
+                .getString(R.string.pref_default_balloons_groups));
+        return sBalloonGroupsTheme;
     }
 
-    public static boolean setStatusMessage(Context context, String message) {
-        return sPreferences.edit()
+    /** Still unused. */
+    public static boolean getEmojiConverter(Context context) {
+        return getBoolean("pref_emoji_converter",
+                context.getResources().getBoolean(R.bool.pref_default_emoji_converter));
+    }
+
+    public static String getStatusMessage() {
+        return getString("pref_status_message", null);
+    }
+
+    public static void setStatusMessage(String message) {
+        sPreferences.edit()
             .putString("pref_status_message", message)
-            .commit();
+            .apply();
     }
 
     /** Loads and stores a cached version of the given conversation background. */
+    @SuppressWarnings("deprecation")
     public static File cacheConversationBackground(Context context, Uri uri) throws IOException {
         InputStream in = null;
         OutputStream out = null;
@@ -318,14 +359,30 @@ public final class Preferences {
                 height = display.getHeight();
             }
 
-            in = context.getContentResolver().openInputStream(uri);
-            BitmapFactory.Options options = MediaStorage.preloadBitmap(in, width, height);
-            in.close();
+            BitmapFactory.Options options;
+            try {
+                in = context.getContentResolver().openInputStream(uri);
+                options = MediaStorage.preloadBitmap(in, width, height);
+            }
+            catch (Exception e) {
+                throw new IOException(e);
+            }
+            finally {
+                SystemUtils.closeStream(in);
+            }
 
-            // open again
-            in = context.getContentResolver().openInputStream(uri);
-            Bitmap bitmap = BitmapFactory.decodeStream(in, null, options);
-            in.close();
+            Bitmap bitmap;
+            try {
+                // open again
+                in = context.getContentResolver().openInputStream(uri);
+                bitmap = BitmapFactory.decodeStream(in, null, options);
+            }
+            catch (Exception e) {
+                throw new IOException(e);
+            }
+            finally {
+                SystemUtils.closeStream(in);
+            }
 
             Bitmap tn = ThumbnailUtils.extractThumbnail(bitmap, width, height);
             bitmap.recycle();
@@ -341,31 +398,21 @@ public final class Preferences {
             return outFile;
         }
         finally {
-            try {
-                in.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-            try {
-                out.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
+            SystemUtils.closeStream(out);
         }
     }
 
     public static Drawable getConversationBackground(Context context) {
         InputStream in = null;
         try {
-            if (getBoolean(context, "pref_custom_background", false)) {
+            if (getBoolean("pref_custom_background", false)) {
                 if (sCustomBackground == null) {
-                    String _customBg = getString(context, "pref_background_uri", null);
+                    String _customBg = getString("pref_background_uri", null);
                     in = context.getContentResolver().openInputStream(Uri.parse(_customBg));
-
-                    Bitmap bmap = BitmapFactory.decodeStream(in, null, null);
-                    sCustomBackground = new BitmapDrawable(context.getResources(), bmap);
+                    if (in != null) {
+                        Bitmap bmap = BitmapFactory.decodeStream(in, null, null);
+                        sCustomBackground = new BitmapDrawable(context.getResources(), bmap);
+                    }
                 }
                 return sCustomBackground;
             }
@@ -374,12 +421,7 @@ public final class Preferences {
             // ignored
         }
         finally {
-            try {
-                in.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
+            SystemUtils.closeStream(in);
         }
         return null;
     }
@@ -392,13 +434,17 @@ public final class Preferences {
         boolean old = sPreferences.getBoolean("offline_mode", false);
         // set flag again!
         boolean offline = !old;
-        sPreferences.edit().putBoolean("offline_mode", offline).commit();
+        sPreferences.edit()
+            .putBoolean("offline_mode", offline)
+            .apply();
 
         if (offline) {
             // stop the message center and never start it again
             MessageCenterService.stop(context);
+            Kontalk.setBackendEnabled(context, false);
         }
         else {
+            Kontalk.setBackendEnabled(context, true);
             MessageCenterService.start(context);
         }
 
@@ -407,7 +453,9 @@ public final class Preferences {
 
     /** Enable/disable offline mode. */
     public static void setOfflineMode(Context context, boolean enabled) {
-        sPreferences.edit().putBoolean("offline_mode", enabled).commit();
+        sPreferences.edit()
+            .putBoolean("offline_mode", enabled)
+            .apply();
 
         if (enabled) {
             // stop the message center and never start it again
@@ -418,85 +466,92 @@ public final class Preferences {
         }
     }
 
-    public static boolean getOfflineMode(Context context) {
-        return getBoolean(context, "offline_mode", false);
+    public static boolean getOfflineMode() {
+        return getBoolean("offline_mode", false);
     }
 
-    public static boolean getOfflineModeUsed(Context context) {
-        return getBoolean(context, "offline_mode_used", false);
+    public static boolean getOfflineModeUsed() {
+        return getBoolean("offline_mode_used", false);
     }
 
-    public static boolean setOfflineModeUsed(Context context) {
-        return sPreferences.edit()
+    public static void setOfflineModeUsed() {
+        sPreferences.edit()
             .putBoolean("offline_mode_used", true)
-            .commit();
+            .apply();
     }
 
     public static boolean getSendTyping(Context context) {
-        return getBoolean(context, "pref_send_typing", context.getResources()
+        return getBoolean("pref_send_typing", context.getResources()
             .getBoolean(R.bool.pref_default_send_typing));
     }
 
-    public static String getDialPrefix(Context context) {
-        String pref = getString(context, "pref_remove_prefix", null);
+    public static String getDialPrefix() {
+        String pref = getString("pref_remove_prefix", null);
         return (pref != null && !TextUtils.isEmpty(pref.trim())) ? pref: null;
     }
 
-    public static String getPushSenderId(Context context) {
-        return getString(context, "pref_push_sender", null);
+    public static String getPushSenderId() {
+        return getString("pref_push_sender", null);
     }
 
-    public static boolean setPushSenderId(Context context, String senderId) {
+    public static boolean setPushSenderId(String senderId) {
         return sPreferences.edit()
             .putString("pref_push_sender", senderId)
             .commit();
     }
 
     public static boolean getAcceptAnyCertificate(Context context) {
-        return getBoolean(context, "pref_accept_any_certificate", context.getResources()
+        return getBoolean("pref_accept_any_certificate", context.getResources()
             .getBoolean(R.bool.pref_default_accept_any_certificate));
     }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public static boolean setAcceptAnyCertificate(boolean acceptAnyCertificate) {
+        return sPreferences.edit()
+            .putBoolean("pref_accept_any_certificate", acceptAnyCertificate)
+            .commit();
+    }
+
     public static int getIdleTimeMillis(Context context, int minValue) {
-        return getIntMinValue(context, "pref_idle_time", minValue, context
+        return getIntMinValue("pref_idle_time", minValue, context
             .getResources().getInteger(R.integer.pref_default_idle_time));
     }
 
     public static int getWakeupTimeMillis(Context context, int minValue) {
-        return getIntMinValue(context, "pref_wakeup_time", minValue, context
+        return getIntMinValue("pref_wakeup_time", minValue, context
             .getResources().getInteger(R.integer.pref_default_wakeup_time));
     }
 
-    public static long getLastConnection(Context context) {
-        return getLong(context, "pref_last_connection", -1);
+    public static long getLastConnection() {
+        return getLong("pref_last_connection", -1);
     }
 
     // TODO why isn't this used?
-    public static boolean setLastConnection(Context context) {
-        return sPreferences.edit()
+    public static void setLastConnection() {
+        sPreferences.edit()
             .putLong("pref_last_connection", System.currentTimeMillis())
-            .commit();
+            .apply();
     }
 
     public static String getEnterKeyMode(Context context) {
         try {
-            return getString(context, "pref_text_enter", context
+            return getString("pref_text_enter", context
                 .getString(R.string.pref_default_text_enter));
         }
         catch (ClassCastException e) {
             // legacy mode
-            return getBoolean(context, "pref_text_enter", false) ?
+            return getBoolean("pref_text_enter", false) ?
                 "newline" : "default";
         }
     }
 
     public static boolean getShowBlockedUsers(Context context) {
-        return getBoolean(context, "pref_show_blocked_users", context
+        return getBoolean("pref_show_blocked_users", context
             .getResources().getBoolean(R.bool.pref_default_show_blocked_users));
     }
 
-    public static String getRosterVersion(Context context) {
-        return getString(context, "roster_version", "");
+    public static String getRosterVersion() {
+        return getString("roster_version", "");
     }
 
     public static boolean setRosterVersion(String version) {
@@ -505,10 +560,40 @@ public final class Preferences {
             .commit();
     }
 
+    public static boolean isSkipDozeMode() {
+        return getBoolean("skip_doze_mode", false);
+    }
+
+    public static boolean setSkipDozeMode(boolean value) {
+        return sPreferences.edit()
+            .putBoolean("skip_doze_mode", value)
+            .commit();
+    }
+
+    public static boolean isSkipHuaweiProtectedApps() {
+        return getBoolean("huawei_skip_protected_apps", false);
+    }
+
+    public static boolean setSkipHuaweiProtectedApps(boolean value) {
+        return sPreferences.edit()
+            .putBoolean("huawei_skip_protected_apps", value)
+            .commit();
+    }
+
+    public static boolean isReportingEnabled(Context context) {
+        return getBoolean("pref_reporting", context
+            .getResources().getBoolean(R.bool.pref_default_reporting));
+    }
+
+    public static boolean isDebugLogEnabled(Context context) {
+        return getBoolean("pref_debug_log", context
+            .getResources().getBoolean(R.bool.pref_default_debug_log));
+    }
+
     public static long getPingAlarmInterval(Context context, long defaultValue) {
         String networkType = SystemUtils.getCurrentNetworkName(context);
         return (networkType != null) ?
-            getLong(context, "ping_alarm_interval_" + networkType, defaultValue) :
+            getLong("ping_alarm_interval_" + networkType, defaultValue) :
             defaultValue;
     }
 
@@ -522,7 +607,7 @@ public final class Preferences {
     public static long getPingAlarmBackoff(Context context, long defaultValue) {
         String networkType = SystemUtils.getCurrentNetworkName(context);
         return (networkType != null) ?
-            getLong(context, "ping_alarm_backoff_" + networkType, defaultValue) :
+            getLong("ping_alarm_backoff_" + networkType, defaultValue) :
             defaultValue;
     }
 
@@ -537,16 +622,24 @@ public final class Preferences {
      * Saves the current registration progress data. Used for recoverying a
      * registration after a restart or in very low memory situations.
      */
-    public static boolean saveRegistrationProgress(Context context, String name,
+    public static boolean saveRegistrationProgress(String name,
         String phoneNumber, PersonalKey key, String passphrase,
         byte[] importedPublicKey, byte[] importedPrivateKey, String serverUri,
-        String sender, boolean force, Map<String, String> trustedKeys) {
+        String sender, String challenge, String brandImage, String brandLink,
+        boolean canFallback, boolean force, Map<String, Keyring.TrustedFingerprint> trustedKeys) {
 
         ByteArrayOutputStream trustedKeysOut = null;
         if (trustedKeys != null) {
             trustedKeysOut = new ByteArrayOutputStream();
             Properties prop = new Properties();
-            prop.putAll(trustedKeys);
+
+            for (Map.Entry<String, Keyring.TrustedFingerprint> e : trustedKeys.entrySet()) {
+                Keyring.TrustedFingerprint fingerprint = e.getValue();
+                if (fingerprint != null) {
+                    prop.put(e.getKey(), fingerprint.toString());
+                }
+            }
+
             try {
                 prop.store(trustedKeysOut, null);
             }
@@ -560,7 +653,7 @@ public final class Preferences {
         return sPreferences.edit()
             .putString("registration_name", name)
             .putString("registration_phone", phoneNumber)
-            .putString("registration_key", key.toBase64())
+            .putString("registration_key", key != null ? key.toBase64() : null)
             .putString("registration_importedpublickey", importedPublicKey != null ?
                 Base64.encodeToString(importedPublicKey, Base64.NO_WRAP) : null)
             .putString("registration_importedprivatekey", importedPrivateKey != null ?
@@ -568,6 +661,10 @@ public final class Preferences {
             .putString("registration_passphrase", passphrase)
             .putString("registration_server", serverUri)
             .putString("registration_sender", sender)
+            .putString("registration_challenge", challenge)
+            .putString("registration_brandimage", brandImage)
+            .putString("registration_brandlink", brandLink)
+            .putBoolean("registration_canfallback", canFallback)
             .putBoolean("registration_force", force)
             .putString("registration_trustedkeys", trustedKeysOut != null ?
                 Base64.encodeToString(trustedKeysOut.toByteArray(), Base64.NO_WRAP) : null)
@@ -575,48 +672,59 @@ public final class Preferences {
     }
 
     @SuppressWarnings({"unchecked"})
-    public static RegistrationProgress getRegistrationProgress(Context context) {
-        String name = getString(context, "registration_name", null);
+    public static RegistrationProgress getRegistrationProgress() {
+        String name = getString("registration_name", null);
         if (name != null) {
             RegistrationProgress p = new RegistrationProgress();
             p.name = name;
-            p.phone = getString(context, "registration_phone", null);
-            String serverUri = getString(context, "registration_server", null);
+            p.phone = getString("registration_phone", null);
+            String serverUri = getString("registration_server", null);
             p.server = serverUri != null ? new EndpointServer(serverUri) : null;
-            p.key = PersonalKey.fromBase64(getString(context, "registration_key", null));
-            p.passphrase = getString(context, "registration_passphrase", null);
+            String key = getString("registration_key", null);
+            p.key = !TextUtils.isEmpty(key) ? PersonalKey.fromBase64(key) : null;
+            p.passphrase = getString("registration_passphrase", null);
 
-            String importedPublicKey = getString(context, "registration_importedpublickey", null);
+            String importedPublicKey = getString("registration_importedpublickey", null);
             if (importedPublicKey != null)
                 p.importedPublicKey = Base64.decode(importedPublicKey, Base64.NO_WRAP);
-            String importedPrivateKey = getString(context, "registration_importedprivatekey", null);
+            String importedPrivateKey = getString("registration_importedprivatekey", null);
             if (importedPrivateKey != null)
                 p.importedPrivateKey = Base64.decode(importedPrivateKey, Base64.NO_WRAP);
 
-            p.sender = getString(context, "registration_sender", null);
-            p.force = getBoolean(context, "registration_force", false);
+            p.sender = getString("registration_sender", null);
+            p.challenge = getString("registration_challenge", null);
+            p.brandImage = getString("registration_brandimage", null);
+            p.brandLink = getString("registration_brandlink", null);
+            p.canFallback = getBoolean("registration_canfallback", false);
+            p.force = getBoolean("registration_force", false);
 
-            String trustedKeys = getString(context, "registration_trustedkeys", null);
+            String trustedKeys = getString("registration_trustedkeys", null);
             if (trustedKeys != null) {
                 ByteArrayInputStream trustedKeysProp =
                     new ByteArrayInputStream(Base64.decode(trustedKeys, Base64.NO_WRAP));
                 try {
                     Properties prop = new Properties();
                     prop.load(trustedKeysProp);
-                    p.trustedKeys = new HashMap<>((Map) prop);
+                    p.trustedKeys = new HashMap<>(prop.size());
+                    for (Map.Entry e : prop.entrySet()) {
+                        Keyring.TrustedFingerprint fingerprint =
+                            Keyring.TrustedFingerprint.fromString((String) e.getValue());
+                        if (fingerprint != null) {
+                            p.trustedKeys.put((String) e.getKey(), fingerprint);
+                        }
+                    }
                 }
                 catch (IOException ignored) {
                 }
             }
-
 
             return p;
         }
         return null;
     }
 
-    public static boolean clearRegistrationProgress(Context context) {
-        return sPreferences.edit()
+    public static void clearRegistrationProgress() {
+        sPreferences.edit()
             .remove("registration_name")
             .remove("registration_phone")
             .remove("registration_key")
@@ -624,9 +732,14 @@ public final class Preferences {
             .remove("registration_importedprivatekey")
             .remove("registration_passphrase")
             .remove("registration_server")
+            .remove("registration_sender")
+            .remove("registration_challenge")
+            .remove("registration_brandimage")
+            .remove("registration_brandlink")
+            .remove("registration_canfallback")
             .remove("registration_force")
             .remove("registration_trustedkeys")
-            .commit();
+            .apply();
     }
 
     public static final class RegistrationProgress {
@@ -638,8 +751,12 @@ public final class Preferences {
         public byte[] importedPrivateKey;
         public EndpointServer server;
         public String sender;
+        public String challenge;
+        public String brandImage;
+        public String brandLink;
+        public boolean canFallback;
         public boolean force;
-        public Map<String, String> trustedKeys;
+        public Map<String, Keyring.TrustedFingerprint> trustedKeys;
     }
 
     /** Recent statuses database helper. */
@@ -654,7 +771,7 @@ public final class Preferences {
             "timestamp INTEGER" +
             ")";
 
-        public RecentStatusDbHelper(Context context) {
+        RecentStatusDbHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
         }
 

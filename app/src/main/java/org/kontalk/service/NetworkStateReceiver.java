@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,17 +18,17 @@
 
 package org.kontalk.service;
 
-import org.kontalk.Kontalk;
-import org.kontalk.service.msgcenter.AndroidAdaptiveServerPingManager;
-import org.kontalk.service.msgcenter.MessageCenterService;
-import org.kontalk.util.Preferences;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.util.Log;
+
+import org.kontalk.Kontalk;
+import org.kontalk.Log;
+import org.kontalk.service.msgcenter.AndroidAdaptiveServerPingManager;
+import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.util.Preferences;
 
 
 /**
@@ -123,10 +123,10 @@ public class NetworkStateReceiver extends BroadcastReceiver {
         // check if some activity is holding to the message center
         // or there is a pending push notification
         if (((Kontalk) context.getApplicationContext()).hasReference() ||
-                Preferences.getLastPushNotification(context) < 0)
+                Preferences.getLastPushNotification() < 0)
             return true;
 
-        long lastConnect = Preferences.getLastConnection(context);
+        long lastConnect = Preferences.getLastConnection();
 
         // no last connection registered
         if (lastConnect < 0)

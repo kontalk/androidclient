@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -16,7 +16,9 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<org.kontalk.ui.view.ContactsListItem xmlns:android="http://schemas.android.com/apk/res/android"
+<org.kontalk.ui.view.ContactsListItem
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:minHeight="@dimen/avatar_list_item_height"
@@ -28,6 +30,7 @@
         android:layout_width="@dimen/indexed_list_margin"
         android:layout_height="match_parent"
         android:background="?android:attr/colorBackground">
+
         <include layout="@layout/pinned_header_listview_side_header" />
     </FrameLayout>
 
@@ -35,11 +38,26 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="@dimen/avatar_list_item_height"
-        android:layout_toRightOf="@+id/header_container">
+        android:layout_toRightOf="@+id/header_container"
+        android:layout_toEndOf="@+id/header_container">
 
-        <org.kontalk.ui.view.CircleContactBadge
-            android:id="@+id/avatar"
-            style="@style/AvatarListItemStyle" />
+        <FrameLayout
+            android:id="@+id/avatar_container"
+            style="@style/AvatarListItemStyle">
+
+            <org.kontalk.ui.view.CircleContactBadge
+                android:id="@+id/avatar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <org.kontalk.ui.view.CircleCheckBox
+                android:id="@+id/checkbox"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:civ_fill_color="?attr/colorPrimaryDark"
+                android:visibility="gone"/>
+
+        </FrameLayout>
 
         <TextView
             android:id="@android:id/text1"
@@ -48,9 +66,10 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_alignWithParentIfMissing="true"
-            android:layout_toRightOf="@id/avatar"
+            android:layout_toEndOf="@id/avatar_container"
+            android:layout_toRightOf="@id/avatar_container"
             android:ellipsize="marquee"
-            android:singleLine="true" />
+            android:maxLines="1"/>
 
         <TextView
             android:id="@android:id/text2"
@@ -60,7 +79,8 @@
             android:layout_alignWithParentIfMissing="true"
             android:paddingBottom="16dp"
             android:layout_below="@android:id/text1"
-            android:layout_toRightOf="@id/avatar"
+            android:layout_toEndOf="@id/avatar_container"
+            android:layout_toRightOf="@id/avatar_container"
             android:maxLines="2"
             android:ellipsize="end"/>
     </RelativeLayout>

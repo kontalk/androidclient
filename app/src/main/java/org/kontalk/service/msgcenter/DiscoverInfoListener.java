@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,13 +26,16 @@ import org.jivesoftware.smack.filter.StanzaIdFilter;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.disco.packet.DiscoverItems;
+
+import org.kontalk.Log;
 import org.kontalk.client.EndpointServer;
+import org.kontalk.client.HTTPFileUpload;
 import org.kontalk.client.PushRegistration;
-import org.kontalk.client.UploadExtension;
+import org.kontalk.upload.HTTPFileUploadService;
 
 
 /**
- * Packet listener for service discovery.
+ * Packet listener for service discovery (info).
  * @author Daniele Ricci
  */
 class DiscoverInfoListener extends MessageCenterPacketListener {
@@ -42,7 +45,7 @@ class DiscoverInfoListener extends MessageCenterPacketListener {
     }
 
     @Override
-    public void processPacket(Stanza packet) {
+    public void processStanza(Stanza packet) {
         XMPPConnection conn = getConnection();
         EndpointServer server = getServer();
 
@@ -78,17 +81,11 @@ class DiscoverInfoListener extends MessageCenterPacketListener {
              * Actually, delay any message from being requeued if at least
              * 1 media message is present; do the discovery first.
              */
-            else if (UploadExtension.NAMESPACE.equals(feat.getVar())) {
-                // media upload is available on this server
-                // request items to check what services are available
-                DiscoverItems items = new DiscoverItems();
-                items.setNode(UploadExtension.NAMESPACE);
-                items.setTo(server.getNetwork());
-
-                StanzaFilter filter = new StanzaIdFilter(items.getStanzaId());
-                conn.addAsyncStanzaListener(new UploadDiscoverItemsListener(getInstance()), filter);
-
-                sendPacket(items);
+            else if (HTTPFileUpload.NAMESPACE.equals(feat.getVar())) {
+                Log.d(MessageCenterService.TAG, "got upload service: " + packet.getFrom());
+                addUploadService(new HTTPFileUploadService(conn, packet.getFrom().asBareJid()), 0);
+                // resend pending messages
+                resendPendingMessages(true, false);
             }
         }
     }

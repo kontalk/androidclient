@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -17,23 +17,34 @@
  -->
 
 <resources>
+    <!-- default theme selector -->
+    <style name="Theme.Light" parent="Base.Theme.Light">
+    </style>
 
-  <!-- default theme selector -->
-  <style name="Theme.Light" parent="Base.Theme.Light">
-    <item name="actionModeBackground">@drawable/cab_background_top_holo_dark</item>
-  </style>
+    <!-- base theme selector -->
+    <style name="Base.Theme.Light" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/app_primary</item>
+        <item name="colorPrimaryDark">@color/app_primary_dark</item>
+        <!-- not working pre-Lollipop
+        <item name="android:textColorPrimary">#212121</item>
+        <item name="android:textColorSecondary">#727272</item>
+         -->
+        <item name="colorAccent">@color/app_accent</item>
 
-  <!-- base theme selector -->
-  <style name="Base.Theme.Light" parent="Theme.AppCompat.Light.NoActionBar">
-    <item name="colorPrimary">@color/app_primary</item>
-    <item name="colorPrimaryDark">@color/app_primary_dark</item>
-    <!-- not working pre-Lollipop
-    <item name="android:textColorPrimary">#212121</item>
-    <item name="android:textColorSecondary">#727272</item>
-     -->
-    <item name="colorAccent">@color/app_accent</item>
+        <item name="windowActionModeOverlay">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
 
-    <item name="windowActionModeOverlay">true</item>
-  </style>
-
+    <!-- base theme for dialog activities -->
+    <style name="Theme.Light.Dialog" parent="Theme.AppCompat.Light.DialogWhenLarge">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/app_primary</item>
+        <item name="colorPrimaryDark">@color/app_primary_dark</item>
+        <!-- not working pre-Lollipop
+        <item name="android:textColorPrimary">#212121</item>
+        <item name="android:textColorSecondary">#727272</item>
+        -->
+        <item name="colorAccent">@color/app_accent</item>
+    </style>
 </resources>

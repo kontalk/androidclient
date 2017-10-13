@@ -28,7 +28,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.text.TextUtils;
-import android.util.Log;
+import org.kontalk.Log;
 
 import com.android.vending.billing.IInAppBillingService;
 

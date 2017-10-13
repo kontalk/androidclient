@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,20 +18,21 @@
 
 package org.kontalk.crypto;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.content.Context;
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.util.Base64;
-import android.util.Base64InputStream;
-import android.util.Base64OutputStream;
-import android.util.Log;
-
-import org.kontalk.Kontalk;
-import org.kontalk.authenticator.Authenticator;
-import org.kontalk.crypto.PGP.PGPDecryptedKeyPairRing;
-import org.kontalk.crypto.PGP.PGPKeyPairRing;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.SignatureException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.Date;
+import java.util.Iterator;
 
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPKeyPair;
@@ -47,20 +48,20 @@ import org.spongycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBu
 import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
 import org.spongycastle.operator.OperatorCreationException;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.SignatureException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Iterator;
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.content.Context;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.util.Base64;
+import android.util.Base64InputStream;
+import android.util.Base64OutputStream;
+
+import org.kontalk.Kontalk;
+import org.kontalk.Log;
+import org.kontalk.authenticator.Authenticator;
+import org.kontalk.crypto.PGP.PGPDecryptedKeyPairRing;
+import org.kontalk.crypto.PGP.PGPKeyPairRing;
 
 
 /** Personal asymmetric encryption key. */
@@ -388,15 +389,13 @@ public class PersonalKey implements Parcelable {
         throw new PGPException("invalid key data");
     }
 
-    public static PersonalKey create() throws IOException {
+    public static PersonalKey create(Date timestamp) throws IOException {
         try {
-            PGPDecryptedKeyPairRing kp = PGP.create();
+            PGPDecryptedKeyPairRing kp = PGP.create(timestamp);
             return new PersonalKey(kp, null);
         }
         catch (Exception e) {
-            IOException io = new IOException("unable to generate keypair");
-            io.initCause(e);
-            throw io;
+            throw new IOException("unable to generate keypair", e);
         }
     }
 
@@ -447,7 +446,6 @@ public class PersonalKey implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        // TODO write byte arrays
         try {
             PGP.toParcel(mPair, dest);
         }

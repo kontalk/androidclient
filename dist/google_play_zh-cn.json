@@ -1,6 +1,0 @@
-{
-    "full_description": "<b>请帮助我们让Kontalk变得更好！如果你有任何问题，请发送电子邮件至devteam@kontalk.org！！留下负面评论并不能帮助一个非盈利性的项目！谢谢！</b>\n<i>注意：不要安装在SD卡上！</i>\n\n<b>关注Twitter上的@kontalknet或者identi.ca来追踪最新的更改以及服务器状态！</b>\n\nKontalk是一个安全的即时通信工具，她允许你完全免费地发送和接收文本、图片、语音消息（其他文件类型不久后支持）给/从其他Kontalk用户。\n\n&#8226;&#8195; <b>你的手机号码即是你的ID。</b>没有用户名或者密码<br/>\n&#8226;&#8195; <b>她会自动找到其他Kontalk用户</b>通过查询你的地址簿, 这样就能更容易地在Kontalk上与你的朋友联系<br/>\n&#8226;&#8195; <b>端对端加密</b>保证安全与隐私会话，使得只有你和你正在联系的人能阅读它们<br/>\n&#8226;&#8195; 你自己和你在网络中使用的全部手机号码都采用的是不可逆的加密<br/>\n&#8226;&#8195; 她支持多设备，这样在手机上开始聊天，尔后继续在你的平板上继续会话会变得非常容易<br/>\n&#8226;&#8195; 基于开放标准: XMPP与OpenPGP\n\nKontalk是一个完全开源的社区项目，所有的源代码都被放置在Github (https://github.com/kontalk)，她允许所有人来检查她的安全性并改进她。\nKontalk网络依赖社区捐赠来保证基础架构的运营，所以如果可能，请考虑在 http://kontalk.net/ 捐赠。即便是一小点也无所谓。\n\n你可以在这个页面发现该应用使用的所有权限： https://github.com/kontalk/androidclient/wiki/Android-client-permissions\n\n(*) 使用运营商网络可能会产生流量费", 
-    "recent_changes": "*主屏幕的离线模式提示\n*实时监控联系人的更改\n*修正消息丢失问题\n*自动删除过期用户\n*其他修正与增强\n\n详细更新日志请参看https://github.com/kontalk/androidclient/releases/tag/v3.1.1", 
-    "short_description": "新的沟通方式：社区驱动的即时消息网络。", 
-    "title": "Kontalk Messenger"
-}

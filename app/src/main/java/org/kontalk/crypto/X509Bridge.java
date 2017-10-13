@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 import org.spongycastle.asn1.misc.MiscObjectIdentifiers;
 import org.spongycastle.asn1.misc.NetscapeCertType;
@@ -301,6 +302,7 @@ public class X509Bridge {
             BigInteger.ONE,
             startDate,
             endDate,
+            Locale.US,
             subject,
             /*
              * Sets the public-key to embed in this certificate.

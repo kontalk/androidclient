@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -35,13 +35,24 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <TextView android:id="@+id/account"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="6dp"
+                android:gravity="center_horizontal"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textIsSelectable="true" />
+
             <TextView android:id="@+id/name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:gravity="center_horizontal"
                 android:textSize="20sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:textIsSelectable="true" />
 
             <TextView android:id="@+id/fingerprint"
                 android:layout_width="wrap_content"
@@ -49,7 +60,8 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="4dp"
                 android:gravity="center_horizontal"
-                android:textSize="20sp" />
+                android:textSize="20sp"
+                android:textIsSelectable="true" />
 
             <ImageView android:id="@+id/qrcode"
                 android:layout_width="wrap_content"

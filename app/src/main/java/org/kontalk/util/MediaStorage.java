@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,10 +19,10 @@
 package org.kontalk.util;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URLConnection;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -43,11 +43,12 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.media.ExifInterface;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.webkit.MimeTypeMap;
 
 import org.kontalk.Kontalk;
+import org.kontalk.Log;
 
 
 /**
@@ -57,8 +58,6 @@ import org.kontalk.Kontalk;
 public abstract class MediaStorage {
     private static final String TAG = Kontalk.TAG;
 
-    public static final File MEDIA_ROOT = new File(Environment.getExternalStorageDirectory(), "Kontalk");
-
     public static final String UNKNOWN_FILENAME = "unknown_file.bin";
 
     private static final File DCIM_ROOT = new File(Environment
@@ -67,21 +66,29 @@ public abstract class MediaStorage {
     private static final File PICTURES_ROOT = new File(Environment
         .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
         "Kontalk");
+    private static final File PICTURES_SENT_ROOT = new File(new File(Environment
+        .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+        "Kontalk"), "Sent");
     private static final File AUDIO_ROOT = new File(Environment
         .getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
+        "Kontalk");
+    private static final File AUDIO_SENT_ROOT = new File(new File(Environment
+        .getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
+        "Kontalk"), "Sent");
+    private static final File DOWNLOADS_ROOT = new File(Environment
+        .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
         "Kontalk");
 
     private static final DateFormat sDateFormat =
         new SimpleDateFormat("yyyyMMdd_HHmmssSSS", Locale.US);
 
-    private static final int THUMBNAIL_WIDTH = 256;
-    private static final int THUMBNAIL_HEIGHT = 256;
+    private static final int THUMBNAIL_WIDTH = 512;
+    private static final int THUMBNAIL_HEIGHT = 512;
     public static final String THUMBNAIL_MIME = "image/png";
     public static final String THUMBNAIL_MIME_NETWORK = "image/jpeg";
-    public static final int THUMBNAIL_MIME_COMPRESSION = 60;
+    public static final int THUMBNAIL_MIME_COMPRESSION = 50;
 
     public static final String COMPRESS_MIME = "image/jpeg";
-    private static final String COMPRESS_FILENAME_FORMAT = "compress_%d.jpg";
     private static final int COMPRESSION_QUALITY = 85;
 
     public static boolean isExternalStorageAvailable() {
@@ -89,9 +96,13 @@ public abstract class MediaStorage {
             .equals(Environment.MEDIA_MOUNTED);
     }
 
+    public static File getInternalMediaFile(Context context, String filename) {
+        return new File(context.getCacheDir(), filename);
+    }
+
     /** Writes a media to the internal cache. */
     public static File writeInternalMedia(Context context, String filename, byte[] contents) throws IOException {
-        File file = new File(context.getCacheDir(), filename);
+        File file = getInternalMediaFile(context, filename);
         FileOutputStream fout = new FileOutputStream(file);
         fout.write(contents);
         fout.close();
@@ -139,51 +150,80 @@ public abstract class MediaStorage {
     }
 
     private static void cacheThumbnail(Context context, Uri media, FileOutputStream fout, boolean forNetwork) throws IOException {
-        ContentResolver cr = context.getContentResolver();
-        InputStream in = cr.openInputStream(media);
-        BitmapFactory.Options options = preloadBitmap(in, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT);
-        in.close();
-
-        // open again
-        in = cr.openInputStream(media);
-        Bitmap bitmap = BitmapFactory.decodeStream(in, null, options);
-        in.close();
-
-        Bitmap thumbnail = ThumbnailUtils
-            .extractThumbnail(bitmap, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT);
-        bitmap.recycle();
-
-        thumbnail = bitmapOrientation(context, media, thumbnail);
-
-        // write down to file
-        thumbnail.compress(forNetwork ? Bitmap.CompressFormat.JPEG :
-            Bitmap.CompressFormat.PNG,
-            forNetwork ? THUMBNAIL_MIME_COMPRESSION : 0, fout);
-        thumbnail.recycle();
+        resizeImage(context, media, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT,
+                forNetwork ? Bitmap.CompressFormat.JPEG : Bitmap.CompressFormat.PNG,
+            forNetwork ? THUMBNAIL_MIME_COMPRESSION : 0,
+            fout);
     }
 
-    public static Bitmap bitmapOrientation(Context context, Uri media, Bitmap bitmap) {
+    /**
+     * Tries various methods for obtaining the rotation of the image.
+     * @return a matrix to rotate the image (if any)
+     */
+    private static Matrix getRotation(Context context, Uri media) throws IOException {
+        // method 1: query the media storage
+        Cursor cursor = context.getContentResolver().query(media,
+            new String[] { MediaStore.Images.ImageColumns.ORIENTATION }, null, null, null);
+
+        if (cursor != null) {
+            cursor.moveToFirst();
+            int orientation = cursor.getInt(0);
+            cursor.close();
+
+            if (orientation != 0) {
+                Matrix m = new Matrix();
+                m.postRotate(orientation);
+
+                return m;
+            }
+        }
+
+        // method 2: write media contents to a temporary file and run ExifInterface
+        InputStream in = context.getContentResolver().openInputStream(media);
+        OutputStream out = null;
+        File tmp = null;
+        try {
+            tmp = File.createTempFile("rotation", null, context.getCacheDir());
+            out = new FileOutputStream(tmp);
+
+            SystemUtils.copy(in, out);
+            // flush the file
+            out.close();
+
+            ExifInterface exif = new ExifInterface(tmp.toString());
+            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 1);
+            Matrix matrix = new Matrix();
+            switch (orientation) {
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    matrix.postRotate(90);
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    matrix.postRotate(180);
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    matrix.postRotate(270);
+                    break;
+                default:
+                    return null;
+            }
+
+            return matrix;
+        }
+        finally {
+            if (tmp != null)
+                tmp.delete();
+            SystemUtils.closeStream(in);
+            SystemUtils.closeStream(out);
+        }
+    }
+
+    /** Apply a rotation matrix respecting the image orientation. */
+    static Bitmap bitmapOrientation(Context context, Uri media, Bitmap bitmap) {
         // check if we have to (and can) rotate the thumbnail
         try {
-            Cursor cursor = context.getContentResolver().query(media,
-                new String[] { MediaStore.Images.ImageColumns.ORIENTATION }, null, null, null);
-
-            if (cursor != null) {
-                cursor.moveToFirst();
-                int orientation = cursor.getInt(0);
-                cursor.close();
-
-                if (orientation != 0) {
-                    Matrix m = new Matrix();
-                    m.postRotate(orientation);
-
-                    Bitmap rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
-                    // createBitmap might return the input bitmap which we don't want to recycle
-                    if (rotated != bitmap)
-                        bitmap.recycle();
-                    bitmap = rotated;
-
-                }
+            Matrix m = getRotation(context, media);
+            if (m != null) {
+                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
             }
         }
         catch (Exception e) {
@@ -193,54 +233,112 @@ public abstract class MediaStorage {
         return bitmap;
     }
 
-    public static File writeMedia(String filename, InputStream source) throws IOException {
-        MEDIA_ROOT.mkdirs();
-        File f = new File(MEDIA_ROOT, filename);
-        FileOutputStream fout = new FileOutputStream(f);
-        byte[] buffer = new byte[1024];
-        int len;
-        while ((len = source.read(buffer)) != -1)
-            fout.write(buffer, 0, len);
-        fout.close();
-        return f;
-    }
-
-    public static File writeMedia(String filename, byte[] contents) throws IOException {
-        MEDIA_ROOT.mkdirs();
-        File f = new File(MEDIA_ROOT, filename);
-        FileOutputStream fout = new FileOutputStream(f);
-        fout.write(contents);
-        fout.close();
-        return f;
-    }
-
     public static long getLength(Context context, Uri media) throws IOException {
         AssetFileDescriptor stat = null;
+        long length = 0;
         try {
             stat = context.getContentResolver().openAssetFileDescriptor(media, "r");
-            return stat.getLength();
+            if (stat != null)
+                length = stat.getLength();
         }
         finally {
             try {
-                stat.close();
+                if (stat != null)
+                    stat.close();
             }
-            catch (Exception e) {
+            catch (IOException e) {
                 // ignored
             }
         }
+
+        if (length == 0) {
+            // try to count bytes by reading it
+            InputStream in = null;
+            try {
+                in = context.getContentResolver().openInputStream(media);
+                CountingInputStream counter = new CountingInputStream(in);
+                counter.consume();
+                length = counter.getByteCount();
+            }
+            finally {
+                try {
+                    if (in != null)
+                        in.close();
+                }
+                catch (IOException e) {
+                    // ignored
+                }
+            }
+        }
+
+        return length;
     }
 
-    /** Creates a temporary JPEG file. */
-    public static File getOutgoingImageFile() throws IOException {
-        return getOutgoingImageFile(new Date());
+    private static final class CountingInputStream extends InputStream {
+        private final InputStream mInputStream;
+        private long mBytes;
+
+        public CountingInputStream(InputStream in) {
+            mInputStream = in;
+        }
+
+        @Override
+        public int available() throws IOException {
+            return mInputStream.available();
+        }
+
+        @Override
+        public void close() throws IOException {
+            mInputStream.close();
+        }
+
+        @Override
+        public int read() throws IOException {
+            int data = mInputStream.read();
+            if (data >= 0)
+                mBytes++;
+            return data;
+        }
+
+        public long getByteCount() {
+            return mBytes;
+        }
+
+        public void consume() throws IOException {
+            while (read() >= 0);
+        }
     }
 
-    private static File getOutgoingImageFile(Date date) throws IOException {
-        createMedia(DCIM_ROOT);
+    /** Creates a temporary JPEG file for a photo (DCIM). */
+    public static File getOutgoingPhotoFile() throws IOException {
+        return getOutgoingPhotoFile(new Date());
+    }
+
+    private static File getOutgoingPhotoFile(Date date) throws IOException {
+        return createImageFile(DCIM_ROOT, date);
+    }
+
+    /** Creates a temporary JPEG file for a picture (Pictures). */
+    public static File getOutgoingPictureFile() throws IOException {
+        return getOutgoingPictureFile(new Date());
+    }
+
+    private static File getOutgoingPictureFile(Date date) throws IOException {
+        createNoMedia(PICTURES_SENT_ROOT);
+        return createImageFile(PICTURES_SENT_ROOT, date);
+    }
+
+    private static File createImageFile(File path, Date date) throws IOException {
+        createMedia(path);
         String timeStamp = sDateFormat.format(date);
-        File f = new File(DCIM_ROOT, "IMG_" + timeStamp + ".jpg");
+        File f = new File(path, "IMG_" + timeStamp + ".jpg");
         f.createNewFile();
         return f;
+    }
+
+    public static String getOutgoingPictureFilename(Date date, String extension) {
+        String timeStamp = sDateFormat.format(date);
+        return "IMG_" + timeStamp + "." + extension;
     }
 
     /** Creates a file object for an incoming image file. */
@@ -256,11 +354,16 @@ public abstract class MediaStorage {
     }
 
     private static File getOutgoingAudioFile(Date date) throws IOException {
-        createNoMedia(AUDIO_ROOT);
+        createNoMedia(AUDIO_SENT_ROOT);
         String timeStamp = sDateFormat.format(date);
-        File f = new File(AUDIO_ROOT, "record_" + timeStamp + ".3gp");
+        File f = new File(AUDIO_SENT_ROOT, "record_" + timeStamp + ".3gp");
         f.createNewFile();
         return f;
+    }
+
+    public static String getOutgoingAudioFilename(Date date, String extension) {
+        String timeStamp = sDateFormat.format(date);
+        return "audio_" + timeStamp + "." + extension;
     }
 
     /** Creates a file object for an incoming audio file. */
@@ -268,6 +371,12 @@ public abstract class MediaStorage {
         createNoMedia(AUDIO_ROOT);
         String timeStamp = sDateFormat.format(date);
         return new File(AUDIO_ROOT, "audio_" + timeStamp + "." + extension);
+    }
+
+    public static File getIncomingFile(Date date, String extension) {
+        createMedia(DOWNLOADS_ROOT);
+        String timeStamp = sDateFormat.format(date);
+        return new File(DOWNLOADS_ROOT, "file_" + timeStamp + "." + extension);
     }
 
     /** Ensures that the given path exists. */
@@ -310,13 +419,53 @@ public abstract class MediaStorage {
         return mime;
     }
 
-    public static File resizeImage(Context context, Uri uri, long msgId, int maxSize)
-        throws FileNotFoundException {
-        return resizeImage(context, uri, msgId, maxSize, maxSize, COMPRESSION_QUALITY);
+    /** Guesses the MIME type of an URL. */
+    public static String getType(String url) {
+        String mime;
+
+        // the following methods actually use the same underlying implementation
+        // (libcore.net.MimeUtils), but that could change in the future so no
+        // hurt in trying them all just in case.
+        // Lowercasing the filename seems to help in detecting the correct MIME.
+
+        // try WebKit detection
+        mime = MimeTypeMap.getSingleton()
+            .getMimeTypeFromExtension(MimeTypeMap
+                .getFileExtensionFromUrl(url).toLowerCase());
+        if (mime == null)
+            // try Java detection
+            mime = URLConnection.guessContentTypeFromName(url.toLowerCase());
+        return mime;
     }
 
-    public static File resizeImage(Context context, Uri uri, long msgId, int maxWidth, int maxHeight, int quality)
-        throws FileNotFoundException {
+    public static File resizeImage(Context context, Uri uri, int maxSize) throws IOException {
+        return resizeImage(context, uri, maxSize, maxSize, COMPRESSION_QUALITY);
+    }
+
+    public static File resizeImage(Context context, Uri uri, int maxWidth, int maxHeight, int quality)
+            throws IOException {
+
+        FileOutputStream stream = null;
+        try {
+            final File file = getOutgoingPictureFile();
+            stream = new FileOutputStream(file);
+            resizeImage(context, uri, maxWidth, maxHeight,
+                Bitmap.CompressFormat.JPEG, quality, stream);
+            return file;
+        }
+        finally {
+            try {
+                stream.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
+    }
+
+    public static void resizeImage(Context context, Uri uri, int maxWidth, int maxHeight,
+            Bitmap.CompressFormat format, int quality, FileOutputStream output)
+            throws IOException {
 
         final int MAX_IMAGE_SIZE = 1200000; // 1.2MP
 
@@ -374,50 +523,56 @@ public abstract class MediaStorage {
         }
 
         if (bitmap == null) {
-            return null;
+            return;
         }
         float photoW = bitmap.getWidth();
         float photoH = bitmap.getHeight();
         if (photoW == 0 || photoH == 0) {
-            return null;
+            return;
         }
         float scaleFactor = Math.max(photoW / maxWidth, photoH / maxHeight);
         int w = (int) (photoW / scaleFactor);
         int h = (int) (photoH / scaleFactor);
         if (h == 0 || w == 0) {
-            return null;
+            return;
         }
 
-        Bitmap scaledBitmap;
+        Bitmap scaledBitmap = null;
         try {
             scaledBitmap = Bitmap.createScaledBitmap(bitmap, w, h, true);
         }
         finally {
-            bitmap.recycle();
+            if (scaledBitmap != bitmap)
+                bitmap.recycle();
         }
 
         // check for rotation data
-        scaledBitmap = bitmapOrientation(context, uri, scaledBitmap);
-
-        String filename = String.format(COMPRESS_FILENAME_FORMAT, msgId);
-        final File compressedFile = new File(context.getCacheDir(), filename);
-
-        FileOutputStream stream = null;
+        Bitmap rotatedScaledBitmap = bitmapOrientation(context, uri, scaledBitmap);
+        if (rotatedScaledBitmap != scaledBitmap)
+            scaledBitmap.recycle();
 
         try {
-            stream = new FileOutputStream(compressedFile);
-            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream);
-
-            return compressedFile;
+            rotatedScaledBitmap.compress(format, quality, output);
         }
         finally {
-            try {
-                stream.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
+            rotatedScaledBitmap.recycle();
         }
+    }
+
+    public static File copyOutgoingMedia(Context context, Uri media) throws IOException {
+        final File outFile = getOutgoingPictureFile();
+        InputStream in = context.getContentResolver().openInputStream(media);
+        OutputStream out = null;
+        try {
+            out = new FileOutputStream(outFile);
+            SystemUtils.copy(in, out);
+            return outFile;
+        }
+        finally {
+            SystemUtils.closeStream(in);
+            SystemUtils.closeStream(out);
+        }
+
     }
 
     /**
@@ -450,6 +605,8 @@ public abstract class MediaStorage {
 
         // Create a file with the requested MIME type.
         intent.setType(mimeType);
+        // Note: This is not documented, but works
+        intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
         intent.putExtra(Intent.EXTRA_TITLE, fileName);
         fragment.startActivityForResult(intent, requestCode);
     }

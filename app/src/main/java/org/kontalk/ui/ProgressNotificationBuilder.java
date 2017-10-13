@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
  */
 
 package org.kontalk.ui;
+
+import java.util.Locale;
 
 import org.kontalk.R;
 
@@ -63,7 +65,6 @@ public class ProgressNotificationBuilder extends NotificationCompat.Builder {
     public ProgressNotificationBuilder progress(int progress, int contentTitle, int contentText) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             this.setSmallIcon(R.drawable.ic_stat_notify)
-                .setProgress(100, progress, false)
                 .setContentTitle(mContext.getString(contentTitle))
                 .setContentText(mContext.getString(contentText));
 
@@ -79,7 +80,7 @@ public class ProgressNotificationBuilder extends NotificationCompat.Builder {
             mContentView = new RemoteViews(mContext.getPackageName(), mLayout);
             // this should not be needed -- contentView.setOnClickPendingIntent(R.id.progress_notification, null);
             mContentView.setTextViewText(R.id.title, mContext.getString(contentText));
-            mContentView.setTextViewText(R.id.progress_text, (progress < 0) ? "" : String.format("%d%%", progress));
+            mContentView.setTextViewText(R.id.progress_text, (progress < 0) ? "" : String.format(Locale.US, "%d%%", progress));
 
             if (progress < 0)
                 mContentView.setProgressBar(R.id.progress_bar, 0, 0, true);

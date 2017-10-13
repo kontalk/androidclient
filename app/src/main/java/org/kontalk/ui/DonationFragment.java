@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ package org.kontalk.ui;
 
 import java.util.Arrays;
 
-import org.kontalk.BuildConfig;
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.billing.BillingResult;
 import org.kontalk.billing.BillingServiceManager;
@@ -32,9 +32,10 @@ import org.kontalk.billing.OnBillingSetupFinishedListener;
 import org.kontalk.billing.OnConsumeFinishedListener;
 import org.kontalk.billing.OnPurchaseFinishedListener;
 import org.kontalk.billing.QueryInventoryFinishedListener;
+import org.kontalk.util.SystemUtils;
 
 import android.app.Activity;
-import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import android.app.Dialog;
@@ -44,6 +45,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.text.ClipboardManager;
 import android.view.LayoutInflater;
@@ -149,28 +151,29 @@ public class DonationFragment extends Fragment implements OnClickListener {
     }
 
     private void donateFlattr() {
-        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.flattr_url))));
+        SystemUtils.openURL(getContext(), getString(R.string.flattr_url));
     }
 
     private void donateBitcoin() {
         final String address = getString(R.string.bitcoin_address);
         Uri uri = Uri.parse("bitcoin:" + address);
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri.toString()));
+        Intent intent = SystemUtils.externalIntent(Intent.ACTION_VIEW, Uri.parse(uri.toString()));
 
         Activity ctx = getActivity();
         final PackageManager pm = ctx.getPackageManager();
         if (pm.resolveActivity(intent, 0) != null)
             startActivity(intent);
         else
-            new AlertDialogWrapper
-                .Builder(getActivity())
-                .setTitle(R.string.title_bitcoin_dialog)
-                .setMessage(getString(R.string.text_bitcoin_dialog, address))
-                .setPositiveButton(android.R.string.ok, null)
-                .setNeutralButton(R.string.copy_clipboard, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
+            new MaterialDialog.Builder(getActivity())
+                .title(R.string.title_bitcoin_dialog)
+                .content(getString(R.string.text_bitcoin_dialog, address))
+                .positiveText(android.R.string.ok)
+                .neutralText(R.string.copy_clipboard)
+                .onNeutral(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                         ClipboardManager cpm = (ClipboardManager) getActivity()
-                                .getSystemService(Context.CLIPBOARD_SERVICE);
+                            .getSystemService(Context.CLIPBOARD_SERVICE);
                         cpm.setText(address);
 
                         Toast.makeText(getActivity(), R.string.bitcoin_clipboard_copied,
@@ -182,13 +185,13 @@ public class DonationFragment extends Fragment implements OnClickListener {
 
     private void donatePaypal() {
         // just start Paypal donate button URL
-        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.paypal_url))));
+        SystemUtils.openURL(getContext(), getString(R.string.paypal_url));
     }
 
     private void setupGoogle(final Dialog progress) {
         if (mBillingService == null) {
             mBillingService = BillingServiceManager.getInstance(getActivity());
-            mBillingService.enableDebugLogging(BuildConfig.DEBUG);
+            mBillingService.enableDebugLogging(Log.isDebug());
 
             mBillingService.startSetup(new OnBillingSetupFinishedListener() {
                 public void onSetupFinished(BillingResult result) {
@@ -267,16 +270,18 @@ public class DonationFragment extends Fragment implements OnClickListener {
         final String[] iabItems = getResources().getStringArray(R.array.iab_items);
 
         // show dialog with choices
-        new AlertDialogWrapper.Builder(getActivity())
-            .setItems(dialogItems, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
+        new MaterialDialog.Builder(getActivity())
+            .items(dialogItems)
+            .itemsCallback(new MaterialDialog.ListCallback() {
+                @Override
+                public void onSelection(MaterialDialog dialog, View itemView, int position, CharSequence text) {
                     // start the purchase
-                    String itemId = iabItems[which];
+                    String itemId = iabItems[position];
                     mBillingService.launchPurchaseFlow(getActivity(), itemId,
                         IAB_REQUEST_CODE, mPurchaseFinishedListener);
                 }
             })
-            .setNegativeButton(android.R.string.cancel, null)
+            .negativeText(android.R.string.cancel)
             .show();
     }
 
@@ -312,10 +317,9 @@ public class DonationFragment extends Fragment implements OnClickListener {
     }
 
     private void alert(String message) {
-        new AlertDialogWrapper
-            .Builder(getActivity())
-            .setMessage(message)
-            .setNeutralButton(android.R.string.ok, null)
+        new MaterialDialog.Builder(getActivity())
+            .content(message)
+            .positiveText(android.R.string.ok)
             .show();
     }
 }

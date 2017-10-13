@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@ package org.kontalk.client;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
@@ -47,15 +48,16 @@ import javax.net.ssl.X509TrustManager;
 
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.util.Log;
+import android.support.annotation.NonNull;
 
-import info.guardianproject.netcipher.NetCipher;
+import info.guardianproject.netcipher.client.TlsOnlySocketFactory;
 
+import org.kontalk.Log;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.service.DownloadListener;
 import org.kontalk.util.InternalTrustStore;
-import org.kontalk.util.MediaStorage;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.ProgressOutputStreamEntity;
 
@@ -70,15 +72,21 @@ public class ClientHTTPConnection {
     /** Regex used to parse content-disposition headers */
     private static final Pattern CONTENT_DISPOSITION_PATTERN = Pattern
             .compile("attachment;\\s*filename\\s*=\\s*\"([^\"]*)\"");
+    /** Minimum delay for progress notification updates in milliseconds. */
+    private static final int PROGRESS_PUBLISH_DELAY = 1000;
 
     private final Context mContext;
 
     private final PrivateKey mPrivateKey;
     private final X509Certificate mCertificate;
 
-    private HttpsURLConnection currentRequest;
+    private HttpURLConnection currentRequest;
     private final static int CONNECT_TIMEOUT = 15000;
     private final static int READ_TIMEOUT = 40000;
+
+    public ClientHTTPConnection(Context context) {
+        this(context, null, null);
+    }
 
     public ClientHTTPConnection(Context context, PrivateKey privateKey, X509Certificate bridgeCert) {
         mContext = context;
@@ -87,8 +95,11 @@ public class ClientHTTPConnection {
     }
 
     public void abort() {
-        if (currentRequest != null)
+        try {
             currentRequest.disconnect();
+        }
+        catch (Exception ignored) {
+        }
     }
 
     /**
@@ -96,8 +107,8 @@ public class ClientHTTPConnection {
      * @param url URL to download
      * @return the request object
      */
-    private HttpsURLConnection prepareURLDownload(String url, boolean acceptAnyCertificate) throws IOException {
-        HttpsURLConnection conn = NetCipher.getHttpsURLConnection(new URL(url));
+    private HttpURLConnection prepareURLDownload(String url, boolean acceptAnyCertificate) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
         try {
             setupClient(conn, acceptAnyCertificate);
         }
@@ -108,26 +119,28 @@ public class ClientHTTPConnection {
     }
 
     private IOException innerException(String detail, Throwable cause) {
-        IOException ie = new IOException(detail);
-        ie.initCause(cause);
-        return ie;
+        return new IOException(detail, cause);
     }
 
-    private void setupClient(HttpsURLConnection conn, boolean acceptAnyCertificate)
+    @SuppressWarnings("deprecation")
+    @SuppressLint("AllowAllHostnameVerifier")
+    private void setupClient(HttpURLConnection conn, boolean acceptAnyCertificate)
             throws CertificateException, UnrecoverableKeyException,
             NoSuchAlgorithmException, KeyStoreException,
             KeyManagementException, NoSuchProviderException,
             IOException {
 
         // bug caused by Lighttpd
-        conn.setRequestProperty("Expect", "100-continue");
+        //conn.setRequestProperty("Expect", "100-continue");
         conn.setConnectTimeout(CONNECT_TIMEOUT);
         conn.setReadTimeout(READ_TIMEOUT);
         conn.setDoInput(true);
-        conn.setSSLSocketFactory(setupSSLSocketFactory(mContext,
-            mPrivateKey, mCertificate, acceptAnyCertificate));
-        if (acceptAnyCertificate)
-            conn.setHostnameVerifier(new AllowAllHostnameVerifier());
+        if (conn instanceof HttpsURLConnection) {
+            ((HttpsURLConnection) conn).setSSLSocketFactory(setupSSLSocketFactory(mContext,
+                mPrivateKey, mCertificate, acceptAnyCertificate));
+            if (acceptAnyCertificate)
+                ((HttpsURLConnection) conn).setHostnameVerifier(new AllowAllHostnameVerifier());
+        }
     }
 
     public static SSLSocketFactory setupSSLSocketFactory(Context context,
@@ -138,14 +151,17 @@ public class ClientHTTPConnection {
                 NoSuchProviderException {
 
         // in-memory keystore
-        KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-        keystore.load(null, null);
-        keystore.setKeyEntry("private", privateKey, null, new Certificate[] { certificate });
+        KeyManager[] km = null;
+        if (privateKey != null && certificate != null) {
+            KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+            keystore.load(null, null);
+            keystore.setKeyEntry("private", privateKey, null, new Certificate[]{certificate});
 
-        // key managers
-        KeyManagerFactory kmFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        kmFactory.init(keystore, null);
-        KeyManager[] km = kmFactory.getKeyManagers();
+            // key managers
+            KeyManagerFactory kmFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            kmFactory.init(keystore, null);
+            km = kmFactory.getKeyManagers();
+        }
 
         // trust managers
         TrustManager[] tm;
@@ -158,11 +174,13 @@ public class ClientHTTPConnection {
                         return null;
                     }
 
+                    @SuppressLint("TrustAllX509TrustManager")
                     @Override
                     public void checkServerTrusted(X509Certificate[] chain, String authType)
                         throws CertificateException {
                     }
 
+                    @SuppressLint("TrustAllX509TrustManager")
                     @Override
                     public void checkClientTrusted(X509Certificate[] chain, String authType)
                         throws CertificateException {
@@ -182,20 +200,20 @@ public class ClientHTTPConnection {
             tm = tmFactory.getTrustManagers();
         }
 
-        SSLContext ctx = SSLContext.getInstance("TLS");
+        SSLContext ctx = SSLContext.getInstance("TLSv1");
         ctx.init(km, tm, null);
-        return ctx.getSocketFactory();
+        return new TlsOnlySocketFactory(ctx.getSocketFactory(), true);
     }
 
     /**
      * Downloads to a directory represented by a {@link File} object,
      * determining the file name from the Content-Disposition header.
      */
-    public void downloadAutofilename(String url, File defaultBase, Date timestamp, DownloadListener listener) throws IOException {
-        _download(url, defaultBase, timestamp, listener);
+    public void downloadAutofilename(String url, @NonNull File defaultFile, Date timestamp, DownloadListener listener) throws IOException {
+        _download(url, defaultFile, timestamp, listener);
     }
 
-    private void _download(String url, File defaultBase, Date timestamp, DownloadListener listener) throws IOException {
+    private void _download(String url, @NonNull File defaultFile, Date timestamp, DownloadListener listener) throws IOException {
         boolean acceptAnyCertificate = Preferences.getAcceptAnyCertificate(mContext);
         currentRequest = prepareURLDownload(url, acceptAnyCertificate);
 
@@ -217,16 +235,19 @@ public class ClientHTTPConnection {
                 if (disp != null)
                     name = parseContentDisposition(disp);
 
-                if (name == null) {
-                    // very bad hack to overcome server bad behaviour
-                    name = MediaStorage.UNKNOWN_FILENAME;
+                if (name != null) {
+                    // combine default file directory with server-provided filename
+                    destination = new File(defaultFile.getParentFile(), name);
                 }
-
-                destination = new File(defaultBase, name);
+                else {
+                    // fallback to default filename
+                    destination = defaultFile;
+                }
             }
 
             // we need to wrap the entity to monitor the download progress
-            ProgressOutputStreamEntity entity = new ProgressOutputStreamEntity(currentRequest, url, destination, listener);
+            ProgressOutputStreamEntity entity =
+                new ProgressOutputStreamEntity(currentRequest, url, destination, listener, PROGRESS_PUBLISH_DELAY);
             FileOutputStream out = new FileOutputStream(destination);
             entity.writeTo(out);
             out.close();

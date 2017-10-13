@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,10 +32,18 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 
+import org.kontalk.BuildConfig;
+import org.kontalk.authenticator.Authenticator;
+import org.kontalk.client.GroupExtension;
+import org.kontalk.data.GroupInfo;
+import org.kontalk.provider.MessagesProviderUtils;
+import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.util.MediaStorage;
+import org.kontalk.util.MessageUtils;
 
 
 /**
@@ -54,6 +62,7 @@ public class CompositeMessage {
         ImageComponent.class,
         AudioComponent.class,
         VCardComponent.class,
+        LocationComponent.class,
     };
 
     private static final String[] MESSAGE_LIST_PROJECTION = {
@@ -77,6 +86,14 @@ public class CompositeMessage {
         Messages.ATTACHMENT_LENGTH,
         Messages.ATTACHMENT_ENCRYPTED,
         Messages.ATTACHMENT_SECURITY_FLAGS,
+        Messages.GEO_LATITUDE,
+        Messages.GEO_LONGITUDE,
+        Messages.GEO_TEXT,
+        Messages.GEO_STREET,
+        Groups.GROUP_JID,
+        Groups.SUBJECT,
+        Groups.GROUP_TYPE,
+        Groups.MEMBERSHIP,
     };
 
     // these indexes matches MESSAGE_LIST_PROJECTION
@@ -100,8 +117,18 @@ public class CompositeMessage {
     public static final int COLUMN_ATTACHMENT_LENGTH = 17;
     public static final int COLUMN_ATTACHMENT_ENCRYPTED = 18;
     public static final int COLUMN_ATTACHMENT_SECURITY_FLAGS = 19;
+    public static final int COLUMN_GEO_LATITUDE = 20;
+    public static final int COLUMN_GEO_LONGITUDE = 21;
+    public static final int COLUMN_GEO_TEXT = 22;
+    public static final int COLUMN_GEO_STREET = 23;
+    public static final int COLUMN_GROUP_JID = 24;
+    public static final int COLUMN_GROUP_SUBJECT = 25;
+    public static final int COLUMN_GROUP_TYPE = 26;
+    public static final int COLUMN_GROUP_MEMBERSHIP = 27;
+
 
     public static final String MSG_ID = "org.kontalk.message.id";
+    public static final String MSG_SERVER_ID = "org.kontalk.message.serverId";
     public static final String MSG_SENDER = "org.kontalk.message.sender";
     public static final String MSG_MIME = "org.kontalk.message.mime";
     public static final String MSG_CONTENT = "org.kontalk.message.content";
@@ -109,6 +136,7 @@ public class CompositeMessage {
     public static final String MSG_GROUP = "org.kontalk.message.group";
     public static final String MSG_TIMESTAMP = "org.kontalk.message.timestamp";
     public static final String MSG_ENCRYPTED = "org.kontalk.message.encrypted";
+    public static final String MSG_COMPRESS = "org.kontalk.message.compress";
 
     private static final int SUFFIX_LENGTH = "Component".length();
 
@@ -149,7 +177,7 @@ public class CompositeMessage {
     /** Empty constructor for local use. */
     private CompositeMessage(Context context) {
         mContext = context;
-        mComponents = new ArrayList<MessageComponent<?>>();
+        mComponents = new ArrayList<>();
     }
 
     public String getId() {
@@ -195,6 +223,11 @@ public class CompositeMessage {
 
     public long getServerTimestamp() {
         return mServerTimestamp;
+    }
+
+    // for internal use only.
+    public void setStatus(int status) {
+        mStatus = status;
     }
 
     public int getStatus() {
@@ -244,11 +277,15 @@ public class CompositeMessage {
         mComponents.clear();
     }
 
+    public <T extends MessageComponent<?>> boolean hasComponent(Class<T> type) {
+        return getComponent(type) != null;
+    }
+
     /** Returns the first component of the given type. */
-    public MessageComponent<?> getComponent(Class<? extends MessageComponent<?>> type) {
+    public <T extends MessageComponent<?>> T getComponent(Class<T> type) {
         for (MessageComponent<?> cmp : mComponents) {
             if (type.isInstance(cmp))
-                return cmp;
+                return (T) cmp;
         }
 
         return null;
@@ -265,7 +302,7 @@ public class CompositeMessage {
         mTimestamp = c.getLong(COLUMN_TIMESTAMP);
         mStatusChanged = c.getLong(COLUMN_STATUS_CHANGED);
         mStatus = c.getInt(COLUMN_STATUS);
-        mRecipients = new ArrayList<String>();
+        mRecipients = new ArrayList<>();
         mEncrypted = (c.getShort(COLUMN_ENCRYPTED) > 0);
         mSecurityFlags = c.getInt(COLUMN_SECURITY);
         mServerTimestamp = c.getLong(COLUMN_SERVER_TIMESTAMP);
@@ -293,13 +330,63 @@ public class CompositeMessage {
         else {
 
             String mime = c.getString(COLUMN_BODY_MIME);
+            String groupJid = c.getString(COLUMN_GROUP_JID);
+            String groupSubject = c.getString(COLUMN_GROUP_SUBJECT);
+            String groupType = c.getString(COLUMN_GROUP_TYPE);
+            int groupMembership = c.getInt(COLUMN_GROUP_MEMBERSHIP);
 
             if (body != null) {
+                // remove trailing zero
+                String bodyText = MessageUtils.toString(body);
 
                 // text data
                 if (TextComponent.supportsMimeType(mime)) {
-                    TextComponent txt = new TextComponent(new String(body));
+                    TextComponent txt = new TextComponent(bodyText);
                     addComponent(txt);
+                }
+
+                else if (LocationComponent.supportsMimeType(mime)) {
+                    double lat = c.getDouble(COLUMN_GEO_LATITUDE);
+                    double lon = c.getDouble(COLUMN_GEO_LONGITUDE);
+                    String text = c.getString(COLUMN_GEO_TEXT);
+                    String street = c.getString(COLUMN_GEO_STREET);
+
+                    LocationComponent location = new LocationComponent(lat, lon, text, street);
+                    addComponent(location);
+                }
+
+                // group command
+                else if (GroupCommandComponent.supportsMimeType(mime)) {
+                    String groupId = XmppStringUtils.parseLocalpart(groupJid);
+                    String groupOwner = XmppStringUtils.parseDomain(groupJid);
+                    GroupExtension ext = null;
+
+                    String subject;
+                    String[] createMembers;
+                    if ((createMembers = GroupCommandComponent.getCreateCommandMembers(bodyText)) != null) {
+                        ext = new GroupExtension(groupId, groupOwner, GroupExtension.Type.CREATE,
+                            groupSubject, GroupCommandComponent.membersFromJIDs(createMembers));
+                    }
+                    else if (GroupCommandComponent.COMMAND_PART.equals(bodyText)) {
+                        ext = new GroupExtension(groupId, groupOwner, GroupExtension.Type.PART);
+                    }
+                    else if ((subject = GroupCommandComponent.getSubjectCommand(bodyText)) != null) {
+                        ext = new GroupExtension(groupId, groupOwner, GroupExtension.Type.SET, subject);
+                    }
+                    else {
+                        String[] addMembers = GroupCommandComponent.getAddCommandMembers(bodyText);
+                        String[] removeMembers = GroupCommandComponent.getRemoveCommandMembers(bodyText);
+                        if (addMembers != null || removeMembers != null) {
+                            ext = new GroupExtension(groupId, groupOwner, GroupExtension.Type.SET,
+                                groupSubject, GroupCommandComponent
+                                    // TODO what about existing members here?
+                                    .membersFromJIDs(null, addMembers, removeMembers));
+                        }
+                    }
+
+                    if (ext != null)
+                        addComponent(new GroupCommandComponent(ext, peer,
+                            Authenticator.getSelfJID(mContext)));
                 }
 
                 // unknown data
@@ -320,7 +407,7 @@ public class CompositeMessage {
                 boolean attEncrypted = c.getInt(COLUMN_ATTACHMENT_ENCRYPTED) > 0;
                 int attSecurityFlags = c.getInt(COLUMN_ATTACHMENT_SECURITY_FLAGS);
 
-                AttachmentComponent att = null;
+                AttachmentComponent att;
                 File previewFile = (attPreview != null) ? new File(attPreview) : null;
                 Uri localUri = (attLocal != null) ? Uri.parse(attLocal) : null;
 
@@ -342,6 +429,12 @@ public class CompositeMessage {
                             attLength, attEncrypted, attSecurityFlags);
                 }
 
+                else {
+                    att = new DefaultAttachmentComponent(attMime,
+                            localUri, attFetch,
+                            attLength, attEncrypted, attSecurityFlags);
+                }
+
                 // TODO other type of attachments
 
                 if (att != null) {
@@ -349,6 +442,12 @@ public class CompositeMessage {
                     addComponent(att);
                 }
 
+            }
+
+            // group information
+            if (groupJid != null) {
+                GroupInfo groupInfo = new GroupInfo(groupJid, groupSubject, groupType, groupMembership);
+                addComponent(new GroupComponent(groupInfo));
             }
 
         }
@@ -377,10 +476,21 @@ public class CompositeMessage {
         return msg;
     }
 
+    /** Holder for message delete information. */
+    public static final class DeleteMessageHolder {
+        long id;
+
+        public DeleteMessageHolder(Cursor cursor) {
+            id = cursor.getLong(COLUMN_ID);
+        }
+    }
+
+    public static void deleteFromCursor(Context context, DeleteMessageHolder holder) {
+        MessagesProviderUtils.deleteMessage(context, holder.id);
+    }
+
     public static void deleteFromCursor(Context context, Cursor cursor) {
-        context.getContentResolver().delete(ContentUris
-            .withAppendedId(Messages.CONTENT_URI,
-                cursor.getLong(COLUMN_ID)), null, null);
+        MessagesProviderUtils.deleteMessage(context, cursor.getLong(COLUMN_ID));
     }
 
     public static void startQuery(AsyncQueryHandler handler, int token, long threadId, long count, long lastId) {
@@ -402,13 +512,14 @@ public class CompositeMessage {
         Class<AttachmentComponent> klass = getSupportingComponent(mime);
         if (klass != null) {
             String cname = klass.getSimpleName();
-            return cname.substring(0, cname.length() - SUFFIX_LENGTH) +
-                ": " + mime;
+            String text = cname.substring(0, cname.length() - SUFFIX_LENGTH);
+            return BuildConfig.DEBUG ? (text + ": " + mime) : text;
         }
 
         // no supporting component - return mime
         // TODO i18n
-        return "Unknown: " + mime;
+        String text = "Unknown";
+        return BuildConfig.DEBUG ? (text + ": " + mime) : text;
     }
 
     private static Class<AttachmentComponent> getSupportingComponent(String mime) {
@@ -436,17 +547,34 @@ public class CompositeMessage {
      * @param mime MIME type of the incoming attachment
      * @param timestamp timestamp of the message
      */
-    public static File getIncomingFile(String mime, Date timestamp) {
-        Class<AttachmentComponent> klass = getSupportingComponent(mime);
-        if (klass != null) {
-            if (klass.isAssignableFrom(ImageComponent.class)) {
+    public static File getIncomingFile(String mime, @NonNull Date timestamp) {
+        if (mime != null) {
+            if (ImageComponent.supportsMimeType(mime)) {
                 String ext = ImageComponent.getFileExtension(mime);
                 return MediaStorage.getIncomingImageFile(timestamp, ext);
             }
-            else if (klass.isAssignableFrom(AudioComponent.class)) {
+            else if (AudioComponent.supportsMimeType(mime)) {
                 String ext = AudioComponent.getFileExtension(mime);
                 return MediaStorage.getIncomingAudioFile(timestamp, ext);
             }
+            // TODO maybe other file types?
+        }
+        return null;
+    }
+
+    /**
+     * Returns a correct file name for the given MIME.
+     * @param mime MIME type of the incoming attachment
+     * @param timestamp timestamp of the message
+     */
+    public static String getFilename(String mime, @NonNull Date timestamp) {
+        if (ImageComponent.supportsMimeType(mime)) {
+            String ext = ImageComponent.getFileExtension(mime);
+            return MediaStorage.getOutgoingPictureFilename(timestamp, ext);
+        }
+        else if (AudioComponent.supportsMimeType(mime)) {
+            String ext = AudioComponent.getFileExtension(mime);
+            return MediaStorage.getOutgoingAudioFilename(timestamp, ext);
         }
 
         return null;

@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,12 @@
 
 package org.kontalk.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.view.MenuItem;
 import android.widget.Toast;
 
 import org.kontalk.R;
@@ -37,6 +40,9 @@ public class ContactsListActivity extends ToolbarActivity
 
     public static final String TAG = ContactsListActivity.class.getSimpleName();
 
+    public static final String MODE_MULTI_SELECT = "org.kontalk.contacts.MULTI_SELECT";
+    public static final String MODE_ADD_USERS = "org.kontalk.contacts.ADD_USERS";
+
     private ContactsListFragment mFragment;
 
     @Override
@@ -45,15 +51,30 @@ public class ContactsListActivity extends ToolbarActivity
 
         setContentView(R.layout.contacts_list_screen);
 
-        setupToolbar(true);
+        setupToolbar(true, true);
 
-        mFragment = (ContactsListFragment) getSupportFragmentManager()
+        boolean multiselect = getIntent().getBooleanExtra(MODE_MULTI_SELECT, false);
+        if (multiselect) {
+            boolean addUsers = getIntent().getBooleanExtra(MODE_ADD_USERS, false);
+            // FIXME using another string
+            setTitle(addUsers ? R.string.menu_invite_group : R.string.action_compose_group);
+        }
+
+        if (savedInstanceState == null) {
+            mFragment = ContactsListFragment.newInstance(multiselect);
+            getSupportFragmentManager().beginTransaction()
+                .add(R.id.fragment_contacts_list, mFragment)
+                .commitAllowingStateLoss();
+        }
+        else {
+            mFragment = (ContactsListFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_contacts_list);
+        }
 
         if (!getIntent().getBooleanExtra("picker", false))
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        if (!Preferences.getContactsListVisited(this))
+        if (!Preferences.getContactsListVisited())
             Toast.makeText(this, R.string.msg_do_refresh,
                     Toast.LENGTH_LONG).show();
     }
@@ -76,27 +97,31 @@ public class ContactsListActivity extends ToolbarActivity
         }
 
         // hold message center
-        MessageCenterService.hold(this);
+        MessageCenterService.hold(this, true);
 
         mFragment.startQuery();
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                startActivity(new Intent(this, ConversationsActivity.class));
-                return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+    protected boolean isNormalUpNavigation() {
+        return false;
     }
 
     /** Called when a contact has been selected from a {@link ContactsListFragment}. */
     @Override
     public void onContactSelected(ContactsListFragment fragment, Contact contact) {
         Intent i = new Intent(Intent.ACTION_PICK, Threads.getUri(contact.getJID()));
+        setResult(RESULT_OK, i);
+        finish();
+    }
+
+    @Override
+    public void onContactsSelected(ContactsListFragment fragment, List<Contact> contacts) {
+        Intent i = new Intent(Intent.ACTION_PICK);
+        ArrayList<Uri> uris = new ArrayList<>(contacts.size());
+        for (Contact contact : contacts)
+            uris.add(Threads.getUri(contact.getJID()));
+        i.putParcelableArrayListExtra("org.kontalk.contacts", uris);
         setResult(RESULT_OK, i);
         finish();
     }

@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,14 +37,13 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGP;
-import org.kontalk.crypto.PRNGFixes;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MessagesProvider;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.NetworkStateReceiver;
 import org.kontalk.service.ServerListUpdater;
@@ -53,6 +52,7 @@ import org.kontalk.service.UploadService;
 import org.kontalk.service.msgcenter.IPushService;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.PushServiceManager;
+import org.kontalk.service.msgcenter.SecureConnectionManager;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.ui.MessagingNotification;
@@ -101,18 +101,77 @@ public class Kontalk extends Application {
      */
     private int mRefCounter;
 
+    /** Messages controller singleton instance. */
+    private MessagesController mMessagesController;
+
+    private final SharedPreferences.OnSharedPreferenceChangeListener mPrefListener =
+        new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+                // debug log
+                if ("pref_debug_log".equals(key)) {
+                    Log.init(Kontalk.this);
+                }
+                // reporting opt-in
+                else if ("pref_reporting".equals(key)) {
+                    if (Preferences.isReportingEnabled(Kontalk.this)) {
+                        ReportingManager.register(Kontalk.this);
+                    }
+                    else {
+                        ReportingManager.unregister(Kontalk.this);
+                    }
+                }
+                // actions requiring an account
+                else if (Authenticator.getDefaultAccount(Kontalk.this) != null) {
+                    // manual server address
+                    if ("pref_network_uri".equals(key)) {
+                        // temporary measure for users coming from old betas
+                        // this is triggered because manual server address is cleared
+                        if (Authenticator.getDefaultServer(Kontalk.this) != null) {
+                            // just restart the message center for now
+                            Log.w(TAG, "network address changed");
+                            MessageCenterService.restart(Kontalk.this);
+                        }
+                    }
+                    // hide presence flag / encrypt user data flag
+                    else if ("pref_hide_presence".equals(key) || "pref_encrypt_userdata".equals(key)) {
+                        MessageCenterService.updateStatus(Kontalk.this);
+                    }
+                    // changing remove prefix
+                    else if ("pref_remove_prefix".equals(key)) {
+                        SyncAdapter.requestSync(Kontalk.this, true);
+                    }
+                }
+            }
+        };
+
     @Override
     public void onCreate() {
         super.onCreate();
 
-        // register security provider
-        PGP.registerProvider();
-
-        // apply RNG fixes
-        PRNGFixes.apply();
-
         // init preferences
+        // This must be done before registering the reporting manager
+        // because we need access to the reporting opt-in preference.
+        // However this call will not be reported if it crashes
         Preferences.init(this);
+
+        // init logging system
+        // done after preferences because we need to access debug log preference
+        Log.init(this);
+
+        // register reporting manager
+        if (Preferences.isReportingEnabled(this))
+            ReportingManager.register(this);
+
+        // register security provider
+        SecureConnectionManager.init(this);
+        try {
+            PGP.registerProvider();
+        }
+        catch (PGP.PRNGFixException e) {
+            ReportingManager.logException(e);
+            Log.w(TAG, "Unable to install PRNG fix - ignoring", e);
+        }
 
         // init contacts
         Contact.init(this, new Handler());
@@ -121,37 +180,7 @@ public class Kontalk extends Application {
         MessagingNotification.init(this);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        final SharedPreferences.OnSharedPreferenceChangeListener prefListener =
-            new SharedPreferences.OnSharedPreferenceChangeListener() {
-            @Override
-            public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-                // no account - abort
-                if (Authenticator.getDefaultAccount(Kontalk.this) == null)
-                    return;
-
-                // manual server address
-                if ("pref_network_uri".equals(key)) {
-                    // temporary measure for users coming from old betas
-                    // this is triggered because manual server address is cleared
-                    if (Authenticator.getDefaultServer(getApplicationContext()) != null) {
-                        // just restart the message center for now
-                        Log.w(TAG, "network address changed");
-                        MessageCenterService.restart(Kontalk.this);
-                    }
-                }
-
-                // hide presence flag / encrypt user data flag
-                else if ("pref_hide_presence".equals(key) || "pref_encrypt_userdata".equals(key)) {
-                    MessageCenterService.updateStatus(Kontalk.this);
-                }
-
-                // changing remove prefix
-                else if ("pref_remove_prefix".equals(key)) {
-                    SyncAdapter.requestSync(getApplicationContext(), true);
-                }
-            }
-        };
-        prefs.registerOnSharedPreferenceChangeListener(prefListener);
+        prefs.registerOnSharedPreferenceChangeListener(mPrefListener);
 
         // TODO listen for changes to phone numbers
 
@@ -162,7 +191,7 @@ public class Kontalk extends Application {
                 xmppUpgrade();
 
             // update notifications from locally unread messages
-            MessagingNotification.updateMessagesNotification(this, false);
+            MessagingNotification.delayedUpdateMessagesNotification(this, false);
 
             // register account change listener
             final OnAccountsUpdateListener listener = new OnAccountsUpdateListener() {
@@ -185,7 +214,7 @@ public class Kontalk extends Application {
                         setServicesEnabled(Kontalk.this, false);
                         // unregister from push notifications
                         IPushService pushMgr = PushServiceManager.getInstance(Kontalk.this);
-                        if (pushMgr.isServiceAvailable())
+                        if (pushMgr != null && pushMgr.isServiceAvailable())
                             pushMgr.unregister(PushServiceManager.getDefaultListener());
                         // delete all messages
                         MessagesProvider.deleteDatabase(Kontalk.this);
@@ -209,7 +238,7 @@ public class Kontalk extends Application {
 
     private void xmppUpgrade() {
         // delete custom server
-        Preferences.setServerURI(this, null);
+        Preferences.setServerURI(null);
         // delete cached server list
         ServerListUpdater.deleteCachedList(this);
     }
@@ -254,6 +283,18 @@ public class Kontalk extends Application {
         return mKeyPassphrase;
     }
 
+    /** Returns the messages controller singleton instance. */
+    public MessagesController getMessagesController() {
+        if (mMessagesController == null)
+            mMessagesController = new MessagesController(this);
+        return mMessagesController;
+    }
+
+    /** Returns the messages controller singleton instance. */
+    public static MessagesController getMessagesController(Context context) {
+        return get(context).getMessagesController();
+    }
+
     /** Returns true if we are using a two-panes UI. */
     public static boolean hasTwoPanesUI(Context context) {
         return context.getResources().getBoolean(R.bool.has_two_panes);
@@ -269,6 +310,12 @@ public class Kontalk extends Application {
         PackageManager pm = context.getPackageManager();
         enableService(context, pm, ComposeMessage.class, enabled);
         enableService(context, pm, SearchActivity.class, enabled);
+        setBackendEnabled(context, enabled);
+    }
+
+    /** Enable/disable backend application components when account is added or removed. */
+    public static void setBackendEnabled(Context context, boolean enabled) {
+        PackageManager pm = context.getPackageManager();
         enableService(context, pm, MessageCenterService.class, enabled);
         enableService(context, pm, DownloadService.class, enabled);
         enableService(context, pm, UploadService.class, enabled);

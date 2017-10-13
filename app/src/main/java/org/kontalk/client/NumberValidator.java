@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,13 +19,18 @@
 package org.kontalk.client;
 
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -47,17 +52,21 @@ import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.spongycastle.openpgp.PGPException;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Base64;
-import android.util.Log;
 
+import org.kontalk.Log;
 import org.kontalk.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.X509Bridge;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.XMPPConnectionHelper;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.service.msgcenter.PGPKeyPairRingProvider;
@@ -73,51 +82,103 @@ import org.kontalk.util.MessageUtils;
  * @version 1.0
  */
 public class NumberValidator implements Runnable, ConnectionHelperListener {
-    private static final String TAG = NumberValidator.class.getSimpleName();
+    @SuppressWarnings("WeakerAccess")
+    static final String TAG = NumberValidator.class.getSimpleName();
 
     /** Initialization */
-    public static final int STEP_INIT = 0;
+    private static final int STEP_INIT = 0;
     /** Validation step (sending phone number and waiting for SMS) */
-    public static final int STEP_VALIDATION = 1;
+    private static final int STEP_VALIDATION = 1;
     /** Requesting authentication token */
-    public static final int STEP_AUTH_TOKEN = 2;
+    private static final int STEP_AUTH_TOKEN = 2;
     /** Login test for imported key */
-    public static final int STEP_LOGIN_TEST = 3;
+    private static final int STEP_LOGIN_TEST = 3;
 
     public static final int ERROR_THROTTLING = 1;
     public static final int ERROR_USER_EXISTS = 2;
 
-    private final EndpointServer.EndpointServerProvider mServerProvider;
+    // constants for choosing a brand image size
+    public static final int BRAND_IMAGE_VECTOR = 0;
+    public static final int BRAND_IMAGE_SMALL = 1;
+    public static final int BRAND_IMAGE_MEDIUM = 2;
+    public static final int BRAND_IMAGE_LARGE = 3;
+    public static final int BRAND_IMAGE_HD = 4;
+
+    private static final List<String> BRAND_IMAGE_SIZES = Arrays.asList(
+        "brand-image-vector",
+        "brand-image-small",
+        "brand-image-medium",
+        "brand-image-large",
+        "brand-image-hd"
+    );
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({
+        BRAND_IMAGE_VECTOR,
+        BRAND_IMAGE_SMALL,
+        BRAND_IMAGE_MEDIUM,
+        BRAND_IMAGE_LARGE,
+        BRAND_IMAGE_HD
+    })
+    public @interface BrandImageSize {}
+
+    // from Kontalk server code
+    /** Challenge the user with a verification PIN sent through a SMS or a told through a phone call. */
+    public static final String CHALLENGE_PIN = "pin";
+    /** Challenge the user with a missed call from a random number and making the user guess the digits. */
+    public static final String CHALLENGE_MISSED_CALL = "missedcall";
+    /** Challenge the user with the caller ID presented in a user-initiated call to a given phone number. */
+    public static final String CHALLENGE_CALLER_ID = "callerid";
+    // default requested challenge
+    private static final String DEFAULT_CHALLENGE = CHALLENGE_PIN;
+
+    @SuppressWarnings("WeakerAccess")
+    final EndpointServer.EndpointServerProvider mServerProvider;
     private final String mName;
     private final String mPhone;
     private boolean mForce;
     private boolean mFallback;
     private PersonalKey mKey;
-    private PGPKeyPairRing mKeyRing;
+    @SuppressWarnings("WeakerAccess")
+    PGPKeyPairRing mKeyRing;
     private X509Certificate mBridgeCert;
     private String mPassphrase;
+    private int mBrandImageSize;
     private final Object mKeyLock = new Object();
 
     private byte[] mImportedPrivateKey;
     private byte[] mImportedPublicKey;
 
-    private final XMPPConnectionHelper mConnector;
-    private NumberValidatorListener mListener;
-    private volatile int mStep;
+    @SuppressWarnings("WeakerAccess")
+    final XMPPConnectionHelper mConnector;
+    @SuppressWarnings("WeakerAccess")
+    NumberValidatorListener mListener;
+    @SuppressWarnings("WeakerAccess")
+    volatile int mStep;
     private CharSequence mValidationCode;
 
     private Thread mThread;
 
     private HandlerThread mServiceHandler;
-    private Handler mInternalHandler;
+    @SuppressWarnings("WeakerAccess")
+    Handler mInternalHandler;
+
+    /** This will used to store the server-indicated challenge. */
+    String mServerChallenge;
 
     public NumberValidator(Context context, EndpointServer.EndpointServerProvider serverProvider,
         String name, String phone, PersonalKey key, String passphrase) {
+        this(context, serverProvider, name, phone, key, passphrase, BRAND_IMAGE_VECTOR);
+    }
+
+    public NumberValidator(Context context, EndpointServer.EndpointServerProvider serverProvider,
+        String name, String phone, PersonalKey key, String passphrase, @BrandImageSize int brandImageSize) {
         mServerProvider = serverProvider;
         mName = name;
         mPhone = phone;
         mKey = key;
         mPassphrase = passphrase;
+        mBrandImageSize = brandImageSize;
 
         mConnector = new XMPPConnectionHelper(context.getApplicationContext(), mServerProvider.next(), true);
         mConnector.setRetryEnabled(false);
@@ -163,6 +224,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         return mConnector.getServer();
     }
 
+    public String getServerChallenge() {
+        return mServerChallenge;
+    }
+
     public static boolean isMissedCall(String senderId) {
         // very quick way to check if we are using missed call based verification
         return senderId != null && senderId.endsWith("???");
@@ -200,6 +265,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
     @Override
     public void run() {
+        // aborted
+        if (mServiceHandler == null)
+            return;
+
         try {
             // begin!
             if (mStep == STEP_INIT) {
@@ -245,7 +314,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
                 // setup listener for form response
                 conn.addAsyncStanzaListener(new StanzaListener() {
-                    public void processPacket(Stanza packet) {
+                    public void processStanza(Stanza packet) {
                         int reason = 0;
                         IQ iq = (IQ) packet;
 
@@ -256,16 +325,40 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                             DataForm response = iq.getExtension("x", "jabber:x:data");
                             if (response != null) {
                                 // ok! message will be sent
+                                String smsFrom = null, challenge = null,
+                                    brandLink = null;
+                                boolean canFallback = false;
                                 List<FormField> iter = response.getFields();
                                 for (FormField field : iter) {
-                                    if (field.getVariable().equals("from")) {
-                                        String smsFrom = field.getValues().get(0);
-                                        Log.d(TAG, "using sender id: " + smsFrom);
-                                        mListener.onValidationRequested(NumberValidator.this, smsFrom);
-
-                                        // prevent error handling
-                                        return;
+                                    String fieldName = field.getVariable();
+                                    if ("from".equals(fieldName)) {
+                                        smsFrom = field.getValues().get(0);
                                     }
+                                    else if ("challenge".equals(fieldName)) {
+                                        challenge = field.getValues().get(0);
+                                    }
+                                    else if ("brand-link".equals(fieldName)) {
+                                        brandLink = field.getValues().get(0);
+                                    }
+                                    else if ("can-fallback".equals(fieldName) && field.getType() == FormField.Type.bool) {
+                                        String val = field.getValues().get(0);
+                                        canFallback = "1".equals(val) || "true".equalsIgnoreCase(val) || "yes".equalsIgnoreCase(val);
+                                    }
+                                }
+
+                                // brand image needs some more complex logic
+                                final String brandImage = getBrandImageField(response);
+
+                                if (smsFrom != null) {
+                                    Log.d(TAG, "using sender id: " + smsFrom + ", challenge: " + challenge);
+                                    mServerChallenge = challenge;
+                                    ReportingManager.logRegister(challenge);
+
+                                    mListener.onValidationRequested(NumberValidator.this,
+                                        smsFrom, challenge, brandImage, brandLink, canFallback);
+
+                                    // prevent error handling
+                                    return;
                                 }
                             }
                         }
@@ -346,7 +439,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
                 XMPPConnection conn = mConnector.getConnection();
                 conn.addAsyncStanzaListener(new StanzaListener() {
-                    public void processPacket(Stanza packet) {
+                    public void processStanza(Stanza packet) {
                         IQ iq = (IQ) packet;
                         if (iq.getType() == IQ.Type.result) {
                             DataForm response = iq.getExtension("x", "jabber:x:data");
@@ -427,6 +520,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
             }
         }
         catch (Throwable e) {
+            ReportingManager.logException(e);
             if (mListener != null)
                 mListener.onError(this, e);
 
@@ -441,14 +535,17 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         Log.w(TAG, "shutting down");
         try {
             if (mThread != null) {
-                mInternalHandler.post(new Runnable() {
+                // save and null everything
+                final HandlerThread serviceHandler = mServiceHandler;
+                final Handler internalHandler = mInternalHandler;
+                mServiceHandler = null;
+                mInternalHandler = null;
+
+                internalHandler.post(new Runnable() {
                     public void run() {
                         try {
-                            mConnector.getConnection().disconnect();
-                            mServiceHandler.quit();
-                            // null everything
-                            mServiceHandler = null;
-                            mInternalHandler = null;
+                            serviceHandler.quit();
+                            mConnector.shutdown();
                         }
                         catch (Exception e) {
                             // ignored
@@ -456,7 +553,6 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                     }
                 });
                 mThread.interrupt();
-                mThread.join();
                 mThread = null;
             }
 
@@ -485,7 +581,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private void initConnection() throws XMPPException, SmackException,
             PGPException, KeyStoreException, NoSuchProviderException,
             NoSuchAlgorithmException, CertificateException,
-            IOException {
+            IOException, InterruptedException {
 
         if (!mConnector.isConnected() || mConnector.isServerDirty()) {
             mConnector.setListener(this);
@@ -534,6 +630,14 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
             fallback.addValue(String.valueOf(mFallback));
             form.addField(fallback);
         }
+        else {
+            // not falling back, ask for our preferred challenge
+            FormField challenge = new FormField("challenge");
+            challenge.setLabel("Challenge type");
+            challenge.setType(FormField.Type.text_single);
+            challenge.addValue(DEFAULT_CHALLENGE);
+            form.addField(challenge);
+        }
 
         iq.addExtension(form.getDataFormToSend());
         return iq;
@@ -550,38 +654,106 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         type.addValue("http://kontalk.org/protocol/register#code");
         form.addField(type);
 
-        FormField code = new FormField("code");
-        code.setLabel("Validation code");
-        code.setType(FormField.Type.text_single);
-        code.addValue(mValidationCode.toString());
-        form.addField(code);
+        if (mValidationCode != null) {
+            FormField code = new FormField("code");
+            code.setLabel("Validation code");
+            code.setType(FormField.Type.text_single);
+            code.addValue(mValidationCode.toString());
+            form.addField(code);
+        }
 
         iq.addExtension(form.getDataFormToSend());
         return iq;
+    }
+
+    /**
+     * Finds the appropriate brand image form field from the response to use.
+     * @param form the response form
+     * @return a brand image URL, or null if none was found
+     */
+    @SuppressWarnings("WeakerAccess")
+    @Nullable
+    String getBrandImageField(DataForm form) {
+        // logic could be optimized, but it does its job.
+        // Besides, it's a one-time method.
+        String preferredSize = getBrandImageAttributeName(mBrandImageSize);
+        String result = findField(form, preferredSize);
+
+        if (result == null) {
+            // preferred attribute not found, look for other ones from the smaller ones
+            for (int i = mBrandImageSize - 1; i > BRAND_IMAGE_VECTOR; i--) {
+                String size = getBrandImageAttributeName(i);
+                result = findField(form, size);
+            }
+        }
+
+        if (result == null) {
+            // no smaller size found, try a bigger one
+            for (int i = mBrandImageSize + 1; i <= BRAND_IMAGE_HD; i++) {
+                String size = getBrandImageAttributeName(i);
+                result = findField(form, size);
+            }
+        }
+
+        // nothing was found if result is still null
+        return result;
+    }
+
+    private String findField(DataForm form, String name) {
+        FormField field = form.getField(name);
+        if (field != null) {
+            List<String> values = field.getValues();
+            if (values != null && values.size() > 0) {
+                String value = values.get(0);
+                return value != null && value.trim().length() > 0 ?
+                    value : null;
+            }
+        }
+        return null;
+    }
+
+    private String getBrandImageAttributeName(int size) {
+        try {
+            return BRAND_IMAGE_SIZES.get(size);
+        }
+        catch (IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException("invalid brand image size: " + size);
+        }
     }
 
     public synchronized void setListener(NumberValidatorListener listener) {
         mListener = listener;
     }
 
-    public abstract interface NumberValidatorListener {
+    public interface NumberValidatorListener {
         /** Called if an exception get thrown. */
-        public void onError(NumberValidator v, Throwable e);
+        void onError(NumberValidator v, Throwable e);
 
         /** Called if the server doesn't support registration/auth tokens. */
-        public void onServerCheckFailed(NumberValidator v);
+        void onServerCheckFailed(NumberValidator v);
 
         /** Called on confirmation that the validation SMS is being sent. */
-        public void onValidationRequested(NumberValidator v, String sender);
+        void onValidationRequested(NumberValidator v, String sender, String challenge, String brandImage, String brandLink, boolean canFallback);
 
         /** Called if phone number validation failed. */
-        public void onValidationFailed(NumberValidator v, int reason);
+        void onValidationFailed(NumberValidator v, int reason);
 
         /** Called on receiving of authentication token. */
-        public void onAuthTokenReceived(NumberValidator v, byte[] privateKey, byte[] publicKey);
+        void onAuthTokenReceived(NumberValidator v, byte[] privateKey, byte[] publicKey);
 
         /** Called if validation code has not been verified. */
-        public void onAuthTokenFailed(NumberValidator v, int reason);
+        void onAuthTokenFailed(NumberValidator v, int reason);
+    }
+
+    /** Handles special numbers not handled by libphonenumber. */
+    public static boolean isSpecialNumber(PhoneNumber number) {
+        if (number.getCountryCode() == 31) {
+            // handle special M2M numbers: 11 digits starting with 097[0-8]
+            final Pattern regex = Pattern.compile("^97[0-8][0-9]{8}$");
+            Matcher m = regex.matcher(String.valueOf(number.getNationalNumber()));
+            return m.matches();
+        }
+        return false;
     }
 
     /**
@@ -597,6 +769,12 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         String myRegionCode = tm.getSimCountryIso();
         if (myRegionCode != null)
             myRegionCode = myRegionCode.toUpperCase(Locale.US);
+
+        return fixNumber(number, myNumber, myRegionCode, lastResortCc);
+    }
+
+    static String fixNumber(String number, String myNumber, String myRegionCode, int lastResortCc)
+        throws NumberParseException {
 
         PhoneNumberUtil util = PhoneNumberUtil.getInstance();
         try {
@@ -624,11 +802,48 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 throw e;
         }
 
+        handleSpecialCases(parsedNum);
+
         // a NumberParseException would have been thrown at this point
         return util.format(parsedNum, PhoneNumberFormat.E164);
     }
 
+    /**
+     * Handles special cases in a parsed phone number.
+     * @param phoneNumber the phone number to check. It will be modified in place.
+     */
+    public static void handleSpecialCases(PhoneNumber phoneNumber) {
+        PhoneNumberUtil util = PhoneNumberUtil.getInstance();
+
+        // Argentina numbering rules
+        int argCode = util.getCountryCodeForRegion("AR");
+        if (phoneNumber.getCountryCode() == argCode) {
+            // forcibly add the 9 between country code and national number
+            long nsn = phoneNumber.getNationalNumber();
+            if (firstDigit(nsn) != 9) {
+                phoneNumber.setNationalNumber(addSignificantDigits(nsn, 9));
+            }
+        }
+    }
+
+    static long addSignificantDigits(long n, int ds) {
+        final long orig = n;
+        int count = 1;
+        while (n < -9 || 9 < n) {
+            n /= 10;
+            count++;
+        }
+        long power = ds * (long) Math.pow(10, count);
+        return orig + power;
+    }
+
+    private static int firstDigit(long n) {
+        while (n < -9 || 9 < n) n /= 10;
+        return (int) Math.abs(n);
+    }
+
     /** Returns the (parsed) number stored in this device SIM card. */
+    @SuppressLint("HardwareIds")
     public static PhoneNumber getMyNumber(Context context) {
         try {
             final TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);

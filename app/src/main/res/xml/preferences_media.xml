@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kontalk Android client
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <com.afollestad.materialdialogs.prefs.MaterialListPreference
+        android:key="pref_image_resize"
+        android:title="@string/pref_image_resize"
+        android:summary="%s"
+        android:entries="@array/image_resize_labels"
+        android:entryValues="@array/image_resize_values"
+        android:defaultValue="@integer/pref_default_image_resize"/>
+    <com.afollestad.materialdialogs.prefs.MaterialListPreference
+        android:key="pref_media_autodownload"
+        android:title="@string/pref_media_autodownload"
+        android:summary="%s"
+        android:entries="@array/media_autodownload_labels"
+        android:entryValues="@array/media_autodownload_values"
+        android:defaultValue="@string/pref_default_media_autodownload"/>
+    <com.afollestad.materialdialogs.prefs.MaterialEditTextPreference
+        android:key="pref_media_autodownload_threshold"
+        android:dialogTitle="@string/pref_media_autodownload_threshold"
+        android:positiveButtonText="@android:string/ok"
+        android:negativeButtonText="@android:string/cancel"
+        android:title="@string/pref_media_autodownload_threshold"
+        android:summary="@string/pref_title_media_autodownload_threshold"
+        android:dialogMessage="@string/pref_msg_media_autodownload_threshold"
+        android:singleLine="true" android:inputType="number"
+        android:defaultValue="@integer/pref_default_media_autodownload_threshold"/>
+
+</PreferenceScreen>

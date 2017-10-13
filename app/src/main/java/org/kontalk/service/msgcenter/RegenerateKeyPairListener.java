@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,15 +18,23 @@
 
 package org.kontalk.service.msgcenter;
 
+import java.io.IOException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
+import java.security.cert.CertificateException;
+
+import org.jivesoftware.smack.packet.Stanza;
+import org.spongycastle.openpgp.PGPException;
+
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.util.Log;
 import android.widget.Toast;
 
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.authenticator.LegacyAuthentication;
@@ -36,14 +44,6 @@ import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
 import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
 import org.kontalk.util.MessageUtils;
 
-import org.jivesoftware.smack.packet.Stanza;
-import org.spongycastle.openpgp.PGPException;
-
-import java.io.IOException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
-import java.security.cert.CertificateException;
-
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_REGENERATE_KEYPAIR;
 
 
@@ -51,9 +51,10 @@ import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_REGENERA
 class RegenerateKeyPairListener extends RegisterKeyPairListener {
     private BroadcastReceiver mKeyReceiver;
 
-    public RegenerateKeyPairListener(MessageCenterService instance) {
-        super(instance, null);
-        mPassphrase = getApplication().getCachedPassphrase();
+    public RegenerateKeyPairListener(MessageCenterService instance, String passphrase) {
+        super(instance, passphrase);
+        if (passphrase == null)
+            mPassphrase = getApplication().getCachedPassphrase();
     }
 
     public void run() throws CertificateException, SignatureException,
@@ -136,8 +137,8 @@ class RegenerateKeyPairListener extends RegisterKeyPairListener {
     }
 
     @Override
-    public void processPacket(Stanza packet) {
-        super.processPacket(packet);
+    public void processStanza(Stanza packet) {
+        super.processStanza(packet);
 
         // we are done here
         endKeyPairRegeneration();

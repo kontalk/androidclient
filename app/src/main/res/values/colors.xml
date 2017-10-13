@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -22,14 +22,6 @@
     <color name="app_primary_dark">#1976D2</color>
     <color name="app_accent">#03A9F4</color>
 
-    <!-- Widget background -->
-    <drawable name="light_blue_background">#ffecfbff</drawable>
-
-	<drawable name="fill_incoming_background">#ffdb8e41</drawable>
-	<drawable name="border_incoming_background">#ffcb7a28</drawable>
-	<drawable name="fill_outgoing_background">#ff3d80dc</drawable>
-	<drawable name="border_outgoing_background">#ff1859bb</drawable>
-
     <!-- text color -->
     <color name="text_color_draft">#ffff0000</color>
 
@@ -41,14 +33,11 @@
     <!-- grayed out text -->
     <color name="grayed_out">#ff999999</color>
 
-    <color name="conversation_active_background">#ff229DC9</color>
-    
     <!-- audio progress bar color -->
     <color name="audio_pbar_record">#ffdd1812</color>
     <color name="audio_pbar_play">#ff00acec</color>
 
-    <color name="date_stamp_background">#ff33B5E5</color>
-    <color name="date_stamp_text">#dddddd</color>
+    <color name="date_stamp_background">@color/app_accent</color>
 
     <color name="warning_bar_background_fatal">#f44336</color>
     <color name="warning_bar_text_fatal">@android:color/white</color>
@@ -58,6 +47,7 @@
     <color name="notification_name_color">@android:color/white</color>
 
     <color name="button_danger">#f44336</color>
+    <color name="button_success">#4caf50</color>
 
     <color name="pinned_header_text">#a7a7a7</color>
 
@@ -69,6 +59,13 @@
     <color name="green_light">#99CC00</color>
     <color name="yellow_light">#FFBB33</color>
     <color name="red_light">#FF4444</color>
-    <!-- pure white -->
+
+    <color name="bg_default_contact">#bbbbbb</color>
+
+    <color name="map_placeholder_background">#552196F3</color>
+
+    <color name="gray_circular">#ECECEC</color>
+    <color name="gray_background">#F2F2F2</color>
+    <color name="divider">#d9d9d9</color>
 
 </resources>

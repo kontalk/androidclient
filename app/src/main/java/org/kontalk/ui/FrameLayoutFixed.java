@@ -8,14 +8,15 @@
 
 package org.kontalk.ui;
 
+import java.util.ArrayList;
+
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 
-import java.util.ArrayList;
+import org.kontalk.Log;
 
 public class FrameLayoutFixed extends FrameLayout {
     private final ArrayList<View> mMatchParentChildren = new ArrayList<View>(1);

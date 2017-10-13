@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -131,6 +131,12 @@ public class XMPPUtils {
 
     public static String createLocalpart(String uid) {
         return MessageUtils.sha1(uid);
+    }
+
+    /** Returns true if the given JID is a domain JID (e.g. beta.kontalk.net). */
+    public static boolean isDomainJID(String jid) {
+        return XmppStringUtils.parseDomain(jid)
+            .equalsIgnoreCase(jid);
     }
 
 }

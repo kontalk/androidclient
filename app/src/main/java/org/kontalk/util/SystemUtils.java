@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,16 +18,27 @@
 
 package org.kontalk.util;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.Array;
+import java.lang.reflect.Method;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -37,12 +48,22 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.ContactsContract;
+import android.support.annotation.AttrRes;
+import android.support.annotation.ColorRes;
+import android.support.v4.content.ContextCompat;
+import android.text.style.CharacterStyle;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.util.SparseBooleanArray;
+import android.util.TypedValue;
 import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import org.kontalk.BuildConfig;
+import org.kontalk.Kontalk;
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 
@@ -66,7 +87,7 @@ public final class SystemUtils {
         if (m.find() && m.groupCount() > 0) {
             try {
                 int versionCode = Integer.parseInt(m.group(1));
-                int currentVersion = getVersionCode(context);
+                int currentVersion = getVersionCode();
                 return versionCode < currentVersion;
             }
             catch (Exception ignored) {
@@ -78,7 +99,7 @@ public final class SystemUtils {
         return true;
     }
 
-    public static int getVersionCode(Context context) {
+    public static int getVersionCode() {
         return BuildConfig.VERSION_CODE;
     }
 
@@ -87,6 +108,17 @@ public final class SystemUtils {
             BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE);
     }
 
+    /**
+     * Returns true if on Gingerbread or earlier.
+     * We need this to disable some fancy animations or graphics which would be
+     * too difficult to make them work on these Android versions. Besides, even
+     * Google doesn't want to support them anymore.
+     */
+    public static boolean isLegacySystem() {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB;
+    }
+
+    @SuppressWarnings("deprecation")
     public static Point getDisplaySize(Context context) {
         Point displaySize = null;
         WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
@@ -278,6 +310,150 @@ public final class SystemUtils {
         }
 
         return clone;
+    }
+
+    public static <T> T[] concatenate (T[] a, T[] b) {
+        int aLen = a.length;
+        int bLen = b.length;
+
+        @SuppressWarnings("unchecked")
+        T[] c = (T[]) Array.newInstance(a.getClass().getComponentType(), aLen+bLen);
+        System.arraycopy(a, 0, c, 0, aLen);
+        System.arraycopy(b, 0, c, aLen, bLen);
+
+        return c;
+    }
+
+    public static <T> T[] concatenate (T[] a, T b) {
+        int aLen = a.length;
+
+        @SuppressWarnings("unchecked")
+        T[] c = (T[]) Array.newInstance(a.getClass().getComponentType(), aLen + 1);
+        System.arraycopy(a, 0, c, 0, aLen);
+        c[aLen] = b;
+
+        return c;
+    }
+
+    public static <T> boolean contains(final T[] array, final T v) {
+        for (final T e : array)
+            if (e == v || v != null && v.equals(e))
+                return true;
+
+        return false;
+    }
+
+    /** Instead of importing the whole commons-io :) */
+    public static long copy(final InputStream input, final OutputStream output) throws IOException {
+        byte[] buffer = new byte[4096];
+        long count = 0;
+        int n;
+        while (-1 != (n = input.read(buffer))) {
+            output.write(buffer, 0, n);
+            count += n;
+        }
+        return count;
+    }
+
+    /** Closes the given stream, ignoring any errors. */
+    public static void closeStream(Closeable stream) {
+        try {
+            stream.close();
+        }
+        catch (Exception ignored) {
+        }
+    }
+
+    public static void openURL(Context context, String url) {
+        try {
+            context.startActivity(externalIntent(Intent.ACTION_VIEW,
+                Uri.parse(url)));
+        }
+        catch (ActivityNotFoundException e) {
+            Toast.makeText(context, R.string.chooser_error_no_browser,
+                Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public static void dial(Context context, CharSequence phone) {
+        try {
+            context.startActivity(externalIntent(Intent.ACTION_DIAL,
+                Uri.parse("tel:" + phone)));
+        }
+        catch (ActivityNotFoundException e) {
+            Toast.makeText(context, R.string.chooser_error_no_dialer,
+                Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public static boolean isCallable(Context context, Intent intent) {
+        List<ResolveInfo> list = context.getPackageManager().queryIntentActivities(intent,
+            PackageManager.MATCH_DEFAULT_ONLY);
+        return list.size() > 0;
+    }
+
+    public static Intent externalIntent(String action) {
+        return externalIntent(action, null);
+    }
+
+    public static Intent externalIntent(String action, Uri data) {
+        Intent i = new Intent(action, data);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+        }
+        else {
+            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+        }
+        return i;
+    }
+
+    public static String getUserSerial(Context context) {
+        //noinspection ResourceType
+        @SuppressLint("WrongConstant")
+        Object userManager = context.getSystemService("user");
+        if (null == userManager) return "";
+
+        try {
+            Method myUserHandleMethod = android.os.Process.class.getMethod("myUserHandle", (Class<?>[]) null);
+            Object myUserHandle = myUserHandleMethod.invoke(android.os.Process.class, (Object[]) null);
+            Method getSerialNumberForUser = userManager.getClass().getMethod("getSerialNumberForUser", myUserHandle.getClass());
+            Long userSerial = (Long) getSerialNumberForUser.invoke(userManager, myUserHandle);
+            if (userSerial != null) {
+                return String.valueOf(userSerial);
+            } else {
+                return "";
+            }
+        }
+        catch (Exception ignored) {
+        }
+        return "";
+    }
+
+    public static CharacterStyle getColoredSpan(Context context, @ColorRes int colorResId) {
+        return new ForegroundColorSpan(ContextCompat.getColor(context, colorResId));
+    }
+
+    public static CharacterStyle getTypefaceSpan(int typeface) {
+        return new StyleSpan(typeface);
+    }
+
+    public static int getThemedResource(Context context, @AttrRes int attrResId) {
+        TypedValue value = new TypedValue();
+        if (!context.getTheme().resolveAttribute(attrResId, value, true))
+            throw new Resources.NotFoundException();
+        return value.resourceId;
+    }
+
+    public static ProximityScreenLocker createProximityScreenLocker(final Activity activity)
+    {
+        final ProximityScreenLocker proximityScreenLockerNative = ProximityScreenLockerNative.create(activity);
+        if (proximityScreenLockerNative == null) {
+            Log.d(Kontalk.TAG, "native proximity screen locking is not supported => using fallback");
+            return new ProximityScreenLockerFallback(activity);
+        }
+
+        Log.d(Kontalk.TAG, "native proximity screen locking is supported");
+        return proximityScreenLockerNative;
     }
 
 }

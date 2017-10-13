@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -20,5 +20,6 @@
       xmlns:app="http://schemas.android.com/apk/res-auto">
     <item android:id="@+id/menu_settings" android:title="@string/menu_settings" android:icon="@drawable/ic_menu_preferences" app:showAsAction="ifRoom" />
     <item android:id="@+id/menu_import_key" android:title="@string/menu_import_key" android:icon="@drawable/ic_menu_key" app:showAsAction="never"/>
+    <!-- displayed only on debug -->
     <item android:id="@+id/menu_manual_verification" android:title="@string/menu_manual_verification" android:icon="@android:drawable/ic_menu_more" app:showAsAction="never" />
 </menu>

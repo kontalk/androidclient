@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,15 +20,16 @@ package org.kontalk.data;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 
 import org.jxmpp.util.XmppStringUtils;
-import org.kontalk.util.Preferences;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.content.ContentResolver;
@@ -46,13 +47,17 @@ import android.os.Handler;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.PhoneLookup;
+import android.support.annotation.NonNull;
 import android.support.v4.util.LruCache;
-import android.util.Log;
 
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.crypto.PGPLazyPublicKeyRingLoader;
+import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MyUsers.Keys;
 import org.kontalk.provider.MyUsers.Users;
+import org.kontalk.util.MessageUtils;
+import org.kontalk.util.Preferences;
 
 
 /**
@@ -60,7 +65,7 @@ import org.kontalk.provider.MyUsers.Users;
  * @author Daniele Ricci
  */
 public class Contact {
-    private final static String TAG = Contact.class.getSimpleName();
+    final static String TAG = Contact.class.getSimpleName();
 
     private final static String[] ALL_CONTACTS_PROJECTION = {
         Users._ID,
@@ -71,9 +76,7 @@ public class Contact {
         Users.JID,
         Users.REGISTERED,
         Users.STATUS,
-        Users.FINGERPRINT,
         Users.BLOCKED,
-        Keys.TRUSTED_PUBLIC_KEY,
     };
 
     public static final int COLUMN_ID = 0;
@@ -84,9 +87,7 @@ public class Contact {
     public static final int COLUMN_JID = 5;
     public static final int COLUMN_REGISTERED = 6;
     public static final int COLUMN_STATUS = 7;
-    public static final int COLUMN_FINGERPRINT = 8;
-    public static final int COLUMN_BLOCKED = 9;
-    public static final int COLUMN_TRUSTED_PUBLIC_KEY = 10;
+    public static final int COLUMN_BLOCKED = 8;
 
     /** The aggregated Contact id identified by this object. */
     private final long mContactId;
@@ -107,18 +108,18 @@ public class Contact {
 
     private String mFingerprint;
     private PGPLazyPublicKeyRingLoader mTrustedKeyRing;
+    // trust level for the above trusted keyring
+    private int mTrustedLevel;
 
     /** Timestamp the user was last seen. Not coming from the database. */
     private long mLastSeen;
-    /** Version information. Not coming from the database. */
-    private String mVersion;
 
     public interface ContactCallback {
-        public void avatarLoaded(Contact contact, Drawable avatar);
+        void avatarLoaded(Contact contact, Drawable avatar);
     }
 
     public interface ContactChangeListener {
-        public void onContactInvalidated(String userId);
+        void onContactInvalidated(String userId);
     }
 
     private static final Set<ContactChangeListener> sListeners = new HashSet<>();
@@ -161,8 +162,7 @@ public class Contact {
                         put(userId, c);
 
                         // insert result into users database immediately
-                        ContentValues values = new ContentValues(6);
-                        values.put(Users.HASH, XmppStringUtils.parseLocalpart(userId));
+                        ContentValues values = new ContentValues(5);
                         values.put(Users.NUMBER, numberHint);
                         values.put(Users.DISPLAY_NAME, name);
                         values.put(Users.JID, userId);
@@ -180,6 +180,49 @@ public class Contact {
 
     private final static ContactCache cache = new ContactCache();
 
+    /** Stores volatile and connection-time information about a contact. */
+    private static final class ContactState {
+        private final String mJID;
+        private boolean mTyping;
+        /** Version information. Not coming from the database. */
+        private String mVersion;
+
+        ContactState(String jid) {
+            mJID = jid;
+        }
+
+        public boolean isTyping() {
+            return mTyping;
+        }
+
+        public void setTyping(boolean typing) {
+            mTyping = typing;
+        }
+
+        public String getVersion() {
+            return mVersion;
+        }
+
+        public void setVersion(String version) {
+            mVersion = version;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return o == this ||
+                (o instanceof ContactState &&
+                    ((ContactState) o).mJID.equals(mJID));
+        }
+
+        @Override
+        public int hashCode() {
+            return mJID.hashCode();
+        }
+    }
+
+    // keys is the full JID because typing is not a global but a device state
+    private static final Map<String, ContactState> sStates = new HashMap<>();
+
     public static void init(Context context, Handler handler) {
         context.getContentResolver().registerContentObserver(Contacts.CONTENT_URI, false,
             new ContentObserver(handler) {
@@ -191,7 +234,38 @@ public class Contact {
         );
     }
 
-    private Contact(long contactId, String lookupKey, String name, String number, String jid, boolean blocked) {
+    private static ContactState getContactState(String jid) {
+        ContactState state = sStates.get(jid);
+        if (state == null) {
+            state = new ContactState(jid);
+            sStates.put(jid, state);
+        }
+        return state;
+    }
+
+    public static void setTyping(String jid, boolean typing) {
+        getContactState(jid).setTyping(typing);
+    }
+
+    public static boolean isTyping(String jid) {
+        ContactState state = sStates.get(jid);
+        return state != null && state.isTyping();
+    }
+
+    public static void setVersion(String jid, String version) {
+        getContactState(jid).setVersion(version);
+    }
+
+    public static String getVersion(String jid) {
+        ContactState state = sStates.get(jid);
+        return state != null ? state.getVersion() : null;
+    }
+
+    public static void clearState(String jid) {
+        sStates.remove(jid);
+    }
+
+    Contact(long contactId, String lookupKey, String name, String number, String jid, boolean blocked) {
         mContactId = contactId;
         mLookupKey = lookupKey;
         mName = name;
@@ -225,6 +299,15 @@ public class Contact {
         return mName;
     }
 
+    /** Returns a visible and readable name that can be used across the UI. */
+    public String getDisplayName() {
+        if (mName != null && mName.length() > 0)
+            return mName;
+        if (mNumber != null && mNumber.length() > 0)
+            return mNumber;
+        return mJID;
+    }
+
     public String getJID() {
         return mJID;
     }
@@ -253,8 +336,36 @@ public class Contact {
         return null;
     }
 
+    public String getTrustedFingerprint() {
+        try {
+            if (mTrustedKeyRing != null)
+                return mTrustedKeyRing.getFingerprint();
+        }
+        catch (Exception e) {
+            // ignored for now
+            Log.w(TAG, "unable to load public keyring", e);
+        }
+        return null;
+    }
+
+    public int getTrustedLevel() {
+        return mTrustedLevel;
+    }
+
     public String getFingerprint() {
         return mFingerprint;
+    }
+
+    /** Returns true if the key is unknown, i.e. no key was trusted yet. */
+    public boolean isKeyUnknown() {
+        return mTrustedKeyRing == null;
+    }
+
+    /** Returns true if the key has changed and not approved yet. */
+    public boolean isKeyChanged() {
+        String trustedFingerprint = getTrustedFingerprint();
+        return (trustedFingerprint == null || mFingerprint == null) ||
+            !mFingerprint.equals(trustedFingerprint);
     }
 
     public long getLastSeen() {
@@ -265,21 +376,18 @@ public class Contact {
         mLastSeen = lastSeen;
     }
 
-    public String getVersion() {
-        return mVersion;
-    }
-
-    public void setVersion(String version) {
-        mVersion = version;
-    }
-
+    @NonNull
     private static Drawable generateRandomAvatar(Context context, Contact contact) {
+        String letter = (contact.mName != null && contact.mName.length() > 0) ?
+            contact.mName : contact.mJID;
+        int size = context.getResources().getDimensionPixelSize(R.dimen.avatar_size);
+
         return TextDrawable.builder()
             .beginConfig()
-            .width(context.getResources().getDimensionPixelSize(R.dimen.avatar_size))
-            .height(context.getResources().getDimensionPixelSize(R.dimen.avatar_size))
+            .width(size)
+            .height(size)
             .endConfig()
-            .buildRect(contact.mName.substring(0, 1).toUpperCase(Locale.US),
+            .buildRect(letter.substring(0, 1).toUpperCase(Locale.US),
                 ColorGenerator.MATERIAL.getColor(contact.mJID));
     }
 
@@ -306,14 +414,8 @@ public class Contact {
 
     public synchronized Drawable getAvatar(Context context) {
         if (mAvatar == null) {
-            if (mAvatarData == null) {
-                Uri uri = getUri();
-                if (uri != null)
-                    mAvatarData = loadAvatarData(context, uri);
-            }
-
-            if (mAvatarData != null) {
-                Bitmap b = BitmapFactory.decodeByteArray(mAvatarData, 0, mAvatarData.length);
+            Bitmap b = loadAvatarBitmap(context);
+            if (b != null) {
                 mAvatar = new BitmapDrawable(context.getResources(), b);
             }
         }
@@ -324,9 +426,36 @@ public class Contact {
         return mAvatar;
     }
 
+    private synchronized Bitmap loadAvatarBitmap(Context context) {
+        if (mAvatarData == null) {
+            Uri uri = getUri();
+            if (uri != null)
+                mAvatarData = loadAvatarData(context, uri);
+        }
+
+        if (mAvatarData != null)
+            return BitmapFactory.decodeByteArray(mAvatarData, 0, mAvatarData.length);
+
+        return null;
+    }
+
+    /**
+     * Public version of {@link #loadAvatarBitmap} which includes the random
+     * avatar generation.
+     * @return a newly-allocated {@link Bitmap}
+     */
+    @NonNull
+    public synchronized Bitmap getAvatarBitmap(Context context) {
+        Bitmap avatar = loadAvatarBitmap(context);
+        if (avatar == null) {
+            Drawable d = generateRandomAvatar(context, this);
+            avatar = MessageUtils.drawableToBitmap(d);
+        }
+        return avatar;
+    }
+
     private void clear() {
         mLastSeen = 0;
-        mVersion = null;
     }
 
     public static void invalidate(String userId) {
@@ -346,6 +475,17 @@ public class Contact {
                 c.clear();
             }
         }
+        // invalidate contact state
+        sStates.clear();
+    }
+
+    /** Invalidates cached data for the given contact. Does not delete contact information. */
+    public static void invalidateData(String userId) {
+        Contact c = cache.get(XmppStringUtils.parseBareJid(userId));
+        if (c != null)
+            c.clear();
+        // invalidate contact state
+        clearState(userId);
     }
 
     public static void registerContactChangeListener(ContactChangeListener l) {
@@ -362,17 +502,8 @@ public class Contact {
         }
     }
 
-    /** Returns the text to be used in a list view section indexer. */
-    public static String getStringForSection(Cursor cursor) {
-        String name = cursor.getString(COLUMN_DISPLAY_NAME);
-        if (name == null)
-            name = cursor.getString(COLUMN_NUMBER);
-
-        return name.substring(0, 1).toUpperCase();
-    }
-
     /** Builds a contact from a UsersProvider cursor. */
-    public static Contact fromUsersCursor(Cursor cursor) {
+    public static Contact fromUsersCursor(Context context, Cursor cursor) {
         // try the cache
         String jid = cursor.getString(COLUMN_JID);
         Contact c = cache.get(jid);
@@ -384,16 +515,13 @@ public class Contact {
             final String number = cursor.getString(COLUMN_NUMBER);
             final boolean registered = (cursor.getInt(COLUMN_REGISTERED) != 0);
             final String status = cursor.getString(COLUMN_STATUS);
-            final String fingerprint = cursor.getString(COLUMN_FINGERPRINT);
             final boolean blocked = (cursor.getInt(COLUMN_BLOCKED) != 0);
-            final byte[] trustedKeyring = cursor.getBlob(COLUMN_TRUSTED_PUBLIC_KEY);
 
             c = new Contact(contactId, key, name, number, jid, blocked);
             c.mRegistered = registered;
             c.mStatus = status;
-            c.mFingerprint = fingerprint;
-            if (trustedKeyring != null)
-                c.mTrustedKeyRing = new PGPLazyPublicKeyRingLoader(trustedKeyring);
+
+            retrieveKeyInfo(context, c);
 
             cache.put(jid, c);
         }
@@ -419,15 +547,36 @@ public class Contact {
         return null;
     }
 
-    public static Contact findByUserId(Context context, String userId) {
+    public static Contact findByUserId(Context context, @NonNull String userId) {
         return findByUserId(context, userId, null);
     }
 
-    public static Contact findByUserId(Context context, String userId, String numberHint) {
-        return cache.get(context, userId, numberHint);
+    @NonNull
+    public static Contact findByUserId(Context context, @NonNull String userId, String numberHint) {
+        Contact c = cache.get(context, userId, numberHint);
+        // build dummy contact if not found
+        if (c == null) {
+            c = new Contact(-1, null, userId, numberHint, userId, false);
+            // try to retrieve the key from the keyring
+            // We may find one for pending subscription users which have
+            // disappeared from the users table after a resync
+            retrieveKeyInfo(context, c);
+        }
+        return c;
     }
 
-    private static Contact _findByUserId(Context context, String userId) {
+    private static void retrieveKeyInfo(Context context, Contact c) {
+        // trusted key
+        Keyring.TrustedPublicKeyData trustedKeyring = Keyring.getPublicKeyData(context, c.getJID(), Keys.TRUST_IGNORED);
+        // latest (possibly unknown) fingerprint
+        c.mFingerprint = Keyring.getFingerprint(context, c.getJID(), Keys.TRUST_UNKNOWN);
+        if (trustedKeyring != null) {
+            c.mTrustedKeyRing = new PGPLazyPublicKeyRingLoader(trustedKeyring.keyData);
+            c.mTrustedLevel = trustedKeyring.trustLevel;
+        }
+    }
+
+    static Contact _findByUserId(Context context, String userId) {
         ContentResolver cres = context.getContentResolver();
         Cursor c = cres.query(Uri.withAppendedPath(Users.CONTENT_URI, userId),
             new String[] {
@@ -437,9 +586,7 @@ public class Contact {
                 Users.CONTACT_ID,
                 Users.REGISTERED,
                 Users.STATUS,
-                Users.FINGERPRINT,
                 Users.BLOCKED,
-                Keys.TRUSTED_PUBLIC_KEY,
             }, null, null, null);
 
         if (c.moveToFirst()) {
@@ -449,17 +596,14 @@ public class Contact {
             final long cid = c.getLong(3);
             final boolean registered = (c.getInt(4) != 0);
             final String status = c.getString(5);
-            final String fingerprint = c.getString(6);
-            final boolean blocked = (c.getInt(7) != 0);
-            final byte[] trustedKeyring = c.getBlob(8);
+            final boolean blocked = (c.getInt(6) != 0);
             c.close();
 
             Contact contact = new Contact(cid, key, name, number, userId, blocked);
             contact.mRegistered = registered;
             contact.mStatus = status;
-            contact.mFingerprint = fingerprint;
-            if (trustedKeyring != null)
-                contact.mTrustedKeyRing = new PGPLazyPublicKeyRingLoader(trustedKeyring);
+
+            retrieveKeyInfo(context, contact);
 
             return contact;
         }
@@ -470,21 +614,30 @@ public class Contact {
     private static byte[] loadAvatarData(Context context, Uri contactUri) {
         byte[] data = null;
 
-        Uri uri;
+        InputStream avatarDataStream;
         try {
-            long cid = ContentUris.parseId(contactUri);
-            uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, cid);
+            avatarDataStream = Contacts.openContactPhotoInputStream(
+                context.getContentResolver(), contactUri);
         }
         catch (Exception e) {
-            uri = contactUri;
+            // fallback to old behaviour
+            try {
+                long cid = ContentUris.parseId(contactUri);
+                Uri uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, cid);
+                avatarDataStream = Contacts.openContactPhotoInputStream(
+                    context.getContentResolver(), uri);
+            }
+            catch (Exception ignored) {
+                // no way of getting avatar, sorry
+                return null;
+            }
+
         }
 
-        InputStream avatarDataStream = Contacts.openContactPhotoInputStream(
-                    context.getContentResolver(), uri);
         if (avatarDataStream != null) {
             try {
-                    data = new byte[avatarDataStream.available()];
-                    avatarDataStream.read(data, 0, data.length);
+                data = new byte[avatarDataStream.available()];
+                avatarDataStream.read(data, 0, data.length);
             }
             catch (IOException e) {
                 Log.e(TAG, "cannot retrieve contact avatar", e);
@@ -493,7 +646,8 @@ public class Contact {
                 try {
                     avatarDataStream.close();
                 }
-                catch (IOException e) {}
+                catch (IOException ignored) {
+                }
             }
         }
 

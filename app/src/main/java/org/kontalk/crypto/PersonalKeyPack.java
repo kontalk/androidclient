@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@ public interface PersonalKeyPack {
     public static final String BRIDGE_KEY_FILENAME = "kontalk-login.key";
     public static final String BRIDGE_CERTPACK_FILENAME = "kontalk-login.p12";
     public static final String TRUSTED_KEYS_FILENAME = "trusted.properties";
+    public static final String ACCOUNT_INFO_FILENAME = "account-info.properties";
 
     public static final String KEYPACK_FILENAME = "kontalk-keys.zip";
     public static final String KEYPACK_MIME = "application/zip";

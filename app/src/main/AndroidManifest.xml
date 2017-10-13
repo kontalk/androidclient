@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <!-- Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -17,8 +17,13 @@
  -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="org.kontalk"
+          xmlns:tools="http://schemas.android.com/tools"
+          package="org.kontalk"
       android:installLocation="internalOnly">
+
+    <!-- internal permissions -->
+    <permission android:name="${applicationId}.permission.NOTIFICATION_ACTION" android:protectionLevel="signature" />
+
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
@@ -39,11 +44,18 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+    <uses-permission android:name="${applicationId}.permission.NOTIFICATION_ACTION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
     <!-- device features will never be mandatory -->
     <uses-feature android:name="android.hardware.telephony" android:required="false"/>
     <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
     <uses-feature android:name="android.hardware.microphone" android:required="false"/>
+    <uses-feature android:name="android.hardware.sensor.proximity" android:required="false"/>
+    <uses-feature android:name="android.hardware.location.network" android:required="false"/>
+    <uses-feature android:name="android.hardware.location.gps" android:required="false"/>
 
     <application android:name=".Kontalk"
         android:label="@string/app_name"
@@ -55,7 +67,8 @@
         <service android:name=".service.msgcenter.MessageCenterService"
             android:label="@string/service_name"/>
         <service android:name=".authenticator.AccountAuthenticatorService"
-                android:label="@string/authenticator_name">
+                 android:label="@string/authenticator_name"
+                 tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator"/>
             </intent-filter>
@@ -63,7 +76,8 @@
                 android:resource="@xml/authenticator"/>
         </service>
         <service android:name=".sync.ContactsSyncAdapterService"
-                android:label="@string/sync_service_name">
+                 android:label="@string/sync_service_name"
+                 tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter"/>
             </intent-filter>
@@ -74,14 +88,23 @@
             android:label="@string/download_service"/>
         <service android:name=".service.UploadService"/>
         <service android:name=".service.KeyPairGeneratorService"/>
+        <service android:name=".service.MediaService"/>
+        <service android:name=".service.DirectShareTargetService"
+            android:permission="android.permission.BIND_CHOOSER_TARGET_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.chooser.ChooserTargetService" />
+            </intent-filter>
+        </service>
 
         <!-- Content providers -->
         <provider android:name=".provider.MessagesProvider"
-            android:exported="false"
+            android:exported="true"
+            android:permission="android.permission.BIND_CHOOSER_TARGET_SERVICE"
             android:authorities="${applicationId}.messages"/>
 
         <provider android:name=".provider.UsersProvider"
-            android:exported="false"
+            android:exported="true"
+            android:permission="android.permission.BIND_CHOOSER_TARGET_SERVICE"
             android:authorities="${applicationId}.users"/>
 
         <!-- Broadcast receivers -->
@@ -97,10 +120,13 @@
                 <action android:name="android.net.conn.BACKGROUND_DATA_SETTING_CHANGED"/>
             </intent-filter>
         </receiver>
-
-        <!-- Other -->
-        <meta-data android:name="android.app.default_searchable"
-            android:value=".ui.SearchActivity" />
+        <receiver android:name=".service.NotificationActionReceiver"
+            android:permission="${applicationId}.permission.NOTIFICATION_ACTION">
+            <intent-filter>
+                <action android:name="org.kontalk.ACTION_NOTIFICATION_DELETED"/>
+                <action android:name="org.kontalk.ACTION_NOTIFICATION_MARK_READ"/>
+            </intent-filter>
+        </receiver>
 
         <!-- Activities -->
         <activity android:name=".ui.ConversationsActivity"
@@ -110,22 +136,31 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
+            <meta-data android:name="android.app.default_searchable"
+                android:value="org.kontalk.ui.SearchActivity" />
         </activity>
 
-        <activity android:name=".ui.SearchActivity">
+        <activity android:name=".ui.SearchActivity"
+              android:parentActivityName=".ui.ConversationsActivity"
+              tools:targetApi="jelly_bean">
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <meta-data android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.kontalk.ui.ConversationsActivity" />
         </activity>
 
         <activity android:name=".ui.ComposeMessage"
             android:launchMode="singleTop"
             android:configChanges="keyboardHidden"
-            android:windowSoftInputMode="stateHidden">
-            <intent-filter>
+            android:windowSoftInputMode="stateHidden"
+            android:parentActivityName=".ui.ConversationsActivity"
+            tools:targetApi="jelly_bean">
+        <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <data android:mimeType="vnd.android.cursor.item/${applicationId}.user"
@@ -163,13 +198,36 @@
                 <data android:scheme="sms" />
                 <data android:scheme="smsto" />
             </intent-filter>
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.kontalk.ui.ConversationsActivity" />
+            <meta-data
+                android:name="android.service.chooser.chooser_target_service"
+                android:value="org.kontalk.service.DirectShareTargetService" />
         </activity>
 
-        <activity android:name=".ui.PreferencesActivity">
+        <activity android:name=".ui.prefs.PreferencesActivity"
+              android:parentActivityName=".ui.ConversationsActivity"
+              tools:targetApi="jelly_bean">
             <intent-filter>
                 <action android:name="android.intent.action.MANAGE_NETWORK_USAGE" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.kontalk.ui.ConversationsActivity" />
+        </activity>
+
+        <activity android:name=".ui.prefs.NotificationPreferencesActivity"
+              android:parentActivityName=".ui.ConversationsActivity"
+              tools:targetApi="jelly_bean">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.NOTIFICATION_PREFERENCES" />
+            </intent-filter>
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.kontalk.ui.ConversationsActivity" />
         </activity>
 
         <activity android:name=".ui.NumberValidation"/>
@@ -177,15 +235,56 @@
         <activity android:name=".ui.CodeValidation"/>
 
         <activity android:name=".ui.ContactsListActivity"
-            android:label="@string/contacts_list_title"/>
+            android:label="@string/contacts_list_title"
+            android:parentActivityName=".ui.ConversationsActivity"
+            tools:targetApi="jelly_bean">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.kontalk.ui.ConversationsActivity" />
+        </activity>
 
         <activity android:name=".ui.StatusActivity"
-            android:label="@string/status_activity_title"/>
+            android:label="@string/status_activity_title"
+            android:parentActivityName=".ui.ConversationsActivity"
+            tools:targetApi="jelly_bean">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.kontalk.ui.ConversationsActivity" />
+        </activity>
 
-        <activity android:name=".ui.AboutActivity"/>
+        <activity android:name=".ui.AboutActivity"
+            android:parentActivityName=".ui.ConversationsActivity"
+            tools:targetApi="jelly_bean">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.kontalk.ui.ConversationsActivity" />
+        </activity>
 
         <activity android:name=".ui.MyKeyActivity"
-            android:label="@string/mykey_activity_title"/>
+            android:label="@string/mykey_activity_title"
+            android:parentActivityName=".ui.ConversationsActivity"
+            tools:targetApi="jelly_bean">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.kontalk.ui.ConversationsActivity" />
+        </activity>
+
+        <activity android:name=".ui.GroupInfoActivity"
+            android:label="@string/groupinfo_activity_title"/>
+
+        <activity android:name=".ui.GroupInfoDialog"
+            android:theme="@style/Theme.Light.Dialog"
+            android:label="@string/groupinfo_activity_title"/>
+
+        <activity android:name=".ui.PositionActivity"
+            android:label="@string/position_screen_title"
+            android:parentActivityName=".ui.ComposeMessage"
+            tools:targetApi="jelly_bean">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.kontalk.ui.ComposeMessage" />
+        </activity>
+
 
         <!--
         <activity android:name=".ui.QuickReplyActivity"

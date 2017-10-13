@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,6 @@ import org.jivesoftware.smackx.xdata.provider.DataFormProvider;
 import android.content.Context;
 
 import org.kontalk.R;
-import org.kontalk.util.NoCacheMiniDnsResolver;
 
 
 /**
@@ -88,11 +87,7 @@ public class SmackInitializer {
         // disable extensions and experimental - we will load our own extensions
         SmackConfiguration.addDisabledSmackClass("org.jivesoftware.smack.extensions.ExtensionsInitializer");
         SmackConfiguration.addDisabledSmackClass("org.jivesoftware.smack.experimental.ExperimentalInitializer");
-        if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.FROYO) {
-            // java.net.IDN, needed by minidns, is not present on API level 8
-            SmackConfiguration.addDisabledSmackClass("org.jivesoftware.smack.util.dns.minidns.MiniDnsResolver");
-            NoCacheMiniDnsResolver.setup();
-        }
+        SmackConfiguration.addDisabledSmackClass("org.jivesoftware.smack.ReconnectionManager");
     }
 
 }

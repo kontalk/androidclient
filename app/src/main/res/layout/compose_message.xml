@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -44,7 +44,6 @@
         <ListView android:id="@android:id/list"
             style="?android:attr/listViewWhiteStyle"
             android:background="@android:color/transparent"
-            android:cacheColorHint="@android:color/transparent"
             android:divider="@null"
             android:dividerHeight="0.0sp"
             android:layout_width="fill_parent"
@@ -53,10 +52,10 @@
             android:drawSelectorOnTop="false"
             android:transcriptMode="normal"
             android:smoothScrollbar="false"
+            android:fadeScrollbars="true"
             android:scrollbarAlwaysDrawVerticalTrack="true"
-            android:fastScrollEnabled="true"
-            android:fastScrollAlwaysVisible="true"
-            android:scrollbarStyle="insideInset"
+            android:fastScrollEnabled="false"
+            android:scrollbarStyle="insideOverlay"
             android:stackFromBottom="true"
             android:fadingEdgeLength="8dp"
             >

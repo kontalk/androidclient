@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -18,7 +18,9 @@
 
 <org.kontalk.ui.view.MessageListItem
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/msg_list_item"
+    android:background="@drawable/list_item_background"
     android:paddingTop="2dip"
     android:paddingBottom="2dip"
     android:paddingLeft="5dp"
@@ -27,14 +29,13 @@
     android:layout_height="wrap_content">
 
     <TextView android:id="@+id/date_header"
+        style="@style/DateHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:textSize="12sp"
-        android:textColor="@color/date_stamp_text"
-        android:background="@drawable/date_stamp"
+        android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
-        android:textAllCaps="true"/>
+        app:textAllCaps="true"/>
 
     <ViewStub android:id="@+id/balloon_stub"
         android:layout_width="fill_parent"

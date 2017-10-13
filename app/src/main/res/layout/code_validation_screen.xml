@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
      Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -19,35 +19,86 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_height="match_parent"
     android:layout_width="match_parent">
     <include layout="@layout/toolbar_simple"/>
     <fr.castorflex.android.smoothprogressbar.SmoothProgressBar
         android:id="@+id/progressbar"
         android:layout_width="match_parent"
-        android:layout_height="4dp"
-        android:layout_alignBottom="@+id/toolbar"
-        android:visibility="gone"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/toolbar"
+        android:visibility="invisible"
         android:indeterminate="true"
         android:interpolator="@anim/progressbar_interpolator"
-        app:spb_color="@color/warning_bar_background_warning"/>
+        app:spb_color="@color/warning_bar_background_warning"
+        tools:ignore="UnknownIdInLayout"/>
 
-    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:scrollbars="vertical"
         android:layout_below="@id/toolbar">
 
         <LinearLayout
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:orientation="vertical"
             android:padding="18dip" >
 
             <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
+                android:id="@+id/brand_poweredby"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingLeft="20dip"
+                android:paddingRight="20dip"
+                android:layout_marginBottom="10dp"
+                android:gravity="center"
+                android:visibility="gone"
+                android:text="@string/registration_poweredby" />
+
+            <FrameLayout android:id="@+id/brand_parent"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:visibility="gone">
+
+                <!-- content description will be added at runtime -->
+                <ImageView
+                    android:id="@+id/brand"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginBottom="10dp"
+                    android:visibility="gone"
+                    android:scaleType="fitCenter"
+                    tools:ignore="ContentDescription"/>
+
+                <ProgressBar
+                    android:id="@+id/brand_loading"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginBottom="10dp"
+                    android:indeterminate="true"
+                    android:visibility="gone"/>
+
+            </FrameLayout>
+
+            <TextView
+                style="?android:attr/textAppearanceLarge"
+                android:id="@+id/brand_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingLeft="20dip"
+                android:paddingRight="20dip"
+                android:layout_marginBottom="10dp"
+                android:linksClickable="true"
+                android:autoLink="web"
+                android:gravity="center"
+                android:visibility="gone"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:paddingLeft="20dip"
                 android:paddingRight="20dip"
                 android:paddingBottom="10dip"
@@ -55,23 +106,37 @@
                 android:text="@string/code_validation_intro" />
 
             <TextView
-                android:id="@+id/code_validation_sender"
+                android:id="@+id/code_validation_phone"
                 style="?android:attr/textAppearanceLarge"
                 android:layout_width="wrap_content"
-                android:layout_height="fill_parent"
+                android:layout_height="match_parent"
                 android:paddingLeft="20dip"
                 android:paddingRight="20dip"
                 android:paddingBottom="10dip"
-                android:layout_marginLeft="-20dp"
-                android:layout_marginStart="-20dp"
                 android:gravity="center"
-                android:drawableLeft="@drawable/ic_menu_call"
-                android:drawableStart="@drawable/ic_menu_call" />
+                android:drawablePadding="8dp"
+                android:drawableLeft="@drawable/ic_menu_call_black"
+                android:drawableStart="@drawable/ic_menu_call_black" />
+
+            <Button
+                android:id="@+id/code_validation_call"
+                style="?android:attr/textAppearanceLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:paddingLeft="30dp"
+                android:paddingStart="30dp"
+                android:paddingRight="30dp"
+                android:paddingEnd="30dp"
+                android:paddingTop="20dp"
+                android:paddingBottom="20dp"
+                android:layout_marginBottom="10dp"
+                android:visibility="gone"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/code_validation_intro2"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:paddingLeft="20dip"
                 android:paddingRight="20dip"
                 android:paddingBottom="10dip"
@@ -87,17 +152,63 @@
 
             <Button
                 android:id="@+id/send_button"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:onClick="validateCode"
                 android:text="@string/button_validation_register" />
 
             <Button
                 android:id="@+id/fallback_button"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:onClick="doFallback"
+                android:visibility="gone"
                 android:text="@string/button_validation_fallback" />
+
+            <TextView
+                android:id="@+id/code_validation_intro3"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingLeft="20dip"
+                android:paddingRight="20dip"
+                android:paddingTop="10dip"
+                android:text="@string/code_validation_intro3" />
+
+            <!--
+            <TextView
+                android:id="@+id/brand_poweredby"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingLeft="20dip"
+                android:paddingRight="20dip"
+                android:layout_marginTop="10dip"
+                android:gravity="center"
+                android:visibility="gone"
+                android:text="@string/registration_poweredby" />
+
+            - content description will be added at runtime -
+            <ImageView
+                android:id="@+id/brand"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:paddingLeft="20dip"
+                android:paddingRight="20dip"
+                android:layout_marginBottom="10dp"
+                android:visibility="gone"
+                tools:ignore="ContentDescription"/>
+
+            <TextView
+                android:id="@+id/brand_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingLeft="20dip"
+                android:paddingRight="20dip"
+                android:layout_marginBottom="10dp"
+                android:gravity="center"
+                android:linksClickable="true"
+                android:autoLink="web"
+                android:visibility="gone"/>
+            -->
 
         </LinearLayout>
 

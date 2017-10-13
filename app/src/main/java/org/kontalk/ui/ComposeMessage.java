@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,22 +18,7 @@
 
 package org.kontalk.ui;
 
-import java.util.ArrayList;
 import java.util.regex.Pattern;
-
-import org.kontalk.Kontalk;
-import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.NumberValidator;
-import org.kontalk.data.Conversation;
-import org.kontalk.message.ImageComponent;
-import org.kontalk.message.TextComponent;
-import org.kontalk.message.VCardComponent;
-import org.kontalk.provider.MyMessages.Threads;
-import org.kontalk.provider.MyMessages.Threads.Conversations;
-import org.kontalk.util.MediaStorage;
-import org.kontalk.util.MessageUtils;
-import org.kontalk.util.XMPPUtils;
 
 import android.content.ContentUris;
 import android.content.Context;
@@ -41,21 +26,33 @@ import android.content.Intent;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.StyleSpan;
-import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
+
+import org.kontalk.Kontalk;
+import org.kontalk.Log;
+import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
+import org.kontalk.client.NumberValidator;
+import org.kontalk.data.Conversation;
+import org.kontalk.message.TextComponent;
+import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.provider.MyMessages.Threads.Conversations;
+import org.kontalk.util.MessageUtils;
+import org.kontalk.util.SystemUtils;
+import org.kontalk.util.XMPPUtils;
 
 
 /**
  * Conversation writing activity.
  * @author Daniele Ricci
- * @version 1.0
  */
 public class ComposeMessage extends ToolbarActivity implements ComposeMessageParent {
     public static final String TAG = ComposeMessage.class.getSimpleName();
@@ -73,16 +70,30 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     public static final String EXTRA_MESSAGE = "org.kontalk.conversation.MESSAGE";
     /** Used with VIEW actions, highlight a {@link Pattern} in messages. */
     public static final String EXTRA_HIGHLIGHT = "org.kontalk.conversation.HIGHLIGHT";
+    /** Used with SEND actions sent via direct share. */
+    public static final String EXTRA_USERID = "org.kontalk.conversation.USERID";
+    /** Used internally when reloading: does not trigger scroll-to-match. */
+    static final String EXTRA_RELOADING = "org.kontalk.conversation.RELOADING";
+    /** Set to true for showing the group chat on creation disclaimer. */
+    static final String EXTRA_CREATING_GROUP = "org.kontalk.CREATING_GROUP";
 
     /** The SEND intent. */
     private Intent sendIntent;
+    /** The SEND intent from direct share. */
+    private Intent directSendIntent;
 
-    private ComposeMessageFragment mFragment;
+    AbstractComposeFragment mFragment;
 
     /**
      * True if the window has lost focus the last time
      * {@link #onWindowFocusChanged} was called. */
     private boolean mLostFocus;
+    /**
+     * This is set to true in {@link #onResume} and to false in {@link #onPause}.
+     * It is checked in {@link #onWindowFocusChanged} to ensure that the activity is indeed
+     * visible before granting focus capabilities.
+     */
+    private boolean mResumed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,16 +103,23 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
 
         setupActionBar();
 
-        // load the fragment
-        mFragment = (ComposeMessageFragment) getSupportFragmentManager()
-            .findFragmentById(R.id.fragment_compose_message);
+        if (savedInstanceState != null) {
+            mFragment = (AbstractComposeFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_compose_message);
+        }
 
-        Bundle args = processIntent(savedInstanceState);
-        mFragment.setMyArguments(args);
+        if (mFragment == null) {
+            // build chat fragment
+            AbstractComposeFragment f = getComposeFragment(savedInstanceState);
+            if (f != null) {
+                // insert it into the activity
+                setComposeFragment(f);
+            }
+        }
     }
 
     private void setupActionBar() {
-        Toolbar toolbar = super.setupToolbar(true);
+        Toolbar toolbar = super.setupToolbar(true, true);
         // TODO find a way to use a colored selector
         toolbar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -113,16 +131,41 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int itemId = item.getItemId();
+    protected boolean isNormalUpNavigation() {
+        return false;
+    }
 
-        switch (itemId) {
-            case android.R.id.home:
-                onHomeClick();
-                return true;
+    private void setComposeFragment(@NonNull AbstractComposeFragment f) {
+        mFragment = f;
+        getSupportFragmentManager().beginTransaction()
+            .replace(R.id.fragment_compose_message, f)
+            .setTransition(FragmentTransaction.TRANSIT_NONE)
+            .commitNowAllowingStateLoss();
+    }
+
+    @Override
+    public void loadConversation(long threadId, boolean creatingGroup) {
+        // create bootstrap intent
+        setIntent(ComposeMessage.fromConversation(this, threadId, creatingGroup));
+        loadConversation();
+    }
+
+    @Override
+    public void loadConversation(Uri threadUri) {
+        onNewIntent(fromThreadUri(this, threadUri));
+    }
+
+    public void loadConversation() {
+        // build chat fragment
+        AbstractComposeFragment f = getComposeFragment(null);
+        if (f != null) {
+            // insert it into the activity
+            setComposeFragment(f);
         }
-
-        return super.onOptionsItemSelected(item);
+        else {
+            // conversation disappeared
+            finish();
+        }
     }
 
     @Override
@@ -158,14 +201,46 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
             super.onBackPressed();
     }
 
-    private void onHomeClick() {
-        finish();
-        startActivity(new Intent(this, ConversationsActivity.class));
+    public void onTitleClick() {
+        if (mFragment instanceof ComposeMessageFragment)
+            ((ComposeMessageFragment) mFragment).viewContact();
+        else if (mFragment instanceof GroupMessageFragment)
+            ((GroupMessageFragment) mFragment).viewGroupInfo();
     }
 
-    public void onTitleClick() {
-        if (mFragment != null)
-            mFragment.viewContact();
+    private AbstractComposeFragment getComposeFragment(Bundle savedInstanceState) {
+        Bundle args = processIntent(savedInstanceState);
+        if (args != null) {
+            AbstractComposeFragment f = null;
+            Uri threadUri = args.getParcelable("data");
+            String action = args.getString("action");
+            if (ACTION_VIEW_CONVERSATION.equals(action)) {
+                long threadId = ContentUris.parseId(threadUri);
+                Conversation conv = Conversation.loadFromId(this, threadId);
+                if (conv != null) {
+                    f = conv.isGroupChat() ?
+                        new GroupMessageFragment() :
+                        new ComposeMessageFragment();
+                }
+            }
+            else if (ACTION_VIEW_USERID.equals(action)) {
+                String userId =  threadUri.getLastPathSegment();
+                Conversation conv = Conversation.loadFromUserId(this, userId);
+                f = conv != null && conv.isGroupChat() ?
+                    new GroupMessageFragment() :
+                    new ComposeMessageFragment();
+            }
+            else {
+                // default to a single user chat
+                f = new ComposeMessageFragment();
+            }
+
+            if (f != null)
+                f.setArguments(args);
+            return f;
+        }
+
+        return null;
     }
 
     private Bundle processIntent(Bundle savedInstanceState) {
@@ -174,6 +249,11 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
             mLostFocus = savedInstanceState.getBoolean("lostFocus");
 
             Uri uri = savedInstanceState.getParcelable(Uri.class.getName());
+            if (uri == null) {
+                Log.d(TAG, "restoring non-loaded conversation, aborting");
+                finish();
+                return null;
+            }
             intent = new Intent(ACTION_VIEW_USERID, uri);
         }
         else {
@@ -193,10 +273,9 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
                 Uri uri = intent.getData();
 
                 // two-panes UI: start conversation list
-                if (Kontalk.hasTwoPanesUI(this) && Intent.ACTION_VIEW.equals(action)) {
-                    Intent startIntent = new Intent(getApplicationContext(), ConversationsActivity.class);
-                    startIntent.setAction(Intent.ACTION_VIEW);
-                    startIntent.setData(uri);
+                if (Kontalk.hasTwoPanesUI(this)) {
+                    Intent startIntent = new Intent(action, uri,
+                        getApplicationContext(), ConversationsActivity.class);
                     startActivity(startIntent);
                     // no need to go further
                     finish();
@@ -209,19 +288,28 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
                     args.putParcelable("data", uri);
                     args.putLong(EXTRA_MESSAGE, intent.getLongExtra(EXTRA_MESSAGE, -1));
                     args.putString(EXTRA_HIGHLIGHT, intent.getStringExtra(EXTRA_HIGHLIGHT));
+                    args.putBoolean(EXTRA_CREATING_GROUP, intent.getBooleanExtra(EXTRA_CREATING_GROUP, false));
                 }
             }
 
             // send external content
             else if (Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) {
-                sendIntent = intent;
                 String mime = intent.getType();
 
                 Log.i(TAG, "sending data to someone: " + mime);
-                chooseContact();
 
-                // onActivityResult will handle the rest
-                return null;
+                String userId = intent.getStringExtra(EXTRA_USERID);
+                if (userId != null) {
+                    handleSendResult(userId, intent);
+                    // we'll handle directSendIntent later
+                    return null;
+                }
+                else {
+                    sendIntent = intent;
+                    chooseContact();
+                    // onActivityResult will handle the rest
+                    return null;
+                }
             }
 
             // send to someone
@@ -273,19 +361,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
                 if (threadUri != null) {
                     Log.i(TAG, "composing message for conversation: " + threadUri);
                     String userId = threadUri.getLastPathSegment();
-                    Intent i = fromUserId(this, userId);
-                    if (i != null) {
-                        onNewIntent(i);
-
-                        // process SEND intent if necessary
-                        if (sendIntent != null)
-                            processSendIntent();
-                    }
-                    else {
-                        Toast.makeText(this, R.string.contact_not_registered, Toast.LENGTH_LONG)
-                            .show();
-                        finish();
-                    }
+                    handleSendResult(userId, null);
                 }
             }
             else {
@@ -298,7 +374,42 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
         }
     }
 
+    private void handleSendResult(String userId, Intent directShareIntent) {
+        Intent i = fromUserId(this, userId);
+        if (i != null) {
+            if (Kontalk.hasTwoPanesUI(this)) {
+                // we need to go back to the main activity
+                Intent startIntent = new Intent(getApplicationContext(), ConversationsActivity.class);
+                startIntent.setAction(ACTION_VIEW_USERID);
+                startIntent.setData(Threads.getUri(userId));
+                startIntent.putExtra(ConversationsActivity.EXTRA_SEND_INTENT,
+                    directShareIntent != null ? directShareIntent : sendIntent);
+                startActivity(startIntent);
+                finish();
+            }
+            else {
+                onNewIntent(i);
+
+                // process SEND intent if necessary
+                if (sendIntent != null)
+                    processSendIntent();
+                // otherwise save direct share intent for later
+                else if (directShareIntent != null)
+                    directSendIntent = directShareIntent;
+            }
+        }
+        else {
+            Toast.makeText(this, R.string.contact_not_registered, Toast.LENGTH_LONG)
+                .show();
+            finish();
+        }
+    }
+
     public static Intent fromUserId(Context context, String userId) {
+        return fromUserId(context, userId, false);
+    }
+
+    public static Intent fromUserId(Context context, String userId, boolean creatingGroup) {
         Conversation conv = Conversation.loadFromUserId(context, userId);
         // not found - create new
         if (conv == null) {
@@ -308,32 +419,57 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
             return ni;
         }
 
+        return fromConversation(context, conv, creatingGroup);
+    }
+
+    public static Intent fromThreadUri(Context context, Uri threadUri) {
+        String userId = threadUri.getLastPathSegment();
+        Conversation conv = Conversation.loadFromUserId(context, userId);
+        // not found - create new
+        if (conv == null) {
+            Intent ni = new Intent(context, ComposeMessage.class);
+            ni.setAction(ComposeMessage.ACTION_VIEW_USERID);
+            ni.setData(threadUri);
+            return ni;
+        }
+
         return fromConversation(context, conv);
     }
 
     /** Creates an {@link Intent} for launching the composer for a given {@link Conversation}. */
     public static Intent fromConversation(Context context, Conversation conv) {
-        return fromConversation(context, conv.getThreadId());
+        return fromConversation(context, conv, false);
+    }
+
+    /** Creates an {@link Intent} for launching the composer for a given {@link Conversation}. */
+    public static Intent fromConversation(Context context, Conversation conv, boolean creatingGroup) {
+        return fromConversation(context, conv.getThreadId(), creatingGroup);
     }
 
     /** Creates an {@link Intent} for launching the composer for a given thread Id. */
     public static Intent fromConversation(Context context, long threadId) {
-        return new Intent(ComposeMessage.ACTION_VIEW_CONVERSATION,
-                ContentUris.withAppendedId(Conversations.CONTENT_URI,
-                        threadId),
+        return fromConversation(context, threadId, false);
+    }
+
+    /** Creates an {@link Intent} for launching the composer for a given thread Id. */
+    public static Intent fromConversation(Context context, long threadId, boolean creatingGroup) {
+        Intent i = new Intent(ComposeMessage.ACTION_VIEW_CONVERSATION,
+                ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId),
                 context, ComposeMessage.class);
+        i.putExtra(EXTRA_CREATING_GROUP, creatingGroup);
+        return i;
     }
 
     /** Creates an {@link Intent} for sending a text message. */
     public static Intent sendTextMessage(String text) {
-        Intent i = new Intent(Intent.ACTION_SEND);
+        Intent i = SystemUtils.externalIntent(Intent.ACTION_SEND);
         i.setType(TextComponent.MIME_TYPE);
         i.putExtra(Intent.EXTRA_TEXT, text);
         return i;
     }
 
     public static Intent sendMediaMessage(Uri uri, String mime) {
-        Intent i = new Intent(Intent.ACTION_SEND);
+        Intent i = SystemUtils.externalIntent(Intent.ACTION_SEND);
         i.setType(mime);
         i.putExtra(Intent.EXTRA_STREAM, uri);
         return i;
@@ -346,101 +482,53 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
         startActivityForResult(i, REQUEST_CONTACT_PICKER);
     }
 
-    private void sendMedia(Uri uri) {
-        Log.d(TAG, "looking up mime type for uri " + uri);
-        String mime = MediaStorage.getType(this, uri);
-        Log.d(TAG, "using detected mime type " + mime);
-
-        if (ImageComponent.supportsMimeType(mime)) {
-            // send image immediately
-            mFragment.sendBinaryMessage(uri, mime, true, ImageComponent.class);
-        }
-
-        else if (VCardComponent.supportsMimeType(mime)) {
-            mFragment.sendBinaryMessage(uri, mime, true, VCardComponent.class);
-        }
-
-        else {
-            // notify to user
-            Log.w(TAG, "mime " + mime + " not supported");
-            Toast.makeText(this, R.string.send_mime_not_supported, Toast.LENGTH_LONG)
-                .show();
-        }
-    }
-
     private void processSendIntent() {
-        String mime = sendIntent.getType();
-        boolean multi = Intent.ACTION_SEND_MULTIPLE.equals(sendIntent.getAction());
-
-        if (multi) {
-            // multiple texts: take only the first one
-            // FIXME this will not allow text file attachments
-            if (TextComponent.supportsMimeType(mime)) {
-                ArrayList<CharSequence> texts = sendIntent.getCharSequenceArrayListExtra(Intent.EXTRA_TEXT);
-                if (texts != null && texts.size() > 0)
-                    mFragment.setTextEntry(texts.get(0));
-            }
-
-            else {
-                ArrayList<Uri> uris = sendIntent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-                if (uris != null) {
-                    for (Uri uri : uris) {
-                        sendMedia(uri);
-                    }
-                }
-            }
-        }
-
-        else {
-            // FIXME this will not allow text file attachments
-            if (TextComponent.supportsMimeType(mime)) {
-                CharSequence text = sendIntent.getCharSequenceExtra(Intent.EXTRA_TEXT);
-                mFragment.setTextEntry(text);
-            }
-
-            else {
-                Uri uri = sendIntent.getParcelableExtra(Intent.EXTRA_STREAM);
-                if (uri != null)
-                    sendMedia(uri);
-            }
-        }
-
+        SendIntentReceiver.processSendIntent(this, sendIntent, mFragment);
         sendIntent = null;
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
         setIntent(intent);
-        Bundle args = processIntent(null);
-        if (args != null) {
-            mFragment.setMyArguments(args);
-            mFragment.reload();
-        }
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle state) {
-        super.onRestoreInstanceState(state);
-        Bundle args = processIntent(state);
-        if (args != null) {
-            mFragment.setMyArguments(args);
-        }
+        loadConversation();
     }
 
     @Override
     protected void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
-        out.putParcelable(Uri.class.getName(), Threads.getUri(mFragment.getUserId()));
+        if (mFragment != null)
+            out.putParcelable(Uri.class.getName(), Threads.getUri(mFragment.getUserId()));
         out.putBoolean("lostFocus", mLostFocus);
+    }
+
+    @Override
+    protected void onResumeFragments() {
+        super.onResumeFragments();
+        if (directSendIntent != null) {
+            SendIntentReceiver.processSendIntent(this, directSendIntent, mFragment);
+            directSendIntent = null;
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mResumed = true;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mResumed = false;
     }
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
 
-        if (hasFocus) {
+        if (hasFocus && mResumed) {
             if (mLostFocus) {
-                mFragment.onFocus(true);
+                mFragment.onFocus();
                 mLostFocus = false;
             }
         }

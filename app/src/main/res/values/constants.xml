@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
      Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -19,16 +19,22 @@
 
 <resources>
     <string name="website" translatable="false">www.kontalk.org</string>
-	<string name="mailto" translatable="false">devteam@kontalk.org</string>
-	<string name="facebook_link" translatable="false">http://www.facebook.com/kontalknet</string>
-	<string name="facebook_profile" translatable="false">fb://profile/337867392917587</string>
-	<string name="googleplus_link" translatable="false">https://plus.google.com/u/0/102201749813756709299</string>
-	<string name="twitter_link" translatable="false">https://twitter.com/kontalknet</string>
-	<string name="identica_link" translatable="false">https://identi.ca/kontalknet</string>
+    <string name="mailto" translatable="false">devteam@kontalk.org</string>
+    <string name="forum" translatable="false">forum.kontalk.org</string>
+    <string name="irc_link" translatable="false">irc://chat.freenode.net/kontalk</string>
+    <string name="facebook_link" translatable="false">http://www.facebook.com/kontalknet</string>
+    <string name="facebook_profile" translatable="false">fb://profile/337867392917587</string>
+    <string name="googleplus_link" translatable="false">https://plus.google.com/u/0/102201749813756709299</string>
+    <string name="twitter_link" translatable="false">https://twitter.com/kontalknet</string>
+    <string name="identica_link" translatable="false">https://identi.ca/kontalknet</string>
     <string name="netsite" translatable="false">www.kontalk.net</string>
     <string name="bitcoin_address" translatable="false">14vipppSvCG7VdvoYmbhKZ8DbTfv9U1QfS</string>
     <string name="flattr_url" translatable="false">http://flattr.com/thing/1194909/Kontalk-network</string>
     <string name="paypal_url" translatable="false">https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=VU57LMG64GATN</string>
     <string name="devteam" translatable="false">Kontalk devteam</string>
     <string name="help_url" translatable="false">https://github.com/kontalk/androidclient/wiki</string>
+    <string name="help_import_key" translatable="false">https://github.com/kontalk/androidclient/wiki/Export-personal-key-to-another-device</string>
+    <!-- Unfortunately there is no authoritative documentation on this -->
+    <string name="help_huawei_protected_apps">https://android.stackexchange.com/a/152662/155232</string>
+    <string name="help_doze_whitelist" translatable="false">https://github.com/kontalk/androidclient/wiki/Battery-optimization-mode</string>
 </resources>

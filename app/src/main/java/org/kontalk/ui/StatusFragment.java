@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ public class StatusFragment extends ListFragment implements View.OnClickListener
 
         mStatus = (EditText) view.findViewById(android.R.id.input);
         // TODO retrieve current status from server?
-        mStatus.setText(Preferences.getStatusMessage(getActivity()));
+        mStatus.setText(Preferences.getStatusMessage());
 
         view.findViewById(R.id.button_ok).setOnClickListener(this);
         view.findViewById(R.id.button_cancel).setOnClickListener(this);
@@ -98,7 +98,7 @@ public class StatusFragment extends ListFragment implements View.OnClickListener
         if (parent != null) {
             if (text.trim().length() <= 0)
                 text = text.trim();
-            Preferences.setStatusMessage(parent, text);
+            Preferences.setStatusMessage(text);
             Preferences.addRecentStatusMessage(parent, text);
 
             // start the message center to push the status message

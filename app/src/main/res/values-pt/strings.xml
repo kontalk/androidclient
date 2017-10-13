@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -59,7 +59,6 @@
   <string name="confirm_delete_thread">Apagar tópico</string>
   <string name="confirm_will_delete_thread">O tópico inteiro será apagado.</string>
   <string name="new_messages">Novas mensagens</string>
-  <string name="unread_messages">%d mensagens não lidas</string>
   <string name="only_one_account_supported">Somente uma conta Kontalk é suportada.</string>
   <string name="send">Enviar</string>
   <string name="hint_enter_text">Insira o seu texto aqui</string>
@@ -99,13 +98,10 @@
   <string name="pref_messaging_settings">Configurações de mensagens</string>
   <string name="pref_privacy_settings">Configurações de privacidade</string>
   <string name="pref_encrypt">Criptografar mensagens</string>
-  <string name="pref_title_on_encrypt">Todas as mensagens serão criptografadas a partir de agora </string>
-  <string name="pref_title_off_encrypt">Todas as mensagens serão enviadas sem criptografar daqui em diante</string>
   <string name="pref_encrypt_userdata">Criptografar dados pessoais</string>
   <string name="pref_title_on_encrypt_userdata">A mensagem de estado será visível apenas quando os usuários/as tiverem o seu número de telefone</string>
   <string name="pref_title_off_encrypt_userdata">A mensagem de estado será visível para qualquer pessoa</string>
   <string name="pref_auto_accept_subscriptions">Aceitar os convites automaticamente</string>
-  <string name="pref_title_auto_accept_subscriptions">Aceitar automaticamente convites de conversa de outros usuários</string>
   <string name="pref_send_typing">Enviar notificação de digitação</string>
   <string name="pref_hide_presence">Ocultar presença</string>
   <string name="pref_title_on_hide_presence">Os usuários/as não vão vê-lo conectado</string>
@@ -196,8 +192,6 @@
   <string name="pref_custom_background">Fundo personalizado</string>
   <string name="pref_background_uri">Fundo</string>
   <string name="pref_title_background_uri">Defina uma imagem personalizada às conversações</string>
-  <string name="pref_title_off_custom_background">Usando fundo padrão</string>
-  <string name="pref_title_on_custom_background">Escolha um fundo usando a opção abaixo</string>
   <string name="err_attachment_corrupted">Não foi possível transferir o anexo. A mensagem deve estar corrompida.</string>
   <string name="serverlist_updating">A actualizar a lista de servidores…</string>
   <string name="serverlist_update_error">Não foi possível baixar a lista de servidores. Por favor, tente mais tarde.</string>
@@ -205,7 +199,6 @@
   <string name="pref_remove_prefix">Prefixo de marcação</string>
   <string name="pref_title_remove_prefix">Apague algum prefixo de marcação no Kontalk para os números de telefone coincidirem corretamente</string>
   <string name="pref_export_keypair">Exportar a chave pessoal</string>
-  <string name="pref_title_export_keypair">Exportar chave pessoal e certificado de login para armazenamento externo</string>
   <string name="msg_status_sending">A enviar</string>
   <string name="msg_status_sent">Enviada</string>
   <string name="msg_status_notaccepted">Rejeitada</string>
@@ -213,7 +206,6 @@
   <string name="msg_status_delivered">Recebida</string>
   <string name="msg_status_encrypted">Criptografada</string>
   <string name="pref_balloons">Tema do balão da conversa</string>
-  <string name="pref_title_balloons">Escolha um tema para os balões da conversa</string>
   <string name="attachment_picture">Imagem</string>
   <string name="attachment_contact">Contacto</string>
   <string name="chooser_send_picture">Enviar imagem</string>
@@ -259,4 +251,8 @@
   <string name="title_invitation">Convite de conversa</string>
   <string name="button_accept">Aceitar</string>
   <string name="button_block">Bloquear</string>
+  <plurals name="unread_messages">
+    <item quantity="one">%d mensagens não lidas</item>
+    <item quantity="other">%d mensagens não lidas</item>
+  </plurals>
 </resources>

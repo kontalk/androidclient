@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kontalk Android client
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- actions -->
+    <item android:icon="@drawable/ic_menu_attach" android:title="@string/menu_attachment" android:id="@+id/menu_attachment" app:showAsAction="always"/>
+    <item android:icon="@drawable/ic_menu_invite" android:title="@string/menu_invite_group" android:id="@+id/invite_group" app:showAsAction="ifRoom"/>
+    <item android:icon="@drawable/ic_menu_info_details" android:title="@string/menu_group_info" android:id="@+id/group_info" app:showAsAction="ifRoom"/>
+
+    <!-- menu -->
+    <item android:icon="@drawable/ic_menu_chat" android:title="@string/menu_set_group_subject" android:id="@+id/group_subject"/>
+    <item android:icon="@drawable/ic_menu_delete" android:title="@string/delete_thread_messages" android:id="@+id/delete_thread"/>
+    <item android:icon="@drawable/ic_menu_exit" android:title="@string/menu_leave_group" android:id="@+id/leave_group"/>
+</menu>

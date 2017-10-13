@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -23,15 +23,12 @@
     android:orientation="horizontal"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="5dip"
-    android:paddingBottom="3dip"
-    android:paddingLeft="5dip"
-    android:paddingRight="3dip">
+    android:background="?attr/colorBackgroundFloating">
 
     <ImageButton
         android:id="@+id/emoji_button"
-        style="?android:attr/buttonStyle"
-        android:src="@drawable/ic_emoji_dark"
+        style="?attr/borderlessButtonStyle"
+        android:src="@drawable/ic_emoji"
         android:adjustViewBounds="false"
         android:drawablePadding="0dip"
         android:layout_width="48dp"
@@ -42,29 +39,30 @@
         android:contentDescription="@string/menu_smileys" />
 
     <com.rockerhieu.emojicon.EmojiconEditText
-        android:textColor="@android:color/black"
         android:id="@+id/text_editor"
         android:layout_width="0dip"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_gravity="bottom"
-        android:autoText="true"
+        android:textColor="?android:textColorPrimary"
         android:textSize="16sp"
         android:layout_toRightOf="@id/emoji_button"
+        android:layout_toEndOf="@id/emoji_button"
         android:layout_toLeftOf="@id/send_button"
+        android:layout_toStartOf="@id/send_button"
         android:layout_alignParentTop="true"
         app:emojiconSize="@dimen/emoji_edittext_size"
-        android:capitalize="sentences"
         android:nextFocusRight="@+id/send_button"
         android:hint="@string/hint_enter_text"
         android:minHeight="48dip"
         android:inputType="textAutoCorrect|textCapSentences|textMultiLine"
-        android:imeOptions="actionSend|flagNoEnterAction"
+        android:imeOptions="actionSend|flagNoEnterAction|flagNoExtractUi|flagNoFullscreen"
         />
 
     <org.kontalk.ui.FrameLayoutFixed
         android:layout_height="48dp"
         android:layout_width="fill_parent"
+        android:layout_toStartOf="@+id/audio_send_button"
         android:layout_toLeftOf="@+id/audio_send_button"
         android:background="@android:color/white"
         android:id="@+id/record_layout"
@@ -75,6 +73,7 @@
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:layout_gravity="center"
+            android:layout_marginStart="30dp"
             android:layout_marginLeft="30dp"
             android:orientation="horizontal"
             android:id="@+id/slide_text">
@@ -89,8 +88,9 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#999999"
-                android:textSize="12dp"
+                android:textColor="?android:textColorSecondary"
+                android:textSize="12sp"
+                android:layout_marginStart="6dp"
                 android:layout_marginLeft="6dp"
                 android:text="@string/slide_to_cancel"
                 android:id="@+id/slide_to_cancel"
@@ -102,6 +102,7 @@
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:layout_gravity="center_vertical"
+            android:paddingStart="13dp"
             android:paddingLeft="13dp"
             android:orientation="horizontal"
             android:background="@android:color/white">
@@ -110,7 +111,7 @@
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:id="@+id/rec_image"
-                android:src="@drawable/bar_rec"
+                android:src="@drawable/ic_rec"
                 android:layout_gravity="center_vertical"
                 android:layout_marginTop="1dp"/>
 
@@ -118,9 +119,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/recording_time"
-                android:textColor="#4d4c4b"
-                android:textSize="16dp"
+                android:textColor="?android:textColorPrimary"
+                android:textSize="16sp"
                 android:layout_gravity="center_vertical"
+                android:layout_marginStart="6dp"
                 android:layout_marginLeft="6dp"/>
 
         </LinearLayout>
@@ -129,28 +131,32 @@
 
     <ImageButton
         android:id="@+id/send_button"
-        style="?android:attr/buttonStyle"
+        style="?attr/borderlessButtonStyle"
         android:src="@drawable/send_button_selector"
         android:drawablePadding="0dip"
-        android:layout_width="wrap_content"
+        android:layout_width="60dip"
         android:layout_height="wrap_content"
         android:minHeight="48dip"
         android:layout_alignBottom="@id/text_editor"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:contentDescription="@string/send"
         android:nextFocusLeft="@+id/text_editor" />
 
     <ImageButton
         android:id="@+id/audio_send_button"
-        style="?android:attr/buttonStyle"
+        style="?attr/borderlessButtonStyle"
         android:src="@drawable/ptt_button_state"
-        android:layout_width="wrap_content"
+        android:layout_width="60dip"
         android:layout_height="wrap_content"
         android:visibility="invisible"
         android:minHeight="48dip"
         android:drawablePadding="0dip"
+        android:adjustViewBounds="false"
         android:layout_alignLeft="@id/send_button"
+        android:layout_alignStart="@id/send_button"
         android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_alignBottom="@+id/text_editor"/>
 
 </org.kontalk.ui.view.ComposerBar>

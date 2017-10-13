@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,9 +47,9 @@ public interface MessageListItemTheme {
 
     void setSecurityFlags(int securityFlags);
 
-    void setIncoming(Contact contact);
+    void setIncoming(Contact contact, boolean sameMessageBlock);
 
-    void setOutgoing(Contact contact, int status);
+    void setOutgoing(Contact contact, int status, boolean sameMessageBlock);
 
     void setTimestamp(CharSequence timestamp);
 

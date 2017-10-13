@@ -1,5 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?><!-- Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kontalk Android client
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -43,6 +44,12 @@
 
     <style name="AvatarListItemSubtitleStyle" parent="android:TextAppearance.Small" />
 
+    <style name="DateHeader">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">?android:attr/textColorPrimaryInverse</item>
+        <item name="android:background">@drawable/date_stamp</item>
+    </style>
+
     <style name="PinnedHeader">
         <item name="android:background">?android:attr/colorBackground</item>
         <item name="android:gravity">center_vertical|left</item>
@@ -52,6 +59,43 @@
         <item name="android:textStyle">bold</item>
         <item name="android:textColor">@color/pinned_header_text</item>
         <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="TextAppearance.CommandMessage.Small" parent="android:TextAppearance.Small">
+        <item name="android:textStyle">italic</item>
+    </style>
+
+    <style name="TextAppearance.CommandMessage" parent="android:TextAppearance">
+        <item name="android:textStyle">italic</item>
+    </style>
+
+    <style name="TextAppearance.CommandMessage.Large" parent="android:TextAppearance.Large">
+        <item name="android:textStyle">italic</item>
+    </style>
+
+    <style name="TextAppearance.GroupInfo.Title" parent="android:TextAppearance.Medium">
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="AvatarListItemBadgeStyle">
+        <item name="android:layout_marginLeft">@dimen/avatar_chat_margin_start</item>
+        <item name="android:layout_height">@dimen/avatar_chat_size</item>
+        <item name="android:layout_width">@dimen/avatar_chat_size</item>
+    </style>
+
+    <style name="AvatarListItemBadgeStyle.Top" parent="AvatarListItemBadgeStyle">
+        <item name="android:layout_gravity">top</item>
+        <item name="android:layout_marginTop">4dp</item>
+    </style>
+
+    <style name="AvatarListItemBadgeStyle.Bottom" parent="AvatarListItemBadgeStyle">
+        <item name="android:layout_gravity">bottom</item>
+        <item name="android:layout_marginBottom">4dp</item>
+    </style>
+
+    <style name="TextAppearance.RegisterConfirm.Phone" parent="android:TextAppearance">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">24sp</item>
     </style>
 
 </resources>

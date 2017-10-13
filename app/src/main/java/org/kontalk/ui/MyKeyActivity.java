@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,13 +31,13 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.kontalk.Kontalk;
+import org.kontalk.Log;
 import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.util.SystemUtils;
@@ -50,6 +50,7 @@ import org.kontalk.util.SystemUtils;
 public class MyKeyActivity extends ToolbarActivity {
     private static final String TAG = Kontalk.TAG;
 
+    private TextView mAccountName;
     private TextView mTextName;
     private TextView mTextFingerprint;
     private ImageView mQRCode;
@@ -59,8 +60,9 @@ public class MyKeyActivity extends ToolbarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mykey_screen);
 
-        setupToolbar(true);
+        setupToolbar(true, true);
 
+        mAccountName = (TextView) findViewById(R.id.account);
         mTextName = (TextView) findViewById(R.id.name);
         mTextFingerprint = (TextView) findViewById(R.id.fingerprint);
         mQRCode = (ImageView) findViewById(R.id.qrcode);
@@ -69,6 +71,9 @@ public class MyKeyActivity extends ToolbarActivity {
     @Override
     protected void onStart() {
         super.onStart();
+
+        mAccountName.setText(Authenticator.getDefaultAccountName(this));
+
         // load personal key
         PersonalKey key;
         try {
@@ -98,14 +103,8 @@ public class MyKeyActivity extends ToolbarActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+    protected boolean isNormalUpNavigation() {
+        return true;
     }
 
     private Bitmap getQRCodeBitmap(String text) throws WriterException {

@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,19 +18,15 @@
 
 package org.kontalk.provider;
 
-import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.android.providers.contacts.ContactLocaleUtils;
 import com.android.providers.contacts.FastScrollingIndexCache;
 
-import org.jxmpp.util.XmppStringUtils;
-import org.spongycastle.openpgp.PGPException;
-import org.spongycastle.openpgp.PGPPublicKeyRing;
-
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
@@ -51,17 +47,15 @@ import android.provider.BaseColumns;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.RawContacts;
-import android.util.Log;
+import android.support.annotation.NonNull;
+import android.support.annotation.VisibleForTesting;
+import android.support.v4.database.DatabaseUtilsCompat;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
-import org.kontalk.R;
+import org.kontalk.Log;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
-import org.kontalk.crypto.Coder;
-import org.kontalk.crypto.PGP;
-import org.kontalk.crypto.PGPCoder;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers.Keys;
@@ -80,7 +74,8 @@ import org.kontalk.util.XMPPUtils;
 public class UsersProvider extends ContentProvider {
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".users";
 
-    private static final int DATABASE_VERSION = 8;
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    static final int DATABASE_VERSION = 10;
     private static final String DATABASE_NAME = "users.db";
     private static final String TABLE_USERS = "users";
     private static final String TABLE_USERS_OFFLINE = "users_offline";
@@ -90,6 +85,7 @@ public class UsersProvider extends ContentProvider {
     private static final int USERS_JID = 2;
     private static final int KEYS = 3;
     private static final int KEYS_JID = 4;
+    private static final int KEYS_JID_FINGERPRINT = 5;
 
     private long mLastResync;
 
@@ -101,20 +97,18 @@ public class UsersProvider extends ContentProvider {
     private static HashMap<String, String> usersProjectionMap;
     private static HashMap<String, String> keysProjectionMap;
 
-    private static class DatabaseHelper extends SQLiteOpenHelper {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    static class DatabaseHelper extends SQLiteOpenHelper {
         private static final String CREATE_TABLE_USERS = "(" +
             "_id INTEGER PRIMARY KEY," +
-            "hash TEXT NOT NULL UNIQUE," +
+            "jid TEXT NOT NULL UNIQUE," +
             "number TEXT NOT NULL UNIQUE," +
             "display_name TEXT," +
-            "jid TEXT," +
             "lookup_key TEXT," +
             "contact_id INTEGER," +
             "registered INTEGER NOT NULL DEFAULT 0," +
             "status TEXT," +
             "last_seen INTEGER," +
-            "public_key BLOB," +
-            "fingerprint TEXT," +
             "blocked INTEGER NOT NULL DEFAULT 0" +
             ")";
 
@@ -126,21 +120,37 @@ public class UsersProvider extends ContentProvider {
             "CREATE TABLE " + TABLE_USERS_OFFLINE + CREATE_TABLE_USERS;
 
         private static final String CREATE_TABLE_KEYS = "(" +
-            "jid TEXT PRIMARY KEY," +
+            "jid TEXT NOT NULL," +
+            "fingerprint TEXT NOT NULL," +
+            "trust_level INTEGER NOT NULL DEFAULT 0," +
+            "timestamp INTEGER NOT NULL," +  // key creation timestamp
             "public_key BLOB," +
-            "fingerprint TEXT" +
+            "PRIMARY KEY (jid, fingerprint)" +
             ")";
 
         /** This table will contain keys verified (and trusted) by the user. */
         private static final String SCHEMA_KEYS =
             "CREATE TABLE " + TABLE_KEYS + " " + CREATE_TABLE_KEYS;
 
-        private static final String[] SCHEMA_UPGRADE_V7 = {
-            SCHEMA_KEYS,
-            "INSERT INTO " + TABLE_KEYS + " SELECT jid, public_key, fingerprint FROM " + TABLE_USERS,
+        private static final String[] SCHEMA_UPGRADE_V9 = {
+            // online table
+            "CREATE TABLE users_backup " + CREATE_TABLE_USERS,
+            "INSERT INTO users_backup SELECT _id, jid, number, display_name, lookup_key, contact_id, registered, status, last_seen, blocked FROM " + TABLE_USERS,
+            "DROP TABLE " + TABLE_USERS,
+            "ALTER TABLE users_backup RENAME TO " + TABLE_USERS,
+            // offline table
+            "CREATE TABLE users_backup " + CREATE_TABLE_USERS,
+            "INSERT INTO users_backup SELECT _id, jid, number, display_name, lookup_key, contact_id, registered, status, last_seen, blocked FROM " + TABLE_USERS_OFFLINE,
+            "DROP TABLE " + TABLE_USERS_OFFLINE,
+            "ALTER TABLE users_backup RENAME TO " + TABLE_USERS_OFFLINE,
+            // keys table
+            "CREATE TABLE keys_backup " + CREATE_TABLE_KEYS,
+            "INSERT INTO keys_backup SELECT jid, fingerprint, "+Keys.TRUST_VERIFIED+", strftime('%s')*1000, public_key FROM " + TABLE_KEYS + " WHERE fingerprint IS NOT NULL",
+            "DROP TABLE " + TABLE_KEYS,
+            "ALTER TABLE keys_backup RENAME TO " + TABLE_KEYS,
         };
 
-        // any upgrade - just replace the table
+        // any upgrade - just re-create all tables
         private static final String[] SCHEMA_UPGRADE = {
             "DROP TABLE IF EXISTS " + TABLE_USERS,
             SCHEMA_USERS,
@@ -173,9 +183,9 @@ public class UsersProvider extends ContentProvider {
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             switch (oldVersion) {
-                case 7:
-                    // create keys table and trust anyone
-                    for (String sql : SCHEMA_UPGRADE_V7)
+                case 9:
+                    // new keys management
+                    for (String sql : SCHEMA_UPGRADE_V9)
                         db.execSQL(sql);
                     break;
                 default:
@@ -222,7 +232,7 @@ public class UsersProvider extends ContentProvider {
     }
 
     @Override
-    public String getType(Uri uri) {
+    public String getType(@NonNull Uri uri) {
         switch (sUriMatcher.match(uri)) {
             case USERS:
                 return Users.CONTENT_TYPE;
@@ -261,7 +271,11 @@ public class UsersProvider extends ContentProvider {
 
             for (int i = 0; i < count; i++) {
                 cursor.moveToNext();
-                String label = mLocaleUtils.getLabel(cursor.getString(Contact.COLUMN_DISPLAY_NAME));
+                String source = cursor.getString(Contact.COLUMN_DISPLAY_NAME);
+                // use phone number if we don't have a display name
+                if (source == null)
+                    source = cursor.getString(Contact.COLUMN_NUMBER);
+                String label = mLocaleUtils.getLabel(source);
                 Counter counter = groups.get(label);
                 if (counter == null) {
                     counter = new Counter(1);
@@ -294,6 +308,7 @@ public class UsersProvider extends ContentProvider {
      * to a cursor as extras.  It first checks {@link FastScrollingIndexCache} to see if we
      * already have a cached result.
      */
+    @SuppressLint("NewApi")
     private void bundleFastScrollingIndexExtras(UsersCursor cursor, Uri queryUri,
         final SQLiteDatabase db, SQLiteQueryBuilder qb, String selection,
         String[] selectionArgs, String sortOrder, String countExpression) {
@@ -330,8 +345,8 @@ public class UsersProvider extends ContentProvider {
     }
 
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection,
-            String[] selectionArgs, String sortOrder) {
+    public Cursor query(@NonNull Uri uri, String[] projection, String selection,
+                        String[] selectionArgs, String sortOrder) {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         boolean offline = Boolean.parseBoolean(uri.getQueryParameter(Users.OFFLINE));
 
@@ -340,13 +355,10 @@ public class UsersProvider extends ContentProvider {
             // use the same table name as an alias
             String table = offline ? (TABLE_USERS_OFFLINE + " " + TABLE_USERS) :
                 TABLE_USERS;
-            qb.setTables(table +
-                " LEFT OUTER JOIN " + TABLE_KEYS + " ON " +
-                TABLE_USERS + "." + Users.JID + "=" +
-                TABLE_KEYS + "." + Keys.JID);
+            qb.setTables(table);
             qb.setProjectionMap(usersProjectionMap);
         }
-        else if (match == KEYS) {
+        else if (match == KEYS || match == KEYS_JID || match == KEYS_JID_FINGERPRINT) {
             qb.setTables(TABLE_KEYS);
             qb.setProjectionMap(keysProjectionMap);
         }
@@ -356,15 +368,24 @@ public class UsersProvider extends ContentProvider {
                 // nothing to do
                 break;
 
-            case USERS_JID:
+            case USERS_JID: {
                 // TODO append to selection
                 String userId = uri.getPathSegments().get(1);
                 selection = TABLE_USERS + "." + Users.JID + " = ?";
                 selectionArgs = new String[] { userId };
                 break;
+            }
 
             case KEYS:
                 // nothing to do
+                break;
+
+            case KEYS_JID:
+            case KEYS_JID_FINGERPRINT:
+                String userId = uri.getPathSegments().get(1);
+                selection = DatabaseUtilsCompat.concatenateWhere(selection, Keys.JID + "=?");
+                selectionArgs = DatabaseUtilsCompat.appendSelectionArgs(selectionArgs, new String[] { userId });
+                // TODO support for fingerprint in Uri
                 break;
 
             default:
@@ -373,11 +394,12 @@ public class UsersProvider extends ContentProvider {
 
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor c = qb.query(db, projection, selection, selectionArgs, null, null, sortOrder);
-        if (c.getCount() == 0 && match != KEYS) {
-            // request sync
+        if ((match == USERS || match == USERS_JID) && c.getCount() == 0 &&
+                (match != USERS_JID || !XMPPUtils.isDomainJID(uri.getPathSegments().get(1)))) {
+            // empty result set and sync requested
             SyncAdapter.requestSync(getContext(), false);
         }
-        else if (Boolean.parseBoolean(uri.getQueryParameter(Users.EXTRA_INDEX))) {
+        if (Boolean.parseBoolean(uri.getQueryParameter(Users.EXTRA_INDEX)) && c.getCount() > 0) {
             UsersCursor uc = new UsersCursor(c);
             bundleFastScrollingIndexExtras(uc, uri, db, qb, selection, selectionArgs, sortOrder, null);
             c = uc;
@@ -445,7 +467,7 @@ public class UsersProvider extends ContentProvider {
     */
 
     @Override
-    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+    public int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         try {
             boolean isResync = Boolean.parseBoolean(uri.getQueryParameter(Users.RESYNC));
             boolean bootstrap = Boolean.parseBoolean(uri.getQueryParameter(Users.BOOTSTRAP));
@@ -480,7 +502,9 @@ public class UsersProvider extends ContentProvider {
                         .getQueryParameter(Users.OFFLINE)), selection, selectionArgs);
 
                 case KEYS:
-                    return updateKey(values, selection, selectionArgs);
+                case KEYS_JID:
+                case KEYS_JID_FINGERPRINT:
+                    throw new IllegalArgumentException("use insert for keys");
 
                 default:
                     throw new IllegalArgumentException("Unknown URI " + uri);
@@ -498,23 +522,25 @@ public class UsersProvider extends ContentProvider {
         if (rc == 0) {
             ContentValues insertValues = new ContentValues(values);
             // insert new record
-            insertValues.put(Users.HASH, XmppStringUtils.parseLocalpart(selectionArgs[0]));
             insertValues.put(Users.JID, selectionArgs[0]);
             insertValues.put(Users.NUMBER, selectionArgs[0]);
+            /*
             if (!values.containsKey(Users.DISPLAY_NAME))
-                insertValues.put(Users.DISPLAY_NAME, getContext().getString(R.string.peer_unknown));
+                insertValues.put(Users.DISPLAY_NAME, selectionArgs[0]);
+             */
             insertValues.put(Users.REGISTERED, true);
 
-            db.insert(offline ? TABLE_USERS_OFFLINE : TABLE_USERS, null, insertValues);
-            return 1;
+            try {
+                db.insert(offline ? TABLE_USERS_OFFLINE : TABLE_USERS, null, insertValues);
+                return 1;
+            }
+            catch (SQLiteConstraintException e) {
+                // nothing was updated but the row exists
+                return 0;
+            }
         }
 
         return rc;
-    }
-
-    private int updateKey(ContentValues values, String selection, String[] selectionArgs) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        return db.update(TABLE_KEYS, values, selection, selectionArgs);
     }
 
     /** Commits the offline table to the online table. */
@@ -565,19 +591,19 @@ public class UsersProvider extends ContentProvider {
 
         // we are trying to be fast here
         SQLiteStatement stm = db.compileStatement("INSERT INTO " + TABLE_USERS_OFFLINE +
-            " (hash, number, jid, display_name, lookup_key, contact_id, registered, public_key, fingerprint)" +
-            " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            " (number, jid, display_name, lookup_key, contact_id, registered)" +
+            " VALUES(?, ?, ?, ?, ?, ?)");
 
         // these two statements are used to immediately update data in the online table
         // even if the data is dummy, it will be soon replaced by sync or by manual request
         SQLiteStatement onlineUpd = db.compileStatement("UPDATE " + TABLE_USERS +
-            " SET number = ?, display_name = ?, lookup_key = ?, contact_id = ? WHERE hash = ?");
+            " SET number = ?, display_name = ?, lookup_key = ?, contact_id = ? WHERE jid = ?");
         SQLiteStatement onlineIns = db.compileStatement("INSERT INTO " + TABLE_USERS +
-            " (hash, number, jid, display_name, lookup_key, contact_id, registered, public_key, fingerprint)" +
-            " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            " (number, jid, display_name, lookup_key, contact_id, registered)" +
+            " VALUES(?, ?, ?, ?, ?, ?)");
 
         Cursor phones = null;
-        String dialPrefix = Preferences.getDialPrefix(context);
+        String dialPrefix = Preferences.getDialPrefix();
         int dialPrefixLen = dialPrefix != null ? dialPrefix.length() : 0;
 
         try {
@@ -631,8 +657,8 @@ public class UsersProvider extends ContentProvider {
                         String jid = XMPPUtils.createLocalJID(getContext(), hash);
 
                         addResyncContact(db, stm, onlineUpd, onlineIns,
-                            hash, number, jid, name,
-                            lookupKey, contactId, false, null, null);
+                            number, jid, name,
+                            lookupKey, contactId, false);
                         count++;
                     }
                     catch (IllegalArgumentException iae) {
@@ -705,9 +731,9 @@ public class UsersProvider extends ContentProvider {
                             long contactId = phones.getLong(phones.getColumnIndex(BaseColumns._ID));
 
                             addResyncContact(db, stm, onlineUpd, onlineIns,
-                                hash, number, jid, name,
+                                number, jid, name,
                                 null, contactId,
-                                false, null, null);
+                                false);
                             count++;
                         }
                         catch (IllegalArgumentException iae) {
@@ -741,9 +767,10 @@ public class UsersProvider extends ContentProvider {
                     String jid = XMPPUtils.createLocalJID(getContext(), hash);
 
                     addResyncContact(db, stm, onlineUpd, onlineIns,
-                        hash, ownNumber, jid, ownName,
+                        ownNumber, jid, ownName,
                         null, null,
-                        true, publicKeyData, fingerprint);
+                        true);
+                    insertOrUpdateKey(jid, fingerprint, publicKeyData, false);
                     count++;
                 }
                 catch (IllegalArgumentException iae) {
@@ -769,13 +796,12 @@ public class UsersProvider extends ContentProvider {
     }
 
     private void addResyncContact(SQLiteDatabase db, SQLiteStatement stm, SQLiteStatement onlineUpd, SQLiteStatement onlineIns,
-        String hash, String number, String jid, String displayName, String lookupKey,
-        Long contactId, boolean registered, byte[] publicKey, String fingerprint) {
+        String number, String jid, String displayName, String lookupKey,
+        Long contactId, boolean registered) {
 
         int i = 0;
 
         stm.clearBindings();
-        stm.bindString(++i, hash);
         stm.bindString(++i, number);
         stm.bindString(++i, jid);
         if (displayName != null)
@@ -791,14 +817,6 @@ public class UsersProvider extends ContentProvider {
         else
             stm.bindNull(++i);
         stm.bindLong(++i, registered ? 1 : 0);
-        if (publicKey != null)
-            stm.bindBlob(++i, publicKey);
-        else
-            stm.bindNull(++i);
-        if (fingerprint != null)
-            stm.bindString(++i, fingerprint);
-        else
-            stm.bindNull(++i);
         stm.executeInsert();
 
         // update online entry
@@ -817,14 +835,13 @@ public class UsersProvider extends ContentProvider {
             onlineUpd.bindLong(++i, contactId);
         else
             onlineUpd.bindNull(++i);
-        onlineUpd.bindString(++i, hash);
+        onlineUpd.bindString(++i, jid);
         int rows = executeUpdateDelete(db, onlineUpd);
 
         // no contact found, insert a new dummy one
         if (rows <= 0) {
             i = 0;
             onlineIns.clearBindings();
-            onlineIns.bindString(++i, hash);
             onlineIns.bindString(++i, number);
             onlineIns.bindString(++i, jid);
             if (displayName != null)
@@ -840,20 +857,12 @@ public class UsersProvider extends ContentProvider {
             else
                 onlineIns.bindNull(++i);
             onlineIns.bindLong(++i, registered ? 1 : 0);
-            if (publicKey != null)
-                onlineIns.bindBlob(++i, publicKey);
-            else
-                onlineIns.bindNull(++i);
-            if (fingerprint != null)
-                onlineIns.bindString(++i, fingerprint);
-            else
-                onlineIns.bindNull(++i);
             onlineIns.executeInsert();
         }
     }
 
     @Override
-    public Uri insert(Uri uri, ContentValues values) {
+    public Uri insert(@NonNull Uri uri, ContentValues values) {
         try {
             int match = sUriMatcher.match(uri);
             switch (match) {
@@ -865,8 +874,22 @@ public class UsersProvider extends ContentProvider {
 
                 case KEYS:
                 case KEYS_JID:
-                    return insertKey(values, Boolean.parseBoolean(uri
-                        .getQueryParameter(Keys.TRUST)));
+                case KEYS_JID_FINGERPRINT:
+                    List<String> segs = uri.getPathSegments();
+                    String jid, fingerprint;
+                    if (segs.size() >= 2) {
+                        // Uri-based insert/update
+                        jid = segs.get(1);
+                        fingerprint = segs.get(2);
+                    }
+                    else {
+                        // take jid and fingerprint from values
+                        jid = values.getAsString(Keys.JID);
+                        fingerprint = values.getAsString(Keys.FINGERPRINT);
+                    }
+
+                    return insertOrUpdateKey(jid, fingerprint, values,
+                        Boolean.parseBoolean(uri.getQueryParameter(Keys.INSERT_ONLY)));
 
                 default:
                     throw new IllegalArgumentException("Unknown URI " + uri);
@@ -887,15 +910,15 @@ public class UsersProvider extends ContentProvider {
             id = db.insertOrThrow(table, null, values);
         }
         catch (SQLException e) {
-            String hash = values.getAsString(Users.HASH);
-            if (hash != null) {
+            String jid = values.getAsString(Users.JID);
+            if (jid != null) {
                 // discard display_name if requested
                 if (discardName) {
                     values.remove(Users.DISPLAY_NAME);
                     values.remove(Users.NUMBER);
                 }
 
-                db.update(table, values, Users.HASH + "=?", new String[] { hash });
+                db.update(table, values, Users.JID + "=?", new String[] { jid });
             }
         }
 
@@ -904,33 +927,48 @@ public class UsersProvider extends ContentProvider {
         return null;
     }
 
-    private Uri insertKey(ContentValues values, boolean trust) {
+    private Uri insertOrUpdateKey(String jid, String fingerprint, byte[] keyData, boolean insertOnly) {
+        if (jid == null || fingerprint == null)
+            throw new IllegalArgumentException("either JID or fingerprint not provided");
+
+        ContentValues values = new ContentValues(1);
+        values.put(Keys.PUBLIC_KEY, keyData);
+        return insertOrUpdateKey(jid, fingerprint, values, insertOnly);
+    }
+
+    private Uri insertOrUpdateKey(String jid, String fingerprint, ContentValues values, boolean insertOnly) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        String jid = values.getAsString(Keys.JID);
-        if (jid == null)
-            throw new IllegalArgumentException("no JID provided");
+        if (jid == null || fingerprint == null)
+            throw new IllegalArgumentException("either JID or fingerprint not provided");
 
-        int rows;
+        int rows = 0;
 
-        if (trust) {
-            SQLiteStatement stm = db.compileStatement("INSERT OR REPLACE INTO " + TABLE_KEYS +
-                " SELECT jid, public_key, fingerprint FROM " + TABLE_USERS + " WHERE jid = ?");
-            stm.bindString(1, jid);
-            stm.executeInsert();
+        try {
+            // try to insert the key with the provided values
+            ContentValues insertValues = new ContentValues(values);
+            insertValues.put(Keys.JID, jid);
+            insertValues.put(Keys.FINGERPRINT, fingerprint);
+            // use current timestamp if the caller didn't provide any
+            long timestamp = values.containsKey(Keys.TIMESTAMP) ?
+                values.getAsLong(Keys.TIMESTAMP) : System.currentTimeMillis();
+            insertValues.put(Keys.TIMESTAMP, timestamp);
+            db.insertOrThrow(TABLE_KEYS, null, insertValues);
             rows = 1;
         }
-        else {
-            try {
-                db.insertOrThrow(TABLE_KEYS, null, values);
-                rows = 1;
-            }
-            catch (SQLException e) {
-                rows = db.update(TABLE_KEYS, values, Keys.JID + "=?", new String[]{jid});
+        catch (SQLiteConstraintException e) {
+            if (!insertOnly) {
+                // we got a duplicated key, update the requested values
+                rows = db.update(TABLE_KEYS, values,
+                    Keys.JID + "=? AND " + Keys.FINGERPRINT + "=?",
+                    new String[]{ jid, fingerprint });
             }
         }
 
         if (rows >= 0)
-            return Keys.CONTENT_URI.buildUpon().appendPath(jid).build();
+            return Keys.CONTENT_URI.buildUpon()
+                    .appendPath(jid)
+                    .appendPath(fingerprint)
+                    .build();
         return null;
     }
 
@@ -957,7 +995,7 @@ public class UsersProvider extends ContentProvider {
     }
 
     @Override
-    public int bulkInsert(Uri uri, ContentValues[] values) {
+    public int bulkInsert(@NonNull Uri uri, @NonNull ContentValues[] values) {
         int match = sUriMatcher.match(uri);
         switch (match) {
             case KEYS:
@@ -968,9 +1006,27 @@ public class UsersProvider extends ContentProvider {
         }
     }
 
+    private int deleteKeys(String userId, String fingerprint, String selection, String[] selectionArgs) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        selection = DatabaseUtilsCompat.concatenateWhere(selection, Keys.JID + "=?");
+        selection = DatabaseUtilsCompat.concatenateWhere(selection, Keys.FINGERPRINT + "=?");
+        selectionArgs = DatabaseUtilsCompat.appendSelectionArgs(selectionArgs, new String[] { userId, fingerprint });
+        return db.delete(TABLE_KEYS, selection, selectionArgs);
+    }
+
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
-        throw new SQLException("manual delete from users table not supported.");
+    public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
+        int match = sUriMatcher.match(uri);
+        switch (match) {
+            case KEYS_JID_FINGERPRINT:
+                List<String> segs = uri.getPathSegments();
+                String userId = segs.get(1);
+                String fingerprint = segs.get(2);
+                return deleteKeys(userId, fingerprint, selection, selectionArgs);
+
+            default:
+                throw new IllegalArgumentException("Unknown URI " + uri);
+        }
     }
 
     // avoid recreating the same object over and over
@@ -985,68 +1041,6 @@ public class UsersProvider extends ContentProvider {
         // TODO Uri.withAppendedPath(Users.CONTENT_URI, msg.getSender(true))
         context.getContentResolver().update(Users.CONTENT_URI,
             registeredValues, Users.JID+"=?", new String[] { jid });
-    }
-
-    /** Returns a {@link Coder} instance for encrypting data. */
-    public static Coder getEncryptCoder(Context context, EndpointServer server, PersonalKey key, String[] recipients) {
-        // get recipients public keys from users database
-        PGPPublicKeyRing keys[] = new PGPPublicKeyRing[recipients.length];
-        for (int i = 0; i < recipients.length; i++) {
-            PGPPublicKeyRing ring = getPublicKey(context, recipients[i], true);
-            if (ring == null)
-                throw new IllegalArgumentException("public key not found for user " + recipients[i]);
-
-            keys[i] = ring;
-        }
-
-        return new PGPCoder(server, key, keys);
-    }
-
-    /** Returns a {@link Coder} instance for decrypting data. */
-    public static Coder getDecryptCoder(Context context, EndpointServer server, PersonalKey key, String sender) {
-        PGPPublicKeyRing senderKey = getPublicKey(context, sender, true);
-        return new PGPCoder(server, key, senderKey);
-    }
-
-    /** Retrieves the (un)trusted public key for a user. */
-    public static PGPPublicKeyRing getPublicKey(Context context, String jid, boolean trusted) {
-        byte[] keydata = null;
-        ContentResolver res = context.getContentResolver();
-        Cursor c = res.query(Users.CONTENT_URI.buildUpon()
-            .appendPath(jid).build(), new String[] { trusted ?
-                Keys.TRUSTED_PUBLIC_KEY : Users.PUBLIC_KEY },
-            null, null, null);
-
-        if (c.moveToFirst())
-            keydata = c.getBlob(0);
-
-        c.close();
-
-        try {
-            return PGP.readPublicKeyring(keydata);
-        }
-        catch (Exception e) {
-            // ignored
-        }
-
-        return null;
-    }
-
-    /** Retrieves the (un)trusted fingerprint for a user. */
-    public static String getFingerprint(Context context, String jid, boolean trusted) {
-        String fingerprint = null;
-        ContentResolver res = context.getContentResolver();
-        Cursor c = res.query(Users.CONTENT_URI.buildUpon()
-                .appendPath(jid).build(), new String[] { trusted ?
-                Keys.TRUSTED_FINGERPRINT : Users.FINGERPRINT },
-            null, null, null);
-
-        if (c.moveToFirst())
-            fingerprint = c.getString(0);
-
-        c.close();
-
-        return fingerprint;
     }
 
     /** Retrieves the last seen timestamp for a user. */
@@ -1073,42 +1067,30 @@ public class UsersProvider extends ContentProvider {
             values, Users.JID + "=?", new String[] { jid });
     }
 
-    /** Updates a user public key. */
-    public static void setUserKey(Context context, String jid, byte[] keydata)
-            throws IOException, PGPException {
-        String fingerprint = PGP.getFingerprint(keydata);
-        ContentValues values = new ContentValues(2);
-        values.put(Users.FINGERPRINT, fingerprint);
-        values.put(Users.PUBLIC_KEY, keydata);
-        context.getContentResolver().update(Users.CONTENT_URI,
-            values, Users.JID + "=?", new String[]{jid});
-    }
-
-    /** Marks the given user fingerprint as trusted. */
-    public static void trustUserKey(Context context, String jid) {
-        ContentValues values = new ContentValues(1);
-        values.put(Keys.JID, jid);
-        context.getContentResolver().insert(Keys.CONTENT_URI.buildUpon()
-            .appendQueryParameter(Keys.TRUST, "true")
-            .build(), values);
-    }
-
-    /** Trusts a user public key if trusted fingerprint matches the given key. */
-    public static void maybeTrustUserKey(Context context, String jid, byte[] keydata)
-            throws IOException, PGPException {
-        String fingerprint = PGP.getFingerprint(keydata);
-        ContentValues values = new ContentValues(1);
-        values.put(Keys.PUBLIC_KEY, keydata);
-        context.getContentResolver().update(Keys.CONTENT_URI,
-            values, Keys.JID + "=? AND " + Keys.FINGERPRINT + "=?",
-            new String[] { jid, fingerprint });
-    }
-
     public static void setBlockStatus(Context context, String jid, boolean blocked) {
         ContentValues values = new ContentValues(1);
         values.put(Users.BLOCKED, blocked);
-        context.getContentResolver().update(Users.CONTENT_URI.buildUpon()
-            .appendPath(jid).build(), values, null, null);
+        context.getContentResolver().update(Users.CONTENT_URI,
+            values, Users.JID + "=?", new String[] { jid });
+    }
+
+    // FIXME what is this doing here? Using Messages Uri
+    public static int setRequestStatus(Context context, String jid, int status) {
+        ContentValues values = new ContentValues(1);
+        values.put(MyMessages.Threads.REQUEST_STATUS, status);
+
+        // FIXME this won't work on new threads
+        return context.getContentResolver().update(MyMessages.Threads.Requests.CONTENT_URI,
+            values, MyMessages.CommonColumns.PEER + "=?",
+            new String[] { jid });
+    }
+
+    public static int updateDisplayNameIfEmpty(Context context, String jid, String displayName) {
+        ContentValues values = new ContentValues(1);
+        values.put(Users.DISPLAY_NAME, displayName);
+        return context.getContentResolver().update(Users.CONTENT_URI,
+            values, Users.JID + " = ? AND (" + Users.DISPLAY_NAME + " IS NULL OR LENGTH(" + Users.DISPLAY_NAME + ") = 0)",
+            new String[] { jid });
     }
 
     public static int resync(Context context) {
@@ -1117,35 +1099,6 @@ public class UsersProvider extends ContentProvider {
             .appendQueryParameter(Users.RESYNC, "true")
             .build();
         return context.getContentResolver().update(uri, new ContentValues(), null, null);
-    }
-
-    /** Returns a JID-fingerprint map of trusted keys. */
-    public static Map<String, String> getTrustedKeys(Context context) {
-        Cursor c = context.getContentResolver().query(Keys.CONTENT_URI, new String[] {
-                Keys.JID,
-                Keys.FINGERPRINT,
-            }, null, null, null);
-
-        Map<String, String> list = new HashMap<>(c.getCount());
-        while (c.moveToNext()) {
-            list.put(c.getString(0), c.getString(1));
-        }
-
-        c.close();
-        return list;
-    }
-
-    /** Sets the trusted keys, deleting all previous entries. */
-    public static int setTrustedKeys(Context context, Map<String, String> trustedKeys) {
-        ContentValues[] values = new ContentValues[trustedKeys.size()];
-        Iterator<Map.Entry<String, String>> entries = trustedKeys.entrySet().iterator();
-        for (int i = 0; i < values.length; i++) {
-            Map.Entry<String, String> e = entries.next();
-            values[i] = new ContentValues(2);
-            values[i].put(Keys.JID, e.getKey());
-            values[i].put(Keys.FINGERPRINT, e.getValue());
-        }
-        return context.getContentResolver().bulkInsert(Keys.CONTENT_URI, values);
     }
 
     /* Transactions compatibility layer */
@@ -1194,28 +1147,27 @@ public class UsersProvider extends ContentProvider {
         sUriMatcher.addURI(AUTHORITY, TABLE_USERS + "/*", USERS_JID);
         sUriMatcher.addURI(AUTHORITY, TABLE_KEYS, KEYS);
         sUriMatcher.addURI(AUTHORITY, TABLE_KEYS + "/*", KEYS_JID);
+        sUriMatcher.addURI(AUTHORITY, TABLE_KEYS + "/*/*", KEYS_JID_FINGERPRINT);
 
-        usersProjectionMap = new HashMap<String, String>();
+        usersProjectionMap = new HashMap<>();
         usersProjectionMap.put(Users._ID, Users._ID);
-        usersProjectionMap.put(Users.HASH, Users.HASH);
         usersProjectionMap.put(Users.NUMBER, Users.NUMBER);
         usersProjectionMap.put(Users.DISPLAY_NAME, Users.DISPLAY_NAME);
-        usersProjectionMap.put(Users.JID, TABLE_USERS + "." + Users.JID);
+        usersProjectionMap.put(Users.JID, Users.JID);
         usersProjectionMap.put(Users.LOOKUP_KEY, Users.LOOKUP_KEY);
         usersProjectionMap.put(Users.CONTACT_ID, Users.CONTACT_ID);
         usersProjectionMap.put(Users.REGISTERED, Users.REGISTERED);
         usersProjectionMap.put(Users.STATUS, Users.STATUS);
         usersProjectionMap.put(Users.LAST_SEEN, Users.LAST_SEEN);
-        usersProjectionMap.put(Users.PUBLIC_KEY, TABLE_USERS + "." + Users.PUBLIC_KEY);
-        usersProjectionMap.put(Users.FINGERPRINT, TABLE_USERS + "." + Users.FINGERPRINT);
         usersProjectionMap.put(Users.BLOCKED, Users.BLOCKED);
-        usersProjectionMap.put(Keys.TRUSTED_PUBLIC_KEY, TABLE_KEYS + "." + Keys.PUBLIC_KEY);
-        usersProjectionMap.put(Keys.TRUSTED_FINGERPRINT, TABLE_KEYS + "." + Keys.FINGERPRINT);
 
         // only for direct access to the keys table (for optimization)
-        keysProjectionMap = new HashMap<String, String>();
+        keysProjectionMap = new HashMap<>();
         keysProjectionMap.put(Keys.JID, Keys.JID);
         keysProjectionMap.put(Keys.FINGERPRINT, Keys.FINGERPRINT);
+        keysProjectionMap.put(Keys.PUBLIC_KEY, Keys.PUBLIC_KEY);
+        keysProjectionMap.put(Keys.TIMESTAMP, Keys.TIMESTAMP);
+        keysProjectionMap.put(Keys.TRUST_LEVEL, Keys.TRUST_LEVEL);
     }
 
 }

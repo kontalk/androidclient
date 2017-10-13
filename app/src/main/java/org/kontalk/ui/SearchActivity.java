@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,12 +18,11 @@
 
 package org.kontalk.ui;
 
-import org.kontalk.R;
-
 import android.app.SearchManager;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.MenuItem;
+
+import org.kontalk.R;
 
 
 /**
@@ -40,7 +39,7 @@ public class SearchActivity extends ToolbarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.search_list_screen);
 
-        setupToolbar(true);
+        setupToolbar(true, true);
 
         mFragment = (SearchFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_search_list);
@@ -55,16 +54,8 @@ public class SearchActivity extends ToolbarActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                startActivity(new Intent(this, ConversationsActivity.class));
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
-        }
+    protected boolean isNormalUpNavigation() {
+        return true;
     }
 
 }

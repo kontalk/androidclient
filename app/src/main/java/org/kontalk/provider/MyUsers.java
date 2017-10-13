@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,9 +28,7 @@ public class MyUsers {
     private MyUsers() {}
 
     public interface CommonColumns extends BaseColumns {
-        public static final String JID = "jid";
-        public static final String PUBLIC_KEY = "public_key";
-        public static final String FINGERPRINT = "fingerprint";
+        String JID = "jid";
     }
 
     public static final class Users implements CommonColumns {
@@ -45,7 +43,6 @@ public class MyUsers {
         public static final String CONTENT_TYPE = "vnd.android.cursor.dir/" + ITEM_TYPE;
         public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/" + ITEM_TYPE;
 
-        public static final String HASH = "hash";
         public static final String NUMBER = "number";
         public static final String DISPLAY_NAME = "display_name";
         public static final String LOOKUP_KEY = "lookup_key";
@@ -79,15 +76,30 @@ public class MyUsers {
     public static final class Keys implements CommonColumns {
         private Keys() {}
 
+        public static final String PUBLIC_KEY = "public_key";
+        public static final String FINGERPRINT = "fingerprint";
+        public static final String TIMESTAMP = "timestamp";
+        public static final String TRUST_LEVEL = "trust_level";
+
         public static final Uri CONTENT_URI = Uri.parse("content://"
             + UsersProvider.AUTHORITY + "/keys");
 
-        /** Trusted fingerprint of the user. */
-        public static final String TRUSTED_FINGERPRINT = "trusted_fingerprint";
-        /** Trusted public key of the user. */
-        public static final String TRUSTED_PUBLIC_KEY = "trusted_public_key";
+        public static Uri getUri(String jid) {
+            return CONTENT_URI.buildUpon()
+                .appendPath(jid)
+                .build();
+        }
 
-        // uri parameter for insert: trust current key
-        public static final String TRUST = "trust";
+        public static Uri getUri(String jid, String fingerprint) {
+            return CONTENT_URI.buildUpon()
+                .appendPath(jid)
+                .appendPath(fingerprint).build();
+        }
+
+        public static final int TRUST_UNKNOWN = 0;
+        public static final int TRUST_IGNORED = 1;
+        public static final int TRUST_VERIFIED = 2;
+
+        public static final String INSERT_ONLY = "insertOnly";
     }
 }

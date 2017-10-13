@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,19 +20,20 @@ package org.kontalk.ui.view;
 
 import java.util.regex.Pattern;
 
-import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.afollestad.materialdialogs.simplelist.MaterialSimpleListAdapter;
+import com.afollestad.materialdialogs.simplelist.MaterialSimpleListItem;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.style.URLSpan;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewStub;
-import android.widget.ArrayAdapter;
 import android.widget.Checkable;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -40,6 +41,7 @@ import android.widget.TextView;
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.GroupComponent;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 
@@ -51,9 +53,12 @@ import org.kontalk.util.Preferences;
  */
 public class MessageListItem extends RelativeLayout implements Checkable {
 
+    private static final int[] CHECKED_STATE_SET = { android.R.attr.state_checked };
+
     private CompositeMessage mMessage;
     // for message details
     private String mPeer;
+    private String mDisplayName;
 
     private MessageListItemTheme mBalloonTheme;
 
@@ -89,25 +94,32 @@ public class MessageListItem extends RelativeLayout implements Checkable {
         mDateHeader = (TextView) findViewById(R.id.date_header);
     }
 
-    public void afterInflate(int direction) {
+    public void afterInflate(int direction, boolean event, boolean groupChat) {
         ViewStub stub = (ViewStub) findViewById(R.id.balloon_stub);
-        String theme = Preferences.getBalloonTheme(getContext());
-        mBalloonTheme = MessageListItemThemeFactory.createTheme(theme, direction);
+        String theme = groupChat ?
+            Preferences.getBalloonGroupsTheme(getContext()) :
+            Preferences.getBalloonTheme(getContext());
+        mBalloonTheme = MessageListItemThemeFactory.createTheme(theme, direction, event);
         mBalloonTheme.inflate(stub);
     }
 
-    public final void bind(Context context, final CompositeMessage msg,
-       final Contact contact, final Pattern highlight, long previous,
+    public final void bind(Context context, final CompositeMessage msg, final Pattern highlight,
+        int itemType, int previousItemType, long previousTimestamp, String previousPeer,
        Object... args) {
 
         mMessage = msg;
 
-        // FIXME this might not work
-        mChecked = false;
+        setChecked(false);
 
+        boolean sameMessageBlock = false;
         long msgTs = MessageUtils.getMessageTimestamp(mMessage);
-        if (MessageUtils.isSameDate(msgTs, previous)) {
+        boolean sameDate = MessageUtils.isSameDate(msgTs, previousTimestamp);
+        if (sameDate) {
             mDateHeader.setVisibility(View.GONE);
+            // same day, check if it's also same direction and user
+            // some themes will use this information to group messages together
+            String msgPeer = MessageUtils.getMessagePeer(mMessage);
+            sameMessageBlock = (itemType == previousItemType && msgPeer.equals(previousPeer));
         }
         else {
             mDateHeader.setText(MessageUtils.formatDateString(context, msgTs));
@@ -117,19 +129,23 @@ public class MessageListItem extends RelativeLayout implements Checkable {
         mBalloonTheme.setSecurityFlags(mMessage.getSecurityFlags());
 
         if (mMessage.getSender() != null) {
-            mBalloonTheme.setIncoming(contact);
+            Contact contact = Contact.findByUserId(context, msg.getSender(true));
+            mBalloonTheme.setIncoming(contact, sameMessageBlock);
 
-            Contact c = Contact.findByUserId(context, msg.getSender(true));
-            if (c != null)
-                mPeer = c.getNumber();
+            mPeer = contact.getNumber();
+            mDisplayName = contact.getDisplayName();
             if (mPeer == null)
                 mPeer = msg.getSender(true);
         }
         else {
-            mBalloonTheme.setOutgoing(contact, mMessage.getStatus());
-            Contact c = Contact.findByUserId(context, msg.getRecipients().get(0));
-            if (c != null)
-                mPeer = c.getNumber();
+            Contact contact = null;
+            if (!msg.hasComponent(GroupComponent.class))
+                contact = Contact.findByUserId(context, msg.getRecipients().get(0));
+            mBalloonTheme.setOutgoing(contact, mMessage.getStatus(), sameMessageBlock);
+            if (contact != null) {
+                mPeer = contact.getNumber();
+                mDisplayName = contact.getName();
+            }
             if (mPeer == null)
                 mPeer = msg.getRecipients().get(0);
         }
@@ -247,16 +263,19 @@ public class MessageListItem extends RelativeLayout implements Checkable {
 
     @Override
     public void setChecked(boolean checked) {
-        mChecked = checked;
+        if (checked != mChecked) {
+            mChecked = checked;
+            refreshDrawableState();
+        }
+    }
 
-        int backgroundId;
-
-        if (mChecked)
-            backgroundId = R.drawable.list_selected_holo_light;
-        else
-            backgroundId = 0;
-
-        setBackgroundResource(backgroundId);
+    @Override
+    protected int[] onCreateDrawableState(int extraSpace) {
+        final int[] drawableState = super.onCreateDrawableState(extraSpace + 1);
+        if (isChecked()) {
+            mergeDrawableStates(drawableState, CHECKED_STATE_SET);
+        }
+        return drawableState;
     }
 
     @Override
@@ -276,7 +295,7 @@ public class MessageListItem extends RelativeLayout implements Checkable {
 
         if (spans.length == 0) {
             // show the message details dialog
-            MessageUtils.showMessageDetails(getContext(), mMessage, mPeer);
+            MessageUtils.showMessageDetails(getContext(), mMessage, mPeer, mDisplayName);
         }
         else if (spans.length == 1) {
             // show link opener
@@ -284,67 +303,69 @@ public class MessageListItem extends RelativeLayout implements Checkable {
         }
         else {
             // complex stuff (media)
-            ArrayAdapter<URLSpan> adapter =
-                new ArrayAdapter<URLSpan>(getContext(), android.R.layout.select_dialog_item, spans) {
+            URLSpanAdapterCallback click = new URLSpanAdapterCallback(textContent);
+            final MaterialSimpleListAdapter adapter = new MaterialSimpleListAdapter(click);
+            for (URLSpan span : spans) {
+                MaterialSimpleListItem.Builder builder = new MaterialSimpleListItem.Builder(getContext())
+                    .tag(span);
+                try {
+                    String url = span.getURL();
+                    Uri uri = Uri.parse(url);
+
+                    final String telPrefix = "tel:";
+                    if (url.startsWith(telPrefix)) {
+                        // TODO handle country code
+                        url = url.substring(telPrefix.length());
+                    }
+
+                    builder.content(url);
+
+                    Drawable d = getContext().getPackageManager().getActivityIcon(
+                        new Intent(Intent.ACTION_VIEW, uri));
+                    if (d != null) {
+                        builder.icon(d).iconPadding(10);
+                    }
+
+                }
+                catch (android.content.pm.PackageManager.NameNotFoundException ex) {
+                    // it's ok if we're unable to set the drawable for this view - the user
+                    // can still use it
+                }
+
+                adapter.add(builder.build());
+            }
+
+            new MaterialDialog.Builder(getContext())
+                .title(R.string.chooser_select_link)
+                .cancelable(true)
+                .adapter(adapter, null)
+                .negativeText(android.R.string.cancel)
+                .onNegative(new MaterialDialog.SingleButtonCallback() {
                     @Override
-                    public View getView(int position, View convertView, ViewGroup parent) {
-                        View v = super.getView(position, convertView, parent);
-                        Context context = getContext();
-                        try {
-                            URLSpan span = getItem(position);
-                            String url = span.getURL();
-                            Uri uri = Uri.parse(url);
-                            TextView tv = (TextView) v;
-                            Drawable d = context.getPackageManager().getActivityIcon(
-                                new Intent(Intent.ACTION_VIEW, uri));
-                            if (d != null) {
-                                d.setBounds(0, 0, d.getIntrinsicHeight(), d.getIntrinsicHeight());
-                                tv.setCompoundDrawablePadding(10);
-                                tv.setCompoundDrawables(d, null, null, null);
-                            }
-                            final String telPrefix = "tel:";
-                            if (url.startsWith(telPrefix)) {
-                                // TODO handle country code
-                                url = url.substring(telPrefix.length());
-                            }
-                            tv.setText(url);
-                        } catch (android.content.pm.PackageManager.NameNotFoundException ex) {
-                            // it's ok if we're unable to set the drawable for this view - the user
-                            // can still use it
-                        }
-                        return v;
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
                     }
-                };
-
-            AlertDialogWrapper.Builder b = new AlertDialogWrapper.Builder(getContext());
-
-            final TextContentView textView = textContent;
-            DialogInterface.OnClickListener click = new DialogInterface.OnClickListener() {
-                @Override
-                public final void onClick(DialogInterface dialog, int which) {
-                    if (which >= 0) {
-                        spans[which].onClick(textView);
-                    }
-                    dialog.dismiss();
-                }
-            };
-
-            b.setTitle(R.string.chooser_select_link);
-            b.setCancelable(true);
-            b.setAdapter(adapter, click);
-
-            b.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                @Override
-                public final void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            });
-
-            b.show();
+                })
+                .show();
         }
     }
 
     public CompositeMessage getMessage() {
         return mMessage;
+    }
+
+    private static final class URLSpanAdapterCallback implements MaterialSimpleListAdapter.Callback {
+        private TextView mParent;
+
+        URLSpanAdapterCallback(TextView parent) {
+            mParent = parent;
+        }
+
+        @Override
+        public void onMaterialListItemSelected(MaterialDialog dialog, int index, MaterialSimpleListItem item) {
+            if (item != null && item.getTag() != null)
+                ((URLSpan) item.getTag()).onClick(mParent);
+            dialog.dismiss();
+        }
     }
 }

@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
 
 package org.kontalk.ui.view;
 
-import org.kontalk.data.Contact;
 import org.kontalk.data.SearchItem;
 
 import android.content.Context;
@@ -45,8 +44,8 @@ public class SearchListItem extends RelativeLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mText1 = (TextView) findViewById(android.R.id.text1);
-        mText2 = (TextView) findViewById(android.R.id.text2);
+        mText1 = findViewById(android.R.id.text1);
+        mText2 = findViewById(android.R.id.text2);
 
         if (isInEditMode()) {
             mText1.setText("Test contact");
@@ -56,15 +55,7 @@ public class SearchListItem extends RelativeLayout {
 
     public final void bind(Context context, final SearchItem found) {
         mFound = found;
-
-        final Contact contact = found.getContact();
-        String name;
-        if (contact != null)
-            name = contact.getName() + " <" + contact.getNumber() + ">";
-        else
-            name = found.getUserId();
-
-        mText1.setText(name);
+        mText1.setText(found.getUserDisplayName());
         mText2.setText(found.getText());
     }
 

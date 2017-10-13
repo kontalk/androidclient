@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Kontalk Android client
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+<resources>
+    <string name="app_name">Kontalk</string>
+<string name="app_name_offline">Kontalk (ऑफ़लाइन)</string>
+    <string name="app_description">समुदाय संचालित तत्काल संदेश तंत्रजाल</string>
+    <string name="service_name">संदेश केंद्र</string>
+    <string name="authenticator_name">प्रमाणीकरण सेवा</string>
+    <string name="sync_service_name">संपर्कों को साथ रखे</string>
+    <string name="download_service">डाउनलोड सेवा</string>
+    <string name="yes">हाँ</string>
+    <string name="no">नहीं</string>
+    <string name="send">भेजें</string>
+    <string name="menu_compose">लिखें</string>
+    <string name="menu_delete_all">बातचीत मिटाए</string>
+    <string name="menu_search">खोज</string>
+    <string name="mykey_activity_title">मेरी निजी चाबी</string>
+    <string name="menu_settings">सेटिंग्स</string>
+    <string name="menu_offline">ऑफ़लाइन हो जाए</string>
+    <string name="menu_online">ऑनलाइन हो जाए</string>
+    <string name="menu_import_key">चाबी का आयात</string>
+    <string name="menu_manual_verification">पहले से ही कोड है?</string>
+    <string name="pref_network_settings">नेटवर्क सेटिंग</string>
+    <string name="pref_network_uri">सर्वर का पता</string>
+    <string name="pref_title_network_uri">"यह सर्वर की सूची के स्वचालित प्रबंध  को रद्द कर देगी"</string>
+    <string name="number_validation_intro1">कृपया अपना नाम दर्ज करें, अपने देश का फोन कोड का चयन करें और अपना मोबाइल फोन नंबर दर्ज करें । अधिक निर्देश अगले स्क्रीन में प्रदान किया जाएगा।</string>
+    <string name="number_validation_intro2">आप इस उपकरण पर कॉल या एसएमएस प्राप्त करने में असमर्थ हैं, तो आप खुद को एक फोन नंबर डालें: हम इस उपकरण के लिए उस नंबर से सम्बद्ध जोड़ेगे</string>
+    <string name="code_validation_intro">आप को एक एसएमएस या एक कॉल इस संख्या से थोड़ी देर में आएगा:</string>
+    <string name="code_validation_intro2">कृप्या आप को जो कोड मिला है या सुना है उसे डाले।</string>
+    <string name="code_validation_intro_missed_call">आप को इस नंबर से मिस्ड कॉल आएगा। <b>कृपया फोन का जवाब न दे। </b></string>
+    <string name="code_validation_intro2_missed_call">जिस नंबर से आपको कॉल आया उसके अंतिम %d अंक डालें।</string>
+    <string name="hint_validation_name">आपका नाम</string>
+    <string name="hint_validation_number">आपका नंबर</string>
+    <string name="hint_validation_code">पुष्टि संख्या</string>
+    <string name="warn_invalid_number">कृपया एक मान्य फोन नंबर दर्ज करें।</string>
+    <string name="msg_validating_phone">पंजीकरण का निवेदन …</string>
+    <string name="msg_importing_key">निजी कुंजी का आयात …</string>
+    <string name="title_confirm_cancel_registration">पंजीकरण रद्द करें?</string>
+    <string name="msg_initializing">Kontalk नेटवर्क के लिए पंजीकरण जारी है …</string>
+    <string name="msg_authenticated">नेटवर्क से पंजीकृत!</string>
+    <string name="share">बाँटे</string>
+    <string name="resend">फिर से भेजे</string>
+    <string name="copy_message_text">पाठ कॉपी करें</string>
+    <string name="confirm_delete_all">बातचीत को मिटाएं</string>
+    <string name="confirm_will_delete_all">सभी बातचीत को मिटा दिया जाएगा।</string>
+    <string name="sending_message">संदेश भेजा जा रहा है …</string>
+    <string name="message_text_copied">संदेश पाठ की नकल की।</string>
+    <string name="call">कॉल</string>
+    <string name="mark_read">पढ़ लिया</string>
+    <string name="view_contact">संपर्क देखें</string>
+    <string name="view_conversation">बातचीत देखें</string>
+    <string name="delete_message">संदेश को मिटाएं</string>
+    <string name="delete_thread">बातचीत को मिटाएं</string>
+    <string name="confirm_delete_thread">बातचीत को मिटाएं</string>
+    </resources>

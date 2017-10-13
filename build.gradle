@@ -2,9 +2,12 @@
 buildscript {
     repositories {
         jcenter()
+        maven { url 'https://maven.fabric.io/public' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.5.0'
+        classpath 'com.android.tools.build:gradle:2.3.3'
+        classpath 'com.github.triplet.gradle:play-publisher:1.2.0'
+        classpath 'io.fabric.tools:gradle:1.22.1'
     }
 }
 
@@ -12,13 +15,30 @@ allprojects {
     repositories {
         jcenter()
         maven { url "https://jitpack.io" }
+        maven { url 'https://maven.fabric.io/public' }
     }
 
     evaluationDependsOn ":client-common-java"
     ext {
+        appVersionCode = 248
+        appVersionName = '4.1.0-beta3'
+        targetSdkVersion = 22
+        compileSdkVersion = 26
+        buildToolsVersion = '26.0.1'
         smackVersion = project(':client-common-java').smackVersion
-        spongyCastleVersion = '1.52.0.0'
-        appcompatVersion = '23.1.1'
-        googlePlayServicesVersion = '8.4.0'
+        spongyCastleVersion = '1.54.0.0'
+        // Google dropped support for Android API level < 14 starting 26.0.0
+        appcompatVersion = '25.3.1'
+        anyMapsVersion = '9de9d15b22'
+        // Google dropped support for Android 2.3 starting 10.0.x
+        googlePlayServicesVersion = '10.0.1'
+
+        travisBuild = System.getenv("TRAVIS") == "true"
+        // allows for -Dpre-dex=false to be set
+        preDexEnabled = "true" == System.getProperty("pre-dex", "true")
     }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
 }

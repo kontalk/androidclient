@@ -5,31 +5,31 @@
     <extensionProvider>
         <elementName>active</elementName>
         <namespace>http://jabber.org/protocol/chatstates</namespace>
-        <className>org.jivesoftware.smackx.chatstates.packet.ChatStateExtension$Provider</className>
+        <className>org.jivesoftware.smackx.chatstates.provider.ChatStateExtensionProvider</className>
     </extensionProvider>
 
     <extensionProvider>
         <elementName>composing</elementName>
         <namespace>http://jabber.org/protocol/chatstates</namespace>
-        <className>org.jivesoftware.smackx.chatstates.packet.ChatStateExtension$Provider</className>
+        <className>org.jivesoftware.smackx.chatstates.provider.ChatStateExtensionProvider</className>
     </extensionProvider>
 
     <extensionProvider>
         <elementName>paused</elementName>
         <namespace>http://jabber.org/protocol/chatstates</namespace>
-        <className>org.jivesoftware.smackx.chatstates.packet.ChatStateExtension$Provider</className>
+        <className>org.jivesoftware.smackx.chatstates.provider.ChatStateExtensionProvider</className>
     </extensionProvider>
 
     <extensionProvider>
         <elementName>inactive</elementName>
         <namespace>http://jabber.org/protocol/chatstates</namespace>
-        <className>org.jivesoftware.smackx.chatstates.packet.ChatStateExtension$Provider</className>
+        <className>org.jivesoftware.smackx.chatstates.provider.ChatStateExtensionProvider</className>
     </extensionProvider>
 
     <extensionProvider>
         <elementName>gone</elementName>
         <namespace>http://jabber.org/protocol/chatstates</namespace>
-        <className>org.jivesoftware.smackx.chatstates.packet.ChatStateExtension$Provider</className>
+        <className>org.jivesoftware.smackx.chatstates.provider.ChatStateExtensionProvider</className>
     </extensionProvider>
 
     <!-- Service Discovery # Items -->
@@ -223,11 +223,39 @@
         <className>org.kontalk.client.UploadInfo$Provider</className>
     </iqProvider>
 
+    <!-- XEP-0363: HTTP File Upload -->
+    <iqProvider>
+        <elementName>slot</elementName>
+        <namespace>urn:xmpp:http:upload</namespace>
+        <className>org.kontalk.client.HTTPFileUpload$Slot$Provider</className>
+    </iqProvider>
+
+    <!-- Kontalk group extension -->
+    <extensionProvider>
+        <elementName>group</elementName>
+        <namespace>http://kontalk.org/extensions/message#group</namespace>
+        <className>org.kontalk.client.GroupExtension$Provider</className>
+    </extensionProvider>
+
     <!-- RFC 3923: end-to-end encryption -->
     <extensionProvider>
         <elementName>e2e</elementName>
         <namespace>urn:ietf:params:xml:ns:xmpp-e2e</namespace>
         <className>org.kontalk.client.E2EEncryption$Provider</className>
+    </extensionProvider>
+
+    <!-- XEP-0027: Current Jabber OpenPGP Usage (Signing) -->
+    <extensionProvider>
+        <elementName>x</elementName>
+        <namespace>jabber:x:signed</namespace>
+        <className>org.kontalk.client.OpenPGPSignedMessage$Provider</className>
+    </extensionProvider>
+
+    <!-- XEP-0080: User Location -->
+    <extensionProvider>
+        <elementName>geoloc</elementName>
+        <namespace>http://jabber.org/protocol/geoloc</namespace>
+        <className>org.kontalk.client.UserLocation$Provider</className>
     </extensionProvider>
 
 </smackProviders>

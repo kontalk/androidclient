@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,12 +18,6 @@
 
 package org.kontalk.crypto;
 
-import org.kontalk.crypto.PGP.PGPKeyPairRing;
-import org.kontalk.util.ByteArrayInOutStream;
-import org.kontalk.util.MessageUtils;
-import org.spongycastle.bcpg.ArmoredInputStream;
-import org.spongycastle.openpgp.PGPException;
-
 import java.io.IOException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
@@ -32,6 +26,14 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import org.spongycastle.bcpg.ArmoredInputStream;
+import org.spongycastle.openpgp.PGPException;
+
+import org.kontalk.crypto.PGP.PGPKeyPairRing;
+import org.kontalk.provider.Keyring;
+import org.kontalk.util.ByteArrayInOutStream;
+import org.kontalk.util.MessageUtils;
 
 
 /**
@@ -48,6 +50,7 @@ public class PersonalKeyImporter implements PersonalKeyPack {
     private ByteArrayInOutStream mPublicKey;
     private ByteArrayInOutStream mPrivateKey;
     private ByteArrayInOutStream mTrustedKeys;
+    private ByteArrayInOutStream mAccountInfo;
 
     public PersonalKeyImporter(ZipInputStream keypack, String passphrase) {
         mKeyPack = keypack;
@@ -55,7 +58,8 @@ public class PersonalKeyImporter implements PersonalKeyPack {
     }
 
     public void load() throws IOException {
-        ByteArrayInOutStream publicKey = null, privateKey = null, trustedKeys = null;
+        ByteArrayInOutStream publicKey = null, privateKey = null,
+            trustedKeys = null, accountInfo = null;
         IOException zipException = null;
 
         ZipEntry entry;
@@ -80,6 +84,12 @@ public class PersonalKeyImporter implements PersonalKeyPack {
                     trustedKeys = MessageUtils.readFully(mKeyPack, MAX_KEY_SIZE);
                 }
 
+                // account info
+                else if (ACCOUNT_INFO_FILENAME.equals(entry.getName())) {
+                    // I don't really know if this is good...
+                    accountInfo = MessageUtils.readFully(mKeyPack, MAX_KEY_SIZE);
+                }
+
             }
         }
         catch (IOException e) {
@@ -97,6 +107,7 @@ public class PersonalKeyImporter implements PersonalKeyPack {
         mPrivateKey = privateKey;
         mPublicKey = publicKey;
         mTrustedKeys = trustedKeys;
+        mAccountInfo = accountInfo;
     }
 
     /** Releases all resources of imported data. */
@@ -134,11 +145,28 @@ public class PersonalKeyImporter implements PersonalKeyPack {
         return mPublicKey != null ? mPublicKey.toByteArray() : null;
     }
 
-    @SuppressWarnings({"unchecked"})
-    public Map<String, String> getTrustedKeys() throws IOException {
+    @SuppressWarnings("unchecked")
+    public Map<String, Keyring.TrustedFingerprint> getTrustedKeys() throws IOException {
         if (mTrustedKeys != null) {
             Properties prop = new Properties();
             prop.load(mTrustedKeys.getInputStream());
+
+            try {
+                return Keyring.fromTrustedFingerprintMap((Map) prop);
+            }
+            catch (Exception ex) {
+                throw new IOException("invalid trusted keys file", ex);
+            }
+        }
+
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, String> getAccountInfo() throws IOException {
+        if (mAccountInfo != null) {
+            Properties prop = new Properties();
+            prop.load(mAccountInfo.getInputStream());
             return new HashMap<>((Map) prop);
         }
 

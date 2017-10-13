@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,11 +35,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
@@ -50,6 +51,7 @@ import org.kontalk.util.SystemUtils;
  * This class doesn't need to be configured: it hides all the logic of picking
  * a random server, connecting to it, downloading the server list and saving it
  * in the application cache. Finally, it restarts the message center.
+ *
  * @author Daniele Ricci
  */
 public class ServerListUpdater extends BroadcastReceiver {
@@ -74,13 +76,13 @@ public class ServerListUpdater extends BroadcastReceiver {
     }
 
     public void start() {
-        /**
+        /*
          * We have a server list - either builtin or cached. Now pick a random
          * server from the list and contact it for the latest server list.
          */
         EndpointServer random = Preferences.getEndpointServer(mContext);
 
-        /** no server found -- notify to user */
+        /* no server found -- notify to user */
         if (random == null) {
             Log.i(TAG, "no list to pick a random server from - aborting");
 
@@ -99,7 +101,7 @@ public class ServerListUpdater extends BroadcastReceiver {
         }
 
         // check for offline mode
-        if (Preferences.getOfflineMode(mContext)) {
+        if (Preferences.getOfflineMode()) {
             if (mListener != null)
                 mListener.offlineModeEnabled();
             return;
@@ -189,7 +191,9 @@ public class ServerListUpdater extends BroadcastReceiver {
         file.delete();
     }
 
-    /** The path to the locally cached downloaded server list. */
+    /**
+     * The path to the locally cached downloaded server list.
+     */
     private static File getCachedListFile(Context context) {
         return new File(context.getCacheDir(), "serverlist.properties");
     }
@@ -211,9 +215,7 @@ public class ServerListUpdater extends BroadcastReceiver {
             return list;
         }
         catch (Exception e) {
-            IOException ie = new IOException("parse error");
-            ie.initCause(e);
-            throw ie;
+            throw new IOException("parse error", e);
         }
     }
 
@@ -250,36 +252,57 @@ public class ServerListUpdater extends BroadcastReceiver {
         }
     }
 
-    /** Returns (and loads if necessary) the current server list. */
+    /**
+     * Returns (and loads if necessary) the current server list.
+     */
     public static ServerList getCurrentList(Context context) {
         if (sCurrentList != null)
             return sCurrentList;
 
+        ServerList builtin = null;
         try {
+            builtin = parseBuiltinList(context);
             sCurrentList = parseCachedList(context);
+            // use cached list if recent than
+            if (builtin.getDate().after(sCurrentList.getDate()))
+                sCurrentList = builtin;
         }
         catch (IOException e) {
-            try {
-                sCurrentList = parseBuiltinList(context);
+            if (builtin == null) {
+                ReportingManager.logException(e);
+                Log.w(TAG, "unable to load builtin server list", e);
             }
-            catch (IOException be) {
-                Log.w(TAG, "unable to load builtin server list", be);
-            }
+            sCurrentList = builtin;
         }
 
         return sCurrentList;
     }
 
     public interface UpdaterListener {
-        /** Called if either the cached list or the built-in list cannot be loaded.*/
-        public void noData();
-        /** Called when network is not available. */
-        public void networkNotAvailable();
-        /** Called when offline mode is active. */
-        public void offlineModeEnabled();
-        /** Called if an error occurs during update. */
-        public void error(Throwable e);
-        /** Called when list update has finished. */
-        public void updated(ServerList list);
+        /**
+         * Called if either the cached list or the built-in list cannot be loaded.
+         */
+        void noData();
+
+        /**
+         * Called when network is not available.
+         */
+        void networkNotAvailable();
+
+        /**
+         * Called when offline mode is active.
+         */
+        void offlineModeEnabled();
+
+        /**
+         * Called if an error occurs during update.
+         */
+
+        void error(Throwable e);
+
+        /**
+         * Called when list update has finished.
+         */
+        void updated(ServerList list);
     }
 }

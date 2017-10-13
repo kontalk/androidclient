@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
      Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -36,20 +36,31 @@
     <!-- appearance settings defaults -->
     <string name="pref_default_font_size">medium</string>
     <string name="pref_default_balloons">hangout</string>
+    <string name="pref_default_balloons_groups">hangout</string>
     <string name="pref_default_text_enter">default</string>
+    <bool name="pref_default_emoji_converter">false</bool>
 
     <!-- media settings defaults -->
-    <integer name="pref_default_image_resize">1024</integer>
+    <integer name="pref_default_image_resize">1920</integer>
+    <string name="pref_default_media_autodownload">wifi</string>
+    <integer name="pref_default_media_autodownload_threshold">100</integer>
+
+    <!-- location settings defaults -->
+    <string name="pref_default_maps_service">osm</string>
 
     <!-- notification settings defaults -->
     <bool name="pref_default_enable_notifications">true</bool>
     <string name="pref_default_ringtone">content://settings/system/notification_sound</string>
     <string name="pref_default_vibrate">always</string>
-    <bool name="pref_default_enable_notification_led">false</bool>
+    <bool name="pref_default_enable_notification_led">true</bool>
     <integer name="pref_default_notification_led_color">-48060</integer>
 
     <!-- maintenance settings defaults -->
     <integer name="pref_default_idle_time">300000</integer>
     <integer name="pref_default_wakeup_time">900000</integer>
     <bool name="pref_default_accept_any_certificate">false</bool>
+    <bool name="pref_default_debug_log">false</bool>
+
+    <!-- other settings defaults -->
+    <bool name="pref_default_reporting">true</bool>
 </resources>

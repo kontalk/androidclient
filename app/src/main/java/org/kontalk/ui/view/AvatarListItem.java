@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ import org.kontalk.data.Contact.ContactCallback;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.widget.RelativeLayout;
 
@@ -40,6 +41,7 @@ public abstract class AvatarListItem extends RelativeLayout implements ContactCa
     private Handler mHandler;
 
     static protected Drawable sDefaultContactImage;
+    static protected Drawable sDefaultGroupImage;
 
     public AvatarListItem(Context context) {
         super(context);
@@ -54,9 +56,20 @@ public abstract class AvatarListItem extends RelativeLayout implements ContactCa
     private void init(Context context) {
         mHandler = new Handler();
 
+    }
+
+    private Drawable getDefaultContactImage() {
         if (sDefaultContactImage == null)
-            sDefaultContactImage = context.getResources()
-                .getDrawable(R.drawable.ic_contact_picture);
+            sDefaultContactImage = ContextCompat
+                .getDrawable(getContext(), R.drawable.ic_default_contact);
+        return sDefaultContactImage;
+    }
+
+    private Drawable getDefaultGroupImage() {
+        if (sDefaultGroupImage == null)
+            sDefaultGroupImage = ContextCompat
+                .getDrawable(getContext(), R.drawable.ic_default_group);
+        return sDefaultGroupImage;
     }
 
     @Override
@@ -65,25 +78,30 @@ public abstract class AvatarListItem extends RelativeLayout implements ContactCa
         mAvatarView = (CircleContactBadge) findViewById(R.id.avatar);
 
         if (isInEditMode()) {
-            mAvatarView.setImageDrawable(sDefaultContactImage);
+            mAvatarView.setImageDrawable(getDefaultContactImage());
             mAvatarView.setVisibility(VISIBLE);
         }
     }
 
     protected void loadAvatar(Contact contact) {
+        Drawable defaultIcon = isGroupChat() ?
+            getDefaultGroupImage() : getDefaultContactImage();
+
         if (contact != null) {
             // we mark this with the contact's hash code for the async avatar
             mAvatarView.setTag(contact.hashCode());
             mAvatarView.assignContactUri(contact.getUri());
-            mAvatarView.setImageDrawable(sDefaultContactImage);
+            mAvatarView.setImageDrawable(defaultIcon);
             // laod avatar asynchronously
             contact.getAvatarAsync(getContext(), this);
         }
         else {
             mAvatarView.setTag(null);
-            mAvatarView.setImageDrawable(sDefaultContactImage);
+            mAvatarView.setImageDrawable(defaultIcon);
         }
     }
+
+    protected abstract boolean isGroupChat();
 
     @Override
     public void avatarLoaded(final Contact contact, final Drawable avatar) {
@@ -101,12 +119,12 @@ public abstract class AvatarListItem extends RelativeLayout implements ContactCa
         }
     }
 
-    private void updateAvatar(Contact contact, Drawable avatar) {
+    void updateAvatar(Contact contact, Drawable avatar) {
         try {
             // be sure the contact is still the same
             // this is an insane workaround against race conditions
             Integer contactTag = (Integer) mAvatarView.getTag();
-            if (contactTag != null && contactTag.intValue() == contact.hashCode())
+            if (contactTag != null && contactTag == contact.hashCode())
                 mAvatarView.setImageDrawable(avatar);
         }
         catch (Exception e) {

@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 package org.kontalk.billing;
 
 import android.content.Context;
+
+import org.kontalk.BuildConfig;
 
 
 /**
@@ -43,7 +45,7 @@ public class BillingServiceManager {
 
     /** Returns true if the billing action should be visible in the UI. */
     public static boolean isEnabled() {
-        return true;
+        return !BuildConfig.DEBUG;
     }
 
     public static String getResponseDesc(int code) {

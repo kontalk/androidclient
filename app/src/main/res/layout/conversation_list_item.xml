@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
+    android:background="@drawable/list_item_background"
     android:minHeight="@dimen/avatar_list_item_height"
     android:paddingRight="?attr/listPreferredItemPaddingRight"
     android:paddingEnd="?attr/listPreferredItemPaddingRight">
@@ -34,10 +35,13 @@
         style="@style/AvatarListItemTextStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:maxLines="1"
         android:singleLine="true"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@id/avatar"
+        android:layout_toEndOf="@id/avatar"
         android:layout_toLeftOf="@+id/date"
+        android:layout_toStartOf="@+id/date"
         android:layout_alignWithParentIfMissing="true"
         android:ellipsize="marquee" />
         <!-- android:src="@drawable/ic_list_alert_sms_failed" -->
@@ -48,10 +52,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:singleLine="true"
+        android:maxLines="1"
+        android:layout_toEndOf="@id/avatar"
         android:layout_toRightOf="@id/avatar"
         android:layout_below="@id/from"
         android:layout_alignWithParentIfMissing="true"
+        android:layout_toStartOf="@+id/emblems"
         android:layout_toLeftOf="@+id/emblems"
+        android:paddingBottom="16dp"
         app:emojiconSize="@dimen/emoji_listitem_size"
         app:emojiconAlignment="baseline"
         android:ellipsize="marquee" />
@@ -63,22 +71,36 @@
         android:layout_alignTop="@+id/from"
         android:layout_alignBottom="@+id/from"
         android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:paddingTop="16dp"
+        android:maxLines="1"
         android:singleLine="true"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textColor="@color/grayed_out" />
 
-    <FrameLayout android:id="@+id/emblems"
+    <LinearLayout android:id="@+id/emblems"
+		android:orientation="horizontal"
         android:layout_width="wrap_content"
         android:layout_height="20dip"
-        android:layout_marginLeft="4dip"
         android:layout_alignRight="@+id/date"
+		android:layout_alignEnd="@+id/date"
         android:layout_alignTop="@+id/subject">
+
+		<ImageView
+			android:id="@+id/sticky"
+			android:layout_width="@dimen/msg_status_size"
+			android:layout_height="@dimen/msg_status_size"
+            android:layout_marginLeft="4dip"
+            android:layout_marginStart="4dip"
+			android:src="@drawable/ic_msg_star"
+			android:visibility="gone" />
 
 	    <ImageView
 	        android:id="@+id/error"
-	        android:layout_width="20dip"
-	        android:layout_height="fill_parent"
+	        android:layout_width="@dimen/msg_status_size"
+	        android:layout_height="@dimen/msg_status_size"
+            android:layout_marginLeft="4dip"
+            android:layout_marginStart="4dip"
 	        android:visibility="gone" />
 
 	    <TextView
@@ -88,8 +110,10 @@
 	        android:minWidth="20dip"
 	        android:layout_height="fill_parent"
 	        android:gravity="center"
+            android:layout_marginLeft="4dip"
+            android:layout_marginStart="4dip"
 	        android:visibility="gone" />
 
-    </FrameLayout>
+    </LinearLayout>
 
 </org.kontalk.ui.view.ConversationListItem>

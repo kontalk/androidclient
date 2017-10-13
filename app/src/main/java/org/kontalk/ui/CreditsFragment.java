@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,6 +49,7 @@ public class CreditsFragment extends Fragment {
         View view = inflater.inflate(R.layout.about_credits, container, false);
 
         TextView coredevs = (TextView) view.findViewById(R.id.coredevs);
+        TextView contrib = (TextView) view.findViewById(R.id.contrib);
         TextView gfx = (TextView) view.findViewById(R.id.gfx);
         TextView translators = (TextView) view.findViewById(R.id.translators);
 
@@ -62,6 +63,9 @@ public class CreditsFragment extends Fragment {
 
             JSONArray devteam = root.getJSONArray("devteam");
             addCredits(coredevs, devteam);
+
+            JSONArray contributors = root.getJSONArray("contributors");
+            addCredits(contrib, contributors);
 
             JSONArray gfxteam = root.getJSONArray("gfx");
             addCredits(gfx, gfxteam);

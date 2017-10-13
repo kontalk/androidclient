@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -21,8 +21,7 @@
               android:layout_width="match_parent"
               android:orientation="vertical">
     <include layout="@layout/toolbar_simple"/>
-    <fragment android:name="org.kontalk.ui.ComposeMessageFragment"
-              android:id="@+id/fragment_compose_message"
+    <FrameLayout android:id="@+id/fragment_compose_message"
               android:layout_width="fill_parent"
               android:layout_height="fill_parent"/>
 </LinearLayout>

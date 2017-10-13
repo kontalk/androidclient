@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,35 +18,23 @@
 
 package org.kontalk.ui;
 
-import org.kontalk.R;
-import org.kontalk.data.Contact;
-import org.kontalk.data.Conversation;
-import org.kontalk.provider.MessagesProvider;
-import org.kontalk.ui.adapter.ConversationListAdapter;
-import org.kontalk.ui.view.AbsListViewScrollDetector;
-import org.kontalk.ui.view.ConversationListItem;
-import org.kontalk.util.Preferences;
-import org.kontalk.util.SystemUtils;
+import java.util.LinkedList;
+import java.util.List;
 
-import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.akalipetis.fragment.ActionModeListFragment;
 import com.akalipetis.fragment.MultiChoiceModeListener;
+import com.github.clans.fab.FloatingActionMenu;
 
-import android.app.SearchManager;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
-import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDiskIOException;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
-import android.support.v4.view.MenuItemCompat;
+import android.support.annotation.NonNull;
 import android.support.v7.view.ActionMode;
-import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -56,28 +44,33 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.CheckBox;
 import android.widget.ListView;
-import android.widget.Toast;
+import android.widget.TextView;
+
+import org.kontalk.Log;
+import org.kontalk.R;
+import org.kontalk.data.Contact;
+import org.kontalk.data.Conversation;
+import org.kontalk.provider.MyMessages;
+import org.kontalk.ui.adapter.ConversationListAdapter;
+import org.kontalk.ui.view.AbsListViewScrollDetector;
+import org.kontalk.ui.view.ConversationListItem;
+import org.kontalk.util.SystemUtils;
 
 
 public class ConversationListFragment extends ActionModeListFragment
         implements Contact.ContactChangeListener, MultiChoiceModeListener {
-    private static final String TAG = ConversationsActivity.TAG;
+    static final String TAG = ConversationsActivity.TAG;
 
     private static final int THREAD_LIST_QUERY_TOKEN = 8720;
 
     private ThreadListQueryHandler mQueryHandler;
-    private ConversationListAdapter mListAdapter;
+    ConversationListAdapter mListAdapter;
     private boolean mDualPane;
 
-    /** Search menu item. */
-    private MenuItem mSearchMenu;
-    private MenuItem mDeleteAllMenu;
-    /** Offline mode menu item. */
-    private MenuItem mOfflineMenu;
-
-    private View mAction;
-    private boolean mActionVisible;
+    FloatingActionMenu mAction;
+    boolean mActionVisible;
 
     private int mCheckedItemCount;
 
@@ -98,14 +91,22 @@ public class ConversationListFragment extends ActionModeListFragment
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mAction = view.findViewById(R.id.action);
-        mAction.setOnClickListener(new View.OnClickListener() {
+        mAction = (FloatingActionMenu) view.findViewById(R.id.action);
+        mAction.setClosedOnTouchOutside(true);
+        mActionVisible = true;
+
+        view.findViewById(R.id.action_compose).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                chooseContact();
+            public void onClick(View view) {
+                chooseContact(false);
             }
         });
-        mActionVisible = true;
+        view.findViewById(R.id.action_compose_group).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                chooseContact(true);
+            }
+        });
 
         getListView().setOnScrollListener(new AbsListViewScrollDetector() {
             @Override
@@ -203,87 +204,20 @@ public class ConversationListFragment extends ActionModeListFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.conversation_list_menu, menu);
-
-        // compose message
-        /*
-        MenuItem item = menu.findItem(R.id.menu_compose);
-        MenuItemCompat.setShowAsAction(item, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
-        */
-
-        // search
-        mSearchMenu = menu.findItem(R.id.menu_search);
-        SearchView searchView = (SearchView) MenuItemCompat.getActionView(mSearchMenu);
-        SearchManager searchManager = (SearchManager) getContext().getSystemService(Context.SEARCH_SERVICE);
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
-        // LayoutParams.MATCH_PARENT does not work, use a big value instead
-        searchView.setMaxWidth(1000000);
-
-        mDeleteAllMenu = menu.findItem(R.id.menu_delete_all);
-
-        // offline mode
-        mOfflineMenu = menu.findItem(R.id.menu_offline);
-
-        // trigger manually
-        onDatabaseChanged();
-        updateOffline();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (isActionModeActive())
-            return true;
+        return isActionModeActive() || super.onOptionsItemSelected(item);
+    }
 
-        switch(item.getItemId()) {
-            case R.id.menu_status:
-                StatusActivity.start(getActivity());
-                return true;
+    public boolean isActionMenuOpen() {
+        return mAction != null && mAction.isOpened();
+    }
 
-            case R.id.menu_offline:
-                final Context ctx = getActivity();
-                final boolean currentMode = Preferences.getOfflineMode(ctx);
-                if (!currentMode && !Preferences.getOfflineModeUsed(ctx)) {
-                    // show offline mode warning
-                    new AlertDialogWrapper.Builder(ctx)
-                        .setMessage(R.string.message_offline_mode_warning)
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                Preferences.setOfflineModeUsed(ctx);
-                                switchOfflineMode();
-                            }
-                        })
-                        .setNegativeButton(android.R.string.cancel, null)
-                        .show();
-                }
-                else {
-                    switchOfflineMode();
-                }
-                return true;
-
-            case R.id.menu_delete_all:
-                deleteAll();
-                return true;
-
-            case R.id.menu_mykey:
-                launchMyKey();
-                return true;
-
-            case R.id.menu_donate:
-                launchDonate();
-                return true;
-
-            case R.id.menu_settings: {
-                PreferencesActivity.start(getActivity());
-                return true;
-            }
-        }
-
-        return super.onOptionsItemSelected(item);
+    public void closeActionMenu() {
+        if (isActionMenuOpen())
+            mAction.close(true);
     }
 
     public boolean isActionModeActive() {
@@ -299,16 +233,22 @@ public class ConversationListFragment extends ActionModeListFragment
         mode.setTitle(getResources()
             .getQuantityString(R.plurals.context_selected,
                 mCheckedItemCount, mCheckedItemCount));
+        mode.invalidate();
     }
 
     @Override
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-        if (item.getItemId() == R.id.menu_delete) {
-            // using clone because listview returns its original copy
-            deleteSelectedThreads(SystemUtils
-                .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
-            mode.finish();
-            return true;
+        switch (item.getItemId()) {
+            case R.id.menu_delete:
+                // using clone because listview returns its original copy
+                deleteSelectedThreads(SystemUtils
+                    .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
+                mode.finish();
+                return true;
+            case R.id.menu_sticky:
+                stickSelectedThread();
+                mode.finish();
+                return true;
         }
         return false;
     }
@@ -329,77 +269,97 @@ public class ConversationListFragment extends ActionModeListFragment
 
     @Override
     public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-        return false;
+        boolean singleItem = (mCheckedItemCount == 1);
+        menu.findItem(R.id.menu_sticky).setVisible(singleItem);
+        return true;
     }
 
-    private void launchDonate() {
-        Intent i = new Intent(getActivity(), AboutActivity.class);
-        i.setAction(AboutActivity.ACTION_DONATION);
-        startActivity(i);
-    }
+    private void deleteSelectedThreads(SparseBooleanArray checked) {
+        boolean addGroupCheckbox = false;
+        int checkedCount = 0;
+        final List<Conversation.DeleteThreadHolder> list = new LinkedList<>();
+        for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
+            if (checked.get(i)) {
+                checkedCount++;
+                Cursor item = (Cursor) mListAdapter.getItem(i);
+                if (!addGroupCheckbox && Conversation.isGroup(item, MyMessages.Groups.MEMBERSHIP_MEMBER)) {
+                    addGroupCheckbox = true;
+                }
+                list.add(new Conversation.DeleteThreadHolder(item));
+            }
+        }
 
-    private void launchMyKey() {
-        Intent i = new Intent(getActivity(), MyKeyActivity.class);
-        startActivity(i);
-    }
-
-    private void deleteSelectedThreads(final SparseBooleanArray checked) {
-        new AlertDialogWrapper
-            .Builder(getActivity())
-            .setMessage(R.string.confirm_will_delete_threads)
-            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+        final boolean hasGroupCheckbox = addGroupCheckbox;
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
+            .customView(R.layout.dialog_text2_check, false)
+            .positiveText(android.R.string.ok)
+            .positiveColorRes(R.color.button_danger)
+            .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    Context ctx = getActivity();
-                    for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
-                        if (checked.get(i))
-                            Conversation.deleteFromCursor(ctx, (Cursor) mListAdapter.getItem(i));
+                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                    Context ctx = getContext();
+                    boolean promptCheckBoxChecked = false;
+                    if (hasGroupCheckbox) {
+                        CheckBox promptCheckbox = (CheckBox) dialog
+                            .getCustomView().findViewById(R.id.promptCheckbox);
+                        promptCheckBoxChecked = promptCheckbox.isChecked();
+                    }
+
+                    for (Conversation.DeleteThreadHolder item : list) {
+                        boolean hasLeftGroup = Conversation.isGroup(item, MyMessages.Groups.MEMBERSHIP_PARTED) ||
+                            Conversation.isGroup(item, MyMessages.Groups.MEMBERSHIP_KICKED);
+                        Conversation.deleteFromCursor(ctx, item,
+                            hasGroupCheckbox ? promptCheckBoxChecked : hasLeftGroup);
                     }
                     mListAdapter.notifyDataSetChanged();
                 }
             })
-            .setNegativeButton(android.R.string.cancel, null)
-            .show();
+            .negativeText(android.R.string.cancel);
+
+        MaterialDialog dialog = builder.build();
+
+        ((TextView) dialog.getCustomView().findViewById(android.R.id.text1))
+            .setText(getResources().getQuantityString(R.plurals.confirm_will_delete_threads, checkedCount));
+
+        if (addGroupCheckbox) {
+            TextView text2 = (TextView) dialog.getCustomView().findViewById(android.R.id.text2);
+            text2.setText(R.string.delete_threads_groups_disclaimer);
+            text2.setVisibility(View.VISIBLE);
+
+            CheckBox promptCheckbox = (CheckBox) dialog.getCustomView().findViewById(R.id.promptCheckbox);
+            promptCheckbox.setText(getResources()
+                .getQuantityString(R.plurals.delete_threads_leave_groups, checkedCount));
+            promptCheckbox.setVisibility(View.VISIBLE);
+        }
+
+        dialog.show();
     }
 
-    private void deleteThread(final long threadId) {
-        AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(getActivity());
-        builder.setMessage(R.string.confirm_will_delete_thread);
-        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                try {
-                    MessagesProvider.deleteThread(getActivity(), threadId);
-                    MessagingNotification.updateMessagesNotification(getActivity().getApplicationContext(), false);
-                }
-                catch (SQLiteDiskIOException e) {
-                    Log.w(TAG, "error deleting thread");
-                    Toast.makeText(getActivity(), R.string.error_delete_thread,
-                        Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-        builder.setNegativeButton(android.R.string.cancel, null);
-        builder.create().show();
+    private Conversation getCheckedItem() {
+        if (mCheckedItemCount != 1)
+            throw new IllegalStateException("checked items count must be exactly 1");
+
+        Cursor cursor = (Cursor) getListView().getItemAtPosition(getCheckedItemPosition());
+        return Conversation.createFromCursor(getActivity(), cursor);
     }
 
-    public void chooseContact() {
+    private int getCheckedItemPosition() {
+        SparseBooleanArray checked = getListView().getCheckedItemPositions();
+        return checked.keyAt(checked.indexOfValue(true));
+    }
+
+    private void stickSelectedThread() {
+        Conversation conv = getCheckedItem();
+        if (conv != null) {
+            conv.setSticky(!conv.isSticky());
+        }
+        mListAdapter.notifyDataSetChanged();
+    }
+
+    public void chooseContact(boolean multiselect) {
         ConversationsActivity parent = getParentActivity();
         if (parent != null)
-            parent.showContactPicker();
-    }
-
-    private void deleteAll() {
-        AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(getActivity());
-        builder.setMessage(R.string.confirm_will_delete_all);
-        builder.setPositiveButton(android.R.string.ok, new OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                MessagesProvider.deleteDatabase(getActivity());
-                MessagingNotification.updateMessagesNotification(getActivity().getApplicationContext(), false);
-            }
-        });
-        builder.setNegativeButton(android.R.string.cancel, null);
-        builder.create().show();
+            parent.showContactPicker(multiselect);
     }
 
     public ConversationsActivity getParentActivity() {
@@ -428,18 +388,12 @@ public class ConversationListFragment extends ActionModeListFragment
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-
-        // update offline mode
-        updateOffline();
-    }
-
-    @Override
     public void onStop() {
         super.onStop();
         Contact.unregisterContactChangeListener(this);
         mListAdapter.changeCursor(null);
+        if (isActionMenuOpen())
+            mAction.close(false);
     }
 
     @Override
@@ -459,7 +413,7 @@ public class ConversationListFragment extends ActionModeListFragment
     }
 
     /** Used only in fragment contexts. */
-    public void endConversation(ComposeMessageFragment composer) {
+    public void endConversation(AbstractComposeFragment composer) {
         getFragmentManager().beginTransaction().remove(composer).commit();
     }
 
@@ -467,47 +421,6 @@ public class ConversationListFragment extends ActionModeListFragment
         return (getActivity() == null ||
                 (getActivity() != null && getActivity().isFinishing())) ||
                 isRemoving();
-    }
-
-    /* Updates various UI elements after a database change. */
-    private void onDatabaseChanged() {
-        boolean visible = (mListAdapter != null && !mListAdapter.isEmpty());
-        if (mSearchMenu != null) {
-            mSearchMenu.setEnabled(visible).setVisible(visible);
-        }
-        // if it's null it hasn't gone through onCreateOptionsMenu() yet
-        if (mSearchMenu != null) {
-            mSearchMenu.setEnabled(visible).setVisible(visible);
-            mDeleteAllMenu.setEnabled(visible).setVisible(visible);
-        }
-    }
-
-    /** Updates offline mode menu. */
-    private void updateOffline() {
-        ConversationsActivity context = getParentActivity();
-        if (mOfflineMenu != null && context != null) {
-            boolean offlineMode = Preferences.getOfflineMode(context);
-            // set menu
-            int icon = (offlineMode) ? R.drawable.ic_menu_start_conversation :
-                android.R.drawable.ic_menu_close_clear_cancel;
-            int title = (offlineMode) ? R.string.menu_online : R.string.menu_offline;
-            mOfflineMenu.setIcon(icon);
-            mOfflineMenu.setTitle(title);
-            // set window title
-            context.setTitle(offlineMode);
-        }
-    }
-
-    private void switchOfflineMode() {
-        ConversationsActivity ctx = getParentActivity();
-        if (ctx != null) {
-            boolean currentMode = Preferences.getOfflineMode(ctx);
-            Preferences.switchOfflineMode(ctx);
-            updateOffline();
-            // notify the user about the change
-            int text = (currentMode) ? R.string.going_online : R.string.going_offline;
-            Toast.makeText(ctx, text, Toast.LENGTH_SHORT).show();
-        }
     }
 
     @Override
@@ -519,6 +432,10 @@ public class ConversationListFragment extends ActionModeListFragment
                 startQuery();
             }
         });
+    }
+
+    public boolean hasListItems() {
+        return mListAdapter != null && !mListAdapter.isEmpty();
     }
 
     /**
@@ -543,7 +460,9 @@ public class ConversationListFragment extends ActionModeListFragment
             switch (token) {
                 case THREAD_LIST_QUERY_TOKEN:
                     mListAdapter.changeCursor(cursor);
-                    onDatabaseChanged();
+                    ConversationsActivity parent = getParentActivity();
+                    if (parent != null)
+                        parent.onDatabaseChanged();
                     break;
 
                 default:

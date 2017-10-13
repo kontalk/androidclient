@@ -17,6 +17,16 @@
     {
       "name": "Giovanni Lauricella",
       "email": "zio1964@gmail.com"
+    },
+    {
+      "name": "Andrew Nayenko",
+      "email": "@relan"
+    }
+  ],
+  "contributors": [
+    {
+      "name": "Andrew Nayenko",
+      "email": "@relan"
     }
   ],
   "translators": [
@@ -77,8 +87,16 @@
       "email": "slsimic@gmail.com"
     },
     {
-      "name": "SylvieLorxu",
+      "name": "Sylvia van Os",
       "email": "iamsylvie@openmailbox.org"
+    },
+    {
+      "name": "Sebastian Pipping",
+      "email": "sebastian@pipping.org"
+    },
+    {
+      "name": "Suso Comesaña",
+      "email": "susobaco@opmbx.org"
     },
     {
       "name": "Viktor Filinkov",

@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,13 +23,18 @@ import java.util.regex.Pattern;
 
 /**
  * Defines a server address.
+ *
  * @author Daniele Ricci
  */
 public class EndpointServer {
-    /** Default client port. */
+    /**
+     * Default client port.
+     */
     public static final int DEFAULT_PORT = 5222;
 
-    /** Validation pattern. Very basic. */
+    /**
+     * Validation pattern. Very basic.
+     */
     // TODO use this also for parsing
     private static final Pattern sPattern = Pattern.compile("^[A-Za-z0-9\\-\\.]+(\\|[A-Za-z0-9\\-\\.]+(:\\d+)?)?$");
 
@@ -98,15 +103,24 @@ public class EndpointServer {
         return mNetwork;
     }
 
-    /** Interface for providing a server. */
+    /**
+     * Interface for providing a server.
+     */
     public interface EndpointServerProvider {
-        /** Returns the next server that hasn't been picked yet. */
+        /**
+         * Returns the next server that hasn't been picked yet.
+         */
         public EndpointServer next();
-        /** Resets the provider to its initial state. */
+
+        /**
+         * Resets the provider to its initial state.
+         */
         public void reset();
     }
 
-    /** A basic server provider for a single server. */
+    /**
+     * A basic server provider for a single server.
+     */
     public static class SingleServerProvider implements EndpointServerProvider {
         private String mUri;
         private boolean mCalled;
@@ -138,7 +152,9 @@ public class EndpointServer {
         }
     }
 
-    /** Returns true if the input value is a valid endpoint address. */
+    /**
+     * Returns true if the input value is a valid endpoint address.
+     */
     public static boolean validate(String value) {
         return sPattern.matcher(value).matches();
     }

@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,8 @@ package org.kontalk.ui.view;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.view.ViewStub;
 import android.widget.LinearLayout;
@@ -34,19 +36,24 @@ import org.kontalk.util.SystemUtils;
  * Avatar-based message balloon theme.
  * @author Daniele Ricci
  */
-public class AvatarMessageTheme extends BaseMessageTheme {
+public class AvatarMessageTheme extends BaseMessageTheme implements Contact.ContactCallback {
 
     private static Drawable sDefaultContactImage;
 
     private final int mDrawableId;
+    /** If true, handles collapsed message blocks (hides adjacent avatars). */
+    private final boolean mMessageBlocks;
 
-    private LinearLayout mBalloonView;
+    protected LinearLayout mBalloonView;
 
-    private CircleContactBadge mAvatar;
+    protected CircleContactBadge mAvatar;
 
-    public AvatarMessageTheme(int layoutId, int drawableId) {
+    private Handler mHandler;
+
+    public AvatarMessageTheme(int layoutId, int drawableId, boolean messageBlocks) {
         super(layoutId);
         mDrawableId = drawableId;
+        mMessageBlocks = messageBlocks;
     }
 
     @Override
@@ -57,9 +64,11 @@ public class AvatarMessageTheme extends BaseMessageTheme {
 
         mAvatar = (CircleContactBadge) view.findViewById(R.id.avatar);
 
+        mHandler = new Handler();
+
         if (sDefaultContactImage == null) {
-            sDefaultContactImage = mContext.getResources()
-                .getDrawable(R.drawable.ic_contact_picture);
+            sDefaultContactImage = ContextCompat
+                .getDrawable(mContext, R.drawable.ic_default_contact);
         }
 
         return view;
@@ -77,44 +86,97 @@ public class AvatarMessageTheme extends BaseMessageTheme {
         }
     }
 
-    private void setView() {
+    protected void setView(boolean sameMessageBlock) {
         if (mBalloonView != null) {
             mBalloonView.setBackgroundResource(mDrawableId);
         }
     }
 
     @Override
-    public void setIncoming(Contact contact) {
-        setView();
+    public void setIncoming(Contact contact, boolean sameMessageBlock) {
+        setView(sameMessageBlock);
 
         if (mAvatar != null) {
-            mAvatar.assignContactUri(contact != null ? contact.getUri() : null);
-            mAvatar.setImageDrawable(contact != null ?
-                contact.getAvatar(mContext) : sDefaultContactImage);
+            if (mMessageBlocks && sameMessageBlock) {
+                mAvatar.setVisibility(View.INVISIBLE);
+                mAvatar.setImageDrawable(null);
+            }
+            else {
+                mAvatar.setImageDrawable(sDefaultContactImage);
+                if (contact != null) {
+                    // we mark this with the contact's hash code for the async avatar
+                    mAvatar.setTag(contact.hashCode());
+                    mAvatar.assignContactUri(contact.getUri());
+                    contact.getAvatarAsync(mContext, this);
+                }
+                else {
+                    mAvatar.setTag(null);
+                    mAvatar.assignContactUri(null);
+                }
+                mAvatar.setVisibility(View.VISIBLE);
+            }
         }
 
-        super.setIncoming(contact);
+        super.setIncoming(contact, sameMessageBlock);
     }
 
     @Override
-    public void setOutgoing(Contact contact, int status) {
-        setView();
+    public void setOutgoing(Contact contact, int status, boolean sameMessageBlock) {
+        setView(sameMessageBlock);
 
         if (mAvatar != null) {
-            Drawable avatar;
-            Bitmap profile = SystemUtils.getProfilePhoto(mContext);
-            if (profile != null) {
-                avatar = new BitmapDrawable(mContext.getResources(), profile);
+            if (mMessageBlocks && sameMessageBlock) {
+                mAvatar.setVisibility(View.INVISIBLE);
+                mAvatar.setImageDrawable(null);
             }
             else {
-                avatar = sDefaultContactImage;
-            }
+                Drawable avatar;
+                Bitmap profile = SystemUtils.getProfilePhoto(mContext);
+                if (profile != null) {
+                    avatar = new BitmapDrawable(mContext.getResources(), profile);
+                }
+                else {
+                    avatar = sDefaultContactImage;
+                }
 
-            mAvatar.setImageDrawable(avatar);
-            mAvatar.assignContactUri(SystemUtils.getProfileUri(mContext));
+                mAvatar.setImageDrawable(avatar);
+                mAvatar.assignContactUri(SystemUtils.getProfileUri(mContext));
+                mAvatar.setVisibility(View.VISIBLE);
+            }
         }
 
-        super.setOutgoing(contact, status);
+        super.setOutgoing(contact, status, sameMessageBlock);
+    }
+
+    @Override
+    public void avatarLoaded(final Contact contact, final Drawable avatar) {
+        if (avatar != null) {
+            if (mHandler.getLooper().getThread() != Thread.currentThread()) {
+                mHandler.post(new Runnable() {
+                    public void run() {
+                        updateAvatar(contact, avatar);
+                    }
+                });
+            }
+            else {
+                updateAvatar(contact, avatar);
+            }
+        }
+    }
+
+    void updateAvatar(Contact contact, Drawable avatar) {
+        try {
+            // be sure the contact is still the same
+            // this is an insane workaround against race conditions
+            Integer contactTag = (Integer) mAvatar.getTag();
+            if (contactTag != null && contactTag == contact.hashCode())
+                mAvatar.setImageDrawable(avatar);
+        }
+        catch (Exception e) {
+            // we are deliberately ignoring any exception here
+            // because an error here could happen only if something
+            // weird is happening, e.g. user leaving the activity
+        }
     }
 
 }

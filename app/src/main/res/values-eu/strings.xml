@@ -1,0 +1,650 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Kontalk Android client
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+<resources>
+    <string name="app_name">Kontalk</string>
+<string name="app_name_offline">Kontalk (lineaz kanpo)</string>
+    <string name="app_description">Komunitateak gidatutako istanteko mezularitza sarea</string>
+    <string name="service_name">Mezu Zentroa</string>
+    <string name="authenticator_name">Autentifikazio Zerbitzua</string>
+    <string name="sync_service_name">Sinkronizatu Kontaktuak</string>
+    <string name="download_service">Deskarga Zerbitzua</string>
+    <string name="yes">Bai</string>
+    <string name="no">Ez</string>
+    <string name="send">Bidali</string>
+    <string name="menu_compose">Idatzi</string>
+    <string name="menu_create_group">Sortu taldea</string>
+    <string name="menu_delete_all">Ezabatu txatak</string>
+    <string name="menu_search">Bilatu</string>
+    <string name="mykey_activity_title">Nire gako pertsonala</string>
+    <string name="menu_settings">Ezarpenak</string>
+    <string name="menu_offline">Jarri lineaz kanpo</string>
+    <string name="menu_online">Jarri linean</string>
+    <string name="menu_import_key">Inportatu gakoa</string>
+    <string name="menu_manual_verification">Baduzu kode bat dagoeneko?</string>
+    <string name="pref_network_settings">Sarea</string>
+    <string name="pref_network_uri">Eskuzko zerbitzariaren helbidea</string>
+    <string name="pref_title_network_uri">Honek zerbitzari zerrendaren kudeaketa automatikoa gainidatziko du</string>
+    <string name="number_validation_intro1">Mesedez sartu zure izena, hautatu zure herrialde-kodea eta idatzi zure telefono mugikor zenbakia. Hurrengo pantailan jarraibide gehiago emango dira.</string>
+    <string name="number_validation_intro2">Ezin baduzu deirik edo SMSrik jaso gailu honetan, txertatu zeurea den telefono zenbaki bat: zenbaki hori gailu honekin erlazionatuko dugu.</string>
+    <string name="code_validation_intro">Laster SMS edo dei bat jaso beharko zenuke zure zenbakian.</string>
+    <string name="code_validation_intro2">Mesedez txertatu behean jaso edo entzun duzun kodea.</string>
+    <string name="code_validation_intro3">Mesedez ohartu SMSa edo deia kanpoko zenbaki batetik etor daitekeela.</string>
+    <string name="code_validation_intro_missed_call">Laster dei galdu bat jaso beharko zenuke zure zenbakian. <b>MESEDEZ EZ ERANTZUN DEIARI.</b></string>
+    <string name="code_validation_intro2_missed_call">Mesedez txertatu deitu dizun zenbakiaren azken %d digituak.</string>
+    <string name="code_validation_intro_callerid">Ukitu azpiko botoia eta egin dei galdu bat telefono zenbaki horretara. Mesedez ohartu <b>erregistratzen ari zaren telefono zenbakitik hasieratu behar dela deia</b>. Deia doakoa da lehenengo tonua entzun bezain laster esekitzen baduzu. Guretzat nahikoa izango da.</string>
+    <string name="code_validation_intro2_callerid">Deia amaitzean, itzuli hona eta sakatu azpiko egiaztatze botoia.</string>
+    <string name="code_validation_intro_manual">Mesedez txertatu jaso duzun egiaztapen-kodea. Mesedez ohartu egiaztapen-kode bakoitza behin bakarrik erabil daitekeela.</string>
+    <string name="hint_validation_name">Zure izena</string>
+    <string name="hint_validation_number">Zure zenbakia</string>
+    <string name="hint_validation_code">Egiaztapen-kodea</string>
+    <string name="warn_invalid_number">Mesedez sartu baliozko telefono zenbaki bat.</string>
+    <string name="msg_validating_phone">Erregistratzea eskatzen…</string>
+    <string name="msg_importing_key">Gako pertsonala inportatzen…</string>
+    <string name="title_confirm_cancel_registration">Erregistratzea utzi?</string>
+    <string name="confirm_cancel_registration">Atzera bazoaz hutsetik hasi beharko duzu erregistratzen. Beste aplikazio batera aldatu behar baduzu, gailuaren Etxea botoia erabili.</string>
+    <string name="msg_initializing">Kontalk sarera erregistratzen…</string>
+    <string name="msg_authenticated">Sarera erregistratuta!</string>
+    <string name="share">Partekatu</string>
+    <string name="resend">Bidali berriro</string>
+    <string name="copy_message_text">Kopiatu testua</string>
+    <string name="delete_message">Ezabatu mezua</string>
+    <string name="confirm_delete_all">Ezabatu txat guztiak</string>
+    <string name="confirm_will_delete_all">Txat guztiak ezabatuko dira.</string>
+    <string name="sending_message">Mezua bidaltzen…</string>
+    <string name="message_text_copied">Mezuaren testua kopiatuta.</string>
+    <string name="call">Deitu</string>
+    <string name="mark_read">Irakurrita</string>
+    <string name="reply">Erantzun</string>
+    <string name="view_contact">Ikusi kontaktuak</string>
+    <string name="view_conversation">Ikusi txata</string>
+    <string name="delete_thread">Ezabatu txata</string>
+    <string name="menu_sticky">Gogokoak</string>
+    <string name="delete_thread_messages">Ezabatu txataren historia</string>
+    <string name="confirm_delete_thread">Ezabatu txata</string>
+    <string name="confirm_will_delete_thread">Txat osoa ezabatuko da.</string>
+    <string name="new_messages">Mezu berriak</string>
+    <string name="only_one_account_supported">Kontalk kontu bakarra onartzen da.</string>
+    <string name="hint_enter_text">Sartu zure testua hemen</string>
+    <string name="hint_type_to_compose">Tekleatu idazteko</string>
+    <string name="hint_open_kbd_to_compose">Ireki teklatua mezua idazteko</string>
+    <string name="view_image">Ikusi irudia</string>
+    <string name="title_message_options">Mezuaren aukerak</string>
+    <string name="menu_message_details">Xehetasunak</string>
+    <string name="title_message_details">Mezuaren xehetasunak</string>
+    <string name="message_type_label">"Mota: "</string>
+    <string name="text_message">Testu-mezua</string>
+    <string name="image_message">Irudidun mezua</string>
+    <string name="audio_message">Audio-mezua</string>
+    <string name="from_label">"Nork: "</string>
+    <string name="to_address_label">"Nori: "</string>
+    <string name="sent_label">"Bidalita: "</string>
+    <string name="received_label">"Jasota: "</string>
+    <string name="error_label">"Errorea: "</string>
+    <string name="sending_label">"Bidaltzen: "</string>
+    <string name="refused_label">"Onartu gabea: "</string>
+    <string name="notdelivered_label">"Banatu gabea: "</string>
+    <string name="delivered_label">"Banatuta: "</string>
+    <string name="encrypted_label">"Enkriptatuta: "</string>
+    <string name="security_label">"Segurtasuna: "</string>
+    <string name="size_label">"Tamaina: "</string>
+    <string name="size_unknown">(ezezaguna)</string>
+    <string name="title_file_info">Fitxategiaren informazioa</string>
+    <string name="pref_restart_msgcenter">Berrabiarazi mezu zentroa</string>
+    <string name="pref_title_restart_msgcenter">Erabili hau Kontalk ez badabil behar bezala</string>
+    <string name="pref_idle_time">Deskonektatu inaktibo dagoenean</string>
+    <string name="pref_title_idle_time">Zenbat denbora itxaron inaktibitateagatik deskonektatu aurretik</string>
+    <string name="pref_wakeup_time">Birkonektatu zerbitzarira</string>
+    <string name="pref_title_wakeup_time">Inaktibo egon ondoren zenbat denbora itxaron zerbitzarira birkonektatu aurretik. \"Push\" jakinarazpenak erabilgarri ez badaude edo sarearen kalitatea oso txarra bada bakarrik erabiltzen da</string>
+    <string name="pref_maintenance">Mantentzea</string>
+    <string name="pref_regenerate_keypair">Birsortu gako pertsonala</string>
+    <string name="pref_title_regenerate_keypair">Erabili hau zure gako pertsonalaren segurtasuna arriskuan bada</string>
+    <string name="pref_regenerate_keypair_confirm">Gako pare berri bat sortuko da eta zure kontuari esleituko zaio. Zure gako zaharra baliogabe bihurtuko da.</string>
+    <string name="contacts_list_title">Aukeratu kontaktu bat</string>
+    <string name="pref_messaging_settings">Mezularitza</string>
+    <string name="pref_privacy_settings">Pribatutasuna</string>
+    <string name="pref_encrypt">Enkriptatu mezuak</string>
+    <string name="pref_encrypt_userdata">Enkriptatu datu pertsonalak</string>
+    <string name="pref_title_on_encrypt_userdata">Egoera-mezua zure telefono zenbakia duten erabiltzaileek bakarrik izango dute ikusgai</string>
+    <string name="pref_title_off_encrypt_userdata">Egoera-mezua edonork izango du ikusgai</string>
+    <string name="pref_auto_accept_subscriptions">Onartu gonbidapenak automatikoki</string>
+    <string name="pref_send_typing">Bidali idazketa jakinarazpena</string>
+    <string name="pref_hide_presence">Ezkutatu presentzia</string>
+    <string name="pref_title_on_hide_presence">Erabiltzaileek ez zaituzte linean ikusiko</string>
+    <string name="pref_title_off_hide_presence">Erabiltzaileek linean zauden eta azkenekoz noiz konektatu zaren ikusiko dute</string>
+    <string name="contact_not_registered">Kontaktua ez dagoela Kontalken erregistratuta dirudi.</string>
+    <string name="error_store_outbox">Ezin izan da mezua irteerako ontzian biltegiratu. Agian zure memoria beteta dago?</string>
+    <string name="error_delete_thread">Ezin izan da haria ezabatu.</string>
+    <string name="error_delete_message">Ezin izan da mezua ezabatu.</string>
+    <string name="decrypt_message">Desenkriptatu mezua</string>
+    <string name="download_file">Deskargatu fitxategia</string>
+    <string name="download_again">Deskargatu berriro</string>
+    <string name="download">Deskargatu</string>
+    <string name="download_cancel">Utzi deskarga</string>
+    <string name="has_draft">Zirriborroa</string>
+    <string name="pref_update_server_list">Eguneratu zerbitzari zerrenda</string>
+    <string name="server_list_last_update">Azken eguneraketa: %s</string>
+    <string name="pref_title_push_notifications">Erabili \"push\" jakinarazpenak zerbitzariak onartzen baditu, bateria aurrezten du</string>
+    <string name="pref_push_notifications">\"Push\" jakinarazpenak</string>
+    <string name="pref_push_notifications_disabled">Desgaituta</string>
+    <string name="pref_push_notifications_title_default">\"Push\" jakinarazpenak bateria aurrezteko zerbitzariak lagundutako teknologia bat dira. Ez du eraginik denbora errealeko mezuen banaketan.
+
+Desgaituta dagoenean, Kontalk konexioaren portaera zorrotz doitu daiteke sare ezarpenen pantailan.</string>
+    <string name="pref_push_notifications_title_disabled">\"Push\" jakinarazpenen onarpena ez da sartu bertsio honetan.</string>
+    <string name="pref_push_notifications_title_unavailable">\"Push\" jakinarazpenak ez dira onartzen gailu honetan.</string>
+    <string name="hint_search_full">Bilatu mezuak</string>
+    <string name="hint_search_quickbox">Testua zure mezuetan</string>
+    <string name="title_search">Bilatu: \"%s\"</string>
+    <string name="text_search_results_empty">Ez da mezurik aurkitu.</string>
+    <string name="pref_notification_settings">Jakinarazpenak</string>
+    <string name="pref_enable_notifications">Jakinarazpenak</string>
+    <string name="pref_enable_notification_led">Jakinarazpen LEDa</string>
+    <string name="pref_notification_led_color">Jakinarazpen LEDaren kolorea</string>
+    <string name="pref_title_enable_notifications">Bistaratu mezu jakinarazpenak egoera-barran</string>
+    <string name="pref_ringtone">Hautatu txirrin-tonua</string>
+    <string name="pref_vibrate">Bibratu</string>
+    <string name="pref_title_vibrate">Jakinaraztean ere bibratu</string>
+    <string name="confirm_delete_message">Ezabatu mezua</string>
+    <string name="confirm_will_delete_message">Mezua ezabatu egingo da.</string>
+    <string name="confirm_will_delete_messages">Hautatutako mezuak ezabatu egingo dira.</string>
+    <string name="title_user_exists">Erabiltzailea existitzen da</string>
+    <string name="err_authentication_failed">Egiaztapen-kode ukatua. Autentifikazioak huts egin du.</string>
+    <string name="err_authentication_failed_callerid">Egiaztapena ez da behar bezala egin. Saiatu zenbakira berriro deitzen eta itxaron gehixeago.</string>
+    <string name="err_validation_failed">Telefono zenbakiaren egiaztapenak huts egin du.</string>
+    <string name="err_validation_retry_later">Saiakera gehiegi. Mesedez itxaron minutu batzuk eta saiatu berriro.</string>
+    <string name="msg_validation_canceled">Egiaztapena bertan behera utzi da. Halere SMS bat jaso dezakezu.</string>
+    <string name="err_validation_error">Errore bat gertatu da egiaztapenean. Mesedez saiatu berriro beranduago.</string>
+    <string name="err_validation_nonetwork">Ez dago Internet konexiorik erabilgarri. Kontalkek Internet konexio aktibo bat behar du funtzionatzeko.</string>
+    <string name="err_validation_network_error">Ezin izan da zerbitzarira konektatu. Mesedez saiatu berriro beranduago.</string>
+    <string name="err_validation_server_not_supported">Hautatutako zerbitzariak ez du erregistratzea onartzen. Mesedez konfiguratu beste bat ezarpenen pantailan.</string>
+    <string name="err_validation_user_exists"><b>Erabiltzen ari zaren zenbakia Kontalken erregistratuta dago jadanik.</b> Beste gailu bat baduzu erregistratuta, honekin jarraituz gero beste gailua Kontalketik deskonektatuko da. Mesedez kontsultatu gure dokumentazioa zure kontua gailu batetik bestera kopiatzeko. Aukeratu Ados halere jarraitzeko.</string>
+    <string name="text_encrypted">(enkriptatuta)</string>
+    <string name="peer_unknown">(ezezaguna)</string>
+    <string name="msg_draft_saved">Mezua zirriborro gisa gordeta.</string>
+    <string name="send_mime_not_supported">Onartu gabeko fitxategi mota.</string>
+    <string name="button_validate">Erregistratu</string>
+    <string name="button_validation_register">Egiaztatu</string>
+    <string name="button_validation_fallback">Ez zara ezer jasotzen ari?</string>
+    <string name="button_validation_fallback_callerid">Saiatu beste modu batean</string>
+    <string name="notify_ticker_download_completed">Deskarga osatuta</string>
+    <string name="notify_title_download_completed">Deskarga osatuta</string>
+    <string name="notify_text_download_completed">Eranskinaren deskarga osatuta</string>
+    <string name="notify_ticker_download_error">Deskargak huts egin du</string>
+    <string name="notify_title_download_error">Deskarga errorea</string>
+    <string name="notify_text_decryption_error">Desenkriptatzeak huts egin du</string>
+    <string name="notify_text_download_error">Eranskinaren deskargak huts egin du</string>
+    <string name="notify_ticker_upload_error">Kargak huts egin du</string>
+    <string name="notify_title_upload_error">Karga errorea</string>
+    <string name="notify_text_upload_error">Eranskinaren kargak huts egin du</string>
+    <string name="title_invalid_number">Zenbaki baliogabea</string>
+    <string name="err_store_message_failed">Ezin izan da mezua irteerako ontzian biltegiratu.</string>
+    <string name="msg_invalid_number">Mesedez sartu baliozko telefono zenbaki bat.</string>
+    <string name="msg_invalid_cc">Mesedez sartu baliozko herrialde-kode bat.</string>
+    <string name="msg_register_confirm_number1">Telefono zenbakia egiaztatuko dugu:</string>
+    <string name="msg_register_confirm_number2">Mesedez egiaztatu berriro zenbakia zuzena dela.</string>
+    <string name="title_invalid_code">Kode baliogabea</string>
+    <string name="msg_invalid_code">Mesedez sartu baliozko kode bat.</string>
+    <string name="title_nonetwork">Internet konexiorik ez</string>
+    <string name="title_fallback">Arazorik duzu?</string>
+    <string name="msg_fallback">Zure telefono zenbakia beste modu batean egiaztatzen saiatuko gara.</string>
+    <string name="title_no_name">Zure izena</string>
+    <string name="msg_no_name">Mesedez sartu izen bat.</string>
+    <string name="menu_refresh">Freskatu</string>
+    <string name="menu_invite">Gonbidatu erabiltzaileak</string>
+    <string name="title_error">Errorea</string>
+    <string name="person_me">Ni</string>
+    <string name="msg_do_refresh">Erabili menua &gt; Freskatu kontaktu zerrenda eguneratzeko.</string>
+    <string name="msg_sync_progress">Kontaktu zerrenda freskatzen…</string>
+    <string name="err_sync_failed">Ezin izan da kontaktu zerrenda freskatu. Mesedez saiatu berriro beranduago.</string>
+    <string name="err_sync_nonetwork">Sarea ez dago erabilgarri. Mesedez saiatu berriro beranduago.</string>
+    <string name="text_invite_message">Hepa! Eman begirada bat Kontalk-i, doako mezularitza aplikazio libre bat da! http://kontalk.org/</string>
+    <string name="text_contacts_empty">Erabiltzaile berriak zerrenda honetara gehituko dira automatikoki.
+
+Erabili <b>Menua</b> &gt; <b>Gonbidatu erabiltzaileak</b> norbaiti gonbidapen mezu bat bidaltzeko.</string>
+    <string name="text_conversations_empty">Mezuak idazten hasteko erabili azpiko <b>mezu berria</b> botoia.</string>
+    <string name="notify_ticker_external_storage">Kanpoko biltegia ez dago erabilgarri</string>
+    <string name="notify_text_external_storage">Ezin izan da kanpo biltegian idatzi.</string>
+    <string name="title_user_not_found">Erabiltzailea ez da aurkitu</string>
+    <string name="message_user_not_found">Kontaktua ez dagoela Kontalken erregistratuta dirudi. Halere erabiltzailearekin harremanetan jartzen saia zaitezke edo berari gonbidapen mezu bat bidali.</string>
+    <string name="yes_user_not_found">Jarri halere erabiltzailearekin harremanetan</string>
+    <string name="no_user_not_found">Bidali gonbidapena</string>
+    <string name="pref_appearance_settings">Itxura</string>
+    <string name="pref_font_size">Letra-tamaina</string>
+    <string name="menu_status">Egoera</string>
+    <string name="menu_attachment">Erantsi</string>
+    <string name="menu_smileys">Aurpegierak</string>
+    <string name="menu_invite_group">Gehitu erabiltzaileak</string>
+    <string name="menu_start_group">Hasi taldea</string>
+    <string name="menu_group_info">Taldearen informazioa</string>
+    <string name="menu_set_group_subject">Ezarri talde-izena</string>
+    <string name="menu_leave_group">Utzi taldea</string>
+    <string name="menu_block_user">Blokeatu</string>
+    <string name="menu_unblock_user">Desblokeatu</string>
+    <string name="menu_encryption">Enkriptatzea</string>
+    <string name="vcard_message">vCard mezua</string>
+    <string name="open_file">Ireki fitxategia</string>
+    <string name="open_audio">Erreproduzitu audio-fitxategia</string>
+    <string name="msg_msgcenter_restarted">Mezu zentroa berrabiarazita.</string>
+    <string name="downloading_attachment">Eranskina deskargatzen…</string>
+    <string name="decrypting_attachment">Eranskina desenkriptatzen…</string>
+    <string name="attachment_download">Eranskinaren deskarga</string>
+    <string name="attachment_upload">Eranskinaren karga</string>
+    <string name="seen_moment_ago_label">duela une bat</string>
+    <string name="seen_online_label">aktibo</string>
+    <string name="seen_away_label">linean</string>
+    <string name="seen_typing_label">idazten…</string>
+    <string name="invitation_sent_label">gonbidapena onartzeko zain</string>
+    <string name="pref_custom_background">Atzeko plano pertsonalizatua</string>
+    <string name="pref_background_uri">Atzeko planoa</string>
+    <string name="pref_title_background_uri">Ezarri atzeko planoko irudi pertsonalizatua elkarrizketetan</string>
+    <string name="pref_title_custom_background">Hautatu atzeko planoa azpiko aukera erabiliz</string>
+    <string name="err_custom_background">Errore bat gertatu da atzeko planoa ezartzean. Mesedez saiatu beste irudi batekin.</string>
+    <string name="err_attachment_corrupted">Ezin izan da eranskina deskargatu. Mezua hondatua egon daiteke.</string>
+    <string name="serverlist_updating">Zerbitzari zerrenda eguneratzen…</string>
+    <string name="serverlist_update_error">Ezin izan da zerbitzari zerrenda deskargatu. Mesedez saiatu berriro beranduago.</string>
+    <string name="serverlist_update_nodata">Ez da zerbitzari zerrenda erabilgarririk aurkitu.</string>
+    <string name="serverlist_update_nonetwork">Sare erabilgarririk ez. Mesedez saiatu berriro beranduago.</string>
+    <string name="serverlist_update_offline">Lineaz kanpoko modua gaituta dago.</string>
+    <string name="pref_emoji_converter">Bihurtu aurpegierak emotikonotan</string>
+    <string name="pref_title_emoji_converter">Bihurtu automatikoki testu batzuetako aurpegierak emotikonotan</string>
+
+    <string name="pref_vibrate_label_always">Beti</string>
+    <string name="pref_vibrate_label_silent">Isilik dagoenean bakarrik</string>
+    <string name="pref_vibrate_label_never">Inoiz ez</string>
+    <string name="pref_fontsize_label_small">Txikia</string>
+    <string name="pref_fontsize_label_medium">Ertaina</string>
+    <string name="pref_fontsize_label_large">Handia</string>
+    <string name="pref_balloon_label_hangout">Hangout</string>
+    <string name="pref_balloon_label_silence">Isiltasuna</string>
+    <string name="pref_balloon_label_classic">Klasikoa</string>
+    <string name="pref_balloon_label_classic_old">Klasikoa (zaharra)</string>
+    <string name="pref_balloon_label_iphone">iPhone</string>
+    <string name="pref_text_enter_label_default">Lehenetsia</string>
+    <string name="pref_text_enter_label_newline">Sartu</string>
+    <string name="pref_text_enter_label_newline_send">Bidali</string>
+    <string name="pref_image_resize_label_original">Jatorrizkoa</string>
+    <string name="pref_image_resize_label_small">Txikia (0,4 MP)</string>
+    <string name="pref_image_resize_label_medium">Ertaina (1,0 MP)</string>
+    <string name="pref_image_resize_label_large">Handia (2,0 MP)</string>
+    <string name="pref_idle_time_label_never">Inoiz ez</string>
+    <string name="pref_idle_time_label_5m">5 minutu</string>
+    <string name="pref_idle_time_label_15m">15 minutu</string>
+    <string name="pref_idle_time_label_30m">30 minutu</string>
+    <string name="pref_idle_time_label_1h">1 ordu</string>
+    <string name="pref_wakeup_time_label_5m">5 minutu</string>
+    <string name="pref_wakeup_time_label_15m">15 minutu</string>
+    <string name="pref_wakeup_time_label_30m">30 minutu</string>
+    <string name="pref_wakeup_time_label_1h">1 ordu</string>
+    <string name="pref_wakeup_time_label_3h">3 ordu</string>
+
+    <string name="pref_remove_prefix">Markatze aurrezenbakia</string>
+    <string name="pref_change_passphrase">Aldatu gako pertsonalaren pasahitza</string>
+    <string name="pref_title_remove_prefix">Kendu markatze aurrezenbaki batzuk Kontalken telefono zenbakiak zuzen bat etortzeko</string>
+    <string name="pref_export_keypair">Esportatu gako pertsonala</string>
+    <string name="msg_import_keypair">Kontalkek zure gakoak %s-(e)tik inportatuko ditu zure kanpoko biltegira. Egon ziur fitxategia existitzen dela eta gako esportatuen baliozko artxibo bat dela.</string>
+    <string name="msg_import_keypair_complete">Gako pertsonala inportatzea osatuta.</string>
+    <string name="err_import_keypair_failed">Gako pertsonala inportatzeak huts egin du.</string>
+    <string name="err_import_keypair_uid_mismatch">Inportatutako gakoa ez dator bat sartu duzun telefono zenbakiarekin.</string>
+    <string name="err_import_keypair_read">Ezin izan da gako pertsonala irakurri kanpoko biltegitik.</string>
+    <string name="title_passphrase">Pasahitza</string>
+    <string name="title_passphrase_request">Gako pertsonalaren pasahitza</string>
+    <string name="err_invalid_passphrase">Pasahitz okerra. Berrabiarazi aplikazioa beste batekin saiatzeko.</string>
+
+    <string name="msg_status_sending">Bidaltzen</string>
+    <string name="msg_status_sent">Bidalita</string>
+    <string name="msg_status_notaccepted">Uko eginda</string>
+    <string name="msg_status_notdelivered">Banatu gabea</string>
+    <string name="msg_status_delivered">Banatuta</string>
+    <string name="msg_status_encrypted">Enkriptatuta</string>
+
+    <string name="pref_balloons">Txat bunbuiloen gaia</string>
+    <string name="pref_balloons_groups">Taldeko txat bunbuiloen gaia</string>
+
+    <string name="attachment_camera">Kamera</string>
+    <string name="attachment_picture">Galeria</string>
+    <string name="attachment_contact">Kontaktua</string>
+    <string name="attachment_audio">Audioa</string>
+    <string name="attachment_video">Bideoa</string>
+    <string name="attachment_file">Fitxategia</string>
+    <string name="attachment_vcard">Kontaktua</string>
+    <string name="attachment_location">Kokalekua</string>
+
+    <string name="msg_not_implemented">Oraindik ez da inplementatu.</string>
+
+    <string name="chooser_send_picture">Bidali irudia</string>
+    <string name="chooser_error_no_camera">Kanpoko biltegia ez dago erabilgarri. Kamerarekin irudiak hartzea ez da gaituta egongo.</string>
+    <string name="chooser_error_no_camera_app">Kamera aplikazio erabilgarririk ez.</string>
+    <string name="chooser_error_no_gallery_app">Galeria aplikaziorik ez erabilgarri.</string>
+    <string name="chooser_error_no_app">Fitxategia irekitzeko aplikazio egokirik ez erabilgarri.</string>
+
+    <string name="chooser_error_no_dialer">Markatzeko aplikaziorik ez erabilgarri deitzeko edo telefonia ez dago erabilgarri gailu honetan.</string>
+    <string name="chooser_error_no_browser">Esteka irekitzeko arakatzailerik ez erabilgarri.</string>
+    <string name="chooser_select_link">Aukeratu ekintza</string>
+
+    <string name="status_activity_title">Egoera mezua</string>
+    <string name="hint_status_entry">Idatzi zure egoera mezua hemen</string>
+    <string name="header_recent_status">Egoera mezu erabili berriak</string>
+
+    <string name="title_offline_mode_warning">Lineaz kanpoko modua</string>
+    <string name="message_offline_mode_warning">Lineaz kanpoko moduan Kontalk ez da zerbitzarira konektatuko lineako modura itzuli arte. Zu ez zara mezuak bidaltzeko edo jasotzeko gai izango eta erabiltzaileek lineaz kanpoko gisa ikusiko zaituzte.</string>
+
+    <string name="warning_offline_mode">Lineaz kanpoko modua aktibo dago. Mezuak atzera linean zaudenean bidaliko dira.</string>
+    <string name="going_offline">Lineaz kanpo joaten.</string>
+    <string name="going_online">Lineara joaten.</string>
+
+    <string name="pref_other">Besteak</string>
+    <string name="pref_help">Laguntza</string>
+    <string name="pref_donate">Dohaintza egin</string>
+    <string name="pref_about">Honi buruz</string>
+
+    <string name="title_about">Honi buruz</string>
+    <string name="title_donation">Dohaintza egin</string>
+    <string name="title_credits">Kredituak</string>
+
+    <string name="about_version">%1$s (%2$d)</string>
+
+    <string name="social_twitter">Twitter</string>
+    <string name="social_googleplus">Google Plus</string>
+    <string name="social_facebook">Facebook</string>
+    <string name="social_identica">Identi.ca</string>
+
+    <string name="donate_text">Kontalkek dirua behar du martxan jarraitzeko. Mesedez hausnartu dohaintza bat egiteaz, txikia bada ere.</string>
+    <string name="title_bitcoin_dialog">Bitcoin</string>
+    <string name="text_bitcoin_dialog">Bitcoin helbidea:
+%s</string>
+    <string name="donate_wallet">Google Play</string>
+    <string name="donate_paypal">PayPal</string>
+    <string name="donate_bitcoin">Bitcoin</string>
+    <string name="donate_flattr">Flattr</string>
+
+    <string name="msg_generating_keypair">Gako pertsonala atzeko planoan sortzen.</string>
+    <string name="msg_gen_keypair_complete">Gako pertsonalaren birsortzea osatuta.</string>
+    <string name="notify_gen_keypair_ticker">Gako pertsonala sortzen…</string>
+    <string name="notify_gen_keypair_title">Gako pertsonala sortzen</string>
+    <string name="notify_gen_keypair_text">Normal lan egiten jarraitu dezakezu.</string>
+
+    <string name="msg_xmpp_upgrading">Bertsio-berritzen…</string>
+    <string name="title_no_personal_key">Gako pertsonalik ez</string>
+    <string name="msg_no_personal_key">Une honetan ez dago gako pertsonalik erabilgarri (ziurrenik duela gutxi bertsio-berritu duzulako). Ez zara Kontalken sarean saioa hasteko gai izango ez baduzu gako pertsonalik sortzen. Mesedez sartu zure izena Kontalk itxiz eta berriro irekiz.</string>
+    <string name="msg_keypair_exported">Gako pertsonal eta saio hasiera ziurtagiria kanpoko biltegira esportatuta.</string>
+    <string name="err_keypair_export_write">Ezin izan da gako pertsonala kanpoko biltegian idatzi.</string>
+    <string name="err_keypair_export_other">Ezin izan da esportatu gako pertsonala.</string>
+
+    <string name="security_status_good">ona</string>
+    <string name="security_status_bad">txarra</string>
+
+    <string name="security_error_invalid_signature">" (sinadura baliogabea)"</string>
+    <string name="security_error_invalid_sender">" (bidaltzaile baliogabea)"</string>
+    <string name="security_error_invalid_recipient">" (hartzaile baliogabea)"</string>
+    <string name="security_error_invalid_timestamp">" (denbora-zigilu baliogabea)"</string>
+    <string name="security_error_invalid_data">" (datu baliogabeak)"</string>
+    <string name="security_error_decrypt_failed">" (des enkriptatzeak huts egin du)"</string>
+    <string name="security_error_integrity_check">" (osotasun egiaztapena)"</string>
+    <string name="security_error_public_key_unavail">" (gako publikorik ez erabilgarri)"</string>
+
+    <string name="invite_notification">txateatzera gonbidatzen zaitu</string>
+    <string name="title_invitation">Gonbidapena txat batera</string>
+    <string name="text_invitation1">Honek eskatua:</string>
+    <string name="text_invitation2">Hatz-marka:</string>
+    <string name="button_accept">Onartu</string>
+    <string name="button_refuse">Ukatu</string>
+    <string name="button_block">Blokeatu</string>
+    <string name="button_ignore">Egin ez ikusi</string>
+    <string name="button_identity">Identitatea</string>
+    <string name="button_private_chat">Txat pribatua</string>
+    <string name="text_invitation_info">(txat gonbidapena)</string>
+    <string name="title_identity">Identitatea</string>
+    <string name="title_identity_self">Identitatea (hau zu zara!)</string>
+
+    <string name="msg_connecting_iab">Google Play-ra konektatzen…</string>
+    <string name="msg_iab_thankyou">Eskerrik asko!</string>
+    <string name="msg_iab_thankyou_warning">Zerbait gaizki joan da, baina dohaintza behar bezala egin da. Eskerrik asko!</string>
+
+    <string name="iab_error_setup">Errorea aplikaziotik fakturazioa konfiguratzean (%d)</string>
+    <string name="iab_error_query">Aplikaziotik fakturazio inbentarioa kontsultatzeak huts egin du (%d)</string>
+
+    <string name="copy_clipboard">Kopiatu arbelera</string>
+    <string name="bitcoin_clipboard_copied">Bitcoin helbidea arbelera kopiatuta.</string>
+
+    <string name="warn_no_personal_key">Ezin izan da gako pertsonala kargatu. Desgaitu enkriptatzea ezarpenetatik hala ere mezuak bidaltzeko.</string>
+    <string name="warn_no_public_key">Ezin izan da gako pertsonalik aurkitu erabiltzaile honentzat. Saiatu zure kontaktu zerrenda freskatzen edo desgaitu enkriptatzea ezarpenetatik hala ere mezua bidaltzeko.</string>
+    <string name="warn_encryption_failed">Ezin izan da mezua enkriptatu. Desgaitu enkriptatzea ezarpenetatik hala ere mezua bidaltzeko.</string>
+    <string name="warn_not_subscribed">Ezin izan da mezua bidali. Erabiltzaileak oraindik ez du zure gonbidapena onartu.</string>
+
+    <string name="pref_sync_sim_contacts">Sinkronizatu kontaktuak SIMetik</string>
+    <string name="pref_title_sync_sim_contacts">Sartu SIMeko kontatuak erabiltzaile erregistratuak egiaztatzean</string>
+
+    <string name="pref_sync_invisible_contacts">Sartu kontatu ikusezinak</string>
+    <string name="pref_title_sync_invisible_contacts">Sartu Kontatuen aplikazioan bistaratzen ez diren kontaktuak. Gaitu DAVDroid erabiltzen baduzu</string>
+
+    <string name="pref_accept_any_certificate">Onartu edozein SSL ziurtagiri</string>
+
+    <string name="pref_delete_account">Ezabatu zure kontua</string>
+    <string name="msg_delete_account">Zure kontua ezabatzeak zure mezu guztiak ere ezabatuko ditu. Zure kontua zerbitzarian automatikoki ezabatuko da aste gutxi batzuen ondoren.</string>
+    <string name="msg_delete_account_progress">Zure kontua ezabatzen…</string>
+
+    <string name="msg_user_blocked">Erabiltzailea blokeatua izan da.</string>
+    <string name="msg_user_unblocked">Erabiltzailea desblokeatua izan da.</string>
+    <string name="title_block_user_warning">Ziur erabiltzailea hau blokeatu nahi duzula?</string>
+    <string name="msg_block_user_warning">Erabiltzaile hau blokeatzekotan zara. Hori egiten baduzu, erabiltzaile hau ez da zuri inolako mezurik edo multimedia edukirik bidaltzeko gai izango bera desblokeatzen duzun arte. Erabiltzaile hau ez da zure egoera edo azken presentzia jakina ikusteko gai izango eta zu ere ez zara bere egoera ikusteko gai izango. Albo-ondorio gisa, zu ere ez zara berari mezurik edo multimedia edukirik bidaltzeko gai izango.</string>
+    <string name="title_unblock_user_warning">Ziur erabiltzaile hau desblokeatu nahi duzula?</string>
+    <string name="msg_unblock_user_warning">Erabiltzaile hau desblokeatzekotan zaude. Desblokeatzeak zuri mezuak bidaltzea eta zure egoera eta azken presentzia jakina ikustea ahalbidetuko dio.</string>
+
+    <string name="title_disable_encryption">Desgaitu enkriptatzea txat honentzat?</string>
+    <string name="msg_disable_encryption">Txat honetan bidalitako mezu berri guztiak EZ dira enkriptatuko.
+Desgaitu enkriptatzea zure kontaktuak gako pertsonalik ez badu bakarrik.</string>
+    <string name="menu_disable_encryption">Desgaitu</string>
+
+    <string name="notification_text_more">Sakatu hemen gehiago jakiteko</string>
+
+    <string name="title_auth_error">Autentifikazio errorea</string>
+    <string name="msg_auth_error">Kontalken zerbitzari batean autentifikazioak huts egin du konektatzen saiatu garen azken aldian. Zerbitzariaren huts egite tenporal bat izan daiteke edo, ziurrenik, zerbitzaria zure gako pertsonala ukatzen ari da. Zure Kontalk kontua Android sistemaren ezarpenetatik ezabatzea eta berriro erregistratzea gomendatzen dizugu (nahiz eta zure Kontalkeko mezu guztiak galduko dituzun).</string>
+
+    <string name="warn_invite_no_app">Erabiltzaileak gonbidatzeko aplikaziorik ez erabilgarri.</string>
+
+    <string name="pref_text_enter">Sartu botoia</string>
+    <string name="pref_title_text_enter">Hautatu teklatuko sartu botoiaren portaera</string>
+
+    <string name="title_password1">Pasahitza:</string>
+    <string name="title_password2">Berretsi pasahitza:</string>
+
+    <string name="err_password_too_short">Pasahitzak gutxienez %d karaktere eduki behar ditu.</string>
+    <string name="err_passwords_mismatch">Pasahitza ez dator bat!</string>
+    <string name="err_password_invalid">Pasahitz okerra.</string>
+
+    <string name="hint_record">Sakatu mikrofonoa grabatzen hasteko.</string>
+    <string name="hint_ptt">Eduki mikrofonoa sakatuta grabatzeko.</string>
+    <string name="err_change_passphrase">Ezin izan da gako pertsonalaren pasahitza aldatu.</string>
+    <string name="err_file_not_found">Fitxategia ez da aurkitu.</string>
+    <string name="err_audio_record">Errorea audio grabaketa hastean.</string>
+    <string name="err_audio_record_writing">Errorea kanpoko biltegian idaztean.</string>
+    <string name="err_audio_record_noaudio">Ez da audiorik grabatu.</string>
+    <string name="err_playing_audio">Errorea audioa erreproduzitzean.</string>
+    <string name="err_playing_sdcard">Errorea kanpoko biltegitik irakurtzean.</string>
+    <string name="slide_to_cancel">IRRISTATU UZTEKO</string>
+
+    <string name="pref_media_settings">Multimedia</string>
+    <string name="pref_image_resize">Aldatu tamainaz irudiak</string>
+    <string name="pref_media_autodownload_threshold">Deskarga automatikoen muga</string>
+    <string name="pref_title_media_autodownload_threshold">Tamaina hau baino txikiagoa duten fitxategiak automatikoki deskargatuko dira beti</string>
+    <string name="pref_msg_media_autodownload_threshold">Sartu balio bat kB-tan. Ezarri 0n inoiz ez deskargatzeko automatikoki.</string>
+
+    <string name="pref_media_autodownload">Deskargatu automatikoki</string>
+    <string name="pref_media_autodownload_label_never">Inoiz ez</string>
+    <string name="pref_media_autodownload_label_wifi">Wi-Fi bidez bakarrik</string>
+    <string name="pref_media_autodownload_label_always">Beti</string>
+
+    <string name="pref_on">Aktibatuta</string>
+    <string name="pref_off">Desaktibatuta</string>
+
+    <string name="err_server_invalid_format">Helbide formatu baliogabea.</string>
+
+    <string name="err_no_contacts_app">Ez da kontaktu aplikaziorik aurkitu.</string>
+    <string name="err_no_contact">Kontaktua ez da aurkitu.</string>
+
+    <string name="warning_button_details">XEHETASUNAK</string>
+    <string name="warning_older_version">Zure laguna Kontalken bertsio zaharrago bat erabiltzen ari da. Baliteke eginbide batzuk zuzen ez funtzionatzea.</string>
+    <string name="warning_public_key_changed">Gako pertsonala aldatuta</string>
+    <string name="title_public_key_changed_warning">Gako pertsonala aldatuta</string>
+    <string name="msg_public_key_changed_warning">Mesedez egiaztatu erabiltzailearekin Kontalk berrinstalatu edo bere gakoa nahita birsortu duela, bestela komunikazioa arriskuan egon daiteke!</string>
+    <string name="warning_public_key_unknown">Gako pertsonala oraindik ez da egiaztatu</string>
+    <string name="title_public_key_unknown_warning">Egiaztatu gako pertsonala</string>
+    <string name="msg_public_key_unknown_warning">Mesedez egiaztatu erabiltzailearekin bere hatz-marka bat datorrela <b>identitatea</b> elkarrizketa-koadroan bistaratutakoarekin, bestela komunikazioa arriskuan egon daiteke!</string>
+    <string name="warning_public_key_group_unverified">Taldekide batzuen identitatea ez da egiaztatu.</string>
+
+    <string name="warning_user_blocked">Erabiltzaile hau blokeatu duzu.</string>
+
+    <string name="about_credits_devteam"><b>Kontalk hauei esker izan da posible:</b></string>
+    <string name="about_credits_gfx"><b>Grafikoak/Ikonoak</b></string>
+    <string name="about_credits_contrib"><b>Kolaboratzaileak</b></string>
+    <string name="about_credits_translators"><b>Itzultzaileak</b></string>
+
+    <string name="pref_show_blocked_users">Erakutsi erabiltzaile blokeatuak</string>
+    <string name="button_load_next_page">Kargatu mezu gehiago</string>
+
+    <string name="group_untitled">Taldea izengabea</string>
+    <string name="title_group_subject">Talde-izena</string>
+    <string name="group_command_create">Taldea sortuta:</string>
+    <string name="group_command_self_parted">Taldea utzi duzu.</string>
+    <string name="group_command_user_parted">%s-(e)k taldea utzi du.</string>
+    <string name="group_command_owner_parted">Jabeak (%s) taldea utzi du. Inork ezin du kiderik gehitu edo kendu.</string>
+    <string name="group_command_subject">Taldeari izen hau ezarri zaio: %s</string>
+    <string name="group_command_text_subject">Talde-izena aldatuta</string>
+    <string name="group_info_set_title">Aldatu izena</string>
+    <string name="group_command_users_added">Erabiltzaile gehituak:</string>
+    <string name="group_command_users_removed">Erabiltzaile kenduak:</string>
+
+    <string name="group_command_text_create">Taldea sortuta</string>
+    <string name="group_command_text_part">Norbaitek taldea utzi du</string>
+    <string name="group_command_text_part_self">Talde hau utzi duzu</string>
+    <string name="group_command_text_part_kicked">Talde honetatik kendu zaituzte</string>
+    <string name="group_command_text_add_remove">Norbait gehitua edo kendua izan da</string>
+
+    <string name="groupinfo_activity_title">Taldearen informazioa</string>
+
+    <string name="group_info_leave">Utzi taldea</string>
+    <string name="group_info_members">Taldekideak</string>
+    <string name="group_info_ignore_all">Ez ikusi egin guztiari</string>
+    <string name="group_info_owner_member">Jabea</string>
+    <string name="confirm_will_leave_group">Behin utzita ez zara talde honetara berriro sartzeko gai izango.</string>
+    <string name="leave_group_delete_messages">Ezabatu txataren historia ere</string>
+    <string name="group_info_menu_remove">Ezabatu</string>
+    <string name="group_info_menu_add_again">Gehitu berriro</string>
+
+    <string name="title_ignore_all_identities">Ez ikusi egin identitate guztiei?</string>
+    <string name="msg_ignore_all_identities">Egiaztatu gabeko identitate guztiak ez ikusi eginda gisa markatuko dira.</string>
+    <string name="learn_more">Ikasi gehiago</string>
+
+    <string name="text_group_command_fallback">Hau talde txateko mezu bat da. Kontalk bertsio zahar bat erabiltzen ari zara edo zure bezeroak ez du talde txaten protokoloa onartzen. Mesedez bertsio-berritu azken bertsiora!</string>
+
+    <string name="title_huawei_protected_apps">Huawei-ren aplikazio babestuak</string>
+    <string name="msg_huawei_protected_apps">Kontalkek babestutako aplikazioetan gaituta egotea behar du ondo funtzionatzeko.</string>
+    <string name="btn_huawei_protected_apps">Babestutako aplikazioak</string>
+    <string name="title_doze_mode">Bateria-optimizazioa</string>
+    <string name="msg_doze_mode">Kontalkek bateria-optimizaziotik salbuetsita egon behar du ondo funtzionatzeko. Hitz ematen dugu ez dizugula bateria xahutuko.</string>
+    <string name="btn_request_doze_mode_whitelist">Baimen eskaera</string>
+
+    <string name="status_label">"Egoera: "</string>
+    <string name="trust_unknown">Egiaztatu gabea</string>
+    <string name="trust_ignored">Ez ikusi eginda</string>
+    <string name="trust_verified">Egiaztatuta</string>
+    <string name="status_notsubscribed">Onartu gabea/Blokeatuta</string>
+
+    <string name="action_compose">Txat berria</string>
+    <string name="action_compose_group">Talde berria</string>
+
+    <string name="pref_reporting">Bidali erabilera-estatistika anonimoak</string>
+    <string name="pref_title_reporting">Hutsegiteen txostenak barne</string>
+
+    <string name="delete_threads_leave_any_groups">Utzi edozein talde ere</string>
+
+    <string name="check_dont_show_again">Ez erakutsi berriro</string>
+
+    <string name="pref_debug_log">Gaitu arazketa erregistroa</string>
+    <string name="pref_send_debug_log">Bidali arazketa erregistroa</string>
+
+    <string name="registration_poweredby">Honek eskainia</string>
+
+    <string name="audio_duration_max">%1$s / %2$s</string>
+
+    <string name="notification_group_title">%1$s @ %2$s</string>
+
+    <plurals name="confirm_will_delete_threads">
+	<item quantity="one">Hautatutako txata ezabatuko da.</item>
+	<item quantity="other">Hautatutako txatak ezabatuko dira.</item>
+</plurals>
+
+    <plurals name="delete_threads_leave_groups">
+	<item quantity="one">Talde ere utzi</item>
+	<item quantity="other">Taldeak ere utzi</item>
+</plurals>
+
+    <plurals name="unread_messages">
+	<item quantity="one">Irakurri gabeko mezu 1</item>
+	<item quantity="other">Irakurri gabeko %d mezu</item>
+</plurals>
+
+    <plurals name="unread_messages_group">
+	<item quantity="one">%1$d mezu @ %2$s</item>
+	<item quantity="other"/>
+</plurals>
+
+    <plurals name="notification_more">
+	<item quantity="one">+1 gehiago</item>
+	<item quantity="other">+%d gehiago</item>
+</plurals>
+
+    <plurals name="context_selected">
+	<item quantity="one">1 hautatua</item>
+	<item quantity="other">%d hautatuta</item>
+</plurals>
+
+    <plurals name="group_people">
+	<item quantity="one">Pertsona 1</item>
+	<item quantity="other">%d pertsona</item>
+</plurals>
+
+<string name="delete_threads_groups_disclaimer">Talde txatak txat historiatik ezabatuko dira, goiko kontrol-laukiak hautatuta ez badago behintzat.</string>
+    <string name="create_group_disclaimer">Mesedez gogoratu taldekide guztiek elkar ezagutu behar dutela txateatu ahal izateko.</string>
+    <string name="location_message">Kokaleku mezua</string>
+    <string name="position_screen_title">Posizioa</string>
+    <string name="pref_maps_google_label">Google Maps</string>
+    <string name="pref_maps_osm_label">OpenStreetMap</string>
+
+    <string name="notification_location">Kokaleku bat bidali zaizu</string>
+    <string name="location_no_result">Emaitzarik ez</string>
+    <string name="places_nearby">Hurbileko lekuak</string>
+    <string name="send_selected_location">Bidali hautatutako kokalekua</string>
+    <string name="send_location">Bidali zure uneko kokalekua</string>
+    <string name="accurate_to">%1$s metroko zehaztasuna</string>
+    <string name="meters_away">%d m-ra</string>
+    <string name="kilometers_away">%.2f km-ra</string>
+    <string name="loading">Kargatzen…</string>
+    <string name="your_position">Zu</string>
+    <string name="err_googlemaps_fallback_osm">Google Maps ez dago erabilgarri, OpenStreetMap-era itzultzen da.</string>
+    <string name="err_location_no_providers">Kokaleku-hornitzailerik ez erabilgarri. Uneko kokalekua ez da erabilgarri egongo.</string>
+    <string name="err_location_access_unknown_error">Ezin dira kokaleku zerbitzuak aktibatu.</string>
+    <string name="msg_location_disabled">Kokalekura sarbidea behar dugu. Aukeratu Ados ezarpenetara joan eta gaitzeko.</string>
+
+    <string name="menu_open_map">Ireki mapetan</string>
+    <string name="menu_map">Mapa</string>
+    <string name="menu_satellite">Satelitea</string>
+
+    <string name="pref_location_settings">Kokalekua</string>
+    <string name="pref_maps_service">Zerbitzu-hornitzailea</string>
+
+    </resources>

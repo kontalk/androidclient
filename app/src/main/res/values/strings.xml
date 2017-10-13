@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
     <string name="no">No</string>
     <string name="send">Send</string>
     <string name="menu_compose">Compose</string>
+    <string name="menu_create_group">Create group</string>
     <string name="menu_delete_all">Delete chats</string>
     <string name="menu_search">Search</string>
     <string name="mykey_activity_title">My personal key</string>
@@ -36,15 +37,18 @@
     <string name="menu_online">Go online</string>
     <string name="menu_import_key">Import key</string>
     <string name="menu_manual_verification">Already have a code?</string>
-    <string name="pref_network_settings">Network settings</string>
+    <string name="pref_network_settings">Network</string>
     <string name="pref_network_uri">Manual server address</string>
     <string name="pref_title_network_uri">This will override server list automatic management</string>
     <string name="number_validation_intro1">Please enter your name, select your country code and input your mobile phone number. More instructions will be provided in the next screen.</string>
     <string name="number_validation_intro2">If you are unable to receive calls or SMS on this device, insert a phone number you own: we will associate that number to this device.</string>
-    <string name="code_validation_intro">You should receive a SMS or a call from this number briefly:</string>
+    <string name="code_validation_intro">You should receive a SMS or a call to your number briefly.</string>
     <string name="code_validation_intro2">Please insert the code you receive or hear below.</string>
-    <string name="code_validation_intro_missed_call">You should receive a missed call from this number briefly. <b>PLEASE DO NOT ANSWER THE CALL.</b></string>
+    <string name="code_validation_intro3">Please note that SMS or call might come from a foreign number.</string>
+    <string name="code_validation_intro_missed_call">You should receive a missed call to your number briefly. <b>PLEASE DO NOT ANSWER THE CALL.</b></string>
     <string name="code_validation_intro2_missed_call">Please insert the last %d digits of the number you will be called by.</string>
+    <string name="code_validation_intro_callerid">Tap the button below and give a missed call to that phone number. Please note that <b>the call must be initiated from the phone number you are registering</b>. The call is free of charge if you hang up as soon as you hear the first ring. It will be enough for us.</string>
+    <string name="code_validation_intro2_callerid">After closing the call, come back here and tap the verify button below.</string>
     <string name="code_validation_intro_manual">Please insert the verification code you received. Please note that a verification code can be used only once.</string>
     <string name="hint_validation_name">Your name</string>
     <string name="hint_validation_number">Your number</string>
@@ -66,14 +70,15 @@
     <string name="message_text_copied">Message text copied.</string>
     <string name="call">Call</string>
     <string name="mark_read">Read</string>
+    <string name="reply">Reply</string>
     <string name="view_contact">View contact</string>
     <string name="view_conversation">View chat</string>
     <string name="delete_thread">Delete chat</string>
+    <string name="menu_sticky">Favorite</string>
+    <string name="delete_thread_messages">Delete chat history</string>
     <string name="confirm_delete_thread">Delete chat</string>
     <string name="confirm_will_delete_thread">The entire chat will be deleted.</string>
-    <string name="confirm_will_delete_threads">The selected chats will be deleted.</string>
     <string name="new_messages">New messages</string>
-    <string name="unread_messages">%d unread messages</string>
     <string name="only_one_account_supported">Only one Kontalk account is supported.</string>
     <string name="hint_enter_text">Enter your text here</string>
     <string name="hint_type_to_compose">Type to compose</string>
@@ -84,6 +89,7 @@
     <string name="title_message_details">Message details</string>
     <string name="message_type_label">Type:\u0020</string>
     <string name="text_message">Text message</string>
+    <string name="location_message">Location message</string>
     <string name="image_message">Image message</string>
     <string name="audio_message">Audio message</string>
     <string name="from_label">From:\u0020</string>
@@ -105,14 +111,15 @@
     <string name="pref_idle_time">Disconnect when idle</string>
     <string name="pref_title_idle_time">How long to wait before disconnecting for inactivity</string>
     <string name="pref_wakeup_time">Reconnect to server</string>
-    <string name="pref_title_wakeup_time">How long to wait before reconnecting to the server after an inactivity period. Works only if push notifications are not available</string>
+    <string name="pref_title_wakeup_time">How long to wait before reconnecting to the server after an inactivity period. Used only if push notifications are not available or network quality is very bad</string>
     <string name="pref_maintenance">Maintenance</string>
     <string name="pref_regenerate_keypair">Regenerate personal key</string>
     <string name="pref_title_regenerate_keypair">Use this in case your personal key has been compromised</string>
     <string name="pref_regenerate_keypair_confirm">A new key pair will be generated and assigned to your account. Your old key will become invalid.</string>
     <string name="contacts_list_title">Choose a contact</string>
-    <string name="pref_messaging_settings">Messaging settings</string>
-    <string name="pref_privacy_settings">Privacy settings</string>
+    <string name="position_screen_title">Position</string>
+    <string name="pref_messaging_settings">Messaging</string>
+    <string name="pref_privacy_settings">Privacy</string>
     <string name="pref_encrypt">Encrypt messages</string>
     <string name="pref_encrypt_userdata">Encrypt personal data</string>
     <string name="pref_title_on_encrypt_userdata">Status message will be visible only to users having your phone number</string>
@@ -135,12 +142,16 @@
     <string name="pref_update_server_list">Update server list</string>
     <string name="server_list_last_update">Last update: %s</string>
     <string name="pref_title_push_notifications">Use push notifications if server supports it, saves battery</string>
-    <string name="pref_title_disabled_push_notifications">Push notifications are not supported on this device</string>
     <string name="pref_push_notifications">Push notifications</string>
+    <string name="pref_push_notifications_disabled">Disabled</string>
+    <string name="pref_push_notifications_title_default">Push notifications are a server-assisted technology to save battery. It does not affect real-time delivery of messages.\n\nWhen disabled, Kontalk connection behavior can be fine tuned in the network settings screen.</string>
+    <string name="pref_push_notifications_title_disabled">Push notifications support was not included in this version.</string>
+    <string name="pref_push_notifications_title_unavailable">Push notifications are not supported on this device.</string>
     <string name="hint_search_full">Search messages</string>
     <string name="hint_search_quickbox">Text in your messages</string>
     <string name="title_search">Search: \"%s\"</string>
-    <string name="pref_notification_settings">Notification settings</string>
+    <string name="text_search_results_empty">No messages found.</string>
+    <string name="pref_notification_settings">Notifications</string>
     <string name="pref_enable_notifications">Notifications</string>
     <string name="pref_enable_notification_led">Notification LED</string>
     <string name="pref_notification_led_color">Notification LED color</string>
@@ -153,6 +164,7 @@
     <string name="confirm_will_delete_messages">The selected messages will be deleted.</string>
     <string name="title_user_exists">User exists</string>
     <string name="err_authentication_failed">Verification code refused. Authentication failed.</string>
+    <string name="err_authentication_failed_callerid">Verification wasn\'t successful. Try to call the number again and wait a little longer.</string>
     <string name="err_validation_failed">Phone number verification failed.</string>
     <string name="err_validation_retry_later">Too many attempts. Please wait a few minutes and try again.</string>
     <string name="msg_validation_canceled">Verification canceled. You might receive a SMS anyway.</string>
@@ -167,12 +179,14 @@
     <string name="send_mime_not_supported">File type not supported.</string>
     <string name="button_validate">Register</string>
     <string name="button_validation_register">Verify</string>
-    <string name="button_validation_fallback">Not receiving a call?</string>
+    <string name="button_validation_fallback">Not receiving anything?</string>
+    <string name="button_validation_fallback_callerid">Try another way</string>
     <string name="notify_ticker_download_completed">Download completed</string>
     <string name="notify_title_download_completed">Download completed</string>
     <string name="notify_text_download_completed">Attachment download completed</string>
     <string name="notify_ticker_download_error">Download failed</string>
     <string name="notify_title_download_error">Download error</string>
+    <string name="notify_text_decryption_error">Decryption failed</string>
     <string name="notify_text_download_error">Attachment download failed</string>
     <string name="notify_ticker_upload_error">Upload failed</string>
     <string name="notify_title_upload_error">Upload error</string>
@@ -181,6 +195,8 @@
     <string name="err_store_message_failed">Unable to store message to outbox.</string>
     <string name="msg_invalid_number">Please insert a valid phone number.</string>
     <string name="msg_invalid_cc">Please insert a valid country code.</string>
+    <string name="msg_register_confirm_number1">We will verify the phone number:</string>
+    <string name="msg_register_confirm_number2">Please double check that the number is correct.</string>
     <string name="title_invalid_code">Invalid code</string>
     <string name="msg_invalid_code">Please insert a valid code.</string>
     <string name="title_nonetwork">No internet connection</string>
@@ -191,7 +207,8 @@
     <string name="menu_refresh">Refresh</string>
     <string name="menu_invite">Invite users</string>
     <string name="title_error">Error</string>
-    <string name="msg_do_refresh">Pull down to update contact list.</string>
+    <string name="person_me">Me</string>
+    <string name="msg_do_refresh">Use Menu > Refresh to update contact list.</string>
     <string name="msg_sync_progress">Refreshing contacts list&#8230;</string>
     <string name="err_sync_failed">Unable to refresh contacts list. Please retry later.</string>
     <string name="err_sync_nonetwork">Network not available. Please retry later.</string>
@@ -204,13 +221,19 @@
     <string name="message_user_not_found">Contact seems not to be registered on Kontalk. You can try to contact the user anyway or send him/her an invitation message.</string>
     <string name="yes_user_not_found">Contact user anyway</string>
     <string name="no_user_not_found">Send invite</string>
-    <string name="pref_appearance_settings">Appearance settings</string>
+    <string name="pref_appearance_settings">Appearance</string>
     <string name="pref_font_size">Font size</string>
     <string name="menu_status">Status</string>
     <string name="menu_attachment">Attach</string>
     <string name="menu_smileys">Smileys</string>
+    <string name="menu_invite_group">Add users</string>
+    <string name="menu_start_group">Start group</string>
+    <string name="menu_group_info">Group info</string>
+    <string name="menu_set_group_subject">Set group subject</string>
+    <string name="menu_leave_group">Leave group</string>
     <string name="menu_block_user">Block</string>
     <string name="menu_unblock_user">Unblock</string>
+    <string name="menu_encryption">Encryption</string>
     <string name="vcard_message">vCard message</string>
     <string name="open_file">Open file</string>
     <string name="open_audio">Play audio file</string>
@@ -235,6 +258,8 @@
     <string name="serverlist_update_nodata">No available server list found.</string>
     <string name="serverlist_update_nonetwork">Network not available. Please retry later.</string>
     <string name="serverlist_update_offline">Offline mode is enabled.</string>
+    <string name="pref_emoji_converter">Convert smileys to emojis</string>
+    <string name="pref_title_emoji_converter">Automatically convert some text smileys to emojis</string>
 
     <string name="pref_vibrate_label_always">Always</string>
     <string name="pref_vibrate_label_silent">Only when silent</string>
@@ -243,6 +268,7 @@
     <string name="pref_fontsize_label_medium">Medium</string>
     <string name="pref_fontsize_label_large">Large</string>
     <string name="pref_balloon_label_hangout">Hangout</string>
+    <string name="pref_balloon_label_silence">Silence</string>
     <string name="pref_balloon_label_classic">Classic</string>
     <string name="pref_balloon_label_classic_old">Classic (old)</string>
     <string name="pref_balloon_label_iphone">iPhone</string>
@@ -250,9 +276,9 @@
     <string name="pref_text_enter_label_newline">Enter</string>
     <string name="pref_text_enter_label_newline_send">Send</string>
     <string name="pref_image_resize_label_original">Original</string>
-    <string name="pref_image_resize_label_small">Small (0.3MP)</string>
-    <string name="pref_image_resize_label_medium">Medium (0.5MP)</string>
-    <string name="pref_image_resize_label_large">Large (0.8MP)</string>
+    <string name="pref_image_resize_label_small">Small (0.4MP)</string>
+    <string name="pref_image_resize_label_medium">Medium (1.0MP)</string>
+    <string name="pref_image_resize_label_large">Large (2.0MP)</string>
     <string name="pref_idle_time_label_never">Never</string>
     <string name="pref_idle_time_label_5m">5 minutes</string>
     <string name="pref_idle_time_label_15m">15 minutes</string>
@@ -263,6 +289,8 @@
     <string name="pref_wakeup_time_label_30m">30 minutes</string>
     <string name="pref_wakeup_time_label_1h">1 hour</string>
     <string name="pref_wakeup_time_label_3h">3 hours</string>
+    <string name="pref_maps_google_label">Google Maps</string>
+    <string name="pref_maps_osm_label">OpenStreetMap</string>
 
     <string name="pref_remove_prefix">Dial prefix</string>
     <string name="pref_change_passphrase">Change personal key password</string>
@@ -274,6 +302,8 @@
     <string name="err_import_keypair_uid_mismatch">Imported key doesn\'t match the phone number you entered.</string>
     <string name="err_import_keypair_read">Unable to read personal key from external storage.</string>
     <string name="title_passphrase">Password</string>
+    <string name="title_passphrase_request">Personal key password</string>
+    <string name="err_invalid_passphrase">Wrong password. Restart the app to try another one.</string>
 
     <string name="msg_status_sending">Sending</string>
     <string name="msg_status_sent">Sent</string>
@@ -283,6 +313,7 @@
     <string name="msg_status_encrypted">Encrypted</string>
 
     <string name="pref_balloons">Chat balloon theme</string>
+    <string name="pref_balloons_groups">Group chat balloon theme</string>
 
     <string name="attachment_camera">Camera</string>
     <string name="attachment_picture">Gallery</string>
@@ -293,12 +324,35 @@
     <string name="attachment_vcard">Contact</string>
     <string name="attachment_location">Location</string>
 
+    <string name="notification_location">sent you a location</string>
+    <string name="location_no_result">No results</string>
+    <string name="places_nearby">Places nearby</string>
+    <string name="send_selected_location">Send selected location</string>
+    <string name="send_location">Send your current location</string>
+    <string name="accurate_to">Accurate to %1$s meters</string>
+    <string name="meters_away">%d m away</string>
+    <string name="kilometers_away">%.2f km away</string>
+    <string name="loading">Loading…</string>
+    <string name="your_position">You</string>
+    <string name="err_googlemaps_fallback_osm">Google Maps is not available, falling back to OpenStreetMap.</string>
+    <string name="err_location_no_providers">No location providers available. Current location will not be available.</string>
+    <string name="err_location_access_unknown_error">Unable to request location services activation.</string>
+    <string name="msg_location_disabled">We need access to location. Choose OK to go to settings and enable it.</string>
+
+    <string name="menu_open_map">Open in maps</string>
+    <string name="menu_map">Map</string>
+    <string name="menu_satellite">Satellite</string>
+
     <string name="msg_not_implemented">Not implemented yet.</string>
 
     <string name="chooser_send_picture">Send picture</string>
     <string name="chooser_error_no_camera">External storage not available. Taking picture from camera will not be enabled.</string>
     <string name="chooser_error_no_camera_app">No camera app available.</string>
+    <string name="chooser_error_no_gallery_app">No gallery app available.</string>
+    <string name="chooser_error_no_app">No suitable app available to open the file.</string>
 
+    <string name="chooser_error_no_dialer">No dialer app available to call or no telephony available on this device.</string>
+    <string name="chooser_error_no_browser">No browser available to open link.</string>
     <string name="chooser_select_link">Choose action</string>
 
     <string name="status_activity_title">Status message</string>
@@ -366,8 +420,14 @@
     <string name="text_invitation1">Request by:</string>
     <string name="text_invitation2">Fingerprint:</string>
     <string name="button_accept">Accept</string>
+    <string name="button_refuse">Refuse</string>
     <string name="button_block">Block</string>
+    <string name="button_ignore">Ignore</string>
     <string name="button_identity">Identity</string>
+    <string name="button_private_chat">Private chat</string>
+    <string name="text_invitation_info">(chat invitation)</string>
+    <string name="title_identity">Identity</string>
+    <string name="title_identity_self">Identity (this is you!)</string>
 
     <string name="msg_connecting_iab">Connecting to Google Play&#8230;</string>
     <string name="msg_iab_thankyou">Thank you!</string>
@@ -403,6 +463,10 @@
     <string name="title_unblock_user_warning">Really unblock this user?</string>
     <string name="msg_unblock_user_warning">You\'re about to unblock this user. Unblocking will allow him/her to send messages to you and see your status and last known presence.</string>
 
+    <string name="title_disable_encryption">Disable encryption for this chat?</string>
+    <string name="msg_disable_encryption">All new messages sent in this chat will NOT be encrypted.\nDisable encryption only if your contact does not have a personal key.</string>
+    <string name="menu_disable_encryption">Disable</string>
+
     <string name="notification_text_more">Tap here to know more</string>
 
     <string name="title_auth_error">Authentication error</string>
@@ -431,8 +495,22 @@
     <string name="err_playing_sdcard">Error reading from external storage.</string>
     <string name="slide_to_cancel">SLIDE TO CANCEL</string>
 
-    <string name="pref_media_settings">Media settings</string>
+    <string name="pref_media_settings">Media</string>
     <string name="pref_image_resize">Resize images</string>
+    <string name="pref_media_autodownload_threshold">Automatic download threshold</string>
+    <string name="pref_title_media_autodownload_threshold">Files smaller than this size will always be downloaded automatically</string>
+    <string name="pref_msg_media_autodownload_threshold">Enter a value in KB. Set to 0 to never download automatically.</string>
+
+    <string name="pref_media_autodownload">Download automatically</string>
+    <string name="pref_media_autodownload_label_never">Never</string>
+    <string name="pref_media_autodownload_label_wifi">Only on Wi-Fi</string>
+    <string name="pref_media_autodownload_label_always">Always</string>
+
+    <string name="pref_location_settings">Location</string>
+    <string name="pref_maps_service">Service provider</string>
+
+    <string name="pref_on">On</string>
+    <string name="pref_off">Off</string>
 
     <string name="err_server_invalid_format">Invalid address format.</string>
 
@@ -441,25 +519,129 @@
 
     <string name="warning_button_details">DETAILS</string>
     <string name="warning_older_version">Your buddy is using an older version of Kontalk. Some features might not work correctly.</string>
-    <string name="warning_public_key_changed">This user\'s personal key changed unexpectedly!</string>
+    <string name="warning_public_key_changed">Personal key changed</string>
     <string name="title_public_key_changed_warning">Personal key changed</string>
     <string name="msg_public_key_changed_warning">Please verify with the user that he/she reinstalled Kontalk or regenerated his/her key intentionally, otherwise communication could be compromised!</string>
-    <string name="warning_public_key_unknown">This user\'s personal key is untrusted!</string>
-    <string name="title_public_key_unknown_warning">Untrusted personal key</string>
+    <string name="warning_public_key_unknown">Personal key not yet verified</string>
+    <string name="title_public_key_unknown_warning">Verify personal key</string>
     <string name="msg_public_key_unknown_warning">Please verify with the user that his/her fingerprint matches the one displayed in the <b>identity</b> dialog, otherwise communication could be compromised!</string>
+    <string name="warning_public_key_group_unverified">Identity of some group members have not been verified.</string>
 
-    <string name="warning_user_blocked">User has been blocked by you.</string>
+    <string name="warning_user_blocked">You blocked this user.</string>
 
     <string name="about_credits_devteam"><b>Kontalk is brought to you by:</b></string>
-    <string name="about_credits_gfx"><b>Graphics/Iconography</b></string>
+    <string name="about_credits_gfx"><b>Graphics/Icons</b></string>
+    <string name="about_credits_contrib"><b>Contributors</b></string>
     <string name="about_credits_translators"><b>Translators</b></string>
 
     <string name="pref_show_blocked_users">Show blocked users</string>
     <string name="button_load_next_page">Load more messages</string>
 
+    <string name="group_untitled">Untitled group</string>
+    <string name="title_group_subject">Group subject</string>
+    <string name="group_command_create">Group created:</string>
+    <string name="group_command_self_parted">You left the group.</string>
+    <string name="group_command_user_parted">%s left the group.</string>
+    <string name="group_command_owner_parted">The owner (%s) left the group. No one can add or remove members.</string>
+    <string name="group_command_subject">Group subject set to: %s</string>
+    <string name="group_command_users_added">Users added:</string>
+    <string name="group_command_users_removed">Users removed:</string>
+
+    <string name="group_command_text_create">Group created</string>
+    <string name="group_command_text_subject">Group subject changed</string>
+    <string name="group_command_text_part">Someone left this group</string>
+    <string name="group_command_text_part_self">You left this group</string>
+    <string name="group_command_text_part_kicked">You were removed from this group</string>
+    <string name="group_command_text_add_remove">Someone was added or removed</string>
+
+    <string name="groupinfo_activity_title">Group info</string>
+
+    <string name="group_info_set_title">Change subject</string>
+    <string name="group_info_leave">Leave group</string>
+    <string name="group_info_members">Group members</string>
+    <string name="group_info_ignore_all">Ignore all</string>
+    <string name="group_info_owner_member">Owner</string>
+    <string name="confirm_will_leave_group">You won\'t be able to enter this group again after you leave.</string>
+    <string name="leave_group_delete_messages">Also delete chat history</string>
+    <string name="group_info_menu_remove">Remove</string>
+    <string name="group_info_menu_add_again">Add again</string>
+
+    <string name="title_ignore_all_identities">Ignore all identities?</string>
+    <string name="msg_ignore_all_identities">All unverified identities will be marked as ignored.</string>
+    <string name="learn_more">Learn more</string>
+
+    <string name="text_group_command_fallback">This is a group chat message. You\'re using an old version of Kontalk or your client doesn\'t support the group chat protocol. Please upgrade to the latest version!</string>
+
+    <string name="title_huawei_protected_apps">Huawei Protected Apps</string>
+    <string name="msg_huawei_protected_apps">Kontalk requires to be enabled in Protected Apps to function properly.</string>
+    <string name="btn_huawei_protected_apps">Protected Apps</string>
+    <string name="title_doze_mode">Battery optimization</string>
+    <string name="msg_doze_mode">Kontalk requires to be whitelisted from battery optimization to function properly. We promise we won\'t hog your battery.</string>
+    <string name="btn_request_doze_mode_whitelist">Request permission</string>
+    <string name="msg_request_doze_failed_manual">Please mark Kontalk as not optimized in the next screen.</string>
+
+    <string name="status_label">Status:\u0020</string>
+    <string name="trust_unknown">Not verified</string>
+    <string name="trust_ignored">Ignored</string>
+    <string name="trust_verified">Verified</string>
+    <string name="status_notsubscribed">Not allowed/Blocked</string>
+
+    <string name="action_compose">New chat</string>
+    <string name="action_compose_group">New group</string>
+
+    <string name="pref_reporting">Send anonymous usage statistics</string>
+    <string name="pref_title_reporting">Including crash reports</string>
+
+    <string name="delete_threads_leave_any_groups">Also leave any groups</string>
+
+    <string name="delete_threads_groups_disclaimer">Group chats will only have their chat history deleted unless the checkbox above is selected.</string>
+    <string name="create_group_disclaimer">Please remember that every member in the group must know each other in order to chat.</string>
+    <string name="check_dont_show_again">Do not show again</string>
+
+    <string name="pref_debug_log">Enable debug log</string>
+    <string name="pref_send_debug_log">Send debug log</string>
+
+    <string name="registration_poweredby">Powered by</string>
+
+    <string name="audio_duration_max">%1$s / %2$s</string>
+
+    <!-- contact name, group subject -->
+    <string name="notification_group_title">%1$s @ %2$s</string>
+
+    <plurals name="confirm_will_delete_threads">
+        <item quantity="one">The selected chat will be deleted.</item>
+        <item quantity="other">The selected chats will be deleted.</item>
+    </plurals>
+
+    <plurals name="delete_threads_leave_groups">
+        <item quantity="one">Also leave group</item>
+        <item quantity="other">Also leave groups</item>
+    </plurals>
+
+    <!-- "one" is not actually used -->
+    <plurals name="unread_messages">
+        <item quantity="one">1 unread message</item>
+        <item quantity="other">%d unread messages</item>
+    </plurals>
+
+    <!-- "one" is not actually used -->
+    <plurals name="unread_messages_group">
+        <item quantity="other">%1$d messages @ %2$s</item>
+    </plurals>
+
+    <plurals name="notification_more">
+        <item quantity="one">+1 more</item>
+        <item quantity="other">+%d more</item>
+    </plurals>
+
     <plurals name="context_selected">
         <item quantity="one">1 selected</item>
         <item quantity="other">%d selected</item>
+    </plurals>
+
+    <plurals name="group_people">
+        <item quantity="one">1 person</item>
+        <item quantity="other">%d people</item>
     </plurals>
 
 </resources>

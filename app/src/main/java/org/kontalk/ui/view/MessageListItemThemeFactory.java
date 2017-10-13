@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.kontalk.R;
-import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.provider.MyMessages;
 
 
 /**
@@ -41,16 +41,22 @@ public class MessageListItemThemeFactory {
         mThemes.put("hangout", new FactoryCreator() {
             @Override
             public MessageListItemTheme create(int direction) {
+                return new HangoutMessageTheme(direction);
+            }
+        });
+        mThemes.put("silence", new FactoryCreator() {
+            @Override
+            public MessageListItemTheme create(int direction) {
                 int layoutId, drawableId;
-                if (direction == Messages.DIRECTION_IN) {
-                    layoutId = R.layout.balloon_avatar_in;
-                    drawableId = R.drawable.balloon_hangout_incoming;
+                if (direction == MyMessages.Messages.DIRECTION_IN) {
+                    layoutId = R.layout.balloon_avatar_in_bottom;
+                    drawableId = R.drawable.balloon_silence_incoming;
                 }
                 else {
                     layoutId = R.layout.balloon_avatar_out;
-                    drawableId = R.drawable.balloon_hangout_outgoing;
+                    drawableId = R.drawable.balloon_silence_outgoing;
                 }
-                return new AvatarMessageTheme(layoutId, drawableId);
+                return new AvatarMessageTheme(layoutId, drawableId, false);
             }
         });
         mThemes.put("classic", new FactoryCreator() {
@@ -79,11 +85,16 @@ public class MessageListItemThemeFactory {
     private MessageListItemThemeFactory() {
     }
 
-    public static MessageListItemTheme createTheme(String theme, int direction) {
-        FactoryCreator factory = mThemes.get(theme);
-        if (factory == null)
-            throw new IllegalArgumentException("theme not found: " + theme);
+    public static MessageListItemTheme createTheme(String theme, int direction, boolean event) {
+        if (event) {
+            return new EventMessageTheme(R.layout.balloon_event);
+        }
+        else {
+            FactoryCreator factory = mThemes.get(theme);
+            if (factory == null)
+                throw new IllegalArgumentException("theme not found: " + theme);
 
-        return factory.create(direction);
+            return factory.create(direction);
+        }
     }
 }

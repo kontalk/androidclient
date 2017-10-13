@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@ package org.kontalk.crypto;
 import java.io.IOException;
 
 import org.spongycastle.openpgp.PGPException;
+import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 
@@ -33,6 +34,7 @@ public class PGPLazyPublicKeyRingLoader {
     private byte[] mData;
 
     private PGPPublicKeyRing mKeyRing;
+    private String mFingerprint;
 
     public PGPLazyPublicKeyRingLoader(byte[] encoding) {
         mData = encoding;
@@ -45,6 +47,18 @@ public class PGPLazyPublicKeyRingLoader {
             mData = null;
         }
         return mKeyRing;
+    }
+
+    public String getFingerprint() throws PGPException, IOException {
+        if (mFingerprint == null) {
+            PGPPublicKeyRing key = getPublicKeyRing();
+            if (key != null) {
+                PGPPublicKey pk = PGP.getMasterKey(key);
+                if (pk != null)
+                    mFingerprint = PGP.getFingerprint(pk);
+            }
+        }
+        return mFingerprint;
     }
 
 }

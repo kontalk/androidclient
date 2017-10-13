@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -24,10 +24,11 @@
         app:actionViewClass="android.support.v7.widget.SearchView" app:showAsAction="collapseActionView|ifRoom"/>
 
     <!-- menu -->
-    <item android:id="@+id/menu_offline" android:title="@string/menu_offline" android:icon="@drawable/ic_menu_cancel"/>
+    <item android:id="@+id/menu_offline" android:title="@string/menu_offline" android:icon="@drawable/ic_menu_offline"/>
     <item android:id="@+id/menu_status" android:title="@string/menu_status" android:icon="@drawable/ic_menu_status"/>
     <item android:id="@+id/menu_delete_all" android:title="@string/menu_delete_all" android:icon="@drawable/ic_menu_delete"/>
     <item android:id="@+id/menu_mykey" android:title="@string/mykey_activity_title" android:icon="@drawable/ic_menu_key"/>
+    <item android:id="@+id/menu_help" android:title="@string/pref_help" android:icon="@drawable/ic_menu_help"/>
     <item android:id="@+id/menu_donate" android:title="@string/pref_donate" android:icon="@drawable/ic_menu_donate"/>
     <item android:id="@+id/menu_settings" android:title="@string/menu_settings" android:icon="@drawable/ic_menu_preferences"/>
 </menu>

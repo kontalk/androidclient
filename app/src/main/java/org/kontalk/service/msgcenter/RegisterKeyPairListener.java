@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,13 +18,11 @@
 
 package org.kontalk.service.msgcenter;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.text.TextUtils;
-import android.util.Base64;
-import android.util.Log;
+import java.io.IOException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
+import java.security.cert.CertificateException;
+import java.util.List;
 
 import org.jivesoftware.smack.filter.StanzaFilter;
 import org.jivesoftware.smack.filter.StanzaIdFilter;
@@ -34,19 +32,22 @@ import org.jivesoftware.smackx.iqregister.packet.Registration;
 import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
+import org.spongycastle.openpgp.PGPException;
+import org.spongycastle.openpgp.PGPPublicKey;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.text.TextUtils;
+import android.util.Base64;
+
+import org.kontalk.Log;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.SmackInitializer;
 import org.kontalk.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.X509Bridge;
-import org.spongycastle.openpgp.PGPException;
-import org.spongycastle.openpgp.PGPPublicKey;
-
-import java.io.IOException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
-import java.security.cert.CertificateException;
-import java.util.List;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_CONNECTED;
 
@@ -180,7 +181,7 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener imple
     }
 
     @Override
-    public void processPacket(Stanza packet) {
+    public void processStanza(Stanza packet) {
         IQ iq = (IQ) packet;
         if (iq.getType() == IQ.Type.result) {
             DataForm response = iq.getExtension("x", "jabber:x:data");

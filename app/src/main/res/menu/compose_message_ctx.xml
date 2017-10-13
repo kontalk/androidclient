@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -26,7 +26,6 @@
     <item android:id="@+id/menu_retry" android:title="@string/resend" android:icon="@drawable/ic_menu_send" app:showAsAction="never"/>
     <item android:id="@+id/menu_share" android:title="@string/share" android:icon="@drawable/ic_menu_share" app:showAsAction="never"/>
     <item android:id="@+id/menu_copy_text" android:title="@string/copy_message_text" android:icon="@drawable/ic_menu_copy" app:showAsAction="never"/>
-    <item android:id="@+id/menu_decrypt" android:title="@string/decrypt_message" android:icon="@drawable/ic_menu_unlock" app:showAsAction="never"/>
     <item android:id="@+id/menu_open" android:title="@string/open_file" android:icon="@drawable/ic_menu_open" app:showAsAction="never"/>
     <item android:id="@+id/menu_download" android:title="@string/download_file" android:icon="@drawable/ic_menu_download" app:showAsAction="never"/>
     <item android:id="@+id/menu_cancel_download" android:title="@string/download_cancel" android:icon="@drawable/ic_menu_cancel" app:showAsAction="never"/>

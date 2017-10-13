@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,23 +25,28 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 
+import android.support.annotation.NonNull;
+
 import org.kontalk.service.DownloadListener;
 
 
 public class ProgressOutputStreamEntity {
-    private static final int BUFFER_SIZE = 1024 * 2;
+    private static final int BUFFER_SIZE = 10240 * 10;
 
     private final HttpURLConnection mParent;
     private final String mUrl;
     private final File mFile;
     private final DownloadListener mListener;
+    private final long mPublishDelay;
 
     public ProgressOutputStreamEntity(HttpURLConnection parent,
-            String url, File file, final DownloadListener listener) {
+            String url, File file, final DownloadListener listener,
+            final long publishDelay) {
         mParent = parent;
         mUrl = url;
         mFile = file;
         mListener = listener;
+        mPublishDelay = publishDelay;
     }
 
     private void _writeTo(OutputStream outstream) throws IOException {
@@ -66,7 +71,7 @@ public class ProgressOutputStreamEntity {
 
     public void writeTo(OutputStream outstream) throws IOException {
         mListener.start(mUrl, mFile, mParent.getContentLength());
-        _writeTo(new CountingOutputStream(outstream, mUrl, mFile, mListener));
+        _writeTo(new CountingOutputStream(outstream, mUrl, mFile, mListener, mParent.getContentLength(), mPublishDelay));
         String mime = mParent.getContentType();
         mListener.completed(mUrl, mime, mFile);
     }
@@ -75,25 +80,30 @@ public class ProgressOutputStreamEntity {
         private final DownloadListener listener;
         private final String url;
         private final File file;
+        private final StepTimer publishTimer;
+        private final long size;
         private long transferred;
 
-        public CountingOutputStream(final OutputStream out,
-                final String url, final File file, final DownloadListener listener) {
+        CountingOutputStream(final OutputStream out,
+                final String url, final File file, final DownloadListener listener,
+                long size, long publishDelay) {
             super(out);
             this.url = url;
             this.file = file;
             this.listener = listener;
+            this.size = size;
+            this.publishTimer = new StepTimer(publishDelay);
             this.transferred = 0;
         }
 
         @Override
-        public void write(byte[] buffer) throws IOException {
+        public void write(@NonNull byte[] buffer) throws IOException {
             out.write(buffer);
             publishProgress(buffer.length);
         }
 
         @Override
-        public void write(byte[] b, int off, int len) throws IOException {
+        public void write(@NonNull byte[] b, int off, int len) throws IOException {
             out.write(b, off, len);
             publishProgress(len);
         }
@@ -106,7 +116,8 @@ public class ProgressOutputStreamEntity {
 
         private void publishProgress(long add) {
             this.transferred += add;
-            this.listener.progress(url, file, this.transferred);
+            if (this.transferred >= this.size || publishTimer.isStep())
+                this.listener.progress(url, file, this.transferred);
         }
     }
 

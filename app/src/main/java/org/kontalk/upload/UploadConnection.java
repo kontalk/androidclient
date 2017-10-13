@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ public interface UploadConnection {
 
     public void abort();
 
-    public String upload(Uri uri, String mime, boolean encrypt, String to, ProgressListener listener)
+    public String upload(Uri uri, long length, String mime, boolean encrypt, String[] to, ProgressListener listener)
         throws IOException;
 
 }

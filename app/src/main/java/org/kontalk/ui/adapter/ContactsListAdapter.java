@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ import com.android.contacts.common.list.ContactsSectionIndexer;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v4.content.ContextCompat;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,6 +34,7 @@ import android.widget.TextView;
 
 import lb.library.cursor.SearchablePinnedHeaderCursorListViewAdapter;
 
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers;
@@ -68,10 +69,10 @@ public class ContactsListAdapter extends SearchablePinnedHeaderCursorListViewAda
         final TypedValue typedValue = new TypedValue();
 
         context.getTheme().resolveAttribute(android.R.attr.colorBackground, typedValue, true);
-        int pinnedHeaderBackgroundColor = context.getResources().getColor(typedValue.resourceId);
+        int pinnedHeaderBackgroundColor = ContextCompat.getColor(context, typedValue.resourceId);
         setPinnedHeaderBackgroundColor(pinnedHeaderBackgroundColor);
 
-        int textColor = context.getResources().getColor(R.color.pinned_header_text);
+        int textColor = ContextCompat.getColor(context, R.color.pinned_header_text);
         setPinnedHeaderTextColor(textColor);
     }
 
@@ -96,7 +97,7 @@ public class ContactsListAdapter extends SearchablePinnedHeaderCursorListViewAda
         }
 
         ContactsListItem headerView = (ContactsListItem) view;
-        Contact contact = Contact.fromUsersCursor(cursor);
+        Contact contact = Contact.fromUsersCursor(context, cursor);
         headerView.bind(context, contact);
     }
 
@@ -149,8 +150,11 @@ public class ContactsListAdapter extends SearchablePinnedHeaderCursorListViewAda
     }
 
     private static class ViewHolder {
-        public TextView headerView;
+        TextView headerView;
         public TextView text1;
         public TextView text2;
+
+        ViewHolder() {
+        }
     }
 }

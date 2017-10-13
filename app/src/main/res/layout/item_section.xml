@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="@dimen/avatar_list_item_height"
-    android:layout_height="wrap_content"
-    android:textColor="@color/app_primary"
-    style="?android:attr/textAppearanceLarge"
-    android:paddingTop="4dp"
-    android:paddingBottom="4dp"
-    android:gravity="center_horizontal"/>

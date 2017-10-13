@@ -75,7 +75,7 @@ public class PrivateKeyUploadListener extends MessageCenterPacketListener {
     }
 
     @Override
-    public void processPacket(Stanza packet) {
+    public void processStanza(Stanza packet) {
         getConnection().removeAsyncStanzaListener(this);
 
         IQ iq = (IQ) packet;

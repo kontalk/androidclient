@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ import org.kontalk.service.msgcenter.IPushListener;
 import org.kontalk.service.msgcenter.MessageCenterService;
 
 import android.content.Context;
-import android.util.Log;
+import org.kontalk.Log;
 
 
 /**

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -38,6 +38,25 @@
         <attr name="start_angle" format="float"/>
         <attr name="end_angle" format="float"/>
         <attr name="circle_fill" format="color"/>
+    </declare-styleable>
+
+    <declare-styleable name="SmoothCheckBox">
+        <attr name="duration" format="integer"/>
+        <attr name="stroke_width" format="dimension"/>
+        <attr name="color_tick" format="color"/>
+        <attr name="color_checked" format="color"/>
+        <attr name="color_unchecked" format="color"/>
+        <attr name="color_unchecked_stroke" format="color"/>
+    </declare-styleable>
+
+    <declare-styleable name="SlidingUpPanelLayout">
+        <attr name="panelHeight" format="dimension" />
+        <attr name="shadowHeight" format="dimension" />
+        <attr name="paralaxOffset" format="dimension" />
+        <attr name="fadeColor" format="color" />
+        <attr name="flingVelocity" format="integer" />
+        <attr name="dragView" format="reference" />
+        <attr name="overlay" format="boolean"/>
     </declare-styleable>
 
 </resources>

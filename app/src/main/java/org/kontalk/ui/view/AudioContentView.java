@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -86,6 +86,10 @@ public class AudioContentView extends RelativeLayout
         mSeekBar = (SeekBar) findViewById(R.id.balloon_audio_seekbar);
         mDownloadButton = (ImageView) findViewById(R.id.balloon_audio_download);
         mTime = (TextView) findViewById(R.id.balloon_audio_time);
+
+        if (isInEditMode()) {
+            mDownloadButton.setVisibility(GONE);
+        }
     }
 
     @Override
@@ -136,7 +140,9 @@ public class AudioContentView extends RelativeLayout
 
     @Override
     public void onClick(View v) {
-        mAudioPlayerControl.buttonClick(new File(mComponent.getLocalUri().getPath()), this, mMessageId);
+        Uri localUri = mComponent.getLocalUri();
+        if (localUri != null)
+            mAudioPlayerControl.buttonClick(new File(localUri.getPath()), this, mMessageId);
     }
 
     @Override

@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,19 +19,14 @@
 package org.kontalk.service.msgcenter;
 
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
 import java.util.Map;
 
-import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.roster.RosterEntry;
-
-import org.kontalk.Kontalk;
-import org.kontalk.client.EndpointServer;
-import org.kontalk.client.KontalkConnection;
-import org.kontalk.message.CompositeMessage;
-import org.kontalk.service.msgcenter.MessageCenterService.IdleConnectionHandler;
+import org.jxmpp.jid.BareJid;
+import org.jxmpp.jid.Jid;
+import org.jxmpp.stringprep.XmppStringprepException;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -39,17 +34,24 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 
+import org.kontalk.Kontalk;
+import org.kontalk.client.EndpointServer;
+import org.kontalk.client.KontalkConnection;
+import org.kontalk.message.CompositeMessage;
+import org.kontalk.service.msgcenter.MessageCenterService.IdleConnectionHandler;
+
 
 /**
  * Packet listener for the Message Center.
  * @author Daniele Ricci
  */
 abstract class MessageCenterPacketListener implements StanzaListener {
+    protected static final String TAG = MessageCenterService.TAG;
 
     private WeakReference<MessageCenterService> mInstance;
 
     MessageCenterPacketListener(MessageCenterService instance) {
-        mInstance = new WeakReference<MessageCenterService>(instance);
+        mInstance = new WeakReference<>(instance);
     }
 
     protected MessageCenterService getInstance() {
@@ -79,7 +81,17 @@ abstract class MessageCenterPacketListener implements StanzaListener {
         return (instance != null) ? instance.mMyUsername : null;
     }
 
-    protected RosterEntry getRosterEntry(String jid) {
+    protected RosterEntry getRosterEntry(Jid jid) {
+        return getRosterEntry(jid.asBareJid());
+    }
+
+    protected RosterEntry getRosterEntry(BareJid jid) {
+        MessageCenterService instance = mInstance.get();
+        return (instance != null) ? instance.getRosterEntry(jid) : null;
+    }
+
+    @Deprecated
+    protected RosterEntry getRosterEntry(String jid) throws XmppStringprepException {
         MessageCenterService instance = mInstance.get();
         return (instance != null) ? instance.getRosterEntry(jid) : null;
     }
@@ -120,33 +132,40 @@ abstract class MessageCenterPacketListener implements StanzaListener {
             instance.sendPacket(packet, bumpIdle);
     }
 
-    protected void initUploadServices() {
+    protected void addUploadService(IUploadService service) {
         MessageCenterService instance = mInstance.get();
+        if (instance != null)
+            instance.addUploadService(service);
+    }
+
+    protected void addUploadService(IUploadService service, int priority) {
+        MessageCenterService instance = mInstance.get();
+        if (instance != null)
+            instance.addUploadService(service, priority);
+    }
+
+    protected void resendPendingMessages(final boolean retrying, final boolean forcePending) {
+        final MessageCenterService instance = mInstance.get();
         if (instance != null) {
-            if (instance.mUploadServices == null)
-                instance.mUploadServices = new HashMap<String, String>();
-            else
-                instance.mUploadServices.clear();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    instance.resendPendingMessages(retrying, forcePending);
+                }
+            });
         }
     }
 
-    protected void setUploadService(String name, String url) {
-        MessageCenterService instance = mInstance.get();
-        if (instance != null)
-            instance.mUploadServices.put(name, url);
-    }
-
-    protected void resendPendingMessages(boolean retrying, boolean forcePending) {
-        MessageCenterService instance = mInstance.get();
-        if (instance != null)
-            instance.resendPendingMessages(retrying, forcePending);
-    }
-
-    protected void resendPending(boolean retrying, boolean forcePending, String to) {
-        MessageCenterService instance = mInstance.get();
+    protected void resendPending(final boolean retrying, final boolean forcePending, final String to) {
+        final MessageCenterService instance = mInstance.get();
         if (instance != null) {
-            instance.resendPendingMessages(retrying, forcePending, to);
-            instance.resendPendingReceipts();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    instance.resendPendingMessages(retrying, forcePending, to);
+                    instance.resendPendingReceipts();
+                }
+            });
         }
     }
 
@@ -181,11 +200,9 @@ abstract class MessageCenterPacketListener implements StanzaListener {
     }
 
     protected Uri incoming(CompositeMessage msg) {
-        MessageCenterService instance = mInstance.get();
-        if (instance != null)
-            return instance.incoming(msg);
-
-        return null;
+        Context context = getContext();
+        return (context != null) ? Kontalk
+            .getMessagesController(context).incoming(msg) : null;
     }
 
     protected IdleConnectionHandler getIdleHandler() {
@@ -193,9 +210,21 @@ abstract class MessageCenterPacketListener implements StanzaListener {
         return (instance != null) ? instance.mIdleHandler: null;
     }
 
+    protected void hold(boolean activate) {
+        IdleConnectionHandler handler = getIdleHandler();
+        if (handler != null)
+            handler.hold(activate);
+    }
+
+    protected void release() {
+        IdleConnectionHandler handler = getIdleHandler();
+        if (handler != null)
+            handler.release();
+    }
+
     protected void runOnUiThread(Runnable action) {
         MessageCenterService instance = mInstance.get();
-        if (instance != null)
+        if (instance != null && instance.mHandler != null)
             instance.mHandler.post(action);
     }
 
@@ -209,18 +238,6 @@ abstract class MessageCenterPacketListener implements StanzaListener {
         MessageCenterService instance = mInstance.get();
         if (instance != null)
             instance.endKeyPairImport();
-    }
-
-    protected void resumeSmAck() {
-        MessageCenterService instance = mInstance.get();
-        if (instance != null && instance.mConnection != null) {
-            try {
-                instance.mConnection.resumeSmAck();
-            }
-            catch (SmackException ignored) {
-                // we don't really care
-            }
-        }
     }
 
 }

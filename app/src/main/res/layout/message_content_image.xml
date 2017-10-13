@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -19,4 +19,14 @@
 <org.kontalk.ui.view.ImageContentView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"/>
+    android:layout_height="match_parent">
+
+    <ImageView android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <TextView android:id="@+id/placeholder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+</org.kontalk.ui.view.ImageContentView>

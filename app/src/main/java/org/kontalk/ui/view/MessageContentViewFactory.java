@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,10 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import org.kontalk.message.AudioComponent;
+import org.kontalk.message.DefaultAttachmentComponent;
+import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.ImageComponent;
+import org.kontalk.message.LocationComponent;
 import org.kontalk.message.MessageComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
@@ -61,6 +64,15 @@ public class MessageContentViewFactory {
         }
         else if (component instanceof VCardComponent) {
             view = (MessageContentView<T>) VCardContentView.create(inflater, parent);
+        }
+        else if (component instanceof DefaultAttachmentComponent) {
+            view = (MessageContentView<T>) DefaultAttachmentContentView.create(inflater, parent);
+        }
+        else if (component instanceof GroupCommandComponent) {
+            view = (MessageContentView<T>) GroupContentView.create(inflater, parent);
+        }
+        else if (component instanceof LocationComponent) {
+            view = (MessageContentView<T>) LocationContentView.create(inflater, parent);
         }
 
         if (view != null)

@@ -16,10 +16,6 @@
 
 package org.kontalk.crypto;
 
-import android.os.Build;
-import android.os.Process;
-import android.util.Log;
-
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -34,6 +30,11 @@ import java.security.Provider;
 import java.security.SecureRandom;
 import java.security.SecureRandomSpi;
 import java.security.Security;
+
+import android.os.Build;
+import android.os.Process;
+
+import org.kontalk.Log;
 
 /**
  * Fixes for the output of the default PRNG having low entropy.
@@ -141,35 +142,45 @@ public final class PRNGFixes {
         // default, if not yet installed.
         Provider[] secureRandomProviders =
                 Security.getProviders("SecureRandom.SHA1PRNG");
-        if ((secureRandomProviders == null)
+
+        // Insert and check the provider atomically.
+        // The official Android Java libraries use synchronized methods for
+        // insertProviderAt, etc., so synchronizing on the class should
+        // make things more stable, and prevent race conditions with other
+        // versions of this code.
+        synchronized (java.security.Security.class) {
+
+            if ((secureRandomProviders == null)
                 || (secureRandomProviders.length < 1)
                 || (!LinuxPRNGSecureRandomProvider.class.equals(
-                        secureRandomProviders[0].getClass()))) {
-            Security.insertProviderAt(new LinuxPRNGSecureRandomProvider(), 1);
-        }
+                secureRandomProviders[0].getClass()))) {
+                Security.insertProviderAt(new LinuxPRNGSecureRandomProvider(), 1);
+            }
 
-        // Assert that new SecureRandom() and
-        // SecureRandom.getInstance("SHA1PRNG") return a SecureRandom backed
-        // by the Linux PRNG-based SecureRandom implementation.
-        SecureRandom rng1 = new SecureRandom();
-        if (!LinuxPRNGSecureRandomProvider.class.equals(
+            // Assert that new SecureRandom() and
+            // SecureRandom.getInstance("SHA1PRNG") return a SecureRandom backed
+            // by the Linux PRNG-based SecureRandom implementation.
+            SecureRandom rng1 = new SecureRandom();
+            if (!LinuxPRNGSecureRandomProvider.class.equals(
                 rng1.getProvider().getClass())) {
-            throw new SecurityException(
+                throw new SecurityException(
                     "new SecureRandom() backed by wrong Provider: "
-                            + rng1.getProvider().getClass());
-        }
+                        + rng1.getProvider().getClass());
+            }
 
-        SecureRandom rng2;
-        try {
-            rng2 = SecureRandom.getInstance("SHA1PRNG");
-        } catch (NoSuchAlgorithmException e) {
-            throw new SecurityException("SHA1PRNG not available", e);
-        }
-        if (!LinuxPRNGSecureRandomProvider.class.equals(
+            SecureRandom rng2;
+            try {
+                rng2 = SecureRandom.getInstance("SHA1PRNG");
+            }
+            catch (NoSuchAlgorithmException e) {
+                throw new SecurityException("SHA1PRNG not available", e);
+            }
+            if (!LinuxPRNGSecureRandomProvider.class.equals(
                 rng2.getProvider().getClass())) {
-            throw new SecurityException(
+                throw new SecurityException(
                     "SecureRandom.getInstance(\"SHA1PRNG\") backed by wrong"
-                    + " Provider: " + rng2.getProvider().getClass());
+                        + " Provider: " + rng2.getProvider().getClass());
+            }
         }
     }
 

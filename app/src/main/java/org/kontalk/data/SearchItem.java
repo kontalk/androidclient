@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,9 +20,11 @@ package org.kontalk.data;
 
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Messages.Fulltext;
+import org.kontalk.reporting.ReportingManager;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteException;
 
 
 /**
@@ -30,27 +32,22 @@ import android.database.Cursor;
  * @author Daniele Ricci
  */
 public class SearchItem {
-    public static final String[] SEARCH_PROJECTION = {
+    private static final String[] SEARCH_PROJECTION = {
         Fulltext._ID + " AS " + Messages._ID,
         Fulltext.THREAD_ID,
         Fulltext.CONTENT
     };
 
-    protected final long mId;
-    protected final long mThreadId;
-    protected String mUserId;
-    protected final String mText;
-    protected Contact mContact;
+    private final long mId;
+    private final long mThreadId;
+    private final String mText;
+    private final Conversation mConversation;
 
     private SearchItem(Context context, long id, long threadId, String text) {
         mId = id;
         mThreadId = threadId;
         mText = text;
-        Conversation conv = Conversation.loadFromId(context, threadId);
-        if (conv != null) {
-            mUserId = conv.getRecipient();
-            mContact = conv.getContact();
-        }
+        mConversation = Conversation.loadFromId(context, threadId);
     }
 
     public long getMessageId() {
@@ -61,16 +58,26 @@ public class SearchItem {
         return mThreadId;
     }
 
-    public String getUserId() {
-        return mUserId;
+    public String getUserDisplayName() {
+        if (mConversation != null) {
+            if (mConversation.isGroupChat()) {
+                return mConversation.getGroupSubject();
+            }
+            else {
+                final Contact contact = mConversation.getContact();
+                String name;
+                if (contact != null)
+                    name = contact.getName() + " <" + contact.getNumber() + ">";
+                else
+                    name = mConversation.getRecipient();
+                return name;
+            }
+        }
+        return null;
     }
 
     public String getText() {
         return mText;
-    }
-
-    public Contact getContact() {
-        return mContact;
     }
 
     public static SearchItem fromCursor(Context context, Cursor cursor) {
@@ -81,9 +88,15 @@ public class SearchItem {
     }
 
     public static Cursor query(Context context, String query) {
-        // TODO enhanced queries?
-        return context.getContentResolver().query(Fulltext.CONTENT_URI
+        try {
+            // TODO enhanced queries?
+            return context.getContentResolver().query(Fulltext.CONTENT_URI
                     .buildUpon().appendQueryParameter("pattern", query + "*").build(),
                 SEARCH_PROJECTION, null, null, null);
+        }
+        catch (SQLiteException e) {
+            ReportingManager.logException(e);
+            return null;
+        }
     }
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -32,6 +32,24 @@
             android:title="@string/pref_push_notifications"
             android:defaultValue="@bool/pref_default_push_notifications"
             android:layout="@layout/md_preference_custom"/>
+        <com.afollestad.materialdialogs.prefs.MaterialListPreference
+            android:key="pref_idle_time"
+            android:title="@string/pref_idle_time"
+            android:summary="@string/pref_title_idle_time"
+            android:entries="@array/idle_time_labels"
+            android:entryValues="@array/idle_time_values"
+            android:defaultValue="@integer/pref_default_idle_time"/>
+        <com.afollestad.materialdialogs.prefs.MaterialListPreference
+            android:key="pref_wakeup_time"
+            android:title="@string/pref_wakeup_time"
+            android:summary="@string/pref_title_wakeup_time"
+            android:entries="@array/wakeup_time_labels"
+            android:entryValues="@array/wakeup_time_values"
+            android:defaultValue="@integer/pref_default_wakeup_time"/>
+        <CheckBoxPreference android:key="pref_accept_any_certificate"
+            android:title="@string/pref_accept_any_certificate"
+            android:defaultValue="@bool/pref_default_accept_any_certificate"
+            android:layout="@layout/md_preference_custom"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_messaging_settings"
@@ -62,35 +80,21 @@
 
     <PreferenceCategory android:key="pref_maintenance"
         android:title="@string/pref_maintenance">
-        <com.afollestad.materialdialogs.prefs.MaterialListPreference
-            android:key="pref_idle_time"
-            android:title="@string/pref_idle_time"
-            android:summary="@string/pref_title_idle_time"
-            android:entries="@array/idle_time_labels"
-            android:entryValues="@array/idle_time_values"
-            android:defaultValue="@integer/pref_default_idle_time"/>
-        <com.afollestad.materialdialogs.prefs.MaterialListPreference
-            android:key="pref_wakeup_time"
-            android:title="@string/pref_wakeup_time"
-            android:summary="@string/pref_title_wakeup_time"
-            android:entries="@array/wakeup_time_labels"
-            android:entryValues="@array/wakeup_time_values"
-            android:defaultValue="@integer/pref_default_wakeup_time"/>
-        <CheckBoxPreference android:key="pref_accept_any_certificate"
-            android:title="@string/pref_accept_any_certificate"
-            android:defaultValue="@bool/pref_default_accept_any_certificate"
+        <CheckBoxPreference android:key="pref_debug_log"
+            android:title="@string/pref_debug_log"
+            android:defaultValue="@bool/pref_default_debug_log"
+            android:layout="@layout/md_preference_custom"/>
+        <org.kontalk.ui.prefs.SendDebugLogPreference android:key="pref_send_debug_log"
+            android:title="@string/pref_send_debug_log"
+            android:dependency="pref_debug_log"
             android:layout="@layout/md_preference_custom"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_other"
         android:title="@string/pref_other">
-        <Preference android:key="pref_help"
+        <org.kontalk.ui.prefs.HelpPreference android:key="pref_help"
             android:title="@string/pref_help"
-            android:layout="@layout/md_preference_custom">
-            <intent
-                android:action="android.intent.action.VIEW"
-                android:data="@string/help_url" />
-        </Preference>
+            android:layout="@layout/md_preference_custom"/>
         <Preference android:key="pref_donate"
             android:title="@string/pref_donate"
             android:layout="@layout/md_preference_custom">

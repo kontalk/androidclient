@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,66 +18,109 @@
 
 package org.kontalk.util;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TimeZone;
+
+import com.afollestad.materialdialogs.MaterialDialog;
+
+import org.jivesoftware.smack.util.StringUtils;
+import org.spongycastle.jcajce.provider.digest.SHA1;
+import org.spongycastle.openpgp.PGPException;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
+import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.format.DateUtils;
 import android.text.format.Time;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
-import android.util.Log;
-
-import org.jivesoftware.smack.packet.ExtensionElement;
-import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.util.StringUtils;
 
 import org.kontalk.Kontalk;
 import org.kontalk.R;
-import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.EndpointServer;
-import org.kontalk.client.OutOfBandData;
 import org.kontalk.crypto.Coder;
-import org.kontalk.crypto.DecryptException;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.message.AttachmentComponent;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.DefaultAttachmentComponent;
+import org.kontalk.message.GroupCommandComponent;
+import org.kontalk.message.GroupComponent;
 import org.kontalk.message.ImageComponent;
-import org.kontalk.message.MessageComponent;
+import org.kontalk.message.LocationComponent;
 import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
+import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MyMessages.Messages;
-import org.kontalk.provider.UsersProvider;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
-
-import com.afollestad.materialdialogs.AlertDialogWrapper;
-
-import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_TIMESTAMP;
 
 
 public final class MessageUtils {
     // TODO convert these to XML styles
+    // these spans can't be used more than once in a Spanned because it's the same object reference!!!
+    @Deprecated
     public static final StyleSpan STYLE_BOLD = new StyleSpan(Typeface.BOLD);
+    @Deprecated
     private static final ForegroundColorSpan STYLE_RED = new ForegroundColorSpan(Color.RED);
+    @Deprecated
     private static final ForegroundColorSpan STYLE_GREEN = new ForegroundColorSpan(Color.rgb(0, 0xAA, 0));
+
+    /** For ascii to emoji converter. */
+    private static Map<String, String> sEmojiConverterMap = new HashMap<>();
+
+    static {
+        //http://apps.timwhitlock.info/emoji/tables/unicode
+        //http://unicode.org/emoji/charts/full-emoji-list.html
+        //use this to get UTF-16 from UTF-32: http://www.fileformat.info/info/unicode/char/search.htm
+        //you have to use UTF-16 here!
+        sEmojiConverterMap.put(":)", "\uD83D\uDE42");
+        sEmojiConverterMap.put(":-)", "\uD83D\uDE42");
+        sEmojiConverterMap.put(":(", "\uD83D\uDE41");
+        sEmojiConverterMap.put(":-(", "\uD83D\uDE41");
+        sEmojiConverterMap.put(":'(", "\uD83D\uDE22");
+        sEmojiConverterMap.put("<3", "\u0000\u2764");
+        sEmojiConverterMap.put(";-)", "\uD83D\uDE09");
+        sEmojiConverterMap.put(";)", "\uD83D\uDE09");
+        sEmojiConverterMap.put(":p", "\uD83D\uDE1B");
+        sEmojiConverterMap.put(":P", "\uD83D\uDE1B");
+        sEmojiConverterMap.put(":b", "\uD83D\uDE1B");
+        sEmojiConverterMap.put(";p", "\uD83D\uDE1C");
+        sEmojiConverterMap.put(";P", "\uD83D\uDE1C");
+        sEmojiConverterMap.put(";b", "\uD83D\uDE1C");
+        sEmojiConverterMap.put("xp", "\uD83D\uDE1D");
+        sEmojiConverterMap.put("xP", "\uD83D\uDE1D");
+        sEmojiConverterMap.put("xb", "\uD83D\uDE1D");
+        sEmojiConverterMap.put("Xp", "\uD83D\uDE1D");
+        sEmojiConverterMap.put("XP", "\uD83D\uDE1D");
+        sEmojiConverterMap.put("Xb", "\uD83D\uDE1D");
+        sEmojiConverterMap.put("B)", "\uD83D\uDE0E");
+        sEmojiConverterMap.put(":/", "\uD83D\uDE15");
+        sEmojiConverterMap.put(":\\", "\uD83D\uDE15");
+        sEmojiConverterMap.put(":|", "\uD83D\uDE10");
+        sEmojiConverterMap.put(":o", "\uD83D\uDE2E");
+        sEmojiConverterMap.put(":O", "\uD83D\uDE2E");
+        sEmojiConverterMap.put(";(", "\uD83D\uDE20");
+        sEmojiConverterMap.put(";-(", "\uD83D\uDE20");
+    }
 
     public static final int MILLISECONDS_IN_DAY = 86400000;
 
@@ -183,8 +226,21 @@ public final class MessageUtils {
         return serverTime > 0 ? serverTime : c.getLong(CompositeMessage.COLUMN_TIMESTAMP);
     }
 
+    public static String getMessagePeer(CompositeMessage msg) {
+        return msg.getDirection() == Messages.DIRECTION_IN ?
+            msg.getSender(true) : msg.getRecipients().get(0);
+    }
+
+    public static String getMessagePeer(Cursor c) {
+        return c.getString(CompositeMessage.COLUMN_PEER);
+    }
+
+    public static int getMessageDirection(Cursor c) {
+        return c.getInt(CompositeMessage.COLUMN_DIRECTION);
+    }
+
     public static String bytesToHex(byte[] data) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < data.length; i++) {
             int halfbyte = (data[i] >>> 4) & 0x0F;
             int two_halfs = 0;
@@ -201,18 +257,11 @@ public final class MessageUtils {
 
     /** TODO move somewhere else */
     public static String sha1(String text) {
-        try {
-            MessageDigest md;
-            md = MessageDigest.getInstance("SHA-1");
-            md.update(text.getBytes(), 0, text.length());
-            byte[] sha1hash = md.digest();
+        MessageDigest md = new SHA1.Digest();
+        md.update(text.getBytes(), 0, text.length());
+        byte[] sha1hash = md.digest();
 
-            return bytesToHex(sha1hash);
-        }
-        catch (NoSuchAlgorithmException e) {
-            // no SHA-1?? WWWHHHHAAAAAATTTT???!?!?!?!?!
-            throw new RuntimeException("no SHA-1 available. What the crap of a device do you have?");
-        }
+        return bytesToHex(sha1hash);
     }
 
     public static ByteArrayInOutStream readFully(InputStream in, long maxSize) throws IOException {
@@ -242,7 +291,7 @@ public final class MessageUtils {
         details.append(res.getString(R.string.message_type_label));
 
         int resId = R.string.text_message;
-        AttachmentComponent attachment = (AttachmentComponent) msg
+        AttachmentComponent attachment = msg
                 .getComponent(AttachmentComponent.class);
 
         if (attachment != null) {
@@ -267,7 +316,7 @@ public final class MessageUtils {
         }
         else {
             // text content length (if found)
-            TextComponent txt = (TextComponent) msg
+            TextComponent txt = msg
                     .getComponent(TextComponent.class);
 
             if (txt != null)
@@ -282,16 +331,17 @@ public final class MessageUtils {
         return details.toString();
     }
 
-    public static void showMessageDetails(Context context, CompositeMessage msg, String decodedPeer) {
+    public static void showMessageDetails(Context context, CompositeMessage msg, String decodedPeer, String decodedName) {
         CharSequence messageDetails = MessageUtils.getMessageDetails(
-            context, msg, decodedPeer);
-        new AlertDialogWrapper.Builder(context)
-            .setTitle(R.string.title_message_details)
-            .setMessage(messageDetails)
-            .setCancelable(true).show();
+            context, msg, decodedPeer, decodedName);
+        new MaterialDialog.Builder(context)
+            .title(R.string.title_message_details)
+            .content(messageDetails)
+            .cancelable(true)
+            .show();
     }
 
-    private static CharSequence getMessageDetails(Context context, CompositeMessage msg, String decodedPeer) {
+    private static CharSequence getMessageDetails(Context context, CompositeMessage msg, String decodedPeer, String decodedName) {
         SpannableStringBuilder details = new SpannableStringBuilder();
         Resources res = context.getResources();
         int direction = msg.getDirection();
@@ -300,7 +350,12 @@ public final class MessageUtils {
         details.append(res.getString(R.string.message_type_label));
 
         int resId = R.string.text_message;
-        AttachmentComponent attachment = (AttachmentComponent) msg
+
+        if (msg.hasComponent(LocationComponent.class)) {
+            resId = R.string.location_message;
+        }
+
+        AttachmentComponent attachment = msg
                 .getComponent(AttachmentComponent.class);
 
         if (attachment != null) {
@@ -315,13 +370,18 @@ public final class MessageUtils {
         details.append(res.getString(resId));
 
         // To/From
-        details.append('\n');
-        if (direction == Messages.DIRECTION_OUT)
-            details.append(res.getString(R.string.to_address_label));
-        else
-            details.append(res.getString(R.string.from_label));
+        if (!msg.hasComponent(GroupComponent.class) || direction == Messages.DIRECTION_IN) {
+            details.append('\n');
+            if (direction == Messages.DIRECTION_OUT)
+                details.append(res.getString(R.string.to_address_label));
+            else
+                details.append(res.getString(R.string.from_label));
 
-        details.append(decodedPeer);
+            String displayName = (decodedName != null) ?
+                decodedName + "\n<" + decodedPeer + ">" :
+                decodedPeer;
+            details.append(displayName);
+        }
 
         // Encrypted
         int securityFlags = msg.getSecurityFlags();
@@ -407,7 +467,7 @@ public final class MessageUtils {
         }
         else {
             // text content length (if found)
-            TextComponent txt = (TextComponent) msg
+            TextComponent txt = msg
                     .getComponent(TextComponent.class);
 
             if (txt != null)
@@ -549,224 +609,18 @@ public final class MessageUtils {
         return StringUtils.randomString(30);
     }
 
-    /** Decrypts a message, modifying the object <b>in place</b>. */
-    public static void decryptMessage(Context context, EndpointServer server, CompositeMessage msg) throws Exception {
-        // encrypted messages have a single encrypted raw component
-        RawComponent raw = (RawComponent) msg
-                .getComponent(RawComponent.class);
-
-        if (raw != null)
-            decryptMessage(context, server, msg, raw.getContent());
-    }
-
-    /** Decrypts a message, modifying the object <b>in place</b>. */
-    public static void decryptMessage(Context context, EndpointServer server, CompositeMessage msg, byte[] encryptedData)
-            throws Exception {
-
-        // message stanza
-        Message m = null;
-
-        try {
-            PersonalKey key = Kontalk.get(context).getPersonalKey();
-
-            if (server == null)
-                server = Preferences.getEndpointServer(context);
-
-            Coder coder = UsersProvider.getDecryptCoder(context, server, key, msg.getSender(true));
-
-            // decrypt
-            Coder.DecryptOutput result = coder.decryptText(encryptedData, true);
-
-            String contentText;
-
-            if (XMPPUtils.XML_XMPP_TYPE.equalsIgnoreCase(result.mime)) {
-                m = XMPPUtils.parseMessageStanza(result.cleartext);
-
-                if (result.timestamp != null && !checkDriftedDelay(m, result.timestamp))
-                    result.errors.add(new DecryptException(DECRYPT_EXCEPTION_INVALID_TIMESTAMP,
-                        "Drifted timestamp"));
-
-                contentText = m.getBody();
-            }
-            else {
-                contentText = result.cleartext;
-            }
-
-            // clear componenets (we are adding new ones)
-            msg.clearComponents();
-            // decrypted text
-            if (contentText != null)
-                msg.addComponent(new TextComponent(contentText));
-
-            if (result.errors.size() > 0) {
-
-                int securityFlags = msg.getSecurityFlags();
-
-                for (DecryptException err : result.errors) {
-
-                    int code = err.getCode();
-                    switch (code) {
-
-                        case DecryptException.DECRYPT_EXCEPTION_INTEGRITY_CHECK:
-                            securityFlags |= Coder.SECURITY_ERROR_INTEGRITY_CHECK;
-                            break;
-
-                        case DecryptException.DECRYPT_EXCEPTION_VERIFICATION_FAILED:
-                            securityFlags |= Coder.SECURITY_ERROR_INVALID_SIGNATURE;
-                            break;
-
-                        case DecryptException.DECRYPT_EXCEPTION_INVALID_DATA:
-                            securityFlags |= Coder.SECURITY_ERROR_INVALID_DATA;
-                            break;
-
-                        case DecryptException.DECRYPT_EXCEPTION_INVALID_SENDER:
-                            securityFlags |= Coder.SECURITY_ERROR_INVALID_SENDER;
-                            break;
-
-                        case DecryptException.DECRYPT_EXCEPTION_INVALID_RECIPIENT:
-                            securityFlags |= Coder.SECURITY_ERROR_INVALID_RECIPIENT;
-                            break;
-
-                        case DecryptException.DECRYPT_EXCEPTION_INVALID_TIMESTAMP:
-                            securityFlags |= Coder.SECURITY_ERROR_INVALID_TIMESTAMP;
-                            break;
-
-                    }
-
-                }
-
-                msg.setSecurityFlags(securityFlags);
-            }
-
-            msg.setEncrypted(false);
-
-        }
-        catch (Exception exc) {
-            // pass over the message even if encrypted
-            // UI will warn the user about that and wait
-            // for user decisions
-            int securityFlags = msg.getSecurityFlags();
-
-            if (exc instanceof DecryptException) {
-
-                int code = ((DecryptException) exc).getCode();
-                switch (code) {
-
-                    case DecryptException.DECRYPT_EXCEPTION_DECRYPT_FAILED:
-                    case DecryptException.DECRYPT_EXCEPTION_PRIVATE_KEY_NOT_FOUND:
-                        securityFlags |= Coder.SECURITY_ERROR_DECRYPT_FAILED;
-                        break;
-
-                    case DecryptException.DECRYPT_EXCEPTION_INTEGRITY_CHECK:
-                        securityFlags |= Coder.SECURITY_ERROR_INTEGRITY_CHECK;
-                        break;
-
-                    case DecryptException.DECRYPT_EXCEPTION_INVALID_DATA:
-                        securityFlags |= Coder.SECURITY_ERROR_INVALID_DATA;
-                        break;
-
-                }
-
-                msg.setSecurityFlags(securityFlags);
-            }
-
-            throw exc;
-        }
-
-        // we have a decrypted message stanza, process it
-        if (m != null) {
-
-            // TODO duplicated code (MessageListener#processPacket)
-
-            // out of band data
-            ExtensionElement _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
-            if (_media != null && _media instanceof OutOfBandData) {
-                File previewFile = null;
-
-                OutOfBandData media = (OutOfBandData) _media;
-                String mime = media.getMime();
-                String fetchUrl = media.getUrl();
-                long length = media.getLength();
-                boolean encrypted = media.isEncrypted();
-
-                // bits-of-binary for preview
-                ExtensionElement _preview = m.getExtension(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE);
-                if (_preview != null && _preview instanceof BitsOfBinary) {
-                    BitsOfBinary preview = (BitsOfBinary) _preview;
-                    String previewMime = preview.getType();
-                    if (previewMime == null)
-                        previewMime = MediaStorage.THUMBNAIL_MIME_NETWORK;
-
-                    String filename = null;
-
-                    if (ImageComponent.supportsMimeType(mime)) {
-                        filename = ImageComponent.buildMediaFilename(msg.getId(), previewMime);
-                    }
-
-                    else if (VCardComponent.supportsMimeType(mime)) {
-                        filename = VCardComponent.buildMediaFilename(msg.getId(), previewMime);
-                    }
-
-                    try {
-                        if (filename != null) previewFile =
-                            MediaStorage.writeInternalMedia(context,
-                                filename, preview.getContents());
-                    }
-                    catch (IOException e) {
-                        Log.w(Kontalk.TAG, "error storing thumbnail", e);
-                    }
-                }
-
-                MessageComponent<?> attachment = null;
-
-                if (ImageComponent.supportsMimeType(mime)) {
-                    // cleartext only for now
-                    attachment = new ImageComponent(mime, previewFile, null, fetchUrl, length,
-                        encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-                }
-
-                else if (VCardComponent.supportsMimeType(mime)) {
-                    // cleartext only for now
-                    attachment = new VCardComponent(previewFile, null, fetchUrl, length,
-                        encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-                }
-
-                else if (AudioComponent.supportsMimeType(mime)) {
-                    attachment = new AudioComponent(mime, null, fetchUrl, length,
-                        encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-                }
-
-
-                // TODO other types
-
-                if (attachment != null)
-                    msg.addComponent(attachment);
-
-                // add a dummy body if none was found
-                /*
-                if (body == null) {
-                    msg.addComponent(new TextComponent(CompositeMessage
-                        .getSampleTextContent((Class<? extends MessageComponent<?>>)
-                            attachment.getClass(), mime)));
-                }
-                */
-
-            }
-
-        }
-    }
-
-    private static boolean checkDriftedDelay(Message m, Date expected) {
-        Date stamp = XMPPUtils.getStanzaDelay(m);
-        if (stamp != null) {
-            long time = stamp.getTime();
-            long now = expected.getTime();
-            long diff = Math.abs(now - time);
-            return (diff < Coder.TIMEDIFF_THRESHOLD);
-        }
-
-        // no timestamp found
-        return true;
+    public static File encryptFile(Context context, InputStream in, String[] users)
+            throws GeneralSecurityException, IOException, PGPException {
+        PersonalKey key = Kontalk.get(context).getPersonalKey();
+        EndpointServer server = Preferences.getEndpointServer(context);
+        Coder coder = Keyring.getEncryptCoder(context, server, key, users);
+        // create a temporary file to store encrypted data
+        File temp = File.createTempFile("media", null, context.getCacheDir());
+        FileOutputStream out = new FileOutputStream(temp);
+        coder.encryptFile(in, out);
+        // close encrypted file
+        out.close();
+        return temp;
     }
 
     /** Fills in a {@link ContentValues} object from the given message. */
@@ -778,7 +632,7 @@ public final class MessageUtils {
         // message still encrypted - use whole body of raw component
         if (msg.isEncrypted()) {
 
-            RawComponent raw = (RawComponent) msg.getComponent(RawComponent.class);
+            RawComponent raw = msg.getComponent(RawComponent.class);
             // if raw it's null it's a bug
             content = raw.getContent();
             mime = null;
@@ -787,31 +641,36 @@ public final class MessageUtils {
         }
 
         else {
+            GroupCommandComponent group = msg.getComponent(GroupCommandComponent.class);
+            if (group != null) {
+                content = group.getTextContent().getBytes();
+                mime = GroupCommandComponent.MIME_TYPE;
+            }
+            else {
+                TextComponent txt = msg.getComponent(TextComponent.class);
 
-            TextComponent txt = (TextComponent) msg.getComponent(TextComponent.class);
-
-            if (txt != null) {
-                content = txt.getContent().getBytes();
-                mime = TextComponent.MIME_TYPE;
+                if (txt != null) {
+                    content = txt.getContent().getBytes();
+                    mime = TextComponent.MIME_TYPE;
+                }
             }
 
             checkAttachment = true;
-
         }
 
         // selective components detection
 
         if (checkAttachment) {
-
             @SuppressWarnings("unchecked")
             Class<AttachmentComponent>[] tryComponents = new Class[] {
                 ImageComponent.class,
                 VCardComponent.class,
                 AudioComponent.class,
+                DefaultAttachmentComponent.class,
             };
 
             for (Class<AttachmentComponent> klass : tryComponents) {
-                AttachmentComponent att = (AttachmentComponent) msg.getComponent(klass);
+                AttachmentComponent att = msg.getComponent(klass);
                 if (att != null) {
 
                     values.put(Messages.ATTACHMENT_MIME, att.getMime());
@@ -827,9 +686,7 @@ public final class MessageUtils {
                     // only one attachment is supported
                     break;
                 }
-
             }
-
         }
 
         values.put(Messages.BODY_CONTENT, content);
@@ -842,7 +699,8 @@ public final class MessageUtils {
         values.put(Messages.SERVER_TIMESTAMP, msg.getServerTimestamp());
     }
 
-    public static Bitmap drawableToBitmap(Drawable drawable) {
+    @NonNull
+    public static Bitmap drawableToBitmap(@NonNull Drawable drawable) {
         Bitmap bitmap;
 
         if (drawable instanceof BitmapDrawable) {
@@ -862,6 +720,78 @@ public final class MessageUtils {
         drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         drawable.draw(canvas);
         return bitmap;
+    }
+
+    public static String toString(byte[] text) {
+        return new String(trimNul(text));
+    }
+
+    public static byte[] trimNul(byte[] text) {
+        if (text.length > 0 && text[text.length - 1] == '\0') {
+            byte[] nulBody = new byte[text.length - 1];
+            System.arraycopy(text, 0, nulBody, 0, nulBody.length);
+            text = nulBody;
+        }
+        return text;
+    }
+
+    // checks for ASCII-smileys and replace them
+    public static boolean convertSmileys(Editable input) {
+        boolean converted = false;
+        for (String key : sEmojiConverterMap.keySet()) {
+            // order of arguments of OR is essential here!
+            converted = replaceEditable(input, key, sEmojiConverterMap.get(key)) || converted;
+        }
+        return converted;
+    }
+    
+    // actual replacement ASCII -> UTF-16 if necessary
+    private static boolean replaceEditable(Editable text, String in, String out) {
+        boolean replaced = false;
+        int notReplaced = 0;
+        for (int position = text.toString().indexOf(in); position >= 0; position = text.toString().indexOf(in)){
+
+            // check if there are symbols that should not be converted, e.g. in "http://" or "experte"
+            // if only these last, exit the loop
+            if (notReplaced > 0){
+                position = ordinalIndexOf(text.toString(), " " + in, notReplaced) + 1;
+                if (position < 1){
+                    break;
+                }
+            }
+            // emoji at beginning is okay, emoji with other char than space in front is not okay
+            if (position > 0 && text.charAt(position - 1) > 32 && text.charAt(position - 1) < 255) {
+                notReplaced++;
+                continue;
+            }
+            text.replace(position, position + in.length(), out);
+            replaced = true;
+        }
+        return replaced;
+    }
+
+    //can't find such a function in java api, so take it from StringUtils.java
+    public static int ordinalIndexOf(String str, String searchStr, int ordinal) {
+        if (str == null || searchStr == null || ordinal <= 0) {
+            return -1;
+        }
+        if (searchStr.length() == 0) {
+            return 0;
+        }
+        int found = 0;
+        int index = -1;
+        do {
+            index = str.indexOf(searchStr, index + 1);
+            if (index < 0) {
+                return index;
+            }
+            found++;
+        } while (found < ordinal);
+        return index;
+    }
+
+    public static boolean sendEncrypted(Context context, boolean chatEncryptionEnabled) {
+        return Preferences.getEncryptionEnabled(context) && chatEncryptionEnabled;
     }
 
 }

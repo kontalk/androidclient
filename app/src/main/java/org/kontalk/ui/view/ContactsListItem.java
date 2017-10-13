@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,19 +20,31 @@ package org.kontalk.ui.view;
 
 import org.kontalk.R;
 import org.kontalk.data.Contact;
+import org.kontalk.provider.MyUsers;
+import org.kontalk.util.SystemUtils;
 
 import android.content.Context;
-import android.text.TextUtils;
+import android.support.v4.content.ContextCompat;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.CharacterStyle;
 import android.util.AttributeSet;
+import android.widget.Checkable;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 
-public class ContactsListItem extends AvatarListItem {
+public class ContactsListItem extends AvatarListItem implements Checkable {
+
+    private static final int[] CHECKED_STATE_SET = { android.R.attr.state_checked };
 
     private Contact mContact;
-    private TextView mHeader;
     private TextView mText1;
     private TextView mText2;
+    private ImageView mTrustStatus;
+    private CircleCheckBox mCheckbox;
+
+    private boolean mChecked;
 
     public ContactsListItem(Context context) {
         super(context);
@@ -46,9 +58,10 @@ public class ContactsListItem extends AvatarListItem {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mHeader = (TextView) findViewById(R.id.header_text);
         mText1 = (TextView) findViewById(android.R.id.text1);
         mText2 = (TextView) findViewById(android.R.id.text2);
+        mTrustStatus = (ImageView) findViewById(R.id.trust_status);
+        mCheckbox = (CircleCheckBox) findViewById(R.id.checkbox);
 
         if (isInEditMode()) {
             mText1.setText("Test contact");
@@ -57,25 +70,77 @@ public class ContactsListItem extends AvatarListItem {
     }
 
     public final void bind(Context context, final Contact contact) {
+        bind(context, contact, null, null);
+    }
+
+    public final void bind(Context context, final Contact contact, String prependStatus, CharacterStyle prependStyle) {
+        bind(context, contact, prependStatus, prependStyle, true);
+    }
+
+    public final void bind(Context context, final Contact contact, String prependStatus, CharacterStyle prependStyle, boolean subscribed) {
         mContact = contact;
+
+        setChecked(false);
 
         loadAvatar(contact);
 
-        if (!TextUtils.isEmpty(contact.getName())) {
-            mText1.setText(contact.getName());
-        } else {
-            mText1.setText(contact.getNumber());
-        }
+        mText1.setText(contact.getDisplayName());
 
-        String text2 = contact.getStatus();
+        CharSequence text2 = contact.getStatus();
         if (text2 == null) {
             text2 = contact.getNumber();
-            mText2.setTextColor(getResources().getColor(R.color.grayed_out));
+            mText2.setTextColor(ContextCompat.getColor(context, R.color.grayed_out));
         }
         else {
-            mText2.setTextColor(getResources().getColor(android.R.color.secondary_text_light));
+            int color = ContextCompat.getColor(context,
+                SystemUtils.getThemedResource(getContext(), android.R.attr.textColorSecondary));
+            mText2.setTextColor(color);
+        }
+        if (prependStatus != null) {
+            if (prependStyle != null) {
+                text2 = new SpannableString(prependStatus + " " + text2);
+                ((SpannableString) text2).setSpan(prependStyle, 0, prependStatus.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            else {
+                text2 = prependStatus + " " + text2;
+            }
         }
         mText2.setText(text2);
+
+        if (mTrustStatus != null) {
+            int resId;
+
+            if (!subscribed) {
+                resId = R.drawable.ic_denied;
+            }
+            else if (contact.isKeyChanged()) {
+                // the key has changed and was not trusted yet
+                resId = R.drawable.ic_trust_unknown;
+            }
+            else {
+                switch (contact.getTrustedLevel()) {
+                    case MyUsers.Keys.TRUST_UNKNOWN:
+                        resId = R.drawable.ic_trust_unknown;
+                        break;
+                    case MyUsers.Keys.TRUST_IGNORED:
+                        resId = R.drawable.ic_trust_ignored;
+                        break;
+                    case MyUsers.Keys.TRUST_VERIFIED:
+                        resId = R.drawable.ic_trust_verified;
+                        break;
+                    default:
+                        resId = -1;
+                }
+            }
+
+            if (resId > 0) {
+                mTrustStatus.setImageResource(resId);
+            }
+            else {
+                mTrustStatus.setImageDrawable(null);
+            }
+        }
+
     }
 
     public final void unbind() {
@@ -92,6 +157,42 @@ public class ContactsListItem extends AvatarListItem {
 
     public Contact getContact() {
         return mContact;
+    }
+
+    @Override
+    protected boolean isGroupChat() {
+        return false;
+    }
+
+    @Override
+    public boolean isChecked() {
+        return mChecked;
+    }
+
+    @Override
+    public void setChecked(boolean checked) {
+        if (checked != mChecked) {
+            mChecked = checked;
+            if (mCheckbox != null) {
+                mCheckbox.setChecked(checked);
+                mAvatarView.setVisibility(checked ? GONE : VISIBLE);
+            }
+            refreshDrawableState();
+        }
+    }
+
+    @Override
+    protected int[] onCreateDrawableState(int extraSpace) {
+        final int[] drawableState = super.onCreateDrawableState(extraSpace + 1);
+        if (isChecked()) {
+            mergeDrawableStates(drawableState, CHECKED_STATE_SET);
+        }
+        return drawableState;
+    }
+
+    @Override
+    public void toggle() {
+        setChecked(!mChecked);
     }
 
 }

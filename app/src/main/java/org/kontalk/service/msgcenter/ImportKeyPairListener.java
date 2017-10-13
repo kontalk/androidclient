@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -81,8 +81,8 @@ class ImportKeyPairListener extends RegisterKeyPairListener {
     // TODO
 
     @Override
-    public void processPacket(Stanza packet) {
-        super.processPacket(packet);
+    public void processStanza(Stanza packet) {
+        super.processStanza(packet);
 
         // we are done here
         endKeyPairImport();

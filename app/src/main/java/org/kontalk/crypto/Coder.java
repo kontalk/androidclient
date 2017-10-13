@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -87,7 +87,7 @@ public abstract class Coder {
     /** Encrypts a stanza. */
     public abstract byte[] encryptStanza(CharSequence xml) throws GeneralSecurityException;
 
-    /** Decrypts a byte array which should content text. */
+    /** Decrypts a byte array which should contain text. */
     public abstract DecryptOutput decryptText(byte[] encrypted, boolean verify)
         throws GeneralSecurityException;
 
@@ -97,6 +97,9 @@ public abstract class Coder {
     /** Decrypts a file. */
     public abstract void decryptFile(InputStream input, boolean verify,
         OutputStream output, List<DecryptException> errors) throws GeneralSecurityException;
+
+    /** Verifies a byte array which should contain text. */
+    public abstract Coder.VerifyOutput verifyText(byte[] signed, boolean verify) throws GeneralSecurityException;
 
     /** Returns true if the given security flags has some error bit on. */
     public static boolean isError(int securityFlags) {
@@ -110,7 +113,7 @@ public abstract class Coder {
             (securityFlags & SECURITY_ERROR_PUBLIC_KEY_UNAVAILABLE) != 0;
     }
 
-    public static final class DecryptOutput {
+    public static class DecryptOutput {
         public final String mime;
         public final String cleartext;
         public final Date timestamp;
@@ -122,6 +125,19 @@ public abstract class Coder {
             this.timestamp = timestamp;
             this.errors = errors;
         }
+    }
+
+    public static class VerifyOutput {
+        public final String cleartext;
+        public final Date timestamp;
+        public final List<VerifyException> errors;
+
+        VerifyOutput(String cleartext, Date timestamp, List<VerifyException> errors) {
+            this.cleartext = cleartext;
+            this.timestamp = timestamp;
+            this.errors = errors;
+        }
+
     }
 
 }

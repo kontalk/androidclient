@@ -1,4 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Kontalk Android client
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
 <org.kontalk.ui.view.AudioContentView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -21,7 +38,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:id="@+id/balloon_audio_player"
-        android:layout_marginTop="12dp"
         android:focusable="false"
         android:background="@drawable/play_balloon"
         android:layout_alignParentLeft="true" />
@@ -30,10 +46,9 @@
         android:id="@+id/balloon_audio_seekbar"
         android:layout_width="@dimen/message_audio_width"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="9dp"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="8dp"
         android:focusable="false"
-        android:layout_toRightOf="@+id/balloon_audio_player" />
+        android:layout_toRightOf="@+id/balloon_audio_player"/>
 
     <TextView
         android:id="@+id/balloon_audio_time"

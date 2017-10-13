@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,6 +71,9 @@ import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_TIME
 import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_PRIVATE_KEY_NOT_FOUND;
 import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_VERIFICATION_FAILED;
 
+import static org.kontalk.crypto.VerifyException.VERIFY_EXCEPTION_INVALID_DATA;
+import static org.kontalk.crypto.VerifyException.VERIFY_EXCEPTION_VERIFICATION_FAILED;
+
 
 /**
  * PGP coder implementation.
@@ -131,7 +134,7 @@ public class PGPCoder extends Coder {
                     xml +
                 "</xmpp>";
 
-            return encryptData(XMPPUtils.XML_XMPP_TYPE, xmlWrapper.toString());
+            return encryptData(XMPPUtils.XML_XMPP_TYPE, xmlWrapper);
         }
 
         catch (PGPException e) {
@@ -147,13 +150,12 @@ public class PGPCoder extends Coder {
             throws PGPException, IOException, SignatureException {
 
         String from = mKey.getUserId(mServer.getNetwork());
-        StringBuilder to = new StringBuilder();
-        for (PGPPublicKeyRing rcpt : mRecipients)
-            to.append(PGP.getUserId(PGP.getMasterKey(rcpt), mServer.getNetwork()))
-                .append("; ");
+        String[] to = new String[mRecipients.length];
+        for (int i = 0; i < to.length; i++)
+            to[i] = PGP.getUserId(PGP.getMasterKey(mRecipients[i]), mServer.getNetwork());
 
         // secure the message against the most basic attacks using Message/CPIM
-        CPIMMessage cpim = new CPIMMessage(from, to.toString(), new Date(), mime, data);
+        CPIMMessage cpim = new CPIMMessage(from, to, new Date(), mime, data);
         byte[] plainText = cpim.toByteArray();
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -387,8 +389,18 @@ public class PGPCoder extends Coder {
                             }
 
                             // check that the recipient matches the full uid of the personal key
+                            boolean foundTo = false;
                             String myUid = mKey.getUserId(mServer.getNetwork());
-                            if (!myUid.equals(msg.getTo())) {
+                            String[] msgTo = msg.getTo();
+                            if (msgTo != null) {
+                                for (String to : msgTo) {
+                                    if (myUid.equals(to)) {
+                                        foundTo = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!foundTo) {
                                 errors.add(new DecryptException(
                                     DECRYPT_EXCEPTION_INVALID_RECIPIENT,
                                     "Destination does not match personal key"));
@@ -403,7 +415,7 @@ public class PGPCoder extends Coder {
                                         "Sender does not match sender's key"));
                                 }
                             }
-                            else if (verify) {
+                            else {
                                 errors.add(new DecryptException(
                                     DECRYPT_EXCEPTION_VERIFICATION_FAILED,
                                     "No public key available to verify sender"));
@@ -601,7 +613,7 @@ public class PGPCoder extends Coder {
 
                 PGPOnePassSignature ops = null;
                 if (message instanceof PGPOnePassSignatureList) {
-                    if (verify) {
+                    if (verify && mSender != null) {
                         ops = ((PGPOnePassSignatureList) message).get(0);
                         ops.init(new BcPGPContentVerifierBuilderProvider(), PGP.getSigningKey(mSender));
                     }
@@ -701,6 +713,125 @@ public class PGPCoder extends Coder {
         catch (PGPException pe) {
             throw new DecryptException(DECRYPT_EXCEPTION_INVALID_DATA, pe);
         }
+    }
+
+    @Override
+    public VerifyOutput verifyText(byte[] signed, boolean verify) throws GeneralSecurityException {
+        List<VerifyException> errors = new ArrayList<>();
+        Date timestamp;
+        String out;
+
+        try {
+            PGPObjectFactory plainFact = new PGPObjectFactory(signed, sFingerprintCalculator);
+
+            Object message = plainFact.nextObject();
+
+            if (message instanceof PGPCompressedData) {
+                PGPCompressedData cData = (PGPCompressedData) message;
+                PGPObjectFactory pgpFact = new PGPObjectFactory(cData.getDataStream(), sFingerprintCalculator);
+
+                message = pgpFact.nextObject();
+
+                PGPOnePassSignature ops = null;
+                if (message instanceof PGPOnePassSignatureList) {
+                    if (verify && mSender != null) {
+                        ops = ((PGPOnePassSignatureList) message).get(0);
+                        try {
+                            ops.init(new BcPGPContentVerifierBuilderProvider(), PGP.getSigningKey(mSender));
+                        }
+                        catch (ClassCastException e) {
+                            try {
+                                // workaround for backward compatibility
+                                ops.init(new BcPGPContentVerifierBuilderProvider(), PGP.getMasterKey(mSender));
+                            }
+                            catch (ClassCastException e2) {
+                                // peer used new ECC key to sign, but we still have the old RSA one
+                                // no verification is possible
+                                ops = null;
+                            }
+                        }
+                    }
+
+                    message = pgpFact.nextObject();
+                }
+
+                if (message instanceof PGPLiteralData) {
+                    PGPLiteralData ld = (PGPLiteralData) message;
+
+                    timestamp = ld.getModificationTime();
+                    InputStream unc = ld.getInputStream();
+                    ByteArrayOutputStream bout = new ByteArrayOutputStream();
+
+                    byte[] buf = new byte[4096];
+                    int num;
+
+                    while ((num = unc.read(buf)) >= 0) {
+                        bout.write(buf, 0, num);
+
+                        if (ops != null)
+                            ops.update(buf, 0, num);
+                    }
+
+                    if (verify) {
+                        if (ops == null) {
+                            errors.add(new VerifyException(
+                                VERIFY_EXCEPTION_VERIFICATION_FAILED,
+                                "No signature list found"));
+                        }
+
+                        message = pgpFact.nextObject();
+
+                        if (ops != null) {
+
+                            if (message instanceof PGPSignatureList) {
+                                PGPSignature signature = ((PGPSignatureList) message).get(0);
+                                if (!ops.verify(signature)) {
+                                    errors.add(new VerifyException(
+                                        VERIFY_EXCEPTION_VERIFICATION_FAILED,
+                                        "Signature verification failed"));
+                                }
+                            }
+
+                            else {
+                                errors.add(new VerifyException(
+                                    VERIFY_EXCEPTION_INVALID_DATA,
+                                    "Invalid signature packet"));
+                            }
+
+                        }
+
+                    }
+
+                    out = bout.toString();
+                }
+                else {
+                    // invalid or unknown packet
+                    throw new VerifyException(
+                        VERIFY_EXCEPTION_INVALID_DATA,
+                        "Unknown packet type " + message.getClass().getName());
+                }
+
+            }
+
+            else {
+                throw new VerifyException(
+                    VERIFY_EXCEPTION_INVALID_DATA,
+                    "Compressed data packet expected");
+            }
+
+        }
+
+        // unrecoverable situations
+
+        catch (IOException ioe) {
+            throw new VerifyException(VERIFY_EXCEPTION_INVALID_DATA, ioe);
+        }
+
+        catch (PGPException pe) {
+            throw new VerifyException(VERIFY_EXCEPTION_INVALID_DATA, pe);
+        }
+
+        return new VerifyOutput(out, timestamp, errors);
     }
 
 }

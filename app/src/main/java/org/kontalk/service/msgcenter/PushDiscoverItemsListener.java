@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,29 +36,30 @@ class PushDiscoverItemsListener extends MessageCenterPacketListener {
     }
 
     @Override
-    public void processPacket(Stanza packet) {
+    public void processStanza(Stanza packet) {
         // we don't need this listener anymore
         getConnection().removeAsyncStanzaListener(this);
 
         DiscoverItems query = (DiscoverItems) packet;
         List<DiscoverItems.Item> items = query.getItems();
         for (DiscoverItems.Item item : items) {
-            String jid = item.getEntityID();
+            String jid = item.getEntityID().toString();
             // google push notifications
             if (("gcm.push." + getServer().getNetwork()).equals(jid)) {
                 String senderId = item.getNode();
                 setPushSenderId(senderId);
 
                 if (isPushNotificationsEnabled()) {
-                    String oldSender = Preferences.getPushSenderId(getContext());
+                    String oldSender = Preferences.getPushSenderId();
 
                     // store the new sender id
-                    Preferences.setPushSenderId(getContext(), senderId);
+                    Preferences.setPushSenderId(senderId);
 
                     // begin a registration cycle if senderId is different
                     if (oldSender != null && !oldSender.equals(senderId)) {
-                        PushServiceManager.getInstance(getContext())
-                            .unregister(getPushListener());
+                        IPushService service = PushServiceManager.getInstance(getContext());
+                        if (service != null)
+                            service.unregister(getPushListener());
                         // unregister will see this as an attempt to register again
                         startPushRegistrationCycle();
                     }

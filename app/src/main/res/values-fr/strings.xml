@@ -1,6 +1,6 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="app_name">Kontalk</string>
   <string name="app_description">Réseau de messagerie instantanée géré par la communauté</string>
   <string name="service_name">Messagerie</string>
@@ -47,7 +47,7 @@
   <string name="warn_invalid_number">Veuillez insérer un numéro de téléphone valide.</string>
   <string name="msg_validating_phone">Demande d\'enregistrement…</string>
   <string name="msg_initializing">Enregistrement au réseau Kontalk…</string>
-  <string name="msg_authenticated">Vous êtes bien enregistré sur le réseau!</string>
+  <string name="msg_authenticated">Vous êtes bien enregistré sur le réseau !</string>
   <string name="share">Partager</string>
   <string name="resend">Envoyer à nouveau</string>
   <string name="copy_message_text">Copier le texte</string>
@@ -63,7 +63,6 @@
   <string name="confirm_delete_thread">Supprimer la conversation</string>
   <string name="confirm_will_delete_thread">Toute la conversation sera effacée.</string>
   <string name="new_messages">Nouveaux messages</string>
-  <string name="unread_messages">%d messages non lus</string>
   <string name="only_one_account_supported">Uniquement un compte Kontalk est supporté.</string>
   <string name="hint_enter_text">Écrire ici</string>
   <string name="hint_type_to_compose">Taper pour écrire</string>
@@ -91,7 +90,7 @@
   <string name="size_unknown">(inconnu)</string>
   <string name="title_file_info">Information du fichier</string>
   <string name="pref_restart_msgcenter">Redémarrer la messagerie</string>
-  <string name="pref_title_restart_msgcenter">A utiliser si le centre de messagerie ne fonctionnne pas correctement</string>
+  <string name="pref_title_restart_msgcenter">A utiliser si Kontalk ne fonctionne pas correctement</string>
   <string name="pref_idle_time">Déconnecter quand inactif</string>
   <string name="pref_title_idle_time">Combien de temps attendre avant de se déconnecter pour inactivité</string>
   <string name="pref_wakeup_time">Se reconnecter au serveur</string>
@@ -104,13 +103,10 @@
   <string name="pref_messaging_settings">Paramètres des discussions</string>
   <string name="pref_privacy_settings">Paramètres de confidentialité</string>
   <string name="pref_encrypt">Chiffrement des messages</string>
-  <string name="pref_title_on_encrypt">Tous les messages seront chiffrés dès maintenant</string>
-  <string name="pref_title_off_encrypt">Tous les messages seront en clair dès maintenant</string>
   <string name="pref_encrypt_userdata">Chiffrer les informations personnelles</string>
   <string name="pref_title_on_encrypt_userdata">Les statuts seront visible que pour les utilisateurs possédant votre numéro</string>
   <string name="pref_title_off_encrypt_userdata">Les statuts seront visible par tout le monde</string>
   <string name="pref_auto_accept_subscriptions">Automatiquement accepter les invitations</string>
-  <string name="pref_title_auto_accept_subscriptions">Automatiquement accepter les invitations à discuter par d\'autres utilisateurs</string>
   <string name="pref_send_typing">Envoyer notification de rédaction du message</string>
   <string name="pref_hide_presence">Masquer la présence</string>
   <string name="pref_title_on_hide_presence">Les utilisateurs ne nous verront pas en ligne</string>
@@ -126,7 +122,6 @@
   <string name="pref_update_server_list">Mettre à jour la liste des serveurs</string>
   <string name="server_list_last_update">Dernière mise à jour: %s</string>
   <string name="pref_title_push_notifications">Utiliser les notifications \"push\" si le serveur le supporte, préserve votre batterie</string>
-  <string name="pref_title_disabled_push_notifications">Les notifications push ne sont pas supportées par cet appareil</string>
   <string name="pref_push_notifications">Notification \"push\"</string>
   <string name="hint_search_full">Chercher dans les messages</string>
   <string name="hint_search_quickbox">Texte dans vos messages</string>
@@ -201,14 +196,12 @@
   <string name="attachment_download">Téléchargement de pièce jointe</string>
   <string name="attachment_upload">Téléversement de la pièce jointe</string>
   <string name="seen_moment_ago_label">il y a un instant</string>
-  <string name="seen_online_label">en ligne</string>
+  <string name="seen_online_label">actif</string>
   <string name="seen_typing_label">écrit…</string>
   <string name="invitation_sent_label">invitation en attente</string>
   <string name="pref_custom_background">Fond d\'écran personnalisé</string>
   <string name="pref_background_uri">Fond d\'écran</string>
   <string name="pref_title_background_uri">Utiliser un fond d\'écran personnalisé pour les conversations</string>
-  <string name="pref_title_off_custom_background">Utilise le fond d\'écran par défaut</string>
-  <string name="pref_title_on_custom_background">Choisir un fond d\'écran avec l\'options ci-dessous</string>
   <string name="err_attachment_corrupted">Impossible de télécharger la pièce jointe. Le message peut être corrompu.</string>
   <string name="serverlist_updating">Mise à jour de la liste listes des serveurs…</string>
   <string name="serverlist_update_error">Impossible de télécharger la liste de serveurs. Veuillez réessayer plus tard.</string>
@@ -228,9 +221,9 @@
   <string name="pref_text_enter_label_newline">Entrée</string>
   <string name="pref_text_enter_label_newline_send">Envoyer</string>
   <string name="pref_image_resize_label_original">Original</string>
-  <string name="pref_image_resize_label_small">Petit (0.3MP)</string>
-  <string name="pref_image_resize_label_medium">Moyen (0.5MP)</string>
-  <string name="pref_image_resize_label_large">Large (0.8MP)</string>
+  <string name="pref_image_resize_label_small">Petit (0.4MP)</string>
+  <string name="pref_image_resize_label_medium">Moyen (1.0MP)</string>
+  <string name="pref_image_resize_label_large">Large (2.0MP)</string>
   <string name="pref_idle_time_label_never">Jamais</string>
   <string name="pref_idle_time_label_5m">5 minutes</string>
   <string name="pref_idle_time_label_15m">15 minutes</string>
@@ -245,9 +238,6 @@
   <string name="pref_change_passphrase">Changer le mot de passe de la clé personnelle</string>
   <string name="pref_title_remove_prefix">Enlevez le préfixe du numéro dans Kontalk pour faire correspondre les numéros de téléphone correctement</string>
   <string name="pref_export_keypair">Exporter la clé personnelle</string>
-  <string name="pref_title_export_keypair">Exporter la clé personnelle et le certificat d\'identification sur un stockage externe</string>
-  <string name="pref_import_keypair">Importer clé personnelle</string>
-  <string name="pref_title_import_keypair">Importer une clé personnelle et un certificat d\'un support de stockage externe</string>
   <string name="msg_import_keypair">Kontalk va importer votre clé depuis %s dans votre stockage externe. Soyez sûr que le fichier existe et que l\'archive de la clé exporté est valide.</string>
   <string name="msg_import_keypair_complete">Importation de la clé personnelle réussie.</string>
   <string name="err_import_keypair_failed">Import de la clé personelle échouée.</string>
@@ -259,8 +249,7 @@
   <string name="msg_status_delivered">Reçu</string>
   <string name="msg_status_encrypted">Chiffré</string>
   <string name="pref_balloons">Thème des conversations</string>
-  <string name="pref_title_balloons">Choisissez un thème de ballon de discussion</string>
-  <string name="attachment_picture">Photo</string>
+  <string name="attachment_picture">Galerie</string>
   <string name="attachment_contact">Contact</string>
   <string name="attachment_audio">Audio</string>
   <string name="chooser_send_picture">Envoyer une photo</string>
@@ -325,16 +314,12 @@
   <string name="iab_error_query">N\'a pas pu demander l\'inventaire de la facturation in-app (%d)</string>
   <string name="copy_clipboard">Copier dans le presse-papiers</string>
   <string name="bitcoin_clipboard_copied">Adresse Bitcoin copiée dans le presse-papiers.</string>
-  <string name="warn_no_personal_key">Impossible de chargé la clé personnelle. Désactivez le chiffrement dans le menu Paramètres pour envoyer le message quand même.</string>
+  <string name="warn_no_personal_key">Impossible de charger la clé personnelle. Désactivez le chiffrement dans le menu Paramètres pour envoyer le message quand même.</string>
   <string name="warn_no_public_key">Impossible de trouver une clé publique pour cet utilisateur. Essayez d\'actualiser votre liste de contacts ou de désactiver le chiffrement dans les menu Paramètres pour envoyer le message quand même.</string>
   <string name="warn_encryption_failed">Impossible de chiffrer un message. Désactiver le chiffrement dans le menu Paramètres pour envoyer un message quand même.</string>
   <string name="warn_not_subscribed">Impossible d\'envoyer un message. L\'utilisateur n\'a pas encore accepté votre invitation.</string>
   <string name="pref_sync_sim_contacts">Synchronisation des contacts de la carte SIM</string>
-  <string name="pref_title_off_sync_sim_contacts">Ne pas inclure les contacts de la carte SIM lors de la vérification des utilisateurs enregistrés</string>
-  <string name="pref_title_on_sync_sim_contacts">Les contacts de la carte SIM sont également inclus lors de la vérification des utilisateurs enregistrés</string>
   <string name="pref_sync_invisible_contacts">Inclure les contacts invisible</string>
-  <string name="pref_title_off_sync_invisible_contacts">Ne pas inclure les contacts qui ne sont pas affichées dans l\'application Contacts. Activer pour DAVDroid comme solution de contournement</string>
-  <string name="pref_title_on_sync_invisible_contacts">Les contacts non affichées dans l\'application Contacts seront inclus dans Kontalk</string>
   <string name="pref_accept_any_certificate">Accepter tous les certificats SSL</string>
   <string name="pref_delete_account">Supprimer votre compte</string>
   <string name="msg_delete_account">Supprimer votre compte va également supprimer tous vos messages. Votre compte sur le serveur sera automatiquement supprimé au bout de quelques semaines.</string>
@@ -364,12 +349,8 @@
   <string name="slide_to_cancel">GLISSER POUR ANNULER</string>
   <string name="pref_media_settings">Paramètres média</string>
   <string name="pref_image_resize">Redimensionner les images</string>
-  <string name="pref_title_image_resize">Redimensionnement de l\'image avant envoi</string>
   <string name="err_server_invalid_format">Format d\'adresse invalide.</string>
   <string name="err_no_contacts_app">Aucune application de contacts trouvé.</string>
-  <string name="warning_public_key">La clé personnelle pour cet utilisateur a changé de manière inattendue !</string>
-  <string name="title_public_key_warning">Changement de clé personnelle</string>
-  <string name="msg_public_key_warning">La clé personnelle pour cet utilisateur a changé. S\'il vous plaît vérifier avec l\'utilisateur qu\'il/elle à réinstallé Kontalk ou régénéré sa clé intentionnellement, sinon la communication pourrait être compromise !</string>
 <string name="title_user_exists">L\'utilisateur existe</string>
     <string name="err_validation_user_exists"><b>Le numéro que vous utilisez est déjà inscrit sur Kontalk.</b> Si vous avez enregistré un autre appareil, cela va vous couper de Kontalk. S\'il vous plaît référer vous à notre documentation sur la façon d\'importer votre compte entre différents appareils. Choisissez OK pour continuer tout de même.</string>
     <string name="about_credits_gfx"><b>Graphiques/Icônes</b></string>
@@ -399,16 +380,59 @@
     <string name="msg_fallback">Nous allons essayer une autre façon de vérifier votre numéro de téléphone.</string>
     <string name="title_confirm_cancel_registration">Annuler l\'enregistrement ?</string>
     <string name="confirm_cancel_registration">"Si vous retourner en arrière vous devrez recommencer l\'enregistremnet de zéro. Si vous avez besoin de passer à une autre appli,  il suffit d\'utiliser le bouton d\'accueil de l\'appareil."</string>
-    <string name="confirm_will_delete_threads">Les conversations sélectionnés seront supprimés.</string>
     <string name="confirm_will_delete_messages">Les messages sélectionnés seront supprimés.</string>
     <string name="pref_balloon_label_hangout">Hangout</string>
     <string name="title_block_user_warning">Bloquer cet utilisateur, vraiment ?</string>
     <string name="title_unblock_user_warning">Débloquer cet utilisateur, vraiment ?</string>
     <string name="warning_button_details">DÉTAILS</string>
     <plurals name="context_selected">
-	<item quantity="one">1 sélectionné</item>
+	<item quantity="one">%d sélectionné</item>
 	<item quantity="other">%d sélectionné</item>
 </plurals>
 
 <string name="app_name_offline">Kontalk (hors ligne)</string>
+    <string name="mark_read">Lu</string>
+    <string name="pref_enable_notification_led">Voyant de notification</string>
+    <string name="pref_notification_led_color">Couleur du voyant de notification</string>
+    <string name="seen_away_label">en ligne</string>
+    <string name="pref_title_custom_background">Choisir un fond d\'écran en utilisant l\'option ci-dessous</string>
+    <string name="err_import_keypair_read">Impossible de lire la clé personnelle depuis le stockage externe.</string>
+    <string name="attachment_camera">Appareil photo</string>
+    <string name="attachment_video">Vidéo</string>
+    <string name="attachment_file">Fichier</string>
+    <string name="attachment_vcard">Contact</string>
+    <string name="attachment_location">Localisation</string>
+
+    <string name="msg_not_implemented">Pas encore implémenté.</string>
+
+    <string name="chooser_error_no_camera_app">Aucune application d\'appareil photo disponible.</string>
+
+    <string name="err_keypair_export_write">Impossible d\'écrire la clé personnelle dans le stockage externe.</string>
+    <string name="err_keypair_export_other">Impossible d\'exporter la clé personnelle.</string>
+
+    <string name="pref_title_sync_sim_contacts">Inclure les contacts sur la carte SIM lors de la recherche d\'utilisateurs enregistrés</string>
+
+    <string name="pref_title_sync_invisible_contacts">Inclure les contacts non affichés dans l\'application de Carnet d\'Adresses. À activer si vous utilisez DAVDroid</string>
+
+    <string name="warning_public_key_changed">La clé personnelle de cet utilisateur a changé inopinément !</string>
+    <string name="title_public_key_changed_warning">Clé personnelle changée</string>
+    <string name="msg_public_key_changed_warning">Merci de vérifier avec l\'utilisateur qu\'il ou elle a réinstallé Kontalk ou régénéré sa clé intentionnellement, sinon la communication pourrait être compromise !</string>
+    <string name="warning_public_key_unknown">La clé personnelle de cet utilisateur n\'est pas fiable !</string>
+    <string name="title_public_key_unknown_warning">Clé personnelle non fiable</string>
+    <string name="msg_public_key_unknown_warning">Merci de vérifier avec l\'utilisateur que son empreinte correspond à celle affichée dans la boite de dialogue <b>identité</b>, sinon la communication pourrait être compromise !</string>
+
+    <string name="pref_show_blocked_users">Montrer les utilisateurs bloqués</string>
+    <string name="button_load_next_page">Charger plus de messages</string>
+
+    <plurals name="unread_messages">
+        <item quantity="one">%d messages non lus</item>
+        <item quantity="other">%d messages non lus</item>
+    </plurals>
+
+    <plurals name="confirm_will_delete_threads">
+      <item quantity="one" tools:ignore="ImpliedQuantity">Les conversations sélectionnés seront supprimés.</item>
+      <item quantity="other">Les conversations sélectionnés seront supprimés.</item>
+    </plurals>
+
+<string name="menu_create_group">Créer un groupe</string>
     </resources>

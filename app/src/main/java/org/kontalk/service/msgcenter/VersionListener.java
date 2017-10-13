@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,13 +42,13 @@ class VersionListener extends MessageCenterPacketListener {
     }
 
     @Override
-    public void processPacket(Stanza packet) {
+    public void processStanza(Stanza packet) {
         Version p = (Version) packet;
         Intent i = new Intent(ACTION_VERSION);
         i.putExtra(EXTRA_PACKET_ID, p.getStanzaId());
 
-        i.putExtra(EXTRA_FROM, p.getFrom());
-        i.putExtra(EXTRA_TO, p.getTo());
+        i.putExtra(EXTRA_FROM, p.getFrom().toString());
+        i.putExtra(EXTRA_TO, p.getTo().toString());
 
         i.putExtra(EXTRA_VERSION_NAME, p.getName());
         i.putExtra(EXTRA_VERSION_NUMBER, p.getVersion());

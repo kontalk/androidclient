@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,19 +27,24 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.Provider;
 import java.security.PublicKey;
-import java.security.Security;
 import java.security.SignatureException;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
 
-import org.kontalk.util.MessageUtils;
-
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.bcpg.ArmoredInputStream;
+import org.spongycastle.bcpg.BCPGInputStream;
+import org.spongycastle.bcpg.BCPGKey;
+import org.spongycastle.bcpg.DSASecretBCPGKey;
+import org.spongycastle.bcpg.ECSecretBCPGKey;
+import org.spongycastle.bcpg.ElGamalSecretBCPGKey;
 import org.spongycastle.bcpg.HashAlgorithmTags;
+import org.spongycastle.bcpg.PublicKeyPacket;
+import org.spongycastle.bcpg.RSASecretBCPGKey;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
 import org.spongycastle.openpgp.PGPEncryptedData;
 import org.spongycastle.openpgp.PGPException;
@@ -71,12 +76,14 @@ import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyEncryptorBuilder;
 
 import android.os.Parcel;
 
+import org.kontalk.util.MessageUtils;
+
 
 /** Some PGP utility method, mainly for use by {@link PersonalKey}. */
 public class PGP {
 
     /** Security provider: Spongy Castle. */
-    public static final String PROVIDER = "SC";
+    public static Provider PROVIDER;
 
     /** Default EC curve used. */
     private static final String EC_CURVE = "P-256";
@@ -128,12 +135,26 @@ public class PGP {
     }
 
     public static void registerProvider() {
-        // register spongy castle provider
-        Security.insertProviderAt(new BouncyCastleProvider(), 1);
+        // create spongy castle provider
+        // do not register it as can cause issues on some devices
+        PROVIDER = new BouncyCastleProvider();
+        try {
+            // apply RNG fixes
+            PRNGFixes.apply();
+        }
+        catch (Exception e) {
+            throw new PRNGFixException("Unable to apply PRNG fix", e);
+        }
+    }
+
+    public static final class PRNGFixException extends SecurityException {
+        PRNGFixException(String message, Throwable cause) {
+            super(message, cause);
+        }
     }
 
     /** Creates an ECDSA/ECDH key pair. */
-    public static PGPDecryptedKeyPairRing create()
+    public static PGPDecryptedKeyPairRing create(Date timestamp)
             throws NoSuchAlgorithmException, NoSuchProviderException, PGPException, InvalidAlgorithmParameterException {
 
         KeyPairGenerator gen;
@@ -142,17 +163,17 @@ public class PGP {
         gen = KeyPairGenerator.getInstance("RSA", PROVIDER);
         gen.initialize(RSA_KEY_LENGTH);
 
-        authKp = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, gen.generateKeyPair(), new Date());
+        authKp = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, gen.generateKeyPair(), timestamp);
 
         gen = KeyPairGenerator.getInstance("ECDH", PROVIDER);
         gen.initialize(new ECGenParameterSpec(EC_CURVE));
 
-        encryptKp = new JcaPGPKeyPair(PGPPublicKey.ECDH, gen.generateKeyPair(), new Date());
+        encryptKp = new JcaPGPKeyPair(PGPPublicKey.ECDH, gen.generateKeyPair(), timestamp);
 
         gen = KeyPairGenerator.getInstance("ECDSA", PROVIDER);
         gen.initialize(new ECGenParameterSpec(EC_CURVE));
 
-        signKp = new JcaPGPKeyPair(PGPPublicKey.ECDSA, gen.generateKeyPair(), new Date());
+        signKp = new JcaPGPKeyPair(PGPPublicKey.ECDSA, gen.generateKeyPair(), timestamp);
 
         return new PGPDecryptedKeyPairRing(authKp, signKp, encryptKp);
     }
@@ -220,73 +241,119 @@ public class PGP {
         return PGPPublicKey.addCertification(pgpPubKey, sGen.generateCertification(pgpPubKey));
     }
 
-    public static PGPDecryptedKeyPairRing fromParcel(Parcel in) throws PGPException {
-        ensureKeyConverter();
-
-        // TODO read byte data
-
-        PrivateKey privAuth = (PrivateKey) in.readSerializable();
-        PublicKey pubAuth = (PublicKey) in.readSerializable();
-        int algoAuth = in.readInt();
-        Date dateAuth = new Date(in.readLong());
-
-        PGPPublicKey pubKeyAuth = sKeyConverter.getPGPPublicKey(algoAuth, pubAuth, dateAuth);
-        PGPPrivateKey privKeyAuth = sKeyConverter.getPGPPrivateKey(pubKeyAuth, privAuth);
-        PGPKeyPair authKp = new PGPKeyPair(pubKeyAuth, privKeyAuth);
-
-        PrivateKey privSign = (PrivateKey) in.readSerializable();
-        PublicKey pubSign = (PublicKey) in.readSerializable();
-        int algoSign = in.readInt();
-        Date dateSign = new Date(in.readLong());
-
-        PGPPublicKey pubKeySign = sKeyConverter.getPGPPublicKey(algoSign, pubSign, dateSign);
-        PGPPrivateKey privKeySign = sKeyConverter.getPGPPrivateKey(pubKeySign, privSign);
-        PGPKeyPair signKp = new PGPKeyPair(pubKeySign, privKeySign);
-
-        PrivateKey privEnc = (PrivateKey) in.readSerializable();
-        PublicKey pubEnc = (PublicKey) in.readSerializable();
-        int algoEnc = in.readInt();
-        Date dateEnc = new Date(in.readLong());
-
-        PGPPublicKey pubKeyEnc = sKeyConverter.getPGPPublicKey(algoEnc, pubEnc, dateEnc);
-        PGPPrivateKey privKeyEnc = sKeyConverter.getPGPPrivateKey(pubKeyEnc, privEnc);
-        PGPKeyPair encryptKp = new PGPKeyPair(pubKeyEnc, privKeyEnc);
-
+    public static PGPDecryptedKeyPairRing fromParcel(Parcel in) throws PGPException, IOException {
+        PGPKeyPair authKp = readKeyPairFromParcel(in);
+        PGPKeyPair signKp = readKeyPairFromParcel(in);
+        PGPKeyPair encryptKp = readKeyPairFromParcel(in);
         return new PGPDecryptedKeyPairRing(authKp, signKp, encryptKp);
     }
 
     public static void toParcel(PGPDecryptedKeyPairRing pair, Parcel dest)
-            throws NoSuchProviderException, PGPException {
+            throws NoSuchProviderException, PGPException, IOException {
+        writeKeyPairToParcel(pair.authKey, dest);
+        writeKeyPairToParcel(pair.signKey, dest);
+        writeKeyPairToParcel(pair.encryptKey, dest);
+    }
 
-        PrivateKey privAuth = convertPrivateKey(pair.authKey.getPrivateKey());
-        PublicKey pubAuth = convertPublicKey(pair.authKey.getPublicKey());
-        int algoAuth = pair.authKey.getPrivateKey().getPublicKeyPacket().getAlgorithm();
-        Date dateAuth = pair.authKey.getPrivateKey().getPublicKeyPacket().getTime();
+    private static void writeKeyPairToParcel(PGPKeyPair keypair, Parcel dest) throws IOException {
+        // write private key
+        PGPPrivateKey priv = keypair.getPrivateKey();
+        // key ID
+        dest.writeLong(priv.getKeyID());
+        // private key data packet
+        byte[] privData = priv.getPrivateKeyDataPacket().getEncoded();
+        dest.writeInt(privData.length);
+        dest.writeByteArray(privData);
+        // public key packet
+        byte[] privPubKey = priv.getPublicKeyPacket().getEncoded();
+        dest.writeInt(privPubKey.length);
+        dest.writeByteArray(privPubKey);
 
-        PrivateKey privSign = convertPrivateKey(pair.signKey.getPrivateKey());
-        PublicKey pubSign = convertPublicKey(pair.signKey.getPublicKey());
-        int algoSign = pair.signKey.getPrivateKey().getPublicKeyPacket().getAlgorithm();
-        Date dateSign = pair.signKey.getPrivateKey().getPublicKeyPacket().getTime();
+        // write public key
+        PGPPublicKey pub = keypair.getPublicKey();
+        // whole public key
+        byte[] pubPacket = pub.getEncoded();
+        dest.writeInt(pubPacket.length);
+        dest.writeByteArray(pubPacket);
+    }
 
-        PrivateKey privEnc = convertPrivateKey(pair.encryptKey.getPrivateKey());
-        PublicKey pubEnc = convertPublicKey(pair.encryptKey.getPublicKey());
-        int algoEnc = pair.encryptKey.getPrivateKey().getPublicKeyPacket().getAlgorithm();
-        Date dateEnc = pair.encryptKey.getPrivateKey().getPublicKeyPacket().getTime();
+    private static PGPKeyPair readKeyPairFromParcel(Parcel in) throws IOException, PGPException {
+        BCPGInputStream reader = null;
+        long privID;
+        BCPGKey privData;
+        PublicKeyPacket privPubKey;
 
-        dest.writeSerializable(privAuth);
-        dest.writeSerializable(pubAuth);
-        dest.writeInt(algoAuth);
-        dest.writeLong(dateAuth.getTime());
+        // rebuild private key
 
-        dest.writeSerializable(privSign);
-        dest.writeSerializable(pubSign);
-        dest.writeInt(algoSign);
-        dest.writeLong(dateSign.getTime());
+        try {
+            // key ID
+            privID = in.readLong();
 
-        dest.writeSerializable(privEnc);
-        dest.writeSerializable(pubEnc);
-        dest.writeInt(algoEnc);
-        dest.writeLong(dateEnc.getTime());
+            // private key data packet
+            int privDataLength = in.readInt();
+            byte[] privDataData = new byte[privDataLength];
+            in.readByteArray(privDataData);
+            // object will be read later
+
+            // public key packet
+            int privPubKeyLength = in.readInt();
+            byte[] privPubKeyData = new byte[privPubKeyLength];
+            in.readByteArray(privPubKeyData);
+
+            reader = new BCPGInputStream(new ByteArrayInputStream(privPubKeyData));
+            privPubKey = (PublicKeyPacket) reader.readPacket();
+            reader.close();
+
+            reader = new BCPGInputStream(new ByteArrayInputStream(privDataData));
+
+            // from PGPSecretKey
+            // apparently there is no way to make this dynamic
+            switch (privPubKey.getAlgorithm())
+            {
+                case PGPPublicKey.RSA_ENCRYPT:
+                case PGPPublicKey.RSA_GENERAL:
+                case PGPPublicKey.RSA_SIGN:
+                    privData = new RSASecretBCPGKey(reader);
+                    break;
+                case PGPPublicKey.DSA:
+                    privData = new DSASecretBCPGKey(reader);
+                    break;
+                case PGPPublicKey.ELGAMAL_ENCRYPT:
+                case PGPPublicKey.ELGAMAL_GENERAL:
+                    privData = new ElGamalSecretBCPGKey(reader);
+                    break;
+                case PGPPublicKey.ECDH:
+                case PGPPublicKey.ECDSA:
+                    privData = new ECSecretBCPGKey(reader);
+                    break;
+                default:
+                    throw new PGPException("unknown public key algorithm encountered");
+            }
+
+            reader.close();
+        }
+        finally {
+            try {
+                if (reader != null)
+                    reader.close();
+            }
+            catch (IOException ignored) {
+            }
+        }
+
+        PGPPrivateKey priv = new PGPPrivateKey(privID, privPubKey, privData);
+
+        // rebuild public key
+        // public key data
+        int pubKeyLength = in.readInt();
+        byte[] pubKeyData = new byte[pubKeyLength];
+        in.readByteArray(pubKeyData);
+
+        PGPObjectFactory f = new PGPObjectFactory(pubKeyData, sFingerprintCalculator);
+        PGPPublicKeyRing pubring = (PGPPublicKeyRing) f.nextObject();
+        PGPPublicKey pub = pubring.getPublicKey();
+
+        return new PGPKeyPair(pub, priv);
     }
 
     public static void serialize(PGPDecryptedKeyPairRing pair, ObjectOutputStream dest)
@@ -364,8 +431,7 @@ public class PGP {
     }
 
     public static String getFingerprint(byte[] publicKeyring) throws IOException, PGPException {
-        PGPPublicKey pk = getMasterKey(publicKeyring);
-        return MessageUtils.bytesToHex(pk.getFingerprint()).toUpperCase(Locale.US);
+        return getFingerprint(getMasterKey(publicKeyring));
     }
 
     // FIXME very ugly method

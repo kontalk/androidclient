@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,10 +21,10 @@ package org.kontalk.ui.view;
 import java.util.regex.Pattern;
 
 import android.content.Context;
+import android.support.v7.widget.AppCompatTextView;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import org.kontalk.R;
 import org.kontalk.message.CompositeMessage;
@@ -36,7 +36,7 @@ import org.kontalk.util.Preferences;
  * Message component for {@link org.kontalk.message.VCardComponent}.
  * @author Daniele Ricci
  */
-public class VCardContentView extends TextView
+public class VCardContentView extends AppCompatTextView
     implements MessageContentView<VCardComponent> {
 
     private VCardComponent mComponent;
@@ -92,9 +92,8 @@ public class VCardContentView extends TextView
     }
 
     public static VCardContentView create(LayoutInflater inflater, ViewGroup parent) {
-        VCardContentView view = (VCardContentView) inflater.inflate(R.layout.message_content_vcard,
+        return (VCardContentView) inflater.inflate(R.layout.message_content_vcard,
             parent, false);
-        return view;
     }
 
 }

@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package org.kontalk.provider;
 
-
+import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
@@ -67,6 +67,8 @@ public final class MyMessages {
         public static final int STATUS_NOTDELIVERED = 7;
         /** Pending user review (e.g. unencryptable message). */
         public static final int STATUS_PENDING = 8;
+        /** Outgoing message, queued for processing (e.g. compression). */
+        public static final int STATUS_QUEUED = 9;
 
         /**
          * Builds a message {@link Uri}.
@@ -78,7 +80,13 @@ public final class MyMessages {
                     + MessagesProvider.AUTHORITY + "/messages/" + Uri.encode(msgId));
         }
 
+        public static Uri getUri(long databaseId) {
+            return ContentUris.withAppendedId(CONTENT_URI, databaseId);
+        }
+
         public static final class Fulltext implements BaseColumns {
+            private Fulltext() {}
+
             public static final Uri CONTENT_URI = Uri.parse("content://"
                     + MessagesProvider.AUTHORITY + "/fulltext");
 
@@ -107,11 +115,23 @@ public final class MyMessages {
         public static final String ATTACHMENT_ENCRYPTED = "att_encrypted";
         public static final String ATTACHMENT_SECURITY_FLAGS = "att_security_flags";
 
+        public static final String GEO_LATITUDE = "geo_lat";
+        public static final String GEO_LONGITUDE = "geo_lon";
+        public static final String GEO_TEXT = "geo_text";
+        public static final String GEO_STREET = "geo_street";
+
         public static final String SECURITY_FLAGS = "security_flags";
 
         // not DESC here because the listview is reverse-stacked
         public static final String DEFAULT_SORT_ORDER = _ID;
         public static final String INVERTED_SORT_ORDER = _ID + " DESC";
+
+        // used as query parameters
+        public static final String CLEAR_PENDING = "clear_pending";
+        public static final String KEEP_GROUP = "keep_group";
+
+        // special thread_id value for not creating a new thread
+        public static final long NO_THREAD = -1;
     }
 
     /** Threads are just for conversations metadata. */
@@ -140,6 +160,8 @@ public final class MyMessages {
 
         /** Request represents a presence subscription request. */
         public static final class Requests implements BaseColumns {
+            private Requests() {}
+
             public static final Uri CONTENT_URI = Uri
                 .parse("content://" + MessagesProvider.AUTHORITY + "/requests");
         }
@@ -163,8 +185,59 @@ public final class MyMessages {
         public static final String COUNT = "count";
         public static final String DRAFT = "draft";
         public static final String REQUEST_STATUS = "request_status";
+        public static final String STICKY = "sticky";
+        public static final String ENCRYPTION = "encryption";
 
-        public static final String DEFAULT_SORT_ORDER = "timestamp DESC";
+        public static final String DEFAULT_SORT_ORDER = "sticky DESC, timestamp DESC";
         public static final String INVERTED_SORT_ORDER = "timestamp";
+    }
+
+    public static final class Groups {
+        private Groups() {}
+
+        /** Group subject max length. Like a SMS :) */
+        public static final int GROUP_SUBJECT_MAX_LENGTH = 160;
+
+        // flags for group_members.pending
+        public static final int MEMBER_PENDING_ADDED = 1;
+        public static final int MEMBER_PENDING_REMOVED = 1 << 1;
+
+        // values for groups.membership
+        /** You left the group. */
+        public static final int MEMBERSHIP_PARTED = 0;
+        /** You are a current member. */
+        public static final int MEMBERSHIP_MEMBER = 1;
+        /** You are an observer. */
+        public static final int MEMBERSHIP_OBSERVER = 2;
+        /** You were removed from the group. */
+        public static final int MEMBERSHIP_KICKED = 3;
+
+        public static final Uri CONTENT_URI = Uri.parse("content://"
+            + MessagesProvider.AUTHORITY + "/groups");
+
+        public static Uri getUri(String jid) {
+            return Uri.parse("content://"
+                + MessagesProvider.AUTHORITY + "/groups/" + Uri.encode(jid));
+        }
+
+        public static Uri getMembersUri(String jid) {
+            return Uri.parse("content://"
+                + MessagesProvider.AUTHORITY + "/groups/" + Uri.encode(jid) + "/members");
+        }
+
+        public static final String GROUP_JID = "group_jid";
+        public static final String PEER = "group_" + CommonColumns.PEER;
+        public static final String THREAD_ID = Messages.THREAD_ID;
+        public static final String GROUP_TYPE = "group_type";
+        public static final String SUBJECT = "subject";
+        public static final String MEMBERSHIP = "membership";
+        /**
+         * Status used for members. It's set on request and cleared back to 0
+         * when the command has been confirmed.
+         * An added user is pending addition until the add member command is
+         * acknowledged by the server. A removed user is pending removal until
+         * the remove member command is acknowledged by the server.
+         */
+        public static final String PENDING = "pending";
     }
 }

@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.PrivateKey;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -47,9 +46,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 
 import org.kontalk.Kontalk;
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.client.ClientHTTPConnection;
 import org.kontalk.client.EndpointServer;
@@ -57,20 +56,19 @@ import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.DecryptException;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MyMessages.Messages;
-import org.kontalk.provider.UsersProvider;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.ConversationsActivity;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.ProgressNotificationBuilder;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.Preferences;
-import org.kontalk.util.StepTimer;
 
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOADING;
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOAD_ERROR;
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOAD_OK;
-import static org.kontalk.ui.MessagingNotification.NOTIFICATION_UPDATE_DELAY;
 
 
 /**
@@ -84,8 +82,10 @@ public class DownloadService extends IntentService implements DownloadListener {
     /** A map to avoid duplicate downloads. */
     private static final Map<String, Long> sQueue = new LinkedHashMap<>();
 
-    public static final String ACTION_DOWNLOAD_URL = "org.kontalk.action.DOWNLOAD_URL";
-    public static final String ACTION_DOWNLOAD_ABORT = "org.kontalk.action.DOWNLOAD_ABORT";
+    private static final String ACTION_DOWNLOAD_URL = "org.kontalk.action.DOWNLOAD_URL";
+    private static final String ACTION_DOWNLOAD_ABORT = "org.kontalk.action.DOWNLOAD_ABORT";
+
+    private static final String EXTRA_NOTIFY = "org.kontalk.download.notify";
 
     private ProgressNotificationBuilder mNotificationBuilder;
     private NotificationManager mNotificationManager;
@@ -93,12 +93,11 @@ public class DownloadService extends IntentService implements DownloadListener {
     // data about the download currently being processed
     private Notification mCurrentNotification;
     private long mTotalBytes;
-    /** Step timer for notification updates. */
-    private StepTimer mUpdateTimer = new StepTimer(NOTIFICATION_UPDATE_DELAY);
 
     private long mMessageId;
     private String mPeer;
     private boolean mEncrypted;
+    private boolean mNotify;
 
     private ClientHTTPConnection mDownloadClient;
     private boolean mCanceled;
@@ -109,17 +108,20 @@ public class DownloadService extends IntentService implements DownloadListener {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (mNotificationManager == null)
-            mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        // crappy firmware - as per docs, intent can't be null in this case
+        if (intent != null) {
+            if (mNotificationManager == null)
+                mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        if (ACTION_DOWNLOAD_ABORT.equals(intent.getAction())) {
-            final Uri uri = intent.getData();
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    onDownloadAbort(uri);
-                }
-            }).start();
+            if (ACTION_DOWNLOAD_ABORT.equals(intent.getAction())) {
+                final Uri uri = intent.getData();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        onDownloadAbort(uri);
+                    }
+                }).start();
+            }
         }
 
         return super.onStartCommand(intent, flags, startId);
@@ -127,6 +129,10 @@ public class DownloadService extends IntentService implements DownloadListener {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        // crappy firmware - as per docs, intent can't be null in this case
+        if (intent == null)
+            return;
+
         String action = intent.getAction();
 
         if (ACTION_DOWNLOAD_URL.equals(action)) {
@@ -144,21 +150,10 @@ public class DownloadService extends IntentService implements DownloadListener {
         startForeground(0);
         mCanceled = false;
 
-        if (mDownloadClient == null) {
-            PersonalKey key;
-            PrivateKey privateKey;
-            try {
-                key = ((Kontalk) getApplication()).getPersonalKey();
-                privateKey = key.getBridgePrivateKey();
-            }
-            catch (Exception e) {
-                // TODO i18n :)
-                errorNotification("ERROR", "NAUGHTY BOY/GIRL!");
-                return;
-            }
+        mNotify = args.getBoolean(EXTRA_NOTIFY, true);
 
-            mDownloadClient = new ClientHTTPConnection(this,
-                privateKey, key.getBridgeCertificate());
+        if (mDownloadClient == null) {
+            mDownloadClient = new ClientHTTPConnection(this);
         }
 
         try {
@@ -169,21 +164,28 @@ public class DownloadService extends IntentService implements DownloadListener {
                 return;
             }
 
-            // make sure storage directory is present
-            MediaStorage.MEDIA_ROOT.mkdirs();
-
             mMessageId = args.getLong(CompositeMessage.MSG_ID, 0);
             mPeer = args.getString(CompositeMessage.MSG_SENDER);
             mEncrypted = args.getBoolean(CompositeMessage.MSG_ENCRYPTED, false);
             sQueue.put(url, mMessageId);
 
-            Date date = null;
+            Date date;
             long timestamp = args.getLong(CompositeMessage.MSG_TIMESTAMP);
             if (timestamp > 0)
                 date = new Date(timestamp);
+            else
+                date = new Date();
+
+            String mime = args.getString(CompositeMessage.MSG_MIME);
+            // this will be used if the server doesn't provide one
+            // if the server provides a filename, only the path will be used
+            File defaultFile = CompositeMessage.getIncomingFile(mime, date);
+            if (defaultFile == null) {
+                defaultFile = MediaStorage.getIncomingFile(date, "bin");
+            }
 
             // download content
-            mDownloadClient.downloadAutofilename(url, MediaStorage.MEDIA_ROOT, date, this);
+            mDownloadClient.downloadAutofilename(url, defaultFile, date, this);
         }
         catch (Exception e) {
             error(url, null, e);
@@ -195,7 +197,7 @@ public class DownloadService extends IntentService implements DownloadListener {
         }
     }
 
-    private void onDownloadAbort(Uri uri) {
+    void onDownloadAbort(Uri uri) {
         String url = uri.toString();
         Long msgId = sQueue.get(url);
         if (msgId != null) {
@@ -248,7 +250,6 @@ public class DownloadService extends IntentService implements DownloadListener {
 
     @Override
     public void start(String url, File destination, long length) {
-        mUpdateTimer.reset();
         startForeground(length);
     }
 
@@ -273,7 +274,7 @@ public class DownloadService extends IntentService implements DownloadListener {
             try {
                 EndpointServer server = Preferences.getEndpointServer(this);
                 PersonalKey key = ((Kontalk) getApplicationContext()).getPersonalKey();
-                Coder coder = UsersProvider.getDecryptCoder(this, server, key, mPeer);
+                Coder coder = Keyring.getDecryptCoder(this, server, key, mPeer);
                 if (coder != null) {
                     in = new FileInputStream(destination);
 
@@ -297,8 +298,7 @@ public class DownloadService extends IntentService implements DownloadListener {
             catch (Exception e) {
                 Log.e(TAG, "decryption failed!", e);
                 errorNotification(getString(R.string.notify_ticker_download_error),
-                    // TODO i18n
-                    "Decryption failed.");
+                    getString(R.string.notify_text_decryption_error));
                 return;
             }
             finally {
@@ -333,7 +333,7 @@ public class DownloadService extends IntentService implements DownloadListener {
         stopForeground();
 
         // notify only if conversation is not open
-        if (!MessagingNotification.isPaused(mPeer)) {
+        if (!MessagingNotification.isPaused(mPeer) && mNotify) {
 
             // detect mime type if not available
             if (mime == null)
@@ -365,9 +365,11 @@ public class DownloadService extends IntentService implements DownloadListener {
     public void error(String url, File destination, Throwable exc) {
         Log.e(TAG, "download error", exc);
         stopForeground();
-        if (!mCanceled)
+        if (!mCanceled) {
+            ReportingManager.logException(exc);
             errorNotification(getString(R.string.notify_ticker_download_error),
                 getString(R.string.notify_text_download_error));
+        }
     }
 
     private void errorNotification(String ticker, String text) {
@@ -394,7 +396,7 @@ public class DownloadService extends IntentService implements DownloadListener {
 
     @Override
     public void progress(String url, File destination, long bytes) {
-        if (mCurrentNotification != null && (bytes >= mTotalBytes || mUpdateTimer.isStep())) {
+        if (mCurrentNotification != null) {
             int progress = (int) ((100 * bytes) / mTotalBytes);
             foregroundNotification(progress);
             // send the updates to the notification manager
@@ -405,4 +407,31 @@ public class DownloadService extends IntentService implements DownloadListener {
     public static boolean isQueued(String url) {
         return sQueue.containsKey(url);
     }
+
+    public static void start(Context context, long databaseId, String sender,
+            String mime, long timestamp, boolean encrypted, String url) {
+        start(context, databaseId, sender, mime, timestamp, encrypted, url, true);
+    }
+
+    public static void start(Context context, long databaseId, String sender,
+            String mime, long timestamp, boolean encrypted, String url, boolean notify) {
+        Intent i = new Intent(context, DownloadService.class);
+        i.setAction(DownloadService.ACTION_DOWNLOAD_URL);
+        i.putExtra(CompositeMessage.MSG_ID, databaseId);
+        i.putExtra(CompositeMessage.MSG_SENDER, sender);
+        i.putExtra(CompositeMessage.MSG_MIME, mime);
+        i.putExtra(CompositeMessage.MSG_TIMESTAMP, timestamp);
+        i.putExtra(CompositeMessage.MSG_ENCRYPTED, encrypted);
+        i.putExtra(EXTRA_NOTIFY, notify);
+        i.setData(Uri.parse(url));
+        context.startService(i);
+    }
+
+    public static void abort(Context context, Uri uri) {
+        Intent i = new Intent(context, DownloadService.class);
+        i.setAction(DownloadService.ACTION_DOWNLOAD_ABORT);
+        i.setData(uri);
+        context.startService(i);
+    }
+
 }

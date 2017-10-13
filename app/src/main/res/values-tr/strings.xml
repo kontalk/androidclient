@@ -1,0 +1,122 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- Kontalk Android client
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+<resources>
+  <string name="app_name">Kontalk</string>
+<string name="app_description">Topluluk-yönetimli anında mesajlaşma ağı</string>
+    <string name="service_name">Mesaj Merkezi</string>
+    <string name="authenticator_name">Yetkilendirme Servisi</string>
+    <string name="sync_service_name">Kişileri Senkronize Et</string>
+    <string name="download_service">İndirme Servisi</string>
+    <string name="yes">Evet</string>
+    <string name="no">Hayır</string>
+    <string name="send">Gönder</string>
+    <string name="menu_compose">Yaz</string>
+    <string name="menu_delete_all">Konuşmaları sil</string>
+    <string name="menu_search">Ara</string>
+    <string name="mykey_activity_title">Kişisel Anahtarım</string>
+    <string name="menu_settings">Ayarlar</string>
+    <string name="menu_offline">Çevrimdışı ol</string>
+    <string name="menu_online">Çevrimiçi ol</string>
+    <string name="menu_import_key">Anahtarı içe aktar</string>
+    <string name="menu_manual_verification">Zaten kodunuz var mı?</string>
+    <string name="pref_network_settings">Ağ ayarları</string>
+    <string name="pref_network_uri">Elle sunucu adresi</string>
+    <string name="pref_title_network_uri">Bunu yapmak, otomatik servis listesi yönetiminin üzerine yazacak</string>
+    <string name="number_validation_intro1">Lütfen isminizi giriniz, ülke kodunuzu seçiniz ve mobil telefon numaranızı yazınız. Gelecek ekranda daha fazla yönerge sağlanacaktır.</string>
+    <string name="number_validation_intro2">Bu aygıt üzerinde çağrı yada SMS alamıyorsanız, sizin olan bir numara giriniz: bu numarayı bu aygıtla ilişkilendireceğiz.</string>
+    <string name="code_validation_intro2">Lütfen aldığınız yada duyduğunuz kodu aşağıya girin.</string>
+    <string name="code_validation_intro_missed_call">Bu numaradan en kısa zamanda yanıtsız bir çağrı alacaksınız. <b> LÜTFEN ÇAĞRIYI YANITLAMAYIN</b></string>
+    <string name="code_validation_intro2_missed_call">Lütfen aranacağınız numaranın son %d rakamını giriniz.</string>
+    <string name="code_validation_intro_manual">Lütfen aldığınız doğrulama kodunu giriniz. Lütfen bir doğrulama kodunun sadece bir kez kullanılabileceğine dikkat ediniz.</string>
+    <string name="hint_validation_name">İsminiz</string>
+    <string name="hint_validation_number">Numaranız</string>
+    <string name="hint_validation_code">Doğrulama kodu</string>
+    <string name="warn_invalid_number">Lütfen geçerli bir telefon numarası girin.</string>
+    <string name="msg_validating_phone">Kaydolma isteği yapılıyor…</string>
+    <string name="msg_importing_key">Kişisel anahtar içe aktarılıyor…</string>
+    <string name="title_confirm_cancel_registration">Kaybolmaktan vazgeç?</string>
+    <string name="confirm_cancel_registration">Geri dönerseniz, kayda en baştan başlayacaksınız. Başka bir uygulamaya geçmek istiyorsanız, sadece ev tuşunu kullanın.</string>
+    <string name="msg_initializing">Kontalk ağına kaydolunuyor…</string>
+    <string name="msg_authenticated">Ağa kaydolundu!</string>
+    <string name="share">Paylaş</string>
+    <string name="resend">Yeniden gönder</string>
+    <string name="copy_message_text">Yazıyı kopyala</string>
+    <string name="delete_message">Mesajı sil</string>
+    <string name="confirm_delete_all">Bütün konuşmaları sil</string>
+    <string name="confirm_will_delete_all">Bütün konuşmalar silinmiş olacak.</string>
+    <string name="sending_message">Mesaj gönderiliyor…</string>
+    <string name="message_text_copied">Mesaj yazısı kopyaladım.</string>
+    <string name="call">Arama</string>
+    <string name="mark_read">Oku</string>
+    <string name="view_contact">Kişiyi göster</string>
+    <string name="view_conversation">Konuşmayı göster</string>
+    <string name="delete_thread">Konuşmayı sil</string>
+    <string name="confirm_delete_thread">Konuşmayı sil</string>
+    <string name="confirm_will_delete_thread">Bütün konuşma silinmiş olacak.</string>
+    <string name="new_messages">Yeni mesajlar</string>
+    <string name="only_one_account_supported">Sadece bir Kontalk hesabı desteklenir.</string>
+    <string name="hint_enter_text">Yazınızı buraya girin</string>
+    <string name="hint_type_to_compose">Yazmak için klavye kullanın</string>
+    <string name="hint_open_kbd_to_compose">Mesaj yazmak için klavyeyi açın</string>
+    <string name="view_image">Görüntüyü göster</string>
+    <string name="title_message_options">Mesaj ayarları</string>
+    <string name="menu_message_details">Ayrıntılar</string>
+    <string name="title_message_details">Mesaj ayrıntıları</string>
+    <string name="message_type_label">"Tip: "</string>
+    <string name="text_message">Yazılı mesaj</string>
+    <string name="image_message">Görüntülü mesaj</string>
+    <string name="audio_message">Sesli mesaj</string>
+    <string name="from_label">"Kimden: "</string>
+    <string name="to_address_label">"Kime: "</string>
+    <string name="sent_label">"Gönderildi: "</string>
+    <string name="received_label">"Alındı: "</string>
+    <string name="error_label">"Hata: "</string>
+    <string name="sending_label">"Gönderiliyor: "</string>
+    <string name="refused_label">"Onaylanmadı: "</string>
+    <string name="notdelivered_label">"Ulaştırılmayan: "</string>
+    <string name="delivered_label">"Ulaştırılan: "</string>
+    <string name="encrypted_label">"Şifrelenmiş: "</string>
+    <string name="security_label">"Güvenlik: "</string>
+    <string name="size_label">"Boyut: "</string>
+    <string name="size_unknown">(bilinmeyen)</string>
+    <string name="title_file_info">Dosya bilgisi</string>
+    <string name="pref_restart_msgcenter">Mesaj merkezini yeniden başlat</string>
+    <string name="pref_title_restart_msgcenter">Bunu Kontalk düzgün çalışmıyorsa kullanın</string>
+    <string name="pref_idle_time">Meşgul olduğunda bağlantıyı kes</string>
+    <string name="pref_title_idle_time">Etkinlik olmadığında bağlantıyı kesmek için ne kadar bekleneceği</string>
+    <string name="pref_wakeup_time">Sunucuya yeniden bağlan</string>
+    <string name="button_load_next_page">Daha fazla mesaj yükle</string>
+
+    <string name="about_credits_translators"><b>Çevirmenler</b></string>
+
+    <string name="pref_show_blocked_users">Engellenmiş kullanıcıları göster</string>
+    <string name="warning_public_key_unknown">Bu kullanıcının kişisel anahtarı güvenilmez!</string>
+    <string name="title_public_key_unknown_warning">Güvenilmez kişisel anahtar</string>
+    <string name="warning_user_blocked">Kullanıcı sizin tarafınızdan engellendi.</string>
+
+    <plurals name="unread_messages">
+        <item quantity="one">1 okunmamış mesaj</item>
+        <item quantity="other">%d okunmamış mesaj</item>
+    </plurals>
+
+    <plurals name="confirm_will_delete_threads">
+        <item quantity="one">Seçilmiş konuşmalar silinmiş olacak.</item>
+        <item quantity="other">Seçilmiş konuşmalar silinmiş olacak.</item>
+    </plurals>
+
+</resources>

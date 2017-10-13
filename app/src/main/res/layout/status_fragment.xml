@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
      Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -58,7 +58,7 @@
         android:layout_height="match_parent"
         android:drawSelectorOnTop="false"
         android:fadingEdgeLength="16dip"
-        android:fastScrollEnabled="true"
+        android:fastScrollEnabled="false"
         android:scrollbarAlwaysDrawVerticalTrack="true"
         android:scrollbarStyle="insideInset"
         android:smoothScrollbar="false"

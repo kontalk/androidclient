@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -94,9 +94,10 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
                 .createContent(mInflater, mContent, cmp, databaseId,
                     highlight, args);
 
-            processComponentView(view);
-
-            mContent.addContent(view);
+            if (view != null) {
+                processComponentView(view);
+                mContent.addContent(view);
+            }
         }
     }
 
@@ -118,14 +119,14 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
     }
 
     @Override
-    public void setIncoming(Contact contact) {
+    public void setIncoming(Contact contact, boolean sameMessageBlock) {
         // no status icon for incoming messages
         mStatusIcon.setImageDrawable(null);
         mStatusIcon.setVisibility(View.GONE);
     }
 
     @Override
-    public void setOutgoing(Contact contact, int status) {
+    public void setOutgoing(Contact contact, int status, boolean sameMessageBlock) {
         int resId = 0;
         int statusId = 0;
 
@@ -135,6 +136,7 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
                 // use pending icon even for errors
             case MyMessages.Messages.STATUS_ERROR:
             case MyMessages.Messages.STATUS_PENDING:
+            case MyMessages.Messages.STATUS_QUEUED:
                 resId = R.drawable.ic_msg_pending;
                 statusId = R.string.msg_status_sending;
                 break;

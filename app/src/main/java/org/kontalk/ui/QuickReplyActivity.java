@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,11 +21,6 @@ package org.kontalk.ui;
 import java.io.IOException;
 import java.util.Random;
 
-import org.kontalk.R;
-import org.kontalk.data.Contact;
-import org.kontalk.provider.MyMessages.Messages;
-import org.kontalk.util.Preferences;
-
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
@@ -35,13 +30,18 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.kontalk.Log;
+import org.kontalk.R;
+import org.kontalk.data.Contact;
+import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.util.Preferences;
 
 
 public class QuickReplyActivity extends Activity {

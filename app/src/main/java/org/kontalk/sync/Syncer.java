@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,17 +54,16 @@ import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.RawContacts;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
-import android.util.Log;
 
-import org.kontalk.BuildConfig;
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.NumberValidator;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PGPUserID;
 import org.kontalk.data.Contact;
+import org.kontalk.provider.Keyring;
+import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.MyUsers.Users;
-import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.XMPPUtils;
 
@@ -135,7 +134,7 @@ public class Syncer {
         private boolean blocklistReceived;
 
         public PresenceBroadcastReceiver(List<String> jidList, Syncer notifyTo) {
-            this.notifyTo = new WeakReference<Syncer>(notifyTo);
+            this.notifyTo = new WeakReference<>(notifyTo);
             this.jidList = jidList;
         }
 
@@ -188,7 +187,7 @@ public class Syncer {
                             rosterCount += list.length;
                             if (response == null) {
                                 // prepare list to be filled in with presence data
-                                response = new ArrayList<PresenceItem>(rosterCount);
+                                response = new ArrayList<>(rosterCount);
                             }
                             for (String jid : list) {
                                 PresenceItem p = new PresenceItem();
@@ -445,21 +444,7 @@ public class Syncer {
             String number = cursor.getString(1);
             String lookupKey = cursor.getString(2);
 
-            // a phone number with less than 4 digits???
-            if (number.length() < 4)
-                continue;
-
-            // fix number
-            try {
-                number = NumberValidator.fixNumber(mContext, number, account.name, 0);
-            }
-            catch (Exception e) {
-                Log.e(TAG, "unable to normalize number: " + number + " - skipping", e);
-                // skip number
-                continue;
-            }
-
-            // avoid to send duplicates to server
+            // avoid to send duplicates to the server
             if (lookupNumbers.put(XmppStringUtils.parseLocalpart(jid),
                     new RawPhoneNumberEntry(lookupKey, number, jid)) == null)
                 jidList.add(jid);
@@ -532,7 +517,6 @@ public class Syncer {
                     new ArrayList<ContentProviderOperation>();
                 // TODO operations.size() could be used instead (?)
                 int op = 0;
-                String ownContactJid = null;
 
                 // this is the time - delete all Kontalk raw contacts
                 try {
@@ -589,15 +573,15 @@ public class Syncer {
                         if (entry.publicKey != null) {
                             try {
                                 PGPPublicKey pubKey = PGP.getMasterKey(entry.publicKey);
-
-                                String fp = PGP.getFingerprint(pubKey);
-                                registeredValues.put(Users.FINGERPRINT, fp);
-                                registeredValues.put(Users.PUBLIC_KEY, entry.publicKey);
+                                // trust our own key blindly
+                                int trustLevel = Authenticator.isSelfJID(mContext, entry.from) ?
+                                    MyUsers.Keys.TRUST_VERIFIED : -1;
+                                // update keys table immediately
+                                Keyring.setKey(mContext, entry.from, entry.publicKey, trustLevel);
 
                                 // no data from system contacts, use name from public key
                                 if (data == null) {
-                                    // TODO server
-                                    PGPUserID uid = PGP.parseUserId(pubKey, null);
+                                    PGPUserID uid = PGP.parseUserId(pubKey, XmppStringUtils.parseDomain(entry.from));
                                     if (uid != null) {
                                         registeredValues.put(Users.DISPLAY_NAME, uid.getName());
                                     }
@@ -608,8 +592,6 @@ public class Syncer {
                             }
                         }
                         else {
-                            registeredValues.putNull(Users.FINGERPRINT);
-                            registeredValues.putNull(Users.PUBLIC_KEY);
                             // use roster name if no contact data available
                             if (data == null && entry.rosterName != null) {
                                 registeredValues.put(Users.DISPLAY_NAME, entry.rosterName);
@@ -642,8 +624,6 @@ public class Syncer {
 
                         // if this is our own contact, trust our own key later
                         if (Authenticator.isSelfJID(mContext, entry.from)) {
-                            ownContactJid = entry.from;
-
                             // register our profile while we're at it
                             if (data != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
                                 // add contact
@@ -677,10 +657,6 @@ public class Syncer {
                 }
 
                 commit(usersProvider, syncResult);
-
-                if (ownContactJid != null)
-                    // we found our own contact, trust our own key now
-                    UsersProvider.trustUserKey(mContext, ownContactJid);
             }
 
             // timeout or error
@@ -758,7 +734,7 @@ public class Syncer {
             try {
                 nameQuery.close();
             }
-            catch (Exception e) {}
+            catch (Exception ignored) {}
         }
 
         return (displayName != null) ? displayName : defaultValue;
@@ -808,7 +784,7 @@ public class Syncer {
 
     private void addContact(Account account, String username, String phone, String jid,
             List<ContentProviderOperation> operations, int index) {
-        if (BuildConfig.DEBUG) {
+        if (Log.isDebug()) {
             Log.d(TAG, "adding contact \"" + username + "\" <" + phone + ">");
         }
 
@@ -823,7 +799,7 @@ public class Syncer {
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     private void addProfile(Account account, String username, String phone, String jid,
             List<ContentProviderOperation> operations, int index) {
-        if (BuildConfig.DEBUG) {
+        if (Log.isDebug()) {
             Log.d(TAG, "adding profile \"" + username + "\" <" + phone + ">");
         }
 

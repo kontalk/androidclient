@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -18,184 +18,46 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory android:key="pref_network_settings"
-        android:title="@string/pref_network_settings">
-        <Preference android:key="pref_update_server_list"
-            android:title="@string/pref_update_server_list"
-            android:layout="@layout/md_preference_custom"/>
-		<com.afollestad.materialdialogs.prefs.MaterialEditTextPreference
-            android:key="pref_network_uri"
-		    android:dialogTitle="@string/pref_network_uri"
-		    android:positiveButtonText="@android:string/ok"
-		    android:negativeButtonText="@android:string/cancel"
-		    android:title="@string/pref_network_uri"
-            android:summary="@string/pref_title_network_uri"
-		    android:singleLine="true" android:inputType="textUri"/>
-        <CheckBoxPreference android:key="pref_push_notifications"
-            android:summary="@string/pref_title_push_notifications"
-            android:title="@string/pref_push_notifications"
-            android:defaultValue="@bool/pref_default_push_notifications"
-            android:layout="@layout/md_preference_custom"/>
-    </PreferenceCategory>
+    <Preference android:key="pref_network_settings"
+        android:title="@string/pref_network_settings"
+        android:persistent="false"
+        android:layout="@layout/md_preference_custom"/>
 
-    <PreferenceCategory android:key="pref_messaging_settings"
-        android:title="@string/pref_messaging_settings">
-        <Preference android:key="pref_privacy_settings"
-            android:title="@string/pref_privacy_settings"
-            android:persistent="false"
-            android:layout="@layout/md_preference_custom"/>
-        <CheckBoxPreference android:key="pref_show_blocked_users"
-            android:title="@string/pref_show_blocked_users"
-            android:defaultValue="@bool/pref_default_show_blocked_users"
-            android:layout="@layout/md_preference_custom"/>
-        <com.afollestad.materialdialogs.prefs.MaterialEditTextPreference
-            android:key="pref_remove_prefix"
-            android:dialogTitle="@string/pref_remove_prefix"
-            android:positiveButtonText="@android:string/ok"
-            android:negativeButtonText="@android:string/cancel"
-            android:title="@string/pref_remove_prefix"
-            android:summary="@string/pref_title_remove_prefix"
-            android:singleLine="true" android:inputType="phone"/>
-        <CheckBoxPreference android:key="pref_sync_sim_contacts"
-            android:summary="@string/pref_title_sync_sim_contacts"
-            android:title="@string/pref_sync_sim_contacts"
-            android:defaultValue="@bool/pref_default_sync_sim_contacts"
-            android:layout="@layout/md_preference_custom"/>
-        <CheckBoxPreference android:key="pref_sync_invisible_contacts"
-            android:summary="@string/pref_title_sync_invisible_contacts"
-            android:title="@string/pref_sync_invisible_contacts"
-            android:defaultValue="@bool/pref_default_sync_invisible_contacts"
-            android:layout="@layout/md_preference_custom"/>
-    </PreferenceCategory>
+    <Preference android:key="pref_messaging_settings"
+        android:title="@string/pref_messaging_settings"
+        android:persistent="false"
+        android:layout="@layout/md_preference_custom"/>
 
-    <PreferenceCategory android:key="pref_appearance_settings"
-        android:title="@string/pref_appearance_settings">
-        <com.afollestad.materialdialogs.prefs.MaterialListPreference
-            android:key="pref_font_size"
-            android:title="@string/pref_font_size"
-            android:summary="%s"
-            android:entries="@array/fontsize_labels"
-            android:entryValues="@array/fontsize_values"
-            android:defaultValue="@string/pref_default_font_size"/>
-        <CheckBoxPreference android:key="pref_custom_background"
-            android:title="@string/pref_custom_background"
-            android:summary="@string/pref_title_custom_background"
-            android:layout="@layout/md_preference_custom"/>
-        <Preference android:key="pref_background_uri"
-            android:title="@string/pref_background_uri"
-            android:summary="@string/pref_title_background_uri"
-            android:dependency="pref_custom_background"
-            android:layout="@layout/md_preference_custom"/>
-        <com.afollestad.materialdialogs.prefs.MaterialListPreference
-            android:key="pref_balloons"
-            android:title="@string/pref_balloons"
-            android:summary="%s"
-            android:entries="@array/balloons_labels"
-            android:entryValues="@array/balloons_values"
-            android:defaultValue="@string/pref_default_balloons"/>
-        <com.afollestad.materialdialogs.prefs.MaterialListPreference
-            android:key="pref_text_enter"
-            android:title="@string/pref_text_enter"
-            android:summary="@string/pref_title_text_enter"
-            android:entries="@array/text_enter_labels"
-            android:entryValues="@array/text_enter_values"
-            android:defaultValue="@string/pref_default_text_enter"/>
-    </PreferenceCategory>
+    <Preference android:key="pref_appearance_settings"
+        android:title="@string/pref_appearance_settings"
+        android:persistent="false"
+        android:layout="@layout/md_preference_custom"/>
 
-    <PreferenceCategory android:key="pref_media_settings"
-            android:title="@string/pref_media_settings">
-        <com.afollestad.materialdialogs.prefs.MaterialListPreference
-            android:key="pref_image_resize"
-            android:title="@string/pref_image_resize"
-            android:summary="%s"
-            android:entries="@array/image_resize_labels"
-            android:entryValues="@array/image_resize_values"
-            android:defaultValue="@integer/pref_default_image_resize"/>
-    </PreferenceCategory>
+    <Preference android:key="pref_media_settings"
+        android:title="@string/pref_media_settings"
+        android:persistent="false"
+        android:layout="@layout/md_preference_custom"/>
 
-    <PreferenceCategory android:key="pref_notification_settings"
-        android:title="@string/pref_notification_settings">
-        <CheckBoxPreference android:key="pref_enable_notifications"
-            android:summary="@string/pref_title_enable_notifications"
-            android:title="@string/pref_enable_notifications"
-            android:defaultValue="@bool/pref_default_enable_notifications"
-            android:layout="@layout/md_preference_custom"/>
-        <Preference android:key="pref_ringtone"
-            android:dependency="pref_enable_notifications"
-            android:title="@string/pref_ringtone"
-            android:defaultValue="@string/pref_default_ringtone"
-            android:layout="@layout/md_preference_custom"/>
-        <com.afollestad.materialdialogs.prefs.MaterialListPreference
-            android:key="pref_vibrate"
-            android:dependency="pref_enable_notifications"
-            android:title="@string/pref_vibrate"
-            android:summary="@string/pref_title_vibrate"
-            android:entries="@array/vibrate_labels"
-            android:entryValues="@array/vibrate_values"
-            android:defaultValue="@string/pref_default_vibrate"/>
-        <CheckBoxPreference android:key="pref_enable_notification_led"
-            android:title="@string/pref_enable_notification_led"
-            android:dependency="pref_enable_notifications"
-            android:defaultValue="@bool/pref_default_enable_notification_led"
-            android:layout="@layout/md_preference_custom"/>
-        <Preference android:key="pref_notification_led_color"
-            android:dependency="pref_enable_notification_led"
-            android:title="@string/pref_notification_led_color"
-            android:defaultValue="@integer/pref_default_notification_led_color"
-            android:layout="@layout/md_preference_custom"/>
-    </PreferenceCategory>
+    <Preference android:key="pref_location_settings"
+        android:title="@string/pref_location_settings"
+        android:persistent="false"
+        android:layout="@layout/md_preference_custom"/>
 
-    <PreferenceCategory android:key="pref_maintenance"
-        android:title="@string/pref_maintenance">
-        <com.afollestad.materialdialogs.prefs.MaterialListPreference
-            android:key="pref_idle_time"
-            android:title="@string/pref_idle_time"
-            android:summary="@string/pref_title_idle_time"
-            android:entries="@array/idle_time_labels"
-            android:entryValues="@array/idle_time_values"
-            android:defaultValue="@integer/pref_default_idle_time"/>
-        <com.afollestad.materialdialogs.prefs.MaterialListPreference
-            android:key="pref_wakeup_time"
-            android:title="@string/pref_wakeup_time"
-            android:summary="@string/pref_title_wakeup_time"
-            android:entries="@array/wakeup_time_labels"
-            android:entryValues="@array/wakeup_time_values"
-            android:defaultValue="@integer/pref_default_wakeup_time"/>
-        <Preference android:key="pref_restart_msgcenter"
-            android:summary="@string/pref_title_restart_msgcenter"
-            android:title="@string/pref_restart_msgcenter"
-            android:layout="@layout/md_preference_custom"/>
-        <Preference android:key="pref_change_passphrase"
-            android:title="@string/pref_change_passphrase"
-            android:layout="@layout/md_preference_custom"/>
-        <Preference android:key="pref_regenerate_keypair"
-            android:summary="@string/pref_title_regenerate_keypair"
-            android:title="@string/pref_regenerate_keypair"
-            android:layout="@layout/md_preference_custom"/>
-        <Preference android:key="pref_export_keypair"
-            android:title="@string/pref_export_keypair"
-            android:layout="@layout/md_preference_custom"/>
-        <Preference android:key="pref_register_device"
-            android:title="Register device"
-            android:layout="@layout/md_preference_custom"/>
-        <CheckBoxPreference android:key="pref_accept_any_certificate"
-            android:title="@string/pref_accept_any_certificate"
-            android:defaultValue="@bool/pref_default_accept_any_certificate"
-            android:layout="@layout/md_preference_custom"/>
-        <Preference android:key="pref_delete_account"
-            android:title="@string/pref_delete_account"
-            android:layout="@layout/md_preference_custom"/>
-    </PreferenceCategory>
+    <Preference android:key="pref_notification_settings"
+        android:title="@string/pref_notification_settings"
+        android:persistent="false"
+        android:layout="@layout/md_preference_custom"/>
+
+    <Preference android:key="pref_maintenance_settings"
+        android:title="@string/pref_maintenance"
+        android:persistent="false"
+        android:layout="@layout/md_preference_custom"/>
 
     <PreferenceCategory android:key="pref_other"
         android:title="@string/pref_other">
-        <Preference android:key="pref_help"
+        <org.kontalk.ui.prefs.HelpPreference android:key="pref_help"
             android:title="@string/pref_help"
-            android:layout="@layout/md_preference_custom">
-            <intent
-                android:action="android.intent.action.VIEW"
-                android:data="@string/help_url" />
-        </Preference>
+            android:layout="@layout/md_preference_custom"/>
         <Preference android:key="pref_donate"
             android:title="@string/pref_donate"
             android:layout="@layout/md_preference_custom">

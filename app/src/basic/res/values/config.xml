@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
      Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -20,4 +20,6 @@
 <resources>
     <!-- users of the basic flavor will probably have DAVDroid installed -->
     <bool name="pref_default_sync_invisible_contacts">true</bool>
+    <!-- basic flavor doesn't have Google Play Services support -->
+    <integer name="pref_default_idle_time">0</integer>
 </resources>

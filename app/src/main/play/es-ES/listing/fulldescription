@@ -1,0 +1,21 @@
+<b>Por favor, ¡ayúdenos a hacer Kontalk mejor! Si tiene algún problema ¡¡envíenos un correo electrónico a devteam@kontalk.org!! ¡Dejar un comentario negativo no ayudará a un proyecto sin fines de lucro! ¡Gracias!</b>
+<i>NOTA: ¡NO INSTALE LA APP EN LA TARJETA SD!</i>
+
+<b>¡Siga @kontalknet en Twitter o identi.ca para estar al corriente de las últimas modificaciones, así como del estado del servicio!</b>
+
+Kontalk es un programa de mensajería instantánea segura, lo que le permite enviar y recibir texto, imagen y mensajes de voz (próximamente otros tipos de archivos) entre sus usuarios de forma totalmente gratuita (*).
+
+&#8226;&#8195; <b>Su número de teléfono es su ID.</b> Sin nombres de usuario o contraseñas<br/>
+&#8226;&#8195; <b>La aplicación encuentra automáticamente a otros usuarios Kontalk</b> buscando en su libreta de contactos, haciendo más sencillo chatear con sus amigos<br/>
+&#8226;&#8195; <b>El cifrado de extremo a extremo</b> garantiza conversaciones privadas y seguras, de modo que sólo usted y la persona con la que está chateando puedan leerlas<br/>
+&#8226;&#8195; El método de cifrado de su número de teléfono y del resto de números participantes en la red de Kontalk es irreversible<br/>
+&#8226;&#8195; El amplio soporte de diferentes dispositivos permite empezar un chat en un teléfono móvil y continuar la conversación en una tableta<br/>
+&#8226;&#8195; Basado en estándares abiertos: XMPP y OpenPGP
+
+Kontalk es un proyecto de la comunidad de código abierto, con todo el código fuente alojado en GitHub (https://github.com/kontalk), permitiendo a todo el mundo estudiar su seguridad y mejorarla.
+
+La red depende de las donaciones de la comunidad para mantener la infraestructura en funcionamiento, así que si puede, por favor done en http://kontalk.net/. Incluso una pequeña donación es importante.
+
+Los permisos utilizados por la aplicación, los encontrará detallados en la página: https://github.com/kontalk/androidclient/wiki/Android-client-permissions
+
+(*) Los servicios de conexión a Internet pueden originar cargos de su operador telefónico

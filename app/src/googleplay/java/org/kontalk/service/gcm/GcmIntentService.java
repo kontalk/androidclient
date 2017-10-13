@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@ package org.kontalk.service.gcm;
 import java.util.Random;
 
 import org.kontalk.Kontalk;
+import org.kontalk.service.msgcenter.IPushService;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.PushServiceManager;
 import org.kontalk.util.Preferences;
@@ -30,7 +31,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import org.kontalk.Log;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
@@ -59,6 +60,9 @@ public class GcmIntentService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        // restarting from crash - ignore
+        if (intent == null)
+            return;
 
         if (ACTION_RETRY.equals(intent.getAction())) {
 
@@ -70,7 +74,9 @@ public class GcmIntentService extends IntentService {
                 return;
             }
 
-            PushServiceManager.getInstance(this).retry();
+            IPushService service = PushServiceManager.getInstance(this);
+            if (service != null)
+                service.retry();
         }
 
         else {
@@ -80,7 +86,7 @@ public class GcmIntentService extends IntentService {
             // in your BroadcastReceiver.
             String messageType = gcm.getMessageType(intent);
 
-            if (!extras.isEmpty()) {  // has effect of unparcelling Bundle
+            if (extras != null && !extras.isEmpty()) {  // has effect of unparcelling Bundle
 
                 if (GoogleCloudMessaging.
                         MESSAGE_TYPE_MESSAGE.equals(messageType)) {
@@ -92,7 +98,7 @@ public class GcmIntentService extends IntentService {
                     if (ACTION_CHECK_MESSAGES.equals(dataAction)) {
                         // remember we just received a push notifications
                         // this means that there are really messages waiting for us
-                        Preferences.setLastPushNotification(this,
+                        Preferences.setLastPushNotification(
                             System.currentTimeMillis());
 
                         // test message center connection

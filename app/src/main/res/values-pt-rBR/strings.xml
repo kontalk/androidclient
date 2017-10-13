@@ -1,6 +1,6 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- Kontalk Android client
-     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="app_name">Kontalk</string>
   <string name="app_description">Rede de mensagens instantâneas mantida pela comunidade</string>
   <string name="service_name">Centro de mensagens</string>
@@ -30,12 +30,12 @@
   <string name="menu_settings">Configurações</string>
   <string name="menu_offline">Desconectar</string>
   <string name="menu_online">Conectar</string>
-  <string name="pref_network_settings">Configurações de rede</string>
+  <string name="pref_network_settings">Rede</string>
   <string name="pref_network_uri">Endereço manual do servidor</string>
   <string name="pref_title_network_uri">Isso vai sobrescrever a gestão automática da lista de servidores</string>
   <string name="number_validation_intro1">Por favor, digite o seu nome, selecione o código do seu país e entre com o número do seu telefone. Você verá mais instruções na próxima tela.</string>
   <string name="number_validation_intro2">Caso não seja possível receber chamadas ou SMS nesse aparelho, digite um número de telefone que pertença a você: nós associaremos esse número a esse aparelho.</string>
-  <string name="code_validation_intro">Você deverá receber um SMS ou uma chamada telefônica desse número em breve:</string>
+  <string name="code_validation_intro">Você deverá receber um SMS ou uma chamada telefônica em breve.</string>
   <string name="code_validation_intro2">Por favor digite o código que você recebeu.</string>
   <string name="hint_validation_name">Seu nome</string>
   <string name="hint_validation_number">Seu número</string>
@@ -58,7 +58,6 @@
   <string name="confirm_delete_thread">Apagar a conversa</string>
   <string name="confirm_will_delete_thread">A conversa inteira será apagada.</string>
   <string name="new_messages">Novas mensagens</string>
-  <string name="unread_messages">%d mensagens não lidas</string>
   <string name="only_one_account_supported">Somente uma conta Kontalk é suportada.</string>
   <string name="send">Enviar</string>
   <string name="hint_enter_text">Digite o seu texto aqui</string>
@@ -90,21 +89,18 @@
   <string name="pref_idle_time">Desconectar quando ocioso</string>
   <string name="pref_title_idle_time">Quanto tempo esperar antes de desconectar por inatividade</string>
   <string name="pref_wakeup_time">Reconectar ao servidor</string>
-  <string name="pref_title_wakeup_time">Quanto tempo esperar antes de reconectar ao servidor, após um período de inatividade. Funciona somente se as notificações push não estiverem disponíveis</string>
+  <string name="pref_title_wakeup_time">Quanto tempo esperar antes de reconectar ao servidor, após um período de inatividade. Utilizado somente se as notificações push não estiverem disponíveis ou a qualidade da rede estiver muito ruim.</string>
   <string name="pref_maintenance">Manutenção</string>
   <string name="pref_regenerate_keypair">Regerar a chave pessoal</string>
   <string name="pref_title_regenerate_keypair">Utilize isto caso a sua chave pessoal tenha sido comprometida</string>
   <string name="contacts_list_title">Escolha um contato</string>
-  <string name="pref_messaging_settings">Configurações das mensagens</string>
-  <string name="pref_privacy_settings">Configurações de privacidade</string>
+  <string name="pref_messaging_settings">Mensagens</string>
+  <string name="pref_privacy_settings">Privacidade</string>
   <string name="pref_encrypt">Criptografar mensagens</string>
-  <string name="pref_title_on_encrypt">Todas as mensagens serão criptografadas de agora em diante</string>
-  <string name="pref_title_off_encrypt">Todas as mensagens serão enviadas em texto puro de agora em diante</string>
   <string name="pref_encrypt_userdata">Criptografar dados pessoais</string>
   <string name="pref_title_on_encrypt_userdata">A mensagem de status será visível apenas para quem tiver o seu número de telefone</string>
   <string name="pref_title_off_encrypt_userdata">A mensagem de status será visível para qualquer um</string>
   <string name="pref_auto_accept_subscriptions">Aceitar os convites automaticamente</string>
-  <string name="pref_title_auto_accept_subscriptions">Aceitar os convites de conversa das outras pessoas automaticamente</string>
   <string name="pref_send_typing">Enviar notificação de digitação</string>
   <string name="pref_hide_presence">Ocultar presença</string>
   <string name="pref_title_on_hide_presence">As pessoas não verão que você está conectado</string>
@@ -124,7 +120,7 @@
   <string name="hint_search_full">Pesquisar mensagens</string>
   <string name="hint_search_quickbox">Texto nas suas mensagens</string>
   <string name="title_search">Pesquisar: \"%s\"</string>
-  <string name="pref_notification_settings">Configurações de notificação</string>
+  <string name="pref_notification_settings">Notificações</string>
   <string name="pref_enable_notifications">Notificações</string>
   <string name="pref_title_enable_notifications">Exibir notificações de mensagens na barra de estado</string>
   <string name="pref_ringtone">Selecionar o toque</string>
@@ -165,7 +161,7 @@
   <string name="menu_refresh">Atualizar</string>
   <string name="menu_invite">Convidar pessoas</string>
   <string name="title_error">Erro</string>
-  <string name="msg_do_refresh">Puxe para baixo para atualizar a lista de contatos.</string>
+  <string name="msg_do_refresh">Use Menu &gt; Atualizar para atualizar a lista de contatos.</string>
   <string name="msg_sync_progress">Atualizando a lista de contatos…</string>
   <string name="err_sync_failed">Não foi possível atualizar a lista de contatos. Por favor, tente novamente mais tarde.</string>
   <string name="err_sync_nonetwork">Rede não disponível. Por favor, tente novamente mais tarde.</string>
@@ -178,7 +174,7 @@
   <string name="message_user_not_found">Aparentemente esse contato não está registrado no Kontalk. Você pode tentar contatá-lo mesmo assim ou enviar um convite.</string>
   <string name="yes_user_not_found">Contatar essa pessoa mesmo assim</string>
   <string name="no_user_not_found">Enviar o convite</string>
-  <string name="pref_appearance_settings">Configurações de aparência</string>
+  <string name="pref_appearance_settings">Aparência</string>
   <string name="pref_font_size">Tamanho da letra</string>
   <string name="menu_status">Status</string>
   <string name="menu_attachment">Anexar</string>
@@ -190,13 +186,11 @@
   <string name="attachment_download">Baixar anexo</string>
   <string name="attachment_upload">Enviar anexo</string>
   <string name="seen_moment_ago_label">há pouco tempo</string>
-  <string name="seen_online_label">conectado</string>
+  <string name="seen_online_label">ativo</string>
   <string name="seen_typing_label">digitando…</string>
   <string name="pref_custom_background">Fundo personalizado</string>
   <string name="pref_background_uri">Fundo</string>
   <string name="pref_title_background_uri">Defina uma imagem personalizada para as conversas</string>
-  <string name="pref_title_off_custom_background">Usando fundo padrão</string>
-  <string name="pref_title_on_custom_background">Escolha um fundo usando a opção abaixo</string>
   <string name="err_attachment_corrupted">Não foi possível baixar o anexo. A mensagem deve estar corrompida.</string>
   <string name="serverlist_updating">Atualizando a lista de servidores…</string>
   <string name="serverlist_update_error">Não foi possível baixar a lista de servidores. Por favor, tente novamente mais tarde.</string>
@@ -204,7 +198,6 @@
   <string name="pref_remove_prefix">Prefixo de discagem</string>
   <string name="pref_title_remove_prefix">Remover qualquer prefixo de marcação no Kontalk para os números de telefone coincidirem corretamente</string>
   <string name="pref_export_keypair">Exportar chave pessoal</string>
-  <string name="pref_title_export_keypair">Exportar a chave pessoal e o certificado de autenticação para um armazenamento externo</string>
   <string name="msg_status_sending">Enviando</string>
   <string name="msg_status_sent">Enviada</string>
   <string name="msg_status_notaccepted">Recusada</string>
@@ -212,7 +205,6 @@
   <string name="msg_status_delivered">Enviada</string>
   <string name="msg_status_encrypted">Criptografada</string>
   <string name="pref_balloons">Tema do balão de conversa</string>
-  <string name="pref_title_balloons">Escolha um tema para os balões de conversa</string>
   <string name="attachment_picture">Galeria</string>
   <string name="attachment_contact">Contato</string>
   <string name="chooser_send_picture">Enviar imagem</string>
@@ -261,7 +253,7 @@
 <string name="app_name_offline">Kontalk (desconectado)</string>
     <string name="mykey_activity_title">Minha chave pessoal</string>
     <string name="menu_import_key">Importar chave</string>
-    <string name="code_validation_intro_missed_call">Você verá uma chamada não atendida desse número em breve <b>POR FAVOR, NÃO ATENDA A CHAMADA.</b></string>
+    <string name="code_validation_intro_missed_call">Você verá uma chamada não atendida em breve. <b>POR FAVOR, NÃO ATENDA A CHAMADA.</b></string>
     <string name="code_validation_intro2_missed_call">Por favor, insira os últimos %d dígitos do número que ligará para você.</string>
     <string name="menu_manual_verification">Já tem um código?</string>
     <string name="code_validation_intro_manual">Por favor, digite o código de verificação que você recebeu. Esse código só poderá ser utilizado uma vez.</string>
@@ -269,17 +261,15 @@
     <string name="title_confirm_cancel_registration">Cancelar o registro?</string>
     <string name="confirm_cancel_registration">Se você voltar, terá que reiniciar o registro a partir do zero. Caso necessite mudar para outro aplicativo, NÃO utilize o botão \"voltar\" do seu aparelho.</string>
     <string name="resend">Enviar novamente</string>
-    <string name="confirm_will_delete_threads">As conversas selecionadas serão apagadas.</string>
     <string name="audio_message">Mensagem de áudio</string>
     <string name="pref_regenerate_keypair_confirm">Um novo par de chaves será gerado e associado à sua conta. As chaves antigas serão invalidadas.</string>
     <string name="error_delete_thread">Não foi possível apagar a conversa.</string>
     <string name="error_delete_message">Não foi possível apagar a mensagem.</string>
-    <string name="pref_title_disabled_push_notifications">Notificações push não são suportadas neste dispositivo</string>
     <string name="confirm_will_delete_messages">As mensagens selecionadas serão apagadas.</string>
     <string name="title_user_exists">O usuário já existe</string>
     <string name="err_validation_nonetwork">Não existe nenhuma conexão com a Internet disponível. Kontalk necessita de uma conexão ativa com a Internet para funcionar.</string>
     <string name="err_validation_user_exists"><b>O número que você está usando já está registrado na Kontalk.</b> Caso você tenha registrado outro dispositivo ele será retirado da Kontalk, caso você prossiga. Por favor, consulte nossa documentação para ver como copiar sua conta de um dispositivo para o outro. Selecione OK caso queira continuar mesmo assim.</string>
-    <string name="button_validation_fallback">Não recebeu nenhuma ligação?</string>
+    <string name="button_validation_fallback">Não está recebendo nada?</string>
     <string name="title_nonetwork">Nenhuma conexão com a Internet</string>
     <string name="title_fallback">Está tendo problemas?</string>
     <string name="msg_fallback">Nós tentaremos outra maneira de verificar o seu número de telefone.</string>
@@ -306,9 +296,9 @@
     <string name="pref_text_enter_label_newline">Enter</string>
     <string name="pref_text_enter_label_newline_send">Enviar</string>
     <string name="pref_image_resize_label_original">Original</string>
-    <string name="pref_image_resize_label_small">Pequena (0,3 Mp)</string>
-    <string name="pref_image_resize_label_medium">Média (0,5 Mp)</string>
-    <string name="pref_image_resize_label_large">Grande (0,8 Mp)</string>
+    <string name="pref_image_resize_label_small">Pequena (0,4 Mp)</string>
+    <string name="pref_image_resize_label_medium">Média (1,0 Mp)</string>
+    <string name="pref_image_resize_label_large">Grande (2,0 Mp)</string>
     <string name="pref_idle_time_label_never">Nunca</string>
     <string name="pref_idle_time_label_5m">5 minutos</string>
     <string name="pref_idle_time_label_15m">15 minutos</string>
@@ -321,8 +311,6 @@
     <string name="pref_wakeup_time_label_3h">3 horas</string>
 
     <string name="pref_change_passphrase">Alterar a senha da chave pessoal</string>
-    <string name="pref_import_keypair">Importar chave pessoal</string>
-    <string name="pref_title_import_keypair">Importa a chave pessoal e o certificado de autenticação de um armazenamento externo</string>
     <string name="msg_import_keypair">O Kontalk irá importar sua chaves de %s em seu armazeno externo. Certifique-se de que o arquivo existe e que é um arquivo de exportação de chaves válido.</string>
     <string name="msg_import_keypair_complete">A importação da chave pessoal foi finalizada.</string>
     <string name="err_import_keypair_failed">Não foi possível importar a chave pessoal.</string>
@@ -395,7 +383,7 @@
     <string name="title_unblock_user_warning">Deseja realmente desbloquear essa pessoa?</string>
     <string name="pref_enable_notification_led">Notificação via LED</string>
     <string name="pref_notification_led_color">Cor do LED de notificação</string>
-    <string name="seen_away_label">afastado</string>
+    <string name="seen_away_label">conectado</string>
     <string name="msg_unblock_user_warning">Você está prestes a desbloquear essa pessoa. Ao fazer isso, você permitirá que ela envie mensagens para você, veja o seu status e último horário de conexão.</string>
 
     <string name="notification_text_more">Toque aqui para saber mais</string>
@@ -426,7 +414,7 @@
     <string name="err_playing_sdcard">Ocorreu um erro na leitura do armazenamento externo.</string>
     <string name="slide_to_cancel">DESLIZE PARA CANCELAR</string>
 
-    <string name="pref_media_settings">Configurações de mídia</string>
+    <string name="pref_media_settings">Mídia</string>
     <string name="pref_image_resize">Redimensionar as imagens</string>
 
     <string name="err_server_invalid_format">O formato do endereço é inválido.</string>
@@ -436,24 +424,230 @@
 
     <string name="warning_button_details">DETALHES</string>
     <string name="warning_older_version">Esse seu contato está usando uma versão mais antiga do Kontalk. Alguns recursos podem não funcionar corretamente.</string>
-    <string name="warning_public_key_changed">A chave pessoal dessa pessoa mudou inesperadamente!</string>
+    <string name="warning_public_key_changed">A chave pessoal mudou</string>
     <string name="title_public_key_changed_warning">Chave pessoal alterada</string>
     <string name="msg_public_key_changed_warning">Por favor, verifique com essa pessoa se ela reinstalou o Kontalk ou regerou a sua chave intencionalmente, caso contrário a comunicação pode ter sido comprometida!</string>
-    <string name="warning_public_key_unknown">A chave pessoal dessa pessoa não é confiável!</string>
-    <string name="title_public_key_unknown_warning">Chave pessoal não confiável</string>
+    <string name="warning_public_key_unknown">A chave pessoal ainda não foi verificada</string>
+    <string name="title_public_key_unknown_warning">Verificar chave pessoal</string>
     <string name="msg_public_key_unknown_warning">Por favor, verifique com essa pessoa se a fingerprint dela corresponde àquela exibida na tela <b>identidade</b>, caso contrário a comunicação pode ter sido comprometida!</string>
 
-    <string name="warning_user_blocked">Essa pessoa foi bloqueada por você.</string>
+    <string name="warning_user_blocked">Você bloqueou essa pessoa.</string>
 
     <string name="about_credits_devteam"><b>Kontalk foi trazido até você por:</b></string>
-    <string name="about_credits_gfx"><b>Gráficos/Iconografia</b></string>
+    <string name="about_credits_gfx"><b>Gráficos/Ícones</b></string>
     <string name="about_credits_translators"><b>Tradutores</b></string>
 
     <string name="pref_show_blocked_users">Exibir usuários bloqueados</string>
 
     <plurals name="context_selected">
-	<item quantity="one">1 selecionado</item>
+	<item quantity="one">%d selecionado</item>
 	<item quantity="other">%d selecionados</item>
 </plurals>
 
-</resources>
+<string name="mark_read">Ler</string>
+    <string name="button_load_next_page">Carregar mais mensagens</string>
+
+    <string name="pref_media_autodownload_threshold">Limite do download automático</string>
+    <string name="pref_title_media_autodownload_threshold">Arquivos com tamanho menor que esse serão baixados automaticamente</string>
+    <string name="pref_msg_media_autodownload_threshold">Digite um valor em kb. Defina como 0 para nunca efetuar o download automático.</string>
+
+    <string name="pref_media_autodownload">Baixar automaticamente</string>
+    <string name="pref_media_autodownload_label_never">Nunca</string>
+    <string name="pref_media_autodownload_label_wifi">Apenas com Wi-Fi</string>
+    <string name="pref_media_autodownload_label_always">Sempre</string>
+
+    <string name="text_search_results_empty">Não foi encontrada nenhuma mensagem.</string>
+    <string name="chooser_error_no_gallery_app">Não existe nenhum aplicativo de galeria disponível.</string>
+
+    <string name="learn_more">Saiba mais</string>
+
+    <string name="title_huawei_protected_apps">Aplicativos Protegidos do Huawei</string>
+    <string name="msg_huawei_protected_apps">É necessário habilitar o Kontalk nos Aplicativos Protegidos para que ele possa funcionar corretamente.</string>
+    <string name="btn_huawei_protected_apps">Aplicativos Protegidos</string>
+
+    <string name="menu_invite_group">Adicionar usuários</string>
+    <string name="menu_set_group_subject">Definir o assunto do grupo</string>
+    <string name="menu_leave_group">Sair do grupo</string>
+    <string name="chooser_error_no_browser">Não existe nenhum navegador disponível para abrir o link.</string>
+    <string name="text_invitation_info">(convite para conversar)</string>
+
+    <string name="group_untitled">Grupo sem título</string>
+    <string name="title_group_subject">Assunto do grupo</string>
+    <string name="group_command_create">Grupo criado:</string>
+    <string name="group_command_self_parted">Você saiu do grupo.</string>
+    <string name="group_command_user_parted">%s saiu do grupo.</string>
+    <string name="group_command_subject">O assunto do grupo foi definido como: %s</string>
+
+    <string name="group_command_text_create">O grupo foi criado</string>
+    <string name="group_command_text_subject">O assunto do grupo foi alterado</string>
+    <string name="group_command_text_part">Alguém saiu deste grupo</string>
+    <string name="group_command_text_add_remove">Alguém foi adicionado ou removido</string>
+
+    <string name="groupinfo_activity_title">Informações do grupo</string>
+
+    <string name="group_info_set_title">Alterar o assunto</string>
+    <string name="group_info_leave">Sair do grupo</string>
+    <string name="group_info_members">Membros do grupo</string>
+    <string name="confirm_will_leave_group">Você não conseguirá retornar a esse grupo depois que sair dele.</string>
+
+    <plurals name="group_people">
+	<item quantity="one">%d pessoa</item>
+	<item quantity="other">%d pessoas</item>
+</plurals>
+
+
+<string name="chooser_error_no_app">Não existe nenhum aplicativo disponível para abrir esse arquivo.</string>
+
+    <string name="button_ignore">Ignorar</string>
+    <string name="title_identity">Identidade</string>
+    <string name="title_identity_self">Identidade (esse é você!)</string>
+
+    <string name="warning_public_key_group_unverified">A identidade de alguns membros do grupo não foi verificada.</string>
+
+    <string name="group_command_text_part_self">Você saiu deste grupo</string>
+    <string name="group_info_ignore_all">Ignorar tudo</string>
+    <string name="title_ignore_all_identities">Ignorar todas as identidades?</string>
+    <string name="msg_ignore_all_identities">Todas as identidades não verificadas serão marcadas como ignoradas.</string>
+    <string name="text_group_command_fallback">Essa é uma mensagem de conversa em grupo. Você está usando uma versão antiga do Kontalk ou o seu cliente não suporta o protocolo de conversa em grupo. Por favor, atualize para a última versão!</string>
+
+    <string name="status_label">"Status: "</string>
+    <string name="trust_unknown">Não verificado</string>
+    <string name="trust_ignored">Ignorado</string>
+    <string name="trust_verified">Verificado</string>
+
+    <string name="notification_group_title">%1$s @ %2$s</string>
+
+    <plurals name="notification_more">
+	<item quantity="one">mais %d</item>
+	<item quantity="other">mais %d</item>
+</plurals>
+
+    <string name="menu_create_group">Criar grupo</string>
+    <string name="action_compose">Nova conversa</string>
+    <string name="action_compose_group">Novo grupo</string>
+
+    <string name="group_info_menu_remove">Remover</string>
+
+    <string name="pref_balloon_label_silence">Silence</string>
+    <string name="title_passphrase_request">Senha da chave pessoal</string>
+    <string name="err_invalid_passphrase">Senha errada. Reinicie a aplicação para tentar outra.</string>
+
+    <string name="group_command_text_part_kicked">Você foi removido desse grupo</string>
+
+    <plurals name="unread_messages">
+	<item quantity="one">1 mensagem não lida</item>
+	<item quantity="other">%d mensagens não lidas</item>
+</plurals>
+
+    <plurals name="unread_messages_group">
+        <item quantity="one">%1$d mensagens @ %2$s</item>
+	    <item quantity="other">%1$d mensagens @ %2$s</item>
+    </plurals>
+<string name="delete_thread_messages">Apagar o histórico da conversa</string>
+    <string name="pref_on">Ativar</string>
+    <string name="pref_off">Desativar</string>
+
+    <string name="leave_group_delete_messages">Também apagar o histórico da conversa</string>
+    <string name="pref_push_notifications_title_default">Notificações push são uma tecnologia associada ao servidor para economizar bateria. Ela não afeta o envio das mensagens em tempo real
+
+Se desabilitada, você pode fazer ajustes finos no funcionamento da conexão do Kontalk, a partir da tela de configurações da rede.</string>
+    <string name="pref_push_notifications_title_disabled">O suporte a notificações push não foi incluída nesta versão.</string>
+    <string name="pref_push_notifications_title_unavailable">Notificações push não são suportadas neste dispositivo.</string>
+    <string name="about_credits_contrib"><b>Colaboradores</b></string>
+    <string name="pref_push_notifications_disabled">Desabilitado</string>
+    <string name="code_validation_intro_callerid">Toque no botão abaixo e ligue para esse número, desligando assim que ouvir o sinal de chamada. Repare que <b>a chamada tem que ser feita a partir do telefone que você está registrando</b>. Você não pagará nada por isso, desde que encerre a chamada assim que ouvir o primeiro sinal. Isso é o suficiente para nós.</string>
+    <string name="code_validation_intro2_callerid">Após encerrar a chamada, volte aqui e toque o botão de verificação abaixo.</string>
+    <string name="menu_sticky">Favorito</string>
+    <string name="err_authentication_failed_callerid">A verificação não foi bem sucedida. Tente ligar para o número novamente e esperar um pouco mais.</string>
+    <string name="button_validation_fallback_callerid">Tente outra forma</string>
+    <string name="menu_start_group">Iniciar o grupo</string>
+    <string name="menu_group_info">Informações do grupo</string>
+    <string name="pref_emoji_converter">Converter carinhas (texto) em emojis (gráfico)</string>
+    <string name="pref_title_emoji_converter">Converte automaticamente as carinhas de texto para emojis</string>
+
+    <string name="chooser_error_no_dialer">Não existe aplicativo de discagem ou telefone disponível nesse aparelho.</string>
+    <string name="button_refuse">Recusar</string>
+    <string name="button_private_chat">Conversa privada</string>
+    <string name="group_command_owner_parted">O administrador (%s) deixou o grupo. Ninguém pode adicionar ou remover membros.</string>
+    <string name="group_info_owner_member">Administrador</string>
+    <string name="pref_reporting">Enviar estatísticas anônimas de uso</string>
+    <string name="pref_title_reporting">Incluindo relatórios de falhas</string>
+
+    <plurals name="confirm_will_delete_threads">
+	<item quantity="one" tools:ignore="ImpliedQuantity">A conversa selecionada será apagada.</item>
+	<item quantity="other">As conversas selecionadas serão apagadas.</item>
+</plurals>
+
+    <plurals name="delete_threads_leave_groups">
+	<item quantity="one" tools:ignore="ImpliedQuantity">Também sair do grupo</item>
+	<item quantity="other">Também sair dos grupos</item>
+</plurals>
+
+<string name="delete_threads_leave_any_groups">Também sair de todos os grupos</string>
+
+    <string name="pref_balloons_groups">Tema do balão de conversas em grupo</string>
+
+    <string name="delete_threads_groups_disclaimer">Conversas em grupo terão somente seu histórico de conversas excluído, a não ser que a a opção acima seja selecionada.</string>
+    <string name="create_group_disclaimer">Por favor, lembre-se de que todas as pessoas do grupo devem conhecer-se umas às outras para poderem conversar.</string>
+    <string name="check_dont_show_again">Não exibir novamente</string>
+
+    <string name="pref_debug_log">Habilitar o relatório de depuração</string>
+    <string name="pref_send_debug_log">Enviar o relatório de depuração</string>
+
+    <string name="notify_text_decryption_error">Falha na descriptografia</string>
+    <string name="menu_encryption">Criptografia</string>
+    <string name="title_disable_encryption">Desabilitar a criptografia para esta conversa?</string>
+    <string name="msg_disable_encryption">Todas as novas mensagens enviadas para essa conversa NÃO serão criptografadas.
+Desabilite a criptografia apenas se o seu contato não posuir uma chave pessoal.</string>
+    <string name="menu_disable_encryption">Desabilitar</string>
+
+    <string name="group_command_users_added">Usuários adicionados:</string>
+    <string name="group_command_users_removed">Usuários removidos:</string>
+
+    <string name="group_info_menu_add_again">Adicionar novamente</string>
+
+    <string name="status_notsubscribed">Não permitido/Bloqueado</string>
+
+    <string name="code_validation_intro3">Um detalhe, o SMS ou a ligação podem se originar de um telefone estrangeiro.</string>
+    <string name="reply">Responder</string>
+    <string name="msg_register_confirm_number1">Nós verificaremos o número do telefone:</string>
+    <string name="msg_register_confirm_number2">Por favor, verifique se o número está correto.</string>
+    <string name="person_me">Eu</string>
+    <string name="title_doze_mode">Otimização de bateria</string>
+    <string name="msg_doze_mode">Para o Kontalk funcionar corretamente ele deve estar nas exceções de otimização de bateria. Nós prometemos que não iremos drenar a sua bateria.</string>
+    <string name="registration_poweredby">Oferecido por</string>
+
+    <string name="audio_duration_max">%1$s / %2$s</string>
+
+    <string name="btn_request_doze_mode_whitelist">Solicitar permissão</string>
+
+    <string name="location_message">Imagem de localização</string>
+    <string name="position_screen_title">Posição</string>
+    <string name="pref_maps_google_label">Google Maps</string>
+    <string name="pref_maps_osm_label">OpenStreetMap</string>
+
+    <string name="notification_location">enviou uma localização para você</string>
+    <string name="location_no_result">Nenhum resultado</string>
+    <string name="places_nearby">Locais próximos</string>
+    <string name="send_selected_location">Enviar a localização selecionada</string>
+    <string name="send_location">Enviar sua localização atual</string>
+    <string name="accurate_to">Precisão de %1$s metros</string>
+    <string name="meters_away">distante %d m</string>
+    <string name="kilometers_away">distante %.2f km</string>
+    <string name="loading">Carregando…</string>
+    <string name="your_position">Você</string>
+    <string name="err_googlemaps_fallback_osm">O Google Maps não está disponível, utilizando o OpenStreetMap no lugar.</string>
+    <string name="err_location_no_providers">Não existe nenhuma fonte de localização. A localização atual não estará disponível.</string>
+    <string name="err_location_access_unknown_error">Não foi possível solicitar a ativação de serviços de localização.</string>
+    <string name="msg_location_disabled">É necessário acessar a localização. Pressione OK para ir às configurações e habilitá-la.</string>
+
+    <string name="menu_open_map">Abrir no Maps</string>
+    <string name="menu_map">Mapa</string>
+    <string name="menu_satellite">Satélite</string>
+
+    <string name="pref_location_settings">Localização</string>
+    <string name="pref_maps_service">Provedor de serviço</string>
+
+    <string name="msg_request_doze_failed_manual">Por favor, marque o Kontalk como não otimizado, na próxima tela.</string>
+
+    </resources>

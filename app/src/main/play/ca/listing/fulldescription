@@ -1,0 +1,20 @@
+<b>Per favor ajudeu-nos a millorar Kontalk! Si teniu algun problema envieu-nos un email a devteam@kontalk.org!! Deixar un comentari negatiu no ajudarà gaire a un projecte sense ànim de lucre! Gràcies!</b>
+<i>NOTA: NO INSTAL·LI L'APP A LA TARGETA SD!</i>
+
+<b>Segueix @kontalknet a Twitter i identi.ca per estar al corrent dels darrers canvis i de l'estat del servei!</b>
+
+Kontalk és una aplicació de missatgeria instantània segura, que permet enviar i rebre text, imatges i missatges d'àudio (properament altres tipus de fitxers) entre diferents usuaris Kontalk de manera completament gratuita (*).
+
+&#8226;&#8195; <b>El seu número de telèfon és la seva ID.</b> Sense utilitzar noms d'suari ni contrasenyes<br/>
+&#8226;&#8195; <b>L'app troba automàticament altres usuaris Kontalk</b> de la seva llibreta de contactes, el que fa encara més fàcil xatejar amb els seus amics i amigues<br/>
+&#8226;&#8195; <b>Xifratge d'extrem a extrem</b> garanteix converses segures i privades, de manera que només vosté i la persona amb qui xateja pot llegir-les.<br/>
+&#8226;&#8195; El xifratge dels números de telèfons utilitzats a la xarxa és irreversible (no es poden descodificar)<br/>
+&#8226;&#8195; El suport de diferents dispositius permet començar un xat amb un mòbil i continuar amb una tauleta<br/>
+&#8226;&#8195; Basat en estàndards oberts: XMPP i OpenPGP
+
+Kontalk és un projecte de la comunitat de codi obert, amb tot el seu codi font allotjat a GitHub (https://github.com/kontalk), permetent a tothom estudiar la seva seguretat i millorar-la.
+La xarxa depèn de les donacions de la comunitat per mantenir la infraestructura en funcionament, pel que si vostè pot, si us plau doni a http://kontalk.net/. Fins i tot una petita donació és molt important.
+
+Pot trobar tots els permisos que requereix l'app, explicats en aquesta pàgina: https://github.com/kontalk/androidclient/wiki/Android-client-permissions
+
+(*) El seu operador mòbil pot aplicar càrrecs per serveis de connexió a Internet
