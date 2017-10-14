@@ -20,6 +20,10 @@ package org.kontalk;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import android.content.Context;
 
@@ -36,6 +40,7 @@ import org.kontalk.util.SystemUtils;
 public final class Log {
 
     private static final String LOG_FILENAME = "kontalk-android.log";
+    private static DateFormat DATE_FORMAT;  // created on demand
 
     private static RotatingFileWriter sLogFileWriter;
     private static File sLogFile;
@@ -43,6 +48,7 @@ public final class Log {
     public static void init(Context context) {
         try {
             if (Preferences.isDebugLogEnabled(context)) {
+                DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
                 sLogFile = new File(context.getExternalCacheDir(), LOG_FILENAME);
                 sLogFileWriter = new RotatingFileWriter(sLogFile);
             }
@@ -51,6 +57,7 @@ public final class Log {
                     sLogFileWriter.abort();
                     sLogFileWriter = null;
                 }
+                DATE_FORMAT = null;
             }
         }
         catch (IOException e) {
@@ -88,7 +95,11 @@ public final class Log {
                 strLevel = "?";
                 break;
         }
-        return strLevel + "/" + tag + ": " + msg;
+        String timestamp;
+        synchronized (DATE_FORMAT) {
+            timestamp = DATE_FORMAT.format(new Date());
+        }
+        return timestamp + " " + strLevel + "/" + tag + ": " + msg;
     }
 
     private static void log(String tag, int level, Throwable tr) {
