@@ -985,10 +985,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void handleIntent(Intent intent) {
-        // stop immediately
-        if (isOfflineMode(this))
-            stopSelf();
-
         if (intent != null) {
             String action = intent.getAction();
 
@@ -1106,6 +1102,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     // no command means normal service start, connect if not connected
                     doConnect = true;
                     break;
+            }
+
+            if (isOfflineMode(this)) {
+                // stop immediately
+                canConnect = doConnect = false;
             }
 
             if (canConnect && doConnect)

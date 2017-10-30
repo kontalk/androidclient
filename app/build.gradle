@@ -32,7 +32,6 @@ task checkstyle(type: Checkstyle){
 
 android {
     compileSdkVersion project.compileSdkVersion
-    buildToolsVersion project.buildToolsVersion
 
     defaultConfig {
         applicationId "org.kontalk"
@@ -71,6 +70,8 @@ android {
             }
         }
     }
+
+    flavorDimensions "all"
 
     buildTypes {
         release {
@@ -135,7 +136,7 @@ dependencies {
     compile "com.madgag.spongycastle:pkix:$spongyCastleVersion"
     compile "com.madgag.spongycastle:pg:$spongyCastleVersion"
     compile 'info.guardianproject.netcipher:netcipher:1.2.1'
-    compile 'com.googlecode.libphonenumber:libphonenumber:8.8.3'
+    compile 'com.googlecode.libphonenumber:libphonenumber:8.8.5'
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'com.google.zxing:core:3.3.0'
     compile 'com.segment.backo:backo:1.0.0'
@@ -159,7 +160,7 @@ dependencies {
     compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'com.github.vlivanov:ListViewVariants:f606578467'
 
-    compile 'com.google.code.gson:gson:2.8.1'
+    compile 'com.google.code.gson:gson:2.8.2'
     compile 'com.squareup.okhttp3:okhttp:3.8.1'
 
     compile "com.github.kontalk.AnyMaps:anymaps-base:$anyMapsVersion"
