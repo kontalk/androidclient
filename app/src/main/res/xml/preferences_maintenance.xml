@@ -35,6 +35,11 @@
     <Preference android:key="pref_delete_account"
         android:title="@string/pref_delete_account"
         android:layout="@layout/md_preference_custom"/>
+    <CheckBoxPreference android:key="pref_foreground_service"
+        android:title="@string/pref_foreground_service"
+        android:summary="@string/pref_title_foreground_service"
+        android:defaultValue="@bool/pref_default_foreground_service"
+        android:layout="@layout/md_preference_custom"/>
     <CheckBoxPreference android:key="pref_debug_log"
         android:title="@string/pref_debug_log"
         android:defaultValue="@bool/pref_default_debug_log"
