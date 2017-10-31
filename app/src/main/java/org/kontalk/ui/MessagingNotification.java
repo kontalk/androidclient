@@ -83,6 +83,7 @@ public class MessagingNotification {
     public static final int NOTIFICATION_ID_KEYPAIR_GEN     = 108;
     public static final int NOTIFICATION_ID_INVITATION      = 109;
     public static final int NOTIFICATION_ID_AUTH_ERROR      = 110;
+    public static final int NOTIFICATION_ID_FOREGROUND      = 111;
 
     private static final String[] MESSAGES_UNREAD_PROJECTION =
     {
@@ -552,6 +553,26 @@ public class MessagingNotification {
     public static void clearAuthenticationError(Context context) {
         NotificationManagerCompat nm = NotificationManagerCompat.from(context);
         nm.cancel(NOTIFICATION_ID_AUTH_ERROR);
+    }
+
+    public static Notification buildForegroundNotification(Context context) {
+        Intent ni = new Intent(context.getApplicationContext(), ConversationsActivity.class);
+        PendingIntent pi = PendingIntent.getActivity(context,
+            NOTIFICATION_ID_FOREGROUND, ni, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        // build the notification
+        NotificationCompat.Builder builder = new NotificationCompat
+            .Builder(context.getApplicationContext());
+        builder
+            .setOngoing(true)
+            .setSmallIcon(R.drawable.ic_stat_notify)
+            .setPriority(NotificationCompat.PRIORITY_MIN)
+            .setTicker(context.getString(R.string.notification_ticker_service_running))
+            .setContentTitle(context.getString(R.string.app_name))
+            .setContentText(context.getString(R.string.notification_text_service_running))
+            .setContentIntent(pi);
+
+        return builder.build();
     }
 
     /**

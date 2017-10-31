@@ -472,6 +472,9 @@
     <string name="title_auth_error">Authentication error</string>
     <string name="msg_auth_error">Authentication to a Kontalk server failed the last time we tried to connect. It could be a temporary server failure or, most probably, the server is refusing your personal key. We recommend deleting your Kontalk account from Android system settings and register again (you will lose all of your Kontalk messages though).</string>
 
+    <string name="notification_ticker_service_running">Kontalk is running in the background</string>
+    <string name="notification_text_service_running">Tap to open</string>
+
     <string name="warn_invite_no_app">No application available to invite users.</string>
 
     <string name="pref_text_enter">Enter button</string>
@@ -597,6 +600,9 @@
     <string name="delete_threads_groups_disclaimer">Group chats will only have their chat history deleted unless the checkbox above is selected.</string>
     <string name="create_group_disclaimer">Please remember that every member in the group must know each other in order to chat.</string>
     <string name="check_dont_show_again">Do not show again</string>
+
+    <string name="pref_foreground_service">Enable foreground service</string>
+    <string name="pref_title_foreground_service">Activate this if you want Kontalk to be active in the background when going low on resources. A sticky notification will be displayed</string>
 
     <string name="pref_debug_log">Enable debug log</string>
     <string name="pref_send_debug_log">Send debug log</string>
