@@ -636,4 +636,6 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
     <string name="notification_text_service_running">Toque para abrir</string>
 
     <string name="pref_foreground_service">Habilitar el servicio en primer plano</string>
+    <string name="pref_title_foreground_service">Activa esto si deseas que Kontalk funcione en segundo plano cuando los recursos estén escasos. Se desplegará una notificación fija</string>
+
     </resources>
