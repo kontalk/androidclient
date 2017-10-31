@@ -102,7 +102,7 @@ public class MessagesProvider extends ContentProvider {
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     static class DatabaseHelper extends SQLiteOpenHelper {
         @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-        static final int DATABASE_VERSION = 14;
+        static final int DATABASE_VERSION = 15;
         @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
         static final String DATABASE_NAME = "messages.db";
 
@@ -233,6 +233,10 @@ public class MessagesProvider extends ContentProvider {
         private static final String SCHEMA_MESSAGES_TIMESTAMP_IDX =
             "CREATE INDEX IF NOT EXISTS timestamp_message ON " + TABLE_MESSAGES +
             " (timestamp)";
+
+        private static final String SCHEMA_MESSAGES_THREAD_ID_IDX =
+            "CREATE INDEX IF NOT EXISTS idx_messages_thread_id ON " + TABLE_MESSAGES +
+            "(" + Messages.THREAD_ID + ")";
 
         /** Updates the thread messages count. */
         private static final String UPDATE_MESSAGES_COUNT_NEW =
@@ -381,6 +385,10 @@ public class MessagesProvider extends ContentProvider {
             "DELETE FROM messages WHERE thread_id < 0",
         };
 
+        private static final String[] SCHEMA_UPGRADE_V14 = {
+            "CREATE INDEX idx_messages_thread_id ON messages(thread_id)",
+        };
+
         private Context mContext;
 
         protected DatabaseHelper(Context context) {
@@ -398,6 +406,7 @@ public class MessagesProvider extends ContentProvider {
             db.execSQL(SCHEMA_FULLTEXT);
             db.execSQL(SCHEMA_MESSAGES_INDEX);
             db.execSQL(SCHEMA_MESSAGES_TIMESTAMP_IDX);
+            db.execSQL(SCHEMA_MESSAGES_THREAD_ID_IDX);
             db.execSQL(TRIGGER_THREADS_INSERT_COUNT);
             db.execSQL(TRIGGER_THREADS_UPDATE_COUNT);
             db.execSQL(TRIGGER_THREADS_DELETE_COUNT);
@@ -439,6 +448,11 @@ public class MessagesProvider extends ContentProvider {
                     for (String sql : SCHEMA_UPGRADE_V13) {
                         db.execSQL(sql);
                     }
+                case 14:
+                    for (String sql : SCHEMA_UPGRADE_V14) {
+                        db.execSQL(sql);
+                    }
+                    // fall through
             }
         }
     }
