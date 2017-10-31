@@ -744,17 +744,17 @@ public final class MessageUtils {
         }
         return converted;
     }
-    
+
     // actual replacement ASCII -> UTF-16 if necessary
     private static boolean replaceEditable(Editable text, String in, String out) {
         boolean replaced = false;
         int notReplaced = 0;
-        for (int position = text.toString().indexOf(in); position >= 0; position = text.toString().indexOf(in)){
+        for (int position = text.toString().indexOf(in + " "); position >= 0; position = text.toString().indexOf(in + " ")){
 
-            // check if there are symbols that should not be converted, e.g. in "http://" or "experte"
+            // check if there are symbols that should not be converted, e.g. in "http://" or "expert"
             // if only these last, exit the loop
             if (notReplaced > 0){
-                position = ordinalIndexOf(text.toString(), " " + in, notReplaced) + 1;
+                position = ordinalIndexOf(text.toString(), " " + in + " ", notReplaced) + 1;
                 if (position < 1){
                     break;
                 }
