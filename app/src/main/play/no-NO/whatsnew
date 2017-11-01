@@ -1,6 +1,7 @@
-* Oppdatering av flagg
-* Flerfoldige fikser av bildeopplasting
-* Registrering ved bruk av Persisk lokale fungerer
-* Andre feilrettinger
+Denne versjonen introduserer en ny registreringstilbyder, snilt tilbudt av https://JMP.Chat
+Hjelp oss å forbedre og fiks feil ved å rapportere dem på GitHub eller disktuter dem på vårt forum: https://forum.kontalk.org
 
-Detaljert endringslogg er å finne på https://github.com/kontalk/androidclient/releases/tag/v3.1.10
+* Nyhet: plasseringsdeling
+* Nyhet: Automatisk konvertering av smilefjes til emoji
+* Fiks for minnelekasje som førte til kræsj
+* Mange andre feilrettinger og små forbedringer
