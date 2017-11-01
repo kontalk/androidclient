@@ -634,4 +634,6 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
     <string name="notification_text_service_running">Premi per obrir</string>
 
     <string name="pref_foreground_service">Habilita el servei en primer pla</string>
+    <string name="pref_title_foreground_service">Activa això si vols que Kontalk funcioni en segon pla quan hi hagi pocs recursos. Es mostrarà una notificació fixa</string>
+
     </resources>
