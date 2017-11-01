@@ -762,7 +762,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                     new FileChooserDialog.Builder(NumberValidation.this)
                         .initialPath(PersonalKeyPack.DEFAULT_KEYPACK.getParent())
                         .mimeType(PersonalKeyPack.KEYPACK_MIME)
-                        .show();
+                        .show(getSupportFragmentManager());
                 }
             }
         });
@@ -833,6 +833,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 R.string.err_import_keypair_read,
                 Toast.LENGTH_LONG).show();
         }
+    }
+
+    @Override
+    public void onFileChooserDismissed(@NonNull FileChooserDialog dialog) {
     }
 
     void startImport(ZipInputStream zip, String passphrase) {
@@ -1210,7 +1214,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         try {
             builder.show();
         }
-        catch (MaterialDialog.DialogException ignored) {
+        catch (Exception ignored) {
         }
     }
 

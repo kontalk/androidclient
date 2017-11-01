@@ -38,7 +38,7 @@ android {
         versionCode project.appVersionCode
         versionName project.appVersionName
         targetSdkVersion project.targetSdkVersion
-        minSdkVersion 9
+        minSdkVersion 15
         resConfigs "en", "de", "fr", "it", "es", "ca", "cs", "el", "fa", "gl", "ja", "nl", "pt", "pt-rBR", "ru", "sr", "zh-rCN", "ar", "hi", "tr", "nb-rNO"
         resValue "string", "application_id", applicationId
         resValue "string", "account_type", applicationId + '.account'
@@ -148,9 +148,8 @@ dependencies {
         exclude module: 'smack-omemo-signal'
     }
     compile 'com.github.machinarius:preferencefragment:0.1.1'
-    // MaterialDialogs stopped supporting API < 13 from version 0.9.1.0
-    compile 'com.afollestad.material-dialogs:core:0.9.0.2'
-    compile 'com.afollestad.material-dialogs:commons:0.9.0.2'
+    compile 'com.afollestad.material-dialogs:core:0.9.5.0'
+    compile 'com.afollestad.material-dialogs:commons:0.9.5.0'
     compile 'com.github.castorflex.smoothprogressbar:library:1.1.0'
     compile 'com.nispok:snackbar:2.11.0'
     // Glide 4 requires API level 14

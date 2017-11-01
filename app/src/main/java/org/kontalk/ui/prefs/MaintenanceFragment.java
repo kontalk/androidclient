@@ -190,7 +190,7 @@ public class MaintenanceFragment extends RootPreferenceFragment {
                         if (ctx != null) {
                             new FolderChooserDialog.Builder(ctx)
                                     .initialPath(PersonalKeyPack.DEFAULT_KEYPACK.getParent())
-                                    .show();
+                                    .show(getFragmentManager());
                         }
                     }
                 };

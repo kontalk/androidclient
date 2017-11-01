@@ -25,17 +25,15 @@ allprojects {
 
     evaluationDependsOn ":client-common-java"
     ext {
-        appVersionCode = 260
-        appVersionName = '4.1.0'
+        appVersionCode = 261
+        appVersionName = '4.1.0-next'
         targetSdkVersion = 22
         compileSdkVersion = 27
         smackVersion = project(':client-common-java').smackVersion
         spongyCastleVersion = '1.54.0.0'
-        // Google dropped support for Android API level < 14 starting 26.0.0
-        appcompatVersion = '25.4.0'
-        anyMapsVersion = '9de9d15b22'
-        // Google dropped support for Android 2.3 starting 10.0.x
-        googlePlayServicesVersion = '10.0.1'
+        appcompatVersion = '27.0.0'
+        anyMapsVersion = 'ed538f90d9'
+        googlePlayServicesVersion = '11.4.2'
 
         travisBuild = System.getenv("TRAVIS") == "true"
         // allows for -Dpre-dex=false to be set
