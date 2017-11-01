@@ -567,6 +567,7 @@ public class MessagingNotification {
             .setOngoing(true)
             .setSmallIcon(R.drawable.ic_stat_notify)
             .setPriority(NotificationCompat.PRIORITY_MIN)
+            .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .setTicker(context.getString(R.string.notification_ticker_service_running))
             .setContentTitle(context.getString(R.string.app_name))
             .setContentText(context.getString(R.string.notification_text_service_running))
