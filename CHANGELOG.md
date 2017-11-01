@@ -1,5 +1,15 @@
 # Change Log
 
+## [4.1.0] - 2017-11-01
+### Changed
+- Foreground service notification (#1084)
+- Some performance improvements on messages operations
+
+### Fixed
+- Fix bug in smiley to emoji conversion (#1087)
+- Fix serious bug in group members list status
+- Show contact picture on Motorola Active Display
+
 ## [4.1.0-beta4] - 2017-10-12
 ### Changed
 - Automatic conversion of text smileys into emojis (#940)
