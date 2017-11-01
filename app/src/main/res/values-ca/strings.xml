@@ -630,4 +630,8 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
     <string name="err_location_access_unknown_error">No es poden activar els serveis d\'ubicació.</string>
     <string name="msg_request_doze_failed_manual">Sisplau marqueu Kontalk com a no optimitzat a la pantalla següent.</string>
 
+    <string name="notification_ticker_service_running">Kontalk s\'està executant en segon pla</string>
+    <string name="notification_text_service_running">Premi per obrir</string>
+
+    <string name="pref_foreground_service">Habilita el servei en primer pla</string>
     </resources>
