@@ -358,9 +358,8 @@ public class MessagingNotification {
             builder.setTicker(accumulator.getTicker());
             Contact contact = accumulator.getContact();
             if (contact != null) {
-                Bitmap avatar = contact.getAvatarBitmap(context);
-                if (avatar != null)
-                    builder.setLargeIcon(avatar);
+                Bitmap avatar = contact.getAvatarBitmap(context, true);
+                builder.setLargeIcon(avatar);
             }
             builder.setNumber(accumulator.unreadCount);
             builder.setSmallIcon(R.drawable.ic_stat_notify);
@@ -497,11 +496,8 @@ public class MessagingNotification {
             .setContentIntent(pi);
 
         // include an avatar if any
-        if (contact != null) {
-            Bitmap avatar = contact.getAvatarBitmap(context);
-            if (avatar != null)
-                builder.setLargeIcon(avatar);
-        }
+        Bitmap avatar = contact.getAvatarBitmap(context, true);
+        builder.setLargeIcon(avatar);
 
         // defaults (sound, vibration, lights)
         setDefaults(context, builder);
@@ -567,6 +563,7 @@ public class MessagingNotification {
             .setOngoing(true)
             .setSmallIcon(R.drawable.ic_stat_notify)
             .setPriority(NotificationCompat.PRIORITY_MIN)
+            .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .setTicker(context.getString(R.string.notification_ticker_service_running))
             .setContentTitle(context.getString(R.string.app_name))
             .setContentText(context.getString(R.string.notification_text_service_running))
@@ -758,9 +755,8 @@ public class MessagingNotification {
 
                     // avatar (non-group)
                     if (conv.groupJid == null) {
-                        Bitmap avatar = contact.getAvatarBitmap(mContext);
-                        if (avatar != null)
-                            mBuilder.setLargeIcon(avatar);
+                        Bitmap avatar = contact.getAvatarBitmap(mContext, true);
+                        mBuilder.setLargeIcon(avatar);
 
                         // phone number for call intent
                         String phoneNumber = contact.getNumber();
