@@ -634,4 +634,10 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="err_location_access_unknown_error">Nicht möglich Standortdienste zu aktivieren.</string>
     <string name="msg_request_doze_failed_manual">Bitte markieren Sie Kontalk auf der nächsten Seite als nicht optimieren.</string>
 
+    <string name="notification_ticker_service_running">Kontalk läuft im Hintergrund</string>
+    <string name="notification_text_service_running">Zum öffnen antippen</string>
+
+    <string name="pref_foreground_service">Vordergrunddienst ermöglichen</string>
+    <string name="pref_title_foreground_service">Aktivieren Sie dies, wenn Kontalk bei knapp werdenden Ressourcen im Vordergrund aktiv bleiben soll . Es wird eine Benachrichtigung angezeigt.</string>
+
     </resources>
