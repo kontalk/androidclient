@@ -155,6 +155,10 @@ public final class PreferencesActivity extends BasePreferencesActivity
         }
     }
 
+    @Override
+    public void onFolderChooserDismissed(@NonNull FolderChooserDialog dialog) {
+    }
+
     public static void start(Activity context) {
         Intent intent = new Intent(context, PreferencesActivity.class);
         context.startActivityIfNeeded(intent, -1);
