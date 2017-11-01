@@ -36,6 +36,7 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -43,6 +44,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
@@ -442,16 +444,49 @@ public class Contact {
     /**
      * Public version of {@link #loadAvatarBitmap} which includes the random
      * avatar generation.
+     * @param context a context
+     * @param resizeForNotification true for resizing the avatar to the large icon size 128x128
      * @return a newly-allocated {@link Bitmap}
      */
     @NonNull
-    public synchronized Bitmap getAvatarBitmap(Context context) {
+    public synchronized Bitmap getAvatarBitmap(Context context, boolean resizeForNotification) {
         Bitmap avatar = loadAvatarBitmap(context);
         if (avatar == null) {
             Drawable d = generateRandomAvatar(context, this);
             avatar = MessageUtils.drawableToBitmap(d);
         }
+
+        if (resizeForNotification && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            // Contact bitmaps are 96x96 so we have to scale 'em up to 128x128 to fill the whole notification large icon.
+            // inspired by the AOSP Mms app
+            final Resources res = context.getResources();
+            final int idealIconHeight =
+                res.getDimensionPixelSize(android.R.dimen.notification_large_icon_height);
+            final int idealIconWidth =
+                res.getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
+            if (avatar.getHeight() < idealIconHeight) {
+                // Scale this image to fit the intended size
+                Bitmap scaledAvatar = Bitmap.createScaledBitmap(
+                    avatar, idealIconWidth, idealIconHeight, true);
+                if (scaledAvatar != null) {
+                    if (scaledAvatar != avatar)
+                        avatar.recycle();
+                    avatar = scaledAvatar;
+                }
+            }
+        }
+
         return avatar;
+    }
+
+    /**
+     * Public version of {@link #loadAvatarBitmap} which includes the random
+     * avatar generation.
+     * @return a newly-allocated {@link Bitmap}
+     */
+    @NonNull
+    public synchronized Bitmap getAvatarBitmap(Context context) {
+        return getAvatarBitmap(context, false);
     }
 
     private void clear() {

@@ -639,4 +639,10 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="err_location_access_unknown_error">Nepodařilo se vyžádat aktivaci polohovacích služeb.</string>
     <string name="msg_request_doze_failed_manual">Označte prosím Kontalk na následující obrazovce jako neoptimalizovaný.</string>
 
+    <string name="notification_ticker_service_running">Kontalk běží na pozadí</string>
+    <string name="notification_text_service_running">Klikněte pro otevření</string>
+
+    <string name="pref_foreground_service">Povolit službu na popředí</string>
+    <string name="pref_title_foreground_service">Aktivujte tuto volbu pokud chcete, aby v případě přechodu do režimu nízké spotřeby byl Kontalk aktivní na pozadí. Bude zobrazena stálá notifikace</string>
+
     </resources>

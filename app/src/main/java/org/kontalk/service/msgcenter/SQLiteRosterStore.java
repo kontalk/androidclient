@@ -99,7 +99,7 @@ public class SQLiteRosterStore extends SQLiteOpenHelper implements RosterStore {
 
     private SQLiteStatement prepareInsert(SQLiteDatabase db, RosterPacket.Item item) {
         if (mInsertStatement == null) {
-            mInsertStatement = db.compileStatement("INSERT INTO " + TABLE_ROSTER +
+            mInsertStatement = db.compileStatement("INSERT OR REPLACE INTO " + TABLE_ROSTER +
                 " VALUES(?, ?, ?, ?, ?, ?)");
         }
         else {

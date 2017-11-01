@@ -59,6 +59,7 @@
     <integer name="pref_default_idle_time">300000</integer>
     <integer name="pref_default_wakeup_time">900000</integer>
     <bool name="pref_default_accept_any_certificate">false</bool>
+    <bool name="pref_default_foreground_service">false</bool>
     <bool name="pref_default_debug_log">false</bool>
 
     <!-- other settings defaults -->

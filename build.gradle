@@ -3,9 +3,13 @@ buildscript {
     repositories {
         jcenter()
         maven { url 'https://maven.fabric.io/public' }
+        maven {
+            url 'https://maven.google.com/'
+            name 'Google'
+        }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.3'
+        classpath 'com.android.tools.build:gradle:3.0.0'
         classpath 'com.github.triplet.gradle:play-publisher:1.2.0'
         classpath 'io.fabric.tools:gradle:1.22.1'
     }
@@ -14,24 +18,22 @@ buildscript {
 allprojects {
     repositories {
         jcenter()
+        google()
         maven { url "https://jitpack.io" }
         maven { url 'https://maven.fabric.io/public' }
     }
 
     evaluationDependsOn ":client-common-java"
     ext {
-        appVersionCode = 248
-        appVersionName = '4.1.0-beta3'
+        appVersionCode = 261
+        appVersionName = '4.1.0-next'
         targetSdkVersion = 22
-        compileSdkVersion = 26
-        buildToolsVersion = '26.0.1'
+        compileSdkVersion = 27
         smackVersion = project(':client-common-java').smackVersion
         spongyCastleVersion = '1.54.0.0'
-        // Google dropped support for Android API level < 14 starting 26.0.0
-        appcompatVersion = '25.3.1'
-        anyMapsVersion = '9de9d15b22'
-        // Google dropped support for Android 2.3 starting 10.0.x
-        googlePlayServicesVersion = '10.0.1'
+        appcompatVersion = '27.0.0'
+        anyMapsVersion = 'ed538f90d9'
+        googlePlayServicesVersion = '11.4.2'
 
         travisBuild = System.getenv("TRAVIS") == "true"
         // allows for -Dpre-dex=false to be set

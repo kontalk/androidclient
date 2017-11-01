@@ -632,4 +632,10 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
     <string name="err_location_access_unknown_error">No es posible activar los servicios de ubicación.</string>
     <string name="msg_request_doze_failed_manual">Por favor marque Kontalk como no optimizado en la siguiente pantalla.</string>
 
+    <string name="notification_ticker_service_running">Kontalk se está ejecutando en segundo plano</string>
+    <string name="notification_text_service_running">Toque para abrir</string>
+
+    <string name="pref_foreground_service">Habilitar el servicio en primer plano</string>
+    <string name="pref_title_foreground_service">Activa esto si deseas que Kontalk funcione en segundo plano cuando los recursos estén escasos. Se desplegará una notificación fija</string>
+
     </resources>

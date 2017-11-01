@@ -632,4 +632,10 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
     <string name="err_location_access_unknown_error">Impossibile richiedere l\'attivazione dei servizi di posizione.</string>
     <string name="msg_request_doze_failed_manual">Imposta Kontalk come non ottimizzato nella schermata che segue.</string>
 
+    <string name="notification_ticker_service_running">Kontalk in esecuzione</string>
+    <string name="notification_text_service_running">Tocca per aprire</string>
+
+    <string name="pref_foreground_service">Attiva servizio persistente</string>
+    <string name="pref_title_foreground_service">Attivalo se vuoi che Kontalk rimanga in esecuzione quando rimane poca memoria disponibile. Apparirà una notifica persistente</string>
+
     </resources>

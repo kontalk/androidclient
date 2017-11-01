@@ -101,6 +101,7 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.Process;
 import android.os.SystemClock;
+import android.support.v4.app.ServiceCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.widget.Toast;
@@ -158,6 +159,8 @@ import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 import org.spongycastle.openpgp.PGPException;
+
+import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_FOREGROUND;
 
 
 /**
@@ -316,6 +319,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Send this intent to request version information to an entity.
      */
     public static final String ACTION_VERSION = "org.kontalk.action.VERSION";
+
+    /**
+     * Send this intent to update the foreground service status of the message center.
+     */
+    public static final String ACTION_FOREGROUND = "org.kontalk.action.FOREGROUND";
 
     // common parameters
     public static final String EXTRA_PACKET_ID = "org.kontalk.packet.id";
@@ -743,6 +751,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     @Override
     public void onCreate() {
+        if (!isOfflineMode(this)) {
+            // immediately setup the foreground notification if requested
+            setForeground();
+        }
+
+        // configure XMPP client
         configure();
 
         // create the roster store
@@ -997,10 +1011,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void handleIntent(Intent intent) {
-        // stop immediately
-        if (isOfflineMode(this))
-            stopSelf();
-
         if (intent != null) {
             String action = intent.getAction();
 
@@ -1118,10 +1128,19 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     doConnect = handleMediaReady(intent);
                     break;
 
+                case ACTION_FOREGROUND:
+                    doConnect = handleForeground();
+                    break;
+
                 default:
                     // no command means normal service start, connect if not connected
                     doConnect = true;
                     break;
+            }
+
+            if (isOfflineMode(this)) {
+                // stop immediately
+                canConnect = doConnect = false;
             }
 
             if (canConnect && doConnect)
@@ -1568,6 +1587,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (msgId > 0)
             sendReadyMedia(msgId);
         return true;
+    }
+
+    @CommandHandler(name = ACTION_FOREGROUND)
+    private boolean handleForeground() {
+        setForeground();
+        return false;
     }
 
     /**
@@ -2888,6 +2913,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             mUploadServices.get(0) : null;
     }
 
+    private void setForeground() {
+        boolean enable = Preferences.getForegroundServiceEnabled(this);
+        if (enable) {
+            startForeground(NOTIFICATION_ID_FOREGROUND,
+                MessagingNotification.buildForegroundNotification(this));
+        }
+        else {
+            ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE);
+        }
+    }
+
     private void beginKeyPairRegeneration(String passphrase) {
         if (mKeyPairRegenerator == null) {
             try {
@@ -3465,6 +3501,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static void requestServerList(final Context context) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_SERVERLIST);
+        context.startService(i);
+    }
+
+    public static void updateForegroundStatus(final Context context) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_FOREGROUND);
         context.startService(i);
     }
 

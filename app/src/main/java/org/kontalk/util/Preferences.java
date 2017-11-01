@@ -192,6 +192,11 @@ public final class Preferences {
         }
     }
 
+    public static boolean getForegroundServiceEnabled(Context context) {
+        return getBoolean("pref_foreground_service", context
+            .getResources().getBoolean(R.bool.pref_default_foreground_service));
+    }
+
     public static boolean getEncryptionEnabled(Context context) {
         return getBoolean("pref_encrypt", context
             .getResources().getBoolean(R.bool.pref_default_encrypt));

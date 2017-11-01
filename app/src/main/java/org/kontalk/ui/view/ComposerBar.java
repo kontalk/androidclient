@@ -90,20 +90,20 @@ public class ComposerBar extends RelativeLayout implements
     private static final String MAX_RECORDING_TIME_TEXT = DateUtils
         .formatElapsedTime(MAX_RECORDING_TIME / 1000);
 
-    private Context mContext;
+    Context mContext;
 
     // for the text entry
-    private boolean mSendEnabled = true;
-    private EditText mTextEntry;
-    private View mSendButton;
-    private ComposerListener mListener;
+    boolean mSendEnabled = true;
+    EditText mTextEntry;
+    View mSendButton;
+    ComposerListener mListener;
     private TextWatcher mChatStateListener;
 
-    private boolean mEnterSend;
+    boolean mEnterSend;
 
     /** Used during audio recording to restore focus status of the text entry. */
     private boolean mTextEntryFocus;
-    private boolean mComposeSent;
+    boolean mComposeSent;
 
     // for Emoji drawer
     private ImageButton mEmojiButton;
@@ -118,21 +118,21 @@ public class ComposerBar extends RelativeLayout implements
     View mAudioButton;
     View mRecordLayout;
     View mSlideText;
-    private float mDraggingX = -1;
-    private float mDistMove;
-    private boolean mIsRecordingAudio;
+    float mDraggingX = -1;
+    float mDistMove;
+    boolean mIsRecordingAudio;
     private TextView mRecordText;
     private File mRecordFile;
     private MediaRecorder mRecord;
     long startTime;
     long elapsedTime;
-    private boolean mCheckMove;
-    private int mOrientation;
+    boolean mCheckMove;
+    int mOrientation;
     private Vibrator mVibrator;
     // initialized in onCreate
     int mMoveThreshold;
-    private int mMoveOffset;
-    private int mMoveOffset2;
+    int mMoveOffset;
+    int mMoveOffset2;
 
     public ComposerBar(Context context) {
         super(context);
@@ -163,7 +163,7 @@ public class ComposerBar extends RelativeLayout implements
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mTextEntry = (EditText) findViewById(R.id.text_editor);
+        mTextEntry = findViewById(R.id.text_editor);
 
         // enter key flag
         int inputTypeFlags;
@@ -283,7 +283,7 @@ public class ComposerBar extends RelativeLayout implements
             }
 
             mSlideText = findViewById(R.id.slide_text);
-            mRecordText = (TextView) findViewById(R.id.recording_time);
+            mRecordText = findViewById(R.id.recording_time);
 
             int screenWidth = SystemUtils.getDisplaySize(mContext).x;
             // position of "slide to cancel" label (actually left margin; screen dependent)
@@ -364,7 +364,7 @@ public class ComposerBar extends RelativeLayout implements
             mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
         }
 
-        mEmojiButton = (ImageButton) findViewById(R.id.emoji_button);
+        mEmojiButton = findViewById(R.id.emoji_button);
         mEmojiButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -509,7 +509,7 @@ public class ComposerBar extends RelativeLayout implements
         }
     }
 
-    private void startRecording() {
+    void startRecording() {
         // ask parent to stop all sounds
         mListener.stopAllSounds();
 
@@ -657,7 +657,7 @@ public class ComposerBar extends RelativeLayout implements
             MAX_RECORDING_TIME_TEXT));
     }
 
-    private void submitSend() {
+    void submitSend() {
         mTextEntry.removeTextChangedListener(mChatStateListener);
         // send message
         mListener.sendTextMessage(mTextEntry.getText().toString());
@@ -693,7 +693,7 @@ public class ComposerBar extends RelativeLayout implements
         return mEmojiVisible;
     }
 
-    private void toggleEmojiDrawer() {
+    void toggleEmojiDrawer() {
         // TODO animate drawer enter & exit
 
         if (isEmojiVisible()) {
@@ -717,7 +717,7 @@ public class ComposerBar extends RelativeLayout implements
             mEmojiView.setOnEmojiconClickedListener(this);
 
             mWindowLayoutParams = new WindowManager.LayoutParams();
-            mWindowLayoutParams.gravity = Gravity.BOTTOM | Gravity.LEFT;
+            mWindowLayoutParams.gravity = Gravity.BOTTOM | Gravity.START;
             mWindowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL;
             mWindowLayoutParams.token = ((Activity) mContext).getWindow().getDecorView().getWindowToken();
             mWindowLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |

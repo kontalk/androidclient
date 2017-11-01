@@ -45,7 +45,7 @@ import android.support.v4.app.NotificationCompat.Style;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.NotificationCompat;
+import android.support.v4.app.NotificationCompat;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -83,6 +83,7 @@ public class MessagingNotification {
     public static final int NOTIFICATION_ID_KEYPAIR_GEN     = 108;
     public static final int NOTIFICATION_ID_INVITATION      = 109;
     public static final int NOTIFICATION_ID_AUTH_ERROR      = 110;
+    public static final int NOTIFICATION_ID_FOREGROUND      = 111;
 
     private static final String[] MESSAGES_UNREAD_PROJECTION =
     {
@@ -357,9 +358,8 @@ public class MessagingNotification {
             builder.setTicker(accumulator.getTicker());
             Contact contact = accumulator.getContact();
             if (contact != null) {
-                Bitmap avatar = contact.getAvatarBitmap(context);
-                if (avatar != null)
-                    builder.setLargeIcon(avatar);
+                Bitmap avatar = contact.getAvatarBitmap(context, true);
+                builder.setLargeIcon(avatar);
             }
             builder.setNumber(accumulator.unreadCount);
             builder.setSmallIcon(R.drawable.ic_stat_notify);
@@ -496,11 +496,8 @@ public class MessagingNotification {
             .setContentIntent(pi);
 
         // include an avatar if any
-        if (contact != null) {
-            Bitmap avatar = contact.getAvatarBitmap(context);
-            if (avatar != null)
-                builder.setLargeIcon(avatar);
-        }
+        Bitmap avatar = contact.getAvatarBitmap(context, true);
+        builder.setLargeIcon(avatar);
 
         // defaults (sound, vibration, lights)
         setDefaults(context, builder);
@@ -552,6 +549,27 @@ public class MessagingNotification {
     public static void clearAuthenticationError(Context context) {
         NotificationManagerCompat nm = NotificationManagerCompat.from(context);
         nm.cancel(NOTIFICATION_ID_AUTH_ERROR);
+    }
+
+    public static Notification buildForegroundNotification(Context context) {
+        Intent ni = new Intent(context.getApplicationContext(), ConversationsActivity.class);
+        PendingIntent pi = PendingIntent.getActivity(context,
+            NOTIFICATION_ID_FOREGROUND, ni, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        // build the notification
+        NotificationCompat.Builder builder = new NotificationCompat
+            .Builder(context.getApplicationContext());
+        builder
+            .setOngoing(true)
+            .setSmallIcon(R.drawable.ic_stat_notify)
+            .setPriority(NotificationCompat.PRIORITY_MIN)
+            .setCategory(NotificationCompat.CATEGORY_SERVICE)
+            .setTicker(context.getString(R.string.notification_ticker_service_running))
+            .setContentTitle(context.getString(R.string.app_name))
+            .setContentText(context.getString(R.string.notification_text_service_running))
+            .setContentIntent(pi);
+
+        return builder.build();
     }
 
     /**
@@ -737,9 +755,8 @@ public class MessagingNotification {
 
                     // avatar (non-group)
                     if (conv.groupJid == null) {
-                        Bitmap avatar = contact.getAvatarBitmap(mContext);
-                        if (avatar != null)
-                            mBuilder.setLargeIcon(avatar);
+                        Bitmap avatar = contact.getAvatarBitmap(mContext, true);
+                        mBuilder.setLargeIcon(avatar);
 
                         // phone number for call intent
                         String phoneNumber = contact.getNumber();

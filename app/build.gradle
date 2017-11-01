@@ -32,14 +32,13 @@ task checkstyle(type: Checkstyle){
 
 android {
     compileSdkVersion project.compileSdkVersion
-    buildToolsVersion project.buildToolsVersion
 
     defaultConfig {
         applicationId "org.kontalk"
         versionCode project.appVersionCode
         versionName project.appVersionName
         targetSdkVersion project.targetSdkVersion
-        minSdkVersion 9
+        minSdkVersion 15
         resConfigs "en", "de", "fr", "it", "es", "ca", "cs", "el", "fa", "gl", "ja", "nl", "pt", "pt-rBR", "ru", "sr", "zh-rCN", "ar", "hi", "tr", "nb-rNO"
         resValue "string", "application_id", applicationId
         resValue "string", "account_type", applicationId + '.account'
@@ -71,6 +70,8 @@ android {
             }
         }
     }
+
+    flavorDimensions "all"
 
     buildTypes {
         release {
@@ -135,7 +136,7 @@ dependencies {
     compile "com.madgag.spongycastle:pkix:$spongyCastleVersion"
     compile "com.madgag.spongycastle:pg:$spongyCastleVersion"
     compile 'info.guardianproject.netcipher:netcipher:1.2.1'
-    compile 'com.googlecode.libphonenumber:libphonenumber:8.8.3'
+    compile 'com.googlecode.libphonenumber:libphonenumber:8.8.5'
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'com.google.zxing:core:3.3.0'
     compile 'com.segment.backo:backo:1.0.0'
@@ -147,9 +148,8 @@ dependencies {
         exclude module: 'smack-omemo-signal'
     }
     compile 'com.github.machinarius:preferencefragment:0.1.1'
-    // MaterialDialogs stopped supporting API < 13 from version 0.9.1.0
-    compile 'com.afollestad.material-dialogs:core:0.9.0.2'
-    compile 'com.afollestad.material-dialogs:commons:0.9.0.2'
+    compile 'com.afollestad.material-dialogs:core:0.9.5.0'
+    compile 'com.afollestad.material-dialogs:commons:0.9.5.0'
     compile 'com.github.castorflex.smoothprogressbar:library:1.1.0'
     compile 'com.nispok:snackbar:2.11.0'
     // Glide 4 requires API level 14
@@ -159,7 +159,7 @@ dependencies {
     compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'com.github.vlivanov:ListViewVariants:f606578467'
 
-    compile 'com.google.code.gson:gson:2.8.1'
+    compile 'com.google.code.gson:gson:2.8.2'
     compile 'com.squareup.okhttp3:okhttp:3.8.1'
 
     compile "com.github.kontalk.AnyMaps:anymaps-base:$anyMapsVersion"
