@@ -4,4 +4,5 @@ Help us improve and fix bugs by reporting them on GitHub or discussing them on o
 * NEW: location sharing
 * NEW: automatic conversion of text smileys into emojis
 * fix memory leak leading to crash
-* many other bugfixes and minor improvements
+* fix contact picture not showing on some Motorola devices
+* many other bugfixes and some performance improvements
