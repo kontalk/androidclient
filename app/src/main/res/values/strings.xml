@@ -618,6 +618,11 @@
     <string name="register_device_request_error">Error requesting device registration.</string>
     <string name="register_device_requesting">Requesting registration&#8230;</string>
 
+    <string name="import_device_title">Import account</string>
+    <string name="import_device_instructions">Input the requested data below as it appears on your other device.</string>
+    <string name="import_device_hint_server">Server name</string>
+    <string name="import_device_hint_token">Secret code</string>
+
     <!-- contact name, group subject -->
     <string name="notification_group_title">%1$s @ %2$s</string>
 

@@ -103,6 +103,22 @@ public class RegisterDeviceActivity extends ToolbarActivity {
         return token + "|" + from;
     }
 
+    public static PrivateKeyToken parseTokenText(String tokenText) {
+        String[] parsed = tokenText.split("\\|", 2);
+        return (parsed.length == 2) ?
+            new PrivateKeyToken(parsed[0], parsed[1]) : null;
+    }
+
+    public static final class PrivateKeyToken {
+        public final String server;
+        public final String token;
+
+        PrivateKeyToken(String server, String token) {
+            this.server = server;
+            this.token = token;
+        }
+    }
+
     public static void start(@NonNull Context context, @NonNull String token, @NonNull String from) {
         Intent i = new Intent(context, RegisterDeviceActivity.class);
         i.putExtra("token", token);

@@ -121,6 +121,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public static final int REQUEST_MANUAL_VALIDATION = 771;
     public static final int REQUEST_VALIDATION_CODE = 772;
     public static final int REQUEST_SCAN_TOKEN = 773;
+    public static final int REQUEST_ASK_TOKEN = 774;
 
     public static final int RESULT_FALLBACK = RESULT_FIRST_USER + 1;
 
@@ -499,11 +500,27 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         else if (requestCode == REQUEST_SCAN_TOKEN) {
             String token = data.getStringExtra("text");
             if (!TextUtils.isEmpty(token)) {
-                requestPrivateKey(token);
+                RegisterDeviceActivity.PrivateKeyToken privateKeyToken =
+                    RegisterDeviceActivity.parseTokenText(token);
+
+                if (privateKeyToken != null) {
+                    requestPrivateKey(privateKeyToken.server, privateKeyToken.token);
+                    return;
+                }
             }
-            else {
-                // TODO show error dialog "no token found in barcode"
-            }
+
+            new MaterialDialog.Builder(this)
+                // TODO i18n
+                .content("No valid data found in the barcode.")
+                .positiveText(android.R.string.ok)
+                .show();
+        }
+        else if (requestCode == REQUEST_ASK_TOKEN) {
+            String server = data.getStringExtra(ImportDeviceActivity.EXTRA_SERVER);
+            String token = data.getStringExtra(ImportDeviceActivity.EXTRA_TOKEN);
+            // no need to verify the data, import device activity already checked
+
+            requestPrivateKey(server, token);
         }
     }
 
@@ -797,7 +814,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             // TODO i18n
             .content("Open Kontalk on the other device, choose menu > Settings > Maintenance > Register device. A secret code and a barcode representing it will be displayed.")
             // TODO i18n
-            .neutralText("Input code")
+            .neutralText("Input manually")
             .onAny(new MaterialDialog.SingleButtonCallback() {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
@@ -826,18 +843,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     void askToken() {
-        new MaterialDialog.Builder(this)
-            // TODO i18n
-            .title("Secret code")
-            .positiveText(android.R.string.ok)
-            .negativeText(android.R.string.cancel)
-            .input(null, null, false, new MaterialDialog.InputCallback() {
-                @Override
-                public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
-                    requestPrivateKey(preprocessToken(input));
-                }
-            })
-            .show();
+        ImportDeviceActivity.start(this, REQUEST_ASK_TOKEN);
     }
 
     /** Preprocess a token typed in by the user (e.g. remove spaces). */
@@ -846,7 +852,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         return rawToken.toString();
     }
 
-    void requestPrivateKey(String token) {
+    void requestPrivateKey(String server, String token) {
         // TODO
     }
 
