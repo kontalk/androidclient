@@ -125,6 +125,13 @@ public class PGP {
         }
 
         public static PGPKeyPairRing load(byte[] privateKeyData, byte[] publicKeyData)
+            throws IOException, PGPException {
+            PGPPublicKeyRing publicKey = new PGPPublicKeyRing(publicKeyData, sFingerprintCalculator);
+            PGPSecretKeyRing secretKey = new PGPSecretKeyRing(privateKeyData, sFingerprintCalculator);
+            return new PGPKeyPairRing(publicKey, secretKey);
+        }
+
+        public static PGPKeyPairRing loadArmored(byte[] privateKeyData, byte[] publicKeyData)
                 throws IOException, PGPException {
             ArmoredInputStream inPublic = new ArmoredInputStream(new ByteArrayInputStream(publicKeyData));
             PGPPublicKeyRing publicKey = new PGPPublicKeyRing(inPublic, sFingerprintCalculator);

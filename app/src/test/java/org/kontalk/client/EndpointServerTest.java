@@ -88,7 +88,7 @@ public class EndpointServerTest {
         s = new EndpointServer("beta.kontalk.net");
         assertEquals("beta.kontalk.net", s.toString());
         s = new EndpointServer("beta.kontalk.net|127.0.0.1");
-        assertEquals("beta.kontalk.net|127.0.0.1:" + EndpointServer.DEFAULT_PORT, s.toString());
+        assertEquals("beta.kontalk.net|127.0.0.1", s.toString());
         s = new EndpointServer("beta.kontalk.net|127.0.0.1:5999");
         assertEquals("beta.kontalk.net|127.0.0.1:5999", s.toString());
     }

@@ -30,12 +30,15 @@ import android.accounts.AccountManagerFuture;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.support.annotation.NonNull;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.InputType;
 import android.widget.Toast;
 
@@ -49,6 +52,7 @@ import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.LockedDialog;
 import org.kontalk.ui.PasswordInputDialog;
+import org.kontalk.ui.RegisterDeviceActivity;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 
@@ -63,6 +67,11 @@ public class MaintenanceFragment extends RootPreferenceFragment {
 
     // this is used after when exiting to SAF for exporting
     String mPassphrase;
+
+    // created on demand
+    BroadcastReceiver mUploadPrivateKeyReceiver;
+    MaterialDialog mUploadPrivateKeyProgress;
+    LocalBroadcastManager mLocalBroadcastManager;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -195,28 +204,24 @@ public class MaintenanceFragment extends RootPreferenceFragment {
                     }
                 };
 
-                // passphrase was never set by the user
-                // encrypt it with a user-defined passphrase first
-                if (!Authenticator.isUserPassphrase(getActivity())) {
-                    askNewPassphrase(action);
-                }
+                askOrSetPassphrase(action);
 
-                else {
-                    OnPassphraseRequestListener action2 = new OnPassphraseRequestListener() {
-                        public void onValidPassphrase(String passphrase) {
-                            action.onPassphraseChanged(passphrase);
-                        }
+                return true;
+            }
+        });
 
-                        public void onInvalidPassphrase() {
-                            new MaterialDialog.Builder(getActivity())
-                                .content(R.string.err_password_invalid)
-                                .positiveText(android.R.string.ok)
-                                .show();
-                        }
-                    };
+        // register device
+        final Preference registerDevice = findPreference("pref_register_device");
+        registerDevice.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                final OnPassphraseChangedListener action = new OnPassphraseChangedListener() {
+                    public void onPassphraseChanged(String passphrase) {
+                        uploadPrivateKey(passphrase);
+                    }
+                };
 
-                    askCurrentPassphrase(action2);
-                }
+                askOrSetPassphrase(action);
 
                 return true;
             }
@@ -271,6 +276,16 @@ public class MaintenanceFragment extends RootPreferenceFragment {
 
         ((PreferencesActivity) getActivity()).getSupportActionBar()
                 .setTitle(R.string.pref_maintenance);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mLocalBroadcastManager != null && mUploadPrivateKeyReceiver != null) {
+            mLocalBroadcastManager.unregisterReceiver(mUploadPrivateKeyReceiver);
+            mUploadPrivateKeyReceiver = null;
+            mLocalBroadcastManager = null;
+        }
     }
 
     interface OnPassphraseChangedListener {
@@ -338,6 +353,85 @@ public class MaintenanceFragment extends RootPreferenceFragment {
                 })
                 .negativeText(android.R.string.cancel)
                 .show();
+    }
+
+    void askOrSetPassphrase(final OnPassphraseChangedListener action) {
+        final Context context = getContext();
+
+        // passphrase was never set by the user
+        // encrypt it with a user-defined passphrase first
+        if (!Authenticator.isUserPassphrase(context)) {
+            askNewPassphrase(action);
+        }
+
+        else {
+            OnPassphraseRequestListener action2 = new OnPassphraseRequestListener() {
+                public void onValidPassphrase(String passphrase) {
+                    action.onPassphraseChanged(passphrase);
+                }
+
+                public void onInvalidPassphrase() {
+                    new MaterialDialog.Builder(context)
+                        .content(R.string.err_password_invalid)
+                        .positiveText(android.R.string.ok)
+                        .show();
+                }
+            };
+
+            askCurrentPassphrase(action2);
+        }
+    }
+
+    // TODO should wait for a CONNECTED broadcast and abort if in offline mode
+    void uploadPrivateKey(String passphrase) {
+        final Context context = getContext();
+        if (context == null)
+            return;
+
+        // listen for broadcast to receive the token to display to the user
+        mUploadPrivateKeyReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context invalid, Intent intent) {
+                mLocalBroadcastManager.unregisterReceiver(this);
+                if (mUploadPrivateKeyProgress != null) {
+                    mUploadPrivateKeyProgress.dismiss();
+                    mUploadPrivateKeyProgress = null;
+                }
+
+                String token = intent.getStringExtra(MessageCenterService.EXTRA_TOKEN);
+                String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                String error = intent.getStringExtra(MessageCenterService.EXTRA_ERROR_CONDITION);
+
+                if (token == null || error != null) {
+                    Toast.makeText(context, R.string.register_device_request_error, Toast.LENGTH_LONG).show();
+                }
+                else {
+                    RegisterDeviceActivity.start(context, token, from);
+                }
+            }
+        };
+
+        IntentFilter filter = new IntentFilter(MessageCenterService.ACTION_UPLOAD_PRIVATEKEY);
+        if (mLocalBroadcastManager == null)
+            mLocalBroadcastManager = LocalBroadcastManager.getInstance(context.getApplicationContext());
+
+        mLocalBroadcastManager.registerReceiver(mUploadPrivateKeyReceiver, filter);
+
+        mUploadPrivateKeyProgress = new MaterialDialog.Builder(context)
+            .progress(true, 0)
+            .content(R.string.register_device_requesting)
+            .cancelListener(new DialogInterface.OnCancelListener() {
+                @Override
+                public void onCancel(DialogInterface dialogInterface) {
+                    mLocalBroadcastManager.unregisterReceiver(mUploadPrivateKeyReceiver);
+                    mLocalBroadcastManager = null;
+                    mUploadPrivateKeyReceiver = null;
+                    mUploadPrivateKeyProgress = null;
+                }
+            })
+            .show();
+
+        MessageCenterService.uploadPrivateKey(context.getApplicationContext(), passphrase);
     }
 
     public void exportPersonalKey(Context ctx, OutputStream out) {

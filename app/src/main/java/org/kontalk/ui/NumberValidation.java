@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.net.SocketException;
+import java.security.cert.X509Certificate;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,6 +58,7 @@ import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
@@ -110,6 +112,7 @@ import org.kontalk.util.MessageUtils;
 import org.kontalk.util.ParameterRunnable;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
+import org.kontalk.util.XMPPUtils;
 
 
 /** Number validation activity. */
@@ -119,6 +122,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     public static final int REQUEST_MANUAL_VALIDATION = 771;
     public static final int REQUEST_VALIDATION_CODE = 772;
+    public static final int REQUEST_SCAN_TOKEN = 773;
+    public static final int REQUEST_ASK_TOKEN = 774;
 
     public static final int RESULT_FALLBACK = RESULT_FIRST_USER + 1;
 
@@ -366,6 +371,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 importKey();
                 break;
             }
+            case R.id.menu_import_device: {
+                importDevice();
+                break;
+            }
             case R.id.menu_manual_verification: {
                 validateCode();
                 break;
@@ -456,7 +465,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         }
     }
 
-    private void stopKeyReceiver() {
+    void stopKeyReceiver() {
         if (mKeyReceiver != null)
             lbm.unregisterReceiver(mKeyReceiver);
     }
@@ -488,6 +497,36 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             else if (resultCode == RESULT_FALLBACK) {
                 mClearState = true;
                 startValidation(data.getBooleanExtra("force", false), true);
+            }
+        }
+        else if (requestCode == REQUEST_SCAN_TOKEN) {
+            if (resultCode == RESULT_OK && data != null) {
+                String token = data.getStringExtra("text");
+                if (!TextUtils.isEmpty(token)) {
+                    RegisterDeviceActivity.PrivateKeyToken privateKeyToken =
+                        RegisterDeviceActivity.parseTokenText(token);
+
+                    if (privateKeyToken != null) {
+                        requestPrivateKey(privateKeyToken.account, privateKeyToken.server, privateKeyToken.token);
+                        return;
+                    }
+                }
+
+                new MaterialDialog.Builder(this)
+                    // TODO i18n
+                    .content("No valid data found in the barcode.")
+                    .positiveText(android.R.string.ok)
+                    .show();
+            }
+        }
+        else if (requestCode == REQUEST_ASK_TOKEN) {
+            if (resultCode == RESULT_OK && data != null) {
+                String account = data.getStringExtra(ImportDeviceActivity.EXTRA_ACCOUNT);
+                String server = data.getStringExtra(ImportDeviceActivity.EXTRA_SERVER);
+                String token = data.getStringExtra(ImportDeviceActivity.EXTRA_TOKEN);
+                // no need to verify the data, import device activity already checked
+
+                requestPrivateKey(account, server, token);
             }
         }
     }
@@ -659,6 +698,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     void startValidation(final boolean force, final boolean fallback) {
         mForce = force;
+        if (!fallback) {
+            mImportedPublicKey = null;
+            mImportedPrivateKey = null;
+        }
         enableControls(false);
 
         checkInput(false, new ParameterRunnable<Boolean>() {
@@ -766,6 +809,68 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 }
             }
         });
+    }
+
+    /**
+     * Opens a screen for shooting a QR code or typing in a secure token from
+     * another device.
+     */
+    void importDevice() {
+        PackageManager pm = getPackageManager();
+        boolean hasCamera = pm.hasSystemFeature(PackageManager.FEATURE_CAMERA);
+
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(this)
+            .title(R.string.menu_import_device)
+            // TODO i18n
+            .content("Open Kontalk on the other device, choose menu > Settings > Maintenance > Register device. A secret code and a barcode representing it will be displayed.")
+            // TODO i18n
+            .neutralText("Input manually")
+            .onAny(new MaterialDialog.SingleButtonCallback() {
+                @Override
+                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                    switch (which) {
+                        case POSITIVE:
+                            scanToken();
+                            break;
+                        case NEUTRAL:
+                            askToken();
+                            break;
+                    }
+                }
+            });
+
+        if (hasCamera) {
+            // TODO i18n
+            builder.positiveText("Scan barcode");
+        }
+
+        builder.show();
+    }
+
+    void scanToken() {
+        // TODO i18n
+        ScanTextActivity.start(this, "Scan secret code", REQUEST_SCAN_TOKEN);
+    }
+
+    void askToken() {
+        ImportDeviceActivity.start(this, REQUEST_ASK_TOKEN);
+    }
+
+    void requestPrivateKey(String account, String server, String token) {
+        if (!SystemUtils.isNetworkConnectionAvailable(this)) {
+            error(R.string.err_validation_nonetwork);
+            return;
+        }
+
+        enableControls(false);
+        startProgress(getString(R.string.import_device_requesting));
+
+        EndpointServer.EndpointServerProvider provider =
+            new EndpointServer.SingleServerProvider(server);
+        mValidator = new NumberValidator(this, provider, account, token);
+        mValidator.setListener(this);
+        mValidator.requestPrivateKey();
+        mValidator.start();
     }
 
     private void importAskPassphrase(final ZipInputStream zip) {
@@ -941,6 +1046,77 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         }
     }
 
+    /**
+     * Final step in the import device process: load key data as a PersonalKey
+     * and initiate a normal import process.
+     */
+    boolean startImport(EndpointServer server, String account, byte[] privateKeyData, byte[] publicKeyData, String passphrase) {
+        String manualServer = null;
+        try {
+            PersonalKey key = PersonalKey.load(privateKeyData, publicKeyData, passphrase, (X509Certificate) null);
+
+            String uidStr = key.getUserId(null);
+            PGPUserID uid = PGPUserID.parse(uidStr);
+            if (uid == null)
+                throw new PGPException("malformed user ID: " + uidStr);
+
+            // check that uid matches phone number
+            String email = uid.getEmail();
+            String numberHash = XMPPUtils.createLocalpart(account);
+            String localpart = XmppStringUtils.parseLocalpart(email);
+            if (!numberHash.equalsIgnoreCase(localpart))
+                throw new PGPUidMismatchException("email does not match phone number: " + email);
+
+            // use server from the key only if we didn't set our own
+            if (server == null)
+                manualServer = XmppStringUtils.parseDomain(email);
+            else
+                manualServer = server.toString();
+
+            mName = uid.getName();
+            mPhoneNumber = account;
+            mImportedPublicKey = publicKeyData;
+            mImportedPrivateKey = privateKeyData;
+        }
+
+        catch (PGPUidMismatchException e) {
+            Log.w(TAG, "uid mismatch!");
+            mImportedPublicKey = mImportedPrivateKey = null;
+            mName = null;
+
+            Toast.makeText(this,
+                R.string.err_import_keypair_uid_mismatch,
+                Toast.LENGTH_LONG).show();
+        }
+
+        catch (Exception e) {
+            Log.e(TAG, "error importing keys", e);
+            ReportingManager.logException(e);
+            mImportedPublicKey = mImportedPrivateKey = null;
+            mTrustedKeys = null;
+            mName = null;
+
+            Toast.makeText(this,
+                R.string.err_import_keypair_failed,
+                Toast.LENGTH_LONG).show();
+        }
+
+        if (mImportedPublicKey != null && mImportedPrivateKey != null) {
+            // we can now store the passphrase
+            mPassphrase = passphrase;
+
+            // begin usual validation
+            // TODO implement fallback usage
+            if (!startValidationNormal(manualServer, true, false, true)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     /** No search here. */
     @Override
     public boolean onSearchRequested() {
@@ -1082,6 +1258,35 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         });
     }
 
+    @Override
+    public void onPrivateKeyReceived(final NumberValidator v, final byte[] privateKey, final byte[] publicKey) {
+        // ask for a passphrase
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                new MaterialDialog.Builder(NumberValidation.this)
+                    .title(R.string.title_passphrase)
+                    .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
+                    .input(null, null, new MaterialDialog.InputCallback() {
+                        @Override
+                        public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+                            if (!startImport(v.getServer(), v.getPhone(), privateKey, publicKey, input.toString())) {
+                                abort();
+                            }
+                        }
+                    })
+                    .negativeText(android.R.string.cancel)
+                    .positiveText(android.R.string.ok)
+                    .show();
+            }
+        });
+    }
+
+    @Override
+    public void onPrivateKeyRequestFailed(NumberValidator v, int reason) {
+        // TODO
+    }
+
     private void statusInitializing() {
         if (mProgress == null)
             startProgress();
@@ -1193,20 +1398,20 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     void userExistsWarning() {
         MaterialDialog.Builder builder = new MaterialDialog.Builder(this)
             .content(R.string.err_validation_user_exists)
-            .positiveText(android.R.string.ok)
-            .positiveColorRes(R.color.button_danger)
+            .positiveText(R.string.btn_device_import)
+            .positiveColorRes(R.color.button_success)
             .negativeText(android.R.string.cancel)
-            .neutralText(R.string.learn_more)
+            .neutralText(R.string.btn_device_overwrite)
+            .neutralColorRes(R.color.button_danger)
             .onAny(new MaterialDialog.SingleButtonCallback() {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                     switch (which) {
                         case POSITIVE:
-                            startValidation(true, false);
+                            importDevice();
                             break;
                         case NEUTRAL:
-                            SystemUtils.openURL(NumberValidation.this,
-                                getString(R.string.help_import_key));
+                            startValidation(true, false);
                             break;
                     }
                 }

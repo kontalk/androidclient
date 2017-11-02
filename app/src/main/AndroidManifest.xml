@@ -44,6 +44,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
     <uses-permission android:name="${applicationId}.permission.NOTIFICATION_ACTION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
@@ -56,6 +57,7 @@
     <uses-feature android:name="android.hardware.sensor.proximity" android:required="false"/>
     <uses-feature android:name="android.hardware.location.network" android:required="false"/>
     <uses-feature android:name="android.hardware.location.gps" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
 
     <application android:name=".Kontalk"
         android:label="@string/app_name"
@@ -230,6 +232,24 @@
                 android:value="org.kontalk.ui.ConversationsActivity" />
         </activity>
 
+        <activity android:name=".ui.RegisterDeviceActivity"
+            android:label="@string/register_device_title"
+            android:parentActivityName=".ui.prefs.PreferencesActivity"
+            tools:targetApi="jelly_bean">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.kontalk.ui.prefs.PreferencesActivity" />
+        </activity>
+
+        <activity android:name=".ui.ImportDeviceActivity"
+            android:label="@string/import_device_title"
+            android:parentActivityName=".ui.NumberValidation"
+            tools:targetApi="jelly_bean">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.kontalk.ui.NumberValidation" />
+        </activity>
+
         <activity android:name=".ui.NumberValidation"/>
 
         <activity android:name=".ui.CodeValidation"/>
@@ -285,6 +305,7 @@
                 android:value="org.kontalk.ui.ComposeMessage" />
         </activity>
 
+        <activity android:name=".ui.ScanTextActivity" />
 
         <!--
         <activity android:name=".ui.QuickReplyActivity"

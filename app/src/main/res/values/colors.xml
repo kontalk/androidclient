@@ -27,6 +27,7 @@
 
     <!-- other colors -->
     <color name="highlight_color">#fffffC57</color>
+    <color name="actionbar_opacity">#33000000</color>
 
     <!-- compose message list view background -->
     <color name="compose_message_list_background">#fff5f8fa</color>
@@ -43,7 +44,7 @@
     <color name="warning_bar_text_fatal">@android:color/white</color>
     <color name="warning_bar_background_warning">#ffa726</color>
     <color name="warning_bar_text_warning">@android:color/black</color>
-    
+
     <color name="notification_name_color">@android:color/white</color>
 
     <color name="button_danger">#f44336</color>

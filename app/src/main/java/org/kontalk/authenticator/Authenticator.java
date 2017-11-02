@@ -193,10 +193,9 @@ public class Authenticator extends AbstractAccountAuthenticator {
         AccountManager m = AccountManager.get(ctx);
         Account acc = getDefaultAccount(m);
 
-        String privKeyData = m.getUserData(acc, DATA_PRIVATEKEY);
-        byte[] privateKey = Base64.decode(privKeyData, Base64.DEFAULT);
-
+        byte[] privateKey = getPrivateKeyExportData(m, acc, passphrase, exportPassphrase);
         byte[] bridgeCert = null;
+
         if (bridgeCertificate) {
             // bridge certificate is just plain data
             String bridgeCertData = m.getUserData(acc, DATA_BRIDGECERT);
@@ -211,6 +210,29 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
         PersonalKeyExporter exp = new PersonalKeyExporter();
         exp.save(privateKey, publicKey, dest, passphrase, exportPassphrase, bridgeCert, trustedKeys, acc.name);
+    }
+
+    public static byte[] getPrivateKeyExportData(Context ctx, String passphrase, String exportPassphrase)
+            throws PGPException, IOException {
+        AccountManager m = AccountManager.get(ctx);
+        Account acc = getDefaultAccount(m);
+
+        return getPrivateKeyExportData(m, acc, passphrase, exportPassphrase);
+    }
+
+    private static byte[] getPrivateKeyExportData(AccountManager m, Account acc, String passphrase, String exportPassphrase)
+            throws PGPException, IOException {
+        String privKeyData = m.getUserData(acc, DATA_PRIVATEKEY);
+        byte[] privateKey = Base64.decode(privKeyData, Base64.DEFAULT);
+
+        // custom export passphrase -- re-encrypt private key
+        if (exportPassphrase != null) {
+            privateKey = PGP.copySecretKeyRingWithNewPassword(privateKey,
+                    passphrase, exportPassphrase)
+                    .getEncoded();
+        }
+
+        return privateKey;
     }
 
     public static void setDefaultPersonalKey(Context ctx, byte[] publicKeyData, byte[] privateKeyData,
