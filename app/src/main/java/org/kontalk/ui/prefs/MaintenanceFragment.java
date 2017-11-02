@@ -382,15 +382,16 @@ public class MaintenanceFragment extends RootPreferenceFragment {
         }
     }
 
+    // TODO should wait for a CONNECTED broadcast and abort if in offline mode
     void uploadPrivateKey(String passphrase) {
-        Context context = getContext();
+        final Context context = getContext();
         if (context == null)
             return;
 
         // listen for broadcast to receive the token to display to the user
         mUploadPrivateKeyReceiver = new BroadcastReceiver() {
             @Override
-            public void onReceive(Context context, Intent intent) {
+            public void onReceive(Context invalid, Intent intent) {
                 mLocalBroadcastManager.unregisterReceiver(this);
                 if (mUploadPrivateKeyProgress != null) {
                     mUploadPrivateKeyProgress.dismiss();
@@ -404,7 +405,7 @@ public class MaintenanceFragment extends RootPreferenceFragment {
                     Toast.makeText(context, R.string.register_device_request_error, Toast.LENGTH_LONG).show();
                 }
                 else {
-                    RegisterDeviceActivity.start(getContext(), token);
+                    RegisterDeviceActivity.start(context, token);
                 }
             }
         };
@@ -429,7 +430,7 @@ public class MaintenanceFragment extends RootPreferenceFragment {
             })
             .show();
 
-        MessageCenterService.uploadPrivateKey(getContext(), passphrase);
+        MessageCenterService.uploadPrivateKey(context.getApplicationContext(), passphrase);
     }
 
     public void exportPersonalKey(Context ctx, OutputStream out) {
