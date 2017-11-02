@@ -230,6 +230,15 @@
                 android:value="org.kontalk.ui.ConversationsActivity" />
         </activity>
 
+        <activity android:name=".ui.RegisterDeviceActivity"
+            android:label="@string/register_device_title"
+            android:parentActivityName=".ui.prefs.PreferencesActivity"
+            tools:targetApi="jelly_bean">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.kontalk.ui.prefs.PreferencesActivity" />
+        </activity>
+
         <activity android:name=".ui.NumberValidation"/>
 
         <activity android:name=".ui.CodeValidation"/>

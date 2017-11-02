@@ -18,20 +18,20 @@
 
 package org.kontalk.service.msgcenter;
 
-import android.content.Intent;
-import android.util.Base64;
-
 import org.jivesoftware.smack.filter.StanzaFilter;
 import org.jivesoftware.smack.filter.StanzaIdFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smack.packet.XMPPError;
 import org.jivesoftware.smackx.iqregister.packet.Registration;
 import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
-import org.kontalk.client.SmackInitializer;
 
-import java.util.List;
+import android.content.Intent;
+import android.util.Base64;
+
+import org.kontalk.client.SmackInitializer;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_UPLOAD_PRIVATEKEY;
 
@@ -80,31 +80,30 @@ public class PrivateKeyUploadListener extends MessageCenterPacketListener {
 
         IQ iq = (IQ) packet;
         if (iq.getType() != IQ.Type.result) {
-            finish(null);
+            finish(null, XMPPError.Condition.internal_server_error);
             return;
         }
 
         DataForm response = iq.getExtension("x", "jabber:x:data");
         if (response == null) {
-            finish(null);
+            finish(null, XMPPError.Condition.internal_server_error);
             return;
         }
 
         String token = null;
-        List<FormField> fields = response.getFields();
-        for (FormField field : fields) {
-            if ("token".equals(field.getVariable())) {
-                token = field.getValues().get(0);
-                break;
-            }
-        }
+        FormField field = response.getField("token");
+        if (field != null)
+            token = field.getValues().get(0);
 
-        finish(token);
+        finish(token, null);
     }
 
-    private void finish(String token) {
+    private void finish(String token, XMPPError.Condition errorCondition) {
         Intent i = new Intent(ACTION_UPLOAD_PRIVATEKEY);
-        i.putExtra(MessageCenterService.EXTRA_TOKEN, token);
+        if (token != null)
+            i.putExtra(MessageCenterService.EXTRA_TOKEN, token);
+        if (errorCondition != null)
+            i.putExtra(MessageCenterService.EXTRA_ERROR_CONDITION, errorCondition.toString());
         sendBroadcast(i);
 
         unconfigure();

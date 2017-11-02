@@ -611,6 +611,11 @@
 
     <string name="audio_duration_max">%1$s / %2$s</string>
 
+    <string name="register_device_title">Register device</string>
+    <string name="register_device_instructions">Shoot the bar code below or input the code below manually from your other device.</string>
+    <string name="register_device_request_error">Error requesting device registration.</string>
+    <string name="register_device_requesting">Requesting registration&#8230;</string>
+
     <!-- contact name, group subject -->
     <string name="notification_group_title">%1$s @ %2$s</string>
 

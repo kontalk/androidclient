@@ -20,6 +20,9 @@ package org.kontalk.ui;
 
 import com.google.zxing.WriterException;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.widget.ImageView;
@@ -29,73 +32,67 @@ import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.crypto.PGP;
-import org.kontalk.crypto.PersonalKey;
 import org.kontalk.util.ViewUtils;
 
 
 /**
- * My key activity.
+ * Shows the secure token for registering another device with the same key.
  * @author Daniele Ricci
  */
-public class MyKeyActivity extends ToolbarActivity {
+public class RegisterDeviceActivity extends ToolbarActivity {
     private static final String TAG = Kontalk.TAG;
 
     private TextView mAccountName;
-    private TextView mTextName;
-    private TextView mTextFingerprint;
+    private TextView mTextToken;
     private ImageView mQRCode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.mykey_screen);
+        setContentView(R.layout.register_device_screen);
 
         setupToolbar(true, true);
 
         mAccountName = findViewById(R.id.account);
-        mTextName = findViewById(R.id.name);
-        mTextFingerprint = findViewById(R.id.fingerprint);
+        mTextToken = findViewById(R.id.token);
         mQRCode = findViewById(R.id.qrcode);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onStart() {
         super.onStart();
 
         mAccountName.setText(Authenticator.getDefaultAccountName(this));
 
-        // load personal key
-        PersonalKey key;
-        try {
-            key = Kontalk.get(this).getPersonalKey();
+        String token = getIntent().getStringExtra("token");
+        if ((token.length() % 2) == 0) {
+            mTextToken.setText(token.substring(0, token.length() / 2) + " " +
+                token.substring(token.length() / 2));
         }
-        catch (Exception e) {
-            // TODO handle errors
-            Log.w(TAG, "unable to load personal key");
-            return;
+        else {
+            mTextToken.setText(token);
         }
 
-        // TODO network
-        mTextName.setText(key.getUserId(null));
-
-        String fingerprint = key.getFingerprint();
-        mTextFingerprint.setText(PGP.formatFingerprint(fingerprint)
-            .replaceFirst("  ", "\n"));
-
         try {
-            Bitmap qrCode = ViewUtils.getQRCodeBitmap(this, PGP.createFingerprintURI(fingerprint));
+            Bitmap qrCode = ViewUtils.getQRCodeBitmap(this, token);
             mQRCode.setImageBitmap(qrCode);
         }
         catch (WriterException e) {
             // TODO handle errors
-            Log.w(TAG, "unable to generate fingerprint QR code");
+            Log.w(TAG, "unable to generate token QR code");
         }
     }
 
     @Override
     protected boolean isNormalUpNavigation() {
         return true;
+    }
+
+    public static void start(Context context, String token) {
+        Intent i = new Intent(context, RegisterDeviceActivity.class);
+        i.putExtra("token", token);
+        context.startActivity(i);
     }
 
 }
