@@ -43,6 +43,7 @@ import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.StanzaIdFilter;
+import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.packet.XMPPError;
@@ -93,6 +94,8 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private static final int STEP_AUTH_TOKEN = 2;
     /** Login test for imported key */
     private static final int STEP_LOGIN_TEST = 3;
+    /** Requesting private key to server */
+    private static final int STEP_REQUEST_KEY = 4;
 
     public static final int ERROR_THROTTLING = 1;
     public static final int ERROR_USER_EXISTS = 2;
@@ -148,6 +151,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
     private byte[] mImportedPrivateKey;
     private byte[] mImportedPublicKey;
+    private String mPrivateKeyToken;
 
     @SuppressWarnings("WeakerAccess")
     final XMPPConnectionHelper mConnector;
@@ -165,6 +169,12 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
     /** This will used to store the server-indicated challenge. */
     String mServerChallenge;
+
+    public NumberValidator(Context context, EndpointServer.EndpointServerProvider serverProvider,
+        String phone, String privateKeyToken) {
+        this(context, serverProvider, null, phone, null, null);
+        mPrivateKeyToken = privateKeyToken;
+    }
 
     public NumberValidator(Context context, EndpointServer.EndpointServerProvider serverProvider,
         String name, String phone, PersonalKey key, String passphrase) {
@@ -218,6 +228,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     public void importKey(byte[] privateKeyData, byte[] publicKeyData) {
         mImportedPrivateKey = privateKeyData;
         mImportedPublicKey = publicKeyData;
+    }
+
+    public String getPhone() {
+        return mPhone;
     }
 
     public EndpointServer getServer() {
@@ -424,7 +438,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                         mName, mPassphrase);
                 }
                 else {
-                    mKeyRing = PGPKeyPairRing.load(mImportedPrivateKey, mImportedPublicKey);
+                    mKeyRing = PGPKeyPairRing.loadArmored(mImportedPrivateKey, mImportedPublicKey);
                 }
 
                 // bridge certificate for connection
@@ -494,7 +508,13 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
                 // generate keyring immediately
                 // needed for connection
-                mKeyRing = PGPKeyPairRing.load(mImportedPrivateKey, mImportedPublicKey);
+                try {
+                    mKeyRing = PGPKeyPairRing.loadArmored(mImportedPrivateKey, mImportedPublicKey);
+                }
+                catch (IOException e) {
+                    // try not armored
+                    mKeyRing = PGPKeyPairRing.load(mImportedPrivateKey, mImportedPublicKey);
+                }
 
                 // bridge certificate for connection
                 mBridgeCert = X509Bridge.createCertificate(mKeyRing.publicKey,
@@ -517,6 +537,48 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 if (mListener != null)
                     mListener.onAuthTokenReceived(this,
                         mKeyRing.secretKey.getEncoded(), mKeyRing.publicKey.getEncoded());
+            }
+
+            // request private key to server via secure token
+            else if (mStep == STEP_REQUEST_KEY) {
+                if (mPrivateKeyToken == null)
+                    throw new AssertionError("requesting a private key with no secure token!");
+
+                // we don't need these
+                mKeyRing = null;
+                mBridgeCert = null;
+
+                // connect to server
+                initConnection();
+
+                // prepare final verification form
+                Stanza request = createPrivateKeyRequest();
+
+                XMPPConnection conn = mConnector.getConnection();
+                conn.addAsyncStanzaListener(new StanzaListener() {
+                    public void processStanza(Stanza packet) {
+                        IQ iq = (IQ) packet;
+                        if (iq.getType() == IQ.Type.result) {
+                            ExtensionElement _accountData = iq.getExtension(Account.ELEMENT_NAME, Account.NAMESPACE);
+                            if (_accountData instanceof Account) {
+                                Account accountData = (Account) _accountData;
+
+                                byte[] privateKeyData = accountData.getPrivateKeyData();
+                                byte[] publicKeyData = accountData.getPublicKeyData();
+                                if (privateKeyData != null && privateKeyData.length > 0 &&
+                                    publicKeyData != null && publicKeyData.length > 0) {
+                                    mListener.onPrivateKeyReceived(NumberValidator.this, privateKeyData, publicKeyData);
+                                    return;
+                                }
+                            }
+                        }
+
+                        mListener.onPrivateKeyRequestFailed(NumberValidator.this, -1);
+                    }
+                }, new StanzaIdFilter(request.getStanzaId()));
+
+                // send request packet
+                conn.sendStanza(request);
             }
         }
         catch (Throwable e) {
@@ -578,6 +640,12 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         mThread = null;
     }
 
+    public void requestPrivateKey() {
+        mStep = STEP_REQUEST_KEY;
+        // next start call will trigger the next condition
+        mThread = null;
+    }
+
     private void initConnection() throws XMPPException, SmackException,
             PGPException, KeyStoreException, NoSuchProviderException,
             NoSuchAlgorithmException, CertificateException,
@@ -587,7 +655,14 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
             mConnector.setListener(this);
             PersonalKey key = null;
             if (mImportedPrivateKey != null && mImportedPublicKey != null) {
-                PGPKeyPairRing ring = PGPKeyPairRing.load(mImportedPrivateKey, mImportedPublicKey);
+                PGPKeyPairRing ring;
+                try {
+                    ring = PGPKeyPairRing.loadArmored(mImportedPrivateKey, mImportedPublicKey);
+                }
+                catch (IOException e) {
+                    // try not armored
+                    ring = PGPKeyPairRing.load(mImportedPrivateKey, mImportedPublicKey);
+                }
                 key = PersonalKey.load(ring.secretKey, ring.publicKey, mPassphrase, mBridgeCert);
             }
             else if (mKey != null) {
@@ -663,6 +738,18 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         }
 
         iq.addExtension(form.getDataFormToSend());
+        return iq;
+    }
+
+    private Stanza createPrivateKeyRequest() {
+        Registration iq = new Registration();
+        iq.setType(IQ.Type.get);
+        iq.setTo(mConnector.getConnection().getServiceName());
+
+        Account account = new Account();
+        account.setPrivateKeyToken(mPrivateKeyToken);
+        iq.addExtension(account);
+
         return iq;
     }
 
@@ -743,6 +830,12 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
         /** Called if validation code has not been verified. */
         void onAuthTokenFailed(NumberValidator v, int reason);
+
+        /** Called when receiving the private key. */
+        void onPrivateKeyReceived(NumberValidator v, byte[] privateKey, byte[] publicKey);
+
+        /** Called when request for the private key failed. */
+        void onPrivateKeyRequestFailed(NumberValidator v, int reason);
     }
 
     /** Handles special numbers not handled by libphonenumber. */

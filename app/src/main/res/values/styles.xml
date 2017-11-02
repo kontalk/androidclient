@@ -98,4 +98,9 @@
         <item name="android:textSize">24sp</item>
     </style>
 
+    <style name="TransparentToolbar" parent="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="windowActionBarOverlay">true</item>
+    </style>
+
 </resources>

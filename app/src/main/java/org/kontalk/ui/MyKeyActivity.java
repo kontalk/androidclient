@@ -18,18 +18,9 @@
 
 package org.kontalk.ui;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
 
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -40,7 +31,7 @@ import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
-import org.kontalk.util.SystemUtils;
+import org.kontalk.util.ViewUtils;
 
 
 /**
@@ -62,10 +53,10 @@ public class MyKeyActivity extends ToolbarActivity {
 
         setupToolbar(true, true);
 
-        mAccountName = (TextView) findViewById(R.id.account);
-        mTextName = (TextView) findViewById(R.id.name);
-        mTextFingerprint = (TextView) findViewById(R.id.fingerprint);
-        mQRCode = (ImageView) findViewById(R.id.qrcode);
+        mAccountName = findViewById(R.id.account);
+        mTextName = findViewById(R.id.name);
+        mTextFingerprint = findViewById(R.id.fingerprint);
+        mQRCode = findViewById(R.id.qrcode);
     }
 
     @Override
@@ -93,7 +84,7 @@ public class MyKeyActivity extends ToolbarActivity {
             .replaceFirst("  ", "\n"));
 
         try {
-            Bitmap qrCode = getQRCodeBitmap(PGP.createFingerprintURI(fingerprint));
+            Bitmap qrCode = ViewUtils.getQRCodeBitmap(this, PGP.createFingerprintURI(fingerprint));
             mQRCode.setImageBitmap(qrCode);
         }
         catch (WriterException e) {
@@ -105,33 +96,6 @@ public class MyKeyActivity extends ToolbarActivity {
     @Override
     protected boolean isNormalUpNavigation() {
         return true;
-    }
-
-    private Bitmap getQRCodeBitmap(String text) throws WriterException {
-        QRCodeWriter writer = new QRCodeWriter();
-        Map<EncodeHintType, Object> hints = new HashMap<>();
-        hints.put(EncodeHintType.MARGIN, 2);
-        Point size = SystemUtils.getDisplaySize(this);
-        BitMatrix matrix = writer.encode(text, BarcodeFormat.QR_CODE, size.x, size.x, hints);
-        return toBitmap(matrix);
-    }
-
-    /**
-     * Writes the given Matrix on a new Bitmap object.
-     * http://codeisland.org/2013/generating-qr-codes-with-zxing/
-     * @param matrix the matrix to write.
-     * @return the new {@link Bitmap}-object.
-     */
-    public static Bitmap toBitmap(BitMatrix matrix){
-        int height = matrix.getHeight();
-        int width = matrix.getWidth();
-        Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
-        for (int x = 0; x < width; x++){
-            for (int y = 0; y < height; y++){
-                bmp.setPixel(x, y, matrix.get(x, y) ? Color.BLACK : Color.WHITE);
-            }
-        }
-        return bmp;
     }
 
 }

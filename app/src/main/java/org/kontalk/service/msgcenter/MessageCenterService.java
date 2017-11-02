@@ -20,6 +20,7 @@ package org.kontalk.service.msgcenter;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.annotation.ElementType;
@@ -157,6 +158,7 @@ import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
+import org.spongycastle.openpgp.PGPException;
 
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_FOREGROUND;
 
@@ -262,6 +264,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_IMPORT_KEYPAIR = "org.kontalk.action.IMPORT_KEYPAIR";
 
     /**
+     * Broadcasted when private key was uploaded to server.
+     * Send this intent to upload your private key.
+     */
+    public static final String ACTION_UPLOAD_PRIVATEKEY = "org.kontalk.action.UPLOAD_PRIVATEKEY";
+
+    /**
      * Broadcasted when a presence subscription has been accepted.
      * Send this intent to accept a presence subscription.
      */
@@ -350,6 +358,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     // used with org.kontalk.action.IMPORT_KEYPAIR
     public static final String EXTRA_KEYPACK = "org.kontalk.keypack";
     public static final String EXTRA_PASSPHRASE = "org.kontalk.passphrase";
+
+    // use with org.kontalk.action.UPLOAD_PRIVATEKEY
+    public static final String EXTRA_EXPORT_PASSPHRASE = "org.kontalk.export_passphrase";
+    public static final String EXTRA_TOKEN = "org.kontalk.token";
 
     // used with org.kontalk.action.VERSION
     public static final String EXTRA_VERSION_NAME = "org.kontalk.version.name";
@@ -1039,6 +1051,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     doConnect = handleImportKeyPair(intent);
                     break;
 
+                case ACTION_UPLOAD_PRIVATEKEY:
+                    doConnect = handleUploadPrivateKey(intent);
+                    break;
+
                 case ACTION_CONNECTED:
                     doConnect = handleConnected();
                     break;
@@ -1213,6 +1229,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         String passphrase = intent.getStringExtra(EXTRA_PASSPHRASE);
         beginKeyPairImport(file, passphrase);
         return false;
+    }
+
+    @CommandHandler(name = ACTION_UPLOAD_PRIVATEKEY)
+    private boolean handleUploadPrivateKey(Intent intent) {
+        String exportPassprase = intent.getStringExtra(EXTRA_EXPORT_PASSPHRASE);
+        beginUploadPrivateKey(exportPassprase);
+        return true;
     }
 
     @CommandHandler(name = ACTION_CONNECTED)
@@ -2390,7 +2413,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         values.put(Threads.REQUEST_STATUS, Threads.REQUEST_NONE);
 
         getContentResolver().update(Requests.CONTENT_URI,
-            values, CommonColumns.PEER + "=?", new String[]{to});
+                values, CommonColumns.PEER + "=?", new String[]{to});
     }
 
     private void sendPrivacyListCommand(final String to, final int action) {
@@ -2962,6 +2985,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
+    private void beginUploadPrivateKey(String exportPasshrase) {
+        try {
+            String passphrase = Kontalk.get(this).getCachedPassphrase();
+            byte[] privateKeyData = Authenticator.getPrivateKeyExportData(this, passphrase, exportPasshrase);
+            PrivateKeyUploadListener uploadListener = new PrivateKeyUploadListener(this, privateKeyData);
+            uploadListener.uploadAndListen();
+        }
+        catch (PGPException | IOException e) {
+            Log.e(TAG, "unable to load private key data", e);
+        }
+    }
+
     private boolean canTest() {
         long now = SystemClock.elapsedRealtime();
         return ((now - mLastTest) > MIN_TEST_INTERVAL);
@@ -3391,6 +3426,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.setAction(MessageCenterService.ACTION_IMPORT_KEYPAIR);
         i.putExtra(EXTRA_KEYPACK, keypack);
         i.putExtra(EXTRA_PASSPHRASE, passphrase);
+        context.startService(i);
+    }
+
+    public static void uploadPrivateKey(final Context context, String exportPassphrase) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_UPLOAD_PRIVATEKEY);
+        i.putExtra(EXTRA_EXPORT_PASSPHRASE, exportPassphrase);
         context.startService(i);
     }
 
