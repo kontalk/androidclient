@@ -352,7 +352,7 @@
   <string name="err_server_invalid_format">Formato de dirección inválido.</string>
   <string name="err_no_contacts_app">No se encontró la aplicación de contactos.</string>
 <string name="title_user_exists">El usuario ya existe</string>
-    <string name="err_validation_user_exists"><b>Este número ya está registrado en Kontalk.</b> Si está registrado con otro dispositivo, continuar con este proceso desconectará aquel dispositivo de Kontalk. Por favor consulte nuestra documentación para copiar la cuenta entre diferentes dispositivos. Seleccione OK para continuar igualmente.</string>
+    <string name="err_validation_user_exists"><b>Este número ya está registrado en Kontalk.</b> Si está registrado con otro dispositivo, continuar con este proceso desconectará aquel dispositivo de Kontalk. Si va a registrar otro dispositivo, elija transferir la cuenta.</string>
     <string name="pref_help">Ayuda</string>
     <string name="err_no_contact">Contacto no encontrado.</string>
 
@@ -637,5 +637,23 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
 
     <string name="pref_foreground_service">Habilitar el servicio en primer plano</string>
     <string name="pref_title_foreground_service">Activa esto si deseas que Kontalk funcione en segundo plano cuando los recursos estén escasos. Se desplegará una notificación fija</string>
+
+    <string name="menu_import_device">Registrarse desde otro dispositivo</string>
+    <string name="pref_register_device">Registro de dispositivo</string>
+    <string name="register_device_title">Registro de dispositivo</string>
+    <string name="register_device_instructions">Capture el código de barras de abajo o introduzca los siguientes datos manualmente desde su otro dispositivo.</string>
+    <string name="register_device_request_error">Error al solicitar el registro del dispositivo.</string>
+    <string name="register_device_requesting">Solicitando el registro …</string>
+
+    <string name="import_device_title">Importar cuenta</string>
+    <string name="import_device_instructions">Introduzca los datos solicitados abajo tal y como aparecen en su otro dispositivo.</string>
+    <string name="import_device_hint_account">Número de teléfono</string>
+    <string name="import_device_hint_server">Nombre del servidor</string>
+    <string name="import_device_hint_token">Codigo secreto</string>
+    <string name="err_import_device_fill_all">Por favor rellene todos los campos.</string>
+    <string name="import_device_requesting">Solicitando una cuenta …</string>
+
+    <string name="btn_device_overwrite">He perdido mi cuenta antigua o dispositivo</string>
+    <string name="btn_device_import">Transferir cuenta</string>
 
     </resources>
