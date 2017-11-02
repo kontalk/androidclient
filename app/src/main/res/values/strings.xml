@@ -614,7 +614,7 @@
 
     <string name="pref_register_device">Register device</string>
     <string name="register_device_title">Register device</string>
-    <string name="register_device_instructions">Shoot the bar code below or input the code below manually from your other device.</string>
+    <string name="register_device_instructions">Shoot the bar code below or input the following data manually from your other device.</string>
     <string name="register_device_request_error">Error requesting device registration.</string>
     <string name="register_device_requesting">Requesting registration&#8230;</string>
 

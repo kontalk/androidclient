@@ -18,6 +18,7 @@
 
 package org.kontalk.service.msgcenter;
 
+import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.filter.StanzaFilter;
 import org.jivesoftware.smack.filter.StanzaIdFilter;
 import org.jivesoftware.smack.packet.IQ;
@@ -76,17 +77,18 @@ public class PrivateKeyUploadListener extends MessageCenterPacketListener {
 
     @Override
     public void processStanza(Stanza packet) {
-        getConnection().removeAsyncStanzaListener(this);
+        XMPPConnection conn = getConnection();
+        conn.removeAsyncStanzaListener(this);
 
         IQ iq = (IQ) packet;
         if (iq.getType() != IQ.Type.result) {
-            finish(null, XMPPError.Condition.internal_server_error);
+            finish(XMPPError.Condition.internal_server_error);
             return;
         }
 
         DataForm response = iq.getExtension("x", "jabber:x:data");
         if (response == null) {
-            finish(null, XMPPError.Condition.internal_server_error);
+            finish(XMPPError.Condition.internal_server_error);
             return;
         }
 
@@ -95,13 +97,23 @@ public class PrivateKeyUploadListener extends MessageCenterPacketListener {
         if (field != null)
             token = field.getValues().get(0);
 
-        finish(token, null);
+        finish(token, conn.getXMPPServiceDomain().toString());
     }
 
-    private void finish(String token, XMPPError.Condition errorCondition) {
+    private void finish(String token, String from) {
+        finish(token, from, null);
+    }
+
+    private void finish(XMPPError.Condition errorCondition) {
+        finish(null, null, errorCondition);
+    }
+
+    private void finish(String token, String from, XMPPError.Condition errorCondition) {
         Intent i = new Intent(ACTION_UPLOAD_PRIVATEKEY);
-        if (token != null)
+        if (token != null) {
             i.putExtra(MessageCenterService.EXTRA_TOKEN, token);
+            i.putExtra(MessageCenterService.EXTRA_FROM, from);
+        }
         if (errorCondition != null)
             i.putExtra(MessageCenterService.EXTRA_ERROR_CONDITION, errorCondition.toString());
         sendBroadcast(i);

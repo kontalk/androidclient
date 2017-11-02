@@ -20,11 +20,15 @@ package org.kontalk.ui;
 
 import com.google.zxing.WriterException;
 
+import org.jivesoftware.smack.util.stringencoder.Base32;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.util.Base64;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -43,6 +47,7 @@ public class RegisterDeviceActivity extends ToolbarActivity {
     private static final String TAG = Kontalk.TAG;
 
     private TextView mAccountName;
+    private TextView mTextServer;
     private TextView mTextToken;
     private ImageView mQRCode;
 
@@ -54,6 +59,7 @@ public class RegisterDeviceActivity extends ToolbarActivity {
         setupToolbar(true, true);
 
         mAccountName = findViewById(R.id.account);
+        mTextServer = findViewById(R.id.servername);
         mTextToken = findViewById(R.id.token);
         mQRCode = findViewById(R.id.qrcode);
     }
@@ -65,7 +71,11 @@ public class RegisterDeviceActivity extends ToolbarActivity {
 
         mAccountName.setText(Authenticator.getDefaultAccountName(this));
 
+        String from = getIntent().getStringExtra("from");
+        mTextServer.setText(from);
+
         String token = getIntent().getStringExtra("token");
+
         if ((token.length() % 2) == 0) {
             mTextToken.setText(token.substring(0, token.length() / 2) + " " +
                 token.substring(token.length() / 2));
@@ -75,7 +85,7 @@ public class RegisterDeviceActivity extends ToolbarActivity {
         }
 
         try {
-            Bitmap qrCode = ViewUtils.getQRCodeBitmap(this, token);
+            Bitmap qrCode = ViewUtils.getQRCodeBitmap(this, generateTokenText(token, from));
             mQRCode.setImageBitmap(qrCode);
         }
         catch (WriterException e) {
@@ -89,9 +99,14 @@ public class RegisterDeviceActivity extends ToolbarActivity {
         return true;
     }
 
-    public static void start(Context context, String token) {
+    private static String generateTokenText(String token, String from) {
+        return token + "|" + from;
+    }
+
+    public static void start(@NonNull Context context, @NonNull String token, @NonNull String from) {
         Intent i = new Intent(context, RegisterDeviceActivity.class);
         i.putExtra("token", token);
+        i.putExtra("from", from);
         context.startActivity(i);
     }
 

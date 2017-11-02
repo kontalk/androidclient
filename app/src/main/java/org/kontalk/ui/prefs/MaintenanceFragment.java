@@ -399,13 +399,14 @@ public class MaintenanceFragment extends RootPreferenceFragment {
                 }
 
                 String token = intent.getStringExtra(MessageCenterService.EXTRA_TOKEN);
+                String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
                 String error = intent.getStringExtra(MessageCenterService.EXTRA_ERROR_CONDITION);
 
                 if (token == null || error != null) {
                     Toast.makeText(context, R.string.register_device_request_error, Toast.LENGTH_LONG).show();
                 }
                 else {
-                    RegisterDeviceActivity.start(context, token);
+                    RegisterDeviceActivity.start(context, token, from);
                 }
             }
         };
