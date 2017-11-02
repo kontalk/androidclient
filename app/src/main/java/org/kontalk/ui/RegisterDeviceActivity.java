@@ -99,12 +99,12 @@ public class RegisterDeviceActivity extends ToolbarActivity {
 
     /** This must match the parsing done in {@link #parseTokenText}. */
     private static String generateTokenText(String account, String token, String from) {
-        return account + "|" + from + "|" + token + "|";
+        return account + ";" + from + ";" + token;
     }
 
     /** This must match the generator in {@link #generateTokenText}. */
     public static PrivateKeyToken parseTokenText(String tokenText) {
-        String[] parsed = tokenText.split("\\|", 3);
+        String[] parsed = tokenText.split(";", 3);
         return (parsed.length == 3) ?
             new PrivateKeyToken(parsed[0], parsed[1], parsed[2]) : null;
     }

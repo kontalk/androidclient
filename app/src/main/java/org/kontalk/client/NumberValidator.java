@@ -230,6 +230,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         mImportedPublicKey = publicKeyData;
     }
 
+    public String getPhone() {
+        return mPhone;
+    }
+
     public EndpointServer getServer() {
         return mConnector.getServer();
     }
@@ -434,7 +438,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                         mName, mPassphrase);
                 }
                 else {
-                    mKeyRing = PGPKeyPairRing.load(mImportedPrivateKey, mImportedPublicKey);
+                    mKeyRing = PGPKeyPairRing.loadArmored(mImportedPrivateKey, mImportedPublicKey);
                 }
 
                 // bridge certificate for connection
@@ -504,7 +508,13 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
                 // generate keyring immediately
                 // needed for connection
-                mKeyRing = PGPKeyPairRing.load(mImportedPrivateKey, mImportedPublicKey);
+                try {
+                    mKeyRing = PGPKeyPairRing.loadArmored(mImportedPrivateKey, mImportedPublicKey);
+                }
+                catch (IOException e) {
+                    // try not armored
+                    mKeyRing = PGPKeyPairRing.load(mImportedPrivateKey, mImportedPublicKey);
+                }
 
                 // bridge certificate for connection
                 mBridgeCert = X509Bridge.createCertificate(mKeyRing.publicKey,
@@ -554,8 +564,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                                 Account accountData = (Account) _accountData;
 
                                 byte[] privateKeyData = accountData.getPrivateKeyData();
-                                if (privateKeyData != null && privateKeyData.length > 0) {
-                                    mListener.onPrivateKeyReceived(NumberValidator.this, privateKeyData);
+                                byte[] publicKeyData = accountData.getPublicKeyData();
+                                if (privateKeyData != null && privateKeyData.length > 0 &&
+                                    publicKeyData != null && publicKeyData.length > 0) {
+                                    mListener.onPrivateKeyReceived(NumberValidator.this, privateKeyData, publicKeyData);
                                     return;
                                 }
                             }
@@ -643,7 +655,14 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
             mConnector.setListener(this);
             PersonalKey key = null;
             if (mImportedPrivateKey != null && mImportedPublicKey != null) {
-                PGPKeyPairRing ring = PGPKeyPairRing.load(mImportedPrivateKey, mImportedPublicKey);
+                PGPKeyPairRing ring;
+                try {
+                    ring = PGPKeyPairRing.loadArmored(mImportedPrivateKey, mImportedPublicKey);
+                }
+                catch (IOException e) {
+                    // try not armored
+                    ring = PGPKeyPairRing.load(mImportedPrivateKey, mImportedPublicKey);
+                }
                 key = PersonalKey.load(ring.secretKey, ring.publicKey, mPassphrase, mBridgeCert);
             }
             else if (mKey != null) {
@@ -813,7 +832,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         void onAuthTokenFailed(NumberValidator v, int reason);
 
         /** Called when receiving the private key. */
-        void onPrivateKeyReceived(NumberValidator v, byte[] privateKey);
+        void onPrivateKeyReceived(NumberValidator v, byte[] privateKey, byte[] publicKey);
 
         /** Called when request for the private key failed. */
         void onPrivateKeyRequestFailed(NumberValidator v, int reason);

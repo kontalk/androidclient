@@ -79,8 +79,11 @@ public class EndpointServer {
 
     @Override
     public String toString() {
-        if (mHost != null) {
-            return mNetwork + "|" + mHost + ":" + mPort;
+        if (mHost != null && (!mNetwork.equalsIgnoreCase(mHost) || mPort != DEFAULT_PORT)) {
+            String out = mNetwork + "|" + mHost;
+            if (mPort != DEFAULT_PORT)
+                out += ":" + mPort;
+            return out;
         }
         else {
             return mNetwork;

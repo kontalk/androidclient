@@ -517,7 +517,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
-    public void onPrivateKeyReceived(NumberValidator v, byte[] privateKey) {
+    public void onPrivateKeyReceived(NumberValidator v, byte[] privateKey, byte[] publicKey) {
         // not used.
     }
 

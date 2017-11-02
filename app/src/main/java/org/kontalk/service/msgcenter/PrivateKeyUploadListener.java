@@ -32,7 +32,9 @@ import org.jivesoftware.smackx.xdata.packet.DataForm;
 import android.content.Intent;
 import android.util.Base64;
 
+import org.kontalk.client.EndpointServer;
 import org.kontalk.client.SmackInitializer;
+import org.kontalk.util.Preferences;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_UPLOAD_PRIVATEKEY;
 
@@ -97,7 +99,8 @@ public class PrivateKeyUploadListener extends MessageCenterPacketListener {
         if (field != null)
             token = field.getValues().get(0);
 
-        finish(token, conn.getXMPPServiceDomain().toString());
+        EndpointServer from = Preferences.getEndpointServer(getContext());
+        finish(token, from != null ? from.toString() : conn.getXMPPServiceDomain().toString());
     }
 
     private void finish(String token, String from) {
