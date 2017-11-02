@@ -638,7 +638,7 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
 
     <string name="menu_import_device">Registre des d\'un altre dispositiu</string>
     <string name="pref_register_device">Registre de dispositiu</string>
-    <string name="register_device_title">Registre de dispositius</string>
+    <string name="register_device_title">Registre de dispositiu</string>
     <string name="register_device_instructions">Captureu el codi de barres de sota o entreu les dades següents de forma manual des de l\'altre dispositiu.</string>
     <string name="register_device_request_error">Error en sol·licitar el registre del dispositiu.</string>
     <string name="register_device_requesting">Sol·licitant el registre …</string>
