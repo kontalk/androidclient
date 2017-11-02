@@ -19,7 +19,6 @@
 package org.kontalk.position;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.Gson;
@@ -28,6 +27,7 @@ import android.content.Context;
 import android.location.Location;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,25 +43,25 @@ import org.kontalk.position.model.CategoriesItem;
 import org.kontalk.position.model.SearchResponse;
 import org.kontalk.position.model.VenuesItem;
 
+
 /**
  * Search Places adapter
  *
  * @author andreacappelli
  */
-
 public class SearchPlacesAdapter extends RecyclerView.Adapter<SearchPlacesAdapter.ViewHolder>
         implements ISearchPlacesAdapter {
 
-    private static final String TAG = SearchPlacesAdapter.class.getSimpleName();
+    static final String TAG = SearchPlacesAdapter.class.getSimpleName();
 
     private final static int LOCATION = 0;
     private final static int LOADING = 1;
     private final static int NO_RESULT = 2;
 
     private Context mContext;
-    private List<VenuesItem> mList = new ArrayList<>();
+    List<VenuesItem> mList;
 
-    private boolean mSearching;
+    boolean mSearching;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
@@ -154,7 +154,7 @@ public class SearchPlacesAdapter extends RecyclerView.Adapter<SearchPlacesAdapte
     }
 
     public Position getVenuesItem(int i) {
-        if (mList.size() > 0) {
+        if (mList != null && mList.size() > 0) {
             VenuesItem item = mList.get(i);
             Position position = new Position(item.getLocation().getLat(),
                 item.getLocation().getLng());
@@ -181,7 +181,7 @@ public class SearchPlacesAdapter extends RecyclerView.Adapter<SearchPlacesAdapte
 
     public void searchPlacesWithQuery(String query, Location location) {
         if (query == null || query.length() == 0) {
-            mList.clear();
+            mList = null;
             notifyDataSetChanged();
             mSearching = false;
             return;
@@ -199,9 +199,9 @@ public class SearchPlacesAdapter extends RecyclerView.Adapter<SearchPlacesAdapte
         PlacesRestClient.getPlacesByQuery(mContext, location.getLatitude(), location.getLongitude(),
             query, new Callback() {
                 @Override
-                public void onFailure(Call call, IOException e) {
+                public void onFailure(@NonNull Call call, @NonNull IOException e) {
                     mSearching = false;
-                    mList.clear();
+                    mList = null;
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
@@ -212,7 +212,7 @@ public class SearchPlacesAdapter extends RecyclerView.Adapter<SearchPlacesAdapte
                 }
 
                 @Override
-                public void onResponse(Call call, Response response) throws IOException {
+                public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                     mSearching = false;
                     if (response.body() != null) {
                         Gson gson = new Gson();
