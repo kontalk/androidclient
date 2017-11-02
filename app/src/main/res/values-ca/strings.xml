@@ -352,7 +352,7 @@
   <string name="err_server_invalid_format">Format d\'adreça no vàlid.</string>
   <string name="err_no_contacts_app">No s\'ha trobat l\'app de gestió de contactes.</string>
 <string name="title_user_exists">L\'usuari ja existeix</string>
-    <string name="err_validation_user_exists"><b>Aquest número ja està registrat a Kontalk.</b> Si estàs registrat amb un altre dispositiu, continuar amb el procés desconnectarà aquell dispositiu de Kontalk. Sisplau consulta la nostra documentació per copiar el compte entre diferents dispositius. Selecciona OK per continuar de totes maneres.</string>
+    <string name="err_validation_user_exists"><b>Aquest número ja està registrat a Kontalk.</b> Si estàs registrat amb un altre dispositiu, continuar amb el procés desconnectarà aquell dispositiu de Kontalk. Si esteu registrant un altre dispositiu, seleccioneu transferir el compte.</string>
     <string name="pref_help">Ajuda</string>
     <string name="err_no_contact">Usuari no trobat.</string>
 
@@ -635,5 +635,23 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
 
     <string name="pref_foreground_service">Habilita el servei en primer pla</string>
     <string name="pref_title_foreground_service">Activa això si vols que Kontalk funcioni en segon pla quan hi hagi pocs recursos. Es mostrarà una notificació fixa</string>
+
+    <string name="menu_import_device">Registre des d\'un altre dispositiu</string>
+    <string name="pref_register_device">Registre de dispositiu</string>
+    <string name="register_device_title">Registre de dispositius</string>
+    <string name="register_device_instructions">Captureu el codi de barres de sota o entreu les dades següents de forma manual des de l\'altre dispositiu.</string>
+    <string name="register_device_request_error">Error en sol·licitar el registre del dispositiu.</string>
+    <string name="register_device_requesting">Sol·licitant el registre …</string>
+
+    <string name="import_device_title">Importa el compte</string>
+    <string name="import_device_instructions">Introduïu les dades sol·licitades a sota tal i com apareix a l\'altre dispositiu.</string>
+    <string name="import_device_hint_account">Número de telèfon</string>
+    <string name="import_device_hint_server">Nom del servidor</string>
+    <string name="import_device_hint_token">Codi secret</string>
+    <string name="err_import_device_fill_all">Sisplau ompliu tots els camps.</string>
+    <string name="import_device_requesting">S\'està sol·licitant un compte …</string>
+
+    <string name="btn_device_overwrite">He perdut el meu antic compte o dispositiu</string>
+    <string name="btn_device_import">Transfereix el compte</string>
 
     </resources>
