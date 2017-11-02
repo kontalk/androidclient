@@ -33,7 +33,7 @@
         android:title="@string/pref_export_keypair"
         android:layout="@layout/md_preference_custom"/>
     <Preference android:key="pref_register_device"
-        android:title="Register device"
+        android:title="@string/pref_register_device"
         android:layout="@layout/md_preference_custom"/>
     <Preference android:key="pref_delete_account"
         android:title="@string/pref_delete_account"

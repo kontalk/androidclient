@@ -52,7 +52,6 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginBottom="6dp"
                 android:gravity="center_horizontal"
-                android:textIsSelectable="true"
                 android:text="@string/register_device_instructions"/>
 
             <TextView android:id="@+id/token"

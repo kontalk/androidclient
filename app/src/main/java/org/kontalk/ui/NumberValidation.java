@@ -57,6 +57,7 @@ import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
@@ -119,6 +120,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     public static final int REQUEST_MANUAL_VALIDATION = 771;
     public static final int REQUEST_VALIDATION_CODE = 772;
+    public static final int REQUEST_SCAN_TOKEN = 773;
 
     public static final int RESULT_FALLBACK = RESULT_FIRST_USER + 1;
 
@@ -366,6 +368,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 importKey();
                 break;
             }
+            case R.id.menu_import_device: {
+                importDevice();
+                break;
+            }
             case R.id.menu_manual_verification: {
                 validateCode();
                 break;
@@ -456,7 +462,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         }
     }
 
-    private void stopKeyReceiver() {
+    void stopKeyReceiver() {
         if (mKeyReceiver != null)
             lbm.unregisterReceiver(mKeyReceiver);
     }
@@ -488,6 +494,15 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             else if (resultCode == RESULT_FALLBACK) {
                 mClearState = true;
                 startValidation(data.getBooleanExtra("force", false), true);
+            }
+        }
+        else if (requestCode == REQUEST_SCAN_TOKEN) {
+            String token = data.getStringExtra("text");
+            if (!TextUtils.isEmpty(token)) {
+                requestPrivateKey(token);
+            }
+            else {
+                // TODO show error dialog "no token found in barcode"
             }
         }
     }
@@ -766,6 +781,73 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 }
             }
         });
+    }
+
+    /**
+     * Opens a screen for shooting a QR code or typing in a secure token from
+     * another device.
+     */
+    private void importDevice() {
+        PackageManager pm = getPackageManager();
+        boolean hasCamera = pm.hasSystemFeature(PackageManager.FEATURE_CAMERA);
+
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(this)
+            // TODO i18n
+            .title("Register from another device")
+            // TODO i18n
+            .content("Open Kontalk on the other device, choose menu > Settings > Maintenance > Register device. A secret code and a barcode representing it will be displayed.")
+            // TODO i18n
+            .neutralText("Input code")
+            .onAny(new MaterialDialog.SingleButtonCallback() {
+                @Override
+                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                    switch (which) {
+                        case POSITIVE:
+                            scanToken();
+                            break;
+                        case NEUTRAL:
+                            askToken();
+                            break;
+                    }
+                }
+            });
+
+        if (hasCamera) {
+            // TODO i18n
+            builder.positiveText("Scan barcode");
+        }
+
+        builder.show();
+    }
+
+    void scanToken() {
+        // TODO i18n
+        ScanTextActivity.start(this, "Scan secret code", REQUEST_SCAN_TOKEN);
+    }
+
+    void askToken() {
+        new MaterialDialog.Builder(this)
+            // TODO i18n
+            .title("Secret code")
+            .positiveText(android.R.string.ok)
+            .negativeText(android.R.string.cancel)
+            .input(null, null, false, new MaterialDialog.InputCallback() {
+                @Override
+                public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+                    requestPrivateKey(preprocessToken(input));
+                }
+            })
+            .show();
+    }
+
+    /** Preprocess a token typed in by the user (e.g. remove spaces). */
+    String preprocessToken(CharSequence rawToken) {
+        // TODO remove spaces inside and outside
+        return rawToken.toString();
+    }
+
+    void requestPrivateKey(String token) {
+        // TODO
     }
 
     private void importAskPassphrase(final ZipInputStream zip) {
