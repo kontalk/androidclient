@@ -76,11 +76,13 @@ public class SmackInitializer {
         // not moving these into configuration since they are not loaded often
         ProviderManager.addIQProvider("query", "jabber:iq:register", new RegistrationProvider());
         ProviderManager.addExtensionProvider("x", "jabber:x:data", new DataFormProvider());
+        ProviderManager.addExtensionProvider(Account.ELEMENT_NAME, Account.NAMESPACE, new Account.Provider());
     }
 
     public static void deinitializeRegistration() {
         ProviderManager.removeIQProvider("query", "jabber:iq:register");
         ProviderManager.removeExtensionProvider("x", "jabber:x:data");
+        ProviderManager.removeExtensionProvider(Account.ELEMENT_NAME, Account.NAMESPACE);
     }
 
     private static void disableSmackDefault() {

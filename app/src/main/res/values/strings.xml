@@ -624,6 +624,7 @@
     <string name="import_device_hint_server">Server name</string>
     <string name="import_device_hint_token">Secret code</string>
     <string name="err_import_device_fill_all">Please fill in all fields.</string>
+    <string name="import_device_requesting">Requesting account&#8230;</string>
 
     <string name="btn_device_overwrite">I lost my old account or device</string>
     <string name="btn_device_import">Transfer account</string>

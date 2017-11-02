@@ -258,4 +258,11 @@
         <className>org.kontalk.client.UserLocation$Provider</className>
     </extensionProvider>
 
+    <!-- Kontalk account management (child of iq/query) -->
+    <extensionProvider>
+        <elementName>account</elementName>
+        <namespace>http://kontalk.org/protocol/register#account</namespace>
+        <className>org.kontalk.client.Account$Provider</className>
+    </extensionProvider>
+
 </smackProviders>

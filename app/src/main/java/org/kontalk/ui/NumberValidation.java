@@ -851,7 +851,15 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     void requestPrivateKey(String account, String server, String token) {
-        // TODO
+        enableControls(false);
+        startProgress(getString(R.string.import_device_requesting));
+
+        EndpointServer.EndpointServerProvider provider =
+            new EndpointServer.SingleServerProvider(server);
+        mValidator = new NumberValidator(this, provider, account, token);
+        mValidator.setListener(this);
+        mValidator.requestPrivateKey();
+        mValidator.start();
     }
 
     private void importAskPassphrase(final ZipInputStream zip) {
@@ -1166,6 +1174,17 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 abort();
             }
         });
+    }
+
+    @Override
+    public void onPrivateKeyReceived(NumberValidator v, byte[] privateKey) {
+        // TODO
+        Log.d(TAG, "GOT PRIVATE KEY FROM SERVER (len="+privateKey.length+")");
+    }
+
+    @Override
+    public void onPrivateKeyRequestFailed(NumberValidator v, int reason) {
+        // TODO
     }
 
     private void statusInitializing() {
