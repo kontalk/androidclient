@@ -498,29 +498,34 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             }
         }
         else if (requestCode == REQUEST_SCAN_TOKEN) {
-            String token = data.getStringExtra("text");
-            if (!TextUtils.isEmpty(token)) {
-                RegisterDeviceActivity.PrivateKeyToken privateKeyToken =
-                    RegisterDeviceActivity.parseTokenText(token);
+            if (resultCode == RESULT_OK && data != null) {
+                String token = data.getStringExtra("text");
+                if (!TextUtils.isEmpty(token)) {
+                    RegisterDeviceActivity.PrivateKeyToken privateKeyToken =
+                        RegisterDeviceActivity.parseTokenText(token);
 
-                if (privateKeyToken != null) {
-                    requestPrivateKey(privateKeyToken.server, privateKeyToken.token);
-                    return;
+                    if (privateKeyToken != null) {
+                        requestPrivateKey(privateKeyToken.account, privateKeyToken.server, privateKeyToken.token);
+                        return;
+                    }
                 }
-            }
 
-            new MaterialDialog.Builder(this)
-                // TODO i18n
-                .content("No valid data found in the barcode.")
-                .positiveText(android.R.string.ok)
-                .show();
+                new MaterialDialog.Builder(this)
+                    // TODO i18n
+                    .content("No valid data found in the barcode.")
+                    .positiveText(android.R.string.ok)
+                    .show();
+            }
         }
         else if (requestCode == REQUEST_ASK_TOKEN) {
-            String server = data.getStringExtra(ImportDeviceActivity.EXTRA_SERVER);
-            String token = data.getStringExtra(ImportDeviceActivity.EXTRA_TOKEN);
-            // no need to verify the data, import device activity already checked
+            if (resultCode == RESULT_OK && data != null) {
+                String account = data.getStringExtra(ImportDeviceActivity.EXTRA_ACCOUNT);
+                String server = data.getStringExtra(ImportDeviceActivity.EXTRA_SERVER);
+                String token = data.getStringExtra(ImportDeviceActivity.EXTRA_TOKEN);
+                // no need to verify the data, import device activity already checked
 
-            requestPrivateKey(server, token);
+                requestPrivateKey(account, server, token);
+            }
         }
     }
 
@@ -804,13 +809,12 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
      * Opens a screen for shooting a QR code or typing in a secure token from
      * another device.
      */
-    private void importDevice() {
+    void importDevice() {
         PackageManager pm = getPackageManager();
         boolean hasCamera = pm.hasSystemFeature(PackageManager.FEATURE_CAMERA);
 
         MaterialDialog.Builder builder = new MaterialDialog.Builder(this)
-            // TODO i18n
-            .title("Register from another device")
+            .title(R.string.menu_import_device)
             // TODO i18n
             .content("Open Kontalk on the other device, choose menu > Settings > Maintenance > Register device. A secret code and a barcode representing it will be displayed.")
             // TODO i18n
@@ -846,13 +850,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         ImportDeviceActivity.start(this, REQUEST_ASK_TOKEN);
     }
 
-    /** Preprocess a token typed in by the user (e.g. remove spaces). */
-    String preprocessToken(CharSequence rawToken) {
-        // TODO remove spaces inside and outside
-        return rawToken.toString();
-    }
-
-    void requestPrivateKey(String server, String token) {
+    void requestPrivateKey(String account, String server, String token) {
         // TODO
     }
 
@@ -1281,20 +1279,20 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     void userExistsWarning() {
         MaterialDialog.Builder builder = new MaterialDialog.Builder(this)
             .content(R.string.err_validation_user_exists)
-            .positiveText(android.R.string.ok)
-            .positiveColorRes(R.color.button_danger)
+            .positiveText(R.string.btn_device_import)
+            .positiveColorRes(R.color.button_success)
             .negativeText(android.R.string.cancel)
-            .neutralText(R.string.learn_more)
+            .neutralText(R.string.btn_device_overwrite)
+            .neutralColorRes(R.color.button_danger)
             .onAny(new MaterialDialog.SingleButtonCallback() {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                     switch (which) {
                         case POSITIVE:
-                            startValidation(true, false);
+                            importDevice();
                             break;
                         case NEUTRAL:
-                            SystemUtils.openURL(NumberValidation.this,
-                                getString(R.string.help_import_key));
+                            startValidation(true, false);
                             break;
                     }
                 }

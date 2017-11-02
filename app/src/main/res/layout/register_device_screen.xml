@@ -35,17 +35,6 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <TextView android:id="@+id/account"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="6dp"
-                android:gravity="center_horizontal"
-                android:textIsSelectable="true"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                tools:text="+15555215554"/>
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -53,6 +42,19 @@
                 android:layout_marginBottom="6dp"
                 android:gravity="center_horizontal"
                 android:text="@string/register_device_instructions"/>
+
+            <TextView android:id="@+id/account"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="6dp"
+                android:gravity="center_horizontal"
+                android:textIsSelectable="true"
+                android:textSize="20sp"
+                android:drawableLeft="@drawable/ic_menu_call_black"
+                android:drawableStart="@drawable/ic_menu_call_black"
+                android:drawablePadding="8dp"
+                tools:text="+15555215554"/>
 
             <TextView android:id="@+id/servername"
                 android:layout_width="wrap_content"

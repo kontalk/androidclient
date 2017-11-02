@@ -20,15 +20,12 @@ package org.kontalk.ui;
 
 import com.google.zxing.WriterException;
 
-import org.jivesoftware.smack.util.stringencoder.Base32;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.util.Base64;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -69,7 +66,8 @@ public class RegisterDeviceActivity extends ToolbarActivity {
     protected void onStart() {
         super.onStart();
 
-        mAccountName.setText(Authenticator.getDefaultAccountName(this));
+        String account = Authenticator.getDefaultAccountName(this);
+        mAccountName.setText(account);
 
         String from = getIntent().getStringExtra("from");
         mTextServer.setText(from);
@@ -85,7 +83,7 @@ public class RegisterDeviceActivity extends ToolbarActivity {
         }
 
         try {
-            Bitmap qrCode = ViewUtils.getQRCodeBitmap(this, generateTokenText(token, from));
+            Bitmap qrCode = ViewUtils.getQRCodeBitmap(this, generateTokenText(account, token, from));
             mQRCode.setImageBitmap(qrCode);
         }
         catch (WriterException e) {
@@ -99,21 +97,26 @@ public class RegisterDeviceActivity extends ToolbarActivity {
         return true;
     }
 
-    private static String generateTokenText(String token, String from) {
-        return token + "|" + from;
+    /** This must match the parsing done in {@link #parseTokenText}. */
+    private static String generateTokenText(String account, String token, String from) {
+        return account + "|" + from + "|" + token + "|";
     }
 
+    /** This must match the generator in {@link #generateTokenText}. */
     public static PrivateKeyToken parseTokenText(String tokenText) {
-        String[] parsed = tokenText.split("\\|", 2);
-        return (parsed.length == 2) ?
-            new PrivateKeyToken(parsed[0], parsed[1]) : null;
+        String[] parsed = tokenText.split("\\|", 3);
+        return (parsed.length == 3) ?
+            new PrivateKeyToken(parsed[0], parsed[1], parsed[2]) : null;
     }
 
+    /** A token parsed by {@link #parseTokenText}. */
     public static final class PrivateKeyToken {
+        public final String account;
         public final String server;
         public final String token;
 
-        PrivateKeyToken(String server, String token) {
+        PrivateKeyToken(String account, String server, String token) {
+            this.account = account;
             this.server = server;
             this.token = token;
         }

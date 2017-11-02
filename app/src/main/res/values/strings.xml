@@ -173,7 +173,7 @@
     <string name="err_validation_nonetwork">No Internet connection is available. Kontalk requires an active Internet connection to work.</string>
     <string name="err_validation_network_error">Unable to connect to server. Please try again later.</string>
     <string name="err_validation_server_not_supported">Selected server does not support registration. Please configure another one in Settings screen.</string>
-    <string name="err_validation_user_exists"><b>The number you are using is already registered to Kontalk.</b> If you have registered another device, proceeding in this manner will cut it off from Kontalk. Please refer to our documentation on how to copy your account between devices. Choose OK to continue anyway.</string>
+    <string name="err_validation_user_exists"><b>The number you are using is already registered to Kontalk.</b> If you have registered another device, proceeding in this manner will cut it off from Kontalk. If you are registering another device of yours, choose transfer account.</string>
     <string name="text_encrypted">(encrypted)</string>
     <string name="peer_unknown">(unknown)</string>
     <string name="msg_draft_saved">Message saved as draft.</string>
@@ -620,8 +620,13 @@
 
     <string name="import_device_title">Import account</string>
     <string name="import_device_instructions">Input the requested data below as it appears on your other device.</string>
+    <string name="import_device_hint_account">Phone number</string>
     <string name="import_device_hint_server">Server name</string>
     <string name="import_device_hint_token">Secret code</string>
+    <string name="err_import_device_fill_all">Please fill in all fields.</string>
+
+    <string name="btn_device_overwrite">I lost my old account or device</string>
+    <string name="btn_device_import">Transfer account</string>
 
     <!-- contact name, group subject -->
     <string name="notification_group_title">%1$s @ %2$s</string>

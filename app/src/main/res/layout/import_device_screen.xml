@@ -42,6 +42,20 @@
                 android:gravity="center_horizontal"
                 android:text="@string/import_device_instructions"/>
 
+            <EditText android:id="@+id/account"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="4dp"
+                android:gravity="center_horizontal"
+                android:textSize="20sp"
+                android:drawableLeft="@drawable/ic_menu_call_black"
+                android:drawableStart="@drawable/ic_menu_call_black"
+                android:drawablePadding="8dp"
+                android:inputType="phone"
+                android:hint="@string/import_device_hint_account"
+                tools:text="+15555215554"/>
+
             <EditText android:id="@+id/servername"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
