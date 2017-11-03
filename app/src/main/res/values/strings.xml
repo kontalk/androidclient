@@ -625,6 +625,11 @@
     <string name="import_device_hint_token">Secret code</string>
     <string name="err_import_device_fill_all">Please fill in all fields.</string>
     <string name="import_device_requesting">Requesting account&#8230;</string>
+    <string name="import_device_invalid_barcode">No valid data found in the barcode.</string>
+    <string name="import_device_scan_screen_title">Scan secret code</string>
+    <string name="import_device_btn_scan">Scan barcode</string>
+    <string name="import_device_btn_input">Input manually</string>
+    <string name="import_device_message">Open Kontalk on the other device, choose menu &gt; Settings &gt; Maintenance &gt; Register device. A secret code and a barcode representing it will be displayed.</string>
 
     <string name="btn_device_overwrite">I lost my old account or device</string>
     <string name="btn_device_import">Transfer account</string>
