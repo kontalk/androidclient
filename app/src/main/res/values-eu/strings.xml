@@ -171,7 +171,7 @@ Desgaituta dagoenean, Kontalk konexioaren portaera zorrotz doitu daiteke sare ez
     <string name="err_validation_nonetwork">Ez dago Internet konexiorik erabilgarri. Kontalkek Internet konexio aktibo bat behar du funtzionatzeko.</string>
     <string name="err_validation_network_error">Ezin izan da zerbitzarira konektatu. Mesedez saiatu berriro beranduago.</string>
     <string name="err_validation_server_not_supported">Hautatutako zerbitzariak ez du erregistratzea onartzen. Mesedez konfiguratu beste bat ezarpenen pantailan.</string>
-    <string name="err_validation_user_exists"><b>Erabiltzen ari zaren zenbakia Kontalken erregistratuta dago jadanik.</b> Beste gailu bat baduzu erregistratuta, honekin jarraituz gero beste gailua Kontalketik deskonektatuko da. Mesedez kontsultatu gure dokumentazioa zure kontua gailu batetik bestera kopiatzeko. Aukeratu Ados halere jarraitzeko.</string>
+    <string name="err_validation_user_exists"><b>Erabiltzen ari zaren zenbakia Kontalken erregistratuta dago jadanik.</b> Beste gailu bat baduzu erregistratuta, honekin jarraituz gero beste gailua Kontalketik deskonektatuko da. Zure beste gailu bat erregistratuko baduzu, aukeratu kontua transferitzea.</string>
     <string name="text_encrypted">(enkriptatuta)</string>
     <string name="peer_unknown">(ezezaguna)</string>
     <string name="msg_draft_saved">Mezua zirriborro gisa gordeta.</string>
@@ -646,5 +646,36 @@ Desgaitu enkriptatzea zure kontaktuak gako pertsonalik ez badu bakarrik.</string
 
     <string name="pref_location_settings">Kokalekua</string>
     <string name="pref_maps_service">Zerbitzu-hornitzailea</string>
+
+    <string name="menu_import_device">Erregistratu beste gailu batetik</string>
+    <string name="notification_ticker_service_running">Kontalk atzeko planoan ari da exekutatzen</string>
+    <string name="notification_text_service_running">Ukitu irekitzeko</string>
+
+    <string name="msg_request_doze_failed_manual">Mesedez markatu Kontalk ez optimizatu bezala hurrengo pantailan.</string>
+
+    <string name="pref_foreground_service">Gaitu zerbitzua aurreko planoan</string>
+    <string name="pref_title_foreground_service">Aktibatu hau baliabide gutxirekin Kontalk atzeko planoan aktibo egotea nahi baduzu. Jakinarazpen itsaskor bat bistaratuko da</string>
+
+    <string name="pref_register_device">Gailuaren erregistroa</string>
+    <string name="register_device_title">Gailuaren erregistroa</string>
+    <string name="register_device_instructions">Kapturatu beheko barra kodea edo sartu ondorengo datuak eskuz zure beste gailutik.</string>
+    <string name="register_device_request_error">Errorea gailua erregistratzea eskatzean.</string>
+    <string name="register_device_requesting">Erregistroa eskatzen…</string>
+
+    <string name="import_device_title">Kontua inportatu</string>
+    <string name="import_device_instructions">Sartu eskatutako datuak behean zure beste gailuan agertzen diren bezala.</string>
+    <string name="import_device_hint_account">Telefono zenbakia</string>
+    <string name="import_device_hint_server">Zerbitzariaren izena</string>
+    <string name="import_device_hint_token">Kode sekretua</string>
+    <string name="err_import_device_fill_all">Mesedez bete eremu guztiak.</string>
+    <string name="import_device_requesting">Kontua eskatzen…</string>
+    <string name="import_device_invalid_barcode">Ez da baliozko daturik aurkitu barra-kodean.</string>
+    <string name="import_device_scan_screen_title">Eskaneatu kode sekretua</string>
+    <string name="import_device_btn_scan">Eskaneatu barra-kodea</string>
+    <string name="import_device_btn_input">Sartu eskuz</string>
+    <string name="import_device_message">Ireki Kontalk beste gailuan, aukeratu menua &gt; Ezarpenak &gt; Mantenua &gt; Erregistratu gailua. Hau adieraziz kode sekretu eta barra-kode bat bistaratuko dira.</string>
+
+    <string name="btn_device_overwrite">Nire kontu edo gailu zaharra galdu dut</string>
+    <string name="btn_device_import">Transferitu kontua</string>
 
     </resources>
