@@ -513,8 +513,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 }
 
                 new MaterialDialog.Builder(this)
-                    // TODO i18n
-                    .content("No valid data found in the barcode.")
+                    .content(R.string.import_device_invalid_barcode)
                     .positiveText(android.R.string.ok)
                     .show();
             }
@@ -821,10 +820,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
         MaterialDialog.Builder builder = new MaterialDialog.Builder(this)
             .title(R.string.menu_import_device)
-            // TODO i18n
-            .content("Open Kontalk on the other device, choose menu > Settings > Maintenance > Register device. A secret code and a barcode representing it will be displayed.")
-            // TODO i18n
-            .neutralText("Input manually")
+            .content(R.string.import_device_message)
+            .neutralText(R.string.import_device_btn_input)
             .onAny(new MaterialDialog.SingleButtonCallback() {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
@@ -840,16 +837,15 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             });
 
         if (hasCamera) {
-            // TODO i18n
-            builder.positiveText("Scan barcode");
+            builder.positiveText(R.string.import_device_btn_scan);
         }
 
         builder.show();
     }
 
     void scanToken() {
-        // TODO i18n
-        ScanTextActivity.start(this, "Scan secret code", REQUEST_SCAN_TOKEN);
+        ScanTextActivity.start(this, getString(R.string.import_device_scan_screen_title),
+            REQUEST_SCAN_TOKEN);
     }
 
     void askToken() {
