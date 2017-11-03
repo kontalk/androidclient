@@ -663,4 +663,10 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="btn_device_overwrite">Ztratil jsem svůj starý účet nebo zařízení</string>
     <string name="btn_device_import">Přesunout účet</string>
 
+    <string name="import_device_invalid_barcode">V čárovém kódu nebyly nalezeny platné údaje.</string>
+    <string name="import_device_scan_screen_title">Načíst tajný kód</string>
+    <string name="import_device_btn_scan">Načíst čárový kód</string>
+    <string name="import_device_btn_input">Zadat ručně</string>
+    <string name="import_device_message">Otevřete Kontalk na druhém zařízení, zvolte menu &gt; Nastavení &gt; Údržba &gt; Registrovat zařízení. Bude zobrazen tajný kód a čárový kód, který ho reprezentuje.</string>
+
     </resources>
