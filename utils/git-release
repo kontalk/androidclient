@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+
+WEBLATE_URL="https://translate.kontalk.org/api/"
+WEBLATE_COMPONENT="kontalk-androidclient/app"
+WEBLATE_APIKEY=$(git config release.weblateapikey)
+
+check_requirements() {
+    which wlc >/dev/null ||
+        (echo "Weblate client not found in PATH. Use \`pip3 install wlc\` as root to install it." &&
+        exit 1)
+
+    [[ -z ${WEBLATE_APIKEY} ]] &&
+        echo "Weblate API key must be configured via git config in release.weblateapikey." &&
+        exit 1
+}
+
+usage() {
+    fmt="  %-40s %s\n"
+    echo "Usage: git release <command>"
+    echo
+    echo "Commands:"
+    printf "${fmt}" "begin <version-name> <version-code>" "Begin a new release"
+    printf "${fmt}" "continue" "Continue a release"
+}
+
+usage_begin() {
+    echo "Usage: git release begin <version-name> <version-code>"
+}
+
+my_wlc() {
+    wlc --url "${WEBLATE_URL}" --key "${WEBLATE_APIKEY}" $*
+}
+
+get_repo_dir() {
+    (
+        [[ -d .git ]] && pwd && return 0
+        while [[ ! -d .git ]]; do
+            cd ..
+        done
+        pwd && return 0
+    )
+}
+
+check_stage() {
+    STAGE=$1
+    STAGE_FILE=$(get_repo_dir)/.git/RELEASE
+    CURRENT_STAGE=$(cat ${STAGE_FILE} 2>/dev/null)
+
+    # empty stage check: RELEASE file must not exist
+    [[ -z "${STAGE}" && -f ${STAGE_FILE} ]] &&
+        echo "A release is currently in progress. Please delete .git/RELEASE if that's not true." && return 1
+
+    [[ -n "${STAGE}" && "${CURRENT_STAGE}" != "${STAGE}" ]] &&
+        echo "A release is currently in progress. Please delete .git/RELEASE if that's not true." && return 1
+
+    return 0
+}
+
+set_stage() {
+    STAGE=$1
+    STAGE_FILE=$(get_repo_dir)/.git/RELEASE
+    echo ${STAGE} >${STAGE_FILE}
+}
+
+check_branch() {
+    BRANCH=$1
+
+    CURRENT=$(git rev-parse --abbrev-ref HEAD)
+    if [ "${CURRENT}" != "${BRANCH}" ]; then
+        echo "Not on ${BRANCH} branch. Aborting."
+        return 1
+    fi
+}
+
+cmd_begin() {
+    VERSION_NAME=$1
+    VERSION_CODE=$2
+
+    check_stage || exit 1
+    check_branch master || exit 1
+
+    [[ -z ${VERSION_NAME} || -z ${VERSION_CODE} ]] && usage_begin && return 1
+
+    set -e
+
+    # stage 0: initializing release
+    set_stage 0
+
+    REPO_DIR=$(get_repo_dir)
+
+    echo "Updating translations from Weblate"
+    my_wlc push ${WEBLATE_COMPONENT}
+    git pull
+    echo
+
+    echo "Creating release branch release/${VERSION_NAME}"
+    git checkout -b "release/${VERSION_NAME}"
+    echo
+
+    echo "Setting version code and name"
+    sed -i "s/\([\s]*\)appVersionCode = .*$/\\1appVersionCode = ${VERSION_CODE}/" ${REPO_DIR}/build.gradle
+    sed -i "s/\([\s]*\)appVersionName = '.*'$/\\1appVersionName = '${VERSION_NAME}'/" ${REPO_DIR}/build.gradle
+    echo
+
+    echo "Building release packages"
+    (cd ${REPO_DIR} && ./gradlew assembleRelease)
+
+    # stage 1: waiting for changelog and distribution listings update
+    set_stage 1
+
+    set +e
+
+    echo "Please update CHANGELOG.md and distribution listings."
+    echo "Run \`git release continue\` when finished."
+}
+
+cmd_continue() {
+    echo "TODO"
+}
+
+check_requirements
+
+((!$#)) && usage && exit 1
+
+case "$1" in
+    begin)
+        shift 1
+        cmd_begin $*
+        ;;
+    continue)
+        shift 1
+        cmd_continue $*
+        ;;
+    *)
+        usage
+        exit 1
+        ;;
+esac
