@@ -352,7 +352,7 @@
   <string name="err_server_invalid_format">Neplatný formát adresy.</string>
   <string name="err_no_contacts_app">Nebyla nalezena žádná aplikace pro výběr kontaktů.</string>
 <string name="title_user_exists">Uživatel existuje</string>
-    <string name="err_validation_user_exists"><b>Číslo, které používáte, je již do Kontalku registrováno.</b> Pokud jste registrovali jiné zařízení, pokračování tímto způsobem ho odpojí od Kontalku. Podívejte se prosím do naší dokumentace, jak překopírovat účet mezi dvěma zařízeními. Pokud chcete přesto pokračovat, zvolte OK.</string>
+    <string name="err_validation_user_exists"><b>Číslo, které používáte, je již do Kontalku registrováno.</b> Pokud jste registrovali jiné zařízení, pokračování tímto způsobem ho odpojí od Kontalku. Pokud registrujete jiné svoje zařízení, zvolte přesunout účet.</string>
     <string name="about_credits_devteam"><b>Kontalk vám přináší:</b></string>
     <string name="about_credits_translators"><b>Překladatelé</b></string>
 
@@ -644,5 +644,23 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
 
     <string name="pref_foreground_service">Povolit službu na popředí</string>
     <string name="pref_title_foreground_service">Aktivujte tuto volbu pokud chcete, aby v případě přechodu do režimu nízké spotřeby byl Kontalk aktivní na pozadí. Bude zobrazena stálá notifikace</string>
+
+    <string name="menu_import_device">Registrovat z jiného zařízení</string>
+    <string name="pref_register_device">Registrovat zařízení</string>
+    <string name="register_device_title">Registrovat zařízení</string>
+    <string name="register_device_instructions">Načtěte čárový kód níže nebo zadejte následující údaje ručně na svém dalším zařízení.</string>
+    <string name="register_device_request_error">Chyba při požadavku na registraci zařízení.</string>
+    <string name="register_device_requesting">Požadavek na registraci…</string>
+
+    <string name="import_device_title">Importovat účet</string>
+    <string name="import_device_instructions">Vložte požadované údaje níže tak, jak se zobrazují na druhém zařízení.</string>
+    <string name="import_device_hint_account">Telefonní číslo</string>
+    <string name="import_device_hint_server">Název serveru</string>
+    <string name="import_device_hint_token">Tajný kód</string>
+    <string name="err_import_device_fill_all">Vyplňte prosím všechna pole.</string>
+    <string name="import_device_requesting">Požadavek na účet…</string>
+
+    <string name="btn_device_overwrite">Ztratil jsem svůj starý účet nebo zařízení</string>
+    <string name="btn_device_import">Přesunout účet</string>
 
     </resources>
