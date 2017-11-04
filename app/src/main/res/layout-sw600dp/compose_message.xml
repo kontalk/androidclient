@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<org.kontalk.ui.view.KeyboardAwareRelativeLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root_view"
@@ -77,4 +77,4 @@
 
     <include layout="@layout/circular_attach_view" />
 
-</org.kontalk.ui.view.KeyboardAwareRelativeLayout>
+</RelativeLayout>

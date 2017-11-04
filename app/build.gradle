@@ -122,7 +122,6 @@ dependencies {
     compile (project(':client-common-java')) {
         exclude group: 'net.sf.kxml'
     }
-    compile project(':emojicon:library')
 
     compile "com.android.support:appcompat-v7:$appcompatVersion"
 
@@ -130,6 +129,8 @@ dependencies {
     compile "com.android.support:gridlayout-v7:$appcompatVersion"
     compile "com.android.support:exifinterface:$appcompatVersion"
     compile "com.android.support:recyclerview-v7:$appcompatVersion"
+    // this is actually to override an emoji dependency
+    compile "com.android.support:cardview-v7:$appcompatVersion"
 
     compile "com.madgag.spongycastle:core:$spongyCastleVersion"
     compile "com.madgag.spongycastle:prov:$spongyCastleVersion"
@@ -159,6 +160,7 @@ dependencies {
     compile 'com.github.daniele-athome:FloatingActionButton:b976d71658'
     compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'com.github.vlivanov:ListViewVariants:f606578467'
+    compile 'com.vanniktech:emoji-one:0.5.1'
 
     compile 'com.google.code.gson:gson:2.8.2'
     compile 'com.squareup.okhttp3:okhttp:3.8.1'

@@ -18,6 +18,11 @@
 
 package org.kontalk.ui.view;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.vanniktech.emoji.EmojiTextView;
+
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.TextViewCompat;
@@ -34,17 +39,12 @@ import org.kontalk.R;
 import org.kontalk.message.TextComponent;
 import org.kontalk.util.Preferences;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import com.rockerhieu.emojicon.EmojiconTextView;
-
 
 /**
  * Message component for {@link TextComponent}.
  * @author Daniele Ricci
  */
-public class TextContentView extends EmojiconTextView
+public class TextContentView extends EmojiTextView
         implements MessageContentView<TextComponent> {
 
     // pool-related stuff
@@ -79,11 +79,6 @@ public class TextContentView extends EmojiconTextView
 
     public TextContentView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init(context);
-    }
-
-    public TextContentView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
         init(context);
     }
 
