@@ -156,7 +156,11 @@ cmd_continue() {
     echo
 
     echo "Creating release draft on GitHub"
-    echo hub release create -d -f "TEMPLATE-FILE" v${VERSION_NAME}
+    sed "s/@VERSION_NAME@/${VERSION_NAME}" ${REPO_DIR}/.github/RELEASE_TEMPLATE.md >${REPO_DIR}/.git/RELEASE_EDITMSG
+    hub release create -a /tmp/Kontalk-${VERSION_NAME}-googleplay.apk \
+     -a /tmp/Kontalk-${VERSION_NAME}-basic.apk \
+     -d -f "${REPO_DIR}/.git/RELEASE_EDITMSG" v${VERSION_NAME}
+    rm -f "${REPO_DIR}/.git/RELEASE_EDITMSG"
     echo
 
     echo "Cleaning up"
