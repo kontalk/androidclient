@@ -5,6 +5,10 @@ WEBLATE_COMPONENT="kontalk-androidclient/app"
 WEBLATE_APIKEY=$(git config release.weblateapikey)
 
 check_requirements() {
+    which hub >/dev/null ||
+        (echo "Hub (GitHub client) not found in PATH. Download it from https://github.com/github/hub" &&
+        exit 1)
+
     which wlc >/dev/null ||
         (echo "Weblate client not found in PATH. Use \`pip3 install wlc\` as root to install it." &&
         exit 1)
@@ -62,10 +66,12 @@ set_stage() {
     echo ${STAGE} >${STAGE_FILE}
 }
 
+alias current_branch='git rev-parse --abbrev-ref HEAD'
+
 check_branch() {
     BRANCH=$1
 
-    CURRENT=$(git rev-parse --abbrev-ref HEAD)
+    CURRENT=$(current_branch)
     if [ "${CURRENT}" != "${BRANCH}" ]; then
         echo "Not on ${BRANCH} branch. Aborting."
         return 1
@@ -98,12 +104,13 @@ cmd_begin() {
     echo
 
     echo "Setting version code and name"
-    sed -i "s/\([\s]*\)appVersionCode = .*$/\\1appVersionCode = ${VERSION_CODE}/" ${REPO_DIR}/build.gradle
-    sed -i "s/\([\s]*\)appVersionName = '.*'$/\\1appVersionName = '${VERSION_NAME}'/" ${REPO_DIR}/build.gradle
+    sed -i "s/appVersionCode = .*$/appVersionCode = ${VERSION_CODE}/" ${REPO_DIR}/build.gradle
+    sed -i "s/appVersionName = '.*'$/appVersionName = '${VERSION_NAME}'/" ${REPO_DIR}/build.gradle
     echo
 
     echo "Building release packages"
     (cd ${REPO_DIR} && ./gradlew assembleRelease)
+    echo
 
     # stage 1: waiting for changelog and distribution listings update
     set_stage 1
@@ -115,7 +122,52 @@ cmd_begin() {
 }
 
 cmd_continue() {
-    echo "TODO"
+    check_stage 1 || exit 1
+
+    # extract supposed version from build script
+    VERSION_NAME=$(grep appVersionCode build.gradle | sed 's/ *appVersionCode = \(.*\)$/\1/')
+    BRANCH="release/${VERSION_NAME}"
+    check_branch ${BRANCH} || exit 1
+
+    set -e
+
+    # stage 2: finalizing release
+    set_stage 2
+
+    REPO_DIR=$(get_repo_dir)
+
+    echo "Updating Google Play translations"
+    (cd ${REPO_DIR}/app/src/main/play && ./update.sh)
+    echo
+
+    echo "Pushing release to server"
+    git add ${REPO_DIR}/app/play
+    git commit -as
+    git push -u origin ${BRANCH}
+    git tag -a -m "${VERSION_NAME} release" -s -u 274BE2A3BD56E37A v${VERSION_NAME}
+    git push --tags
+
+    echo "Uploading builds to mirror"
+    cp app/build/outputs/apk/googleplay/release/app-googleplay-release.apk /tmp/Kontalk-${VERSION_NAME}-googleplay.apk
+    cp app/build/outputs/apk/basic/release/app-basic-release.apk /tmp/Kontalk-${VERSION_NAME}-basic.apk
+    (cd ${REPO_DIR}/../packages &&
+        ./release /tmp/Kontalk-${VERSION_NAME}-basic.apk &&
+        ./release /tmp/Kontalk-${VERSION_NAME}-googleplay.apk)
+    echo
+
+    echo "Creating release draft on GitHub"
+    echo hub release create -d -f "TEMPLATE-FILE" v${VERSION_NAME}
+    echo
+
+    echo "Cleaning up"
+    rm -f /tmp/Kontalk-${VERSION_NAME}-googleplay.apk /tmp/Kontalk-${VERSION_NAME}-basic.apk
+    (cd ${REPO_DIR} && ./gradlew clean)
+    echo
+
+    set +e
+
+    rm -f ${REPO_DIR}/.git/RELEASE
+    echo "If everything went well, Travis CI should be doing its work now."
 }
 
 check_requirements
