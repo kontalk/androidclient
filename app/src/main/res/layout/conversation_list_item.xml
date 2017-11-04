@@ -35,7 +35,6 @@
         style="@style/AvatarListItemTextStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:maxLines="1"
         android:singleLine="true"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@id/avatar"
@@ -46,13 +45,12 @@
         android:ellipsize="marquee" />
         <!-- android:src="@drawable/ic_list_alert_sms_failed" -->
 
-    <com.rockerhieu.emojicon.EmojiconTextView
+    <com.vanniktech.emoji.EmojiTextView
         style="@style/AvatarListItemSubtitleStyle"
         android:id="@+id/subject"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:singleLine="true"
-        android:maxLines="1"
         android:layout_toEndOf="@id/avatar"
         android:layout_toRightOf="@id/avatar"
         android:layout_below="@id/from"
@@ -60,8 +58,7 @@
         android:layout_toStartOf="@+id/emblems"
         android:layout_toLeftOf="@+id/emblems"
         android:paddingBottom="16dp"
-        app:emojiconSize="@dimen/emoji_listitem_size"
-        app:emojiconAlignment="baseline"
+        app:emojiSize="@dimen/emoji_listitem_size"
         android:ellipsize="marquee" />
 
     <TextView

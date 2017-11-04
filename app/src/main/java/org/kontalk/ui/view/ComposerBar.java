@@ -25,9 +25,10 @@ import java.util.concurrent.TimeUnit;
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.view.ViewHelper;
 import com.nineoldandroids.view.ViewPropertyAnimator;
-import com.rockerhieu.emojicon.EmojiconsView;
-import com.rockerhieu.emojicon.OnEmojiconClickedListener;
-import com.rockerhieu.emojicon.emoji.Emojicon;
+import com.vanniktech.emoji.EmojiEditText;
+import com.vanniktech.emoji.EmojiPopup;
+import com.vanniktech.emoji.listeners.OnEmojiPopupDismissListener;
+import com.vanniktech.emoji.listeners.OnEmojiPopupShownListener;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -46,16 +47,13 @@ import android.text.InputType;
 import android.text.TextWatcher;
 import android.text.format.DateUtils;
 import android.util.AttributeSet;
-import android.view.Gravity;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
@@ -79,7 +77,7 @@ import org.kontalk.util.SystemUtils;
  * @author Andrea Cappelli
  */
 public class ComposerBar extends RelativeLayout implements
-        EmojiconsView.OnEmojiconBackspaceClickedListener, OnEmojiconClickedListener {
+        OnEmojiPopupShownListener, OnEmojiPopupDismissListener {
     private static final String TAG = ComposeMessage.TAG;
 
     private static final int MIN_RECORDING_TIME = 900;
@@ -94,7 +92,7 @@ public class ComposerBar extends RelativeLayout implements
 
     // for the text entry
     boolean mSendEnabled = true;
-    EditText mTextEntry;
+    EmojiEditText mTextEntry;
     View mSendButton;
     ComposerListener mListener;
     private TextWatcher mChatStateListener;
@@ -107,9 +105,8 @@ public class ComposerBar extends RelativeLayout implements
 
     // for Emoji drawer
     private ImageButton mEmojiButton;
-    private EmojiconsView mEmojiView;
-    private boolean mEmojiVisible;
-    KeyboardAwareRelativeLayout mRootView;
+    private EmojiPopup mEmojiView;
+    RelativeLayout mRootView;
     private WindowManager.LayoutParams mWindowLayoutParams;
 
     // for PTT message
@@ -397,11 +394,12 @@ public class ComposerBar extends RelativeLayout implements
     }
 
     public void setRootView(View rootView) {
-        if (!(rootView instanceof KeyboardAwareRelativeLayout)) {
+        if (rootView.getId() != R.id.root_view) {
             rootView = rootView.findViewById(R.id.root_view);
         }
-        mRootView = (KeyboardAwareRelativeLayout) rootView;
+        mRootView = (RelativeLayout) rootView;
         // this will handle closing of keyboard while emoji drawer is open
+        /* TODO port to EmojiPopup listener?
         mRootView.setOnKeyboardShownListener(new KeyboardAwareRelativeLayout.OnKeyboardShownListener() {
             @Override
             public void onKeyboardShown(boolean visible) {
@@ -410,6 +408,7 @@ public class ComposerBar extends RelativeLayout implements
                 }
             }
         });
+        */
     }
 
     public void forceHideKeyboard() {
@@ -680,22 +679,20 @@ public class ComposerBar extends RelativeLayout implements
     }
 
     @Override
-    public void onEmojiconBackspaceClicked(View v) {
-        EmojiconsView.backspace(mTextEntry);
+    public void onEmojiPopupShown() {
+        mEmojiButton.setImageResource(R.drawable.ic_keyboard);
     }
 
     @Override
-    public void onEmojiconClicked(Emojicon emojicon) {
-        EmojiconsView.input(mTextEntry, emojicon);
+    public void onEmojiPopupDismiss() {
+        mEmojiButton.setImageResource(R.drawable.ic_emoji);
     }
 
     public boolean isEmojiVisible() {
-        return mEmojiVisible;
+        return mEmojiView != null && mEmojiView.isShowing();
     }
 
     void toggleEmojiDrawer() {
-        // TODO animate drawer enter & exit
-
         if (isEmojiVisible()) {
             hideEmojiDrawer();
         }
@@ -705,53 +702,16 @@ public class ComposerBar extends RelativeLayout implements
     }
 
     private void showEmojiDrawer() {
-        int keyboardHeight = mRootView.getKeyboardHeight();
-
-        mEmojiVisible = true;
-
         if (mEmojiView == null) {
-            mEmojiView = (EmojiconsView) LayoutInflater
-                .from(mContext).inflate(R.layout.emojicons, mRootView, false);
-            mEmojiView.setId(R.id.emoji_drawer);
-            mEmojiView.setOnEmojiconBackspaceClickedListener(this);
-            mEmojiView.setOnEmojiconClickedListener(this);
-
-            mWindowLayoutParams = new WindowManager.LayoutParams();
-            mWindowLayoutParams.gravity = Gravity.BOTTOM | Gravity.START;
-            mWindowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL;
-            mWindowLayoutParams.token = ((Activity) mContext).getWindow().getDecorView().getWindowToken();
-            mWindowLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+            mEmojiView = EmojiPopup.Builder.fromRootView(mRootView)
+                .setOnEmojiPopupShownListener(this)
+                .setOnEmojiPopupDismissListener(this)
+                .build(mTextEntry);
         }
 
-        mWindowLayoutParams.height = keyboardHeight;
-        mWindowLayoutParams.width = SystemUtils.getDisplaySize(mContext).x;
-
-        WindowManager wm = (WindowManager) mContext.getSystemService(Activity.WINDOW_SERVICE);
-
-        try {
-            if (mEmojiView.getParent() != null) {
-                wm.removeViewImmediate(mEmojiView);
-            }
-        }
-        catch (Exception e) {
-            Log.e(TAG, "error removing emoji view", e);
-        }
-
-        try {
-            wm.addView(mEmojiView, mWindowLayoutParams);
-        }
-        catch (Exception e) {
-            Log.e(TAG, "error adding emoji view", e);
-            return;
-        }
-
-        if (!mRootView.isKeyboardVisible()) {
-            mRootView.setPadding(0, 0, 0, keyboardHeight);
-            // TODO mEmojiButton.setImageResource(R.drawable.ic_msg_panel_hide);
-        }
-
-        mEmojiButton.setImageResource(R.drawable.ic_keyboard);
+        // this is called only when isEmojiVisible() returns false
+        // so it's guaranteed to always do the show and not the hide
+        mEmojiView.toggle();
     }
 
     private void hideEmojiDrawer() {
@@ -765,15 +725,7 @@ public class ComposerBar extends RelativeLayout implements
             input.showSoftInput(mTextEntry, 0);
         }
 
-        if (mEmojiView != null && mEmojiView.getParent() != null) {
-            WindowManager wm = (WindowManager) mContext
-                .getSystemService(Context.WINDOW_SERVICE);
-            wm.removeViewImmediate(mEmojiView);
-        }
-
-        mEmojiButton.setImageResource(R.drawable.ic_emoji);
-        mRootView.setPadding(0, 0, 0, 0);
-        mEmojiVisible = false;
+        mEmojiView.dismiss();
     }
 
     public void setComposerListener(ComposerListener listener) {

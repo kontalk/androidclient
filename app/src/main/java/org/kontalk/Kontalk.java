@@ -25,6 +25,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 
+import com.vanniktech.emoji.EmojiManager;
+import com.vanniktech.emoji.one.EmojiOneProvider;
+
 import org.spongycastle.openpgp.PGPException;
 
 import android.accounts.Account;
@@ -182,6 +185,10 @@ public class Kontalk extends Application {
 
         // init notification system
         MessagingNotification.init(this);
+
+        // init emoji manager
+        // FIXME this is taking a very long time
+        EmojiManager.install(new EmojiOneProvider());
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(mPrefListener);

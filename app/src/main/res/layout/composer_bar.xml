@@ -38,7 +38,7 @@
         android:layout_alignBottom="@+id/text_editor"
         android:contentDescription="@string/menu_smileys" />
 
-    <com.rockerhieu.emojicon.EmojiconEditText
+    <com.vanniktech.emoji.EmojiEditText
         android:id="@+id/text_editor"
         android:layout_width="0dip"
         android:layout_height="wrap_content"
@@ -51,7 +51,7 @@
         android:layout_toLeftOf="@id/send_button"
         android:layout_toStartOf="@id/send_button"
         android:layout_alignParentTop="true"
-        app:emojiconSize="@dimen/emoji_edittext_size"
+        app:emojiSize="@dimen/emoji_edittext_size"
         android:nextFocusRight="@+id/send_button"
         android:hint="@string/hint_enter_text"
         android:minHeight="48dip"
