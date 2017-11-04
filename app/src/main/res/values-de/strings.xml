@@ -655,4 +655,12 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="err_import_device_fill_all">Bitte alle Felder ausfüllen.</string>
     <string name="import_device_requesting">Account anfordern…</string>
     <string name="import_device_invalid_barcode">Im Barcode wurden keine gültigen Daten gefunden.</string>
+    <string name="import_device_scan_screen_title">Geheimcode scannen</string>
+    <string name="import_device_btn_scan">Barcode scannen</string>
+    <string name="import_device_btn_input">Manuell eingeben</string>
+    <string name="import_device_message">Öffnen Sie Kontalk auf dem anderen Gerät. Wählen Sie Menü&gt; Einstellungen&gt; Wartung&gt; Gerät registrieren. Ein Geheimcode und ein Barcode werden gezeigt.</string>
+
+    <string name="btn_device_overwrite">Ich habe meinen alten Account oder mein Gerät verloren</string>
+    <string name="btn_device_import">Account übertragen</string>
+
     </resources>
