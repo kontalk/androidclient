@@ -352,7 +352,7 @@
   <string name="err_server_invalid_format">Formato indirizzo non valido.</string>
   <string name="err_no_contacts_app">Nessuna applicazione per i contatti trovata.</string>
 <string name="title_user_exists">Account esistente</string>
-    <string name="err_validation_user_exists"><b>Il numero che stai usando risulta essere già registrato su Kontalk.</b> Se hai registrato un altro dispositivo, procedendo in questo modo non gli sarà più permesso l\'accesso a Kontalk. Fai riferimento alla nostra documentazione per sapere come copiare un account da un dispositivo ad un altro. Scegli OK per proseguire comunque.</string>
+    <string name="err_validation_user_exists"><b>Il numero che stai usando risulta essere già registrato su Kontalk.</b> Se hai registrato un altro dispositivo, procedendo in questo modo non gli sarà più permesso l\'accesso a Kontalk. Se stai registrando un altro dispositivo di tuà proprietà, scegli trasferisci account.</string>
     <string name="about_credits_devteam"><b>Kontalk è sviluppato da:</b></string>
     <string name="about_credits_translators"><b>Traduttori</b></string>
 
@@ -637,5 +637,28 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
 
     <string name="pref_foreground_service">Attiva servizio persistente</string>
     <string name="pref_title_foreground_service">Attivalo se vuoi che Kontalk rimanga in esecuzione quando rimane poca memoria disponibile. Apparirà una notifica persistente</string>
+
+    <string name="menu_import_device">Registra da un altro telefono</string>
+    <string name="pref_register_device">Registra dispositivo</string>
+    <string name="register_device_title">Registra dispositivo</string>
+    <string name="register_device_instructions">Scansiona il codice a barre sotto oppure inserisci i dati presentati di seguito manualmente dal tuo altro dispositivo.</string>
+    <string name="register_device_request_error">Errore durante la richiesta di registrazione dispositivo.</string>
+    <string name="register_device_requesting">Richiesta registrazione…</string>
+
+    <string name="import_device_title">Importa account</string>
+    <string name="import_device_instructions">Inserisci i dati richiesti come appaiono sul tuo altro dispositivo.</string>
+    <string name="import_device_hint_account">Numero di telefono</string>
+    <string name="import_device_hint_server">Nome del server</string>
+    <string name="import_device_hint_token">Codice segreto</string>
+    <string name="err_import_device_fill_all">Devi riempire tutti i campi.</string>
+    <string name="import_device_requesting">Richiesta account…</string>
+    <string name="import_device_invalid_barcode">Il codice a barre non contiene dati validi.</string>
+    <string name="import_device_scan_screen_title">Scansiona codice segreto</string>
+    <string name="import_device_btn_scan">Scansiona codice a barre</string>
+    <string name="import_device_btn_input">Inserisci manualmente</string>
+    <string name="import_device_message">Apri Kontalk sul tuo altro dispositivo, scegli menu &gt; Impostazioni &gt; Manutenzione &gt; Registra dispositivo. Appariranno un codice segreto e un codice a barre che lo rappresenta.</string>
+
+    <string name="btn_device_overwrite">Ho perso il mio account o il mio telefono</string>
+    <string name="btn_device_import">Trasferisci account</string>
 
     </resources>
