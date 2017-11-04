@@ -123,7 +123,7 @@ cmd_continue() {
     check_stage 1 || exit 1
 
     # extract supposed version from build script
-    VERSION_NAME=$(grep appVersionCode build.gradle | sed 's/ *appVersionCode = \(.*\)$/\1/')
+    VERSION_NAME=$(grep appVersionName build.gradle | sed "s/ *appVersionName = '\(.*\)'$/\1/")
     BRANCH="release/${VERSION_NAME}"
     check_branch ${BRANCH} || exit 1
 
@@ -139,7 +139,7 @@ cmd_continue() {
     echo
 
     echo "Pushing release to server"
-    git add ${REPO_DIR}/app/play
+    git add ${REPO_DIR}/app/src/main/play
     git commit -as
     git push -u origin ${BRANCH}
     git tag -a -m "${VERSION_NAME} release" -s -u 274BE2A3BD56E37A v${VERSION_NAME}
@@ -154,10 +154,10 @@ cmd_continue() {
     echo
 
     echo "Creating release draft on GitHub"
-    sed "s/@VERSION_NAME@/${VERSION_NAME}" ${REPO_DIR}/.github/RELEASE_TEMPLATE.md >${REPO_DIR}/.git/RELEASE_EDITMSG
+    sed "s/@VERSION_NAME@/${VERSION_NAME}/" ${REPO_DIR}/.github/RELEASE_TEMPLATE.md >${REPO_DIR}/.git/RELEASE_EDITMSG
     hub release create -a /tmp/Kontalk-${VERSION_NAME}-googleplay.apk \
      -a /tmp/Kontalk-${VERSION_NAME}-basic.apk \
-     -d -f "${REPO_DIR}/.git/RELEASE_EDITMSG" v${VERSION_NAME}
+     -d -F "${REPO_DIR}/.git/RELEASE_EDITMSG" v${VERSION_NAME}
     rm -f "${REPO_DIR}/.git/RELEASE_EDITMSG"
     echo
 
