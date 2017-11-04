@@ -352,7 +352,7 @@
   <string name="err_server_invalid_format">Ungültiges Adressformat.</string>
   <string name="err_no_contacts_app">Keine Kontakte App gefunden.</string>
 <string name="title_user_exists">Nutzer existiert</string>
-    <string name="err_validation_user_exists"><b>Die von Ihnen benutzte Nummer ist bereits bei Kontalk registriert.</b> Wenn Sie bereits ein anderes Gerät registriert haben, wird es aus dem Kontalk-Netzwerk entfernt, wenn sie fortfahren. Bitte lesen Sie in unserer Dokumentation nach, wie ihr Account auf verschiedene Geräte kopiert werden kann. Wählen Sie OK, um dennoch fortzufahren.</string>
+    <string name="err_validation_user_exists"><b>Die von Ihnen benutzte Nummer ist bereits bei Kontalk registriert.</b> Wenn Sie bereits ein anderes Gerät registriert haben, wird es aus dem Kontalk-Netzwerk entfernt, wenn sie fortfahren. Wenn Sie ein weiteres Gerät registrieren möchten wählen Sie Account-Transfer aus.</string>
     <string name="about_credits_translators"><b>Übersetzer</b></string>
 
 <string name="about_credits_devteam"><b>Kontalk wird entwickelt von:</b></string>
@@ -640,4 +640,19 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="pref_foreground_service">Vordergrunddienst ermöglichen</string>
     <string name="pref_title_foreground_service">Aktivieren Sie dies, wenn Kontalk bei knapp werdenden Ressourcen im Vordergrund aktiv bleiben soll . Es wird eine Benachrichtigung angezeigt.</string>
 
+    <string name="menu_import_device">Von einem anderen Gerät registrieren</string>
+    <string name="pref_register_device">Gerät registrieren</string>
+    <string name="register_device_title">Gerät registrieren</string>
+    <string name="register_device_instructions">Scannen Sie den Barcode oder geben Sie die folgenden Daten manuell ein.</string>
+    <string name="register_device_request_error">Fehler bei der Registrierung des Gerätes.</string>
+    <string name="register_device_requesting">Registrierung anfordern…</string>
+
+    <string name="import_device_title">Account-Import</string>
+    <string name="import_device_instructions">Geben Sie die Daten so ein, wie es auf Ihrem anderen Gerät angezeigt wird.</string>
+    <string name="import_device_hint_account">Telefonnummer</string>
+    <string name="import_device_hint_server">Servername</string>
+    <string name="import_device_hint_token">Geheimcode</string>
+    <string name="err_import_device_fill_all">Bitte alle Felder ausfüllen.</string>
+    <string name="import_device_requesting">Account anfordern…</string>
+    <string name="import_device_invalid_barcode">Im Barcode wurden keine gültigen Daten gefunden.</string>
     </resources>
