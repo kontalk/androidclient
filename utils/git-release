@@ -66,12 +66,10 @@ set_stage() {
     echo ${STAGE} >${STAGE_FILE}
 }
 
-alias current_branch='git rev-parse --abbrev-ref HEAD'
-
 check_branch() {
     BRANCH=$1
 
-    CURRENT=$(current_branch)
+    CURRENT=$(git rev-parse --abbrev-ref HEAD)
     if [ "${CURRENT}" != "${BRANCH}" ]; then
         echo "Not on ${BRANCH} branch. Aborting."
         return 1
