@@ -675,4 +675,5 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="contactinfo_fingerprint">Otisk prstu</string>
     <string name="contactinfo_userid">ID uživatele</string>
 
+    <string name="seen_offline_label">offline</string>
     </resources>
