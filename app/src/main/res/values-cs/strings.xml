@@ -669,4 +669,10 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="import_device_btn_input">Zadat ručně</string>
     <string name="import_device_message">Otevřete Kontalk na druhém zařízení, zvolte menu &gt; Nastavení &gt; Údržba &gt; Registrovat zařízení. Bude zobrazen tajný kód a čárový kód, který ho reprezentuje.</string>
 
+    <string name="contactinfo_activity_title">Info o kontaktu</string>
+    <string name="contactinfo_last_seen">naposledy viděn(a) %s</string>
+    <string name="contactinfo_phone_number">Telefonní číslo</string>
+    <string name="contactinfo_fingerprint">Otisk prstu</string>
+    <string name="contactinfo_userid">ID uživatele</string>
+
     </resources>
