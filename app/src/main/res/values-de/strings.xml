@@ -352,7 +352,7 @@
   <string name="err_server_invalid_format">Ungültiges Adressformat.</string>
   <string name="err_no_contacts_app">Keine Kontakte App gefunden.</string>
 <string name="title_user_exists">Nutzer existiert</string>
-    <string name="err_validation_user_exists"><b>Die von Ihnen benutzte Nummer ist bereits bei Kontalk registriert.</b> Wenn Sie bereits ein anderes Gerät registriert haben, wird es aus dem Kontalk-Netzwerk entfernt, wenn sie fortfahren. Wenn Sie ein weiteres Gerät registrieren möchten wählen Sie Account-Transfer aus.</string>
+    <string name="err_validation_user_exists"><b>Die von Ihnen benutzte Nummer ist bereits bei Kontalk registriert.</b> Wenn Sie bereits ein anderes Gerät registriert haben, wird es aus dem Kontalk-Netzwerk entfernt, wenn sie fortfahren. Wenn Sie ein weiteres Gerät registrieren möchten wählen Sie Accounttransfer aus.</string>
     <string name="about_credits_translators"><b>Übersetzer</b></string>
 
 <string name="about_credits_devteam"><b>Kontalk wird entwickelt von:</b></string>
@@ -661,6 +661,6 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="import_device_message">Öffnen Sie Kontalk auf dem anderen Gerät. Wählen Sie Menü&gt; Einstellungen&gt; Wartung&gt; Gerät registrieren. Ein Geheimcode und ein Barcode werden gezeigt.</string>
 
     <string name="btn_device_overwrite">Ich habe meinen alten Account oder mein Gerät verloren</string>
-    <string name="btn_device_import">Account übertragen</string>
+    <string name="btn_device_import">Accounttransfer</string>
 
     </resources>
