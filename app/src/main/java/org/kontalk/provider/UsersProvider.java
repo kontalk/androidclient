@@ -75,7 +75,7 @@ public class UsersProvider extends ContentProvider {
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".users";
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    static final int DATABASE_VERSION = 10;
+    static final int DATABASE_VERSION = 11;
     private static final String DATABASE_NAME = "users.db";
     private static final String TABLE_USERS = "users";
     private static final String TABLE_USERS_OFFLINE = "users_offline";
@@ -102,7 +102,7 @@ public class UsersProvider extends ContentProvider {
         private static final String CREATE_TABLE_USERS = "(" +
             "_id INTEGER PRIMARY KEY," +
             "jid TEXT NOT NULL UNIQUE," +
-            "number TEXT NOT NULL UNIQUE," +
+            "number TEXT," +
             "display_name TEXT," +
             "lookup_key TEXT," +
             "contact_id INTEGER," +
@@ -150,6 +150,13 @@ public class UsersProvider extends ContentProvider {
             "ALTER TABLE keys_backup RENAME TO " + TABLE_KEYS,
         };
 
+        private static final String[] SCHEMA_UPGRADE_V10 = {
+            "DROP TABLE IF EXISTS users",
+            SCHEMA_USERS,
+            "DROP TABLE IF EXISTS users_offline",
+            SCHEMA_USERS_OFFLINE,
+        };
+
         // any upgrade - just re-create all tables
         private static final String[] SCHEMA_UPGRADE = {
             "DROP TABLE IF EXISTS " + TABLE_USERS,
@@ -187,6 +194,11 @@ public class UsersProvider extends ContentProvider {
                     // new keys management
                     for (String sql : SCHEMA_UPGRADE_V9)
                         db.execSQL(sql);
+                    break;
+                case 10:
+                    for (String sql : SCHEMA_UPGRADE_V10)
+                        db.execSQL(sql);
+                    mNew = true;
                     break;
                 default:
                     for (String sql : SCHEMA_UPGRADE)
@@ -523,7 +535,6 @@ public class UsersProvider extends ContentProvider {
             ContentValues insertValues = new ContentValues(values);
             // insert new record
             insertValues.put(Users.JID, selectionArgs[0]);
-            insertValues.put(Users.NUMBER, selectionArgs[0]);
             /*
             if (!values.containsKey(Users.DISPLAY_NAME))
                 insertValues.put(Users.DISPLAY_NAME, selectionArgs[0]);

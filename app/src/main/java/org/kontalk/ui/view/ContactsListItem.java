@@ -58,10 +58,10 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mText1 = (TextView) findViewById(android.R.id.text1);
-        mText2 = (TextView) findViewById(android.R.id.text2);
-        mTrustStatus = (ImageView) findViewById(R.id.trust_status);
-        mCheckbox = (CircleCheckBox) findViewById(R.id.checkbox);
+        mText1 = findViewById(android.R.id.text1);
+        mText2 = findViewById(android.R.id.text2);
+        mTrustStatus = findViewById(R.id.trust_status);
+        mCheckbox = findViewById(R.id.checkbox);
 
         if (isInEditMode()) {
             mText1.setText("Test contact");

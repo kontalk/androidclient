@@ -375,6 +375,17 @@ public final class SystemUtils {
         }
     }
 
+    public static void call(Context context, CharSequence phone) {
+        try {
+            context.startActivity(externalIntent(Intent.ACTION_CALL,
+                Uri.parse("tel:" + phone)));
+        }
+        catch (ActivityNotFoundException e) {
+            Toast.makeText(context, R.string.chooser_error_no_dialer,
+                Toast.LENGTH_LONG).show();
+        }
+    }
+
     public static void dial(Context context, CharSequence phone) {
         try {
             context.startActivity(externalIntent(Intent.ACTION_DIAL,

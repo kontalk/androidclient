@@ -69,7 +69,7 @@
             android:layout_toEndOf="@id/avatar_container"
             android:layout_toRightOf="@id/avatar_container"
             android:ellipsize="marquee"
-            android:maxLines="1"/>
+            android:singleLine="true"/>
 
         <TextView
             android:id="@android:id/text2"

@@ -124,8 +124,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
 
         switch (item.getItemId()) {
             case R.id.call_contact:
-                startActivity(SystemUtils.externalIntent(Intent.ACTION_CALL, Uri.parse("tel:"
-                    + mUserPhone)));
+                SystemUtils.call(getContext(), mUserPhone);
                 return true;
 
             case R.id.view_contact:
@@ -149,6 +148,24 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         super.onPause();
         if (mLocalBroadcastManager != null && mBroadcastReceiver != null) {
             mLocalBroadcastManager.unregisterReceiver(mBroadcastReceiver);
+        }
+    }
+
+    public void viewContactInfo() {
+        final Context ctx = getContext();
+        if (ctx == null)
+            return;
+
+        if (mConversation != null) {
+            Contact contact = mConversation.getContact();
+            if (contact != null) {
+                if (Kontalk.hasTwoPanesUI(ctx)) {
+                    ContactInfoDialog.start(ctx, this, contact.getJID(), 0);
+                }
+                else {
+                    ContactInfoActivity.start(ctx, this, contact.getJID(), 0);
+                }
+            }
         }
     }
 
@@ -420,6 +437,8 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         else if (type == Presence.Type.available || type == Presence.Type.unavailable) {
 
             CharSequence statusText = null;
+            // hide any present warning
+            hideWarning();
 
             // really not much sense in requesting the key for a non-existing contact
             Contact contact = getContact();
@@ -978,26 +997,8 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
     }
 
     void setLastSeenSeconds(Context context, long seconds) {
-        CharSequence statusText = null;
-        if (seconds == 0) {
-            // it's improbable, but whatever...
-            statusText = context.getText(R.string.seen_moment_ago_label);
-        }
-        else if (seconds > 0) {
-            long stamp = System.currentTimeMillis() - (seconds * 1000);
-
-            Contact contact = getContact();
-            if (contact != null) {
-                contact.setLastSeen(stamp);
-            }
-
-            // seconds ago relative to our time
-            statusText = MessageUtils.formatRelativeTimeSpan(context, stamp);
-        }
-
-        if (statusText != null) {
-            setCurrentStatusText(statusText);
-        }
+        setCurrentStatusText(MessageUtils
+            .formatLastSeen(context, getContact(), seconds));
     }
 
     private void setCurrentStatusText(CharSequence statusText) {

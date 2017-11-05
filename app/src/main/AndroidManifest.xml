@@ -310,6 +310,13 @@
 
         <activity android:name=".ui.ScanTextActivity" />
 
+        <activity android:name=".ui.ContactInfoActivity"
+            android:label="@string/contactinfo_activity_title" />
+
+        <activity android:name=".ui.ContactInfoDialog"
+            android:theme="@style/Theme.Light.Dialog"
+            android:label="@string/contactinfo_activity_title" />
+
         <!--
         <activity android:name=".ui.QuickReplyActivity"
             android:windowSoftInputMode="stateAlwaysVisible|adjustPan"

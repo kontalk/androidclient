@@ -634,6 +634,12 @@
     <string name="btn_device_overwrite">I lost my old account or device</string>
     <string name="btn_device_import">Transfer account</string>
 
+    <string name="contactinfo_activity_title">Contact info</string>
+    <string name="contactinfo_last_seen">last seen %s</string>
+    <string name="contactinfo_phone_number">Phone number</string>
+    <string name="contactinfo_fingerprint">Fingerprint</string>
+    <string name="contactinfo_userid">User ID</string>
+
     <!-- contact name, group subject -->
     <string name="notification_group_title">%1$s @ %2$s</string>
 
