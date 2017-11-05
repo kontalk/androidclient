@@ -102,16 +102,8 @@ public class GroupInfoFragment extends ActionModeListFragment
 
     private int mCheckedItemCount;
 
-    private BroadcastReceiver mRosterReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-            boolean isSubscribed = intent
-                .getBooleanExtra(MessageCenterService.EXTRA_SUBSCRIBED_FROM, false) &&
-                intent.getBooleanExtra(MessageCenterService.EXTRA_SUBSCRIBED_TO, false);
-            mMembersAdapter.setSubscribed(jid, isSubscribed);
-        }
-    };
+    // created on demand
+    private BroadcastReceiver mRosterReceiver;
     private LocalBroadcastManager mLocalBroadcastManager;
 
     public static GroupInfoFragment newInstance(long threadId) {
@@ -135,9 +127,22 @@ public class GroupInfoFragment extends ActionModeListFragment
         mSetSubject.setEnabled(isOwner && isMember);
         mLeave.setEnabled(isMember);
 
-        // listen to roster entry status requests
-        IntentFilter filter = new IntentFilter(MessageCenterService.ACTION_ROSTER_STATUS);
-        mLocalBroadcastManager.registerReceiver(mRosterReceiver, filter);
+        if (mRosterReceiver == null) {
+            // listen to roster entry status requests
+            mRosterReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                    boolean isSubscribed = intent
+                        .getBooleanExtra(MessageCenterService.EXTRA_SUBSCRIBED_FROM, false) &&
+                        intent.getBooleanExtra(MessageCenterService.EXTRA_SUBSCRIBED_TO, false);
+                    mMembersAdapter.setSubscribed(jid, isSubscribed);
+                }
+            };
+
+            IntentFilter filter = new IntentFilter(MessageCenterService.ACTION_ROSTER_STATUS);
+            mLocalBroadcastManager.registerReceiver(mRosterReceiver, filter);
+        }
 
         // load members
         boolean showIgnoreAll = false;
@@ -643,8 +648,10 @@ public class GroupInfoFragment extends ActionModeListFragment
     @Override
     public void onDetach() {
         super.onDetach();
-        if (mLocalBroadcastManager != null)
+        if (mLocalBroadcastManager != null && mRosterReceiver != null) {
             mLocalBroadcastManager.unregisterReceiver(mRosterReceiver);
+        }
+        mRosterReceiver = null;
     }
 
     private static final class GroupMembersAdapter extends BaseAdapter {

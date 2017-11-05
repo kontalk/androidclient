@@ -30,6 +30,9 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber;
 
 import org.jivesoftware.smack.util.StringUtils;
 import org.spongycastle.jcajce.provider.digest.SHA1;
@@ -59,6 +62,7 @@ import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.PersonalKey;
+import org.kontalk.data.Contact;
 import org.kontalk.message.AttachmentComponent;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
@@ -207,6 +211,24 @@ public final class MessageUtils {
                 DateUtils.FORMAT_SHOW_TIME;
 
         return DateUtils.formatDateTime(context, when, format_flags);
+    }
+
+    @NonNull
+    public static CharSequence formatLastSeen(Context context, Contact contact, long seconds) {
+        if (seconds > 0) {
+            long stamp = System.currentTimeMillis() - (seconds * 1000);
+
+            if (contact != null) {
+                contact.setLastSeen(stamp);
+            }
+
+            // seconds ago relative to our time
+            return MessageUtils.formatRelativeTimeSpan(context, stamp);
+        }
+        else {
+            // it's improbable, but whatever...
+            return context.getText(R.string.seen_moment_ago_label);
+        }
     }
 
     public static boolean isSameDate(long a, long b) {
@@ -792,6 +814,22 @@ public final class MessageUtils {
 
     public static boolean sendEncrypted(Context context, boolean chatEncryptionEnabled) {
         return Preferences.getEncryptionEnabled(context) && chatEncryptionEnabled;
+    }
+
+    /**
+     * Reformats an E.164 phone number properly.
+     * @param phoneNumber an E.164 phone number
+     * @return a properly formatted phone number
+     */
+    public static String reformatPhoneNumber(String phoneNumber) {
+        PhoneNumberUtil util = PhoneNumberUtil.getInstance();
+        try {
+            final Phonenumber.PhoneNumber phone = util.parse(phoneNumber, null);
+            return util.format(phone, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL);
+        }
+        catch (NumberParseException e) {
+            return phoneNumber;
+        }
     }
 
 }

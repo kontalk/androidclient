@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kontalk Android client
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
+<org.kontalk.ui.view.ContactInfoBanner
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="@dimen/avatar_list_item_height"
+    android:background="@drawable/list_item_background"
+    android:paddingRight="?attr/listPreferredItemPaddingRight"
+    android:paddingEnd="?attr/listPreferredItemPaddingRight">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/avatar_list_item_height">
+
+        <org.kontalk.ui.view.CircleContactBadge
+            android:id="@+id/avatar"
+            style="@style/AvatarBannerStyle"
+            tools:src="@drawable/ic_default_contact"/>
+
+        <TextView android:id="@android:id/text1"
+            style="@style/AvatarBannerTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignWithParentIfMissing="true"
+            android:layout_toRightOf="@id/avatar"
+            android:layout_toEndOf="@id/avatar"
+            android:ellipsize="marquee"
+            android:singleLine="true"
+            tools:text="Test Contact"/>
+
+        <TextView android:id="@android:id/text2"
+            style="@style/AvatarBannerSubtitleStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignWithParentIfMissing="true"
+            android:paddingBottom="16dp"
+            android:layout_below="@android:id/text1"
+            android:layout_toRightOf="@id/avatar"
+            android:layout_toEndOf="@id/avatar"
+            android:maxLines="2"
+            android:ellipsize="end"
+            tools:text="online"/>
+
+    </RelativeLayout>
+
+</org.kontalk.ui.view.ContactInfoBanner>

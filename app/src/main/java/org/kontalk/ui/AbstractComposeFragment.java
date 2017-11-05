@@ -1782,7 +1782,7 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
             mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
 
             // request connection and roster load status
-            Context ctx = getActivity();
+            Context ctx = getContext();
             if (ctx != null) {
                 MessageCenterService.requestConnectionStatus(ctx);
                 MessageCenterService.requestRosterStatus(ctx);

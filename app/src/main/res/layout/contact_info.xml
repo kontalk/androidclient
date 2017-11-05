@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kontalk Android client
+     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="8dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingTop="8dp">
+
+    <include layout="@layout/contact_info_banner"
+        android:id="@+id/contact_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView android:id="@+id/contact_phone_label"
+        style="@style/TextAppearance.AppCompat.Medium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:layout_below="@+id/contact_info"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:text="@string/contactinfo_phone_number"/>
+
+    <TextView android:id="@+id/contact_phone"
+        style="@style/ContactInfoElementTextStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:layout_below="@+id/contact_phone_label"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:textIsSelectable="true"
+        tools:text="+1 (555) 521-5554"/>
+
+    <ImageButton android:id="@+id/btn_call"
+        android:contentDescription="@string/call"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:layout_width="48dp"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/contact_phone"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/contact_phone_label"
+        app:srcCompat="@drawable/ic_menu_call_black"/>
+
+    <TextView android:id="@+id/fingerprint_label"
+        style="@style/TextAppearance.AppCompat.Medium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/contact_phone"
+        android:text="@string/contactinfo_fingerprint"/>
+
+    <!-- TODO autosize won't work -->
+    <TextView android:id="@+id/fingerprint"
+        style="@style/ContactInfoElementTextStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/fingerprint_label"
+        android:layout_toLeftOf="@+id/btn_trust_status"
+        android:layout_toStartOf="@+id/btn_trust_status"
+        android:layout_marginBottom="12dp"
+        android:textIsSelectable="true"
+        android:textSize="16sp"
+        tools:text="23C5 B43F 9DDA 7B18 7FA0\nCF99 E65E BEE8 6862 C300"/>
+
+    <ImageButton
+        android:id="@+id/btn_trust_status"
+        android:layout_width="48dp"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/fingerprint"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/fingerprint_label"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:visibility="visible"
+        tools:src="@drawable/ic_trust_ignored"
+        tools:ignore="ContentDescription"/>
+
+    <TextView android:id="@+id/userid_label"
+        style="@style/TextAppearance.AppCompat.Medium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/fingerprint"
+        android:layout_alignStart="@+id/fingerprint"
+        android:layout_below="@+id/fingerprint"
+        android:text="@string/contactinfo_userid"/>
+
+    <TextView android:id="@+id/userid"
+        style="@style/ContactInfoElementTextStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/userid_label"
+        android:layout_alignStart="@+id/userid_label"
+        android:layout_below="@+id/userid_label"
+        android:textIsSelectable="true"
+        tools:text="admin@beta.kontalk.net"/>
+
+</RelativeLayout>

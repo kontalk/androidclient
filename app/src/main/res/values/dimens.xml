@@ -34,6 +34,7 @@
 
     <dimen name="avatar_size">40dp</dimen>
     <dimen name="avatar_checkbox_size">16dp</dimen>
+    <dimen name="avatar_size_large">56dp</dimen>
 
     <dimen name="msg_status_size">16dp</dimen>
 
