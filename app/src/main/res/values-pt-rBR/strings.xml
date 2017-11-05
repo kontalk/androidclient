@@ -268,7 +268,7 @@
     <string name="confirm_will_delete_messages">As mensagens selecionadas serão apagadas.</string>
     <string name="title_user_exists">O usuário já existe</string>
     <string name="err_validation_nonetwork">Não existe nenhuma conexão com a Internet disponível. Kontalk necessita de uma conexão ativa com a Internet para funcionar.</string>
-    <string name="err_validation_user_exists"><b>O número que você está usando já está registrado na Kontalk.</b> Caso você tenha registrado outro dispositivo ele será retirado da Kontalk, caso você prossiga. Por favor, consulte nossa documentação para ver como copiar sua conta de um dispositivo para o outro. Selecione OK caso queira continuar mesmo assim.</string>
+    <string name="err_validation_user_exists"><b>O número que você está usando já está registrado na Kontalk.</b>" Caso você tenha registrado outro dispositivo, ao continuar com esse procedimento,  ele será removido da Kontalk. Se você estiver registrando outro dispositivo seu, selecione transferir conta."</string>
     <string name="button_validation_fallback">Não está recebendo nada?</string>
     <string name="title_nonetwork">Nenhuma conexão com a Internet</string>
     <string name="title_fallback">Está tendo problemas?</string>
@@ -650,4 +650,14 @@ Desabilite a criptografia apenas se o seu contato não posuir uma chave pessoal.
 
     <string name="msg_request_doze_failed_manual">Por favor, marque o Kontalk como não otimizado, na próxima tela.</string>
 
+    <string name="menu_import_device">Registrar a partir de outro dispositivo</string>
+    <string name="notification_ticker_service_running">Kontalk está sendo executado em segundo plano</string>
+    <string name="notification_text_service_running">Toque para abrir</string>
+
+    <string name="pref_foreground_service">Habilitar serviço em primeiro plano</string>
+    <string name="pref_title_foreground_service">Habilite isso se você quiser que o Kontalk fique ativo em segundo plano quando estiver com poucos recursos. Será exibida uma notificação.</string>
+
+    <string name="pref_register_device">Registrar dispositivo</string>
+    <string name="register_device_title">Registrar dispositivo</string>
+    <string name="register_device_instructions">Fotografe o código de barras abaixo ou digite os seguintes dados manualmente a partir de outro dispositivo.</string>
     </resources>
