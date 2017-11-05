@@ -287,6 +287,9 @@ public class UsersProvider extends ContentProvider {
                 // use phone number if we don't have a display name
                 if (source == null)
                     source = cursor.getString(Contact.COLUMN_NUMBER);
+                // use JID if we don't have a phone number
+                if (source == null)
+                    source = cursor.getString(Contact.COLUMN_JID);
                 String label = mLocaleUtils.getLabel(source);
                 Counter counter = groups.get(label);
                 if (counter == null) {

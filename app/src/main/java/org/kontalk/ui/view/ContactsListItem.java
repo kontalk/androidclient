@@ -89,6 +89,8 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
         CharSequence text2 = contact.getStatus();
         if (text2 == null) {
             text2 = contact.getNumber();
+            if (text2 == null)
+                text2 = contact.getJID();
             mText2.setTextColor(ContextCompat.getColor(context, R.color.grayed_out));
         }
         else {

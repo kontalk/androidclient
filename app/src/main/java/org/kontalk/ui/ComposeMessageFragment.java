@@ -326,7 +326,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         // non existant thread - check for not synced contact
         if (getThreadId() <= 0 && mConversation != null && mUserJID != null) {
             Contact contact = mConversation.getContact();
-            if (!(mUserPhone != null && contact != null) || !contact.isRegistered()) {
+            if ((contact == null || !contact.isRegistered()) && mUserPhone != null) {
                 // ask user to send invitation
                 new MaterialDialog.Builder(getActivity())
                     .title(R.string.title_user_not_found)

@@ -80,9 +80,9 @@ public class ContactsListAdapter extends SearchablePinnedHeaderCursorListViewAda
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
         final View inflated = mFactory.inflate(R.layout.contacts_list_item, parent, false);
         final ViewHolder holder = new ViewHolder();
-        holder.headerView = (TextView) inflated.findViewById(R.id.header_text);
-        holder.text1 = (TextView) inflated.findViewById(android.R.id.text1);
-        holder.text2 = (TextView) inflated.findViewById(android.R.id.text2);
+        holder.headerView = inflated.findViewById(R.id.header_text);
+        holder.text1 = inflated.findViewById(android.R.id.text1);
+        holder.text2 = inflated.findViewById(android.R.id.text2);
         inflated.setTag(holder);
         return inflated;
     }
