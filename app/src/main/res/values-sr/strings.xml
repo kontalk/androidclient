@@ -392,7 +392,7 @@
     <string name="about_credits_devteam"><b>Контак вам доносе:</b></string>
     <string name="msg_fallback">Покушаћемо на други начин да проверимо ваш број.</string>
     <string name="err_custom_background">Десила се грешка приликом постављања позадине. Покушајте са другом сликом.</string>
-    <string name="err_validation_user_exists"><b>Број којег користите је већ пријављен на Контак.</b> Ако сте пријавили други уређај, одјавићете га са Контака ако наставите. Погледајте нашу документацију како да копирате ваш налог на други уређај. Притисните У реду да свеједно наставите.</string>
+    <string name="err_validation_user_exists"><b>Број којег користите је већ пријављен на Контак.</b> Ако сте пријавили други уређај, одјавићете га са Контака ако наставите. Ако пријављујете други уређај, изаберите пренос налога.</string>
     <string name="pref_enable_notification_led">Светло обавештења</string>
     <string name="pref_notification_led_color">Боја светла обавештења</string>
     <string name="seen_away_label">на вези</string>
@@ -605,5 +605,75 @@
     <string name="registration_poweredby">Покреће</string>
 
     <string name="audio_duration_max">%1$s / %2$s</string>
+
+    <string name="code_validation_intro3">Имајте на уму да СМС или позив могу да дођу са страног броја.</string>
+    <string name="location_message">Порука локације</string>
+    <string name="position_screen_title">Положај</string>
+    <string name="msg_register_confirm_number1">Проверићемо овај број телефона:</string>
+    <string name="msg_register_confirm_number2">Уверите се да је број тачан.</string>
+    <string name="pref_maps_google_label">Гуглове мапе</string>
+    <string name="pref_maps_osm_label">Опенстрит мапе</string>
+
+    <string name="notification_location">вам посла локацију</string>
+    <string name="location_no_result">Нема резултата</string>
+    <string name="places_nearby">Оближња места</string>
+    <string name="send_selected_location">Пошаљи изабрану локацију</string>
+    <string name="send_location">Пошаљи моју тренутну локацију</string>
+    <string name="accurate_to">Прецизно до %1$ метар(а)</string>
+    <string name="meters_away">%d m далеко</string>
+    <string name="kilometers_away">%.2f km далеко</string>
+    <string name="loading">Учитавам…</string>
+    <string name="your_position">Ви</string>
+    <string name="err_googlemaps_fallback_osm">Гуглове мапе нису доступне, одступам на Опенстрит мапе.</string>
+    <string name="err_location_no_providers">Нема пружаоца услуге локације. Текућа локација није доступна.</string>
+    <string name="err_location_access_unknown_error">Не могу да захтевам активацију услуге локације.</string>
+    <string name="msg_location_disabled">Потребан је приступ локацији. Тапните на У реду да одете у поставке и омогућите то.</string>
+
+    <string name="menu_open_map">Отвори на мапи</string>
+    <string name="menu_map">Мапа</string>
+    <string name="menu_satellite">Сателит</string>
+
+    <string name="notification_ticker_service_running">Контак је покренут у позадини</string>
+    <string name="notification_text_service_running">Тапните да отворите</string>
+
+    <string name="pref_location_settings">Локација</string>
+    <string name="pref_maps_service">Пружалац услуга</string>
+
+    <string name="title_doze_mode">Оптимизација батерије</string>
+    <string name="btn_request_doze_mode_whitelist">Захтевај дозволу</string>
+    <string name="msg_request_doze_failed_manual">Назначите Контак за „без оптимизације“ на следећем екрану.</string>
+
+    <string name="pref_foreground_service">Укључи сервис у првом плану</string>
+    <string name="pref_register_device">Пријави уређај</string>
+    <string name="register_device_title">Пријави уређај</string>
+    <string name="register_device_request_error">Грешка захтева пријаве уређаја.</string>
+    <string name="register_device_requesting">Захтевам пријаву…</string>
+
+    <string name="import_device_title">Увези налог</string>
+    <string name="import_device_hint_account">Број телефона</string>
+    <string name="import_device_hint_server">Име сервера</string>
+    <string name="err_import_device_fill_all">Испуните сва поља.</string>
+    <string name="import_device_requesting">Захтевам налог…</string>
+    <string name="import_device_btn_input">Унеси ручно</string>
+    <string name="btn_device_overwrite">Изгубио сам мој стари налог или уређај</string>
+    <string name="btn_device_import">Пренос налога</string>
+
+    <string name="contactinfo_activity_title">Подаци о контакту</string>
+    <string name="contactinfo_last_seen">виђен %s</string>
+    <string name="contactinfo_phone_number">Број телефона</string>
+    <string name="contactinfo_fingerprint">Отисак</string>
+    <string name="contactinfo_userid">ИД корисника</string>
+
+    <string name="menu_import_device">Пријави са другог уређаја</string>
+    <string name="import_device_instructions">Унесите податке испод онако како су приказани на вашем другом уређају.</string>
+    <string name="import_device_btn_scan">Очитај бар-кôд</string>
+    <string name="register_device_instructions">Очитајте бар-кôд испод или унесите следеће податке ручно са вашег другог уређаја.</string>
+    <string name="import_device_hint_token">Тајни кôд</string>
+    <string name="import_device_invalid_barcode">Нема исправних података у бар-кôду.</string>
+    <string name="import_device_scan_screen_title">Очитај тајни кôд</string>
+    <string name="msg_doze_mode">Да би радио исправно Контак треба да буде искључен из оптимизације батерије. Неће црпити много енергије.</string>
+    <string name="pref_title_foreground_service">Активирајте ово ако желите да Контак буде активан у позадини када су ресурси на ниском нивоу. Трајно обавештење ће бити приказано</string>
+
+    <string name="import_device_message">Отворите Контак на другом уређају, идите на мени &gt; Поставке &gt; Одржавање &gt; Пријави уређај. Тајни кôд и његов бар-кôд ће бити приказани.</string>
 
     </resources>
