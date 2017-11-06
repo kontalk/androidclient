@@ -661,4 +661,10 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
     <string name="btn_device_overwrite">Ho perso il mio account o il mio telefono</string>
     <string name="btn_device_import">Trasferisci account</string>
 
+    <string name="contactinfo_activity_title">Info contatto</string>
+    <string name="contactinfo_last_seen">visto l\'ultima volta</string>
+    <string name="contactinfo_phone_number">Numero di telefono</string>
+    <string name="contactinfo_fingerprint">Fingerprint</string>
+    <string name="contactinfo_userid">ID utente</string>
+
     </resources>
