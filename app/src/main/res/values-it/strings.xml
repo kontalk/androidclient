@@ -667,4 +667,5 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
     <string name="contactinfo_fingerprint">Fingerprint</string>
     <string name="contactinfo_userid">ID utente</string>
 
+    <string name="seen_offline_label">offline</string>
     </resources>
