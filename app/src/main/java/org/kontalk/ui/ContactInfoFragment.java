@@ -21,15 +21,10 @@ package org.kontalk.ui;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
-
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jxmpp.util.XmppStringUtils;
-import org.spongycastle.openpgp.PGPPublicKey;
-import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -41,22 +36,16 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
-import android.text.SpannableStringBuilder;
-import android.text.Spanned;
-import android.text.style.CharacterStyle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.kontalk.Kontalk;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
-import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MyUsers;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.view.ContactInfoBanner;
@@ -78,7 +67,8 @@ public class ContactInfoFragment extends Fragment
     private TextView mPhoneNumber;
     private ImageButton mCallButton;
     private TextView mFingerprint;
-    private ImageView mTrustStatus;
+    private ImageButton mTrustStatus;
+    View mTrustButtons;
     private TextView mUserId;
 
     /**
@@ -122,32 +112,39 @@ public class ContactInfoFragment extends Fragment
                 .replaceFirst(" {2}", "\n"));
             mFingerprint.setTypeface(Typeface.MONOSPACE);
 
-            int resId, textId;
+            int resId, textId, trustButtonsVisibility;
 
             if (mContact.isKeyChanged()) {
                 // the key has changed and was not trusted yet
                 resId = R.drawable.ic_trust_unknown;
                 textId = R.string.trust_unknown;
+                trustButtonsVisibility = View.VISIBLE;
             }
             else {
                 switch (mContact.getTrustedLevel()) {
                     case MyUsers.Keys.TRUST_UNKNOWN:
                         resId = R.drawable.ic_trust_unknown;
                         textId = R.string.trust_unknown;
+                        trustButtonsVisibility = View.VISIBLE;
                         break;
                     case MyUsers.Keys.TRUST_IGNORED:
                         resId = R.drawable.ic_trust_ignored;
                         textId = R.string.trust_ignored;
+                        trustButtonsVisibility = View.VISIBLE;
                         break;
                     case MyUsers.Keys.TRUST_VERIFIED:
                         resId = R.drawable.ic_trust_verified;
                         textId = R.string.trust_verified;
+                        trustButtonsVisibility = View.GONE;
                         break;
                     default:
                         resId = -1;
                         textId = -1;
+                        trustButtonsVisibility = View.GONE;
                 }
             }
+
+            mTrustButtons.setVisibility(trustButtonsVisibility);
 
             if (resId > 0) {
                 mTrustStatus.setImageResource(resId);
@@ -366,144 +363,36 @@ public class ContactInfoFragment extends Fragment
         mTrustStatus = view.findViewById(R.id.btn_trust_status);
         mUserId = view.findViewById(R.id.userid);
 
-        view.findViewById(R.id.btn_trust_status).setOnClickListener(new View.OnClickListener() {
+        mTrustButtons = view.findViewById(R.id.trust_button_bar);
+        mTrustStatus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showIdentityDialog();
+                // TODO animate this
+                mTrustButtons.setVisibility(mTrustButtons.getVisibility() == View.VISIBLE ?
+                    View.GONE : View.VISIBLE);
+            }
+        });
+
+        view.findViewById(R.id.btn_ignore).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                trustKey(mContact.getFingerprint(), MyUsers.Keys.TRUST_IGNORED);
+            }
+        });
+        view.findViewById(R.id.btn_refuse).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                trustKey(mContact.getFingerprint(), MyUsers.Keys.TRUST_UNKNOWN);
+            }
+        });
+        view.findViewById(R.id.btn_accept).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                trustKey(mContact.getFingerprint(), MyUsers.Keys.TRUST_VERIFIED);
             }
         });
 
         return view;
-    }
-
-    void showIdentityDialog() {
-        final String jid = mContact.getJID();
-        final String dialogFingerprint;
-        final String fingerprint;
-        final boolean selfJid = Authenticator.isSelfJID(getContext(), jid);
-        int titleResId = R.string.title_identity;
-        String uid;
-
-        PGPPublicKeyRing publicKey = Keyring.getPublicKey(getContext(), jid, MyUsers.Keys.TRUST_UNKNOWN);
-        if (publicKey != null) {
-            PGPPublicKey pk = PGP.getMasterKey(publicKey);
-            String rawFingerprint = PGP.getFingerprint(pk);
-            fingerprint = PGP.formatFingerprint(rawFingerprint);
-
-            uid = PGP.getUserId(pk, XmppStringUtils.parseDomain(jid));
-            dialogFingerprint = selfJid ? null : rawFingerprint;
-        }
-        else {
-            // FIXME using another string
-            fingerprint = getString(R.string.peer_unknown);
-            uid = null;
-            dialogFingerprint = null;
-        }
-
-        if (Authenticator.isSelfJID(getContext(), jid)) {
-            titleResId = R.string.title_identity_self;
-        }
-
-        SpannableStringBuilder text = new SpannableStringBuilder();
-
-        if (mContact.getName() != null && mContact.getNumber() != null) {
-            text.append(mContact.getName())
-                .append('\n')
-                .append(mContact.getNumber());
-        }
-        else {
-            int start = text.length();
-            text.append(uid != null ? uid : mContact.getJID());
-            text.setSpan(SystemUtils.getTypefaceSpan(Typeface.BOLD), start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        }
-
-        text.append('\n')
-            .append(getString(R.string.text_invitation2))
-            .append('\n');
-
-        int start = text.length();
-        text.append(fingerprint);
-        text.setSpan(SystemUtils.getTypefaceSpan(Typeface.BOLD), start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-        int trustStringId;
-        CharacterStyle[] trustSpans;
-
-        if (dialogFingerprint != null) {
-            int trustedLevel;
-            if (mContact.isKeyChanged()) {
-                // the key has changed and was not trusted yet
-                trustedLevel = MyUsers.Keys.TRUST_UNKNOWN;
-            }
-            else {
-                trustedLevel = mContact.getTrustedLevel();
-            }
-
-            switch (trustedLevel) {
-                case MyUsers.Keys.TRUST_IGNORED:
-                    trustStringId = R.string.trust_ignored;
-                    trustSpans = new CharacterStyle[] {
-                        SystemUtils.getTypefaceSpan(Typeface.BOLD),
-                        SystemUtils.getColoredSpan(getContext(), R.color.button_danger)
-                    };
-                    break;
-
-                case MyUsers.Keys.TRUST_VERIFIED:
-                    trustStringId = R.string.trust_verified;
-                    trustSpans = new CharacterStyle[] {
-                        SystemUtils.getTypefaceSpan(Typeface.BOLD),
-                        SystemUtils.getColoredSpan(getContext(), R.color.button_success)
-                    };
-                    break;
-
-                case MyUsers.Keys.TRUST_UNKNOWN:
-                default:
-                    trustStringId = R.string.trust_unknown;
-                    trustSpans = new CharacterStyle[] {
-                        SystemUtils.getTypefaceSpan(Typeface.BOLD),
-                        SystemUtils.getColoredSpan(getContext(), R.color.button_danger)
-                    };
-                    break;
-            }
-
-            text.append('\n').append(getString(R.string.status_label));
-            start = text.length();
-            text.append(getString(trustStringId));
-            for (CharacterStyle span : trustSpans)
-                text.setSpan(span, start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        }
-
-        MaterialDialog.Builder builder = new MaterialDialog.Builder(getContext())
-            .content(text)
-            .title(titleResId);
-
-        if (dialogFingerprint != null) {
-            builder.onAny(new MaterialDialog.SingleButtonCallback() {
-                @Override
-                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                    switch (which) {
-                        case POSITIVE:
-                            // trust the key
-                            trustKey(dialogFingerprint, MyUsers.Keys.TRUST_VERIFIED);
-                            break;
-                        case NEUTRAL:
-                            // ignore the key
-                            trustKey(dialogFingerprint, MyUsers.Keys.TRUST_IGNORED);
-                            break;
-                        case NEGATIVE:
-                            // untrust the key
-                            trustKey(dialogFingerprint, MyUsers.Keys.TRUST_UNKNOWN);
-                            break;
-                    }
-                }
-            })
-                .positiveText(R.string.button_accept)
-                .positiveColorRes(R.color.button_success)
-                .neutralText(R.string.button_ignore)
-                .negativeText(R.string.button_refuse)
-                .negativeColorRes(R.color.button_danger);
-        }
-
-        builder.show();
     }
 
     void trustKey(String fingerprint, int trustLevel) {

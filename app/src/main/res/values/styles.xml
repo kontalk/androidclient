@@ -47,16 +47,13 @@
     <style name="AvatarBannerStyle">
         <item name="android:layout_width">@dimen/avatar_size_large</item>
         <item name="android:layout_height">@dimen/avatar_size_large</item>
-        <item name="android:layout_marginLeft">16dp</item>
-        <item name="android:layout_marginRight">16dp</item>
-        <item name="android:layout_marginTop">16dp</item>
+        <item name="android:layout_margin">16dp</item>
     </style>
 
     <style name="AvatarBannerTextStyle" parent="android:TextAppearance.Medium">
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">20sp</item>
         <item name="android:paddingTop">16dp</item>
-        <item name="android:layout_marginRight">5dip</item>
     </style>
 
     <style name="AvatarBannerSubtitleStyle" parent="android:TextAppearance.Small" />
@@ -80,6 +77,16 @@
         <item name="android:textStyle">bold</item>
         <item name="android:textColor">@color/pinned_header_text</item>
         <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="ContactInfoItemCard">
+        <item name="android:layout_marginBottom">12dp</item>
+        <item name="android:layout_marginLeft">8dp</item>
+        <item name="android:layout_marginRight">8dp</item>
+    </style>
+
+    <style name="ContactInfoItemCardContent">
+        <item name="android:padding">12dp</item>
     </style>
 
     <style name="TextAppearance.CommandMessage.Small" parent="android:TextAppearance.Small">
