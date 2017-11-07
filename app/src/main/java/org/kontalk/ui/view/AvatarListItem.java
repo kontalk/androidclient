@@ -88,10 +88,12 @@ public abstract class AvatarListItem extends RelativeLayout implements ContactCa
             getDefaultGroupImage() : getDefaultContactImage();
 
         if (contact != null) {
+            // null tag - first time loading: set default
+            if (mAvatarView.getTag() == null)
+                mAvatarView.setImageDrawable(defaultIcon);
             // we mark this with the contact's hash code for the async avatar
             mAvatarView.setTag(contact.hashCode());
             mAvatarView.assignContactUri(contact.getUri());
-            mAvatarView.setImageDrawable(defaultIcon);
             // laod avatar asynchronously
             contact.getAvatarAsync(getContext(), this);
         }
