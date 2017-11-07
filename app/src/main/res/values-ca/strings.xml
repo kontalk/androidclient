@@ -654,4 +654,6 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
     <string name="btn_device_overwrite">He perdut el meu antic compte o dispositiu</string>
     <string name="btn_device_import">Transfereix el compte</string>
 
+    <string name="import_device_invalid_barcode">No s\'han trobat dades vàlides al codi de barres.</string>
+    <string name="import_device_scan_screen_title">Escaneja el codi secret</string>
     </resources>
