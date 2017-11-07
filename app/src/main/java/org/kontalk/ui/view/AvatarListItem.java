@@ -75,7 +75,7 @@ public abstract class AvatarListItem extends RelativeLayout implements ContactCa
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mAvatarView = (CircleContactBadge) findViewById(R.id.avatar);
+        mAvatarView = findViewById(R.id.avatar);
 
         if (isInEditMode()) {
             mAvatarView.setImageDrawable(getDefaultContactImage());
