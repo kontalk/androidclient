@@ -27,7 +27,7 @@ import android.support.v4.app.Fragment;
  * Contact information dialog.
  * @author Daniele Ricci
  */
-public class ContactInfoDialog extends GroupInfoActivity {
+public class ContactInfoDialog extends ContactInfoActivity {
 
     public static void start(Context context, Fragment parent, String userId, int requestCode) {
         Intent intent = new Intent(context, ContactInfoDialog.class);
