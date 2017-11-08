@@ -41,6 +41,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.zip.ZipInputStream;
 
+import org.jivesoftware.smack.ExceptionCallback;
 import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.StanzaListener;
@@ -329,6 +330,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_PACKET_ID = "org.kontalk.packet.id";
     public static final String EXTRA_TYPE = "org.kontalk.packet.type";
     public static final String EXTRA_ERROR_CONDITION = "org.kontalk.packet.error.condition";
+    public static final String EXTRA_ERROR_EXCEPTION = "org.kontalk.packet.error.exception";
 
     // use with org.kontalk.action.PRESENCE/SUBSCRIBED
     public static final String EXTRA_FROM = "org.kontalk.stanza.from";
@@ -446,6 +448,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     LocalBroadcastManager mLocalBroadcastManager;
     private AlarmManager mAlarmManager;
 
+    private LastActivityListener mLastActivityListener;
     private PingFailedListener mPingFailedListener;
 
     /**
@@ -824,9 +827,30 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // reset idler if requested
         if (bumpIdle) mIdleHandler.reset();
 
-        if (mConnection != null) {
+        final XMPPConnection conn = mConnection;
+        if (conn != null) {
             try {
-                mConnection.sendStanza(packet);
+                conn.sendStanza(packet);
+            }
+            catch (NotConnectedException e) {
+                // ignored
+                Log.v(TAG, "not connected. Dropping packet " + packet);
+            }
+            catch (InterruptedException e) {
+                // ignored
+                Log.v(TAG, "interrupted. Dropping packet " + packet);
+            }
+        }
+    }
+
+    void sendIqWithReply(IQ packet, boolean bumpIdle, StanzaListener callback, ExceptionCallback errorCallback) {
+        // reset idler if requested
+        if (bumpIdle) mIdleHandler.reset();
+
+        final XMPPConnection conn = mConnection;
+        if (conn != null) {
+            try {
+                conn.sendIqWithResponseCallback(packet, callback, errorCallback);
             }
             catch (NotConnectedException e) {
                 // ignored
@@ -1458,7 +1482,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
             p.setTo(intent.getStringExtra(EXTRA_TO));
 
-            sendPacket(p);
+            sendIqWithReply(p, true, mLastActivityListener, mLastActivityListener);
         }
         return false;
     }
@@ -1726,8 +1750,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         filter = new StanzaTypeFilter(org.jivesoftware.smack.packet.Message.class);
         connection.addSyncStanzaListener(new MessageListener(this), filter);
 
-        filter = new StanzaTypeFilter(LastActivity.class);
-        connection.addAsyncStanzaListener(new LastActivityListener(this), filter);
+        // this is used as a reply callback
+        mLastActivityListener = new LastActivityListener(this);
 
         filter = new StanzaTypeFilter(Version.class);
         connection.addAsyncStanzaListener(new VersionListener(this), filter);
@@ -3600,21 +3624,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             ReportingManager.logException(e);
             return;
         }
-        try {
-            mConnection.sendIqWithResponseCallback(iq, new StanzaListener() {
-                @Override
-                public void processStanza(Stanza packet) throws NotConnectedException {
-                    if (mPushService != null)
-                        mPushService.setRegisteredOnServer(regId != null);
-                }
-            });
-        }
-        catch (NotConnectedException e) {
-            // ignored
-        }
-        catch (InterruptedException e) {
-            // ignored
-        }
+
+        sendIqWithReply(iq, true, new StanzaListener() {
+            @Override
+            public void processStanza(Stanza packet) throws NotConnectedException {
+                if (mPushService != null)
+                    mPushService.setRegisteredOnServer(regId != null);
+            }
+        }, null);
     }
 
     private void sendPushUnregistration() {
@@ -3628,21 +3645,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             ReportingManager.logException(e);
             return;
         }
-        try {
-            mConnection.sendIqWithResponseCallback(iq, new StanzaListener() {
-                @Override
-                public void processStanza(Stanza packet) throws NotConnectedException {
-                    if (mPushService != null)
-                        mPushService.setRegisteredOnServer(false);
-                }
-            });
-        }
-        catch (NotConnectedException e) {
-            // ignored
-        }
-        catch (InterruptedException e) {
-            // ignored
-        }
+
+        sendIqWithReply(iq, true, new StanzaListener() {
+            @Override
+            public void processStanza(Stanza packet) throws NotConnectedException {
+                if (mPushService != null)
+                    mPushService.setRegisteredOnServer(false);
+            }
+        }, null);
     }
 
     public static String getPushSenderId() {

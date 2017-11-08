@@ -18,8 +18,12 @@
 
 package org.kontalk.service.msgcenter;
 
-import java.lang.ref.WeakReference;
-import java.util.Map;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.Uri;
+import android.support.annotation.NonNull;
 
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.packet.Stanza;
@@ -27,18 +31,18 @@ import org.jivesoftware.smack.roster.RosterEntry;
 import org.jxmpp.jid.BareJid;
 import org.jxmpp.jid.Jid;
 import org.jxmpp.stringprep.XmppStringprepException;
-
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.net.Uri;
-
 import org.kontalk.Kontalk;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.service.msgcenter.MessageCenterService.IdleConnectionHandler;
+
+import java.lang.ref.WeakReference;
+import java.util.Map;
+
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
 
 
 /**
@@ -240,4 +244,18 @@ abstract class MessageCenterPacketListener implements StanzaListener {
             instance.endKeyPairImport();
     }
 
+    /**
+     * Prepare an intent with common stanza parameters.
+     * @param packet the stanza
+     * @return a prepared intent
+     */
+    protected Intent prepareIntent(@NonNull Stanza packet, @NonNull String action) {
+        Intent i = new Intent(action);
+        i.putExtra(EXTRA_PACKET_ID, packet.getStanzaId());
+        if (packet.getFrom() != null)
+            i.putExtra(EXTRA_FROM, packet.getFrom().toString());
+        if (packet.getTo() != null)
+            i.putExtra(EXTRA_TO, packet.getTo().toString());
+        return i;
+    }
 }

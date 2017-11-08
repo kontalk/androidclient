@@ -18,28 +18,25 @@
 
 package org.kontalk.service.msgcenter;
 
-import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_LAST_ACTIVITY;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_SECONDS;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TYPE;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_ERROR_CONDITION;
-
-import org.jivesoftware.smack.packet.Stanza;
-import org.jivesoftware.smack.packet.XMPPError;
-import org.jivesoftware.smackx.iqlast.packet.LastActivity;
-
 import android.content.Intent;
 
-import org.kontalk.util.XMPPUtils;
+import org.jivesoftware.smack.ExceptionCallback;
+import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.IQ;
+import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smackx.iqlast.packet.LastActivity;
+
+import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_LAST_ACTIVITY;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_ERROR_EXCEPTION;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_SECONDS;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TYPE;
 
 
 /**
  * Packet listener for last activity iq.
  * @author Daniele Ricci
  */
-class LastActivityListener extends MessageCenterPacketListener {
+class LastActivityListener extends MessageCenterPacketListener implements ExceptionCallback {
 
     public LastActivityListener(MessageCenterService instance) {
         super(instance);
@@ -47,19 +44,24 @@ class LastActivityListener extends MessageCenterPacketListener {
 
     @Override
     public void processStanza(Stanza packet) {
+        Intent i = prepareIntent(packet, ACTION_LAST_ACTIVITY);
+
         LastActivity p = (LastActivity) packet;
-        Intent i = new Intent(ACTION_LAST_ACTIVITY);
-        i.putExtra(EXTRA_PACKET_ID, p.getStanzaId());
-
-        i.putExtra(EXTRA_TYPE, p.getType().toString());
-        i.putExtra(EXTRA_FROM, p.getFrom().toString());
-        i.putExtra(EXTRA_TO, p.getTo().toString());
         i.putExtra(EXTRA_SECONDS, p.getIdleTime());
-
-        XMPPError.Condition errCondition = XMPPUtils.getErrorCondition(packet);
-        if (errCondition != null)
-            i.putExtra(EXTRA_ERROR_CONDITION, errCondition.toString());
+        i.putExtra(EXTRA_TYPE, p.getType().toString());
 
         sendBroadcast(i);
+    }
+
+    @Override
+    public void processException(Exception exception) {
+        if (exception instanceof XMPPException.XMPPErrorException) {
+            Intent i = prepareIntent(((XMPPException.XMPPErrorException) exception)
+                .getXMPPError().getStanza(), ACTION_LAST_ACTIVITY);
+            i.putExtra(EXTRA_TYPE, IQ.Type.error.toString());
+            i.putExtra(EXTRA_ERROR_EXCEPTION, exception);
+            sendBroadcast(i);
+        }
+        // we currently don't handle reply timeouts
     }
 }
