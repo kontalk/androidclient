@@ -600,6 +600,9 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
                                     long seconds = intent.getLongExtra(MessageCenterService.EXTRA_SECONDS, -1);
                                     setLastSeenSeconds(context, seconds);
                                 }
+                                else {
+                                    setCurrentStatusText(context.getString(R.string.seen_offline_label));
+                                }
                             }
                         }
                     }

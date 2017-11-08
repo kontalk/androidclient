@@ -243,6 +243,9 @@ public class ContactInfoFragment extends Fragment
                                         long seconds = intent.getLongExtra(MessageCenterService.EXTRA_SECONDS, -1);
                                         setLastSeenSeconds(context, seconds);
                                     }
+                                    else {
+                                        mInfoBanner.setSummary(context.getString(R.string.seen_offline_label));
+                                    }
                                 }
                             }
                         }

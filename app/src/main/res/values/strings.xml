@@ -246,6 +246,7 @@
     <string name="seen_moment_ago_label">a moment ago</string>
     <string name="seen_online_label">active</string>
     <string name="seen_away_label">online</string>
+    <string name="seen_offline_label">offline</string>
     <string name="seen_typing_label">typing&#8230;</string>
     <string name="invitation_sent_label">pending invitation</string>
     <string name="pref_custom_background">Custom background</string>
