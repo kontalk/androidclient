@@ -152,7 +152,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
     }
 
     public void viewContactInfo() {
-        final Context ctx = getContext();
+        final Activity ctx = getActivity();
         if (ctx == null)
             return;
 
