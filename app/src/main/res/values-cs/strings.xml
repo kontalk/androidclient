@@ -676,4 +676,6 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="contactinfo_userid">ID uživatele</string>
 
     <string name="seen_offline_label">offline</string>
+    <string name="btn_reply_cancel">Zrušit</string>
+
     </resources>
