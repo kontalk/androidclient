@@ -619,7 +619,7 @@
     <string name="places_nearby">Оближња места</string>
     <string name="send_selected_location">Пошаљи изабрану локацију</string>
     <string name="send_location">Пошаљи моју тренутну локацију</string>
-    <string name="accurate_to">Прецизно до %1$ метар(а)</string>
+    <string name="accurate_to">Прецизно до %1$s метар(а)</string>
     <string name="meters_away">%d m далеко</string>
     <string name="kilometers_away">%.2f km далеко</string>
     <string name="loading">Учитавам…</string>
