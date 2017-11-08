@@ -18,18 +18,7 @@
 
 package org.kontalk.ui.view;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
-import com.nineoldandroids.animation.Animator;
-import com.nineoldandroids.view.ViewHelper;
-import com.nineoldandroids.view.ViewPropertyAnimator;
-import com.vanniktech.emoji.EmojiEditText;
-import com.vanniktech.emoji.EmojiPopup;
-import com.vanniktech.emoji.listeners.OnEmojiPopupDismissListener;
-import com.vanniktech.emoji.listeners.OnEmojiPopupShownListener;
-
+import android.animation.Animator;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
@@ -60,6 +49,11 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.vanniktech.emoji.EmojiEditText;
+import com.vanniktech.emoji.EmojiPopup;
+import com.vanniktech.emoji.listeners.OnEmojiPopupDismissListener;
+import com.vanniktech.emoji.listeners.OnEmojiPopupShownListener;
+
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.message.AudioComponent;
@@ -69,6 +63,10 @@ import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -319,7 +317,7 @@ public class ComposerBar extends RelativeLayout implements
                             stopRecording(false);
                             animateRecordFrame();
                         }
-                        float currentX = ViewHelper.getX(mAudioButton);
+                        float currentX = mAudioButton.getX();
                         x = x + currentX;
                         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mSlideText.getLayoutParams();
                         if (mDraggingX != -1) {
@@ -333,7 +331,7 @@ public class ComposerBar extends RelativeLayout implements
                             else if (alpha < 0) {
                                 alpha = 0;
                             }
-                            ViewHelper.setAlpha(mSlideText, alpha);
+                            mSlideText.setAlpha(alpha);
                         }
                         if (x <= currentX + mSlideText.getWidth() + mMoveThreshold) {
                             if (mDraggingX == -1) {
@@ -350,7 +348,7 @@ public class ComposerBar extends RelativeLayout implements
                         if (params.leftMargin > mMoveThreshold) {
                             params.leftMargin = mMoveThreshold;
                             mSlideText.setLayoutParams(params);
-                            ViewHelper.setAlpha(mSlideText, 1);
+                            mSlideText.setAlpha(1);
                             mDraggingX = -1;
                         }
                     }
@@ -450,9 +448,9 @@ public class ComposerBar extends RelativeLayout implements
                 (FrameLayout.LayoutParams) mSlideText.getLayoutParams();
             params.leftMargin = mMoveThreshold;
             mSlideText.setLayoutParams(params);
-            ViewHelper.setAlpha(mSlideText, 1);
-            ViewHelper.setX(mRecordLayout, screenWidth);
-            ViewPropertyAnimator.animate(mRecordLayout)
+            mSlideText.setAlpha(1);
+            mRecordLayout.setX(screenWidth);
+            mRecordLayout.animate()
                 .setInterpolator(new AccelerateDecelerateInterpolator())
                 .setListener(new Animator.AnimatorListener() {
                     @Override
@@ -461,7 +459,7 @@ public class ComposerBar extends RelativeLayout implements
 
                     @Override
                     public void onAnimationEnd(Animator animator) {
-                        ViewHelper.setX(mRecordLayout, 0);
+                        mRecordLayout.setX(0);
                     }
 
                     @Override
@@ -477,7 +475,7 @@ public class ComposerBar extends RelativeLayout implements
                 .start();
         }
         else {
-            ViewPropertyAnimator.animate(mRecordLayout)
+            mRecordLayout.animate()
                 .setInterpolator(new AccelerateDecelerateInterpolator())
                 .setListener(new Animator.AnimatorListener() {
                     @Override
@@ -490,7 +488,7 @@ public class ComposerBar extends RelativeLayout implements
                             (FrameLayout.LayoutParams) mSlideText.getLayoutParams();
                         params.leftMargin = mMoveThreshold;
                         mSlideText.setLayoutParams(params);
-                        ViewHelper.setAlpha(mSlideText, 1);
+                        mSlideText.setAlpha(1);
                         mRecordLayout.setVisibility(View.GONE);
                     }
 

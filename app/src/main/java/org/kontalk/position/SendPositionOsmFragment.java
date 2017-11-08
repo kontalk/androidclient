@@ -18,15 +18,8 @@
 
 package org.kontalk.position;
 
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
-import com.car2go.maps.AnyMap;
-import com.car2go.maps.model.LatLng;
-import com.car2go.maps.osm.CameraUpdateFactory;
-import com.car2go.maps.osm.MapsConfiguration;
-import com.nineoldandroids.animation.AnimatorSet;
-import com.nineoldandroids.animation.ObjectAnimator;
-
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
@@ -43,6 +36,13 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.car2go.maps.AnyMap;
+import com.car2go.maps.model.LatLng;
+import com.car2go.maps.osm.CameraUpdateFactory;
+import com.car2go.maps.osm.MapsConfiguration;
 
 import org.kontalk.Log;
 import org.kontalk.R;

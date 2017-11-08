@@ -1,12 +1,12 @@
 package io.codetail.animation;
 
+import android.animation.Animator;
 import android.annotation.TargetApi;
 import android.graphics.Rect;
 import android.os.Build;
+import android.support.animation.FloatPropertyCompat;
+import android.util.Property;
 import android.view.View;
-
-import com.nineoldandroids.animation.Animator;
-import com.nineoldandroids.util.FloatProperty;
 
 import java.lang.ref.WeakReference;
 
@@ -99,6 +99,7 @@ public interface RevealAnimator{
         }
     }
 
+    @Deprecated
     class RevealFinishedGingerbread extends SimpleAnimationListener {
         WeakReference<RevealAnimator> mReference;
 
@@ -166,14 +167,14 @@ public interface RevealAnimator{
         }
     }
 
-    class RevealRadius extends FloatProperty<RevealAnimator> {
+    class RevealRadius extends Property<RevealAnimator, Float> {
 
         public RevealRadius() {
-            super("revealRadius");
+            super(Float.class, "revealRadius");
         }
 
         @Override
-        public void setValue(RevealAnimator object, float value) {
+        public void set(RevealAnimator object, Float value) {
             object.setRevealRadius(value);
         }
 

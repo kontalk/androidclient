@@ -1,14 +1,11 @@
 package io.codetail.animation;
 
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
-
-import com.nineoldandroids.animation.Animator;
-import com.nineoldandroids.animation.ObjectAnimator;
-import com.nineoldandroids.view.ViewHelper;
-import com.nineoldandroids.view.ViewPropertyAnimator;
 
 import java.lang.ref.WeakReference;
 
@@ -70,10 +67,9 @@ public class ViewAnimationUtils {
     private static Animator.AnimatorListener getRevealFinishListener(RevealAnimator target){
         if(SDK_INT >= 18){
             return new RevealAnimator.RevealFinishedJellyBeanMr2(target);
-        }else if(SDK_INT >= 14){
+        }
+        else {
             return new RevealAnimator.RevealFinishedIceCreamSandwich(target);
-        }else {
-            return new RevealAnimator.RevealFinishedGingerbread(target);
         }
     }
 
@@ -88,11 +84,10 @@ public class ViewAnimationUtils {
      */
     @Deprecated
     public static void liftingFromBottom(View view, float baseRotation, float fromY, int duration, int startDelay){
-        ViewHelper.setRotationX(view, baseRotation);
-        ViewHelper.setTranslationY(view, fromY);
+        view.setRotationX(baseRotation);
+        view.setTranslationY(fromY);
 
-        ViewPropertyAnimator
-                .animate(view)
+        view.animate()
                 .setInterpolator(new AccelerateDecelerateInterpolator())
                 .setDuration(duration)
                 .setStartDelay(startDelay)
@@ -112,11 +107,10 @@ public class ViewAnimationUtils {
      */
     @Deprecated
     public static void liftingFromBottom(View view, float baseRotation, int duration, int startDelay){
-        ViewHelper.setRotationX(view, baseRotation);
-        ViewHelper.setTranslationY(view, view.getHeight() / 3);
+        view.setRotationX(baseRotation);
+        view.setTranslationY(view.getHeight() / 3);
 
-        ViewPropertyAnimator
-                .animate(view)
+        view.animate()
                 .setInterpolator(new AccelerateDecelerateInterpolator())
                 .setDuration(duration)
                 .setStartDelay(startDelay)
@@ -135,11 +129,10 @@ public class ViewAnimationUtils {
      */
     @Deprecated
     public static void liftingFromBottom(View view, float baseRotation, int duration){
-        ViewHelper.setRotationX(view, baseRotation);
-        ViewHelper.setTranslationY(view, view.getHeight() / 3);
+        view.setRotationX(baseRotation);
+        view.setTranslationY(view.getHeight() / 3);
 
-        ViewPropertyAnimator
-                .animate(view)
+        view.animate()
                 .setInterpolator(new AccelerateDecelerateInterpolator())
                 .setDuration(duration)
                 .rotationX(0)

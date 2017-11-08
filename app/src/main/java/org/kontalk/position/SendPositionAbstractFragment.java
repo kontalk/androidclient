@@ -18,18 +18,8 @@
 
 package org.kontalk.position;
 
-import java.util.Locale;
-
-import com.car2go.maps.AnyMap;
-import com.car2go.maps.CameraUpdateFactory;
-import com.car2go.maps.MapContainerView;
-import com.car2go.maps.OnInterceptTouchEvent;
-import com.car2go.maps.OnMapReadyCallback;
-import com.car2go.maps.model.LatLng;
-import com.nineoldandroids.animation.AnimatorSet;
-import com.nineoldandroids.animation.ObjectAnimator;
-import com.nineoldandroids.view.ViewHelper;
-
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
@@ -52,9 +42,18 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
+import com.car2go.maps.AnyMap;
+import com.car2go.maps.CameraUpdateFactory;
+import com.car2go.maps.MapContainerView;
+import com.car2go.maps.OnInterceptTouchEvent;
+import com.car2go.maps.OnMapReadyCallback;
+import com.car2go.maps.model.LatLng;
+
 import org.kontalk.R;
 import org.kontalk.util.RecyclerItemClickListener;
 import org.kontalk.util.ViewUtils;
+
+import java.util.Locale;
 
 
 /**
@@ -116,7 +115,7 @@ public abstract class SendPositionAbstractFragment extends Fragment implements O
 
         mMapPin = view.findViewById(R.id.map_pin);
         mPinX = view.findViewById(R.id.pin_x);
-        ViewHelper.setAlpha(mPinX, 0.0f);
+        mPinX.setAlpha(0.0f);
 
         mFabMyLocation = view.findViewById(R.id.fab_my_position);
 
@@ -229,7 +228,7 @@ public abstract class SendPositionAbstractFragment extends Fragment implements O
                 }
             }));
 
-            ViewHelper.setAlpha(mFabMyLocation, 0.0f);
+            mFabMyLocation.setAlpha(0.0f);
         }
         else {
             mSendLocationRow.setOnClickListener(new View.OnClickListener() {
@@ -484,10 +483,10 @@ public abstract class SendPositionAbstractFragment extends Fragment implements O
                     }
                 }
 
-                ViewHelper.setTranslationY(mMapViewClip, Math.min(0, top));
-                ViewHelper.setTranslationY(mMapView, Math.max(0, -top / 2));
-                ViewHelper.setTranslationY(mMapPin, mMarkerTop = -top - ViewUtils.dp(getContext(), 42) + height / 2);
-                ViewHelper.setTranslationY(mPinX, -top - ViewUtils.dp(getContext(), 7) + height / 2);
+                mMapViewClip.setTranslationY(Math.min(0, top));
+                mMapView.setTranslationY(Math.max(0, -top / 2));
+                mMapPin.setTranslationY(mMarkerTop = -top - ViewUtils.dp(getContext(), 42) + height / 2);
+                mPinX.setTranslationY(-top - ViewUtils.dp(getContext(), 7) + height / 2);
 
                 layoutParams = (FrameLayout.LayoutParams) mMapView.getLayoutParams();
                 if (layoutParams != null && layoutParams.height != mOverScrollHeight + ViewUtils.dp(getContext(), 10)) {
