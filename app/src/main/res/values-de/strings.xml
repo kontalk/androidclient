@@ -663,7 +663,7 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="btn_device_overwrite">Ich habe meinen alten Account oder mein Gerät verloren</string>
     <string name="btn_device_import">Accounttransfer</string>
 
-    <string name="contactinfo_activity_title">Kontakt Info</string>
+    <string name="contactinfo_activity_title">Kontaktinfo</string>
     <string name="contactinfo_last_seen">Zuletzt gesehen %s</string>
     <string name="contactinfo_phone_number">Telefonnummer</string>
     <string name="contactinfo_fingerprint">Fingerabdruck</string>
