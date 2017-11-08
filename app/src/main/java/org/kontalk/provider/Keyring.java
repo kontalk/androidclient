@@ -153,7 +153,7 @@ public class Keyring {
         String fingerprint = null;
 
         Cursor c = queryLatestWithMinimumTrustLevel(context, jid, trustLevel, MyUsers.Keys.FINGERPRINT);
-        if (c.moveToFirst())
+        if (c.moveToFirst() && !c.isNull(0))
             fingerprint = c.getString(0);
         c.close();
 
