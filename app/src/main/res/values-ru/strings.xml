@@ -137,7 +137,7 @@
   <string name="err_authentication_failed">Проверочный код отклонен. Аутентификация не удалась.</string>
   <string name="err_validation_failed">Ошибка проверки номера телефона.</string>
   <string name="err_validation_retry_later">Слишком много попыток. Пожалуйста, повторите через несколько минут.</string>
-  <string name="msg_validation_canceled">Проверка отменена. Вы всё равно можете получить СМС.</string>
+  <string name="msg_validation_canceled">Проверка отменена. SMS всё равно может прийти.</string>
   <string name="err_validation_error">Произошла ошибка при проверке. Пожалуйста, попробуйте позже.</string>
   <string name="err_validation_network_error">Невозможно подключиться к серверу. Пожалуйста, попробуйте позже.</string>
   <string name="err_validation_server_not_supported">Выбранный сервер не поддерживает регистрацию. Пожалуйста, укажите другой на экране настроек.</string>
