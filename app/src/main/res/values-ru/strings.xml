@@ -494,7 +494,7 @@
 	<item quantity="one">+1 ещё</item>
 	<item quantity="few">+%d ещё</item>
 	<item quantity="many">+%d ещё</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
 
     <plurals name="group_people">
@@ -631,4 +631,11 @@
 
     <string name="msg_request_doze_failed_manual">Пожалуйста, на следующем экране отметьте, что Kontalk не оптимизирован.</string>
 
+    <string name="notification_text_service_running">Нажмите, чтобы открыть</string>
+
+    <string name="import_device_scan_screen_title">Сканировать секретное слово</string>
+    <string name="import_device_btn_scan">Сканировать штрих-код</string>
+    <string name="contactinfo_phone_number">Телефон</string>
+    <string name="contactinfo_fingerprint">Отпечаток пальца</string>
+    <string name="menu_import_device">Присоединить другое устройство</string>
     </resources>
