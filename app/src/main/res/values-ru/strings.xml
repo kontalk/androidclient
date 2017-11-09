@@ -60,7 +60,7 @@
   <string name="view_contact">Просмотреть контакт</string>
   <string name="view_conversation">Просмотреть беседу</string>
   <string name="delete_thread">Удалить беседу</string>
-  <string name="confirm_delete_thread">Удалить беседу</string>
+  <string name="confirm_delete_thread">Удалить разговор</string>
   <string name="confirm_will_delete_thread">Вся беседа будет удалена.</string>
   <string name="new_messages">Новые сообщения</string>
   <string name="only_one_account_supported">Поддерживается только один аккаунт Kontalk.</string>
@@ -92,7 +92,7 @@
   <string name="pref_restart_msgcenter">Перезапустить центр сообщений</string>
   <string name="pref_title_restart_msgcenter">Используйте если Kontalk работает неправильно</string>
   <string name="pref_idle_time">Отключаться при бездействии</string>
-  <string name="pref_title_idle_time">Время ожидания перед отключением ввиду бездействия</string>
+  <string name="pref_title_idle_time">Время ожидания перед тем, как отключить неактивного пользователя</string>
   <string name="pref_wakeup_time">Повторное подключение</string>
   <string name="pref_title_wakeup_time">Время ожидания перед повторным соединением с сервером после периода бездействия. Используется только когда push-уведомления недоступны или качество связи очень плохое</string>
   <string name="pref_maintenance">Обслуживание</string>
@@ -104,7 +104,7 @@
   <string name="pref_privacy_settings">Конфиденциальность</string>
   <string name="pref_encrypt">Шифровать сообщения</string>
   <string name="pref_encrypt_userdata">Зашифровать личные данные</string>
-  <string name="pref_title_on_encrypt_userdata">Статусное сообщение будет видно только тем пользователям, у которых есть ваш номер телефона</string>
+  <string name="pref_title_on_encrypt_userdata">Статусное сообщение видят только те пользователи, у которых есть ваш номер телефона</string>
   <string name="pref_title_off_encrypt_userdata">Статусное сообщение будет видно всем</string>
   <string name="pref_auto_accept_subscriptions">Автоматически принимать приглашения</string>
   <string name="pref_send_typing">Отправлять уведомление о наборе</string>
@@ -171,13 +171,13 @@
   <string name="msg_sync_progress">Обновление списка контактов…</string>
   <string name="err_sync_failed">Невозможно обновить список контактов. Пожалуйста, повторите позднее.</string>
   <string name="err_sync_nonetwork">Сеть недоступна. Пожалуйста, повторите позднее.</string>
-  <string name="text_invite_message">Привет! Попробуй Kontalk из Google Play Маркет, бесплатное приложение для обмена сообщениями! http://kontalk.org/</string>
+  <string name="text_invite_message">Привет! Попробуйте Kontalk, это бесплатное приложение, чтобы обмениваться сообщениями! http://kontalk.org/</string>
   <string name="text_contacts_empty">Новые пользователи будут добавлены в этот список автоматически.\n\nИспользуйте <b>меню</b> &gt; <b>Пригласить пользователей</b>, чтобы отправить кому-нибудь пригласительное сообщение.</string>
   <string name="text_conversations_empty">Для написания <b>нового сообщения</b> используйте значок ниже.</string>
   <string name="notify_ticker_external_storage">Внешнее хранилище недоступно</string>
   <string name="notify_text_external_storage">Невозможно записать на внешее хранилище.</string>
   <string name="title_user_not_found">Пользователь не найден</string>
-  <string name="message_user_not_found">Контакт скорее всего не зарегистрирован в Kontalk. Вы всё равно можете попробовать связаться с пользователем или отправить ему пригласительное сообщение.</string>
+  <string name="message_user_not_found">Контакт скорее всего не зарегистрирован в Kontalk. Вы всё равно можете попробовать связаться с пользователем или послать ему приглашение присоединиться.</string>
   <string name="yes_user_not_found">Все равно соединиться с пользователем</string>
   <string name="no_user_not_found">Отправить приглашение</string>
   <string name="pref_appearance_settings">Внешний вид</string>
@@ -235,7 +235,7 @@
   <string name="pref_wakeup_time_label_1h">1 час</string>
   <string name="pref_wakeup_time_label_3h">3 часа</string>
   <string name="pref_remove_prefix">Префикс набора</string>
-  <string name="pref_change_passphrase">Изменить пароль ключевой пары</string>
+  <string name="pref_change_passphrase">Изменить персональный пароль</string>
   <string name="pref_title_remove_prefix">Удалять некоторые префиксы набора в Kontalk для соответствия списку номеров телефонов</string>
   <string name="pref_export_keypair">Экспорт ключевой пары</string>
   <string name="msg_import_keypair">Kontalk импортирует ваши ключевые пары с %s на внешнем хранилище. Убедитесь, что файл существует и является архивом с действующими ключами.</string>
@@ -322,15 +322,15 @@
   <string name="pref_sync_invisible_contacts">Включить невидимые контакты</string>
   <string name="pref_accept_any_certificate">Принимать любой сертификат SSL</string>
   <string name="pref_delete_account">Удалить ваш аккаунт</string>
-  <string name="msg_delete_account">Удаление аккаунта повлечёт также удаление всех ваших сообщений. Аккаунт на сервере будет удалён автоматически через несколько недель.</string>
+  <string name="msg_delete_account">При удалении аккаунта все ваши сообщения тоже исчезнут. Учётная запись на сервере удалится автоматически через несколько недель.</string>
   <string name="msg_delete_account_progress">Удаление аккаунта…</string>
   <string name="msg_user_blocked">Пользователь заблокирован.</string>
   <string name="msg_user_unblocked">Пользователь разблокирован.</string>
-  <string name="msg_block_user_warning">Вы собираетесь заблокировать пользователя. В этом случае он не сможет посылать вам никакие сообщения или медиафайлы до тех пор, пока вы его не разблокируете. Этот пользователь также не сможет видеть ваш статус и последнее известное время присутствия, а вы — его статус. Как следствие, вы также не сможете посылать ему сообщения и медиафайлы.</string>
-  <string name="msg_unblock_user_warning">Вы собираетесь разблокировать пользователя. Разблокировка позволит ему отправлять вам сообщения и видеть ваши статусы и последнее известное время присутствия.</string>
+  <string name="msg_block_user_warning">Вы собираетесь заблокировать пользователя. В этом случае он не сможет посылать вам сообщения и файлы до тех пор, пока вы его не разблокируете. Этот пользователь также не сможет видеть ваш статус и последнее время присутствия, а вы — его статус. Вы тоже не сможете посылать ему сообщения и файлы.</string>
+  <string name="msg_unblock_user_warning">Вы собираетесь разблокировать пользователя. Он сможет отправлять вам сообщения и видеть ваши статусы и последнее время присутствия.</string>
   <string name="notification_text_more">Нажмите здесь для подробностей</string>
   <string name="title_auth_error">Ошибка аутентификации</string>
-  <string name="msg_auth_error">Аутентификация на сервере Kontalk при последнем соединении не удалась. Это может быть временной ошибкой сервера или, что более вероятно, сервер не распознаёт ваш личный ключ. Рекомендуем удалить ваш аккаунт Kontalk в системных настройках Android и зарегистрироваться снова (при этом, однако, вы потеряете все свои сообщения в Kontalk).</string>
+  <string name="msg_auth_error">"Аутентификация на сервере Kontalk при последнем соединении не удалась. Может быть, это временный сбой в работе сервера, но скорее всего, он не распознаёт ваш личный ключ.  Попробуйте удалить вашу учётную запись Kontalk в системных настройках Android и зарегистрироваться снова (при этом вы потеряете историю сообщений)."</string>
   <string name="warn_invite_no_app">Нет приложений для приглашения пользователей.</string>
   <string name="pref_text_enter">Кнопка ввода</string>
   <string name="pref_title_text_enter">Выберите поведение для кнопки ввода на клавиатуре</string>
@@ -339,7 +339,7 @@
   <string name="err_password_too_short">Пароль должен содержать минимум %d знаков.</string>
   <string name="err_passwords_mismatch">Пароли не совпадают!</string>
   <string name="err_password_invalid">Неправильный пароль.</string>
-  <string name="hint_record">Нажмите на микрофон чтобы начать запись.</string>
+  <string name="hint_record">Нажмите на микрофон, чтобы начать запись.</string>
   <string name="err_change_passphrase">Невозможно изменить пароль ключевой пары.</string>
   <string name="err_file_not_found">Файл не найден.</string>
   <string name="err_audio_record">Ошибка запуска записи аудио.</string>
@@ -391,7 +391,7 @@
 
     <string name="pref_title_sync_sim_contacts">Включать контакты с SIM-карты при поиске зарегистрированных пользователей</string>
 
-    <string name="pref_title_sync_invisible_contacts">Включать контакты, неотображаемые в приложении Контакты. Включите если используете DAVdroid</string>
+    <string name="pref_title_sync_invisible_contacts">Добавлять контакты, не занесённые в приложении Контакты. Включите, если используете DAVdroid</string>
 
     <string name="title_block_user_warning">Действительно заблокировать этого пользователя?</string>
     <string name="title_unblock_user_warning">Действительно разблокировать этого пользователя?</string>
@@ -423,7 +423,7 @@
     <string name="button_load_next_page">Загрузить больше сообщений</string>
 
     <string name="menu_create_group">Создать группу</string>
-    <string name="confirm_cancel_registration">Если Вы вернётесь назад, Вам придётся провести регистрацию с нуля. Если Вам нужно переключиться на другую программу, просто нажмите кнопку с домиком.</string>
+    <string name="confirm_cancel_registration">Если вы вернётесь назад в меню, Вам придётся заново начать регистрацию. Для того, чтобы переключиться на другую программу, просто нажмите кнопку с домиком.</string>
     <string name="text_search_results_empty">Ни одного сообщения не найдено.</string>
     <string name="title_fallback">Имеете проблемы?</string>
     <string name="msg_fallback">Мы попробуем другой путь, чтобы подтвердить Ваш номер телефона.</string>
@@ -442,7 +442,7 @@
 
     <string name="warning_button_details">ДЕТАЛИ</string>
     <string name="title_public_key_changed_warning">Персональный ключ изменён</string>
-    <string name="msg_public_key_changed_warning">Пожалуйста подтвердите, что это пользователь, который переустановил Контолк или создал новый ключ для себя специально, иначе дальнейшая связь с этим контактом может быть прочитана хакерами!</string>
+    <string name="msg_public_key_changed_warning">Пожалуйста, убедитесь, что этот пользователь переустановил Kontalk или специально создал новый ключ, иначе ваш разговор с ним смогут прочитать посторонние!</string>
     <string name="warning_public_key_unknown">Ключ пользователя пока что не опознан</string>
     <string name="title_public_key_unknown_warning">Проверите персональный ключ</string>
     <string name="msg_public_key_unknown_warning">Пожалуйста подтвердите, что отпечаток пользователя соответствует тому, который отражен в его диалоге <b>Личность</b>, иначе разговор может быть прочитан не только вашим собеседником!</string>
@@ -456,7 +456,7 @@
     <string name="group_command_subject">Название группы установлено как: %s</string>
 
     <string name="group_command_text_create">Группа создана</string>
-    <string name="group_command_text_subject">Название группы изменено</string>
+    <string name="group_command_text_subject">Название группы изменилось</string>
     <string name="group_command_text_part">Кто-то покинул эту группу</string>
     <string name="group_command_text_part_self">Вы покинули эту группу</string>
     <string name="group_command_text_add_remove">Кто-то был добавлен или удалён</string>
@@ -467,7 +467,7 @@
     <string name="group_info_leave">Покинуть группу</string>
     <string name="group_info_members">Участники группы</string>
     <string name="group_info_ignore_all">Игнорировать всех</string>
-    <string name="confirm_will_leave_group">Вы не сможете войти в эту группу снова после того, как Вы покинете её.</string>
+    <string name="confirm_will_leave_group">Вы не сможете войти в эту группу снова после того, как покинете её.</string>
     <string name="group_info_menu_remove">Удалить</string>
 
     <string name="title_ignore_all_identities">Проигнорировать все личности?</string>
@@ -477,7 +477,7 @@
     <string name="text_group_command_fallback">Это групповое сообщение беседы. Вы используете старую версию Контолка или Ваш клиент не поддерживает протокол групповой беседы. Пожалуйста обновитесь до последней версии!</string>
 
     <string name="title_huawei_protected_apps">Приложения, защищённые Huawei</string>
-    <string name="msg_huawei_protected_apps">Контaлк требует, чтобы он был включён в список Защищённых Приложений, чтобы функционировать правильно.</string>
+    <string name="msg_huawei_protected_apps">Для того, чтобы Кontalk смог правильно работать, его необходимо внести в список Защищённых Приложений.</string>
     <string name="btn_huawei_protected_apps">Защищённые Приложения</string>
 
     <string name="status_label">"Статус: "</string>
@@ -504,14 +504,14 @@
 </plurals>
 
     <plurals name="unread_messages">
-	<item quantity="one">Непрочитанных сообщений: %d</item>
+	<item quantity="one">Непрочитанное сообщение: %d</item>
 	<item quantity="few">Непрочитанных сообщений: %d</item>
 	<item quantity="many">Непрочитанных сообщений: %d</item>
 	<item quantity="other"/>
 </plurals>
 <string name="menu_group_info">О группе</string>
     <string name="pref_balloon_label_silence">Silence</string>
-    <string name="chooser_error_no_dialer">Нет приложения для набора номера, либо телефония недоступна на этом устройстве.</string>
+    <string name="chooser_error_no_dialer">Нет приложения для набора номера, либо на этом устройстве недоступны звонки.</string>
     <string name="button_refuse">Отклонить</string>
     <string name="button_private_chat">Приватная беседа</string>
 
@@ -522,8 +522,8 @@
 	<item quantity="other"/>
 </plurals>
 
-<string name="code_validation_intro_callerid">Нажмите на кнопку ниже и отправьте пропущенный вызов на этот номер. Пожалуйста, имейте в виду: <b>вызов должен быть совершен с Вашего зарегистрированного телефонного номера</b>. Вызов будет бесплатным, если Вы повесите трубку как только услышите первый сигнал. Этого для нас будет достаточно.</string>
-    <string name="code_validation_intro2_callerid">После закрытия вызова, вернитесь сюда и нажмите кнопку верификации ниже.</string>
+<string name="code_validation_intro_callerid">Нажмите на кнопку и перезвоните на этот номер. Пожалуйста, имейте в виду: <b>звонок возможен только с вашего зарегистрированного телефонного номера</b>. Звонок бесплатный, повесьте трубку как только услышите первый гудок. Нам этого достаточно.</string>
+    <string name="code_validation_intro2_callerid">После завершения звонка вернитесь сюда и нажмите кнопку верификации.</string>
     <string name="menu_sticky">Избранное</string>
     <string name="delete_thread_messages">Удалить историю чата</string>
     <string name="pref_push_notifications_disabled">Отключено</string>
@@ -547,10 +547,9 @@
     <string name="title_disable_encryption">Отключить шифрование для этого чата?</string>
     <string name="menu_disable_encryption">Отключить</string>
 
-    <string name="msg_disable_encryption">Все новые сообщения, отправленные в этот чат, НЕ будут зашифрованы.
-Отключайте шифрование только если у Вашего контакта нет ключевой пары.</string>
+    <string name="msg_disable_encryption">Все новые сообщения, отправленные в этот чат, НЕ БУДУТ зашифрованы. Отключайте шифрование только если у Вашего контакта нет ключевой пары.</string>
     <string name="pref_on">Вкл</string>
-    <string name="pref_off">Выкл</string>
+    <string name="pref_off">Выкл.</string>
 
     <string name="about_credits_contrib"><b>Участники</b></string>
     <string name="group_command_owner_parted">Администратор (%s) покинул группу. Никто не может добавлять или удалять участников.</string>
@@ -573,6 +572,8 @@
 
     <plurals name="unread_messages_group">
 	<item quantity="one">%1$d сообщ. @ %2$s</item>
+	<item quantity="few">%1$d сообщ. @ %2$s</item>
+	<item quantity="many">%1$d сообщ. @ %2$s</item>
 	<item quantity="other"/>
 </plurals>
 
@@ -609,7 +610,7 @@
 
     <string name="notification_location">отправил местоположение</string>
     <string name="location_no_result">Нет результатов</string>
-    <string name="places_nearby">Места рядом</string>
+    <string name="places_nearby">Места поблизости</string>
     <string name="send_selected_location">Отправить выбранное местоположение</string>
     <string name="send_location">Отправить текущее местоположение</string>
     <string name="accurate_to">Точность до %1$s м</string>
@@ -627,7 +628,7 @@
     <string name="menu_satellite">Спутник</string>
 
     <string name="pref_location_settings">Местоположение</string>
-    <string name="pref_maps_service">Провайдер службы</string>
+    <string name="pref_maps_service">Провайдер услуг</string>
 
     <string name="msg_request_doze_failed_manual">Пожалуйста, на следующем экране отметьте, что Kontalk не оптимизирован.</string>
 
@@ -638,4 +639,15 @@
     <string name="contactinfo_phone_number">Телефон</string>
     <string name="contactinfo_fingerprint">Отпечаток пальца</string>
     <string name="menu_import_device">Присоединить другое устройство</string>
+    <string name="seen_offline_label">отключен от сети</string>
+    <string name="notification_ticker_service_running">Kontalk работает в фоновом режиме</string>
+    <string name="pref_foreground_service">Включить поддержку приоритетного сервиса</string>
+    <string name="pref_title_foreground_service">Включайте, если хотите, чтобы Kontalk был запущен в фоновом режиме при недостатке ресурсов. Показать постоянное уведомление</string>
+
+    <string name="contactinfo_last_seen">В последний раз был(а) %s</string>
+    <string name="contactinfo_userid">Идентификатор пользователя</string>
+
+    <string name="pref_register_device">Добавить устройство</string>
+    <string name="register_device_title">Добавить устройство</string>
+    <string name="register_device_instructions">Сфотографируйте штрих-код ниже или вручную введите данные с другого устройства.</string>
     </resources>
