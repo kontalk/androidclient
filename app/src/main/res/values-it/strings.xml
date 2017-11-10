@@ -668,4 +668,6 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
     <string name="contactinfo_userid">ID utente</string>
 
     <string name="seen_offline_label">offline</string>
+    <string name="btn_reply_cancel_description">Annulla risposta</string>
+
     </resources>
