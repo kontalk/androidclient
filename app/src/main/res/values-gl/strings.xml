@@ -644,4 +644,40 @@ Desactivar a cifraxe só se o contacto non ten unha chave persoal.</string>
 
     <string name="msg_request_doze_failed_manual">Marque Kontalk como non optimizado na seguiente pantalla.</string>
 
+    <string name="menu_import_device">Rexístrese desde outro dispositivo</string>
+    <string name="seen_offline_label">Fora de línea</string>
+    <string name="notification_ticker_service_running">Kontalk está executándose en segundo plano</string>
+    <string name="notification_text_service_running">Toca para abrir</string>
+
+    <string name="pref_foreground_service">Activar o servizo de primeiro plano</string>
+    <string name="pref_title_foreground_service">Active isto se quere que Kontalk estea activo en segundo plano ao baixar os recursos. Aparecerá unha notificación adhesiva</string>
+
+    <string name="pref_register_device">Rexistro de dispositivo</string>
+    <string name="register_device_title">Rexistro de dispositivo</string>
+    <string name="register_device_instructions">Esanee o código de barra a continuación ou insire os seguintes datos manualmente desde o outro dispositivo.</string>
+    <string name="register_device_request_error">Erro ao solicitar o rexistro do dispositivo.</string>
+    <string name="register_device_requesting">Solicitude de rexistro …</string>
+
+    <string name="import_device_title">Importar conta</string>
+    <string name="import_device_instructions">Introduza os datos solicitados a continuación como aparece no outro dispositivo.</string>
+    <string name="import_device_hint_account">Número de teléfono</string>
+    <string name="import_device_hint_server">Nome do servidor</string>
+    <string name="import_device_hint_token">Código secreto</string>
+    <string name="err_import_device_fill_all">Encha todos os campos.</string>
+    <string name="import_device_requesting">Solicitando conta …</string>
+    <string name="import_device_invalid_barcode">Non hai datos válidos atopados no código de barras.</string>
+    <string name="import_device_scan_screen_title">Escanea código secreto</string>
+    <string name="import_device_btn_scan">Escanear o código de barras</string>
+    <string name="import_device_btn_input">Entrada manualmente</string>
+    <string name="import_device_message">Abra Kontalk no outro dispositivo, seleccione Menú&gt; Configuración&gt; Mantemento&gt; Rexistro dispositivo. Aparecerá un código secreto e un código de barras que o represente.</string>
+
+    <string name="btn_device_overwrite">Perdín a miña antiga conta ou dispositivo</string>
+    <string name="btn_device_import">Transferencia da conta</string>
+
+    <string name="contactinfo_activity_title">Información de contacto</string>
+    <string name="contactinfo_last_seen">visto por última vez %s</string>
+    <string name="contactinfo_phone_number">Número de teléfono</string>
+    <string name="contactinfo_fingerprint">Impresión dixital</string>
+    <string name="contactinfo_userid">ID do usuario</string>
+
     </resources>
