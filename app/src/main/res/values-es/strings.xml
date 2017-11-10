@@ -656,4 +656,17 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
     <string name="btn_device_overwrite">He perdido mi cuenta antigua o dispositivo</string>
     <string name="btn_device_import">Transferir cuenta</string>
 
+    <string name="seen_offline_label">Fuera de línea</string>
+    <string name="import_device_invalid_barcode">No se encontraron datos válidos en el código de barras.</string>
+    <string name="import_device_scan_screen_title">Escanear código secreto</string>
+    <string name="import_device_btn_scan">Escanear código de barras</string>
+    <string name="import_device_btn_input">Entrada manual</string>
+    <string name="import_device_message">Abra Kontalk en el otro dispositivo, elija menú&gt; Configuraciones&gt; Mantenimiento&gt; Registrar dispositivo. Aparecerán un código secreto y un código de barras que lo representa.</string>
+
+    <string name="contactinfo_activity_title">Datos de contacto</string>
+    <string name="contactinfo_last_seen">última vez visto %s</string>
+    <string name="contactinfo_phone_number">Número de teléfono</string>
+    <string name="contactinfo_fingerprint">Huella digital</string>
+    <string name="contactinfo_userid">ID de usuario</string>
+
     </resources>
