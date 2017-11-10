@@ -656,4 +656,15 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
 
     <string name="import_device_invalid_barcode">No s\'han trobat dades vàlides al codi de barres.</string>
     <string name="import_device_scan_screen_title">Escaneja el codi secret</string>
+    <string name="seen_offline_label">fora de línia</string>
+    <string name="import_device_btn_scan">Escaneja el codi de barres</string>
+    <string name="import_device_btn_input">Introdueix manualment</string>
+    <string name="import_device_message">Obriu Kontalk a l\'altre dispositiu, seleccioneu Menú&gt; Configuració&gt; Manteniment&gt; Registre del dispositiu. Es mostrarà un codi secret i un codi de barres que el representi.</string>
+
+    <string name="contactinfo_activity_title">Dades de contacte</string>
+    <string name="contactinfo_last_seen">vist per últim cop %s</string>
+    <string name="contactinfo_phone_number">Número de telèfon</string>
+    <string name="contactinfo_fingerprint">Empremta digital</string>
+    <string name="contactinfo_userid">ID d\'usuari</string>
+
     </resources>
