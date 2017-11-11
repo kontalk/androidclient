@@ -650,4 +650,22 @@
     <string name="pref_register_device">Добавить устройство</string>
     <string name="register_device_title">Добавить устройство</string>
     <string name="register_device_instructions">Сфотографируйте штрих-код ниже или вручную введите данные с другого устройства.</string>
+    <string name="register_device_request_error">Ошибка при добавлении устройства.</string>
+    <string name="register_device_requesting">Запрос на добавление устройства</string>
+
+    <string name="import_device_title">Импортировать учётную запись</string>
+    <string name="import_device_instructions">Введите запрашиваемые данные в том виде, в каком они представлены на другом устройстве.</string>
+    <string name="import_device_hint_account">Телефон</string>
+    <string name="import_device_hint_server">Имя сервера</string>
+    <string name="import_device_hint_token">Секретный код</string>
+    <string name="err_import_device_fill_all">Заполните все поля, пожалуйста.</string>
+    <string name="import_device_requesting">Запрос учётной записи...</string>
+    <string name="import_device_invalid_barcode">В штрих-коде нет достоверных данных.</string>
+    <string name="import_device_btn_input">Ввести вручную</string>
+    <string name="import_device_message">"Откройте Kontalk на другом устройстве, выберите меню &gt;Настройки &gt;  Сопровождение &gt; Добавить устройство. Вам покажут секретный код и соответствующий ему штрих-код."</string>
+
+    <string name="btn_device_overwrite">Моя учётная запись или моё устройство утрачены</string>
+    <string name="btn_device_import">Перенести учётную запись</string>
+
+    <string name="contactinfo_activity_title">Информация о контакте</string>
     </resources>
