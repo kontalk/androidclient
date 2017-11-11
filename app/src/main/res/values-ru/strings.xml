@@ -45,7 +45,7 @@
   <string name="hint_validation_number">Ваш номер</string>
   <string name="hint_validation_code">Проверочный код</string>
   <string name="warn_invalid_number">Пожалуйста, введите действующий номер телефона.</string>
-  <string name="msg_validating_phone">Запрос регистрации…</string>
+  <string name="msg_validating_phone">Запрос на добавление устройства…</string>
   <string name="msg_initializing">Регистрация в сети Kontalk…</string>
   <string name="msg_authenticated">Зарегистрирован в сети!</string>
   <string name="share">Поделиться</string>
@@ -135,8 +135,8 @@
   <string name="confirm_delete_message">Удалить сообщение</string>
   <string name="confirm_will_delete_message">Сообщение будет удалено.</string>
   <string name="err_authentication_failed">Проверочный код отклонен. Аутентификация не удалась.</string>
-  <string name="err_validation_failed">Ошибка проверки номера телефона.</string>
-  <string name="err_validation_retry_later">Слишком много попыток. Пожалуйста, повторите через несколько минут.</string>
+  <string name="err_validation_failed">Не удалось подтвердить номер телефона.</string>
+  <string name="err_validation_retry_later">Слишком много попыток. Пожалуйста, повторите через пару минут.</string>
   <string name="msg_validation_canceled">Проверка отменена. SMS всё равно может прийти.</string>
   <string name="err_validation_error">Произошла ошибка при проверке. Пожалуйста, попробуйте позже.</string>
   <string name="err_validation_network_error">Невозможно подключиться к серверу. Пожалуйста, попробуйте позже.</string>
@@ -196,7 +196,7 @@
   <string name="attachment_download">Загрузка вложения</string>
   <string name="attachment_upload">Отправка вложения</string>
   <string name="seen_moment_ago_label">только что</string>
-  <string name="seen_online_label">активность</string>
+  <string name="seen_online_label">присутствует</string>
   <string name="seen_typing_label">набирает…</string>
   <string name="invitation_sent_label">ожидающее приглашение</string>
   <string name="pref_custom_background">Другой фон</string>
@@ -321,7 +321,7 @@
   <string name="pref_sync_sim_contacts">Синхронизировать контакты с SIM-карты</string>
   <string name="pref_sync_invisible_contacts">Включить невидимые контакты</string>
   <string name="pref_accept_any_certificate">Принимать любой сертификат SSL</string>
-  <string name="pref_delete_account">Удалить ваш аккаунт</string>
+  <string name="pref_delete_account">Удалить аккаунт</string>
   <string name="msg_delete_account">При удалении аккаунта все ваши сообщения тоже исчезнут. Учётная запись на сервере удалится автоматически через несколько недель.</string>
   <string name="msg_delete_account_progress">Удаление аккаунта…</string>
   <string name="msg_user_blocked">Пользователь заблокирован.</string>
@@ -331,7 +331,7 @@
   <string name="notification_text_more">Нажмите здесь для подробностей</string>
   <string name="title_auth_error">Ошибка аутентификации</string>
   <string name="msg_auth_error">"Аутентификация на сервере Kontalk при последнем соединении не удалась. Может быть, это временный сбой в работе сервера, но скорее всего, он не распознаёт ваш личный ключ.  Попробуйте удалить вашу учётную запись Kontalk в системных настройках Android и зарегистрироваться снова (при этом вы потеряете историю сообщений)."</string>
-  <string name="warn_invite_no_app">Нет приложений для приглашения пользователей.</string>
+  <string name="warn_invite_no_app">Нет приложений с контактами пользователей.</string>
   <string name="pref_text_enter">Кнопка ввода</string>
   <string name="pref_title_text_enter">Выберите поведение для кнопки ввода на клавиатуре</string>
   <string name="title_password1">Пароль:</string>
@@ -440,7 +440,7 @@
     <string name="title_identity">Опознание</string>
     <string name="title_identity_self">Опознание (это Вы!)</string>
 
-    <string name="warning_button_details">ДЕТАЛИ</string>
+    <string name="warning_button_details">ПОДРОБНЕЕ</string>
     <string name="title_public_key_changed_warning">Персональный ключ изменён</string>
     <string name="msg_public_key_changed_warning">Пожалуйста, убедитесь, что этот пользователь переустановил Kontalk или специально создал новый ключ, иначе ваш разговор с ним смогут прочитать посторонние!</string>
     <string name="warning_public_key_unknown">Ключ пользователя пока что не опознан</string>
@@ -530,7 +530,7 @@
     <string name="pref_push_notifications_title_default">Пуш уведомления - технология, поддерживаемая сервером для экономии батареи. Она не влияет на доставку сообщений в реальном времени.
 
 Если Kontalk отключен, политику соединения можно детально настроить в разделе настроек сети.</string>
-    <string name="pref_push_notifications_title_disabled">Поддержка пуш-сообщений не включена в данной версии.</string>
+    <string name="pref_push_notifications_title_disabled">В этой версии пуш-сообщения не поддерживаются.</string>
     <string name="pref_push_notifications_title_unavailable">Пуш-сообщения не поддерживаются на данном устройстве.</string>
     <string name="err_authentication_failed_callerid">Ошибка верификации. Попробуйте вызвать номер снова и подождать чуть дольше.</string>
     <string name="button_validation_fallback_callerid">Попробуйте по-другому</string>
@@ -634,10 +634,10 @@
 
     <string name="notification_text_service_running">Нажмите, чтобы открыть</string>
 
-    <string name="import_device_scan_screen_title">Сканировать секретное слово</string>
+    <string name="import_device_scan_screen_title">Сканировать секретный код</string>
     <string name="import_device_btn_scan">Сканировать штрих-код</string>
     <string name="contactinfo_phone_number">Телефон</string>
-    <string name="contactinfo_fingerprint">Отпечаток пальца</string>
+    <string name="contactinfo_fingerprint">Идентификатор</string>
     <string name="menu_import_device">Присоединить другое устройство</string>
     <string name="seen_offline_label">отключен от сети</string>
     <string name="notification_ticker_service_running">Kontalk работает в фоновом режиме</string>
@@ -659,7 +659,7 @@
     <string name="import_device_hint_server">Имя сервера</string>
     <string name="import_device_hint_token">Секретный код</string>
     <string name="err_import_device_fill_all">Заполните все поля, пожалуйста.</string>
-    <string name="import_device_requesting">Запрос учётной записи...</string>
+    <string name="import_device_requesting">Запрос учётной записи…</string>
     <string name="import_device_invalid_barcode">В штрих-коде нет достоверных данных.</string>
     <string name="import_device_btn_input">Ввести вручную</string>
     <string name="import_device_message">"Откройте Kontalk на другом устройстве, выберите меню &gt;Настройки &gt;  Сопровождение &gt; Добавить устройство. Вам покажут секретный код и соответствующий ему штрих-код."</string>
