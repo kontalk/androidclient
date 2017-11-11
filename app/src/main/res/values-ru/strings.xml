@@ -670,4 +670,6 @@
     <string name="contactinfo_activity_title">Информация о контакте</string>
     <string name="btn_reply_cancel">Отмена</string>
 
+    <string name="btn_reply_cancel_description">Не отвечать</string>
+
     </resources>
