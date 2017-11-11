@@ -668,4 +668,6 @@
     <string name="btn_device_import">Перенести учётную запись</string>
 
     <string name="contactinfo_activity_title">Информация о контакте</string>
+    <string name="btn_reply_cancel">Отмена</string>
+
     </resources>
