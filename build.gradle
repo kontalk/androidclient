@@ -30,10 +30,10 @@ allprojects {
         targetSdkVersion = 22
         compileSdkVersion = 27
         smackVersion = project(':client-common-java').smackVersion
-        spongyCastleVersion = '1.54.0.0'
-        appcompatVersion = '27.0.0'
+        spongyCastleVersion = '1.58.0.0'
+        appcompatVersion = '27.0.1'
         anyMapsVersion = 'ed538f90d9'
-        googlePlayServicesVersion = '11.4.2'
+        googlePlayServicesVersion = '11.6.0'
 
         travisBuild = System.getenv("TRAVIS") == "true"
         // allows for -Dpre-dex=false to be set

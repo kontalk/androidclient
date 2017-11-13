@@ -134,9 +134,15 @@ dependencies {
     compile "com.android.support:cardview-v7:$appcompatVersion"
 
     compile "com.madgag.spongycastle:core:$spongyCastleVersion"
-    compile "com.madgag.spongycastle:prov:$spongyCastleVersion"
-    compile "com.madgag.spongycastle:pkix:$spongyCastleVersion"
-    compile "com.madgag.spongycastle:pg:$spongyCastleVersion"
+    compile ("com.madgag.spongycastle:prov:$spongyCastleVersion") {
+        exclude group: 'junit'
+    }
+    compile ("com.madgag.spongycastle:bcpkix-jdk15on:$spongyCastleVersion") {
+        exclude group: 'junit'
+    }
+    compile ("com.madgag.spongycastle:bcpg-jdk15on:$spongyCastleVersion") {
+        exclude group: 'junit'
+    }
     compile 'info.guardianproject.netcipher:netcipher:1.2.1'
     compile 'com.googlecode.libphonenumber:libphonenumber:8.8.5'
     compile 'com.google.zxing:core:3.3.0'
@@ -179,11 +185,11 @@ dependencies {
     }
 
     testCompile 'junit:junit:4.12'
-    androidTestCompile 'com.android.support.test:runner:0.5'
-    androidTestCompile 'com.android.support.test:rules:0.5'
+    androidTestCompile 'com.android.support.test:runner:1.0.1'
+    androidTestCompile 'com.android.support.test:rules:1.0.1'
     androidTestCompile "com.android.support:support-annotations:$appcompatVersion"
-    androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.2'
-    androidTestCompile 'com.android.support.test.espresso:espresso-intents:2.2.2'
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.1'
+    androidTestCompile 'com.android.support.test.espresso:espresso-intents:3.0.1'
     androidTestCompile 'com.jayway.android.robotium:robotium-solo:5.6.3'
 }
 
