@@ -1,8 +1,7 @@
 This release features our new registration provider kindly offered by https://JMP.Chat
 Help us improve and fix bugs by reporting them on GitHub or discussing them on our forum: https://forum.kontalk.org
 
-* NEW: location sharing
-* NEW: automatic conversion of text smileys into emojis
-* fix memory leak leading to crash
-* fix contact picture not showing on some Motorola devices
-* many other bugfixes and some performance improvements
+* NEW: brand new emoji set and keyboard
+* drop support for Android 2
+* fix delayed message delivery issue
+* other bugfixes

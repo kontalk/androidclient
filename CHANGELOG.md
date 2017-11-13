@@ -1,5 +1,16 @@
 # Change Log
 
+## [4.1.1] - 2017-11-13
+### Changed
+- Private key transfer (#122, #1090)
+- Contact information screen (#456)
+- New emoji set and keyboard (#814)
+- Drop support for Android 2 (#1073)
+
+### Fixed
+- Crash when searching for places (#1091)
+- Fix message delivery delay in some cases (#1094)
+
 ## [4.1.0] - 2017-11-01
 ### Changed
 - Foreground service notification (#1084)
