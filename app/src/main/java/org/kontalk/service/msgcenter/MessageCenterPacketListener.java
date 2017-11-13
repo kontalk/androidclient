@@ -124,16 +124,14 @@ abstract class MessageCenterPacketListener implements StanzaListener {
             instance.mLocalBroadcastManager.unregisterReceiver(receiver);
     }
 
-    protected void sendPacket(Stanza packet) {
+    protected boolean sendPacket(Stanza packet) {
         MessageCenterService instance = mInstance.get();
-        if (instance != null)
-            instance.sendPacket(packet);
+        return instance != null && instance.sendPacket(packet);
     }
 
-    protected void sendPacket(Stanza packet, boolean bumpIdle) {
+    protected boolean sendPacket(Stanza packet, boolean bumpIdle) {
         MessageCenterService instance = mInstance.get();
-        if (instance != null)
-            instance.sendPacket(packet, bumpIdle);
+        return instance != null && instance.sendPacket(packet, bumpIdle);
     }
 
     protected void addUploadService(IUploadService service) {

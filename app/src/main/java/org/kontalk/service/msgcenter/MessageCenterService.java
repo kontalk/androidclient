@@ -814,8 +814,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         unregisterReceiver(mInactivityReceiver);
     }
 
-    void sendPacket(Stanza packet) {
-        sendPacket(packet, true);
+    boolean sendPacket(Stanza packet) {
+        return sendPacket(packet, true);
     }
 
     /**
@@ -823,7 +823,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      *
      * @param bumpIdle true if the idle handler must be notified of this event
      */
-    void sendPacket(Stanza packet, boolean bumpIdle) {
+    boolean sendPacket(Stanza packet, boolean bumpIdle) {
         // reset idler if requested
         if (bumpIdle) mIdleHandler.reset();
 
@@ -831,6 +831,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (conn != null) {
             try {
                 conn.sendStanza(packet);
+                return true;
             }
             catch (NotConnectedException e) {
                 // ignored
@@ -841,6 +842,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Log.v(TAG, "interrupted. Dropping packet " + packet);
             }
         }
+
+        return false;
     }
 
     void sendIqWithReply(IQ packet, boolean bumpIdle, StanzaListener callback, ExceptionCallback errorCallback) {
@@ -853,12 +856,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 conn.sendIqWithResponseCallback(packet, callback, errorCallback);
             }
             catch (NotConnectedException e) {
-                // ignored
                 Log.v(TAG, "not connected. Dropping packet " + packet);
+                if (errorCallback != null)
+                    errorCallback.processException(e);
             }
             catch (InterruptedException e) {
-                // ignored
                 Log.v(TAG, "interrupted. Dropping packet " + packet);
+                if (errorCallback != null)
+                    errorCallback.processException(e);
             }
         }
     }
@@ -2571,7 +2576,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             convJid = to;
         }
 
-        Jid toJid = null;
+        Jid toJid;
         try {
             toJid = JidCreate.from(to);
         }
@@ -2906,7 +2911,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
             }
 
-            sendPacket(m);
+            if (!sendPacket(m) && msgId > 0) {
+                // message was not sent, remove it from the pending queue
+                mWaitingReceipt.remove(id);
+            }
 
             // no ack request, release message center immediately
             if (!ackRequest)
