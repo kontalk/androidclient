@@ -184,8 +184,8 @@ public class X509Bridge {
             throw new IllegalArgumentException("no master key found");
 
         List<String> xmppAddrs = new LinkedList<>();
-        for (@SuppressWarnings("unchecked") Iterator<Object> it = publicKey.getUserIDs(); it.hasNext();) {
-            String attrib = it.next().toString();
+        for (@SuppressWarnings("unchecked") Iterator<String> it = publicKey.getUserIDs(); it.hasNext();) {
+            String attrib = it.next();
             x500NameBuilder.addRDN(BCStyle.CN, attrib);
             // extract email for the subjectAltName
             PGPUserID uid = PGPUserID.parse(attrib);
