@@ -20,11 +20,11 @@ task checkstyle(type: Checkstyle){
         '*/java/org/kontalk/billing/Purchase.java'
     // 3rd-party code
     exclude '**/CircularSeekBar.java',
-        '**/KeyboardAwareRelativeLayout.java', '**/FrameLayoutFixed.java',
-        '**/AbsListViewScrollDetector.java', '**/NoCacheMiniDnsResolver.java',
+        '**/FrameLayoutFixed.java',
+        '**/AbsListViewScrollDetector.java',
         '**/XMPPTCPConnection.java',
         '**/ProximityScreenLocker*.java',
-        'main/java/com/**', 'main/java/io/**', 'main/java/cn/**'
+        'main/java/com/**', 'main/java/io/**'
     def configProps = ['baseDir': projectDir.absolutePath]
     configProperties configProps
     classpath = files()
