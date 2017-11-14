@@ -670,4 +670,6 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="contactinfo_userid">Nutzer ID</string>
 
     <string name="seen_offline_label">offline</string>
+    <string name="btn_reply_cancel">Abbrechen</string>
+
     </resources>
