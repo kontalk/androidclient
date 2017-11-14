@@ -641,9 +641,9 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="pref_title_foreground_service">Aktivieren Sie dies, wenn Kontalk bei knapp werdenden Ressourcen im Vordergrund aktiv bleiben soll . Es wird eine Benachrichtigung angezeigt.</string>
 
     <string name="menu_import_device">Von einem anderen Gerät registrieren</string>
-    <string name="pref_register_device">Gerät registrieren</string>
-    <string name="register_device_title">Gerät registrieren</string>
-    <string name="register_device_instructions">Scannen Sie den Barcode oder geben Sie die folgenden Daten manuell ein.</string>
+    <string name="pref_register_device">Weiteres Gerät registrieren</string>
+    <string name="register_device_title">Weiteres Gerät registrieren</string>
+    <string name="register_device_instructions">Scannen Sie den QR Code oder geben Sie die folgenden Daten manuell ein.</string>
     <string name="register_device_request_error">Fehler bei der Registrierung des Gerätes.</string>
     <string name="register_device_requesting">Registrierung anfordern…</string>
 
@@ -654,11 +654,11 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="import_device_hint_token">Geheimcode</string>
     <string name="err_import_device_fill_all">Bitte alle Felder ausfüllen.</string>
     <string name="import_device_requesting">Account anfordern…</string>
-    <string name="import_device_invalid_barcode">Im Barcode wurden keine gültigen Daten gefunden.</string>
+    <string name="import_device_invalid_barcode">Im QR Code wurden keine gültigen Daten gefunden.</string>
     <string name="import_device_scan_screen_title">Geheimcode scannen</string>
-    <string name="import_device_btn_scan">Barcode scannen</string>
+    <string name="import_device_btn_scan">QR Code scannen</string>
     <string name="import_device_btn_input">Manuell eingeben</string>
-    <string name="import_device_message">Öffnen Sie Kontalk auf dem anderen Gerät. Wählen Sie Menü&gt; Einstellungen&gt; Wartung&gt; Gerät registrieren. Ein Geheimcode und ein Barcode werden gezeigt.</string>
+    <string name="import_device_message">Öffnen Sie Kontalk auf dem anderen Gerät. Wählen Sie Menü&gt; Einstellungen&gt; Wartung&gt; Weiteres Gerät registrieren. Ein Geheimcode und ein QR Code werden gezeigt.</string>
 
     <string name="btn_device_overwrite">Ich habe meinen alten Account oder mein Gerät verloren</string>
     <string name="btn_device_import">Accounttransfer</string>
