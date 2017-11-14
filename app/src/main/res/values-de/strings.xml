@@ -672,4 +672,6 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="seen_offline_label">offline</string>
     <string name="btn_reply_cancel">Abbrechen</string>
 
+    <string name="btn_reply_cancel_description">Antworten abbrechen</string>
+
     </resources>
