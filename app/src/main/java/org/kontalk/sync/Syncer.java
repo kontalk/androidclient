@@ -463,14 +463,12 @@ public class Syncer {
                 Log.e(TAG, "contact delete error", e);
                 syncResult.databaseError = true;
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-                try {
-                    syncResult.stats.numDeletes += deleteProfile(account, provider);
-                }
-                catch (Exception e) {
-                    Log.e(TAG, "profile delete error", e);
-                    syncResult.databaseError = true;
-                }
+            try {
+                syncResult.stats.numDeletes += deleteProfile(account, provider);
+            }
+            catch (Exception e) {
+                Log.e(TAG, "profile delete error", e);
+                syncResult.databaseError = true;
             }
 
             commit(usersProvider, syncResult);
@@ -514,7 +512,7 @@ public class Syncer {
             List<PresenceItem> res = receiver.getResponse();
             if (res != null) {
                 ArrayList<ContentProviderOperation> operations =
-                    new ArrayList<ContentProviderOperation>();
+                    new ArrayList<>();
                 // TODO operations.size() could be used instead (?)
                 int op = 0;
 
@@ -527,14 +525,12 @@ public class Syncer {
                     syncResult.databaseError = true;
                     return;
                 }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-                    try {
-                        syncResult.stats.numDeletes += deleteProfile(account, provider);
-                    }
-                    catch (Exception e) {
-                        Log.e(TAG, "profile delete error", e);
-                        syncResult.databaseError = true;
-                    }
+                try {
+                    syncResult.stats.numDeletes += deleteProfile(account, provider);
+                }
+                catch (Exception e) {
+                    Log.e(TAG, "profile delete error", e);
+                    syncResult.databaseError = true;
                 }
 
                 ContentValues registeredValues = new ContentValues();
@@ -625,7 +621,7 @@ public class Syncer {
                         // if this is our own contact, trust our own key later
                         if (Authenticator.isSelfJID(mContext, entry.from)) {
                             // register our profile while we're at it
-                            if (data != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+                            if (data != null) {
                                 // add contact
                                 addProfile(account,
                                     Authenticator.getDefaultDisplayName(mContext),
@@ -685,7 +681,7 @@ public class Syncer {
         }
     }
 
-    private void requestRosterMatch(String id, List<String> list) {
+    void requestRosterMatch(String id, List<String> list) {
         Intent i = new Intent(mContext, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_ROSTER_MATCH);
         i.putExtra(MessageCenterService.EXTRA_PACKET_ID, id);
@@ -693,7 +689,7 @@ public class Syncer {
         mContext.startService(i);
     }
 
-    private void requestPresenceData(String id) {
+    void requestPresenceData(String id) {
         Intent i = new Intent(mContext, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_PRESENCE);
         i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.probe.toString());
@@ -701,14 +697,14 @@ public class Syncer {
         mContext.startService(i);
     }
 
-    private void requestPublicKeys() {
+    void requestPublicKeys() {
         Intent i = new Intent(mContext, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_PUBLICKEY);
         i.putExtra(MessageCenterService.EXTRA_PACKET_ID, IQ_PACKET_ID);
         mContext.startService(i);
     }
 
-    private void requestBlocklist() {
+    void requestBlocklist() {
         Intent i = new Intent(mContext, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_BLOCKLIST);
         mContext.startService(i);

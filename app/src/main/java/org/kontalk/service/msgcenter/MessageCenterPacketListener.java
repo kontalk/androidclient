@@ -256,4 +256,19 @@ abstract class MessageCenterPacketListener implements StanzaListener {
             i.putExtra(EXTRA_TO, packet.getTo().toString());
         return i;
     }
+
+    /**
+     * Prepare an intent with common stanza parameters from a request stanza.
+     * @param request the original request stanza
+     * @return a prepared intent with inverted from/to
+     */
+    protected Intent prepareResponseIntent(@NonNull Stanza request, @NonNull String action) {
+        Intent i = new Intent(action);
+        i.putExtra(EXTRA_PACKET_ID, request.getStanzaId());
+        if (request.getFrom() != null)
+            i.putExtra(EXTRA_TO, request.getFrom().toString());
+        if (request.getTo() != null)
+            i.putExtra(EXTRA_FROM, request.getTo().toString());
+        return i;
+    }
 }

@@ -1513,7 +1513,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
                 p.setTo(to);
 
-                sendPacket(p);
+                PublicKeyListener listener = new PublicKeyListener(this, p);
+                sendIqWithReply(p, true, listener, listener);
             }
             else {
                 // request public keys for the whole roster
@@ -1522,9 +1523,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     if (isRosterEntrySubscribed(buddy)) {
                         PublicKeyPublish p = new PublicKeyPublish();
                         p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
-                        p.setTo(buddy.getUser());
+                        p.setTo(buddy.getJid());
 
-                        sendPacket(p);
+                        PublicKeyListener listener = new PublicKeyListener(this, p);
+                        sendIqWithReply(p, true, listener, listener);
                     }
                 }
 
@@ -1532,7 +1534,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 PublicKeyPublish p = new PublicKeyPublish();
                 p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
                 p.setTo(mConnection.getUser().asBareJid());
-                sendPacket(p);
+                PublicKeyListener listener = new PublicKeyListener(this, p);
+                sendIqWithReply(p, true, listener, listener);
             }
         }
         return false;
@@ -1760,9 +1763,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         filter = new StanzaTypeFilter(Version.class);
         connection.addAsyncStanzaListener(new VersionListener(this), filter);
-
-        filter = new StanzaTypeFilter(PublicKeyPublish.class);
-        connection.addAsyncStanzaListener(new PublicKeyListener(this), filter);
     }
 
     @Override
