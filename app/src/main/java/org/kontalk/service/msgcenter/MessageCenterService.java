@@ -1105,8 +1105,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     break;
 
                 case ACTION_ROSTER:
-                case ACTION_ROSTER_MATCH:
                     doConnect = handleRoster(intent, canConnect);
+                    break;
+
+                case ACTION_ROSTER_MATCH:
+                    doConnect = handleRosterMatch(intent, canConnect);
                     break;
 
                 case ACTION_ROSTER_LOADED:
@@ -1348,31 +1351,38 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return false;
     }
 
-    @CommandHandler(name = {ACTION_ROSTER, ACTION_ROSTER_MATCH})
+    @CommandHandler(name = ACTION_ROSTER)
     private boolean handleRoster(Intent intent, boolean canConnect) {
         if (canConnect && isConnected()) {
-            Stanza iq;
-
-            if (ACTION_ROSTER_MATCH.equals(intent.getAction())) {
-                iq = new RosterMatch();
-                String[] list = intent.getStringArrayExtra(EXTRA_JIDLIST);
-
-                for (String item : list) {
-                    ((RosterMatch) iq).addItem(item);
-                }
-
-                // directed to the probe component
-                iq.setTo(XmppStringUtils.completeJidFrom("probe", mServer.getNetwork()));
-            }
-            else {
-                iq = new RosterPacket();
-            }
-
+            Stanza iq = new RosterPacket();
             String id = intent.getStringExtra(EXTRA_PACKET_ID);
             iq.setStanzaId(id);
             // iq default type is get
 
             sendPacket(iq);
+        }
+        return false;
+    }
+
+    @CommandHandler(name = ACTION_ROSTER_MATCH)
+    private boolean handleRosterMatch(Intent intent, boolean canConnect) {
+        if (canConnect && isConnected()) {
+            RosterMatch iq = new RosterMatch();
+            String[] list = intent.getStringArrayExtra(EXTRA_JIDLIST);
+
+            for (String item : list) {
+                iq.addItem(item);
+            }
+
+            // directed to the probe component
+            iq.setTo(XmppStringUtils.completeJidFrom("probe", mServer.getNetwork()));
+
+            String id = intent.getStringExtra(EXTRA_PACKET_ID);
+            iq.setStanzaId(id);
+            // iq default type is get
+
+            RosterMatchListener listener = new RosterMatchListener(this, iq);
+            sendIqWithReply(iq, true, listener, listener);
         }
         return false;
     }
@@ -1513,7 +1523,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
                 p.setTo(to);
 
-                sendPacket(p);
+                PublicKeyListener listener = new PublicKeyListener(this, p);
+                sendIqWithReply(p, true, listener, listener);
             }
             else {
                 // request public keys for the whole roster
@@ -1522,9 +1533,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     if (isRosterEntrySubscribed(buddy)) {
                         PublicKeyPublish p = new PublicKeyPublish();
                         p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
-                        p.setTo(buddy.getUser());
+                        p.setTo(buddy.getJid());
 
-                        sendPacket(p);
+                        PublicKeyListener listener = new PublicKeyListener(this, p);
+                        sendIqWithReply(p, true, listener, listener);
                     }
                 }
 
@@ -1532,7 +1544,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 PublicKeyPublish p = new PublicKeyPublish();
                 p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
                 p.setTo(mConnection.getUser().asBareJid());
-                sendPacket(p);
+                PublicKeyListener listener = new PublicKeyListener(this, p);
+                sendIqWithReply(p, true, listener, listener);
             }
         }
         return false;
@@ -1749,9 +1762,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         filter = new StanzaTypeFilter(Presence.class);
         connection.addAsyncStanzaListener(presenceListener, filter);
 
-        filter = new StanzaTypeFilter(RosterMatch.class);
-        connection.addAsyncStanzaListener(new RosterMatchListener(this), filter);
-
         filter = new StanzaTypeFilter(org.jivesoftware.smack.packet.Message.class);
         connection.addSyncStanzaListener(new MessageListener(this), filter);
 
@@ -1760,9 +1770,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         filter = new StanzaTypeFilter(Version.class);
         connection.addAsyncStanzaListener(new VersionListener(this), filter);
-
-        filter = new StanzaTypeFilter(PublicKeyPublish.class);
-        connection.addAsyncStanzaListener(new PublicKeyListener(this), filter);
     }
 
     @Override

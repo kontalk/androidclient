@@ -20,6 +20,8 @@ package org.kontalk.service.msgcenter;
 
 import java.util.List;
 
+import org.jivesoftware.smack.ExceptionCallback;
+import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Stanza;
 
 import android.content.Intent;
@@ -27,10 +29,8 @@ import android.content.Intent;
 import org.kontalk.client.RosterMatch;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_ROSTER_MATCH;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_ERROR_EXCEPTION;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_JIDLIST;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TYPE;
 
 
@@ -38,29 +38,35 @@ import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TYPE;
  * Packet listener for roster match iq stanzas.
  * @author Daniele Ricci
  */
-class RosterMatchListener extends MessageCenterPacketListener {
+class RosterMatchListener extends MessageCenterPacketListener implements ExceptionCallback {
 
-    public RosterMatchListener(MessageCenterService instance) {
+    private final IQ mRequest;
+
+    public RosterMatchListener(MessageCenterService instance, IQ request) {
         super(instance);
+        mRequest = request;
     }
 
     @Override
     public void processStanza(Stanza packet) {
-        if (packet.getError() == null) {
-            RosterMatch p = (RosterMatch) packet;
-            Intent i = new Intent(ACTION_ROSTER_MATCH);
-            i.putExtra(EXTRA_FROM, p.getFrom().toString());
-            i.putExtra(EXTRA_TO, p.getTo().toString());
-            i.putExtra(EXTRA_TYPE, p.getType().toString());
-            i.putExtra(EXTRA_PACKET_ID, p.getStanzaId());
+        RosterMatch p = (RosterMatch) packet;
+        Intent i = prepareIntent(packet, ACTION_ROSTER_MATCH);
+        i.putExtra(EXTRA_TYPE, p.getType().toString());
 
-            List<String> items = p.getItems();
-            if (items != null) {
-                String[] list = new String[items.size()];
-                i.putExtra(EXTRA_JIDLIST, items.toArray(list));
-            }
-
-            sendBroadcast(i);
+        List<String> items = p.getItems();
+        if (items != null) {
+            String[] list = new String[items.size()];
+            i.putExtra(EXTRA_JIDLIST, items.toArray(list));
         }
+
+        sendBroadcast(i);
+    }
+
+    @Override
+    public void processException(Exception exception) {
+        Intent i = prepareResponseIntent(mRequest, ACTION_ROSTER_MATCH);
+        i.putExtra(EXTRA_TYPE, IQ.Type.error.toString());
+        i.putExtra(EXTRA_ERROR_EXCEPTION, exception);
+        sendBroadcast(i);
     }
 }

@@ -18,6 +18,7 @@
 
 package org.kontalk.service.msgcenter;
 
+import org.jivesoftware.smack.ExceptionCallback;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jxmpp.jid.BareJid;
@@ -38,106 +39,110 @@ import org.kontalk.provider.UsersProvider;
 import org.kontalk.sync.SyncAdapter;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_PUBLICKEY;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_ERROR_EXCEPTION;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PUBLIC_KEY;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TYPE;
 
 
 /**
  * Packet Listener for public key publish iq stanzas.
  * @author Daniele Ricci
  */
-class PublicKeyListener extends MessageCenterPacketListener {
+class PublicKeyListener extends MessageCenterPacketListener implements ExceptionCallback {
 
-    public PublicKeyListener(MessageCenterService instance) {
+    private final IQ mRequest;
+
+    public PublicKeyListener(MessageCenterService instance, IQ request) {
         super(instance);
+        mRequest = request;
     }
 
     @Override
     public void processStanza(Stanza packet) {
         PublicKeyPublish p = (PublicKeyPublish) packet;
 
-        if (p.getType() == IQ.Type.result) {
-            byte[] _publicKey = p.getPublicKey();
+        byte[] _publicKey = p.getPublicKey();
 
-            if (_publicKey != null) {
-                BareJid from = p.getFrom().asBareJid();
-                boolean selfJid = Authenticator.isSelfJID(getContext(), from);
+        if (_publicKey != null) {
+            BareJid from = p.getFrom().asBareJid();
+            boolean selfJid = Authenticator.isSelfJID(getContext(), from);
 
-                // is this our key?
-                if (selfJid) {
-                    byte[] bridgeCertData;
-                    try {
-                        PersonalKey key = getApplication().getPersonalKey();
+            // is this our key?
+            if (selfJid) {
+                byte[] bridgeCertData;
+                try {
+                    PersonalKey key = getApplication().getPersonalKey();
 
-                        bridgeCertData = X509Bridge.createCertificate(_publicKey,
-                            key.getAuthKeyPair().getPrivateKey()).getEncoded();
-                    }
-                    catch (Exception e) {
-                        Log.e(MessageCenterService.TAG, "error decoding key data", e);
-                        bridgeCertData = null;
-                    }
-
-                    if (bridgeCertData != null) {
-                        // store key data in AccountManager
-                        Authenticator.setDefaultPersonalKey(getContext(),
-                            _publicKey, null, bridgeCertData, null);
-                        // invalidate cached personal key
-                        getApplication().invalidatePersonalKey();
-
-                        Log.v(MessageCenterService.TAG, "personal key updated.");
-                    }
+                    bridgeCertData = X509Bridge.createCertificate(_publicKey,
+                        key.getAuthKeyPair().getPrivateKey()).getEncoded();
+                }
+                catch (Exception e) {
+                    Log.e(MessageCenterService.TAG, "error decoding key data", e);
+                    bridgeCertData = null;
                 }
 
-                String id = p.getStanzaId();
+                if (bridgeCertData != null) {
+                    // store key data in AccountManager
+                    Authenticator.setDefaultPersonalKey(getContext(),
+                        _publicKey, null, bridgeCertData, null);
+                    // invalidate cached personal key
+                    getApplication().invalidatePersonalKey();
 
-                // broadcast key update
-                Intent i = new Intent(ACTION_PUBLICKEY);
-                i.putExtra(EXTRA_PACKET_ID, id);
-                i.putExtra(EXTRA_FROM, p.getFrom().toString());
-                i.putExtra(EXTRA_TO, p.getTo().toString());
-                i.putExtra(EXTRA_PUBLIC_KEY, _publicKey);
-                sendBroadcast(i);
-
-                // if we are not syncing and this is not a response for the Syncer
-                // save the key immediately
-                if (!SyncAdapter.getIQPacketId().equals(id) || !SyncAdapter.isActive(getContext())) {
-
-                    // updating server key
-                    if (from.isDomainBareJid()) {
-                        Log.v("pubkey", "Updating server key for " + from);
-                        try {
-                            Keyring.setKey(getContext(), from.toString(), _publicKey);
-                        }
-                        catch (Exception e) {
-                            // TODO warn user
-                            Log.e(MessageCenterService.TAG, "unable to update user key", e);
-                        }
-                    }
-
-                    else {
-                        try {
-                            Log.v("pubkey", "Updating key for " + from);
-                            Keyring.setKey(getContext(), from.toString(), _publicKey,
-                                selfJid ? MyUsers.Keys.TRUST_VERIFIED : -1);
-
-                            // update display name with uid (if empty)
-                            PGPUserID keyUid = PGP.parseUserId(_publicKey, getConnection().getServiceName().toString());
-                            if (keyUid != null && keyUid.getName() != null)
-                                UsersProvider.updateDisplayNameIfEmpty(getContext(), from.toString(), keyUid.getName());
-
-                            // invalidate cache for this user
-                            Contact.invalidate(from.toString());
-                        }
-                        catch (Exception e) {
-                            // TODO warn user
-                            Log.e(MessageCenterService.TAG, "unable to update user key", e);
-                        }
-                    }
+                    Log.v(MessageCenterService.TAG, "personal key updated.");
                 }
             }
 
+            String id = p.getStanzaId();
+
+            // broadcast key update
+            Intent i = prepareIntent(packet, ACTION_PUBLICKEY);
+            i.putExtra(EXTRA_PUBLIC_KEY, _publicKey);
+            sendBroadcast(i);
+
+            // if we are not syncing and this is not a response for the Syncer
+            // save the key immediately
+            if (!SyncAdapter.getIQPacketId().equals(id) || !SyncAdapter.isActive(getContext())) {
+
+                // updating server key
+                if (from.isDomainBareJid()) {
+                    Log.v("pubkey", "Updating server key for " + from);
+                    try {
+                        Keyring.setKey(getContext(), from.toString(), _publicKey);
+                    }
+                    catch (Exception e) {
+                        // TODO warn user
+                        Log.e(MessageCenterService.TAG, "unable to update user key", e);
+                    }
+                }
+
+                else {
+                    try {
+                        Log.v("pubkey", "Updating key for " + from);
+                        Keyring.setKey(getContext(), from.toString(), _publicKey,
+                            selfJid ? MyUsers.Keys.TRUST_VERIFIED : -1);
+
+                        // update display name with uid (if empty)
+                        PGPUserID keyUid = PGP.parseUserId(_publicKey, getConnection().getServiceName().toString());
+                        if (keyUid != null && keyUid.getName() != null)
+                            UsersProvider.updateDisplayNameIfEmpty(getContext(), from.toString(), keyUid.getName());
+
+                        // invalidate cache for this user
+                        Contact.invalidate(from.toString());
+                    }
+                    catch (Exception e) {
+                        // TODO warn user
+                        Log.e(MessageCenterService.TAG, "unable to update user key", e);
+                    }
+                }
+            }
         }
+    }
+
+    @Override
+    public void processException(Exception exception) {
+        Intent i = prepareResponseIntent(mRequest, ACTION_PUBLICKEY);
+        i.putExtra(EXTRA_TYPE, IQ.Type.error.toString());
+        i.putExtra(EXTRA_ERROR_EXCEPTION, exception);
+        sendBroadcast(i);
     }
 }

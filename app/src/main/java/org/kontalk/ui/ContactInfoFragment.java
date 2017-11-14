@@ -249,6 +249,12 @@ public class ContactInfoFragment extends Fragment
                                 }
                             }
                         }
+
+                        // TODO handle blocked
+                        // TODO handle unblocked
+                        // TODO handle subscribed
+                        // TODO handle roster status
+                        // TODO handle version
                     }
                 }
             };
@@ -258,12 +264,11 @@ public class ContactInfoFragment extends Fragment
             filter.addAction(MessageCenterService.ACTION_ROSTER_LOADED);
             filter.addAction(MessageCenterService.ACTION_PRESENCE);
             filter.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
-            filter.addAction(MessageCenterService.ACTION_VERSION);
-            filter.addAction(MessageCenterService.ACTION_PUBLICKEY);
-            filter.addAction(MessageCenterService.ACTION_BLOCKED);
-            filter.addAction(MessageCenterService.ACTION_UNBLOCKED);
-            filter.addAction(MessageCenterService.ACTION_SUBSCRIBED);
-            filter.addAction(MessageCenterService.ACTION_ROSTER_STATUS);
+            // TODO filter.addAction(MessageCenterService.ACTION_VERSION);
+            // TODO filter.addAction(MessageCenterService.ACTION_BLOCKED);
+            // TODO filter.addAction(MessageCenterService.ACTION_UNBLOCKED);
+            // TODO filter.addAction(MessageCenterService.ACTION_SUBSCRIBED);
+            // TODO filter.addAction(MessageCenterService.ACTION_ROSTER_STATUS);
             mLocalBroadcastManager.registerReceiver(mReceiver, filter);
         }
 
