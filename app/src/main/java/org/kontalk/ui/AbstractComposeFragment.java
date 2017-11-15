@@ -30,8 +30,6 @@ import java.util.regex.Pattern;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.akalipetis.fragment.ActionModeListFragment;
-import com.akalipetis.fragment.MultiChoiceModeListener;
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.enums.SnackbarType;
@@ -67,18 +65,20 @@ import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.ListFragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.view.ActionMode;
 import android.text.ClipboardManager;
 import android.text.TextUtils;
 import android.util.SparseBooleanArray;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -131,11 +131,11 @@ import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
  * @author Daniele Ricci
  * @author Andrea Cappelli
  */
-public abstract class AbstractComposeFragment extends ActionModeListFragment implements
+public abstract class AbstractComposeFragment extends ListFragment implements
     ComposerListener, View.OnLongClickListener,
     // TODO these two interfaces should be handled by an inner class
     AudioDialog.AudioDialogListener, AudioPlayerControl,
-    MultiChoiceModeListener {
+    AbsListView.MultiChoiceModeListener {
     static final String TAG = ComposeMessage.TAG;
 
     private static final int MESSAGE_LIST_QUERY_TOKEN = 8720;
@@ -276,7 +276,8 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
         ListView list = getListView();
 
-        setMultiChoiceModeListener(this);
+        list.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        list.setMultiChoiceModeListener(this);
 
         // add header view (this must be done before setting the adapter)
         mHeaderView = LayoutInflater.from(getActivity())
@@ -922,79 +923,73 @@ public abstract class AbstractComposeFragment extends ActionModeListFragment imp
 
     @Override
     public void onListItemClick(ListView listView, View view, int position, long id) {
-        int choiceMode = listView.getChoiceMode();
-        if (choiceMode == ListView.CHOICE_MODE_NONE || choiceMode == ListView.CHOICE_MODE_SINGLE) {
-            MessageListItem item = (MessageListItem) view;
-            final CompositeMessage msg = item.getMessage();
+        MessageListItem item = (MessageListItem) view;
+        final CompositeMessage msg = item.getMessage();
 
-            AttachmentComponent attachment = msg.getComponent(AttachmentComponent.class);
+        AttachmentComponent attachment = msg.getComponent(AttachmentComponent.class);
 
-            LocationComponent location = msg.getComponent(LocationComponent.class);
+        LocationComponent location = msg.getComponent(LocationComponent.class);
 
-            if (attachment != null && (attachment.getFetchUrl() != null || attachment.getLocalUri() != null)) {
+        if (attachment != null && (attachment.getFetchUrl() != null || attachment.getLocalUri() != null)) {
 
-                // outgoing message or already fetched
-                if (attachment.getLocalUri() != null) {
-                    // open file
-                    openFile(msg);
+            // outgoing message or already fetched
+            if (attachment.getLocalUri() != null) {
+                // open file
+                openFile(msg);
+            }
+            else {
+                // info & download dialog
+                CharSequence message = MessageUtils
+                    .getFileInfoMessage(getActivity(), msg, getDecodedPeer(msg));
+
+                MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
+                    .title(R.string.title_file_info)
+                    .content(message)
+                    .negativeText(android.R.string.cancel)
+                    .cancelable(true);
+
+                if (!DownloadService.isQueued(attachment.getFetchUrl())) {
+                    MaterialDialog.SingleButtonCallback startDL = new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            // start file download
+                            startDownload(msg);
+                        }
+                    };
+                    builder.positiveText(R.string.download)
+                        .onPositive(startDL);
                 }
                 else {
-                    // info & download dialog
-                    CharSequence message = MessageUtils
-                        .getFileInfoMessage(getActivity(), msg, getDecodedPeer(msg));
-
-                    MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
-                        .title(R.string.title_file_info)
-                        .content(message)
-                        .negativeText(android.R.string.cancel)
-                        .cancelable(true);
-
-                    if (!DownloadService.isQueued(attachment.getFetchUrl())) {
-                        MaterialDialog.SingleButtonCallback startDL = new MaterialDialog.SingleButtonCallback() {
-                            @Override
-                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                // start file download
-                                startDownload(msg);
-                            }
-                        };
-                        builder.positiveText(R.string.download)
-                            .onPositive(startDL);
-                    }
-                    else {
-                        MaterialDialog.SingleButtonCallback stopDL = new MaterialDialog.SingleButtonCallback() {
-                            @Override
-                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                // cancel file download
-                                stopDownload(msg);
-                            }
-                        };
-                        builder.positiveText(R.string.download_cancel)
-                            .onPositive(stopDL);
-                    }
-
-                    builder.show();
+                    MaterialDialog.SingleButtonCallback stopDL = new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            // cancel file download
+                            stopDownload(msg);
+                        }
+                    };
+                    builder.positiveText(R.string.download_cancel)
+                        .onPositive(stopDL);
                 }
-            }
 
-            else if (location != null) {
-                String userId = item.getMessage().getSender();
-                if (item.getMessage().getSender() == null)
-                    userId = Authenticator.getSelfJID(getContext());
-
-                Intent intent = new Intent(getActivity(), PositionActivity.class);
-                Position p = new Position(location.getLatitude(), location.getLongitude(),
-                    "", "");
-                intent.putExtra(PositionActivity.EXTRA_USERPOSITION, p);
-                intent.putExtra(PositionActivity.EXTRA_USERID, userId);
-                startActivity(intent);
-            }
-
-            else {
-                item.onClick();
+                builder.show();
             }
         }
+
+        else if (location != null) {
+            String userId = item.getMessage().getSender();
+            if (item.getMessage().getSender() == null)
+                userId = Authenticator.getSelfJID(getContext());
+
+            Intent intent = new Intent(getActivity(), PositionActivity.class);
+            Position p = new Position(location.getLatitude(), location.getLongitude(),
+                "", "");
+            intent.putExtra(PositionActivity.EXTRA_USERPOSITION, p);
+            intent.putExtra(PositionActivity.EXTRA_USERID, userId);
+            startActivity(intent);
+        }
+
         else {
-            super.onListItemClick(listView, view, position, id);
+            item.onClick();
         }
     }
 

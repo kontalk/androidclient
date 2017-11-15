@@ -23,8 +23,6 @@ import java.util.List;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.akalipetis.fragment.ActionModeListFragment;
-import com.akalipetis.fragment.MultiChoiceModeListener;
 import com.github.clans.fab.FloatingActionMenu;
 
 import android.content.AsyncQueryHandler;
@@ -34,8 +32,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v7.view.ActionMode;
+import android.support.v4.app.ListFragment;
 import android.util.SparseBooleanArray;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -44,6 +43,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.AbsListView;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -59,8 +59,8 @@ import org.kontalk.ui.view.ConversationListItem;
 import org.kontalk.util.SystemUtils;
 
 
-public class ConversationListFragment extends ActionModeListFragment
-        implements Contact.ContactChangeListener, MultiChoiceModeListener {
+public class ConversationListFragment extends ListFragment
+        implements Contact.ContactChangeListener, AbsListView.MultiChoiceModeListener {
     static final String TAG = ConversationsActivity.TAG;
 
     private static final int THREAD_LIST_QUERY_TOKEN = 8720;
@@ -190,9 +190,12 @@ public class ConversationListFragment extends ActionModeListFragment
             list.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
             list.setItemsCanFocus(true);
         }
+        else {
+            list.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        }
 
         setListAdapter(mListAdapter);
-        setMultiChoiceModeListener(this);
+        list.setMultiChoiceModeListener(this);
     }
 
     @Override
@@ -398,18 +401,12 @@ public class ConversationListFragment extends ActionModeListFragment
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        int choiceMode = l.getChoiceMode();
-        if (choiceMode == ListView.CHOICE_MODE_NONE || choiceMode == ListView.CHOICE_MODE_SINGLE) {
-            ConversationListItem cv = (ConversationListItem) v;
-            Conversation conv = cv.getConversation();
+        ConversationListItem cv = (ConversationListItem) v;
+        Conversation conv = cv.getConversation();
 
-            ConversationsActivity parent = getParentActivity();
-            if (parent != null)
-                parent.openConversation(conv, position);
-        }
-        else {
-            super.onListItemClick(l, v, position, id);
-        }
+        ConversationsActivity parent = getParentActivity();
+        if (parent != null)
+            parent.openConversation(conv, position);
     }
 
     /** Used only in fragment contexts. */

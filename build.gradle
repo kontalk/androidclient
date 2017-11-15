@@ -25,8 +25,8 @@ allprojects {
 
     evaluationDependsOn ":client-common-java"
     ext {
-        appVersionCode = 270
-        appVersionName = '4.1.1'
+        appVersionCode = 271
+        appVersionName = '4.1.1-next'
         targetSdkVersion = 22
         compileSdkVersion = 27
         smackVersion = project(':client-common-java').smackVersion
