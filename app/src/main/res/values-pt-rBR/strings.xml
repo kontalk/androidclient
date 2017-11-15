@@ -660,4 +660,8 @@ Desabilite a criptografia apenas se o seu contato não posuir uma chave pessoal.
     <string name="pref_register_device">Registrar dispositivo</string>
     <string name="register_device_title">Registrar dispositivo</string>
     <string name="register_device_instructions">Fotografe o código de barras abaixo ou digite os seguintes dados manualmente a partir de outro dispositivo.</string>
+    <string name="seen_offline_label">desconectado</string>
+    <string name="register_device_request_error">Erro ao solicitar o registro do dispositivo.</string>
+    <string name="register_device_requesting">Solicitando registro…</string>
+
     </resources>
