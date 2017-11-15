@@ -29,6 +29,8 @@ import java.util.Set;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 
+import org.jxmpp.jid.impl.JidCreate;
+import org.jxmpp.stringprep.XmppStringprepException;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
@@ -54,6 +56,7 @@ import android.support.v4.util.LruCache;
 
 import org.kontalk.Log;
 import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGPLazyPublicKeyRingLoader;
 import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MyUsers.Keys;
@@ -376,6 +379,15 @@ public class Contact {
 
     public void setLastSeen(long lastSeen) {
         mLastSeen = lastSeen;
+    }
+
+    public boolean isSelf(Context context) {
+        try {
+            return Authenticator.isSelfJID(context, JidCreate.bareFrom(mJID));
+        }
+        catch (XmppStringprepException e) {
+            return false;
+        }
     }
 
     @NonNull

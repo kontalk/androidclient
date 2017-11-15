@@ -41,6 +41,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.kontalk.Kontalk;
 import org.kontalk.R;
@@ -114,13 +115,22 @@ public class ContactInfoFragment extends Fragment
 
             int resId, textId, trustButtonsVisibility;
 
-            if (mContact.isKeyChanged()) {
+            if (mContact.isSelf(context)) {
+                resId = R.drawable.ic_trust_verified;
+                textId = R.string.trust_verified;
+                trustButtonsVisibility = View.GONE;
+                mTrustStatus.setEnabled(false);
+            }
+            else if (mContact.isKeyChanged()) {
                 // the key has changed and was not trusted yet
                 resId = R.drawable.ic_trust_unknown;
                 textId = R.string.trust_unknown;
                 trustButtonsVisibility = View.VISIBLE;
+                mTrustStatus.setEnabled(true);
             }
             else {
+                mTrustStatus.setEnabled(true);
+
                 switch (mContact.getTrustedLevel()) {
                     case MyUsers.Keys.TRUST_UNKNOWN:
                         resId = R.drawable.ic_trust_unknown;
@@ -375,9 +385,11 @@ public class ContactInfoFragment extends Fragment
         mTrustStatus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO animate this
-                mTrustButtons.setVisibility(mTrustButtons.getVisibility() == View.VISIBLE ?
-                    View.GONE : View.VISIBLE);
+                if (!mContact.isSelf(view.getContext())) {
+                    // TODO animate this
+                    mTrustButtons.setVisibility(mTrustButtons.getVisibility() == View.VISIBLE ?
+                        View.GONE : View.VISIBLE);
+                }
             }
         });
 
