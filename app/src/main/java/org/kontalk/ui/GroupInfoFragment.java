@@ -26,8 +26,6 @@ import java.util.List;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.akalipetis.fragment.ActionModeListFragment;
-import com.akalipetis.fragment.MultiChoiceModeListener;
 
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
@@ -43,20 +41,22 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.view.ActionMode;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.CharacterStyle;
 import android.text.style.ForegroundColorSpan;
 import android.util.SparseBooleanArray;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -84,8 +84,8 @@ import org.kontalk.util.SystemUtils;
  * FIXME this class is too tied to the concept of "Kontalk group"
  * @author Daniele Ricci
  */
-public class GroupInfoFragment extends ActionModeListFragment
-        implements Contact.ContactChangeListener, MultiChoiceModeListener {
+public class GroupInfoFragment extends ListFragment
+        implements Contact.ContactChangeListener, AbsListView.MultiChoiceModeListener {
 
     private TextView mTitle;
     private Button mSetSubject;
@@ -200,7 +200,10 @@ public class GroupInfoFragment extends ActionModeListFragment
         super.onActivityCreated(savedInstanceState);
         mMembersAdapter = new GroupMembersAdapter(getContext(), null);
         setListAdapter(mMembersAdapter);
-        setMultiChoiceModeListener(this);
+
+        ListView list = getListView();
+        list.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        list.setMultiChoiceModeListener(this);
     }
 
     @Override
@@ -415,17 +418,11 @@ public class GroupInfoFragment extends ActionModeListFragment
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        int choiceMode = l.getChoiceMode();
-        if (choiceMode == ListView.CHOICE_MODE_NONE || choiceMode == ListView.CHOICE_MODE_SINGLE) {
-            // open identity dialog
-            // one day this will be the contact info activity
-            GroupMembersAdapter.GroupMember member =
-                (GroupMembersAdapter.GroupMember) mMembersAdapter.getItem(position);
-            showIdentityDialog(member.contact, member.subscribed);
-        }
-        else {
-            super.onListItemClick(l, v, position, id);
-        }
+        // open identity dialog
+        // TODO one day this will be the contact info activity
+        GroupMembersAdapter.GroupMember member =
+            (GroupMembersAdapter.GroupMember) mMembersAdapter.getItem(position);
+        showIdentityDialog(member.contact, member.subscribed);
     }
 
     private void showIdentityDialog(Contact c, boolean subscribed) {
