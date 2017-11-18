@@ -664,4 +664,5 @@ Desabilite a criptografia apenas se o seu contato não posuir uma chave pessoal.
     <string name="register_device_request_error">Erro ao solicitar o registro do dispositivo.</string>
     <string name="register_device_requesting">Solicitando registro…</string>
 
+    <string name="import_device_title">Importar conta</string>
     </resources>
