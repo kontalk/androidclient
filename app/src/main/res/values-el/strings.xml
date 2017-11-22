@@ -365,7 +365,7 @@
     <string name="confirm_will_delete_messages">Τα επιλεγμένα μηνύματα θα διαγραφούν.</string>
     <string name="title_user_exists">Ο χρήστης υπάρχει</string>
     <string name="err_validation_nonetwork">Δεν υπάρχει διαθέσιμη σύνδεση στο διαδίκτυο. Η Kontalk χρειάζεται μια ενεργή σύνδεση στο διαδίκτυο για να λειτουργήσει.</string>
-    <string name="err_validation_user_exists"><b>Ο αριθμός που χρησιμοποιείτε είναι ήδη εγγεγραμμένος στην Kontalk.</b> Αν έχετε εγγράψει μια άλλη συσκευή, το να συνεχίσετε με αυτόν τον τρόπο θα την αποκόψει από την Kontalk. Παρακαλούμε ανατρέξτε στην τεκμηρίωσή μας για το πως να αντιγράψετε το λογαριασμό σας μεταξύ συσκευών. Επιλέξτε ΟΚ για να συνεχίσετε ούτως ή αλλιώς.</string>
+    <string name="err_validation_user_exists"><b>Ο αριθμός που χρησιμοποιείτε είναι ήδη εγγεγραμμένος στην Kontalk.</b> Αν έχετε εγγράψει μια άλλη συσκευή, το να συνεχίσετε με αυτόν τον τρόπο θα την αποκόψει από την Kontalk. Αν θέλετε να εγγράψετε μια άλλη δική σας συσκευή, επιλέξετε μεταφορά λογαριασμού.</string>
     <string name="button_validation_fallback">Δε λάβατε τίποτα;</string>
     <string name="title_nonetwork">Καμία σύνδεση στο διαδίκτυο</string>
     <string name="title_fallback">Αντιμετωπίζετε προβλήματα;</string>
@@ -600,4 +600,69 @@
 
     <string name="audio_duration_max">%1$s / %2$s</string>
 
+    <string name="menu_import_device">Εγγραφή από άλλη συσκευή</string>
+    <string name="location_message">Μήνυμα τοποθεσίας</string>
+    <string name="position_screen_title">Θέση</string>
+    <string name="seen_offline_label">εκτός σύνδεσης</string>
+    <string name="pref_maps_google_label">Χάρτες Google</string>
+    <string name="pref_maps_osm_label">OpenStreetMap</string>
+
+    <string name="notification_location">σας έστειλε μια τοποθεσία</string>
+    <string name="location_no_result">Κανένα αποτέλεσμα</string>
+    <string name="places_nearby">Μέρη κοντά</string>
+    <string name="send_selected_location">Αποστολή επιλεγμένης τοποθεσίας</string>
+    <string name="send_location">Αποστολή της τρέχουσας τοποθεσίας σας</string>
+    <string name="accurate_to">Ακριβής στα %1$s μέτρα</string>
+    <string name="meters_away">%d μέτρα μακρυά</string>
+    <string name="kilometers_away">%.2f χιλιόμετρα μακρυά</string>
+    <string name="loading">Φόρτωση…</string>
+    <string name="your_position">Εσείς</string>
+    <string name="err_googlemaps_fallback_osm">Οι χάρτες Google δεν είναι διαθέσιμοι, επιστροφή στους χάρτες OpenStreetMap.</string>
+    <string name="err_location_no_providers">Δεν υπάρχουν διαθέσιμοι παροχείς τοποθεσίας. Η τρέχουσα τοποθεσία δεν θα είναι διαθέσιμη.</string>
+    <string name="err_location_access_unknown_error">Δεν ήταν δυνατή η αίτηση για ενεργοποίηση των υπηρεσιών εντοπισμού θέσης.</string>
+    <string name="msg_location_disabled">Απαιτείται πρόσβαση στην τοποθεσία σας. Επιλέξτε ΟΚ για να μεταφερθείτε στις ρυθμίσεις και να την ενεργοποιήσετε.</string>
+
+    <string name="menu_open_map">Άνοιγμα στους χάρτες</string>
+    <string name="menu_map">Χάρτης</string>
+    <string name="menu_satellite">Δορυφόρος</string>
+
+    <string name="notification_ticker_service_running">Η Kontalk τρέχει στο παρασκήνιο</string>
+    <string name="notification_text_service_running">Πατήστε για άνοιγμα</string>
+
+    <string name="pref_location_settings">Τοποθεσία</string>
+    <string name="pref_maps_service">Παροχέας υπηρεσίας</string>
+
+    <string name="msg_request_doze_failed_manual">Παρακαλούμε σημειώστε την Kontalk σαν μη βελτιστοποιημένη στην επόμενη οθόνη.</string>
+
+    <string name="pref_foreground_service">Ενεργοποίηση υπηρεσίας προσκηνίου</string>
+    <string name="pref_title_foreground_service">"Ενεργοποιήστε το αν θέλετε η Kontalk να είναι ενεργή στο παρασκήνιο όταν η διαθέσιμη μπαταρία είναι χαμηλά.  Μια κολλώδης ειδοποίηση θα εμφανίζεται"</string>
+
+    <string name="pref_register_device">Εγγραφή συσκευής</string>
+    <string name="register_device_title">Εγγραφή συσκευής</string>
+    <string name="register_device_instructions">Σαρώστε το barcode πιο κάτω ή εισαγάγετε τα ακόλουθα δεδομένα χειροκίνητα από την άλλη σας συσκευή.</string>
+    <string name="register_device_request_error">Σφάλμα στην αίτηση της εγγραφής συσκευής.</string>
+    <string name="register_device_requesting">Αίτηση εγγραφής…</string>
+
+    <string name="import_device_title">Εισαγωγή λογαριασμού</string>
+    <string name="import_device_instructions">Εισαγάγετε τα ζητούμενα δεδομένα παρακάτω, όπως εμφανίζονται στην άλλη συσκευή σας.</string>
+    <string name="import_device_hint_account">Τηλεφωνικός αριθμός</string>
+    <string name="import_device_hint_server">Όνομα διακομιστή</string>
+    <string name="import_device_hint_token">Μυστικός κώδικας</string>
+    <string name="err_import_device_fill_all">Παρακαλώ συμπληρώστε όλα τα πεδία.</string>
+    <string name="import_device_requesting">Αίτηση λογαριασμού…</string>
+    <string name="import_device_invalid_barcode">Δε βρέθηκαν έγκυρα δεδομένα στο barcode.</string>
+    <string name="import_device_btn_scan">Σάρωση barcode</string>
+    <string name="import_device_btn_input">Χειροκίνητη εισαγωγή</string>
+    <string name="import_device_message">Ανοίξτε την Kontalk στην άλλη συσκευή, επιλέξτε Μενού &gt; Ρυθμίσεις &gt; Συντήρηση &gt; Εγγραφή συσκευής. Ένας μυστικός κωδικός και ένα barcode που τον αντιπροσωπεύει θα εμφανιστούν.</string>
+
+    <string name="btn_device_overwrite">Έχασα τον παλιό μου λογαριασμό ή συσκευή</string>
+    <string name="btn_device_import">Μεταφορά λογαριασμού</string>
+
+    <string name="contactinfo_activity_title">Πληροφορίες επαφής</string>
+    <string name="contactinfo_last_seen">τελευταία εμφάνιση %s</string>
+    <string name="contactinfo_phone_number">Τηλεφωνικός αριθμός</string>
+    <string name="contactinfo_fingerprint">Αποτύπωμα</string>
+    <string name="contactinfo_userid">Ταυτότητα Χρήστη</string>
+
+    <string name="import_device_scan_screen_title">Σάρωση μυστικού κωδικού</string>
     </resources>
