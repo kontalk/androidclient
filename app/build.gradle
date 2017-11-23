@@ -144,8 +144,8 @@ dependencies {
         exclude group: 'junit'
     }
     compile 'info.guardianproject.netcipher:netcipher:1.2.1'
-    compile 'com.googlecode.libphonenumber:libphonenumber:8.8.5'
-    compile 'com.google.zxing:core:3.3.0'
+    compile 'com.googlecode.libphonenumber:libphonenumber:8.8.6'
+    compile 'com.google.zxing:core:3.3.1'
     compile 'me.dm7.barcodescanner:zxing:1.9.8'
     compile 'com.segment.backo:backo:1.0.0'
     compile "org.igniterealtime.smack:smack-tcp:$smackVersion"
@@ -169,7 +169,7 @@ dependencies {
     compile 'com.vanniktech:emoji-one:0.5.1'
 
     compile 'com.google.code.gson:gson:2.8.2'
-    compile 'com.squareup.okhttp3:okhttp:3.8.1'
+    compile 'com.squareup.okhttp3:okhttp:3.9.1'
 
     compile "com.github.kontalk.AnyMaps:anymaps-base:$anyMapsVersion"
     compile "com.github.kontalk.AnyMaps:anymaps-osm:$anyMapsVersion"
@@ -180,7 +180,7 @@ dependencies {
 
     googleplayCompile "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
     googleplayCompile "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"
-    googleplayCompile('com.crashlytics.sdk.android:crashlytics:2.7.0@aar') {
+    googleplayCompile('com.crashlytics.sdk.android:crashlytics:2.7.1@aar') {
         transitive = true
     }
 
