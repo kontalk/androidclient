@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
+import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 
 import org.jivesoftware.smack.StanzaListener;
@@ -124,11 +125,13 @@ abstract class MessageCenterPacketListener implements StanzaListener {
             instance.mLocalBroadcastManager.unregisterReceiver(receiver);
     }
 
+    @CheckResult
     protected boolean sendPacket(Stanza packet) {
         MessageCenterService instance = mInstance.get();
         return instance != null && instance.sendPacket(packet);
     }
 
+    @CheckResult
     protected boolean sendPacket(Stanza packet, boolean bumpIdle) {
         MessageCenterService instance = mInstance.get();
         return instance != null && instance.sendPacket(packet, bumpIdle);
