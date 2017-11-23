@@ -530,7 +530,11 @@ class MessageListener extends MessageCenterPacketListener {
             long storageId = ContentUris.parseId(msgUri);
             waitingReceipt.put(ack.getStanzaId(), storageId);
         }
-        sendPacket(ack);
+
+        if (!sendPacket(ack) && msgUri != null) {
+            // receipt was not sent, remove it from the pending queue
+            waitingReceipt.remove(ack.getStanzaId());
+        }
     }
 
     private Message decryptMessage(CompositeMessage msg, byte[] encryptedData) throws Exception {
