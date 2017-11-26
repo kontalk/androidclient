@@ -57,7 +57,7 @@ class MessageAckListener extends MessageCenterPacketListener {
 
         synchronized (waitingReceipt) {
             String id = packet.getStanzaId();
-            Long _msgId = waitingReceipt.remove(id);
+            Long _msgId = waitingReceipt.get(id);
             long msgId = (_msgId != null) ? _msgId : 0;
             ContentResolver cr = getContext().getContentResolver();
 
@@ -71,8 +71,6 @@ class MessageAckListener extends MessageCenterPacketListener {
                 values.put(Messages.STATUS, Messages.STATUS_CONFIRMED);
                 cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
                     values, selectionIncoming, null);
-
-                waitingReceipt.remove(id);
             }
 
             if (msgId > 0) {
@@ -100,7 +98,9 @@ class MessageAckListener extends MessageCenterPacketListener {
                 cr.update(msg, values, selectionOutgoing, null);
             }
 
+            // remove the packet from the waiting list
+            // this will also release the wake lock
+            waitingReceipt.remove(id);
         }
-
     }
 }
