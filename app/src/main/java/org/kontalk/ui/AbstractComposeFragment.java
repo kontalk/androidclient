@@ -117,6 +117,7 @@ import org.kontalk.ui.view.AudioPlayerControl;
 import org.kontalk.ui.view.ComposerBar;
 import org.kontalk.ui.view.ComposerListener;
 import org.kontalk.ui.view.MessageListItem;
+import org.kontalk.ui.view.ReplyBar;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
@@ -177,6 +178,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     private AttachmentRevealFrameLayout mAttachmentContainer;
 
     protected ComposerBar mComposer;
+    protected ReplyBar mReplyBar;
 
     MessageListQueryHandler mQueryHandler;
     MessageListAdapter mListAdapter;
@@ -334,12 +336,21 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.compose_message, container, false);
 
-        mComposer = view.findViewById(R.id.composer_bar);
-        mComposer.setComposerListener(this);
-
         // footer (for tablet presence status)
         mStatusText = view.findViewById(R.id.status_text);
 
+        // reply bar
+        mReplyBar = view.findViewById(R.id.reply_bar);
+        mReplyBar.setOnCancelListener(new ReplyBar.OnCancelListener() {
+            @Override
+            public void onCancel(ReplyBar view) {
+                // TODO disable reply status
+                view.hide();
+            }
+        });
+
+        mComposer = view.findViewById(R.id.composer_bar);
+        mComposer.setComposerListener(this);
         mComposer.setRootView(view);
 
         Configuration config = getResources().getConfiguration();
@@ -393,6 +404,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     @Override
     public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
         MenuItem deleteMenu = menu.findItem(R.id.menu_delete);
+        MenuItem replyMenu = menu.findItem(R.id.menu_reply);
         MenuItem retryMenu = menu.findItem(R.id.menu_retry);
         MenuItem shareMenu = menu.findItem(R.id.menu_share);
         MenuItem copyTextMenu = menu.findItem(R.id.menu_copy_text);
@@ -403,6 +415,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
         // initial status
         deleteMenu.setVisible(true);
+        replyMenu.setVisible(false);
         retryMenu.setVisible(false);
         shareMenu.setVisible(false);
         copyTextMenu.setVisible(false);
@@ -438,6 +451,11 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                     // non-empty text: copy text to clipboard
                     if (text != null && !TextUtils.isEmpty(text.getContent()))
                         copyTextMenu.setVisible(true);
+
+                    // incoming text message: enable reply
+                    if (msg.isIncoming() && text != null) {
+                        replyMenu.setVisible(true);
+                    }
 
                     if (attachment != null) {
 
@@ -488,6 +506,13 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                 // using clone because listview returns its original copy
                 deleteSelectedMessages(SystemUtils
                     .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
+                mode.finish();
+                return true;
+            }
+
+            case R.id.menu_reply: {
+                CompositeMessage msg = getCheckedItem();
+                replyMessage(msg);
                 mode.finish();
                 return true;
             }
@@ -1231,6 +1256,16 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     }
 
     protected abstract void addUsers(String[] members);
+
+    private void replyMessage(CompositeMessage msg) {
+        TextComponent textComponent = msg.getComponent(TextComponent.class);
+        if (textComponent != null) {
+            String sender = msg.getSender();
+            Contact contact = Contact.findByUserId(getContext(), sender);
+
+            mReplyBar.show(contact.getDisplayName(), textComponent.getContent());
+        }
+    }
 
     private void retryMessage(CompositeMessage msg) {
         MessageCenterService.retryMessage(getContext(), ContentUris.withAppendedId

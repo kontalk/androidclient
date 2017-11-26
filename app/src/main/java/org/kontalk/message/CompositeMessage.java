@@ -245,6 +245,14 @@ public class CompositeMessage {
                 Messages.DIRECTION_IN : Messages.DIRECTION_OUT;
     }
 
+    public boolean isIncoming() {
+        return getDirection() == Messages.DIRECTION_IN;
+    }
+
+    public boolean isOutgoing() {
+        return getDirection() == Messages.DIRECTION_OUT;
+    }
+
     public void setDatabaseId(long databaseId) {
         mDatabaseId = databaseId;
     }

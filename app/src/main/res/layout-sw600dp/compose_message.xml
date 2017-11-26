@@ -19,6 +19,7 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/root_view"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
@@ -70,6 +71,28 @@
               android:paddingRight="6dp"
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"/>
+
+        <org.kontalk.ui.view.ReplyBar android:id="@+id/reply_bar"
+            android:layout_width="fill_parent"
+            android:layout_height="@dimen/reply_bar_height"
+            android:padding="8dp"
+            android:background="?attr/colorBackgroundFloating"
+            app:dividerView="@+id/reply_bar_divider"
+            android:visibility="gone"
+            tools:visibility="visible"/>
+
+        <!-- Divider. (Yes, the .9dp is on purpose.) -->
+        <View android:id="@+id/reply_bar_divider"
+            android:background="?attr/dividerHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height=".9dp"
+            android:visibility="gone"
+            tools:visibility="visible"/>
+
+        <include android:id="@+id/composer_bar"
+            layout="@layout/composer_bar"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
 
         <include layout="@layout/composer_bar"/>
 

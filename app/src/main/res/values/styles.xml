@@ -105,6 +105,14 @@
         <item name="android:textStyle">bold</item>
     </style>
 
+    <style name="TextAppearance.ReplyBar.Sender" parent="android:TextAppearance.Small">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">?attr/colorPrimaryDark</item>
+    </style>
+
+    <style name="TextAppearance.ReplyBar.Text" parent="android:TextAppearance.Small">
+    </style>
+
     <style name="AvatarListItemBadgeStyle">
         <item name="android:layout_marginLeft">@dimen/avatar_chat_margin_start</item>
         <item name="android:layout_height">@dimen/avatar_chat_size</item>

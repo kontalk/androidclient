@@ -641,6 +641,8 @@
     <string name="contactinfo_fingerprint">Fingerprint</string>
     <string name="contactinfo_userid">User ID</string>
 
+    <string name="btn_reply_cancel">Cancel</string>
+
     <!-- contact name, group subject -->
     <string name="notification_group_title">%1$s @ %2$s</string>
 
