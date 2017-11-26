@@ -19,8 +19,8 @@
 package org.kontalk.service.msgcenter;
 
 import java.io.File;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.annotation.ElementType;
@@ -32,10 +32,8 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -78,6 +76,7 @@ import org.jxmpp.jid.Jid;
 import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.stringprep.XmppStringprepException;
 import org.jxmpp.util.XmppStringUtils;
+import org.spongycastle.openpgp.PGPException;
 
 import android.accounts.Account;
 import android.app.AlarmManager;
@@ -159,7 +158,7 @@ import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
-import org.spongycastle.openpgp.PGPException;
+import org.kontalk.util.WakefulHashMap;
 
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_FOREGROUND;
 
@@ -509,7 +508,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /**
      * Messages waiting for server receipt (packetId: internalStorageId).
      */
-    Map<String, Long> mWaitingReceipt = new HashMap<>();
+    WakefulHashMap<String, Long> mWaitingReceipt;
 
     private RegenerateKeyPairListener mKeyPairRegenerator;
     private ImportKeyPairListener mKeyPairImporter;
@@ -766,6 +765,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         mRosterStore = new SQLiteRosterStore(this);
         // this will trigger create/upgrade
         mRosterStore.getWritableDatabase();
+
+        // waiting receipt list
+        // also used for keeping the device on while waiting for message delivery
+        mWaitingReceipt = new WakefulHashMap<>(this, PowerManager
+            .PARTIAL_WAKE_LOCK, Kontalk.TAG);
 
         // create the global wake lock
         PowerManager pwr = (PowerManager) getSystemService(Context.POWER_SERVICE);

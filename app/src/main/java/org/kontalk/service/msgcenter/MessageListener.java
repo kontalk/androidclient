@@ -33,7 +33,6 @@ import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 import org.jxmpp.jid.Jid;
 import org.jxmpp.stringprep.XmppStringprepException;
-import org.jxmpp.util.XmppStringUtils;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -157,362 +156,378 @@ class MessageListener extends MessageCenterPacketListener {
 
     private boolean isValidMember(GroupExtension ext, Jid from) {
         return MessagesProviderUtils.isGroupMember(getContext(),
-            ext.getJID(), XmppStringUtils.parseBareJid(from.toString()));
-    }
-
-    @Deprecated
-    private boolean isValidMember(GroupExtension ext, String from) {
-        return MessagesProviderUtils.isGroupMember(getContext(),
-            ext.getJID(), XmppStringUtils.parseBareJid(from));
+            ext.getJID(), from.asBareJid().toString());
     }
 
     @Override
     public void processStanza(Stanza packet) throws SmackException.NotConnectedException {
-        Map<String, Long> waitingReceipt = getWaitingReceiptList();
-
         org.jivesoftware.smack.packet.Message m = (org.jivesoftware.smack.packet.Message) packet;
 
         if (m.getType() == org.jivesoftware.smack.packet.Message.Type.chat) {
-            Intent i = new Intent(ACTION_MESSAGE);
-            Jid from = m.getFrom();
-
-            // check if there is a composing notification
-            ExtensionElement _chatstate = m.getExtension("http://jabber.org/protocol/chatstates");
-            ChatStateExtension chatstate = null;
-            if (_chatstate != null) {
-                chatstate = (ChatStateExtension) _chatstate;
-                Contact.setTyping(from.toString(), chatstate.getChatState() == ChatState.composing);
-
-                i.putExtra("org.kontalk.message.chatState", chatstate.getElementName());
-            }
-
-            i.putExtra(EXTRA_FROM, from.toString());
-            i.putExtra(EXTRA_TO, m.getTo().toString());
-            sendBroadcast(i);
+            ExtensionElement chatstate = processChatState(m);
 
             // non-active chat states are not to be processed as messages
             if (chatstate == null || chatstate.getElementName().equals(ChatState.active.name())) {
-
-                // delayed deliver extension is the first the be processed
-                // because it's used also in delivery receipts
-                Date stamp = XMPPUtils.getStanzaDelay(m);
-
-                long serverTimestamp;
-                if (stamp != null)
-                    serverTimestamp = stamp.getTime();
-                else
-                    serverTimestamp = System.currentTimeMillis();
-
-                DeliveryReceipt deliveryReceipt = DeliveryReceipt.from(m);
-
-                // delivery receipt
-                if (deliveryReceipt != null) {
-                    synchronized (waitingReceipt) {
-                        String id = m.getStanzaId();
-                        Long _msgId = waitingReceipt.get(id);
-                        long msgId = (_msgId != null) ? _msgId : 0;
-                        ContentResolver cr = getContext().getContentResolver();
-
-                        // message has been delivered: check if we have previously stored the server id
-                        if (msgId > 0) {
-                            ContentValues values = new ContentValues(3);
-                            values.put(Messages.MESSAGE_ID, deliveryReceipt.getId());
-                            values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
-                            values.put(Messages.STATUS_CHANGED, serverTimestamp);
-                            cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
-                                values, selectionOutgoing, null);
-
-                            waitingReceipt.remove(id);
-                        }
-                        else {
-                            // FIXME this could lead to fake delivery receipts because message IDs are client-generated
-                            Uri msg = Messages.getUri(deliveryReceipt.getId());
-                            ContentValues values = new ContentValues(2);
-                            values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
-                            values.put(Messages.STATUS_CHANGED, serverTimestamp);
-                            cr.update(msg, values, selectionOutgoing, null);
-                        }
-                    }
-                }
-
-                // incoming message
-                else {
-                    String msgId = m.getStanzaId();
-                    if (msgId == null)
-                        msgId = MessageUtils.messageId();
-
-                    String body = m.getBody();
-
-                    // create message
-                    CompositeMessage msg = new CompositeMessage(
-                        getContext(),
-                        msgId,
-                        serverTimestamp,
-                        from.toString(),
-                        false,
-                        Coder.SECURITY_CLEARTEXT
-                    );
-
-                    // ack request might not be encrypted
-                    boolean needAck = m.hasExtension(DeliveryReceiptRequest.ELEMENT, DeliveryReceipt.NAMESPACE);
-
-                    ExtensionElement _encrypted = m.getExtension(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE);
-
-                    if (_encrypted != null && _encrypted instanceof E2EEncryption) {
-                        E2EEncryption mEnc = (E2EEncryption) _encrypted;
-                        byte[] encryptedData = mEnc.getData();
-
-                        // encrypted message
-                        msg.setEncrypted(true);
-                        msg.setSecurityFlags(Coder.SECURITY_BASIC);
-
-                        if (encryptedData != null) {
-
-                            // decrypt message
-                            try {
-                                Message innerStanza = decryptMessage(msg, encryptedData);
-                                if (innerStanza != null) {
-                                    // copy some attributes over
-                                    innerStanza.setTo(m.getTo());
-                                    innerStanza.setFrom(m.getFrom());
-                                    innerStanza.setType(m.getType());
-                                    m = innerStanza;
-
-                                    if (!needAck) {
-                                        // try the decrypted message
-                                        needAck = m.hasExtension(DeliveryReceiptRequest.ELEMENT, DeliveryReceipt.NAMESPACE);
-                                    }
-                                }
-                            }
-
-                            catch (Exception exc) {
-                                Log.e(MessageCenterService.TAG, "decryption failed", exc);
-
-                                // raw component for encrypted data
-                                // reuse security flags
-                                msg.clearComponents();
-                                msg.addComponent(new RawComponent(encryptedData, true, msg.getSecurityFlags()));
-                            }
-
-                        }
-                    }
-
-                    else {
-
-                        // use message body
-                        if (body != null)
-                            msg.addComponent(new TextComponent(body));
-
-                        // old PGP signature
-                        ExtensionElement _pgpSigned = m.getExtension(OpenPGPSignedMessage.ELEMENT_NAME, OpenPGPSignedMessage.NAMESPACE);
-                        if (_pgpSigned instanceof OpenPGPSignedMessage) {
-                            OpenPGPSignedMessage pgpSigned = (OpenPGPSignedMessage) _pgpSigned;
-                            byte[] signedData = pgpSigned.getData();
-
-                            // signed message
-                            msg.setSecurityFlags(Coder.SECURITY_BASIC_SIGNED);
-
-                            if (signedData != null) {
-                                // check signature
-                                try {
-                                    checkSignedMessage(msg, pgpSigned.getData());
-                                    // at this point our message should be filled with the verified body
-                                }
-
-                                catch (Exception exc) {
-                                    Log.e(MessageCenterService.TAG, "signature check failed", exc);
-                                    // TODO what to do here?
-                                    msg.setSecurityFlags(msg.getSecurityFlags() |
-                                        Coder.SECURITY_ERROR_INVALID_SIGNATURE);
-                                }
-                            }
-                        }
-
-                    }
-
-                    // out of band data
-                    ExtensionElement _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
-                    if (_media instanceof OutOfBandData) {
-                        File previewFile = null;
-
-                        OutOfBandData media = (OutOfBandData) _media;
-                        String mime = media.getMime();
-                        String fetchUrl = media.getUrl();
-                        long length = media.getLength();
-                        boolean encrypted = media.isEncrypted();
-
-                        // bits-of-binary for preview
-                        ExtensionElement _preview = m.getExtension(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE);
-                        if (_preview != null && _preview instanceof BitsOfBinary) {
-                            BitsOfBinary preview = (BitsOfBinary) _preview;
-                            String previewMime = preview.getType();
-                            if (previewMime == null)
-                                previewMime = MediaStorage.THUMBNAIL_MIME_NETWORK;
-
-                            String filename = null;
-
-                            if (ImageComponent.supportsMimeType(previewMime)) {
-                                filename = ImageComponent.buildMediaFilename(previewMime);
-                            }
-
-                            try {
-                                if (filename != null) previewFile =
-                                    MediaStorage.writeInternalMedia(getContext(),
-                                        filename, preview.getContents());
-                            }
-                            catch (IOException e) {
-                                Log.w(MessageCenterService.TAG, "error storing thumbnail", e);
-                                // we are going to need a filename anyway
-                                previewFile = MediaStorage.getInternalMediaFile(getContext(), filename);
-                            }
-                        }
-
-                        MessageComponent<?> attachment = null;
-
-                        if (mime == null) {
-                            // try to guess MIME from URL
-                            mime = MediaStorage.getType(fetchUrl);
-                        }
-
-                        if (ImageComponent.supportsMimeType(mime)) {
-                            if (previewFile == null) {
-                                // no bits of binary, generate a filename anyway so the thumbnail will be generated
-                                // from the original file once downloaded
-                                String filename = ImageComponent.buildMediaFilename(mime);
-                                previewFile = MediaStorage.getInternalMediaFile(getContext(), filename);
-                            }
-
-                            msg.clearComponents();
-                            // cleartext only for now
-                            attachment = new ImageComponent(mime, previewFile, null, fetchUrl, length,
-                                encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-                        }
-
-                        else if (VCardComponent.supportsMimeType(mime)) {
-                            msg.clearComponents();
-                            // cleartext only for now
-                            attachment = new VCardComponent(previewFile, null, fetchUrl, length,
-                                encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-                        }
-
-                        else if (AudioComponent.supportsMimeType(mime)) {
-                            msg.clearComponents();
-                            attachment = new AudioComponent(mime, null, fetchUrl, length,
-                                encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-                        }
-
-                        else {
-                            msg.clearComponents();
-                            attachment = new DefaultAttachmentComponent(mime, null, fetchUrl, length,
-                                encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-                        }
-
-                        // TODO other types
-
-                        if (attachment != null)
-                            msg.addComponent(attachment);
-
-                        // add a dummy body if none was found
-                        /*
-                        if (body == null) {
-                            msg.addComponent(new TextComponent(CompositeMessage
-                                .getSampleTextContent((Class<? extends MessageComponent<?>>)
-                                    attachment.getClass(), mime)));
-                        }
-                        */
-                    }
-
-                    ExtensionElement _location = m.getExtension(UserLocation.ELEMENT_NAME, UserLocation.NAMESPACE);
-                    if (_location != null && _location instanceof UserLocation) {
-                        UserLocation location = (UserLocation) _location;
-                        msg.addComponent(new LocationComponent(location.getLatitude(),
-                            location.getLongitude(), location.getText(), location.getStreet()));
-                    }
-
-                    // group chat
-                    KontalkGroupManager.KontalkGroup group;
-                    try {
-                        group = KontalkGroupManager
-                            .getInstanceFor(getConnection()).getGroup(m);
-                    }
-                    catch (XmppStringprepException e) {
-                        Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
-                        // report it because it's a big deal
-                        ReportingManager.logException(e);
-                        return;
-
-                    }
-                    if (group != null && !processGroupMessage(group, m, msg)) {
-                        // invalid group command
-                        Log.w(TAG, "invalid or unauthorized group command");
-                        return;
-                    }
-
-                    if (msg.getComponents().size() == 0) {
-                        Log.w(TAG, "message has no content, discarding");
-                        return;
-                    }
-
-                    msg.setStatus(needAck ? Messages.STATUS_INCOMING : Messages.STATUS_CONFIRMED);
-
-                    Uri msgUri = incoming(msg);
-
-                    if (needAck) {
-                        // send ack :)
-                        sendReceipt(msgUri, msgId, from, waitingReceipt);
-                    }
-
-                }
+                processChatMessage(m);
             }
         }
 
         // error message
         else if (m.getType() == org.jivesoftware.smack.packet.Message.Type.error) {
-            DeliveryReceipt deliveryReceipt = DeliveryReceipt.from(m);
+            processErrorMessage(m);
+        }
+    }
 
-            // delivery receipt error
-            if (deliveryReceipt != null) {
-                // mark indicated message as incoming and try again
-                Uri msg = Messages.getUri(deliveryReceipt.getId());
-                ContentValues values = new ContentValues(2);
-                values.put(Messages.STATUS, Messages.STATUS_INCOMING);
-                values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
-                getContext().getContentResolver()
-                    .update(msg, values, selectionIngoing, null);
+    private ChatStateExtension processChatState(Message m) {
+        // check if there is a composing notification
+        ExtensionElement _chatstate = m.getExtension("http://jabber.org/protocol/chatstates");
+        ChatStateExtension chatstate = null;
+        if (_chatstate != null) {
+            chatstate = (ChatStateExtension) _chatstate;
 
-                // send receipt again
-                sendReceipt(null, deliveryReceipt.getId(), m.getFrom(), waitingReceipt);
-            }
+            Jid from = m.getFrom();
+            Contact.setTyping(from.toString(), chatstate.getChatState() == ChatState.composing);
 
+            Intent i = new Intent(ACTION_MESSAGE);
+            i.putExtra("org.kontalk.message.chatState", chatstate.getElementName());
+            i.putExtra(EXTRA_FROM, from.toString());
+            i.putExtra(EXTRA_TO, m.getTo().toString());
+            sendBroadcast(i);
+        }
+
+        return chatstate;
+    }
+
+    private void processChatMessage(Message m) throws SmackException.NotConnectedException {
+        Map<String, Long> waitingReceipt = getWaitingReceiptList();
+
+        // delayed deliver extension is the first the be processed
+        // because it's used also in delivery receipts
+        Date stamp = XMPPUtils.getStanzaDelay(m);
+
+        long serverTimestamp;
+        if (stamp != null)
+            serverTimestamp = stamp.getTime();
+        else
+            serverTimestamp = System.currentTimeMillis();
+
+        DeliveryReceipt deliveryReceipt = DeliveryReceipt.from(m);
+
+        // delivery receipt
+        if (deliveryReceipt != null) {
             synchronized (waitingReceipt) {
                 String id = m.getStanzaId();
                 Long _msgId = waitingReceipt.get(id);
                 long msgId = (_msgId != null) ? _msgId : 0;
                 ContentResolver cr = getContext().getContentResolver();
 
-                // message has been rejected: mark as error
+                // FIXME it can happen that a delivery receipt comes before the SM ack (e.g. self messages)
+                // This code like it is now may overwrite the message status
+                // and revert it back to "SENT"
+
+                // message has been delivered: check if we have previously stored the server id
                 if (msgId > 0) {
-                    ContentValues values = new ContentValues(2);
-                    values.put(Messages.STATUS, Messages.STATUS_NOTDELIVERED);
-                    values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
+                    ContentValues values = new ContentValues(3);
+                    values.put(Messages.MESSAGE_ID, deliveryReceipt.getId());
+                    values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
+                    values.put(Messages.STATUS_CHANGED, serverTimestamp);
                     cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
                         values, selectionOutgoing, null);
-
-                    waitingReceipt.remove(id);
-
-                    // we can now release the message center. Hopefully
-                    // there will be one hold and one matching release.
-                    release();
                 }
-                else if (id != null) {
+                else {
                     // FIXME this could lead to fake delivery receipts because message IDs are client-generated
-                    Uri msg = Messages.getUri(id);
+                    Uri msg = Messages.getUri(deliveryReceipt.getId());
                     ContentValues values = new ContentValues(2);
-                    values.put(Messages.STATUS, Messages.STATUS_NOTDELIVERED);
-                    values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
+                    values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
+                    values.put(Messages.STATUS_CHANGED, serverTimestamp);
                     cr.update(msg, values, selectionOutgoing, null);
                 }
+
+                // remove the packet from the waiting list
+                // this will also release the wake lock
+                // This has the side effect of releasing the wake lock if
+                // the delivery receipt comes before the SM ack (which is rare)
+                waitingReceipt.remove(id);
             }
+        }
+
+        // incoming message
+        else {
+            String msgId = m.getStanzaId();
+            if (msgId == null)
+                msgId = MessageUtils.messageId();
+
+            Jid from = m.getFrom();
+            String body = m.getBody();
+
+            // create message
+            CompositeMessage msg = new CompositeMessage(
+                getContext(),
+                msgId,
+                serverTimestamp,
+                from.toString(),
+                false,
+                Coder.SECURITY_CLEARTEXT
+            );
+
+            // ack request might not be encrypted
+            boolean needAck = m.hasExtension(DeliveryReceiptRequest.ELEMENT, DeliveryReceipt.NAMESPACE);
+
+            ExtensionElement _encrypted = m.getExtension(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE);
+
+            if (_encrypted != null && _encrypted instanceof E2EEncryption) {
+                E2EEncryption mEnc = (E2EEncryption) _encrypted;
+                byte[] encryptedData = mEnc.getData();
+
+                // encrypted message
+                msg.setEncrypted(true);
+                msg.setSecurityFlags(Coder.SECURITY_BASIC);
+
+                if (encryptedData != null) {
+
+                    // decrypt message
+                    try {
+                        Message innerStanza = decryptMessage(msg, encryptedData);
+                        if (innerStanza != null) {
+                            // copy some attributes over
+                            innerStanza.setTo(m.getTo());
+                            innerStanza.setFrom(m.getFrom());
+                            innerStanza.setType(m.getType());
+                            m = innerStanza;
+
+                            if (!needAck) {
+                                // try the decrypted message
+                                needAck = m.hasExtension(DeliveryReceiptRequest.ELEMENT, DeliveryReceipt.NAMESPACE);
+                            }
+                        }
+                    }
+
+                    catch (Exception exc) {
+                        Log.e(MessageCenterService.TAG, "decryption failed", exc);
+
+                        // raw component for encrypted data
+                        // reuse security flags
+                        msg.clearComponents();
+                        msg.addComponent(new RawComponent(encryptedData, true, msg.getSecurityFlags()));
+                    }
+
+                }
+            }
+
+            else {
+
+                // use message body
+                if (body != null)
+                    msg.addComponent(new TextComponent(body));
+
+                // old PGP signature
+                ExtensionElement _pgpSigned = m.getExtension(OpenPGPSignedMessage.ELEMENT_NAME, OpenPGPSignedMessage.NAMESPACE);
+                if (_pgpSigned instanceof OpenPGPSignedMessage) {
+                    OpenPGPSignedMessage pgpSigned = (OpenPGPSignedMessage) _pgpSigned;
+                    byte[] signedData = pgpSigned.getData();
+
+                    // signed message
+                    msg.setSecurityFlags(Coder.SECURITY_BASIC_SIGNED);
+
+                    if (signedData != null) {
+                        // check signature
+                        try {
+                            checkSignedMessage(msg, pgpSigned.getData());
+                            // at this point our message should be filled with the verified body
+                        }
+
+                        catch (Exception exc) {
+                            Log.e(MessageCenterService.TAG, "signature check failed", exc);
+                            // TODO what to do here?
+                            msg.setSecurityFlags(msg.getSecurityFlags() |
+                                Coder.SECURITY_ERROR_INVALID_SIGNATURE);
+                        }
+                    }
+                }
+
+            }
+
+            // out of band data
+            ExtensionElement _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
+            if (_media instanceof OutOfBandData) {
+                File previewFile = null;
+
+                OutOfBandData media = (OutOfBandData) _media;
+                String mime = media.getMime();
+                String fetchUrl = media.getUrl();
+                long length = media.getLength();
+                boolean encrypted = media.isEncrypted();
+
+                // bits-of-binary for preview
+                ExtensionElement _preview = m.getExtension(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE);
+                if (_preview != null && _preview instanceof BitsOfBinary) {
+                    BitsOfBinary preview = (BitsOfBinary) _preview;
+                    String previewMime = preview.getType();
+                    if (previewMime == null)
+                        previewMime = MediaStorage.THUMBNAIL_MIME_NETWORK;
+
+                    String filename = null;
+
+                    if (ImageComponent.supportsMimeType(previewMime)) {
+                        filename = ImageComponent.buildMediaFilename(previewMime);
+                    }
+
+                    try {
+                        if (filename != null) previewFile =
+                            MediaStorage.writeInternalMedia(getContext(),
+                                filename, preview.getContents());
+                    }
+                    catch (IOException e) {
+                        Log.w(MessageCenterService.TAG, "error storing thumbnail", e);
+                        // we are going to need a filename anyway
+                        previewFile = MediaStorage.getInternalMediaFile(getContext(), filename);
+                    }
+                }
+
+                MessageComponent<?> attachment;
+
+                if (mime == null) {
+                    // try to guess MIME from URL
+                    mime = MediaStorage.getType(fetchUrl);
+                }
+
+                if (ImageComponent.supportsMimeType(mime)) {
+                    if (previewFile == null) {
+                        // no bits of binary, generate a filename anyway so the thumbnail will be generated
+                        // from the original file once downloaded
+                        String filename = ImageComponent.buildMediaFilename(mime);
+                        previewFile = MediaStorage.getInternalMediaFile(getContext(), filename);
+                    }
+
+                    msg.clearComponents();
+                    // cleartext only for now
+                    attachment = new ImageComponent(mime, previewFile, null, fetchUrl, length,
+                        encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+                }
+
+                else if (VCardComponent.supportsMimeType(mime)) {
+                    msg.clearComponents();
+                    // cleartext only for now
+                    attachment = new VCardComponent(previewFile, null, fetchUrl, length,
+                        encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+                }
+
+                else if (AudioComponent.supportsMimeType(mime)) {
+                    msg.clearComponents();
+                    attachment = new AudioComponent(mime, null, fetchUrl, length,
+                        encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+                }
+
+                else {
+                    msg.clearComponents();
+                    attachment = new DefaultAttachmentComponent(mime, null, fetchUrl, length,
+                        encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+                }
+
+                // TODO other types
+
+                msg.addComponent(attachment);
+
+                // add a dummy body if none was found
+                /*
+                if (body == null) {
+                    msg.addComponent(new TextComponent(CompositeMessage
+                        .getSampleTextContent((Class<? extends MessageComponent<?>>)
+                            attachment.getClass(), mime)));
+                }
+                */
+            }
+
+            ExtensionElement _location = m.getExtension(UserLocation.ELEMENT_NAME, UserLocation.NAMESPACE);
+            if (_location != null && _location instanceof UserLocation) {
+                UserLocation location = (UserLocation) _location;
+                msg.addComponent(new LocationComponent(location.getLatitude(),
+                    location.getLongitude(), location.getText(), location.getStreet()));
+            }
+
+            // group chat
+            KontalkGroupManager.KontalkGroup group;
+            try {
+                group = KontalkGroupManager
+                    .getInstanceFor(getConnection()).getGroup(m);
+            }
+            catch (XmppStringprepException e) {
+                Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+                // report it because it's a big deal
+                ReportingManager.logException(e);
+                return;
+
+            }
+            if (group != null && !processGroupMessage(group, m, msg)) {
+                // invalid group command
+                Log.w(TAG, "invalid or unauthorized group command");
+                return;
+            }
+
+            if (msg.getComponents().size() == 0) {
+                Log.w(TAG, "message has no content, discarding");
+                return;
+            }
+
+            msg.setStatus(needAck ? Messages.STATUS_INCOMING : Messages.STATUS_CONFIRMED);
+
+            Uri msgUri = incoming(msg);
+
+            if (needAck) {
+                // send ack :)
+                sendReceipt(msgUri, msgId, from, waitingReceipt);
+            }
+        }
+    }
+
+    private void processErrorMessage(Message m) {
+        Map<String, Long> waitingReceipt = getWaitingReceiptList();
+        DeliveryReceipt deliveryReceipt = DeliveryReceipt.from(m);
+
+        // delivery receipt error
+        if (deliveryReceipt != null) {
+            // mark indicated message as incoming and try again
+            Uri msg = Messages.getUri(deliveryReceipt.getId());
+            ContentValues values = new ContentValues(2);
+            values.put(Messages.STATUS, Messages.STATUS_INCOMING);
+            values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
+            getContext().getContentResolver()
+                .update(msg, values, selectionIngoing, null);
+
+            // send receipt again
+            sendReceipt(null, deliveryReceipt.getId(), m.getFrom(), waitingReceipt);
+        }
+
+        synchronized (waitingReceipt) {
+            String id = m.getStanzaId();
+            Long _msgId = waitingReceipt.get(id);
+            long msgId = (_msgId != null) ? _msgId : 0;
+            ContentResolver cr = getContext().getContentResolver();
+
+            // message has been rejected: mark as error
+            if (msgId > 0) {
+                ContentValues values = new ContentValues(2);
+                values.put(Messages.STATUS, Messages.STATUS_NOTDELIVERED);
+                values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
+                cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
+                    values, selectionOutgoing, null);
+
+                // we can now release the message center. Hopefully
+                // there will be one hold and one matching release.
+                release();
+            }
+            else if (id != null) {
+                // FIXME this could lead to fake delivery receipts because message IDs are client-generated
+                Uri msg = Messages.getUri(id);
+                ContentValues values = new ContentValues(2);
+                values.put(Messages.STATUS, Messages.STATUS_NOTDELIVERED);
+                values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
+                cr.update(msg, values, selectionOutgoing, null);
+            }
+
+            // remove the packet from the waiting list
+            // this will also release the wake lock
+            waitingReceipt.remove(id);
         }
     }
 
