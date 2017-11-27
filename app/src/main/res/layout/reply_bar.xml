@@ -24,18 +24,17 @@
     <ImageView android:id="@+id/icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/text"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_alignParentBottom="true"
         android:layout_marginRight="8dp"
         android:layout_marginEnd="8dp"
         android:src="@drawable/ic_menu_reply"
         android:tint="?attr/colorPrimaryDark"
-        tools:ignore="ContentDescription"/>
+        tools:ignore="ContentDescription" />
 
-    <TextView
-        android:id="@+id/sender"
+    <TextView android:id="@+id/sender"
         style="@style/TextAppearance.ReplyBar.Sender"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -59,10 +58,10 @@
         android:layout_toStartOf="@+id/btn_cancel"
         android:autoLink="none"
         android:ellipsize="end"
-        android:lines="1"
+        android:maxLines="3"
         android:linksClickable="false"
         app:emojiSize="@dimen/emoji_textview_size"
-        tools:text="Hey man any plans for tonight?"/>
+        tools:text="Hey man any plans for tonight? I thought about lorem ipsum, it was very easy to get, you should try this with multiline text!!"/>
 
     <ImageView android:id="@+id/btn_cancel"
         android:contentDescription="@string/btn_reply_cancel_description"
@@ -72,6 +71,6 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
-        android:layout_alignParentBottom="true"/>
+        android:layout_alignBottom="@+id/text" />
 
 </merge>

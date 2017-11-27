@@ -70,7 +70,8 @@
 
         <org.kontalk.ui.view.ReplyBar android:id="@+id/reply_bar"
             android:layout_width="fill_parent"
-            android:layout_height="@dimen/reply_bar_height"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/reply_bar_height"
             android:padding="8dp"
             android:background="?attr/colorBackgroundFloating"
             app:dividerView="@+id/reply_bar_divider"
