@@ -80,6 +80,7 @@ import org.jivesoftware.smack.SmackException.AlreadyLoggedInException;
 import org.jivesoftware.smack.SmackException.ConnectionException;
 import org.jivesoftware.smack.SmackException.NoResponseException;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
+import org.jivesoftware.smack.SmackException.NotLoggedInException;
 import org.jivesoftware.smack.SmackException.SecurityRequiredByServerException;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.SynchronizationPoint;
@@ -309,7 +310,7 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
         addConnectionListener(new AbstractConnectionListener() {
             @Override
             public void connectionClosedOnError(Exception e) {
-                if (e instanceof XMPPException.StreamErrorException) {
+                if (e instanceof XMPPException.StreamErrorException || e instanceof StreamManagementException) {
                     dropSmState();
                 }
             }
@@ -683,10 +684,6 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
      * @throws Exception if an exception occurs.
      */
     private void proceedTLSReceived() throws NoSuchAlgorithmException, CertificateException, IOException, KeyStoreException, NoSuchProviderException, UnrecoverableKeyException, KeyManagementException, SmackException {
-        SSLContext context = this.config.getCustomSSLContext();
-        KeyStore ks = null;
-        KeyManager[] kms = null;
-        PasswordCallback pcb = null;
         SmackDaneVerifier daneVerifier = null;
 
         if (config.getDnssecMode() == DnssecMode.needsDnssecAndDane) {
@@ -699,6 +696,10 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                 throw new IllegalStateException("DANE requested but DANE provider did not return a DANE verifier");
             }
         }
+
+        SSLContext context = this.config.getCustomSSLContext();
+        KeyStore ks = null;
+        PasswordCallback pcb = null;
 
         if (context == null) {
             final String keyStoreType = config.getKeystoreType();
@@ -724,8 +725,8 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
             else if ("Apple".equals(keyStoreType)) {
                 ks = KeyStore.getInstance("KeychainStore","Apple");
                 ks.load(null,null);
-                //pcb = new PasswordCallback("Apple Keychain",false);
-                //pcb.setPassword(null);
+                // pcb = new PasswordCallback("Apple Keychain",false);
+                // pcb.setPassword(null);
             }
             else if (keyStoreType != null) {
                 ks = KeyStore.getInstance(keyStoreType);
@@ -744,21 +745,32 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                 }
             }
 
+            KeyManager[] kms = null;
+
             if (ks != null) {
                 String keyManagerFactoryAlgorithm = KeyManagerFactory.getDefaultAlgorithm();
-                KeyManagerFactory kmf = KeyManagerFactory.getInstance(keyManagerFactoryAlgorithm);
+                KeyManagerFactory kmf = null;
                 try {
-                    if (pcb == null) {
-                        kmf.init(ks, null);
-                    }
-                    else {
-                        kmf.init(ks, pcb.getPassword());
-                        pcb.clearPassword();
-                    }
-                    kms = kmf.getKeyManagers();
+                    kmf = KeyManagerFactory.getInstance(keyManagerFactoryAlgorithm);
                 }
-                catch (NullPointerException npe) {
-                    LOGGER.log(Level.WARNING, "NullPointerException", npe);
+                catch (NoSuchAlgorithmException e) {
+                    LOGGER.log(Level.FINE, "Could get the default KeyManagerFactory for the '"
+                                    + keyManagerFactoryAlgorithm + "' algorithm", e);
+                }
+                if (kmf != null) {
+                    try {
+                        if (pcb == null) {
+                            kmf.init(ks, null);
+                        }
+                        else {
+                            kmf.init(ks, pcb.getPassword());
+                            pcb.clearPassword();
+                        }
+                        kms = kmf.getKeyManagers();
+                    }
+                    catch (NullPointerException npe) {
+                        LOGGER.log(Level.WARNING, "NullPointerException", npe);
+                    }
                 }
             }
 
@@ -1156,8 +1168,7 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                             if (!smSessionId.equals(resumed.getPrevId())) {
                                 throw new StreamIdDoesNotMatchException(smSessionId, resumed.getPrevId());
                             }
-                            // Mark SM as enabled and resumption as successful.
-                            smResumedSyncPoint.reportSuccess();
+                            // Mark SM as enabled
                             smEnabledSyncPoint.reportSuccess();
                             // First, drop the stanzas already handled by the server
                             processHandledCount(resumed.getHandledCount());
@@ -1173,6 +1184,8 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                             if (!stanzasToResend.isEmpty()) {
                                 requestSmAcknowledgementInternal();
                             }
+                            // Mark SM resumption as successful
+                            smResumedSyncPoint.reportSuccess();
                             LOGGER.fine("Stream Management (XEP-198): Stream resumed");
                             break;
                         case AckAnswer.ELEMENT:
@@ -1201,7 +1214,8 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                         }
                         break;
                     case XmlPullParser.END_TAG:
-                        if (parser.getName().equals("stream")) {
+                        final String endTagName = parser.getName();
+                        if ("stream".equals(endTagName)) {
                             if (!parser.getNamespace().equals("http://etherx.jabber.org/streams")) {
                                 LOGGER.warning(XMPPTCPConnection.this +  " </stream> but different namespace " + parser.getNamespace());
                                 break;
@@ -1856,7 +1870,7 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                             try {
                                 listener.processStanza(ackedStanza);
                             }
-                            catch (InterruptedException | NotConnectedException e) {
+                            catch (InterruptedException | NotConnectedException | NotLoggedInException e) {
                                 LOGGER.log(Level.FINER, "Received exception", e);
                             }
                         }
@@ -1869,7 +1883,7 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                             try {
                                 listener.processStanza(ackedStanza);
                             }
-                            catch (InterruptedException | NotConnectedException e) {
+                            catch (InterruptedException | NotConnectedException | NotLoggedInException e) {
                                 LOGGER.log(Level.FINER, "Received exception", e);
                             }
                         }
