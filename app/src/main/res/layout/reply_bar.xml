@@ -65,7 +65,7 @@
         tools:text="Hey man any plans for tonight?"/>
 
     <ImageView android:id="@+id/btn_cancel"
-        android:contentDescription="@string/btn_reply_cancel"
+        android:contentDescription="@string/btn_reply_cancel_description"
         android:src="@drawable/ic_close_light"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
