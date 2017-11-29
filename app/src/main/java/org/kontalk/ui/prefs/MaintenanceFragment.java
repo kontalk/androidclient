@@ -423,7 +423,8 @@ public class MaintenanceFragment extends RootPreferenceFragment {
             .cancelListener(new DialogInterface.OnCancelListener() {
                 @Override
                 public void onCancel(DialogInterface dialogInterface) {
-                    mLocalBroadcastManager.unregisterReceiver(mUploadPrivateKeyReceiver);
+                    if (mLocalBroadcastManager != null && mUploadPrivateKeyReceiver != null)
+                        mLocalBroadcastManager.unregisterReceiver(mUploadPrivateKeyReceiver);
                     mLocalBroadcastManager = null;
                     mUploadPrivateKeyReceiver = null;
                     mUploadPrivateKeyProgress = null;
