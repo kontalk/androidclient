@@ -54,9 +54,6 @@ import org.kontalk.util.MessageUtils;
  */
 public class CompositeMessage {
 
-    public static final int USERID_LENGTH = 40;
-    public static final int USERID_LENGTH_RESOURCE = 48;
-
     @SuppressWarnings("unchecked")
     private static final Class<AttachmentComponent>[] TRY_COMPONENTS = new Class[] {
         ImageComponent.class,
