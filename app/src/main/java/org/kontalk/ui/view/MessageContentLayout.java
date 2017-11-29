@@ -42,7 +42,6 @@ public class MessageContentLayout extends LinearLayout {
         int prio = view.getPriority();
         int count = getChildCount();
 
-        int currentPrio = -1;
         int position = count;
 
         // search for the right position based on priority
@@ -52,13 +51,9 @@ public class MessageContentLayout extends LinearLayout {
                 int childPrio  = ((MessageContentView) child).getPriority();
                 // we have a chance to be added at this index
                 if (childPrio >= prio) {
-                    // we should be added as the last in our priority
-                    if (currentPrio >= 0 && currentPrio != prio) {
-                        position = i;
-                        break;
-                    }
-
-                    currentPrio = childPrio;
+                    position = i;
+                    break;
+                    // TODO items with same priority should be ordered as inserted
                 }
 
             }
