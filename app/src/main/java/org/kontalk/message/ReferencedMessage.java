@@ -1,0 +1,136 @@
+/*
+ * Kontalk Android client
+ * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package org.kontalk.message;
+
+import android.content.Context;
+import android.database.Cursor;
+
+import org.kontalk.util.MessageUtils;
+
+import static org.kontalk.provider.MyMessages.*;
+
+
+/**
+ * A simple message object used in contextual reply.
+ * Only text messages are supported.
+ * @author Daniele Ricci
+ * TODO refactor {@link CompositeMessage} to implement an interface that we can use in this class.
+ */
+public class ReferencedMessage {
+
+    private static final String[] MESSAGE_PROJECTION = {
+        Messages._ID,
+        Messages.MESSAGE_ID,
+        Messages.PEER,
+        Messages.TIMESTAMP,
+        Messages.BODY_MIME,
+        Messages.BODY_CONTENT,
+        //Messages.BODY_LENGTH,
+    };
+
+    // these indexes matches MESSAGE_PROJECTION
+    public static final int COLUMN_ID = 0;
+    public static final int COLUMN_MESSAGE_ID = 1;
+    public static final int COLUMN_PEER = 2;
+    public static final int COLUMN_TIMESTAMP = 3;
+    public static final int COLUMN_BODY_MIME = 4;
+    public static final int COLUMN_BODY_CONTENT = 5;
+    //public static final int COLUMN_BODY_LENGTH = 6;
+
+    private long mId;
+    private String mMessageId;
+    private String mSender;
+    private long mTimestamp;
+    private String mTextContent;
+
+    public ReferencedMessage(long id, String messageId, String sender, long timestamp, String textContent) {
+        mId = id;
+        mMessageId = messageId;
+        mSender = sender;
+        mTimestamp = timestamp;
+        mTextContent = textContent;
+    }
+
+    public long getId() {
+        return mId;
+    }
+
+    public String getMessageId() {
+        return mMessageId;
+    }
+
+    public String getSender() {
+        return mSender;
+    }
+
+    public long getTimestamp() {
+        return mTimestamp;
+    }
+
+    public String getTextContent() {
+        return mTextContent;
+    }
+
+    private static ReferencedMessage fromCursor(Cursor c) {
+        String mime = c.getString(COLUMN_BODY_MIME);
+        if (!TextComponent.supportsMimeType(mime))
+            throw new IllegalArgumentException("Only text messages are supported");
+
+        long id = c.getLong(COLUMN_ID);
+        String msgId = c.getString(COLUMN_MESSAGE_ID);
+        String sender = c.getString(COLUMN_PEER);
+        long timestamp = c.getLong(COLUMN_TIMESTAMP);
+        byte[] body = c.getBlob(COLUMN_BODY_CONTENT);
+
+        // remove trailing zero
+        String bodyText = MessageUtils.toString(body);
+        return new ReferencedMessage(id, msgId, sender, timestamp, bodyText);
+    }
+
+    public static ReferencedMessage load(Context context, long id) {
+        Cursor c = null;
+        try {
+            c = context.getContentResolver().query(Messages.getUri(id),
+                MESSAGE_PROJECTION, null, null, null);
+            return (c != null && c.moveToNext()) ?
+                fromCursor(c) : null;
+        }
+        finally {
+            if (c != null)
+                c.close();
+        }
+
+    }
+
+    public static ReferencedMessage load(Context context, String messageId) {
+        Cursor c = null;
+        try {
+            c = context.getContentResolver().query(Messages.getUri(messageId),
+                MESSAGE_PROJECTION, null, null, null);
+            return (c != null && c.moveToNext()) ?
+                fromCursor(c) : null;
+        }
+        finally {
+            if (c != null)
+                c.close();
+        }
+
+    }
+
+}

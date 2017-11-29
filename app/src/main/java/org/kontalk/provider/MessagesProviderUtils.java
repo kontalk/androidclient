@@ -77,7 +77,7 @@ public class MessagesProviderUtils {
 
     /** Inserts a new outgoing text message. */
     public static Uri newOutgoingMessage(Context context, String msgId, String userId,
-            String text, boolean encrypted) {
+            String text, boolean encrypted, long inReplyTo) {
 
         byte[] bytes = text.getBytes();
         ContentValues values = new ContentValues(11);
@@ -95,6 +95,8 @@ public class MessagesProviderUtils {
         values.put(Messages.ENCRYPTED, false);
         values.put(Threads.ENCRYPTION, encrypted);
         values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+        if (inReplyTo > 0)
+            values.put(Messages.IN_REPLY_TO, inReplyTo);
         return context.getContentResolver().insert(
             Messages.CONTENT_URI, values);
     }

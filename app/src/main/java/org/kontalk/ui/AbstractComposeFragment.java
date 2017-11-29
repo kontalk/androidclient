@@ -344,7 +344,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         mReplyBar.setOnCancelListener(new ReplyBar.OnCancelListener() {
             @Override
             public void onCancel(ReplyBar view) {
-                // TODO disable reply status
                 view.hide();
             }
         });
@@ -757,9 +756,11 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
     private final class TextMessageThread extends Thread {
         private final String mText;
+        private final long mInReplyTo;
 
-        TextMessageThread(String text) {
+        TextMessageThread(String text, long inReplyTo) {
             mText = text;
+            mInReplyTo = inReplyTo;
         }
 
         @Override
@@ -768,7 +769,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                 final Context context = getContext();
                 final Conversation conv = mConversation;
                 Uri newMsg = Kontalk.getMessagesController(context)
-                    .sendTextMessage(conv, mText);
+                    .sendTextMessage(conv, mText, mInReplyTo);
 
                 // update thread id from the inserted message
                 if (threadId <= 0) {
@@ -871,7 +872,10 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             offlineModeWarning();
 
             // start thread
-            new TextMessageThread(message).start();
+            long inReplyTo = mReplyBar.getMessageId();
+            new TextMessageThread(message, inReplyTo).start();
+            if (inReplyTo > 0)
+                mReplyBar.hide();
         }
     }
 
@@ -1263,7 +1267,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             String sender = msg.getSender();
             Contact contact = Contact.findByUserId(getContext(), sender);
 
-            mReplyBar.show(contact.getDisplayName(), textComponent.getContent());
+            mReplyBar.show(msg.getDatabaseId(), contact.getDisplayName(), textComponent.getContent());
         }
     }
 

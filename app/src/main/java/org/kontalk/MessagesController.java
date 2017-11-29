@@ -35,6 +35,7 @@ import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.GroupComponent;
 import org.kontalk.message.ImageComponent;
+import org.kontalk.message.InReplyToComponent;
 import org.kontalk.message.LocationComponent;
 import org.kontalk.message.MessageComponent;
 import org.kontalk.message.VCardComponent;
@@ -67,7 +68,7 @@ public class MessagesController {
         mContext = context;
     }
 
-    public Uri sendTextMessage(Conversation conv, String text) {
+    public Uri sendTextMessage(Conversation conv, String text, long inReplyTo) {
         boolean encrypted = MessageUtils.sendEncrypted(mContext, conv.isEncryptionEnabled());
 
         String msgId = MessageUtils.messageId();
@@ -75,16 +76,16 @@ public class MessagesController {
 
         // save to local storage
         Uri newMsg = MessagesProviderUtils.newOutgoingMessage(mContext,
-                msgId, userId, text, encrypted);
+                msgId, userId, text, encrypted, inReplyTo);
         if (newMsg != null) {
             // send message!
             if (conv.isGroupChat()) {
                 MessageCenterService.sendGroupTextMessage(mContext,
                         conv.getGroupJid(), conv.getGroupSubject(), conv.getGroupPeers(),
-                        text, encrypted, ContentUris.parseId(newMsg), msgId);
+                        text, encrypted, ContentUris.parseId(newMsg), msgId, inReplyTo);
             } else {
                 MessageCenterService.sendTextMessage(mContext, userId, text,
-                        encrypted, ContentUris.parseId(newMsg), msgId);
+                        encrypted, ContentUris.parseId(newMsg), msgId, inReplyTo);
             }
 
             return newMsg;
@@ -211,6 +212,11 @@ public class MessagesController {
                 values.put(MyMessages.Messages.GEO_TEXT, loc.getText());
             if (!TextUtils.isEmpty(loc.getStreet()))
                 values.put(MyMessages.Messages.GEO_STREET, loc.getStreet());
+        }
+
+        InReplyToComponent inReplyTo = msg.getComponent(InReplyToComponent.class);
+        if (inReplyTo != null) {
+            values.put(MyMessages.Messages.IN_REPLY_TO, inReplyTo.getContent().getId());
         }
 
         GroupComponent groupInfo = msg.getComponent(GroupComponent.class);

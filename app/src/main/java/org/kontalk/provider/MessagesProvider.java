@@ -102,7 +102,7 @@ public class MessagesProvider extends ContentProvider {
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     static class DatabaseHelper extends SQLiteOpenHelper {
         @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-        static final int DATABASE_VERSION = 15;
+        static final int DATABASE_VERSION = 16;
         @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
         static final String DATABASE_NAME = "messages.db";
 
@@ -149,7 +149,10 @@ public class MessagesProvider extends ContentProvider {
             "security_flags INTEGER NOT NULL DEFAULT 0," +
             // timestamp declared by server for incoming messages
             // timestamp of message accepted by server for outgoing messages
-            "server_timestamp INTEGER" +
+            "server_timestamp INTEGER," +
+
+            // reference to message id we are replying to
+            "in_reply_to INTEGER" +
             ")";
 
         /** This table will contain all the messages .*/
@@ -389,6 +392,10 @@ public class MessagesProvider extends ContentProvider {
             "CREATE INDEX idx_messages_thread_id ON messages(thread_id)",
         };
 
+        private static final String[] SCHEMA_UPGRADE_V15 = {
+            "ALTER TABLE messages ADD COLUMN in_reply_to INTEGER",
+        };
+
         private Context mContext;
 
         protected DatabaseHelper(Context context) {
@@ -448,8 +455,14 @@ public class MessagesProvider extends ContentProvider {
                     for (String sql : SCHEMA_UPGRADE_V13) {
                         db.execSQL(sql);
                     }
+                    // fall through
                 case 14:
                     for (String sql : SCHEMA_UPGRADE_V14) {
+                        db.execSQL(sql);
+                    }
+                    // fall through
+                case 15:
+                    for (String sql : SCHEMA_UPGRADE_V15) {
                         db.execSQL(sql);
                     }
                     // fall through
@@ -1711,6 +1724,7 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages.ENCRYPTED, Messages.ENCRYPTED);
         messagesProjectionMap.put(Messages.SECURITY_FLAGS, Messages.SECURITY_FLAGS);
         messagesProjectionMap.put(Messages.SERVER_TIMESTAMP, Messages.SERVER_TIMESTAMP);
+        messagesProjectionMap.put(Messages.IN_REPLY_TO, Messages.IN_REPLY_TO);
         messagesProjectionMap.put(Groups.GROUP_JID, Groups.GROUP_JID);
         messagesProjectionMap.put(Groups.SUBJECT, Groups.SUBJECT);
         messagesProjectionMap.put(Groups.GROUP_TYPE, Groups.GROUP_TYPE);

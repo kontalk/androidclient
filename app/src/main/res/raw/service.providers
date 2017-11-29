@@ -209,6 +209,13 @@
         <className>org.kontalk.client.BitsOfBinary$Provider</className>
     </extensionProvider>
 
+    <!-- XEP-0297: Stanza Forwarding -->
+    <extensionProvider>
+        <elementName>forwarded</elementName>
+        <namespace>urn:xmpp:forward:0</namespace>
+        <className>org.jivesoftware.smackx.forward.provider$ForwardedProvider</className>
+    </extensionProvider>
+
     <!-- Kontalk roster match -->
     <iqProvider>
         <elementName>query</elementName>

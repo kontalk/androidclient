@@ -122,6 +122,8 @@ public final class MyMessages {
 
         public static final String SECURITY_FLAGS = "security_flags";
 
+        public static final String IN_REPLY_TO = "in_reply_to";
+
         // not DESC here because the listview is reverse-stacked
         public static final String DEFAULT_SORT_ORDER = _ID;
         public static final String INVERTED_SORT_ORDER = _ID + " DESC";
