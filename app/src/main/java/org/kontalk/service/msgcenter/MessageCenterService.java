@@ -62,8 +62,10 @@ import org.jivesoftware.smackx.caps.packet.CapsExtension;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.csi.ClientStateIndicationManager;
+import org.jivesoftware.smackx.delay.packet.DelayInformation;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.disco.packet.DiscoverItems;
+import org.jivesoftware.smackx.forward.packet.Forwarded;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
 import org.jivesoftware.smackx.iqversion.VersionManager;
 import org.jivesoftware.smackx.iqversion.packet.Version;
@@ -130,6 +132,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.LocationComponent;
+import org.kontalk.message.ReferencedMessage;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MessagesProviderUtils;
@@ -2085,6 +2088,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Messages.GEO_LONGITUDE,
                 Messages.GEO_TEXT,
                 Messages.GEO_STREET,
+                Messages.IN_REPLY_TO,
             },
             filter.toString(), filterArgs,
             Messages._ID);
@@ -2102,6 +2106,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Set<Long> pendingGroupCommandThreads = new HashSet<>();
 
         while (c.moveToNext()) {
+            // TODO constants for column indexes
             long id = c.getLong(0);
             long threadId = c.getLong(1);
             String msgId = c.getString(2);
@@ -2119,6 +2124,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             String groupJid = c.getString(13); // 14
             String groupSubject = c.getString(14); // 15
+
+            long inReplyToId = c.getLong(19); // 20
 
             if (pendingGroupCommandThreads.contains(threadId)) {
                 Log.v(TAG, "group message for pending group command - delaying");
@@ -2249,6 +2256,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
             }
 
+            if (inReplyToId > 0) {
+                b.putLong("org.kontalk.message.inReplyTo", inReplyToId);
+            }
 
             Log.v(TAG, "resending pending message " + id);
             sendMessage(b);
@@ -2832,6 +2842,29 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     m.addExtension(userLocation);
                 }
 
+                // add referenced message if any
+                long inReplyToId = data.getLong("org.kontalk.message.inReplyTo", 0);
+                if (inReplyToId > 0) {
+                    ReferencedMessage referencedMsg = ReferencedMessage.load(this, inReplyToId);
+                    if (referencedMsg != null) {
+                        DelayInformation fwdDelay = new DelayInformation(new Date(referencedMsg.getTimestamp()));
+
+                        try {
+                            org.jivesoftware.smack.packet.Message fwdMessage =
+                                new org.jivesoftware.smack.packet.Message(referencedMsg.getSender(),
+                                    referencedMsg.getTextContent());
+                            fwdMessage.setStanzaId(referencedMsg.getMessageId());
+
+                            m.addExtension(new Forwarded(fwdDelay, fwdMessage));
+                        }
+                        catch (XmppStringprepException e) {
+                            Log.w(TAG, "unable to parse referenced message JID: " + referencedMsg.getSender(), e);
+                            // this is serious, report it
+                            ReportingManager.logException(e);
+                        }
+                    }
+                }
+
                 if (encrypt) {
                     byte[] toMessage = null;
                     try {
@@ -3164,7 +3197,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /**
      * Sends a text message.
      */
-    public static void sendTextMessage(final Context context, String to, String text, boolean encrypt, long msgId, String packetId) {
+    public static void sendTextMessage(final Context context, String to, String text, boolean encrypt, long msgId, String packetId, long inReplyTo) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
@@ -3174,12 +3207,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.body", text);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
+        i.putExtra("org.kontalk.message.inReplyTo", inReplyTo);
         context.startService(i);
     }
 
     public static void sendGroupTextMessage(final Context context, String groupJid,
         String groupSubject, String[] to,
-        String text, boolean encrypt, long msgId, String packetId) {
+        String text, boolean encrypt, long msgId, String packetId, long inReplyTo) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
@@ -3191,6 +3225,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.body", text);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
+        i.putExtra("org.kontalk.message.inReplyTo", inReplyTo);
         context.startService(i);
     }
 

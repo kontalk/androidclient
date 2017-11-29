@@ -589,44 +589,6 @@ public final class MessageUtils {
         return String.format(Locale.US, "%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
 
-    /** Converts a Kontalk user id to a JID. */
-    public static String toJID(String userId, String network) {
-        StringBuilder jid = new StringBuilder();
-
-        // this is for avoiding a useless call to subSequence
-        int l = userId.length();
-        if (l > CompositeMessage.USERID_LENGTH)
-            jid.append(userId.subSequence(0, CompositeMessage.USERID_LENGTH));
-        else
-            jid.append(userId);
-
-        jid.append('@');
-        jid.append(network);
-
-        if (l > CompositeMessage.USERID_LENGTH)
-            jid.append(userId.subSequence(CompositeMessage.USERID_LENGTH, l));
-
-        return jid.toString();
-    }
-
-    public static boolean compareUserId(String a, String b, boolean full) throws IllegalArgumentException {
-        int aLen = a.length();
-        int bLen = b.length();
-        // validate :)
-        if ((aLen != CompositeMessage.USERID_LENGTH && aLen != CompositeMessage.USERID_LENGTH_RESOURCE) ||
-                (bLen != CompositeMessage.USERID_LENGTH && bLen != CompositeMessage.USERID_LENGTH_RESOURCE) ||
-                a.contains("@") || b.contains("@"))
-            throw new IllegalArgumentException("either one or both parameters are not valid user id.");
-
-        if (full)
-            // full comparison - just equals
-            return a.equalsIgnoreCase(b);
-        else
-            // user id comparison
-            return a.substring(0, CompositeMessage.USERID_LENGTH)
-                .equalsIgnoreCase(b.substring(0, CompositeMessage.USERID_LENGTH));
-    }
-
     public static String messageId() {
         return StringUtils.randomString(30);
     }

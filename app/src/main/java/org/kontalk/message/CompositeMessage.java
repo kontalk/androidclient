@@ -54,9 +54,6 @@ import org.kontalk.util.MessageUtils;
  */
 public class CompositeMessage {
 
-    public static final int USERID_LENGTH = 40;
-    public static final int USERID_LENGTH_RESOURCE = 48;
-
     @SuppressWarnings("unchecked")
     private static final Class<AttachmentComponent>[] TRY_COMPONENTS = new Class[] {
         ImageComponent.class,
@@ -90,6 +87,7 @@ public class CompositeMessage {
         Messages.GEO_LONGITUDE,
         Messages.GEO_TEXT,
         Messages.GEO_STREET,
+        Messages.IN_REPLY_TO,
         Groups.GROUP_JID,
         Groups.SUBJECT,
         Groups.GROUP_TYPE,
@@ -121,11 +119,11 @@ public class CompositeMessage {
     public static final int COLUMN_GEO_LONGITUDE = 21;
     public static final int COLUMN_GEO_TEXT = 22;
     public static final int COLUMN_GEO_STREET = 23;
-    public static final int COLUMN_GROUP_JID = 24;
-    public static final int COLUMN_GROUP_SUBJECT = 25;
-    public static final int COLUMN_GROUP_TYPE = 26;
-    public static final int COLUMN_GROUP_MEMBERSHIP = 27;
-
+    public static final int COLUMN_IN_REPLY_TO = 24;
+    public static final int COLUMN_GROUP_JID = 25;
+    public static final int COLUMN_GROUP_SUBJECT = 26;
+    public static final int COLUMN_GROUP_TYPE = 27;
+    public static final int COLUMN_GROUP_MEMBERSHIP = 28;
 
     public static final String MSG_ID = "org.kontalk.message.id";
     public static final String MSG_SERVER_ID = "org.kontalk.message.serverId";
@@ -150,6 +148,7 @@ public class CompositeMessage {
     protected int mStatus;
     protected boolean mEncrypted;
     protected int mSecurityFlags;
+    protected long mInReplyTo;
 
     /**
      * Recipients (outgoing) - will contain one element for incoming
@@ -314,6 +313,7 @@ public class CompositeMessage {
         mEncrypted = (c.getShort(COLUMN_ENCRYPTED) > 0);
         mSecurityFlags = c.getInt(COLUMN_SECURITY);
         mServerTimestamp = c.getLong(COLUMN_SERVER_TIMESTAMP);
+        mInReplyTo = c.getLong(COLUMN_IN_REPLY_TO);
 
         String peer = c.getString(COLUMN_PEER);
         int direction = c.getInt(COLUMN_DIRECTION);
@@ -452,6 +452,16 @@ public class CompositeMessage {
 
             }
 
+            // in reply to
+            long inReplyToId = c.getLong(COLUMN_IN_REPLY_TO);
+            if (inReplyToId > 0) {
+                // load the referenced message
+                ReferencedMessage referencedMsg = ReferencedMessage.load(mContext, inReplyToId);
+                if (referencedMsg != null)
+                    addComponent(new InReplyToComponent(referencedMsg));
+                // TODO handle missing referenced message by adding a special "message was deleted" component
+            }
+
             // group information
             if (groupJid != null) {
                 GroupInfo groupInfo = new GroupInfo(groupJid, groupSubject, groupType, groupMembership);
@@ -474,6 +484,7 @@ public class CompositeMessage {
         mStatus = 0;
         mEncrypted = false;
         mSecurityFlags = 0;
+        mInReplyTo = 0;
     }
 
     /** Builds an instance from a {@link Cursor} row. */

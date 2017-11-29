@@ -38,6 +38,10 @@ import org.kontalk.R;
  * @author Andrea Cappelli
  */
 public class ReplyBar extends RelativeLayout {
+
+    /** The referenced message database id. */
+    private long mMessageId;
+
     private TextView mSender;
     private TextView mText;
 
@@ -112,7 +116,12 @@ public class ReplyBar extends RelativeLayout {
         mOnCancelListener = listener;
     }
 
-    public void show(CharSequence sender, CharSequence text) {
+    public long getMessageId() {
+        return mMessageId;
+    }
+
+    public void show(long msgId, CharSequence sender, CharSequence text) {
+        mMessageId = msgId;
         mSender.setText(sender);
         mText.setText(text);
         setVisibility(VISIBLE);
@@ -121,6 +130,7 @@ public class ReplyBar extends RelativeLayout {
     }
 
     public void hide() {
+        mMessageId = 0;
         setVisibility(GONE);
         if (mDividerView != null)
             mDividerView.setVisibility(GONE);

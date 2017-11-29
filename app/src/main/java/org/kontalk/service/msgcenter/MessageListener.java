@@ -29,6 +29,7 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
+import org.jivesoftware.smackx.forward.packet.Forwarded;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 import org.jxmpp.jid.Jid;
@@ -64,9 +65,11 @@ import org.kontalk.message.DefaultAttachmentComponent;
 import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.GroupComponent;
 import org.kontalk.message.ImageComponent;
+import org.kontalk.message.InReplyToComponent;
 import org.kontalk.message.LocationComponent;
 import org.kontalk.message.MessageComponent;
 import org.kontalk.message.RawComponent;
+import org.kontalk.message.ReferencedMessage;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
 import org.kontalk.provider.Keyring;
@@ -443,6 +446,24 @@ class MessageListener extends MessageCenterPacketListener {
                 UserLocation location = (UserLocation) _location;
                 msg.addComponent(new LocationComponent(location.getLatitude(),
                     location.getLongitude(), location.getText(), location.getStreet()));
+            }
+
+            ExtensionElement _fwd = m.getExtension(Forwarded.ELEMENT, Forwarded.NAMESPACE);
+            if (_fwd != null && _fwd instanceof Forwarded) {
+                // we actually use only the stanza id for looking up the referenced message in our database.
+                // The forwarded stanza was included for compatibility with other XMPP clients.
+                // Although technically it's a waste of space, and the replied message will
+                // not be displayed if it is deleted
+                Forwarded fwd = (Forwarded) _fwd;
+
+                Stanza fwdMsg = fwd.getForwardedStanza();
+                if (fwdMsg != null && fwdMsg.getStanzaId() != null) {
+                    ReferencedMessage referencedMsg = ReferencedMessage
+                        .load(getContext(), fwdMsg.getStanzaId());
+                    if (referencedMsg != null)
+                        msg.addComponent(new InReplyToComponent(referencedMsg));
+                    // TODO handle missing referenced message
+                }
             }
 
             // group chat
