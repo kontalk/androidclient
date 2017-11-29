@@ -128,7 +128,7 @@ public class LocationContentView extends RelativeLayout
      */
     @Override
     public int getPriority() {
-        return 1;
+        return 3;
     }
 
     private void clear() {

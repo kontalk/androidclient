@@ -26,6 +26,7 @@ import com.vanniktech.emoji.EmojiTextView;
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.TextViewCompat;
+import android.text.Editable;
 import android.text.Layout;
 import android.text.SpannableStringBuilder;
 import android.text.style.BackgroundColorSpan;
@@ -64,7 +65,7 @@ public class TextContentView extends EmojiTextView
      * Maximum affordable size of a text message to make complex stuff
      * (e.g. emoji, linkify, etc.)
      */
-    private static final int MAX_AFFORDABLE_SIZE = 10240;   // 10 KB
+    static final int MAX_AFFORDABLE_SIZE = 10240;   // 10 KB
 
     private TextComponent mComponent;
     private boolean mEncryptionPlaceholder;
@@ -143,16 +144,7 @@ public class TextContentView extends EmojiTextView
         if (formattedMessage.length() < MAX_AFFORDABLE_SIZE)
             Linkify.addLinks(formattedMessage, Linkify.ALL);
 
-        /*
-         * workaround for bugs:
-         * http://code.google.com/p/android/issues/detail?id=17343
-         * http://code.google.com/p/android/issues/detail?id=22493
-         * applies from Honeycomb to JB 4.2.2 afaik
-         */
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB &&
-                android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1)
-            // from http://stackoverflow.com/a/12303155/1045199
-            formattedMessage.append("\u200b"); // was: \u2060
+        TextContentView.applyTextWorkarounds(formattedMessage);
 
         setText(formattedMessage);
     }
@@ -242,7 +234,20 @@ public class TextContentView extends EmojiTextView
         return view;
     }
 
-    public static void setTextStyle(TextView textView) {
+    static void applyTextWorkarounds(Editable formattedMessage) {
+        /*
+         * workaround for bugs:
+         * http://code.google.com/p/android/issues/detail?id=17343
+         * http://code.google.com/p/android/issues/detail?id=22493
+         * applies from Honeycomb to JB 4.2.2 afaik
+         */
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB &&
+            android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1)
+            // from http://stackoverflow.com/a/12303155/1045199
+            formattedMessage.append("\u200b"); // was: \u2060
+    }
+
+    static void setTextStyle(TextView textView) {
         Context context = textView.getContext();
         String size = Preferences.getFontSize(context);
         int sizeId;

@@ -501,7 +501,7 @@ public class MessagesProvider extends ContentProvider {
             case MESSAGES_SERVERID:
                 qb.setTables(TABLE_MESSAGES_GROUPS);
                 qb.setProjectionMap(messagesProjectionMap);
-                qb.appendWhere(Messages.MESSAGE_ID + "='" + DatabaseUtils.sqlEscapeString(uri.getPathSegments().get(1)) + "'");
+                qb.appendWhere(Messages.MESSAGE_ID + "=" + DatabaseUtils.sqlEscapeString(uri.getPathSegments().get(1)));
                 break;
 
             case THREADS:
@@ -518,7 +518,7 @@ public class MessagesProvider extends ContentProvider {
             case THREADS_PEER:
                 qb.setTables(TABLE_THREADS_GROUPS);
                 qb.setProjectionMap(threadsProjectionMap);
-                qb.appendWhere(Threads.PEER + "='" + DatabaseUtils.sqlEscapeString(uri.getPathSegments().get(1)) + "'");
+                qb.appendWhere(Threads.PEER + "=" + DatabaseUtils.sqlEscapeString(uri.getPathSegments().get(1)));
                 break;
 
             case CONVERSATIONS_ID:

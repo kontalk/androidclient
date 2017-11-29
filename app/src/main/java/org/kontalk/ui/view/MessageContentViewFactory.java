@@ -25,6 +25,7 @@ import org.kontalk.message.AudioComponent;
 import org.kontalk.message.DefaultAttachmentComponent;
 import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.ImageComponent;
+import org.kontalk.message.InReplyToComponent;
 import org.kontalk.message.LocationComponent;
 import org.kontalk.message.MessageComponent;
 import org.kontalk.message.TextComponent;
@@ -73,6 +74,9 @@ public class MessageContentViewFactory {
         }
         else if (component instanceof LocationComponent) {
             view = (MessageContentView<T>) LocationContentView.create(inflater, parent);
+        }
+        else if (component instanceof InReplyToComponent) {
+            view = (MessageContentView<T>) QuoteContentView.create(inflater, parent);
         }
 
         if (view != null)

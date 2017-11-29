@@ -176,7 +176,7 @@ public class ImageContentView extends FrameLayout
     /** Image is always on top. */
     @Override
     public int getPriority() {
-        return 1;
+        return 4;
     }
 
     private void clear() {
