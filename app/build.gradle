@@ -32,6 +32,9 @@ task checkstyle(type: Checkstyle){
 
 android {
     compileSdkVersion project.compileSdkVersion
+    // temporarly introduced to fix Cyanogenmod bug
+    // https://issuetracker.google.com/issues/64434571#comment35
+    buildToolsVersion '27.0.1'
 
     defaultConfig {
         applicationId "org.kontalk"
