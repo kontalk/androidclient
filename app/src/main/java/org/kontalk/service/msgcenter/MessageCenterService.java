@@ -1992,6 +1992,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 // TODO Messages.ATTACHMENT_SECURITY_FLAGS,
                 Groups.GROUP_JID,
                 Groups.SUBJECT,
+                Messages.IN_REPLY_TO,
             },
             null, null, null);
 
