@@ -421,6 +421,30 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     private static final int MIN_TEST_INTERVAL = 5 * 60 * 1000;
 
+    private static final String[] RESEND_PROJECTION = new String[] {
+        Messages._ID,
+        Messages.THREAD_ID,
+        Messages.MESSAGE_ID,
+        Messages.PEER,
+        Messages.BODY_CONTENT,
+        Messages.BODY_MIME,
+        Messages.SECURITY_FLAGS,
+        Messages.ATTACHMENT_MIME,
+        Messages.ATTACHMENT_LOCAL_URI,
+        Messages.ATTACHMENT_FETCH_URL,
+        Messages.ATTACHMENT_PREVIEW_PATH,
+        Messages.ATTACHMENT_LENGTH,
+        Messages.ATTACHMENT_COMPRESS,
+        // TODO Messages.ATTACHMENT_SECURITY_FLAGS,
+        Groups.GROUP_JID,
+        Groups.SUBJECT,
+        Messages.GEO_LATITUDE,
+        Messages.GEO_LONGITUDE,
+        Messages.GEO_TEXT,
+        Messages.GEO_STREET,
+        Messages.IN_REPLY_TO,
+    };
+
     static final IPushListener sPushListener = PushServiceManager.getDefaultListener();
 
     /**
@@ -1974,27 +1998,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private void sendReadyMedia(long databaseId) {
         Cursor c = getContentResolver().query(ContentUris
-                .withAppendedId(Messages.CONTENT_URI, databaseId),
-            new String[]{
-                Messages._ID,
-                Messages.THREAD_ID,
-                Messages.MESSAGE_ID,
-                Messages.PEER,
-                Messages.BODY_CONTENT,
-                Messages.BODY_MIME,
-                Messages.SECURITY_FLAGS,
-                Messages.ATTACHMENT_MIME,
-                Messages.ATTACHMENT_LOCAL_URI,
-                Messages.ATTACHMENT_FETCH_URL,
-                Messages.ATTACHMENT_PREVIEW_PATH,
-                Messages.ATTACHMENT_LENGTH,
-                Messages.ATTACHMENT_COMPRESS,
-                // TODO Messages.ATTACHMENT_SECURITY_FLAGS,
-                Groups.GROUP_JID,
-                Groups.SUBJECT,
-                Messages.IN_REPLY_TO,
-            },
-            null, null, null);
+                .withAppendedId(Messages.CONTENT_URI, databaseId), RESEND_PROJECTION, null, null, null);
 
         sendMessages(c, false);
 
@@ -2068,31 +2072,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         Cursor c = getContentResolver().query(Messages.CONTENT_URI,
-            new String[]{
-                Messages._ID,
-                Messages.THREAD_ID,
-                Messages.MESSAGE_ID,
-                Messages.PEER,
-                Messages.BODY_CONTENT,
-                Messages.BODY_MIME,
-                Messages.SECURITY_FLAGS,
-                Messages.ATTACHMENT_MIME,
-                Messages.ATTACHMENT_LOCAL_URI,
-                Messages.ATTACHMENT_FETCH_URL,
-                Messages.ATTACHMENT_PREVIEW_PATH,
-                Messages.ATTACHMENT_LENGTH,
-                Messages.ATTACHMENT_COMPRESS,
-                // TODO Messages.ATTACHMENT_SECURITY_FLAGS,
-                Groups.GROUP_JID,
-                Groups.SUBJECT,
-                Messages.GEO_LATITUDE,
-                Messages.GEO_LONGITUDE,
-                Messages.GEO_TEXT,
-                Messages.GEO_STREET,
-                Messages.IN_REPLY_TO,
-            },
-            filter.toString(), filterArgs,
-            Messages._ID);
+            RESEND_PROJECTION, filter.toString(), filterArgs, Messages._ID);
 
         sendMessages(c, retrying);
 
