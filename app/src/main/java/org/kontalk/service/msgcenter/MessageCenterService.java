@@ -3546,7 +3546,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static void requestPublicKey(final Context context, String to) {
-        requestPublicKey(context, to, null);
+        requestPublicKey(context, to, StringUtils.randomString(6));
     }
 
     public static void requestPublicKey(final Context context, String to, String id) {
