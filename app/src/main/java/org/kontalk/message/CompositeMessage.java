@@ -457,9 +457,8 @@ public class CompositeMessage {
             if (inReplyToId > 0) {
                 // load the referenced message
                 ReferencedMessage referencedMsg = ReferencedMessage.load(mContext, inReplyToId);
-                if (referencedMsg != null)
-                    addComponent(new InReplyToComponent(referencedMsg));
-                // TODO handle missing referenced message by adding a special "message was deleted" component
+                // a null message is allowed, meaning that it was not found
+                addComponent(new InReplyToComponent(referencedMsg));
             }
 
             // group information

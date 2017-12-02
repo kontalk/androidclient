@@ -462,7 +462,6 @@ class MessageListener extends MessageCenterPacketListener {
                         .load(getContext(), fwdMsg.getStanzaId());
                     if (referencedMsg != null)
                         msg.addComponent(new InReplyToComponent(referencedMsg));
-                    // TODO handle missing referenced message
                 }
             }
 

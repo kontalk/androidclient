@@ -99,7 +99,7 @@ public class ImageContentView extends FrameLayout
         else {
             String placeholder = CompositeMessage.getSampleTextContent(component.getContent().getMime());
             mPlaceholder.setText(placeholder);
-            TextContentView.setTextStyle(mPlaceholder);
+            TextContentView.setTextStyle(mPlaceholder, true);
             mContent.setVisibility(GONE);
             mPlaceholder.setVisibility(VISIBLE);
         }

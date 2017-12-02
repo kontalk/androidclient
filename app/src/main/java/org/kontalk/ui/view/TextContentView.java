@@ -24,6 +24,8 @@ import java.util.regex.Pattern;
 import com.vanniktech.emoji.EmojiTextView;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.TextViewCompat;
 import android.text.Editable;
@@ -32,6 +34,7 @@ import android.text.SpannableStringBuilder;
 import android.text.style.BackgroundColorSpan;
 import android.text.util.Linkify;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -138,7 +141,7 @@ public class TextContentView extends EmojiTextView
         mComponent = component;
 
         SpannableStringBuilder formattedMessage = formatMessage(highlight);
-        setTextStyle(this);
+        setTextStyle(this, true);
 
         // linkify!
         if (formattedMessage.length() < MAX_AFFORDABLE_SIZE)
@@ -247,18 +250,46 @@ public class TextContentView extends EmojiTextView
             formattedMessage.append("\u200b"); // was: \u2060
     }
 
-    static void setTextStyle(TextView textView) {
+    /**
+     * Sets the text style based on the text size user preference.
+     * FIXME there is something weird about this method, rewrite it from scratch
+     * @param textView the view to apply the style
+     * @param applyBaseTheme true to apply a base TextAppearance first
+     */
+    static void setTextStyle(TextView textView, boolean applyBaseTheme) {
         Context context = textView.getContext();
         String size = Preferences.getFontSize(context);
         int sizeId;
-        if (size.equals("small"))
-            sizeId = android.R.style.TextAppearance_Small;
-        else if (size.equals("large"))
-            sizeId = android.R.style.TextAppearance_Large;
-        else
-            sizeId = android.R.style.TextAppearance;
-        TextViewCompat.setTextAppearance(textView, sizeId);
-        //setEmojiconSize((int) getTextSize());
+        switch (size) {
+            case "small":
+                sizeId = android.R.style.TextAppearance_Small;
+                break;
+            case "large":
+                sizeId = android.R.style.TextAppearance_Large;
+                break;
+            default:
+                sizeId = android.R.style.TextAppearance;
+                break;
+        }
+
+        if (applyBaseTheme) {
+            // set a baseline theme
+            TextViewCompat.setTextAppearance(textView, android.R.style.TextAppearance);
+        }
+
+        // now apply the text size
+        try {
+            int[] attrs = {android.R.attr.textSize};
+            TypedArray ta = textView.getContext().getTheme().obtainStyledAttributes(sizeId, attrs);
+            float textSize = ta.getDimensionPixelSize(0, 0);
+            if (textSize > 0)
+                textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
+
+            ta.recycle();
+        }
+        catch (Resources.NotFoundException e) {
+            // nothing
+        }
     }
 
 }
