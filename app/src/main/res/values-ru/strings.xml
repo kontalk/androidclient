@@ -159,7 +159,7 @@
   <string name="title_invalid_number">Неверный номер</string>
   <string name="err_store_message_failed">Невозможно сохранить сообщение в исходящих.</string>
   <string name="msg_invalid_number">Пожалуйста, введите действительный номер телефона.</string>
-  <string name="msg_invalid_cc">Пожалуйста, введите действительный код страны.</string>
+  <string name="msg_invalid_cc">Выберите код страны.</string>
   <string name="title_invalid_code">Неверный код</string>
   <string name="msg_invalid_code">Пожалуйста, введите действительный код.</string>
   <string name="title_no_name">Ваше имя</string>
@@ -671,5 +671,10 @@
     <string name="btn_reply_cancel">Отмена</string>
 
     <string name="btn_reply_cancel_description">Не отвечать</string>
+
+    <string name="register_device_nonetwork">Сеть недоступна, попробуйте ещё раз чуть позже.</string>
+    <string name="register_device_offline">Включён режим оффлайн.</string>
+
+    <string name="reply_message_deleted">Сообщение удалено.</string>
 
     </resources>
