@@ -1112,7 +1112,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     break;
 
                 case ACTION_UPLOAD_PRIVATEKEY:
-                    doConnect = handleUploadPrivateKey(intent);
+                    doConnect = handleUploadPrivateKey(intent, canConnect);
                     break;
 
                 case ACTION_CONNECTED:
@@ -1295,9 +1295,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_UPLOAD_PRIVATEKEY)
-    private boolean handleUploadPrivateKey(Intent intent) {
-        String exportPassprase = intent.getStringExtra(EXTRA_EXPORT_PASSPHRASE);
-        beginUploadPrivateKey(exportPassprase);
+    private boolean handleUploadPrivateKey(Intent intent, boolean canConnect) {
+        if (canConnect && isConnected()) {
+            String exportPassprase = intent.getStringExtra(EXTRA_EXPORT_PASSPHRASE);
+            beginUploadPrivateKey(exportPassprase);
+        }
         return true;
     }
 

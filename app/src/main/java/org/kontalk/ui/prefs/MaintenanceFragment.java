@@ -55,6 +55,8 @@ import org.kontalk.ui.PasswordInputDialog;
 import org.kontalk.ui.RegisterDeviceActivity;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.Preferences;
+import org.kontalk.util.SystemUtils;
 
 
 /**
@@ -382,36 +384,60 @@ public class MaintenanceFragment extends RootPreferenceFragment {
         }
     }
 
-    // TODO should wait for a CONNECTED broadcast and abort if in offline mode
-    void uploadPrivateKey(String passphrase) {
+    void uploadPrivateKey(final String passphrase) {
         final Context context = getContext();
         if (context == null)
             return;
+
+        // check for network
+        if (!SystemUtils.isNetworkConnectionAvailable(context)) {
+            Toast.makeText(getActivity(), R.string.register_device_nonetwork,
+                Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        // check for offline mode
+        if (Preferences.getOfflineMode()) {
+            Toast.makeText(getActivity(), R.string.register_device_offline,
+                Toast.LENGTH_LONG).show();
+            return;
+        }
 
         // listen for broadcast to receive the token to display to the user
         mUploadPrivateKeyReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context invalid, Intent intent) {
-                mLocalBroadcastManager.unregisterReceiver(this);
-                if (mUploadPrivateKeyProgress != null) {
-                    mUploadPrivateKeyProgress.dismiss();
-                    mUploadPrivateKeyProgress = null;
+                String action = intent.getAction();
+
+                if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
+                    MessageCenterService.uploadPrivateKey(context.getApplicationContext(), passphrase);
                 }
 
-                String token = intent.getStringExtra(MessageCenterService.EXTRA_TOKEN);
-                String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                String error = intent.getStringExtra(MessageCenterService.EXTRA_ERROR_CONDITION);
+                else if (MessageCenterService.ACTION_UPLOAD_PRIVATEKEY.equals(action)) {
+                    mLocalBroadcastManager.unregisterReceiver(this);
 
-                if (token == null || error != null) {
-                    Toast.makeText(context, R.string.register_device_request_error, Toast.LENGTH_LONG).show();
-                }
-                else {
-                    RegisterDeviceActivity.start(context, token, from);
+                    if (mUploadPrivateKeyProgress != null) {
+                        mUploadPrivateKeyProgress.dismiss();
+                        mUploadPrivateKeyProgress = null;
+                    }
+
+                    String token = intent.getStringExtra(MessageCenterService.EXTRA_TOKEN);
+                    String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                    String error = intent.getStringExtra(MessageCenterService.EXTRA_ERROR_CONDITION);
+
+                    if (token == null || error != null) {
+                        Toast.makeText(context, R.string.register_device_request_error, Toast.LENGTH_LONG).show();
+                    }
+                    else {
+                        RegisterDeviceActivity.start(context, token, from);
+                    }
                 }
             }
         };
 
-        IntentFilter filter = new IntentFilter(MessageCenterService.ACTION_UPLOAD_PRIVATEKEY);
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(MessageCenterService.ACTION_CONNECTED);
+        filter.addAction(MessageCenterService.ACTION_UPLOAD_PRIVATEKEY);
         if (mLocalBroadcastManager == null)
             mLocalBroadcastManager = LocalBroadcastManager.getInstance(context.getApplicationContext());
 
@@ -432,7 +458,8 @@ public class MaintenanceFragment extends RootPreferenceFragment {
             })
             .show();
 
-        MessageCenterService.uploadPrivateKey(context.getApplicationContext(), passphrase);
+        MessageCenterService.requestConnectionStatus(context.getApplicationContext());
+        MessageCenterService.start(context.getApplicationContext());
     }
 
     public void exportPersonalKey(Context ctx, OutputStream out) {
