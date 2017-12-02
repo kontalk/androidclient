@@ -599,6 +599,12 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         if (!importing || !phoneInput.isEmpty()){
             PhoneNumberUtil util = PhoneNumberUtil.getInstance();
             CountryCode cc = (CountryCode) mCountryCode.getSelectedItem();
+            if (cc == null) {
+                error(R.string.msg_invalid_cc);
+                callback.run(false);
+                return;
+            }
+
             if (!BuildConfig.DEBUG) {
                 PhoneNumber phone;
                 try {
