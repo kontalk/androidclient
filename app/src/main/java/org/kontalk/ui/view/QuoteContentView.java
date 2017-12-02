@@ -21,7 +21,11 @@ package org.kontalk.ui.view;
 import java.util.regex.Pattern;
 
 import android.content.Context;
+import android.graphics.Typeface;
+import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.util.Linkify;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -33,6 +37,7 @@ import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.message.InReplyToComponent;
 import org.kontalk.message.ReferencedMessage;
+import org.kontalk.util.SystemUtils;
 
 
 /**
@@ -67,20 +72,39 @@ public class QuoteContentView extends RelativeLayout
     public void bind(long databaseId, InReplyToComponent component, Pattern highlight) {
         mComponent = component;
 
-        SpannableStringBuilder formattedMessage = formatMessage();
+        CharSequence msgSender;
+        CharSequence msgText;
 
-        // TODO TextContentView.setTextStyle(mSender);
-        // TODO TextContentView.setTextStyle(mContent);
+        ReferencedMessage referencedMsg = mComponent.getContent();
+        if (referencedMsg != null) {
+            SpannableStringBuilder formattedMessage =
+                new SpannableStringBuilder(referencedMsg.getTextContent());
 
-        // linkify!
-        if (formattedMessage.length() < TextContentView.MAX_AFFORDABLE_SIZE)
-            Linkify.addLinks(formattedMessage, Linkify.ALL);
+            // linkify!
+            if (formattedMessage.length() < TextContentView.MAX_AFFORDABLE_SIZE)
+                Linkify.addLinks(formattedMessage, Linkify.ALL);
 
-        TextContentView.applyTextWorkarounds(formattedMessage);
+            TextContentView.applyTextWorkarounds(formattedMessage);
+            msgText = formattedMessage;
 
-        Contact sender = Contact.findByUserId(getContext(), mComponent.getContent().getSender());
-        mSender.setText(sender.getDisplayName());
-        mContent.setText(formattedMessage);
+            Contact sender = Contact.findByUserId(getContext(), referencedMsg.getSender());
+            msgSender = sender.getDisplayName();
+        }
+        else {
+            Spannable formattedMessage = new SpannableString(getContext()
+                .getString(R.string.reply_message_deleted));
+            formattedMessage.setSpan(SystemUtils.getTypefaceSpan(Typeface.ITALIC),
+                0, formattedMessage.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            msgText = formattedMessage;
+
+            msgSender = getContext().getString(R.string.peer_unknown);
+        }
+
+        TextContentView.setTextStyle(mSender, false);
+        TextContentView.setTextStyle(mContent, false);
+
+        mSender.setText(msgSender);
+        mContent.setText(msgText);
     }
 
     @Override
@@ -97,13 +121,6 @@ public class QuoteContentView extends RelativeLayout
     @Override
     public int getPriority() {
         return 1;
-    }
-
-    private SpannableStringBuilder formatMessage() {
-        ReferencedMessage referencedMsg = mComponent.getContent();
-        String textContent = referencedMsg.getTextContent();
-
-        return new SpannableStringBuilder(textContent);
     }
 
     private void clear() {
