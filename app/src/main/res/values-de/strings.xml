@@ -159,7 +159,7 @@
   <string name="title_invalid_number">Ungültige Nummer</string>
   <string name="err_store_message_failed">Nachricht kann nicht im Postausgang gespeichert werden.</string>
   <string name="msg_invalid_number">Bitte eine gültige Tel.Nr. eingeben.</string>
-  <string name="msg_invalid_cc">Bitte eine gültige Länderkennung eingeben.</string>
+  <string name="msg_invalid_cc">Bitte wählen Sie ein Land aus.</string>
   <string name="title_invalid_code">Ungültiger Code</string>
   <string name="msg_invalid_code">Bitte einen gültigen Code eingeben.</string>
   <string name="title_no_name">Ihr Name</string>
@@ -673,5 +673,10 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="btn_reply_cancel">Abbrechen</string>
 
     <string name="btn_reply_cancel_description">Antworten abbrechen</string>
+
+    <string name="register_device_nonetwork">Kein Netz verfügbar. Versuchen Sie es bitte später.</string>
+    <string name="register_device_offline">Offlienmodus ist aktiviert.</string>
+
+    <string name="reply_message_deleted">Die Nachricht ist gelöscht.</string>
 
     </resources>
