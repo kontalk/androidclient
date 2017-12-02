@@ -193,7 +193,7 @@ Desgaituta dagoenean, Kontalk konexioaren portaera zorrotz doitu daiteke sare ez
     <string name="title_invalid_number">Zenbaki baliogabea</string>
     <string name="err_store_message_failed">Ezin izan da mezua irteerako ontzian biltegiratu.</string>
     <string name="msg_invalid_number">Mesedez sartu baliozko telefono zenbaki bat.</string>
-    <string name="msg_invalid_cc">Mesedez sartu baliozko herrialde-kode bat.</string>
+    <string name="msg_invalid_cc">Mesedez hautatu herrialde bat.</string>
     <string name="msg_register_confirm_number1">Telefono zenbakia egiaztatuko dugu:</string>
     <string name="msg_register_confirm_number2">Mesedez egiaztatu berriro zenbakia zuzena dela.</string>
     <string name="title_invalid_code">Kode baliogabea</string>
@@ -677,5 +677,18 @@ Desgaitu enkriptatzea zure kontaktuak gako pertsonalik ez badu bakarrik.</string
 
     <string name="btn_device_overwrite">Nire kontu edo gailu zaharra galdu dut</string>
     <string name="btn_device_import">Transferitu kontua</string>
+
+    <string name="seen_offline_label">lineaz kanpo</string>
+    <string name="register_device_nonetwork">Sarea ez dago erabilgarri. Mesedez saiatu berriro beranduago.</string>
+    <string name="register_device_offline">Lineaz kanpoko modua gaituta dago.</string>
+
+    <string name="contactinfo_activity_title">Kontaktuaren informazioa</string>
+    <string name="contactinfo_last_seen">ikusi zen azken aldia %s</string>
+    <string name="contactinfo_phone_number">Telefono zenbakia</string>
+    <string name="contactinfo_fingerprint">Hatz-marka</string>
+    <string name="contactinfo_userid">Erabiltzailearen IDa</string>
+
+    <string name="btn_reply_cancel_description">Bertan behera utzi erantzuna</string>
+    <string name="reply_message_deleted">Mezua ezabatu da.</string>
 
     </resources>
