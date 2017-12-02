@@ -159,7 +159,7 @@
   <string name="title_invalid_number">Neplatné číslo</string>
   <string name="err_store_message_failed">Nepodařilo se uložit zprávu do odeslaných.</string>
   <string name="msg_invalid_number">Zadejte prosím platné telefonní číslo.</string>
-  <string name="msg_invalid_cc">Zadejte prosím platnou národní předvolbu.</string>
+  <string name="msg_invalid_cc">Vyberte prosím zemi.</string>
   <string name="title_invalid_code">Neplatná předvolba</string>
   <string name="msg_invalid_code">Zadejte prosím platnou předvolbu.</string>
   <string name="title_no_name">Vaše jméno</string>
@@ -679,5 +679,10 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="btn_reply_cancel">Zrušit</string>
 
     <string name="btn_reply_cancel_description">Zrušit odpověď</string>
+
+    <string name="register_device_nonetwork">Síť není dostupná. Zkuste to prosím později.</string>
+    <string name="register_device_offline">Offline mód je zapnutý.</string>
+
+    <string name="reply_message_deleted">Zpráva byla smazána.</string>
 
     </resources>
