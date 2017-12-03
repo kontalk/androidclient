@@ -159,7 +159,7 @@
   <string name="title_invalid_number">Numero non valido</string>
   <string name="err_store_message_failed">Impossibile salvare il messaggio in uscita.</string>
   <string name="msg_invalid_number">Inserisci un numero di telefono valido.</string>
-  <string name="msg_invalid_cc">Inserisci un prefisso internazionale valido.</string>
+  <string name="msg_invalid_cc">Seleziona un paese.</string>
   <string name="title_invalid_code">Codice non valido</string>
   <string name="msg_invalid_code">Inserisci un codice valido.</string>
   <string name="title_no_name">Il tuo nome</string>
@@ -669,5 +669,10 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
 
     <string name="seen_offline_label">offline</string>
     <string name="btn_reply_cancel_description">Annulla risposta</string>
+
+    <string name="register_device_nonetwork">Rete non disponibile. Riprova più tardi.</string>
+    <string name="register_device_offline">Modalità offline attiva.</string>
+
+    <string name="reply_message_deleted">Il messaggio è stato cancellato.</string>
 
     </resources>
