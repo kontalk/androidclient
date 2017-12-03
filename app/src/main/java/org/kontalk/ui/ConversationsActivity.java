@@ -99,7 +99,7 @@ public class ConversationsActivity extends MainActivity
         mFragment = (ConversationListFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_conversation_list);
 
-        if (!afterOnCreate())
+        if (Authenticator.getDefaultAccount(this) != null && !afterOnCreate())
             handleIntent(getIntent());
     }
 
