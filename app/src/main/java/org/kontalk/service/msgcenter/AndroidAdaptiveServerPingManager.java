@@ -32,6 +32,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.SystemClock;
+import android.support.v4.app.AlarmManagerCompat;
 
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.util.Preferences;
@@ -200,15 +201,10 @@ public class AndroidAdaptiveServerPingManager extends AbstractAdaptiveServerPing
             }
             else {
                 // when on mobile network, we need exact ping timings
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-                    sAlarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                        SystemClock.elapsedRealtime() + interval,
-                        mPendingIntent);
-                } else {
-                    sAlarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                        SystemClock.elapsedRealtime() + interval,
-                        mPendingIntent);
-                }
+                AlarmManagerCompat.setExactAndAllowWhileIdle(sAlarmManager,
+                    AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    SystemClock.elapsedRealtime() + interval,
+                    mPendingIntent);
             }
         }
     }
