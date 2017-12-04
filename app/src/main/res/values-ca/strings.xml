@@ -159,7 +159,7 @@
   <string name="title_invalid_number">El número no és vàlid</string>
   <string name="err_store_message_failed">No ha estat possible desar el missatge a la safata d\'eixida.</string>
   <string name="msg_invalid_number">Per favor, introduïu un número de telèfon vàlid.</string>
-  <string name="msg_invalid_cc">Per favor, introduïu un codi de país vàlid.</string>
+  <string name="msg_invalid_cc">Per favor, seleccioni un país.</string>
   <string name="title_invalid_code">El codi no és vàlid</string>
   <string name="msg_invalid_code">Per favor, introduïu un codi vàlid.</string>
   <string name="title_no_name">El vostre nom</string>
@@ -666,5 +666,11 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
     <string name="contactinfo_phone_number">Número de telèfon</string>
     <string name="contactinfo_fingerprint">Empremta digital</string>
     <string name="contactinfo_userid">ID d\'usuari</string>
+
+    <string name="register_device_nonetwork">La xarxa no està disponible. Torni-ho a intentar més tard.</string>
+    <string name="register_device_offline">Habilitat el mode fora de línia.</string>
+
+    <string name="btn_reply_cancel_description">Cancel·la la resposta</string>
+    <string name="reply_message_deleted">S\'ha suprimit el missatge.</string>
 
     </resources>
