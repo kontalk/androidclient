@@ -159,7 +159,7 @@
   <string name="title_invalid_number">Número no válido</string>
   <string name="err_store_message_failed">No se pudo guardar el mensaje en la bandeja de salida.</string>
   <string name="msg_invalid_number">Por favor, introduzca un número de teléfono válido.</string>
-  <string name="msg_invalid_cc">Por favor, introduzca un código de país válido.</string>
+  <string name="msg_invalid_cc">Por favor, elija un país.</string>
   <string name="title_invalid_code">Código no válido</string>
   <string name="msg_invalid_code">Por favor, introduzca un código válido.</string>
   <string name="title_no_name">Su nombre</string>
@@ -668,5 +668,11 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
     <string name="contactinfo_phone_number">Número de teléfono</string>
     <string name="contactinfo_fingerprint">Huella digital</string>
     <string name="contactinfo_userid">ID de usuario</string>
+
+    <string name="register_device_nonetwork">Red no disponible. Por favor intente más tarde.</string>
+    <string name="register_device_offline">Está habilitado el modo fuera-de-línea.</string>
+
+    <string name="btn_reply_cancel_description">Cancelar respuesta</string>
+    <string name="reply_message_deleted">El mensaje fue borrado.</string>
 
     </resources>
