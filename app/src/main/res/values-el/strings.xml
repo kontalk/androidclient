@@ -159,7 +159,7 @@
   <string name="title_invalid_number">Μη έγκυρος αριθμός</string>
   <string name="err_store_message_failed">Δεν ήταν δυνατό να αποθηκευτεί το μήνυμα στα εξερχόμενα.</string>
   <string name="msg_invalid_number">Παρακαλούμε εισάγετε έναν έγκυρο αριθμό τηλεφώνου.</string>
-  <string name="msg_invalid_cc">Παρακαλούμε εισάγετε έναν έγκυρο κωδικό χώρας.</string>
+  <string name="msg_invalid_cc">Παρακαλούμε επιλέξτε χώρα.</string>
   <string name="title_invalid_code">Άκυρος κωδικός</string>
   <string name="msg_invalid_code">Παρακαλούμε εισάγετε έναν έγκυρο κωδικό.</string>
   <string name="title_no_name">Το όνομά σας</string>
@@ -665,4 +665,10 @@
     <string name="contactinfo_userid">Ταυτότητα Χρήστη</string>
 
     <string name="import_device_scan_screen_title">Σάρωση μυστικού κωδικού</string>
+    <string name="register_device_nonetwork">Το δίκτυο δεν είναι διαθέσιμο. Παρακαλώ δοκιμάστε αργότερα.</string>
+    <string name="register_device_offline">Η λειτουργία εκτός σύνδεσης είναι ενεργοποιημένη.</string>
+
+    <string name="btn_reply_cancel_description">Ακύρωση απάντησης</string>
+    <string name="reply_message_deleted">Το μήνυμα διεγράφη.</string>
+
     </resources>
