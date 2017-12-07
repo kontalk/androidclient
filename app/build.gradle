@@ -133,8 +133,10 @@ dependencies {
     compile "com.android.support:exifinterface:$appcompatVersion"
     compile "com.android.support:recyclerview-v7:$appcompatVersion"
     compile "com.android.support:support-dynamic-animation:$appcompatVersion"
-    // this is actually to override an emoji dependency
+    // these are actually to override an emoji dependency
     compile "com.android.support:cardview-v7:$appcompatVersion"
+    compile "com.android.support:animated-vector-drawable:$appcompatVersion"
+    compile "com.android.support:support-v13:$appcompatVersion"
 
     compile "com.madgag.spongycastle:core:$spongyCastleVersion"
     compile ("com.madgag.spongycastle:prov:$spongyCastleVersion") {
