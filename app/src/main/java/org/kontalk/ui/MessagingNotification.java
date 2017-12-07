@@ -57,6 +57,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.GroupCommandComponent;
+import org.kontalk.message.LocationComponent;
 import org.kontalk.provider.MessagesProviderUtils.GroupThreadContent;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Groups;
@@ -93,14 +94,23 @@ public class MessagingNotification {
         Messages.BODY_CONTENT,
         Messages.ATTACHMENT_MIME,
         Messages.GEO_LATITUDE,
-        Messages.GEO_LONGITUDE,
-        Messages.GEO_TEXT,
-        Messages.GEO_STREET,
         CommonColumns.ENCRYPTED,
         Groups.GROUP_JID,
         Groups.SUBJECT,
         CommonColumns.TIMESTAMP,
     };
+
+    // mapped to MESSAGES_UNREAD_PROJECTION
+    private static final int COLUMN_MESSAGES_THREAD_ID = 0;
+    private static final int COLUMN_MESSAGES_PEER = 1;
+    private static final int COLUMN_MESSAGES_BODY_MIME = 2;
+    private static final int COLUMN_MESSAGES_BODY_CONTENT = 3;
+    private static final int COLUMN_MESSAGES_ATTACHMENT_MIME = 4;
+    private static final int COLUMN_MESSAGES_GEO_LATITUDE = 5;
+    private static final int COLUMN_MESSAGES_ENCRYPTED = 6;
+    private static final int COLUMN_MESSAGES_GROUP_JID = 7;
+    private static final int COLUMN_MESSAGES_GROUP_SUBJECT = 8;
+    private static final int COLUMN_MESSAGES_TIMESTAMP = 9;
 
     private static final String[] THREADS_UNREAD_PROJECTION =
     {
@@ -114,6 +124,17 @@ public class MessagingNotification {
         Groups.SUBJECT,
         CommonColumns.TIMESTAMP,
     };
+
+    // mapped to THREADS_UNREAD_PROJECTION
+    private static final int COLUMN_THREADS_ID = 0;
+    private static final int COLUMN_THREADS_PEER = 1;
+    private static final int COLUMN_THREADS_MIME = 2;
+    private static final int COLUMN_THREADS_CONTENT = 3;
+    private static final int COLUMN_THREADS_ENCRYPTED = 4;
+    private static final int COLUMN_THREADS_UNREAD = 5;
+    private static final int COLUMN_THREADS_GROUP_JID = 6;
+    private static final int COLUMN_THREADS_GROUP_SUBJECT = 7;
+    private static final int COLUMN_THREADS_TIMESTAMP = 8;
 
     private static final String MESSAGES_UNREAD_SELECTION =
         CommonColumns.NEW + " <> 0 AND " +
@@ -262,17 +283,17 @@ public class MessagingNotification {
             long id = 0;
             while (c.moveToNext()) {
                 // thread_id for PendingIntent
-                id = c.getLong(0);
-                String peer = c.getString(1);
-                String mime = c.getString(2);
-                byte[] content = c.getBlob(3);
-                String attMime = c.getString(4);
-                boolean encrypted = c.getInt(9) != 0;
-                String groupJid = c.getString(10);
-                String groupSubject = c.getString(11);
-                long timestamp = c.getLong(12);
+                id = c.getLong(COLUMN_MESSAGES_THREAD_ID);
+                String peer = c.getString(COLUMN_MESSAGES_PEER);
+                String mime = c.getString(COLUMN_MESSAGES_BODY_MIME);
+                byte[] content = c.getBlob(COLUMN_MESSAGES_BODY_CONTENT);
+                String attMime = c.getString(COLUMN_MESSAGES_ATTACHMENT_MIME);
+                boolean encrypted = c.getInt(COLUMN_MESSAGES_ENCRYPTED) != 0;
+                String groupJid = c.getString(COLUMN_MESSAGES_GROUP_JID);
+                String groupSubject = c.getString(COLUMN_MESSAGES_GROUP_SUBJECT);
+                long timestamp = c.getLong(COLUMN_MESSAGES_TIMESTAMP);
 
-                if (!c.isNull(5)) {
+                if (!c.isNull(COLUMN_MESSAGES_GEO_LATITUDE)) {
                     content = context.getString(R.string.notification_location).getBytes();
                 }
 
@@ -310,21 +331,17 @@ public class MessagingNotification {
             // loop all threads and accumulate them
             MessageAccumulator accumulator = new MessageAccumulator(context);
             while (c.moveToNext()) {
-                long threadId = c.getLong(0);
-                String peer = c.getString(1);
-                String mime = c.getString(2);
-                String content = c.getString(3);
-                boolean encrypted = c.getInt(4) != 0;
-
-                if (!c.isNull(5)) {
-                    content = context.getString(R.string.notification_location);
-                }
+                long threadId = c.getLong(COLUMN_THREADS_ID);
+                String peer = c.getString(COLUMN_THREADS_PEER);
+                String mime = c.getString(COLUMN_THREADS_MIME);
+                String content = c.getString(COLUMN_THREADS_CONTENT);
+                boolean encrypted = c.getInt(COLUMN_THREADS_ENCRYPTED) != 0;
+                int unreadCount = c.getInt(COLUMN_THREADS_UNREAD);
+                String groupJid = c.getString(COLUMN_THREADS_GROUP_JID);
+                String groupSubject = c.getString(COLUMN_THREADS_GROUP_SUBJECT);
 
                 if (encrypted) {
                     content = context.getString(R.string.text_encrypted);
-                }
-                else if (content == null) {
-                    content = CompositeMessage.getSampleTextContent(mime);
                 }
                 else if (GroupCommandComponent.supportsMimeType(mime)) {
                     // content is in a special format
@@ -338,15 +355,21 @@ public class MessagingNotification {
                         content = context.getString(R.string.peer_unknown);
                     }
                 }
+                else if (LocationComponent.supportsMimeType(mime)) {
+                    content = context.getString(R.string.notification_location);
+                }
+                else if (content == null) {
+                    content = CompositeMessage.getSampleTextContent(mime);
+                }
 
                 accumulator.accumulate(
                     threadId,
                     peer,
                     content,
-                    c.getInt(7),
+                    unreadCount,
                     // group data
-                    c.getString(8),
-                    c.getString(9)
+                    groupJid,
+                    groupSubject
                 );
                 // actually we don't need to check for max since conversations were selected
                 // in timestamp order, but whatever...
