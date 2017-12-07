@@ -105,7 +105,6 @@ public class ComposerBar extends RelativeLayout implements
     private ImageButton mEmojiButton;
     private EmojiPopup mEmojiView;
     RelativeLayout mRootView;
-    private WindowManager.LayoutParams mWindowLayoutParams;
 
     // for PTT message
     Handler mHandler;
