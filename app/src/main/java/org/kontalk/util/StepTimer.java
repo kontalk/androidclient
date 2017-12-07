@@ -43,6 +43,7 @@ public class StepTimer {
 
     public void reset() {
         mTimestamp = TimeUnit.NANOSECONDS.toMillis(System.nanoTime());
+        mDelay = 0;
     }
 
     /** Returns true if the defined step delay has passed, optionally resetting the timer if that's true. */
