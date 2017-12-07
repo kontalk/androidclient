@@ -193,7 +193,8 @@ public class Authenticator extends AbstractAccountAuthenticator {
         AccountManager m = AccountManager.get(ctx);
         Account acc = getDefaultAccount(m);
 
-        byte[] privateKey = getPrivateKeyExportData(m, acc, passphrase, exportPassphrase);
+        String privKeyData = m.getUserData(acc, DATA_PRIVATEKEY);
+        byte[] privateKey = Base64.decode(privKeyData, Base64.DEFAULT);
         byte[] bridgeCert = null;
 
         if (bridgeCertificate) {

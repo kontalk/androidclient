@@ -1,5 +1,15 @@
 # Change Log
 
+## [4.1.2] - 2017-12-06
+### Changed
+- Contextual reply (#594)
+
+### Fixed
+- Faster contacts sync (#1093)
+- Fix crash during private key upload (#1102)
+- Fix delay in delivery receipts (#1106)
+- Workaround Cyanogenmod/LineageOS bug (#1112)
+
 ## [4.1.1] - 2017-11-13
 ### Changed
 - Private key transfer (#122, #1090)

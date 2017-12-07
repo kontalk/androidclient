@@ -116,7 +116,7 @@ public class ProgressOutputStreamEntity {
 
         private void publishProgress(long add) {
             this.transferred += add;
-            if (this.transferred >= this.size || publishTimer.isStep())
+            if (this.transferred >= this.size || publishTimer.isStep(true))
                 this.listener.progress(url, file, this.transferred);
         }
     }

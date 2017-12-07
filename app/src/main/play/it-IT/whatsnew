@@ -1,8 +1,7 @@
 Questa versione è supportata dal servizio di registrazione offerto da https://JMP.Chat
 Aiutaci a migliorarla e correggere bug segnalandoli su GitHub o discutendoli sul nostro forum: https://forum.kontalk.org
 
-* NUOVO: invio posizione
-* NUOVO: conversione automatica smiley di testo in emoji
-* corretto memory leak causa di un crash
-* corretta visualizzazione della foto del contatto su alcuni dispositivi Motorola
-* svariate altre correzioni e miglioramenti di performance
+* NUOVO: nuovo set e tastiera emoji
+* abbandonato supporto per Android 2
+* corretto problema di ritardo nella consegna dei messaggi
+* altre correzioni

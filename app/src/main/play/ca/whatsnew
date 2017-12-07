@@ -1,8 +1,7 @@
-Ja tenim els xats en grup! Ajuda'ns a millorar i corregir els errors informant a GitHub o a discutir-los al nou fòrum: https://forum.kontalk.org
+Versió amb nou proveïdor de registre, ofert amablement per https://JMP.Chat
+Ajuda'ns a millorar i corregir els errors informant a GitHub o a discutir-los al nou fòrum: https://forum.kontalk.org
 
-* el límit de gravació d'àudio és ara de 2m de PTT i 5m de diàleg d'àudio
-* millora en la navegació de l'app
-* augment de l'estalvi de bateria en mode offline
-* correccions de fallades a les tabletes
-* correccions de fallada durant la gravació d'àudio PTT
-* moltes correccions d'errors
+* NOU: nou joc d'emojis i de teclat
+* fi de suport per a Android 2
+* solucionat el retard en el lliurament de missatges
+* corregits altres problemes

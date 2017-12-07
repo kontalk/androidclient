@@ -39,7 +39,6 @@ import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -105,7 +104,6 @@ public class ComposerBar extends RelativeLayout implements
     private ImageButton mEmojiButton;
     private EmojiPopup mEmojiView;
     RelativeLayout mRootView;
-    private WindowManager.LayoutParams mWindowLayoutParams;
 
     // for PTT message
     Handler mHandler;
@@ -232,7 +230,7 @@ public class ComposerBar extends RelativeLayout implements
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (mSendEnabled && Preferences.getSendTyping(mContext)) {
                     // send typing notification if necessary
-                    if (!mComposeSent && mListener.sendTyping()) {
+                    if (!mComposeSent && mListener != null && mListener.sendTyping()) {
                         mComposeSent = true;
                     }
                 }
@@ -508,7 +506,8 @@ public class ComposerBar extends RelativeLayout implements
 
     void startRecording() {
         // ask parent to stop all sounds
-        mListener.stopAllSounds();
+        if (mListener != null)
+            mListener.stopAllSounds();
 
         try {
             mRecordFile = MediaStorage.getOutgoingAudioFile();
@@ -568,8 +567,10 @@ public class ComposerBar extends RelativeLayout implements
             if (mRecord != null) {
                 mRecord.stop();
                 if (canSend) {
-                    mListener.sendBinaryMessage(Uri.fromFile(mRecordFile),
-                        AudioDialog.DEFAULT_MIME, false, AudioComponent.class);
+                    if (mListener != null) {
+                        mListener.sendBinaryMessage(Uri.fromFile(mRecordFile),
+                            AudioDialog.DEFAULT_MIME, false, AudioComponent.class);
+                    }
                 }
                 else if (send) {
                     Toast.makeText(mContext, R.string.hint_ptt,
@@ -657,7 +658,9 @@ public class ComposerBar extends RelativeLayout implements
     void submitSend() {
         mTextEntry.removeTextChangedListener(mChatStateListener);
         // send message
-        mListener.sendTextMessage(mTextEntry.getText().toString());
+        if (mListener != null) {
+            mListener.sendTextMessage(mTextEntry.getText().toString());
+        }
         // empty text
         mTextEntry.setText("");
         // hide softkeyboard

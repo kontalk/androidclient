@@ -1,7 +1,7 @@
 This release features our new registration provider kindly offered by https://JMP.Chat
 Help us improve and fix bugs by reporting them on GitHub or discussing them on our forum: https://forum.kontalk.org
 
-* NEW: brand new emoji set and keyboard
-* drop support for Android 2
-* fix delayed message delivery issue
+* NEW: contextual reply
+* workaround bootloop firmware bug for some devices
+* fix delayed delivery receipts issue
 * other bugfixes
