@@ -35,6 +35,7 @@ import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
+import android.os.Build;
 
 import org.kontalk.client.ClientHTTPConnection;
 import org.kontalk.service.ProgressListener;
@@ -134,6 +135,12 @@ public class HTPPFileUploadConnection implements UploadConnection {
         conn.setDoOutput(true);
         conn.setDoInput(true);
         conn.setRequestProperty("Content-Length", String.valueOf(length));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            conn.setFixedLengthStreamingMode(length);
+        }
+        else {
+            conn.setFixedLengthStreamingMode((int) length);
+        }
         conn.setRequestMethod("PUT");
     }
 
