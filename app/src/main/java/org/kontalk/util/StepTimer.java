@@ -45,6 +45,14 @@ public class StepTimer {
         mTimestamp = TimeUnit.NANOSECONDS.toMillis(System.nanoTime());
     }
 
+    /** Returns true if the defined step delay has passed, optionally resetting the timer if that's true. */
+    public boolean isStep(boolean resetIfPassed) {
+        boolean r = isStep();
+        if (r && resetIfPassed)
+            reset();
+        return r;
+    }
+
     /** Returns true if the defined step delay has passed. */
     public boolean isStep() {
         final long now = TimeUnit.NANOSECONDS.toMillis(System.nanoTime());
