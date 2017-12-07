@@ -109,7 +109,7 @@ public class ProgressInputStreamEntity {
 
         private void publishProgress(long add) {
             this.transferred += add;
-            if (this.transferred >= this.size || publishTimer.isStep())
+            if (this.transferred >= this.size || publishTimer.isStep(true))
                 this.listener.progress(conn, this.transferred);
         }
     }
