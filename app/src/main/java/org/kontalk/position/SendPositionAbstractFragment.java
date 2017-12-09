@@ -543,7 +543,9 @@ public abstract class SendPositionAbstractFragment extends Fragment
                 mPermissionAsked = true;
             }
         }
-
+        else {
+            requestLocation();
+        }
     }
 
 }
