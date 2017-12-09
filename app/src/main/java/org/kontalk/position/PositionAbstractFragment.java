@@ -18,6 +18,9 @@
 
 package org.kontalk.position;
 
+import com.afollestad.assent.Assent;
+import com.afollestad.assent.AssentCallback;
+import com.afollestad.assent.PermissionResultSet;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.car2go.maps.AnyMap;
 import com.car2go.maps.CameraUpdateFactory;
@@ -31,6 +34,7 @@ import android.content.Intent;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -57,8 +61,11 @@ import org.kontalk.ui.PositionActivity;
  * @author Andrea Cappelli
  * @author Daniele Ricci
  */
-public abstract class PositionAbstractFragment extends Fragment implements OnMapReadyCallback {
+public abstract class PositionAbstractFragment extends Fragment
+        implements OnMapReadyCallback, AssentCallback {
     final static String TAG = PositionAbstractFragment.class.getSimpleName();
+
+    private static final int REQUEST_PERMISSIONS = 320;
 
     final static int DEFAULT_ZOOM = 12;
 
@@ -77,10 +84,12 @@ public abstract class PositionAbstractFragment extends Fragment implements OnMap
     private TextView mUserName;
     private TextView mDistance;
 
+    private boolean mPermissionAsked;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        Assent.setFragment(this, this);
         setHasOptionsMenu(true);
     }
 
@@ -88,7 +97,7 @@ public abstract class PositionAbstractFragment extends Fragment implements OnMap
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = onInflateView(inflater, container, savedInstanceState);
 
         mMapView = view.findViewById(R.id.mapView);
@@ -108,7 +117,7 @@ public abstract class PositionAbstractFragment extends Fragment implements OnMap
     }
 
     @Override
-    public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         mMyLocation = new Location("network");
@@ -174,6 +183,23 @@ public abstract class PositionAbstractFragment extends Fragment implements OnMap
         });
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        Assent.handleResult(permissions, grantResults);
+    }
+
+    @Override
+    public void onPermissionResult(PermissionResultSet result) {
+        if (result.allPermissionsGranted()) {
+            onMapReady(mMap);
+            requestLocation();
+        }
+    }
+
+    /** Child classes should override this to begin location requests. */
+    protected abstract void requestLocation();
+
     protected abstract boolean isLocationEnabled();
 
     protected void zoomToMyLocation() {
@@ -184,13 +210,17 @@ public abstract class PositionAbstractFragment extends Fragment implements OnMap
     @Override
     public void onPause() {
         super.onPause();
+        if (getActivity() != null && getActivity().isFinishing())
+            Assent.setFragment(this, null);
         mMapView.onPause();
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        Assent.setFragment(this, this);
         mMapView.onResume();
+        askPermissions();
     }
 
     @Override
@@ -206,7 +236,7 @@ public abstract class PositionAbstractFragment extends Fragment implements OnMap
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         mMapView.onSaveInstanceState(outState);
     }
@@ -300,6 +330,20 @@ public abstract class PositionAbstractFragment extends Fragment implements OnMap
                 mDistance.setText(getString(R.string.kilometers_away, distance / 1000.0f));
             }
         }
+    }
+
+    private void askPermissions() {
+        if (!Assent.isPermissionGranted(Assent.ACCESS_COARSE_LOCATION) ||
+            !Assent.isPermissionGranted(Assent.ACCESS_FINE_LOCATION)) {
+
+            if (!mPermissionAsked) {
+                Assent.requestPermissions(this, REQUEST_PERMISSIONS,
+                    Assent.ACCESS_COARSE_LOCATION,
+                    Assent.ACCESS_FINE_LOCATION);
+                mPermissionAsked = true;
+            }
+        }
+
     }
 
 }

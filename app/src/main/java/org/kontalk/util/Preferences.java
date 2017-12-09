@@ -623,6 +623,16 @@ public final class Preferences {
             .commit();
     }
 
+    public static boolean isPermissionAsked(String permission) {
+        return sPreferences.getBoolean("permission_asked_" + permission, false);
+    }
+
+    public static void setPermissionAsked(String permission) {
+        sPreferences.edit()
+            .putBoolean("permission_asked_" + permission, true)
+            .apply();
+    }
+
     /**
      * Saves the current registration progress data. Used for recoverying a
      * registration after a restart or in very low memory situations.

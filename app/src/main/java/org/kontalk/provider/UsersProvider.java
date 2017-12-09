@@ -35,6 +35,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
@@ -49,7 +50,6 @@ import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.RawContacts;
 import android.support.annotation.NonNull;
 import android.support.annotation.VisibleForTesting;
-import android.support.v4.database.DatabaseUtilsCompat;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
@@ -60,6 +60,7 @@ import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers.Keys;
 import org.kontalk.provider.MyUsers.Users;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
@@ -74,7 +75,7 @@ import org.kontalk.util.XMPPUtils;
 public class UsersProvider extends ContentProvider {
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".users";
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    @VisibleForTesting()
     static final int DATABASE_VERSION = 11;
     private static final String DATABASE_NAME = "users.db";
     private static final String TABLE_USERS = "users";
@@ -97,7 +98,7 @@ public class UsersProvider extends ContentProvider {
     private static HashMap<String, String> usersProjectionMap;
     private static HashMap<String, String> keysProjectionMap;
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    @VisibleForTesting()
     static class DatabaseHelper extends SQLiteOpenHelper {
         private static final String CREATE_TABLE_USERS = "(" +
             "_id INTEGER PRIMARY KEY," +
@@ -261,7 +262,7 @@ public class UsersProvider extends ContentProvider {
     }
 
     private static final class Counter {
-        private int value;
+        int value;
 
         public Counter(int start) {
             this.value = start;
@@ -398,8 +399,8 @@ public class UsersProvider extends ContentProvider {
             case KEYS_JID:
             case KEYS_JID_FINGERPRINT:
                 String userId = uri.getPathSegments().get(1);
-                selection = DatabaseUtilsCompat.concatenateWhere(selection, Keys.JID + "=?");
-                selectionArgs = DatabaseUtilsCompat.appendSelectionArgs(selectionArgs, new String[] { userId });
+                selection = DatabaseUtils.concatenateWhere(selection, Keys.JID + "=?");
+                selectionArgs = DatabaseUtils.appendSelectionArgs(selectionArgs, new String[] { userId });
                 // TODO support for fingerprint in Uri
                 break;
 
@@ -797,6 +798,10 @@ public class UsersProvider extends ContentProvider {
 
             success = setTransactionSuccessful(db);
         }
+        catch (SecurityException e) {
+            Log.w(SyncAdapter.TAG, "no access to contacts. Did you deny the permission?", e);
+            ReportingManager.logException(e);
+        }
         finally {
             endTransaction(db, success);
             if (phones != null)
@@ -1022,9 +1027,9 @@ public class UsersProvider extends ContentProvider {
 
     private int deleteKeys(String userId, String fingerprint, String selection, String[] selectionArgs) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        selection = DatabaseUtilsCompat.concatenateWhere(selection, Keys.JID + "=?");
-        selection = DatabaseUtilsCompat.concatenateWhere(selection, Keys.FINGERPRINT + "=?");
-        selectionArgs = DatabaseUtilsCompat.appendSelectionArgs(selectionArgs, new String[] { userId, fingerprint });
+        selection = DatabaseUtils.concatenateWhere(selection, Keys.JID + "=?");
+        selection = DatabaseUtils.concatenateWhere(selection, Keys.FINGERPRINT + "=?");
+        selectionArgs = DatabaseUtils.appendSelectionArgs(selectionArgs, new String[] { userId, fingerprint });
         return db.delete(TABLE_KEYS, selection, selectionArgs);
     }
 
@@ -1117,6 +1122,7 @@ public class UsersProvider extends ContentProvider {
 
     /* Transactions compatibility layer */
 
+    @Deprecated
     @TargetApi(android.os.Build.VERSION_CODES.HONEYCOMB)
     private void beginTransaction(SQLiteDatabase db) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
@@ -1126,12 +1132,14 @@ public class UsersProvider extends ContentProvider {
             db.execSQL("BEGIN IMMEDIATE");
     }
 
+    @Deprecated
     private boolean setTransactionSuccessful(SQLiteDatabase db) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
             db.setTransactionSuccessful();
         return true;
     }
 
+    @Deprecated
     private void endTransaction(SQLiteDatabase db, boolean success) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
             db.endTransaction();
@@ -1139,6 +1147,7 @@ public class UsersProvider extends ContentProvider {
             db.execSQL(success ? "COMMIT" : "ROLLBACK");
     }
 
+    @Deprecated
     private int executeUpdateDelete(SQLiteDatabase db, SQLiteStatement stm) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
             return stm.executeUpdateDelete();
