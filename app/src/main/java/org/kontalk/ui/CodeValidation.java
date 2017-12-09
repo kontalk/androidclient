@@ -337,6 +337,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     protected void onStart() {
         super.onStart();
         // start a users resync in the meantime
+        // FIXME this is executed in the main thread!!!
         UsersProvider.resync(this);
     }
 

@@ -1122,6 +1122,7 @@ public class UsersProvider extends ContentProvider {
 
     /* Transactions compatibility layer */
 
+    @Deprecated
     @TargetApi(android.os.Build.VERSION_CODES.HONEYCOMB)
     private void beginTransaction(SQLiteDatabase db) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
@@ -1131,12 +1132,14 @@ public class UsersProvider extends ContentProvider {
             db.execSQL("BEGIN IMMEDIATE");
     }
 
+    @Deprecated
     private boolean setTransactionSuccessful(SQLiteDatabase db) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
             db.setTransactionSuccessful();
         return true;
     }
 
+    @Deprecated
     private void endTransaction(SQLiteDatabase db, boolean success) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
             db.endTransaction();
@@ -1144,6 +1147,7 @@ public class UsersProvider extends ContentProvider {
             db.execSQL(success ? "COMMIT" : "ROLLBACK");
     }
 
+    @Deprecated
     private int executeUpdateDelete(SQLiteDatabase db, SQLiteStatement stm) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
             return stm.executeUpdateDelete();
