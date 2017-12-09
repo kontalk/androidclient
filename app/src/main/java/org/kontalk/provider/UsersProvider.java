@@ -60,6 +60,7 @@ import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers.Keys;
 import org.kontalk.provider.MyUsers.Users;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
@@ -796,6 +797,10 @@ public class UsersProvider extends ContentProvider {
             }
 
             success = setTransactionSuccessful(db);
+        }
+        catch (SecurityException e) {
+            Log.w(SyncAdapter.TAG, "no access to contacts. Did you deny the permission?", e);
+            ReportingManager.logException(e);
         }
         finally {
             endTransaction(db, success);

@@ -34,6 +34,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipInputStream;
 
+import com.afollestad.assent.Assent;
+import com.afollestad.assent.AssentCallback;
+import com.afollestad.assent.PermissionResultSet;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.folderselector.FileChooserDialog;
@@ -120,10 +123,11 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         implements NumberValidatorListener, FileChooserDialog.FileCallback {
     static final String TAG = NumberValidation.class.getSimpleName();
 
-    public static final int REQUEST_MANUAL_VALIDATION = 771;
-    public static final int REQUEST_VALIDATION_CODE = 772;
-    public static final int REQUEST_SCAN_TOKEN = 773;
-    public static final int REQUEST_ASK_TOKEN = 774;
+    static final int REQUEST_MANUAL_VALIDATION = 771;
+    static final int REQUEST_VALIDATION_CODE = 772;
+    static final int REQUEST_SCAN_TOKEN = 773;
+    static final int REQUEST_ASK_TOKEN = 774;
+    static final int REQUEST_PERMISSIONS = 775;
 
     public static final int RESULT_FALLBACK = RESULT_FIRST_USER + 1;
 
@@ -163,6 +167,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     /** Runnable for delaying initial manual sync starter. */
     Runnable mSyncStart;
     private boolean mSyncing;
+
+    private boolean mPermissionsAsked;
 
     private KeyGeneratorReceiver mKeyReceiver;
 
@@ -215,6 +221,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.number_validation);
         setupToolbar(false, false);
+        Assent.setActivity(this, this);
 
         mAccountManager = AccountManager.get(this);
         mHandler = new Handler();
@@ -328,6 +335,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         state.putString("passphrase", mPassphrase);
         state.putByteArray("importedPrivateKey", mImportedPrivateKey);
         state.putByteArray("importedPublicKey", mImportedPublicKey);
+        state.putBoolean("permissionsAsked", mPermissionsAsked);
     }
 
     @Override
@@ -340,6 +348,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         mPassphrase = savedInstanceState.getString("passphrase");
         mImportedPublicKey = savedInstanceState.getByteArray("importedPublicKey");
         mImportedPrivateKey = savedInstanceState.getByteArray("importedPrivateKey");
+        mPermissionsAsked = savedInstanceState.getBoolean("permissionsAsked");
     }
 
     /** Returning the validator thread. */
@@ -420,33 +429,37 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             startValidationCode(REQUEST_MANUAL_VALIDATION, saved.sender,
                 saved.brandImage, saved.brandLink, saved.challenge, saved.canFallback, saved.server, false);
         }
+        else {
+            if (mKey == null) {
+                PersonalKeyRunnable action = new PersonalKeyRunnable() {
+                    public void run(PersonalKey key) {
+                        if (key != null) {
+                            mKey = key;
+                            if (mValidator != null)
+                                // this will release the waiting lock
+                                mValidator.setKey(mKey);
+                        }
 
-        if (mKey == null) {
-            PersonalKeyRunnable action = new PersonalKeyRunnable() {
-                public void run(PersonalKey key) {
-                    if (key != null) {
-                        mKey = key;
-                        if (mValidator != null)
-                            // this will release the waiting lock
-                            mValidator.setKey(mKey);
+                        // no key, key pair generation started
                     }
+                };
 
-                    // no key, key pair generation started
-                }
-            };
+                // random passphrase (40 characters!!!!)
+                mPassphrase = StringUtils.randomString(40);
 
-            // random passphrase (40 characters!!!!)
-            mPassphrase = StringUtils.randomString(40);
+                mKeyReceiver = new KeyGeneratorReceiver(mHandler, action);
 
-            mKeyReceiver = new KeyGeneratorReceiver(mHandler, action);
+                IntentFilter filter = new IntentFilter(KeyPairGeneratorService.ACTION_GENERATE);
+                filter.addAction(KeyPairGeneratorService.ACTION_STARTED);
+                lbm.registerReceiver(mKeyReceiver, filter);
 
-            IntentFilter filter = new IntentFilter(KeyPairGeneratorService.ACTION_GENERATE);
-            filter.addAction(KeyPairGeneratorService.ACTION_STARTED);
-            lbm.registerReceiver(mKeyReceiver, filter);
+                Intent i = new Intent(this, KeyPairGeneratorService.class);
+                i.setAction(KeyPairGeneratorService.ACTION_GENERATE);
+                startService(i);
+            }
 
-            Intent i = new Intent(this, KeyPairGeneratorService.class);
-            i.setAction(KeyPairGeneratorService.ACTION_GENERATE);
-            startService(i);
+            // ask for access to contacts
+            askPermissions();
         }
     }
 
@@ -465,9 +478,28 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Assent.setActivity(this, this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (isFinishing())
+            Assent.setActivity(this, null);
+    }
+
     void stopKeyReceiver() {
         if (mKeyReceiver != null)
             lbm.unregisterReceiver(mKeyReceiver);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        Assent.handleResult(permissions, grantResults);
     }
 
     @Override
@@ -530,6 +562,26 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         }
     }
 
+    private void askPermissions() {
+        if (mPermissionsAsked)
+            return;
+
+        if (!Assent.isPermissionGranted(Assent.READ_CONTACTS) ||
+            !Assent.isPermissionGranted(Assent.WRITE_CONTACTS)) {
+            Assent.requestPermissions(new AssentCallback() {
+                @Override
+                public void onPermissionResult(PermissionResultSet result) {
+                    // we can go by write contacts denied, but not read contacts
+                    if (!result.isGranted(Assent.READ_CONTACTS)) {
+                        // just notify the user for now, we'll ask again later
+                        error(R.string.err_validation_contacts_denied);
+                    }
+                }
+            }, REQUEST_PERMISSIONS, Assent.READ_CONTACTS, Assent.WRITE_CONTACTS);
+            mPermissionsAsked = true;
+        }
+    }
+
     void keepScreenOn(boolean active) {
         if (active)
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -573,7 +625,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         mPhone.setEnabled(enabled);
     }
 
-    private void error(int message) {
+    void error(int message) {
         new MaterialDialog.Builder(this)
             .content(message)
             .positiveText(android.R.string.ok)
