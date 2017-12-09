@@ -57,6 +57,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.Nullable;
 import android.util.Base64;
 import android.widget.Toast;
 
@@ -107,16 +108,19 @@ public class Authenticator extends AbstractAccountAuthenticator {
         return getDefaultAccount(AccountManager.get(ctx));
     }
 
+    @Nullable
     public static Account getDefaultAccount(AccountManager m) {
         Account[] accs = m.getAccountsByType(ACCOUNT_TYPE);
         return (accs.length > 0) ? accs[0] : null;
     }
 
+    @Nullable
     public static String getDefaultAccountName(Context ctx) {
         Account acc = getDefaultAccount(ctx);
         return (acc != null) ? acc.name : null;
     }
 
+    @Nullable
     public static String getSelfJID(Context ctx) {
         String name = getDefaultAccountName(ctx);
         return (name != null) ?

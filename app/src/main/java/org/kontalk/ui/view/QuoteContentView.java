@@ -34,9 +34,11 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
 import org.kontalk.message.InReplyToComponent;
 import org.kontalk.message.ReferencedMessage;
+import org.kontalk.provider.MyMessages;
 import org.kontalk.util.SystemUtils;
 
 
@@ -87,7 +89,15 @@ public class QuoteContentView extends RelativeLayout
             TextContentView.applyTextWorkarounds(formattedMessage);
             msgText = formattedMessage;
 
-            Contact sender = Contact.findByUserId(getContext(), referencedMsg.getSender());
+            String senderId;
+            if (referencedMsg.getDirection() == MyMessages.Messages.DIRECTION_OUT) {
+                senderId = Authenticator.getSelfJID(getContext());
+            }
+            else {
+                senderId = referencedMsg.getPeer();
+            }
+
+            Contact sender = Contact.findByUserId(getContext(), senderId);
             msgSender = sender.getDisplayName();
         }
         else {

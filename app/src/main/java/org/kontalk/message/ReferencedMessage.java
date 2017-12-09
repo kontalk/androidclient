@@ -38,6 +38,7 @@ public class ReferencedMessage {
         Messages._ID,
         Messages.MESSAGE_ID,
         Messages.PEER,
+        Messages.DIRECTION,
         Messages.TIMESTAMP,
         Messages.BODY_MIME,
         Messages.BODY_CONTENT,
@@ -45,24 +46,27 @@ public class ReferencedMessage {
     };
 
     // these indexes matches MESSAGE_PROJECTION
-    public static final int COLUMN_ID = 0;
-    public static final int COLUMN_MESSAGE_ID = 1;
-    public static final int COLUMN_PEER = 2;
-    public static final int COLUMN_TIMESTAMP = 3;
-    public static final int COLUMN_BODY_MIME = 4;
-    public static final int COLUMN_BODY_CONTENT = 5;
-    //public static final int COLUMN_BODY_LENGTH = 6;
+    private static final int COLUMN_ID = 0;
+    private static final int COLUMN_MESSAGE_ID = 1;
+    private static final int COLUMN_PEER = 2;
+    private static final int COLUMN_DIRECTION = 3;
+    private static final int COLUMN_TIMESTAMP = 4;
+    private static final int COLUMN_BODY_MIME = 5;
+    private static final int COLUMN_BODY_CONTENT = 6;
+    //private static final int COLUMN_BODY_LENGTH = 7;
 
     private long mId;
     private String mMessageId;
-    private String mSender;
+    private String mPeer;
+    private int mDirection;
     private long mTimestamp;
     private String mTextContent;
 
-    public ReferencedMessage(long id, String messageId, String sender, long timestamp, String textContent) {
+    public ReferencedMessage(long id, String messageId, String peer, int direction, long timestamp, String textContent) {
         mId = id;
         mMessageId = messageId;
-        mSender = sender;
+        mPeer = peer;
+        mDirection = direction;
         mTimestamp = timestamp;
         mTextContent = textContent;
     }
@@ -75,8 +79,12 @@ public class ReferencedMessage {
         return mMessageId;
     }
 
-    public String getSender() {
-        return mSender;
+    public String getPeer() {
+        return mPeer;
+    }
+
+    public int getDirection() {
+        return mDirection;
     }
 
     public long getTimestamp() {
@@ -94,13 +102,14 @@ public class ReferencedMessage {
 
         long id = c.getLong(COLUMN_ID);
         String msgId = c.getString(COLUMN_MESSAGE_ID);
-        String sender = c.getString(COLUMN_PEER);
+        String peer = c.getString(COLUMN_PEER);
+        int direction = c.getInt(COLUMN_DIRECTION);
         long timestamp = c.getLong(COLUMN_TIMESTAMP);
         byte[] body = c.getBlob(COLUMN_BODY_CONTENT);
 
         // remove trailing zero
         String bodyText = MessageUtils.toString(body);
-        return new ReferencedMessage(id, msgId, sender, timestamp, bodyText);
+        return new ReferencedMessage(id, msgId, peer, direction, timestamp, bodyText);
     }
 
     public static ReferencedMessage load(Context context, long id) {
