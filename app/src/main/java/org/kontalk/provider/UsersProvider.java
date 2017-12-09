@@ -35,6 +35,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
@@ -49,7 +50,6 @@ import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.RawContacts;
 import android.support.annotation.NonNull;
 import android.support.annotation.VisibleForTesting;
-import android.support.v4.database.DatabaseUtilsCompat;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
@@ -74,7 +74,7 @@ import org.kontalk.util.XMPPUtils;
 public class UsersProvider extends ContentProvider {
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".users";
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    @VisibleForTesting()
     static final int DATABASE_VERSION = 11;
     private static final String DATABASE_NAME = "users.db";
     private static final String TABLE_USERS = "users";
@@ -398,8 +398,8 @@ public class UsersProvider extends ContentProvider {
             case KEYS_JID:
             case KEYS_JID_FINGERPRINT:
                 String userId = uri.getPathSegments().get(1);
-                selection = DatabaseUtilsCompat.concatenateWhere(selection, Keys.JID + "=?");
-                selectionArgs = DatabaseUtilsCompat.appendSelectionArgs(selectionArgs, new String[] { userId });
+                selection = DatabaseUtils.concatenateWhere(selection, Keys.JID + "=?");
+                selectionArgs = DatabaseUtils.appendSelectionArgs(selectionArgs, new String[] { userId });
                 // TODO support for fingerprint in Uri
                 break;
 
@@ -1022,9 +1022,9 @@ public class UsersProvider extends ContentProvider {
 
     private int deleteKeys(String userId, String fingerprint, String selection, String[] selectionArgs) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        selection = DatabaseUtilsCompat.concatenateWhere(selection, Keys.JID + "=?");
-        selection = DatabaseUtilsCompat.concatenateWhere(selection, Keys.FINGERPRINT + "=?");
-        selectionArgs = DatabaseUtilsCompat.appendSelectionArgs(selectionArgs, new String[] { userId, fingerprint });
+        selection = DatabaseUtils.concatenateWhere(selection, Keys.JID + "=?");
+        selection = DatabaseUtils.concatenateWhere(selection, Keys.FINGERPRINT + "=?");
+        selectionArgs = DatabaseUtils.appendSelectionArgs(selectionArgs, new String[] { userId, fingerprint });
         return db.delete(TABLE_KEYS, selection, selectionArgs);
     }
 
