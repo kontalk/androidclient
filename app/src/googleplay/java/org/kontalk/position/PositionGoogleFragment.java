@@ -92,7 +92,7 @@ public class PositionGoogleFragment extends PositionAbstractFragment implements
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
 
         MapsConfiguration.getInstance().initialize(getContext());
@@ -101,7 +101,7 @@ public class PositionGoogleFragment extends PositionAbstractFragment implements
     }
 
     @Override
-    public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         if (!TextUtils.isEmpty(mPosition.getName())) {
@@ -124,8 +124,6 @@ public class PositionGoogleFragment extends PositionAbstractFragment implements
     @Override
     public void onStart() {
         super.onStart();
-        // Disconnecting the client invalidates it.
-        mGoogleApiClient.connect();
     }
 
     @Override
@@ -136,6 +134,12 @@ public class PositionGoogleFragment extends PositionAbstractFragment implements
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
             mGoogleApiClient.disconnect();
         }
+    }
+
+    @Override
+    protected void requestLocation() {
+        // we have permission to begin!
+        mGoogleApiClient.connect();
     }
 
     @Override
@@ -162,12 +166,28 @@ public class PositionGoogleFragment extends PositionAbstractFragment implements
     }
 
     private void startLocationUpdates() {
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
-            mLocationRequest, this);
+        try {
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
+                mLocationRequest, this);
+        }
+        catch (SecurityException e) {
+            Toast.makeText(getContext(), R.string.err_location_permission,
+                Toast.LENGTH_LONG).show();
+        }
     }
 
     private void requestAndPollLastLocation() {
-        Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        Location lastLocation = null;
+        boolean permissionDenied = false;
+        try {
+            lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        }
+        catch (SecurityException e) {
+            permissionDenied = true;
+            Toast.makeText(getContext(), R.string.err_location_permission,
+                Toast.LENGTH_LONG).show();
+        }
+
         // Note that this can be NULL if last location isn't already known.
         if (lastLocation != null) {
             // Print current location if not null
@@ -176,7 +196,8 @@ public class PositionGoogleFragment extends PositionAbstractFragment implements
             mMyLocation.setLongitude(lastLocation.getLongitude());
         }
         // Begin polling for new location updates.
-        startLocationUpdates();
+        if (!permissionDenied)
+            startLocationUpdates();
     }
 
     @Override

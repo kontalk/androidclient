@@ -339,6 +339,7 @@
     <string name="err_googlemaps_fallback_osm">Google Maps is not available, falling back to OpenStreetMap.</string>
     <string name="err_location_no_providers">No location providers available. Current location will not be available.</string>
     <string name="err_location_access_unknown_error">Unable to request location services activation.</string>
+    <string name="err_location_permission">Access to location was denied.</string>
     <string name="msg_location_disabled">We need access to location. Choose OK to go to settings and enable it.</string>
 
     <string name="menu_open_map">Open in maps</string>
