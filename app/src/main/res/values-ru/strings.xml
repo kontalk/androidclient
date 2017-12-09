@@ -677,4 +677,16 @@
 
     <string name="reply_message_deleted">Сообщение удалено.</string>
 
+    <string name="err_location_permission">Недостаточно прав для доступа к местоположению.</string>
+    <string name="err_audio_record_permission">Недостаточно прав для доступа к микрофону.</string>
+    <string name="err_audio_record_writing_permission">Недостаточно прав для доступа к внешнему хранилищу.</string>
+    <string name="err_validation_contacts_denied">Для правильной работы Kontalk нужен доступ к вашим контактам, иначе как он узнает о ваших потенциальных собеседниках?
+\nВы можете дать это разрешение после того, как зарегистрируетесь.</string>
+    <string name="err_contacts_denied">Для правильной работы Kontalk нужен доступ к вашим контактам, иначе как он узнает о ваших потенциальных собеседниках?
+\nЭто разрешение можно дать в настройках Android.</string>
+    <string name="warn_contacts_denied">Вы запретили доступ к контактам. Вам не будут приходить уведомления, у кого из них появился Kontalk.</string>
+
+    <string name="err_storage_denied">Kontalk нужен доступ к внутреннему хранилищу устройства, чтобы сохранять медиа-файлы.
+\nЭто можно разрешить в настройках Android.</string>
+
     </resources>
