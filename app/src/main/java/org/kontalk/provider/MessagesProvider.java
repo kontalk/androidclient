@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-import android.annotation.TargetApi;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -613,24 +612,23 @@ public class MessagesProvider extends ContentProvider {
         ContentValues values = new ContentValues(initialValues);
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        boolean success = false;
         List<Uri> notifications = new ArrayList<>();
 
-        beginTransaction(db);
+        db.beginTransactionNonExclusive();
 
         try {
             switch (match) {
                 case GROUPS:
                     // configure thread as group
                     insertGroup(db, values, notifications);
-                    success = setTransactionSuccessful(db);
+                    db.setTransactionSuccessful();
                     // no uri needed
                     return null;
                 case GROUPS_MEMBERS:
                     // insert members into group
                     String groupJid = uri.getPathSegments().get(1);
                     insertGroupMembers(db, groupJid, values);
-                    success = setTransactionSuccessful(db);
+                    db.setTransactionSuccessful();
                     // no uri needed
                     return null;
             }
@@ -652,7 +650,7 @@ public class MessagesProvider extends ContentProvider {
                 // notify conversation change
                 notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
 
-                success = setTransactionSuccessful(db);
+                db.setTransactionSuccessful();
 
                 // draft or request - return conversation
                 return (draft != null || !requestExists) ?
@@ -726,14 +724,14 @@ public class MessagesProvider extends ContentProvider {
                     notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
                 }
 
-                success = setTransactionSuccessful(db);
+                db.setTransactionSuccessful();
                 return msgUri;
             }
 
             throw new SQLException("Failed to insert row into " + uri);
         }
         finally {
-            endTransaction(db, success);
+            db.endTransaction();
             ContentResolver cr = getContext().getContentResolver();
             for (Uri nuri : notifications)
                 cr.notifyChange(nuri, null);
@@ -1038,17 +1036,16 @@ public class MessagesProvider extends ContentProvider {
         }
 
         List<Uri> notifications = null;
-        boolean success = false;
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-        beginTransaction(db);
+        db.beginTransactionNonExclusive();
 
         try {
             // handle clear pending flags
             String pendingFlags = uri.getQueryParameter(Messages.CLEAR_PENDING);
             if (pendingFlags != null) {
                 updatePendingFlags(db, Integer.parseInt(pendingFlags), where, args);
-                success = setTransactionSuccessful(db);
+                db.setTransactionSuccessful();
                 return 0;
             }
 
@@ -1139,11 +1136,11 @@ public class MessagesProvider extends ContentProvider {
                 }
             }
 
-            success = setTransactionSuccessful(db);
+            db.setTransactionSuccessful();
             return rows;
         }
         finally {
-            endTransaction(db, success);
+            db.endTransaction();
             if (notifications != null) {
                 ContentResolver cr = getContext().getContentResolver();
                 for (Uri nuri : notifications)
@@ -1278,9 +1275,8 @@ public class MessagesProvider extends ContentProvider {
                 SQLiteDatabase db = dbHelper.getWritableDatabase();
                 boolean keepGroup = Boolean.parseBoolean(uri.getQueryParameter(Messages.KEEP_GROUP));
 
-                boolean success = false;
                 int num = 0;
-                beginTransaction(db);
+                db.beginTransactionNonExclusive();
                 try {
                     // rows count will be conversations
                     num = db.delete(TABLE_THREADS, null, null);
@@ -1293,10 +1289,10 @@ public class MessagesProvider extends ContentProvider {
                     }
 
                     // set transaction successful
-                    success = setTransactionSuccessful(db);
+                    db.setTransactionSuccessful();
                 }
                 finally {
-                    endTransaction(db, success);
+                    db.endTransaction();
                 }
 
                 if (num > 0) {
@@ -1315,11 +1311,10 @@ public class MessagesProvider extends ContentProvider {
 
         int rows = 0;
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        boolean success = false;
         List<Uri> notifications = new ArrayList<>();
 
         // let's begin this big transaction :S
-        beginTransaction(db);
+        db.beginTransactionNonExclusive();
 
         try {
 
@@ -1361,10 +1356,10 @@ public class MessagesProvider extends ContentProvider {
                 updateThreadAfterDelete(db, threadId, notifications);
             }
 
-            success = setTransactionSuccessful(db);
+            db.setTransactionSuccessful();
         }
         finally {
-            endTransaction(db, success);
+            db.endTransaction();
             ContentResolver cr = getContext().getContentResolver();
             for (Uri nuri : notifications)
                 cr.notifyChange(nuri, null);
@@ -1390,9 +1385,8 @@ public class MessagesProvider extends ContentProvider {
         long threadId = ContentUris.parseId(uri);
         if (threadId > 0) {
             SQLiteDatabase db = dbHelper.getWritableDatabase();
-            boolean success = false;
 
-            beginTransaction(db);
+            db.beginTransactionNonExclusive();
 
             try {
                 int num = 0;
@@ -1420,12 +1414,12 @@ public class MessagesProvider extends ContentProvider {
                 updateThreadAfterDelete(db, threadId, null);
 
                 // set transaction successful
-                success = setTransactionSuccessful(db);
+                db.setTransactionSuccessful();
 
                 return num;
             }
             finally {
-                endTransaction(db, success);
+                db.endTransaction();
             }
         }
 
@@ -1507,30 +1501,6 @@ public class MessagesProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
         }
-    }
-
-    /* Transactions compatibility layer */
-
-    @TargetApi(android.os.Build.VERSION_CODES.HONEYCOMB)
-    private void beginTransaction(SQLiteDatabase db) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
-            db.beginTransactionNonExclusive();
-        else
-            // this is because API < 11 doesn't have beginTransactionNonExclusive()
-            db.execSQL("BEGIN IMMEDIATE");
-    }
-
-    private boolean setTransactionSuccessful(SQLiteDatabase db) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
-            db.setTransactionSuccessful();
-        return true;
-    }
-
-    private void endTransaction(SQLiteDatabase db, boolean success) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
-            db.endTransaction();
-        else
-            db.execSQL(success ? "COMMIT" : "ROLLBACK");
     }
 
     public static boolean deleteDatabase(Context ctx) {

@@ -27,7 +27,6 @@ import com.android.providers.contacts.ContactLocaleUtils;
 import com.android.providers.contacts.FastScrollingIndexCache;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -563,21 +562,20 @@ public class UsersProvider extends ContentProvider {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         // begin transaction
-        beginTransaction(db);
-        boolean success = false;
+        db.beginTransactionNonExclusive();
 
         try {
             // copy contents from offline
             db.execSQL("DELETE FROM " + TABLE_USERS);
             db.execSQL("INSERT INTO " + TABLE_USERS + " SELECT * FROM " + TABLE_USERS_OFFLINE);
-            success = setTransactionSuccessful(db);
+            db.setTransactionSuccessful();
         }
         catch (SQLException e) {
             // ops :)
             Log.i(SyncAdapter.TAG, "users table commit failed - already committed?", e);
         }
         finally {
-            endTransaction(db, success);
+            db.endTransaction();
             // time to invalidate contacts cache
             Contact.invalidate();
         }
@@ -590,7 +588,7 @@ public class UsersProvider extends ContentProvider {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         // begin transaction
-        beginTransaction(db);
+        db.beginTransactionNonExclusive();
         boolean success = false;
 
         int count = 0;
@@ -796,14 +794,14 @@ public class UsersProvider extends ContentProvider {
                 }
             }
 
-            success = setTransactionSuccessful(db);
+            db.setTransactionSuccessful();
         }
         catch (SecurityException e) {
             Log.w(SyncAdapter.TAG, "no access to contacts. Did you deny the permission?", e);
             ReportingManager.logException(e);
         }
         finally {
-            endTransaction(db, success);
+            db.endTransaction();
             if (phones != null)
                 phones.close();
             stm.close();
@@ -855,7 +853,7 @@ public class UsersProvider extends ContentProvider {
         else
             onlineUpd.bindNull(++i);
         onlineUpd.bindString(++i, jid);
-        int rows = executeUpdateDelete(db, onlineUpd);
+        int rows = onlineUpd.executeUpdateDelete();
 
         // no contact found, insert a new dummy one
         if (rows <= 0) {
@@ -1118,50 +1116,6 @@ public class UsersProvider extends ContentProvider {
             .appendQueryParameter(Users.RESYNC, "true")
             .build();
         return context.getContentResolver().update(uri, new ContentValues(), null, null);
-    }
-
-    /* Transactions compatibility layer */
-
-    @Deprecated
-    @TargetApi(android.os.Build.VERSION_CODES.HONEYCOMB)
-    private void beginTransaction(SQLiteDatabase db) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
-            db.beginTransactionNonExclusive();
-        else
-            // this is because API < 11 doesn't have beginTransactionNonExclusive()
-            db.execSQL("BEGIN IMMEDIATE");
-    }
-
-    @Deprecated
-    private boolean setTransactionSuccessful(SQLiteDatabase db) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
-            db.setTransactionSuccessful();
-        return true;
-    }
-
-    @Deprecated
-    private void endTransaction(SQLiteDatabase db, boolean success) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
-            db.endTransaction();
-        else
-            db.execSQL(success ? "COMMIT" : "ROLLBACK");
-    }
-
-    @Deprecated
-    private int executeUpdateDelete(SQLiteDatabase db, SQLiteStatement stm) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
-            return stm.executeUpdateDelete();
-        }
-        else {
-            stm.execute();
-            SQLiteStatement changes = db.compileStatement("SELECT changes()");
-            try {
-                return (int) changes.simpleQueryForLong();
-            }
-            finally {
-                changes.close();
-            }
-        }
     }
 
     static {
