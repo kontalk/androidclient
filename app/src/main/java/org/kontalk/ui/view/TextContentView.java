@@ -144,8 +144,14 @@ public class TextContentView extends EmojiTextView
         setTextStyle(this, true);
 
         // linkify!
-        if (formattedMessage.length() < MAX_AFFORDABLE_SIZE)
-            Linkify.addLinks(formattedMessage, Linkify.ALL);
+        if (formattedMessage.length() < MAX_AFFORDABLE_SIZE) {
+            try {
+                Linkify.addLinks(formattedMessage, Linkify.ALL);
+            }
+            catch (Throwable e) {
+                // working around some crappy firmwares
+            }
+        }
 
         TextContentView.applyTextWorkarounds(formattedMessage);
 

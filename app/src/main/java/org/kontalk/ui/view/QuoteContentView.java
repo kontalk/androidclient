@@ -83,8 +83,14 @@ public class QuoteContentView extends RelativeLayout
                 new SpannableStringBuilder(referencedMsg.getTextContent());
 
             // linkify!
-            if (formattedMessage.length() < TextContentView.MAX_AFFORDABLE_SIZE)
-                Linkify.addLinks(formattedMessage, Linkify.ALL);
+            if (formattedMessage.length() < TextContentView.MAX_AFFORDABLE_SIZE) {
+                try {
+                    Linkify.addLinks(formattedMessage, Linkify.ALL);
+                }
+                catch (Throwable e) {
+                    // working around some crappy firmwares
+                }
+            }
 
             TextContentView.applyTextWorkarounds(formattedMessage);
             msgText = formattedMessage;
