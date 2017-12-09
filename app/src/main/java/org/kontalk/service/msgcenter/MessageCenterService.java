@@ -2834,14 +2834,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                         try {
                             org.jivesoftware.smack.packet.Message fwdMessage =
-                                new org.jivesoftware.smack.packet.Message(referencedMsg.getSender(),
+                                new org.jivesoftware.smack.packet.Message(referencedMsg.getPeer(),
                                     referencedMsg.getTextContent());
                             fwdMessage.setStanzaId(referencedMsg.getMessageId());
 
                             m.addExtension(new Forwarded(fwdDelay, fwdMessage));
                         }
                         catch (XmppStringprepException e) {
-                            Log.w(TAG, "unable to parse referenced message JID: " + referencedMsg.getSender(), e);
+                            Log.w(TAG, "unable to parse referenced message JID: " + referencedMsg.getPeer(), e);
                             // this is serious, report it
                             ReportingManager.logException(e);
                         }
