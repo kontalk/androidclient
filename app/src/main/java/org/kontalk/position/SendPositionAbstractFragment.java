@@ -25,6 +25,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -42,6 +43,9 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
+import com.afollestad.assent.Assent;
+import com.afollestad.assent.AssentCallback;
+import com.afollestad.assent.PermissionResultSet;
 import com.car2go.maps.AnyMap;
 import com.car2go.maps.CameraUpdateFactory;
 import com.car2go.maps.MapContainerView;
@@ -62,7 +66,10 @@ import java.util.Locale;
  * @author Andrea Cappelli
  * @author Daniele Ricci
  */
-public abstract class SendPositionAbstractFragment extends Fragment implements OnMapReadyCallback {
+public abstract class SendPositionAbstractFragment extends Fragment
+        implements OnMapReadyCallback, AssentCallback {
+
+    private static final int REQUEST_PERMISSIONS = 320;
 
     FrameLayout mMapViewClip;
     private MapContainerView mMapView;
@@ -88,9 +95,12 @@ public abstract class SendPositionAbstractFragment extends Fragment implements O
     private int mOverScrollHeight;
     int mMarkerTop;
 
+    private boolean mPermissionAsked;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Assent.setFragment(this, this);
         setHasOptionsMenu(true);
     }
 
@@ -99,7 +109,7 @@ public abstract class SendPositionAbstractFragment extends Fragment implements O
     @SuppressLint("WrongViewCast")
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = onInflateView(inflater, container, savedInstanceState);
 
         if (isPlacesEnabled()) {
@@ -131,7 +141,7 @@ public abstract class SendPositionAbstractFragment extends Fragment implements O
     protected abstract void onFabClicked(Location location);
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         mUserLocation = new Location("network");
@@ -249,12 +259,15 @@ public abstract class SendPositionAbstractFragment extends Fragment implements O
     @Override
     public void onPause() {
         super.onPause();
+        if (getActivity() != null && getActivity().isFinishing())
+            Assent.setFragment(this, null);
         mMapView.onPause();
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        Assent.setFragment(this, this);
         mMapView.onResume();
 
         if (isPlacesEnabled()) {
@@ -268,6 +281,8 @@ public abstract class SendPositionAbstractFragment extends Fragment implements O
             else
                 prepareLayout(true);
         }
+
+        askPermissions();
     }
 
     @Override
@@ -294,7 +309,7 @@ public abstract class SendPositionAbstractFragment extends Fragment implements O
 
         if (isPlacesEnabled()) {
             MenuItem searchItem = menu.findItem(R.id.menu_search);
-            MenuItemCompat.setOnActionExpandListener(searchItem, new MenuItemCompat.OnActionExpandListener() {
+            searchItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
                 @Override
                 public boolean onMenuItemActionExpand(MenuItem item) {
                     mRecyclerView.setVisibility(View.GONE);
@@ -356,6 +371,23 @@ public abstract class SendPositionAbstractFragment extends Fragment implements O
 
         return false;
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        Assent.handleResult(permissions, grantResults);
+    }
+
+    @Override
+    public void onPermissionResult(PermissionResultSet result) {
+        if (result.allPermissionsGranted()) {
+            onMapReady(mMap);
+            requestLocation();
+        }
+    }
+
+    /** Child classes should override this to begin location requests. */
+    protected abstract void requestLocation();
 
     @Override
     public void onMapReady(final AnyMap anyMap) {
@@ -498,6 +530,20 @@ public abstract class SendPositionAbstractFragment extends Fragment implements O
                 }
             }
         }
+    }
+
+    private void askPermissions() {
+        if (!Assent.isPermissionGranted(Assent.ACCESS_COARSE_LOCATION) ||
+            !Assent.isPermissionGranted(Assent.ACCESS_FINE_LOCATION)) {
+
+            if (!mPermissionAsked) {
+                Assent.requestPermissions(this, REQUEST_PERMISSIONS,
+                    Assent.ACCESS_COARSE_LOCATION,
+                    Assent.ACCESS_FINE_LOCATION);
+                mPermissionAsked = true;
+            }
+        }
+
     }
 
 }

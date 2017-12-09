@@ -184,13 +184,6 @@ public class SendPositionGoogleFragment extends SendPositionAbstractFragment imp
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        // Disconnecting the client invalidates it.
-        mGoogleApiClient.connect();
-    }
-
-    @Override
     public void onStop() {
         super.onStop();
 
@@ -200,13 +193,35 @@ public class SendPositionGoogleFragment extends SendPositionAbstractFragment imp
         }
     }
 
+    @Override
+    protected void requestLocation() {
+        // we have permission to begin!
+        mGoogleApiClient.connect();
+    }
+
     protected void startLocationUpdates() {
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
-            mLocationRequest, this);
+        try {
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
+                mLocationRequest, this);
+        }
+        catch (SecurityException e) {
+            Toast.makeText(getContext(), R.string.err_location_permission,
+                Toast.LENGTH_LONG).show();
+        }
     }
 
     private void requestAndPollLastLocation() {
-        Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        Location lastLocation = null;
+        boolean permissionDenied = false;
+        try {
+            lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        }
+        catch (SecurityException e) {
+            permissionDenied = true;
+            Toast.makeText(getContext(), R.string.err_location_permission,
+                Toast.LENGTH_LONG).show();
+        }
+
         // Note that this can be NULL if last location isn't already known.
         if (lastLocation != null) {
             // Print current location if not null
@@ -218,7 +233,8 @@ public class SendPositionGoogleFragment extends SendPositionAbstractFragment imp
                 mMap.animateCamera(CameraUpdateFactory.getInstance().newLatLngZoom(latLng, 12));
         }
         // Begin polling for new location updates.
-        startLocationUpdates();
+        if (!permissionDenied)
+            startLocationUpdates();
     }
 
     @Override

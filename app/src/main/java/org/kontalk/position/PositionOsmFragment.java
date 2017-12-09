@@ -64,7 +64,7 @@ public class PositionOsmFragment extends PositionAbstractFragment implements Loc
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
 
         MapsConfiguration.getInstance().initialize(getContext());
@@ -122,15 +122,17 @@ public class PositionOsmFragment extends PositionAbstractFragment implements Loc
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        boolean hasProvider = false;
+    public void requestLocation() {
+        boolean hasProvider = false, permissionDenied = false;
         try {
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
             hasProvider = true;
         }
         catch (IllegalArgumentException e) {
             // no gps available
+        }
+        catch (SecurityException e) {
+            permissionDenied = true;
         }
         try {
             mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
@@ -139,8 +141,15 @@ public class PositionOsmFragment extends PositionAbstractFragment implements Loc
         catch (IllegalArgumentException e) {
             // no network location available
         }
+        catch (SecurityException e) {
+            permissionDenied = true;
+        }
 
-        if (!hasProvider) {
+        if (permissionDenied) {
+            Toast.makeText(getContext(), R.string.err_location_permission,
+                Toast.LENGTH_LONG).show();
+        }
+        else if (!hasProvider) {
             Toast.makeText(getContext(), R.string.err_location_no_providers,
                 Toast.LENGTH_LONG).show();
         }

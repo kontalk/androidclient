@@ -20,6 +20,7 @@ package org.kontalk.position;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
@@ -37,6 +38,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.afollestad.assent.Assent;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.car2go.maps.AnyMap;
@@ -46,6 +48,7 @@ import com.car2go.maps.osm.MapsConfiguration;
 
 import org.kontalk.Log;
 import org.kontalk.R;
+import org.kontalk.util.SystemUtils;
 import org.kontalk.util.ViewUtils;
 
 
@@ -142,6 +145,10 @@ public class SendPositionOsmFragment extends SendPositionAbstractFragment implem
     }
 
     protected boolean isLocationEnabled() {
+        if (!SystemUtils.isPermissionGranted(getContext(), Assent.ACCESS_COARSE_LOCATION) ||
+            !SystemUtils.isPermissionGranted(getContext(), Assent.ACCESS_FINE_LOCATION))
+            return false;
+
         if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) &&
             !mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
             needLocation();
@@ -172,19 +179,20 @@ public class SendPositionOsmFragment extends SendPositionAbstractFragment implem
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-
+    protected void requestLocation() {
         // this will trigger a dialog to ask for location
         isLocationEnabled();
 
-        boolean hasProvider = false;
+        boolean hasProvider = false, permissionDenied = false;
         try {
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
             hasProvider = true;
         }
         catch (IllegalArgumentException e) {
             // no gps available
+        }
+        catch (SecurityException e) {
+            permissionDenied = true;
         }
         try {
             mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
@@ -193,8 +201,15 @@ public class SendPositionOsmFragment extends SendPositionAbstractFragment implem
         catch (IllegalArgumentException e) {
             // no network location available
         }
+        catch (SecurityException e) {
+            permissionDenied = true;
+        }
 
-        if (!hasProvider) {
+        if (permissionDenied) {
+            Toast.makeText(getContext(), R.string.err_location_permission,
+                Toast.LENGTH_LONG).show();
+        }
+        else if (!hasProvider) {
             Toast.makeText(getContext(), R.string.err_location_no_providers,
                 Toast.LENGTH_LONG).show();
         }
@@ -226,16 +241,19 @@ public class SendPositionOsmFragment extends SendPositionAbstractFragment implem
     public void onMapReady(final AnyMap anyMap) {
         super.onMapReady(anyMap);
 
-        Location lastLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        // Note that this can be NULL if last location isn't already known.
-        if (lastLocation != null) {
-            // Print current location if not null
-            Log.d(TAG, "last location: " + lastLocation.toString());
-            LatLng latLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
-            mMyLocation.setLatitude(lastLocation.getLatitude());
-            mMyLocation.setLongitude(lastLocation.getLongitude());
-            if (mMap != null)
-                mMap.animateCamera(CameraUpdateFactory.getInstance().newLatLngZoom(latLng, 16));
+        if (SystemUtils.isPermissionGranted(getContext(), Assent.ACCESS_FINE_LOCATION)) {
+            @SuppressLint("MissingPermission")
+            Location lastLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            // Note that this can be NULL if last location isn't already known.
+            if (lastLocation != null) {
+                // Print current location if not null
+                Log.d(TAG, "last location: " + lastLocation.toString());
+                LatLng latLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
+                mMyLocation.setLatitude(lastLocation.getLatitude());
+                mMyLocation.setLongitude(lastLocation.getLongitude());
+                if (mMap != null)
+                    mMap.animateCamera(CameraUpdateFactory.getInstance().newLatLngZoom(latLng, 16));
+            }
         }
     }
 }

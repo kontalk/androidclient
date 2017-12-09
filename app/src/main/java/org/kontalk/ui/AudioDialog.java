@@ -42,12 +42,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.assent.Assent;
+import com.afollestad.assent.AssentCallback;
+import com.afollestad.assent.PermissionResultSet;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.ui.view.CircularSeekBar;
 import org.kontalk.util.MediaStorage;
+import org.kontalk.util.SystemUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,7 +63,7 @@ import java.util.concurrent.TimeUnit;
  * @author Andrea Cappelli
  * @author Daniele Ricci
  */
-public class AudioDialog extends AlertDialog {
+public class AudioDialog extends AlertDialog implements AssentCallback {
     static final String TAG = ComposeMessage.TAG;
 
     private static final String STATE_PREFIX = "AudioDialog_";
@@ -77,6 +81,8 @@ public class AudioDialog extends AlertDialog {
     /** Max duration of recorded audio in milliseconds. */
     private static final long MAX_AUDIO_DURATION = TimeUnit.MINUTES.toMillis(5);
     private static final int MAX_PROGRESS = 100;
+
+    private static final int REQUEST_PERMISSIONS = 300;
 
     static final String MAX_AUDIO_DURATION_TEXT = DateUtils
         .formatElapsedTime(MAX_AUDIO_DURATION / 1000);
@@ -113,15 +119,29 @@ public class AudioDialog extends AlertDialog {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mTimeTxt = (TextView) findViewById(R.id.time);
+        mTimeTxt = findViewById(R.id.time);
         mTimeTxt.setText(DateUtils.formatElapsedTime(0));
-        mHintTxt = (TextView) findViewById(R.id.hint);
-        mImageButton = (ImageView) findViewById(R.id.image_audio);
-        mProgressBar = (CircularSeekBar) findViewById(R.id.circularSeekBar);
-        mProgressBar.getProgress();
+        mHintTxt = findViewById(R.id.hint);
+        mImageButton = findViewById(R.id.image_audio);
+        mProgressBar = findViewById(R.id.circularSeekBar);
         mProgressBar.setMax(MAX_PROGRESS);
         mProgressBar.setVisibility(View.INVISIBLE);
         getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.GONE);
+
+        if (!Assent.isPermissionGranted(Assent.READ_EXTERNAL_STORAGE) ||
+            !Assent.isPermissionGranted(Assent.WRITE_EXTERNAL_STORAGE) ||
+            !Assent.isPermissionGranted(Assent.RECORD_AUDIO)) {
+
+            Assent.requestPermissions(this, REQUEST_PERMISSIONS,
+                Assent.READ_EXTERNAL_STORAGE,
+                Assent.WRITE_EXTERNAL_STORAGE,
+                Assent.RECORD_AUDIO);
+        }
+    }
+
+    @Override
+    public void onPermissionResult(PermissionResultSet result) {
+        // nothing to do actually, user will proceed
     }
 
     @Override
@@ -374,16 +394,25 @@ public class AudioDialog extends AlertDialog {
         catch (IOException e) {
             Log.e(TAG, "error writing on external storage", e);
             cancel();
+
+            int resId = !SystemUtils.isPermissionGranted(getContext(), Assent.READ_EXTERNAL_STORAGE) ||
+                !SystemUtils.isPermissionGranted(getContext(), Assent.WRITE_EXTERNAL_STORAGE) ?
+                R.string.err_audio_record_writing_permission :
+                R.string.err_audio_record_writing;
             new MaterialDialog.Builder(getContext())
-                .content(R.string.err_audio_record_writing)
+                .content(resId)
                 .positiveText(android.R.string.ok)
                 .show();
         }
         catch (RuntimeException e) {
             Log.e(TAG, "error starting audio recording", e);
             cancel();
+
+            int resId = !SystemUtils.isPermissionGranted(getContext(), Assent.RECORD_AUDIO) ?
+                R.string.err_audio_record_permission :
+                R.string.err_audio_record;
             new MaterialDialog.Builder(getContext())
-                .content(R.string.err_audio_record)
+                .content(resId)
                 .positiveText(android.R.string.ok)
                 .show();
         }
