@@ -97,7 +97,7 @@ public class UsersProvider extends ContentProvider {
     private static HashMap<String, String> usersProjectionMap;
     private static HashMap<String, String> keysProjectionMap;
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    @VisibleForTesting()
     static class DatabaseHelper extends SQLiteOpenHelper {
         private static final String CREATE_TABLE_USERS = "(" +
             "_id INTEGER PRIMARY KEY," +
@@ -261,7 +261,7 @@ public class UsersProvider extends ContentProvider {
     }
 
     private static final class Counter {
-        private int value;
+        int value;
 
         public Counter(int start) {
             this.value = start;
