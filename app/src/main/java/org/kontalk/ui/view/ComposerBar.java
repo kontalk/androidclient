@@ -18,6 +18,18 @@
 
 package org.kontalk.ui.view;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+import com.afollestad.assent.Assent;
+import com.afollestad.assent.AssentCallback;
+import com.afollestad.assent.PermissionResultSet;
+import com.vanniktech.emoji.EmojiEditText;
+import com.vanniktech.emoji.EmojiPopup;
+import com.vanniktech.emoji.listeners.OnEmojiPopupDismissListener;
+import com.vanniktech.emoji.listeners.OnEmojiPopupShownListener;
+
 import android.animation.Animator;
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -48,11 +60,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.vanniktech.emoji.EmojiEditText;
-import com.vanniktech.emoji.EmojiPopup;
-import com.vanniktech.emoji.listeners.OnEmojiPopupDismissListener;
-import com.vanniktech.emoji.listeners.OnEmojiPopupShownListener;
-
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.message.AudioComponent;
@@ -63,10 +70,6 @@ import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
 
 /**
  * The composer bar.
@@ -74,7 +77,7 @@ import java.util.concurrent.TimeUnit;
  * @author Andrea Cappelli
  */
 public class ComposerBar extends RelativeLayout implements
-        OnEmojiPopupShownListener, OnEmojiPopupDismissListener {
+        OnEmojiPopupShownListener, OnEmojiPopupDismissListener, AssentCallback {
     private static final String TAG = ComposeMessage.TAG;
 
     private static final int MIN_RECORDING_TIME = 900;
@@ -84,6 +87,8 @@ public class ComposerBar extends RelativeLayout implements
 
     private static final String MAX_RECORDING_TIME_TEXT = DateUtils
         .formatElapsedTime(MAX_RECORDING_TIME / 1000);
+
+    private static final int REQUEST_PERMISSIONS = 200;
 
     Context mContext;
 
@@ -504,18 +509,42 @@ public class ComposerBar extends RelativeLayout implements
         }
     }
 
+    @Override
+    public void onPermissionResult(PermissionResultSet result) {
+        // nothing to do actually, user will just try again
+    }
+
     void startRecording() {
         // ask parent to stop all sounds
         if (mListener != null)
             mListener.stopAllSounds();
 
+        if (!Assent.isPermissionGranted(Assent.READ_EXTERNAL_STORAGE) ||
+            !Assent.isPermissionGranted(Assent.WRITE_EXTERNAL_STORAGE) ||
+            !Assent.isPermissionGranted(Assent.RECORD_AUDIO)) {
+
+            Assent.requestPermissions(this, REQUEST_PERMISSIONS,
+                Assent.READ_EXTERNAL_STORAGE,
+                Assent.WRITE_EXTERNAL_STORAGE,
+                Assent.RECORD_AUDIO);
+        }
+        else {
+            doStartRecording();
+        }
+    }
+
+    private void doStartRecording() {
         try {
             mRecordFile = MediaStorage.getOutgoingAudioFile();
         }
         catch (IOException e) {
             Log.e(TAG, "error creating audio file", e);
-            Toast.makeText(mContext, R.string.err_audio_record_writing,
-                Toast.LENGTH_LONG).show();
+
+            int resId = (!SystemUtils.isPermissionGranted(getContext(), Assent.READ_EXTERNAL_STORAGE) ||
+                !SystemUtils.isPermissionGranted(getContext(), Assent.WRITE_EXTERNAL_STORAGE)) ?
+                R.string.err_audio_record_writing_permission :
+                R.string.err_audio_record_writing;
+            Toast.makeText(mContext, resId, Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -544,8 +573,11 @@ public class ComposerBar extends RelativeLayout implements
         }
         catch (RuntimeException e) {
             Log.e(TAG, "error starting audio recording:", e);
-            Toast.makeText(mContext, R.string.err_audio_record,
-                Toast.LENGTH_LONG).show();
+
+            int resId = !SystemUtils.isPermissionGranted(getContext(), Assent.RECORD_AUDIO) ?
+                R.string.err_audio_record_permission :
+                R.string.err_audio_record;
+            Toast.makeText(mContext, resId, Toast.LENGTH_LONG).show();
         }
     }
 

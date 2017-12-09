@@ -232,6 +232,10 @@ public final class SystemUtils {
         return false;
     }
 
+    public static boolean isPermissionGranted(Context context, String permission) {
+        return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED;
+    }
+
     public static Bitmap getProfilePhoto(Context context) {
         // profile photo is available only since API level 14
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {

@@ -494,6 +494,8 @@
     <string name="err_change_passphrase">Unable to change the personal key password.</string>
     <string name="err_file_not_found">File not found.</string>
     <string name="err_audio_record">Error starting audio recording.</string>
+    <string name="err_audio_record_permission">Access to microphone was denied.</string>
+    <string name="err_audio_record_writing_permission">Access to external storage was denied.</string>
     <string name="err_audio_record_writing">Error writing on external storage.</string>
     <string name="err_audio_record_noaudio">No audio was recorded.</string>
     <string name="err_playing_audio">Error playing audio.</string>
@@ -652,6 +654,8 @@
     <string name="err_validation_contacts_denied">Kontalk needs access to contacts in order to function properly. How can it know the people you can chat with??\nYou will be asked again once you\'ve registered.</string>
     <string name="err_contacts_denied">Kontalk needs access to contacts in order to function properly. How can it know the people you can chat with??\nYou can allow access to contacts from Android settings.</string>
     <string name="warn_contacts_denied">You denied access to contacts. You won\'t be able to see changes in contacts here.</string>
+
+    <string name="err_storage_denied">Kontalk needs access to local storage to store media.\nYou can allow access to storage from Android settings.</string>
 
     <plurals name="confirm_will_delete_threads">
         <item quantity="one">The selected chat will be deleted.</item>

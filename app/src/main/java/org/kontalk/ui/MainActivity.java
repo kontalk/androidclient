@@ -90,7 +90,6 @@ public abstract class MainActivity extends ToolbarActivity {
      * @return true if the method handled the situation, false otherwise
      */
     protected boolean afterOnCreate() {
-        // ask for access to contacts
         askPermissions();
 
         return !xmppUpgrade() && !checkPassword() && (ifHuaweiAlert() || ifDozeAlert());
@@ -122,30 +121,52 @@ public abstract class MainActivity extends ToolbarActivity {
     }
 
     private void askPermissions() {
-        if (Preferences.isPermissionAsked(Assent.READ_CONTACTS) &&
-            Preferences.isPermissionAsked(Assent.WRITE_CONTACTS))
-            return;
+        if (!Preferences.isPermissionAsked(Assent.READ_CONTACTS) ||
+            !Preferences.isPermissionAsked(Assent.WRITE_CONTACTS)) {
 
-        if (!Assent.isPermissionGranted(Assent.READ_CONTACTS) ||
-            !Assent.isPermissionGranted(Assent.WRITE_CONTACTS)) {
-            Assent.requestPermissions(new AssentCallback() {
-                @Override
-                public void onPermissionResult(PermissionResultSet result) {
-                    if (result.isGranted(Assent.READ_CONTACTS)) {
-                        // we finally have contacts, trigger a sync
-                        SyncAdapter.requestSync(MainActivity.this, true);
+            if (!Assent.isPermissionGranted(Assent.READ_CONTACTS) ||
+                !Assent.isPermissionGranted(Assent.WRITE_CONTACTS)) {
+                Assent.requestPermissions(new AssentCallback() {
+                    @Override
+                    public void onPermissionResult(PermissionResultSet result) {
+                        if (result.isGranted(Assent.READ_CONTACTS)) {
+                            // we finally have contacts, trigger a sync
+                            SyncAdapter.requestSync(MainActivity.this, true);
+                        }
+                        else {
+                            new MaterialDialog.Builder(MainActivity.this)
+                                .content(R.string.err_contacts_denied)
+                                .positiveText(android.R.string.ok)
+                                .show();
+                        }
                     }
-                    else {
-                        new MaterialDialog.Builder(MainActivity.this)
-                            .content(R.string.err_contacts_denied)
-                            .positiveText(android.R.string.ok)
-                            .show();
-                    }
-                }
-            }, REQUEST_PERMISSIONS, Assent.READ_CONTACTS, Assent.WRITE_CONTACTS);
+                }, REQUEST_PERMISSIONS, Assent.READ_CONTACTS, Assent.WRITE_CONTACTS);
 
-            Preferences.setPermissionAsked(Assent.READ_CONTACTS);
-            Preferences.setPermissionAsked(Assent.WRITE_CONTACTS);
+                Preferences.setPermissionAsked(Assent.READ_CONTACTS);
+                Preferences.setPermissionAsked(Assent.WRITE_CONTACTS);
+            }
+        }
+
+        if (!Preferences.isPermissionAsked(Assent.READ_EXTERNAL_STORAGE) ||
+            !Preferences.isPermissionAsked(Assent.WRITE_EXTERNAL_STORAGE)) {
+
+            if (!Assent.isPermissionGranted(Assent.READ_EXTERNAL_STORAGE) ||
+                !Assent.isPermissionGranted(Assent.WRITE_EXTERNAL_STORAGE)) {
+                Assent.requestPermissions(new AssentCallback() {
+                    @Override
+                    public void onPermissionResult(PermissionResultSet result) {
+                        if (!result.allPermissionsGranted()) {
+                            new MaterialDialog.Builder(MainActivity.this)
+                                .content(R.string.err_storage_denied)
+                                .positiveText(android.R.string.ok)
+                                .show();
+                        }
+                    }
+                }, REQUEST_PERMISSIONS, Assent.READ_EXTERNAL_STORAGE, Assent.WRITE_EXTERNAL_STORAGE);
+
+                Preferences.setPermissionAsked(Assent.READ_EXTERNAL_STORAGE);
+                Preferences.setPermissionAsked(Assent.WRITE_EXTERNAL_STORAGE);
+            }
         }
     }
 
