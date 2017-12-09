@@ -457,9 +457,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 i.setAction(KeyPairGeneratorService.ACTION_GENERATE);
                 startService(i);
             }
-
-            // ask for access to contacts
-            askPermissions();
         }
     }
 
@@ -482,6 +479,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     protected void onResume() {
         super.onResume();
         Assent.setActivity(this, this);
+        // ask for access to contacts
+        askPermissions();
     }
 
     @Override

@@ -21,12 +21,16 @@ package org.kontalk.ui;
 import java.util.Collections;
 import java.util.List;
 
+import com.afollestad.assent.Assent;
+import com.afollestad.assent.AssentCallback;
+import com.afollestad.assent.PermissionResultSet;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 
@@ -39,7 +43,10 @@ import org.kontalk.R;
  * Simple activity to scan a barcode and return the result to the caller.
  * @author Daniele Ricci
  */
-public class ScanTextActivity extends ToolbarActivity implements ZXingScannerView.ResultHandler {
+public class ScanTextActivity extends ToolbarActivity
+        implements ZXingScannerView.ResultHandler, AssentCallback {
+
+    private static final int REQUEST_PERMISSIONS = 60;
 
     private ZXingScannerView mScannerView;
 
@@ -47,6 +54,7 @@ public class ScanTextActivity extends ToolbarActivity implements ZXingScannerVie
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.scan_text_screen);
+        Assent.setActivity(this, this);
 
         mScannerView = new ZXingScannerView(this);
         List<BarcodeFormat> formats = Collections.singletonList(BarcodeFormat.QR_CODE);
@@ -74,19 +82,52 @@ public class ScanTextActivity extends ToolbarActivity implements ZXingScannerVie
     @Override
     protected void onResume() {
         super.onResume();
+        Assent.setActivity(this, this);
         mScannerView.setResultHandler(this);
-        mScannerView.startCamera();
+
+        if (Assent.isPermissionGranted(Assent.CAMERA)) {
+            startCamera();
+        }
+        else {
+            Assent.requestPermissions(this, REQUEST_PERMISSIONS, Assent.CAMERA);
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        mScannerView.stopCamera();
+        if (isFinishing())
+            Assent.setActivity(this, null);
+        stopCamera();
     }
 
     @Override
     protected boolean isNormalUpNavigation() {
         return true;
+    }
+
+    private void startCamera() {
+        mScannerView.startCamera();
+    }
+
+    private void stopCamera() {
+        mScannerView.stopCamera();
+    }
+
+    @Override
+    public void onPermissionResult(PermissionResultSet result) {
+        if (result.allPermissionsGranted()) {
+            startCamera();
+        }
+        else {
+            finish();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        Assent.handleResult(permissions, grantResults);
     }
 
     @Override
