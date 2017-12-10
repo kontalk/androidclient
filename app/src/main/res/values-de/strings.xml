@@ -679,4 +679,16 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
 
     <string name="reply_message_deleted">Die Nachricht ist gelöscht.</string>
 
+    <string name="err_location_permission">Standortzugriff wurde verweigert.</string>
+    <string name="err_audio_record_permission">Mikrofonzugriff wurde verweigert.</string>
+    <string name="err_audio_record_writing_permission">Speicherzugriff wurde verweigert.</string>
+    <string name="err_validation_contacts_denied">"Kontalk benötigt Zugriff auf  Ihre Kontakte um ordnungsgemäß funktionieren zu können.  Woher soll es sonst Leute kennen mit denen Sie chatten können??
+\nNach der Registrierung werden Sie erneut gefragt."</string>
+    <string name="err_contacts_denied">"Kontalk benötigt Zugriff auf  Ihre Kontakte um ordnungsgemäß funktionieren zu können.  Woher soll es sonst Leute kennen mit denen Sie chatten können??
+\nSie können den Zugriff auf Kontakte über Android-Einstellungen zulassen."</string>
+    <string name="warn_contacts_denied">Sie haben den Zugriff auf Ihre Kontakte verweigert. Änderungen der Kontakte können Sie hier nicht sehen.</string>
+
+    <string name="err_storage_denied">Kontalk benötigt Zugriff auf den lokalen Speicher, um Medien zu speichern.
+\nSie können den Speicherzugriff in den Android-Einstellungen zulassen.</string>
+
     </resources>
