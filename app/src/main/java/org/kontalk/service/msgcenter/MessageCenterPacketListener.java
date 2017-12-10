@@ -18,6 +18,15 @@
 
 package org.kontalk.service.msgcenter;
 
+import java.lang.ref.WeakReference;
+import java.util.Map;
+
+import org.jivesoftware.smack.StanzaListener;
+import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smack.roster.RosterEntry;
+import org.jxmpp.jid.BareJid;
+import org.jxmpp.jid.Jid;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -26,20 +35,11 @@ import android.net.Uri;
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 
-import org.jivesoftware.smack.StanzaListener;
-import org.jivesoftware.smack.packet.Stanza;
-import org.jivesoftware.smack.roster.RosterEntry;
-import org.jxmpp.jid.BareJid;
-import org.jxmpp.jid.Jid;
-import org.jxmpp.stringprep.XmppStringprepException;
 import org.kontalk.Kontalk;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.service.msgcenter.MessageCenterService.IdleConnectionHandler;
-
-import java.lang.ref.WeakReference;
-import java.util.Map;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
@@ -91,12 +91,6 @@ abstract class MessageCenterPacketListener implements StanzaListener {
     }
 
     protected RosterEntry getRosterEntry(BareJid jid) {
-        MessageCenterService instance = mInstance.get();
-        return (instance != null) ? instance.getRosterEntry(jid) : null;
-    }
-
-    @Deprecated
-    protected RosterEntry getRosterEntry(String jid) throws XmppStringprepException {
         MessageCenterService instance = mInstance.get();
         return (instance != null) ? instance.getRosterEntry(jid) : null;
     }

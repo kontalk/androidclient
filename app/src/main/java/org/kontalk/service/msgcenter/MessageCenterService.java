@@ -2332,24 +2332,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return (roster != null) ? roster.getEntry(jid) : null;
     }
 
-    @Deprecated
-    RosterEntry getRosterEntry(String jid) throws XmppStringprepException {
-        return getRosterEntry(JidCreate.bareFrom(jid));
-    }
-
     private boolean isAuthorized(BareJid jid) {
         if (Authenticator.isSelfJID(this, jid))
             return true;
         RosterEntry entry = getRosterEntry(jid);
-        return entry != null && isAuthorized(entry);
-    }
-
-    @Deprecated
-    private boolean isAuthorized(String jid) throws XmppStringprepException {
-        BareJid bareJid = JidCreate.bareFrom(jid);
-        if (Authenticator.isSelfJID(this, bareJid))
-            return true;
-        RosterEntry entry = getRosterEntry(bareJid);
         return entry != null && isAuthorized(entry);
     }
 

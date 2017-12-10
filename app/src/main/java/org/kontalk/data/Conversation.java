@@ -353,11 +353,6 @@ public class Conversation {
         return mGroupMembership;
     }
 
-    public void cancelGroupChat() {
-        mGroupJid = null;
-        mGroupPeers = null;
-    }
-
     public void leaveGroup() {
         // it makes sense to leave a group if we have someone to tell about it
         loadGroupPeers(false);
