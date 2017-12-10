@@ -29,8 +29,7 @@ import android.database.Cursor;
 import android.net.Uri;
 
 import org.kontalk.provider.KontalkGroupCommands;
-import org.kontalk.provider.MessagesProvider;
-import org.kontalk.provider.MessagesProviderUtils;
+import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
@@ -375,7 +374,7 @@ public class Conversation {
             // TODO check for null
 
             // mark group as parted
-            MessagesProviderUtils.setGroupMembership(mContext, mGroupJid, Groups.MEMBERSHIP_PARTED);
+            MessagesProviderClient.setGroupMembership(mContext, mGroupJid, Groups.MEMBERSHIP_PARTED);
 
             if (actuallySend) {
                 MessageCenterService.leaveGroup(mContext, mGroupJid, mGroupPeers, encrypted,
@@ -404,7 +403,7 @@ public class Conversation {
         }
 
         // delete messages and thread
-        MessagesProviderUtils.deleteThread(context, threadId, groupChat && !leaveGroup);
+        MessagesProviderClient.deleteThread(context, threadId, groupChat && !leaveGroup);
 
         // send leave message only if the group was created in the first place
         if (groupChat && leaveGroup) {
@@ -428,7 +427,7 @@ public class Conversation {
     public void setSticky(boolean sticky) {
         mSticky = sticky;
         if (mThreadId > 0)
-            MessagesProviderUtils.setThreadSticky(mContext, mThreadId, sticky);
+            MessagesProviderClient.setThreadSticky(mContext, mThreadId, sticky);
     }
 
     private void loadGroupPeers(boolean force) {
@@ -438,7 +437,7 @@ public class Conversation {
     }
 
     private static String[] loadGroupPeersInternal(Context context, String groupJid) {
-        return MessagesProviderUtils.getGroupMembers(context, groupJid, 0);
+        return MessagesProviderClient.getGroupMembers(context, groupJid, 0);
     }
 
     public static void startQuery(AsyncQueryHandler handler, int token) {
@@ -470,7 +469,7 @@ public class Conversation {
      * @return a newly created thread ID.
      */
     public static long initGroupChat(Context context, String groupJid, String subject, String[] members, String draft) {
-        return MessagesProviderUtils.createGroupThread(context, groupJid, subject, members, draft);
+        return MessagesProviderClient.createGroupThread(context, groupJid, subject, members, draft);
     }
 
     public void addUsers(String[] members) {
@@ -478,7 +477,7 @@ public class Conversation {
             throw new UnsupportedOperationException("Not a group chat conversation");
 
         // add members to the group
-        MessagesProviderUtils.addGroupMembers(mContext, mGroupJid, members, true);
+        MessagesProviderClient.addGroupMembers(mContext, mGroupJid, members, true);
 
         // store add group member command to outbox
         boolean encrypted = MessageUtils.sendEncrypted(mContext, mEncryption);
@@ -501,7 +500,7 @@ public class Conversation {
             throw new UnsupportedOperationException("Not a group chat conversation");
 
         // remove members to the group
-        MessagesProviderUtils.removeGroupMembers(mContext, mGroupJid, members, true);
+        MessagesProviderClient.removeGroupMembers(mContext, mGroupJid, members, true);
 
         // store remove group member command to outbox
         boolean encrypted = MessageUtils.sendEncrypted(mContext, mEncryption);
@@ -521,7 +520,7 @@ public class Conversation {
             throw new UnsupportedOperationException("Not a group chat conversation");
 
         // set group subject
-        MessagesProviderUtils.setGroupSubject(mContext, mGroupJid, subject);
+        MessagesProviderClient.setGroupSubject(mContext, mGroupJid, subject);
 
         // send the command if there is someone to talk to
         boolean actuallySend = GroupControllerFactory.canSendCommandsWithEmptyGroup(mGroupType) ||
@@ -546,7 +545,7 @@ public class Conversation {
     public void setEncryptionEnabled(boolean encryptionEnabled) {
         mEncryption = encryptionEnabled;
         if (mThreadId > 0)
-            MessagesProviderUtils.setEncryption(mContext, mThreadId, encryptionEnabled);
+            MessagesProviderClient.setEncryption(mContext, mThreadId, encryptionEnabled);
     }
 
     public void markAsRead() {
@@ -554,7 +553,7 @@ public class Conversation {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    MessagesProvider.markThreadAsRead(mContext, mThreadId);
+                    MessagesProviderClient.markThreadAsRead(mContext, mThreadId);
                     MessagingNotification.updateMessagesNotification(mContext.getApplicationContext(), false);
                 }
             }).start();

@@ -40,7 +40,7 @@ import org.kontalk.message.LocationComponent;
 import org.kontalk.message.MessageComponent;
 import org.kontalk.message.VCardComponent;
 import org.kontalk.provider.Keyring;
-import org.kontalk.provider.MessagesProviderUtils;
+import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.UsersProvider;
@@ -75,7 +75,7 @@ public class MessagesController {
         String userId = conv.isGroupChat() ? conv.getGroupJid() : conv.getRecipient();
 
         // save to local storage
-        Uri newMsg = MessagesProviderUtils.newOutgoingMessage(mContext,
+        Uri newMsg = MessagesProviderClient.newOutgoingMessage(mContext,
                 msgId, userId, text, encrypted, inReplyTo);
         if (newMsg != null) {
             // send message!
@@ -102,7 +102,7 @@ public class MessagesController {
         String userId = conv.isGroupChat() ? conv.getGroupJid() : conv.getRecipient();
 
         // save to local storage
-        Uri newMsg = MessagesProviderUtils.newOutgoingMessage(mContext,
+        Uri newMsg = MessagesProviderClient.newOutgoingMessage(mContext,
                 msgId, userId, text, lat, lon, geoText, geoStreet, encrypted);
         if (newMsg != null) {
             // send message!
@@ -133,7 +133,7 @@ public class MessagesController {
 
         // save to database
         String userId = conv.isGroupChat() ? conv.getGroupJid() : conv.getRecipient();
-        Uri newMsg = MessagesProviderUtils.newOutgoingMessage(mContext, msgId,
+        Uri newMsg = MessagesProviderClient.newOutgoingMessage(mContext, msgId,
                 userId, mime, uri, 0, compress, null, encrypted);
 
         if (newMsg != null) {
@@ -167,7 +167,7 @@ public class MessagesController {
             // do not add ourselves...
             if (Authenticator.isSelfJID(mContext, member)) {
                 // ...but mark our membership
-                MessagesProviderUtils.setGroupMembership(mContext,
+                MessagesProviderClient.setGroupMembership(mContext,
                         group.getContent().getJID(), MyMessages.Groups.MEMBERSHIP_MEMBER);
                 continue;
             }
@@ -265,12 +265,12 @@ public class MessagesController {
 
             if (removed != null) {
                 // remove members from group
-                MessagesProviderUtils.removeGroupMembers(mContext, group.getContent().getJID(),
+                MessagesProviderClient.removeGroupMembers(mContext, group.getContent().getJID(),
                         removed, false);
                 // set our membership to parted if we were removed from the group
                 for (String removedJid : removed) {
                     if (Authenticator.isSelfJID(mContext, removedJid)) {
-                        MessagesProviderUtils.setGroupMembership(mContext,
+                        MessagesProviderClient.setGroupMembership(mContext,
                                 group.getContent().getJID(), MyMessages.Groups.MEMBERSHIP_KICKED);
                         break;
                     }
@@ -295,12 +295,8 @@ public class MessagesController {
             }
         }
 
-        Uri msgUri = null;
-        try {
-            msgUri = mContext.getContentResolver().insert(MyMessages.Messages.CONTENT_URI, values);
-        } catch (SQLiteConstraintException econstr) {
-            // duplicated message, skip it
-        }
+        // will be null if something went wrong
+        Uri msgUri = MessagesProviderClient.newIncomingMessage(mContext, values);
 
         if (groupInfo == null) {
             // mark sender as registered in the users database

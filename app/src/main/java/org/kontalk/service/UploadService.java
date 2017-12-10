@@ -38,8 +38,7 @@ import android.support.v4.app.NotificationCompat;
 
 import org.kontalk.Log;
 import org.kontalk.R;
-import org.kontalk.provider.MessagesProvider;
-import org.kontalk.provider.MessagesProviderUtils;
+import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.ConversationsActivity;
@@ -196,7 +195,7 @@ public class UploadService extends IntentService implements ProgressListener {
             Log.d(TAG, "uploaded with media URL: " + mediaUrl);
 
             // update message fetch_url
-            MessagesProvider.uploaded(this, databaseId, mediaUrl);
+            MessagesProviderClient.uploaded(this, databaseId, mediaUrl);
 
             // send message with fetch url to server
             if (groupJid != null) {
@@ -318,7 +317,7 @@ public class UploadService extends IntentService implements ProgressListener {
 
     @Override
     public void progress(UploadConnection conn, long bytes) {
-        if (mCanceled || !MessagesProviderUtils.exists(this, mMessageId)) {
+        if (mCanceled || !MessagesProviderClient.exists(this, mMessageId)) {
             Log.v(TAG, "upload canceled or message deleted - aborting");
             mConn.abort();
             mCanceled = true;

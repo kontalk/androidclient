@@ -135,8 +135,8 @@ import org.kontalk.message.LocationComponent;
 import org.kontalk.message.ReferencedMessage;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.Keyring;
-import org.kontalk.provider.MessagesProviderUtils;
-import org.kontalk.provider.MyMessages.CommonColumns;
+import org.kontalk.provider.MessagesProviderClient;
+import org.kontalk.provider.MessagesProviderClient.MessageUpdater;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
@@ -2137,7 +2137,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                  * However, selecting members with zero flags will make a remove command to be sent
                  * only to existing members and not to the ones being removed.
                  */
-                groupMembers = MessagesProviderUtils.getGroupMembers(this, groupJid, -1);
+                groupMembers = MessagesProviderClient.getGroupMembers(this, groupJid, -1);
                 if (groupMembers.length == 0) {
                     // no group member left - skip message
                     // this might be a pending message that was queued before we realized there were no members left
@@ -2446,7 +2446,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         values.put(Threads.REQUEST_STATUS, Threads.REQUEST_NONE);
 
         getContentResolver().update(Requests.CONTENT_URI,
-                values, CommonColumns.PEER + "=?", new String[]{to});
+                values, Threads.PEER + "=?", new String[]{to});
     }
 
     private void sendPrivacyListCommand(final String to, final int action) {
@@ -2898,10 +2898,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                     if (toMessage == null) {
                         // message was not encrypted for some reason, mark it pending user review
-                        ContentValues values = new ContentValues(1);
-                        values.put(Messages.STATUS, Messages.STATUS_PENDING);
-                        getContentResolver().update(ContentUris.withAppendedId
-                            (Messages.CONTENT_URI, msgId), values, null, null);
+                        MessageUpdater.forMessage(this, msgId)
+                            .setStatus(Messages.STATUS_PENDING)
+                            .commit();
 
                         // do not send the message
                         if (msgId > 0)
@@ -3434,9 +3433,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
-    public static void retryMessage(final Context context, Uri uri, boolean chatEncryptionEnabled) {
+    public static void retryMessage(final Context context, long id, boolean chatEncryptionEnabled) {
         boolean encrypted = Preferences.getEncryptionEnabled(context) && chatEncryptionEnabled;
-        MessagesProviderUtils.retryMessage(context, uri, encrypted);
+        Uri uri = ContentUris.withAppendedId(Messages.CONTENT_URI, id);
+        MessagesProviderClient.retryMessage(context, uri, encrypted);
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_RETRY);
         // TODO not implemented yet
@@ -3445,7 +3445,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static void retryMessagesTo(final Context context, String to) {
-        MessagesProviderUtils.retryMessagesTo(context, to);
+        MessagesProviderClient.retryMessagesTo(context, to);
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_RETRY);
         // TODO not implemented yet
@@ -3454,7 +3454,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static void retryAllMessages(final Context context) {
-        MessagesProviderUtils.retryAllMessages(context);
+        MessagesProviderClient.retryAllMessages(context);
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_RETRY);
         context.startService(i);

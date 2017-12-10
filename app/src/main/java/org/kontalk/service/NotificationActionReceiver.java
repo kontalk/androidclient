@@ -31,7 +31,7 @@ import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.data.Conversation;
-import org.kontalk.provider.MessagesProvider;
+import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.ui.MessagingNotification;
 
@@ -52,13 +52,13 @@ public class NotificationActionReceiver extends BroadcastReceiver {
             // mark threads as old
             Parcelable[] threads = intent.getParcelableArrayExtra("org.kontalk.datalist");
             for (Parcelable uri : threads)
-                MessagesProvider.markThreadAsOld(context, ContentUris.parseId((Uri) uri));
+                MessagesProviderClient.markThreadAsOld(context, ContentUris.parseId((Uri) uri));
             MessagingNotification.delayedUpdateMessagesNotification(context, false);
         }
         else if (MessagingNotification.ACTION_NOTIFICATION_REPLY.equals(action)) {
             // mark threads as read
             long threadId = ContentUris.parseId(intent.getData());
-            MessagesProvider.markThreadAsRead(context, threadId);
+            MessagesProviderClient.markThreadAsRead(context, threadId);
 
             // send reply
             Bundle result = RemoteInput.getResultsFromIntent(intent);
@@ -84,7 +84,7 @@ public class NotificationActionReceiver extends BroadcastReceiver {
         }
         else if (MessagingNotification.ACTION_NOTIFICATION_MARK_READ.equals(action)) {
             // mark threads as read
-            MessagesProvider.markThreadAsRead(context, ContentUris.parseId(intent.getData()));
+            MessagesProviderClient.markThreadAsRead(context, ContentUris.parseId(intent.getData()));
             MessagingNotification.delayedUpdateMessagesNotification(context, false);
         }
     }

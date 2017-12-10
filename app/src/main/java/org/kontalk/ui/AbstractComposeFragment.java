@@ -103,7 +103,7 @@ import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
 import org.kontalk.position.Position;
 import org.kontalk.position.PositionManager;
-import org.kontalk.provider.MessagesProviderUtils;
+import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
@@ -718,7 +718,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
             // update thread id from the inserted message
             if (threadId <= 0) {
-                threadId = MessagesProviderUtils.getThreadByMessage(getContext(), newMsg);
+                threadId = MessagesProviderClient.getThreadByMessage(getContext(), newMsg);
                 if (threadId > 0) {
                     // we can run it here because progress=false
                     startQuery();
@@ -775,7 +775,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
                 // update thread id from the inserted message
                 if (threadId <= 0) {
-                    threadId = MessagesProviderUtils.getThreadByMessage(context, newMsg);
+                    threadId = MessagesProviderClient.getThreadByMessage(context, newMsg);
                     if (threadId > 0) {
                         startQuery();
                     }
@@ -834,7 +834,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
                 // update thread id from the inserted message
                 if (threadId <= 0) {
-                    threadId = MessagesProviderUtils.getThreadByMessage(context, newMsg);
+                    threadId = MessagesProviderClient.getThreadByMessage(context, newMsg);
                     if (threadId > 0) {
                         startQuery();
                     }
@@ -1274,8 +1274,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     }
 
     private void retryMessage(CompositeMessage msg) {
-        MessageCenterService.retryMessage(getContext(), ContentUris.withAppendedId
-            (Messages.CONTENT_URI, msg.getDatabaseId()), mConversation.isEncryptionEnabled());
+        MessageCenterService.retryMessage(getContext(), msg.getDatabaseId(), mConversation.isEncryptionEnabled());
     }
 
     void scrollToPosition(int position) {
@@ -2047,7 +2046,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             // update draft
             else {
                 try {
-                    MessagesProviderUtils.updateDraft(getContext(), threadId, text.toString());
+                    MessagesProviderClient.updateDraft(getContext(), threadId, text.toString());
                 }
                 catch (SQLiteDiskIOException e) {
                     // TODO warn user
@@ -2062,7 +2061,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             if (len > 0) {
                 // save to local storage
                 try {
-                    MessagesProviderUtils.insertEmptyThread(getActivity(), getUserId(), text.toString());
+                    MessagesProviderClient.insertEmptyThread(getActivity(), getUserId(), text.toString());
                 }
                 catch (SQLiteDiskIOException e) {
                     // TODO warn user
@@ -2465,7 +2464,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             });
 
             view.setProgressChangeListener(false);
-            if (!MessagesProviderUtils.exists(getActivity(), messageId)) {
+            if (!MessagesProviderClient.exists(getActivity(), messageId)) {
                 resetAudio(view);
             }
 

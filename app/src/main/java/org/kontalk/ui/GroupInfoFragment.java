@@ -70,7 +70,7 @@ import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.Keyring;
-import org.kontalk.provider.MessagesProviderUtils;
+import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyUsers;
@@ -183,7 +183,7 @@ public class GroupInfoFragment extends ListFragment
 
     private String[] getGroupMembers() {
         String[] members = mConversation.getGroupPeers();
-        String[] added = MessagesProviderUtils.getGroupMembers(getContext(),
+        String[] added = MessagesProviderClient.getGroupMembers(getContext(),
             mConversation.getGroupJid(), Groups.MEMBER_PENDING_ADDED);
         if (added.length > 0)
             members = SystemUtils.concatenate(members, added);

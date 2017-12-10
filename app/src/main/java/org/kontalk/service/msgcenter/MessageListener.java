@@ -35,9 +35,7 @@ import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 import org.jxmpp.jid.Jid;
 import org.jxmpp.stringprep.XmppStringprepException;
 
-import android.content.ContentResolver;
 import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -73,7 +71,8 @@ import org.kontalk.message.ReferencedMessage;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
 import org.kontalk.provider.Keyring;
-import org.kontalk.provider.MessagesProviderUtils;
+import org.kontalk.provider.MessagesProviderClient;
+import org.kontalk.provider.MessagesProviderClient.MessageUpdater;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.reporting.ReportingManager;
@@ -94,9 +93,6 @@ import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
  * @author Daniele Ricci
  */
 class MessageListener extends MessageCenterPacketListener {
-
-    private static final String selectionOutgoing = Messages.DIRECTION + "=" + Messages.DIRECTION_OUT;
-    private static final String selectionIngoing = Messages.DIRECTION + "=" + Messages.DIRECTION_IN;
 
     public MessageListener(MessageCenterService instance) {
         super(instance);
@@ -141,7 +137,7 @@ class MessageListener extends MessageCenterPacketListener {
             // check that the sender has valid membership
             (isValidMember(ext, packet.getFrom()) &&
             // all other commands require the group to be present in our database
-            MessagesProviderUtils.isGroupExisting(getContext(), ext.getJID()));
+            MessagesProviderClient.isGroupExisting(getContext(), ext.getJID()));
     }
 
     /** Returns true if the given group command is the owner adding me to the group. */
@@ -158,7 +154,7 @@ class MessageListener extends MessageCenterPacketListener {
     }
 
     private boolean isValidMember(GroupExtension ext, Jid from) {
-        return MessagesProviderUtils.isGroupMember(getContext(),
+        return MessagesProviderClient.isGroupMember(getContext(),
             ext.getJID(), from.asBareJid().toString());
     }
 
@@ -222,29 +218,25 @@ class MessageListener extends MessageCenterPacketListener {
                 String id = m.getStanzaId();
                 Long _msgId = waitingReceipt.get(id);
                 long msgId = (_msgId != null) ? _msgId : 0;
-                ContentResolver cr = getContext().getContentResolver();
 
                 // FIXME it can happen that a delivery receipt comes before the SM ack (e.g. self messages)
                 // This code like it is now may overwrite the message status
                 // and revert it back to "SENT"
 
+                MessageUpdater updater;
+
                 // message has been delivered: check if we have previously stored the server id
                 if (msgId > 0) {
-                    ContentValues values = new ContentValues(3);
-                    values.put(Messages.MESSAGE_ID, deliveryReceipt.getId());
-                    values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
-                    values.put(Messages.STATUS_CHANGED, serverTimestamp);
-                    cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
-                        values, selectionOutgoing, null);
+                    updater = MessageUpdater.forMessage(getContext(), msgId);
                 }
                 else {
-                    // FIXME this could lead to fake delivery receipts because message IDs are client-generated
-                    Uri msg = Messages.getUri(deliveryReceipt.getId());
-                    ContentValues values = new ContentValues(2);
-                    values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
-                    values.put(Messages.STATUS_CHANGED, serverTimestamp);
-                    cr.update(msg, values, selectionOutgoing, null);
+                    updater = MessageUpdater.forMessage(getContext(),
+                        deliveryReceipt.getId(), false);
                 }
+
+                updater
+                    .setStatus(Messages.STATUS_RECEIVED, System.currentTimeMillis())
+                    .commit();
 
                 // remove the packet from the waiting list
                 // this will also release the wake lock
@@ -507,12 +499,9 @@ class MessageListener extends MessageCenterPacketListener {
         // delivery receipt error
         if (deliveryReceipt != null) {
             // mark indicated message as incoming and try again
-            Uri msg = Messages.getUri(deliveryReceipt.getId());
-            ContentValues values = new ContentValues(2);
-            values.put(Messages.STATUS, Messages.STATUS_INCOMING);
-            values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
-            getContext().getContentResolver()
-                .update(msg, values, selectionIngoing, null);
+            MessageUpdater.forMessage(getContext(), deliveryReceipt.getId(), true)
+                .setStatus(Messages.STATUS_INCOMING, System.currentTimeMillis())
+                .commit();
 
             // send receipt again
             sendReceipt(null, deliveryReceipt.getId(), m.getFrom(), waitingReceipt);
@@ -522,15 +511,12 @@ class MessageListener extends MessageCenterPacketListener {
             String id = m.getStanzaId();
             Long _msgId = waitingReceipt.get(id);
             long msgId = (_msgId != null) ? _msgId : 0;
-            ContentResolver cr = getContext().getContentResolver();
 
             // message has been rejected: mark as error
             if (msgId > 0) {
-                ContentValues values = new ContentValues(2);
-                values.put(Messages.STATUS, Messages.STATUS_NOTDELIVERED);
-                values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
-                cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
-                    values, selectionOutgoing, null);
+                MessageUpdater.forMessage(getContext(), msgId)
+                    .setStatus(Messages.STATUS_NOTDELIVERED, System.currentTimeMillis())
+                    .commit();
 
                 // we can now release the message center. Hopefully
                 // there will be one hold and one matching release.
@@ -538,11 +524,9 @@ class MessageListener extends MessageCenterPacketListener {
             }
             else if (id != null) {
                 // FIXME this could lead to fake delivery receipts because message IDs are client-generated
-                Uri msg = Messages.getUri(id);
-                ContentValues values = new ContentValues(2);
-                values.put(Messages.STATUS, Messages.STATUS_NOTDELIVERED);
-                values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
-                cr.update(msg, values, selectionOutgoing, null);
+                MessageUpdater.forMessage(getContext(), id, false)
+                    .setStatus(Messages.STATUS_NOTDELIVERED, System.currentTimeMillis())
+                    .commit();
             }
 
             // remove the packet from the waiting list

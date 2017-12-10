@@ -38,7 +38,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.GroupCommandComponent;
-import org.kontalk.provider.MessagesProviderUtils.GroupThreadContent;
+import org.kontalk.provider.MessagesProviderClient.GroupThreadContent;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.util.MessageUtils;

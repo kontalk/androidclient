@@ -41,7 +41,7 @@ import android.service.chooser.ChooserTargetService;
 import android.support.annotation.NonNull;
 
 import org.kontalk.data.Contact;
-import org.kontalk.provider.MessagesProviderUtils;
+import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.ui.ComposeMessage;
 
 
@@ -66,11 +66,11 @@ public class DirectShareTargetService extends ChooserTargetService {
         ComponentName componentName = new ComponentName(getPackageName(),
             ComposeMessage.class.getCanonicalName());
 
-        Cursor cursor = MessagesProviderUtils.getLatestThreads(this, false, MAX_TARGETS);
+        Cursor cursor = MessagesProviderClient.getLatestThreads(this, false, MAX_TARGETS);
         if (cursor.moveToFirst()) {
             List<ChooserTarget> targets = new ArrayList<>(MAX_TARGETS);
             do {
-                String userId = cursor.getString(MessagesProviderUtils.LATEST_THREADS_COLUMN_PEER);
+                String userId = cursor.getString(MessagesProviderClient.LATEST_THREADS_COLUMN_PEER);
 
                 Contact contact = Contact.findByUserId(this, userId);
 

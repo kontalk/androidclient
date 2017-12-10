@@ -38,7 +38,7 @@ import org.kontalk.BuildConfig;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.GroupExtension;
 import org.kontalk.data.GroupInfo;
-import org.kontalk.provider.MessagesProviderUtils;
+import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
@@ -504,11 +504,11 @@ public class CompositeMessage {
     }
 
     public static void deleteFromCursor(Context context, DeleteMessageHolder holder) {
-        MessagesProviderUtils.deleteMessage(context, holder.id);
+        MessagesProviderClient.deleteMessage(context, holder.id);
     }
 
     public static void deleteFromCursor(Context context, Cursor cursor) {
-        MessagesProviderUtils.deleteMessage(context, cursor.getLong(COLUMN_ID));
+        MessagesProviderClient.deleteMessage(context, cursor.getLong(COLUMN_ID));
     }
 
     public static void startQuery(AsyncQueryHandler handler, int token, long threadId, long count, long lastId) {

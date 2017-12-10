@@ -65,6 +65,7 @@ import org.kontalk.data.Conversation;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.provider.Keyring;
 import org.kontalk.provider.KontalkGroupCommands;
+import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyUsers;
@@ -261,14 +262,10 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             mUserPhone = c.getString(1);
 
             // FIXME should it be retrieved from RawContacts.SYNC3 ??
-            mUserJID = XMPPUtils.createLocalJID(getActivity(), MessageUtils.sha1(mUserPhone));
+            mUserJID = XMPPUtils.createLocalJID(getContext(),
+                XMPPUtils.createLocalpart(mUserPhone));
 
-            Cursor cp = cres.query(MyMessages.Messages.CONTENT_URI,
-                new String[] { MyMessages.Messages.THREAD_ID }, MyMessages.Messages.PEER
-                    + " = ?", new String[] { mUserJID }, null);
-            if (cp.moveToFirst())
-                threadId = cp.getLong(0);
-            cp.close();
+            threadId = MessagesProviderClient.findThread(getContext(), mUserJID);
         }
         c.close();
 

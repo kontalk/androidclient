@@ -45,7 +45,6 @@ import org.kontalk.Log;
 import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.LocationComponent;
 import org.kontalk.message.TextComponent;
-import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Messages.Fulltext;
@@ -56,11 +55,12 @@ import org.kontalk.util.SystemUtils;
 
 /**
  * The message storage provider.
+ * TODO this class needs serious refactoring. There are many tricks and workarounds that should be reworked.
  * @author Daniele Ricci
  */
 public class MessagesProvider extends ContentProvider {
 
-    private static final String TAG = MessagesProvider.class.getSimpleName();
+    static final String TAG = MessagesProvider.class.getSimpleName();
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".messages";
 
     private static final String TABLE_MESSAGES = "messages";
@@ -105,6 +105,7 @@ public class MessagesProvider extends ContentProvider {
         @VisibleForTesting
         static final String DATABASE_NAME = "messages.db";
 
+        // TODO UNIQUE index on msg_id + direction
         private static final String _SCHEMA_MESSAGES = "(" +
             "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
             "thread_id INTEGER NOT NULL, " +
@@ -634,7 +635,7 @@ public class MessagesProvider extends ContentProvider {
             // so we can decide if we have to fire a notification or not
             boolean requestExists = false;
             if (match == REQUESTS) {
-                requestExists = isRequestPending(db, initialValues.getAsString(CommonColumns.PEER));
+                requestExists = isRequestPending(db, initialValues.getAsString(Threads.PEER));
             }
 
             // create the thread first
@@ -834,7 +835,7 @@ public class MessagesProvider extends ContentProvider {
         if (groupJid != null)
             peer = groupJid;
         else
-            peer = initialValues.getAsString(CommonColumns.PEER);
+            peer = initialValues.getAsString(Threads.PEER);
 
         values.put(Threads.PEER, peer);
         values.put(Threads.TIMESTAMP, initialValues.getAsLong(Messages.TIMESTAMP));
@@ -878,7 +879,7 @@ public class MessagesProvider extends ContentProvider {
                 initialValues.getAsString(Messages.BODY_MIME),
                 initialValues.getAsString(Messages.ATTACHMENT_MIME),
                 direction == Messages.DIRECTION_IN && groupJid != null ?
-                    initialValues.getAsString(CommonColumns.PEER) : null,
+                    initialValues.getAsString(Threads.PEER) : null,
                 values);
         }
 
@@ -1424,7 +1425,7 @@ public class MessagesProvider extends ContentProvider {
     }
 
     /** Updates metadata of a given thread. */
-    private int updateThreadInfo(SQLiteDatabase db, long threadId, @Nullable List<Uri> notifications) {
+    private void updateThreadInfo(SQLiteDatabase db, long threadId, @Nullable List<Uri> notifications) {
         Cursor c = db.query(TABLE_MESSAGES_GROUPS, new String[] {
                 Messages.MESSAGE_ID,
                 Messages.DIRECTION,
@@ -1439,7 +1440,6 @@ public class MessagesProvider extends ContentProvider {
             }, Messages.THREAD_ID + " = ?", new String[] { String.valueOf(threadId) },
             null, null, Messages.INVERTED_SORT_ORDER, "1");
 
-        int rc = -1;
         if (c != null) {
             ContentValues v = new ContentValues();
             if (c.moveToFirst()) {
@@ -1464,15 +1464,13 @@ public class MessagesProvider extends ContentProvider {
                 v.putNull(Threads.STATUS);
                 setThreadContent(new byte[0], TextComponent.MIME_TYPE, null, null, v);
             }
-            rc = db.update(TABLE_THREADS, v, Threads._ID + "=" + threadId, null);
+            db.update(TABLE_THREADS, v, Threads._ID + "=" + threadId, null);
             if (notifications != null) {
                 notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
                 notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
             }
             c.close();
         }
-
-        return rc;
     }
 
     private int deleteEmptyThreads(SQLiteDatabase db) {
@@ -1498,147 +1496,6 @@ public class MessagesProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
         }
-    }
-
-    public static boolean deleteDatabase(Context ctx) {
-        try {
-            ContentResolver c = ctx.getContentResolver();
-            c.delete(Conversations.CONTENT_URI, null, null);
-            return true;
-        }
-        catch (Exception e) {
-            Log.e(TAG, "error during database delete!", e);
-            return false;
-        }
-    }
-
-    /**
-     * Marks all messages of the given thread as read.
-     * @param context used to request a {@link ContentResolver}
-     * @param id the thread id
-     * @return the number of rows affected in the messages table
-     */
-    public static int markThreadAsRead(Context context, long id) {
-        ContentResolver c = context.getContentResolver();
-        ContentValues values = new ContentValues(2);
-        values.put(Messages.UNREAD, Boolean.FALSE);
-        values.put(Messages.NEW, Boolean.FALSE);
-        return c.update(Messages.CONTENT_URI, values,
-                Messages.THREAD_ID + " = ? AND " +
-                Messages.UNREAD + " <> 0 AND " +
-                Messages.DIRECTION + " = " + Messages.DIRECTION_IN,
-                new String[] { String.valueOf(id) });
-    }
-
-    /**
-     * Marks all messages as read.
-     * @param context used to request a {@link ContentResolver}
-     * @return the number of rows affected in the messages table
-     */
-    public static int markAllThreadsAsRead(Context context) {
-        ContentResolver c = context.getContentResolver();
-        ContentValues values = new ContentValues(1);
-        values.put(Messages.NEW, Boolean.FALSE);
-        values.put(Messages.UNREAD, Boolean.FALSE);
-        return c.update(Messages.CONTENT_URI, values,
-            Messages.UNREAD + " <> 0 AND " +
-                Messages.DIRECTION + " = " + Messages.DIRECTION_IN,
-            null);
-    }
-
-    public static int markThreadAsOld(Context context, long id) {
-        ContentResolver c = context.getContentResolver();
-        ContentValues values = new ContentValues(1);
-        values.put(Messages.NEW, Boolean.FALSE);
-        return c.update(Messages.CONTENT_URI, values,
-            Messages.THREAD_ID + " = ? AND " +
-            Messages.NEW + " <> 0 AND " +
-            Messages.DIRECTION + " = " + Messages.DIRECTION_IN,
-            new String[] { String.valueOf(id) });
-    }
-
-    /**
-     * Marks all messages as old.
-     * @param context used to request a {@link ContentResolver}
-     * @return the number of rows affected in the messages table
-     */
-    public static int markAllThreadsAsOld(Context context) {
-        ContentResolver c = context.getContentResolver();
-        ContentValues values = new ContentValues(1);
-        values.put(Messages.NEW, Boolean.FALSE);
-        return c.update(Messages.CONTENT_URI, values,
-                Messages.NEW + " <> 0 AND " +
-                Messages.DIRECTION + " = " + Messages.DIRECTION_IN,
-                null);
-    }
-
-    private static ContentValues prepareChangeMessageStatus(
-            int status, long timestamp, long statusChanged) {
-        ContentValues values = new ContentValues();
-        values.put(Messages.STATUS, status);
-        if (timestamp >= 0)
-            values.put(Messages.TIMESTAMP, timestamp);
-        if (statusChanged >= 0)
-            values.put(Messages.STATUS_CHANGED, statusChanged);
-        return values;
-    }
-
-    public static int changeMessageStatus(Context context, Uri uri, int direction, int status) {
-        return changeMessageStatus(context, uri, direction, status, -1, -1);
-    }
-
-    public static int changeMessageStatus(Context context, Uri uri, int direction, int status, long timestamp, long statusChanged) {
-        ContentValues values = prepareChangeMessageStatus(status, timestamp, statusChanged);
-        return context.getContentResolver().update(uri, values, Messages.DIRECTION + "=" + direction, null);
-    }
-
-    public static int changeMessageStatus(Context context, long id, int status) {
-        return changeMessageStatus(context, id, status, -1, -1);
-    }
-
-    public static int changeMessageStatus(Context context, long id, int status, long timestamp, long statusChanged) {
-        ContentValues values = prepareChangeMessageStatus(status, timestamp, statusChanged);
-        Uri uri = ContentUris.withAppendedId(Messages.CONTENT_URI, id);
-        return context.getContentResolver().update(uri, values, null, null);
-    }
-
-    /*
-    public static int changeMessageStatus(Context context, String id, int direction, boolean realId, int status) {
-        return changeMessageStatus(context, id, direction, realId, status, -1, -1);
-    }
-
-    public static int changeMessageStatus(Context context, String id, int direction, boolean realId, int status, long timestamp, long statusChanged) {
-        ContentValues values = prepareChangeMessageStatus(status, timestamp, statusChanged);
-
-        String field = (realId) ? Messages.REAL_ID : Messages.MESSAGE_ID;
-        return context.getContentResolver().update(Messages.CONTENT_URI, values,
-                field + " = ? AND " +
-                Messages.DIRECTION + "=" + direction,
-                new String[] { id });
-    }
-    */
-
-    /** Update a message status if old status == whereStatus. */
-    /*
-    public static int changeMessageStatusWhere(Context context,
-            boolean notEquals, int whereStatus, String id, boolean realId,
-            int status, long timestamp, long statusChanged) {
-        ContentValues values = prepareChangeMessageStatus(status, timestamp, statusChanged);
-
-        String field = (realId) ? Messages.REAL_ID : Messages.MESSAGE_ID;
-        String op = (notEquals) ? "<>" : "=";
-        return context.getContentResolver().update(Messages.CONTENT_URI, values,
-                field + " = ? AND " + Messages.STATUS + op + whereStatus,
-                new String[] { id });
-    }
-    */
-
-    /** Set the fetch URL of a media message, marking it as uploaded. */
-    public static void uploaded(Context context, long msgId, String fetchUrl) {
-        ContentValues values = new ContentValues(1);
-        values.put(Messages.ATTACHMENT_FETCH_URL, fetchUrl);
-        context.getContentResolver().update(Messages.CONTENT_URI, values,
-            Messages._ID + " = " + msgId, null);
     }
 
     static {
