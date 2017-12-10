@@ -24,11 +24,7 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 
-import android.content.ContentResolver;
-import android.content.ContentUris;
-import android.content.ContentValues;
-import android.net.Uri;
-
+import org.kontalk.provider.MessagesProviderClient.MessageUpdater;
 import org.kontalk.provider.MyMessages.Messages;
 
 
@@ -37,11 +33,6 @@ import org.kontalk.provider.MyMessages.Messages;
  * @author Daniele Ricci
  */
 class MessageAckListener extends MessageCenterPacketListener {
-
-    // condition on delivered status in case we receive the receipt before the ack
-    private static final String selectionOutgoing = Messages.DIRECTION + "=" + Messages.DIRECTION_OUT + " AND " +
-        Messages.STATUS + " NOT IN (" + Messages.STATUS_RECEIVED + "," + Messages.STATUS_NOTDELIVERED + ")";
-    private static final String selectionIncoming = Messages.DIRECTION + "=" + Messages.DIRECTION_IN;
 
     public MessageAckListener(MessageCenterService instance) {
         super(instance);
@@ -59,7 +50,6 @@ class MessageAckListener extends MessageCenterPacketListener {
             String id = packet.getStanzaId();
             Long _msgId = waitingReceipt.get(id);
             long msgId = (_msgId != null) ? _msgId : 0;
-            ContentResolver cr = getContext().getContentResolver();
 
             long now = System.currentTimeMillis();
 
@@ -67,20 +57,17 @@ class MessageAckListener extends MessageCenterPacketListener {
             if (receipt != null) {
                 // ack received for outgoing delivery receipt
                 // mark message as confirmed
-                ContentValues values = new ContentValues(1);
-                values.put(Messages.STATUS, Messages.STATUS_CONFIRMED);
-                cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
-                    values, selectionIncoming, null);
+                MessageUpdater.forMessage(getContext(), msgId)
+                    .setStatus(Messages.STATUS_CONFIRMED)
+                    .commit();
             }
 
             if (msgId > 0) {
                 // we have a message awaiting ack from server
-                ContentValues values = new ContentValues(3);
-                values.put(Messages.STATUS, Messages.STATUS_SENT);
-                values.put(Messages.STATUS_CHANGED, now);
-                values.put(Messages.SERVER_TIMESTAMP, now);
-                cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
-                    values, selectionOutgoing, null);
+                MessageUpdater.forMessage(getContext(), msgId)
+                    .setStatus(Messages.STATUS_SENT, now)
+                    .setServerTimestamp(now)
+                    .commit();
 
                 // we can now release the message center. Hopefully
                 // there will be one hold and one matching release.
@@ -90,12 +77,10 @@ class MessageAckListener extends MessageCenterPacketListener {
                 // the user wasn't expecting ack for this message
                 // so we simply update it using the packet id as key
                 // FIXME this could lead to fake acks because message IDs are client-generated
-                Uri msg = Messages.getUri(id);
-                ContentValues values = new ContentValues(3);
-                values.put(Messages.STATUS, Messages.STATUS_SENT);
-                values.put(Messages.STATUS_CHANGED, now);
-                values.put(Messages.SERVER_TIMESTAMP, now);
-                cr.update(msg, values, selectionOutgoing, null);
+                MessageUpdater.forMessage(getContext(), id, false)
+                    .setStatus(Messages.STATUS_SENT, now)
+                    .setServerTimestamp(now)
+                    .commit();
             }
 
             // remove the packet from the waiting list

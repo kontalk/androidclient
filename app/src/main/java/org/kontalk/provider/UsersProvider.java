@@ -1098,7 +1098,7 @@ public class UsersProvider extends ContentProvider {
 
         // FIXME this won't work on new threads
         return context.getContentResolver().update(MyMessages.Threads.Requests.CONTENT_URI,
-            values, MyMessages.CommonColumns.PEER + "=?",
+            values, MyMessages.Threads.PEER + "=?",
             new String[] { jid });
     }
 

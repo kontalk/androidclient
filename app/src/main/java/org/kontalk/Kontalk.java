@@ -45,7 +45,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
-import org.kontalk.provider.MessagesProvider;
+import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.NetworkStateReceiver;
@@ -228,7 +228,7 @@ public class Kontalk extends Application {
                         if (pushMgr != null && pushMgr.isServiceAvailable())
                             pushMgr.unregister(PushServiceManager.getDefaultListener());
                         // delete all messages
-                        MessagesProvider.deleteDatabase(Kontalk.this);
+                        MessagesProviderClient.deleteDatabase(Kontalk.this);
                         // invalidate cached personal key
                         invalidatePersonalKey();
                     }
@@ -240,7 +240,7 @@ public class Kontalk extends Application {
         }
         else {
             // ensure everything is cleared up
-            MessagesProvider.deleteDatabase(Kontalk.this);
+            MessagesProviderClient.deleteDatabase(Kontalk.this);
         }
 
         // enable/disable components

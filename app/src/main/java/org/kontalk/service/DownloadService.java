@@ -39,7 +39,6 @@ import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -57,6 +56,7 @@ import org.kontalk.crypto.DecryptException;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.provider.Keyring;
+import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
@@ -319,12 +319,8 @@ public class DownloadService extends IntentService implements DownloadListener {
             }
         }
 
-        // update messages.localUri
-        if (values == null)
-            values = new ContentValues(1);
-        values.put(Messages.ATTACHMENT_LOCAL_URI, uri.toString());
-        getContentResolver().update(ContentUris
-            .withAppendedId(Messages.CONTENT_URI, mMessageId), values, null, null);
+        // mark file as downloaded
+        MessagesProviderClient.downloaded(this, mMessageId, uri);
 
         // update media store
         MediaStorage.scanFile(this, destination, mime);

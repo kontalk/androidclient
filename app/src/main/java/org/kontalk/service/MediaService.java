@@ -28,8 +28,8 @@ import android.os.Bundle;
 
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.ImageComponent;
-import org.kontalk.provider.MessagesProvider;
-import org.kontalk.provider.MessagesProviderUtils;
+import org.kontalk.provider.MessagesProviderClient;
+import org.kontalk.provider.MessagesProviderClient.MessageUpdater;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.MediaStorage;
@@ -64,7 +64,6 @@ public class MediaService extends IntentService {
     }
 
     private void onPrepareMessage(Uri uri, Bundle args) {
-        String msgId = args.getString(CompositeMessage.MSG_SERVER_ID);
         long databaseId = args.getLong(CompositeMessage.MSG_ID);
         String mime = args.getString(CompositeMessage.MSG_MIME);
         boolean media = args.getBoolean("org.kontalk.message.media", false);
@@ -98,14 +97,16 @@ public class MediaService extends IntentService {
                 length = MediaStorage.getLength(this, uri);
             }
 
-            MessagesProviderUtils.updateMedia(this, databaseId,
+            MessagesProviderClient.updateMedia(this, databaseId,
                 previewFile != null ? previewFile.toString() : null,
                 uri, length);
 
             MessageCenterService.sendMedia(this, databaseId);
         }
         catch (Exception e) {
-            MessagesProvider.changeMessageStatus(this, databaseId, MyMessages.Messages.STATUS_ERROR);
+            MessageUpdater.forMessage(this, databaseId)
+                .setStatus(MyMessages.Messages.STATUS_ERROR)
+                .commit();
             // TODO notify error in some way?
         }
     }

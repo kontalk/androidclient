@@ -28,19 +28,7 @@ import org.kontalk.BuildConfig;
 public final class MyMessages {
     private MyMessages() {}
 
-    public interface CommonColumns extends BaseColumns {
-        public static final String PEER = "peer";
-        public static final String DIRECTION = "direction";
-        public static final String TIMESTAMP = "timestamp";
-        public static final String UNREAD = "unread";
-        public static final String NEW = "new";
-        public static final String STATUS_CHANGED = "status_changed";
-        public static final String STATUS = "status";
-        public static final String MESSAGE_ID = "msg_id";
-        public static final String ENCRYPTED = "encrypted";
-    }
-
-    public static final class Messages implements CommonColumns {
+    public static final class Messages implements BaseColumns {
         private Messages() {}
 
         public static final Uri CONTENT_URI = Uri.parse("content://"
@@ -72,16 +60,22 @@ public final class MyMessages {
 
         /**
          * Builds a message {@link Uri}.
+         * @param id the message local database id
+         * @return a new message {@link Uri}
+         */
+        public static Uri getUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+
+        /**
+         * Builds a message {@link Uri}.
          * @param msgId the message id
          * @return a new message {@link Uri}
          */
         public static Uri getUri(String msgId) {
-            return Uri.parse("content://"
-                    + MessagesProvider.AUTHORITY + "/messages/" + Uri.encode(msgId));
-        }
-
-        public static Uri getUri(long databaseId) {
-            return ContentUris.withAppendedId(CONTENT_URI, databaseId);
+            return CONTENT_URI.buildUpon()
+                .appendPath(msgId)
+                .build();
         }
 
         public static final class Fulltext implements BaseColumns {
@@ -98,6 +92,16 @@ public final class MyMessages {
         private static final String ITEM_TYPE = BuildConfig.APPLICATION_ID + ".message";
         public static final String CONTENT_TYPE = "vnd.android.cursor.dir/" + ITEM_TYPE;
         public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/" + ITEM_TYPE;
+
+        public static final String PEER = "peer";
+        public static final String DIRECTION = "direction";
+        public static final String TIMESTAMP = "timestamp";
+        public static final String UNREAD = "unread";
+        public static final String NEW = "new";
+        public static final String STATUS_CHANGED = "status_changed";
+        public static final String STATUS = "status";
+        public static final String MESSAGE_ID = "msg_id";
+        public static final String ENCRYPTED = "encrypted";
 
         public static final String THREAD_ID = "thread_id";
         public static final String SERVER_TIMESTAMP = "server_timestamp";
@@ -137,7 +141,7 @@ public final class MyMessages {
     }
 
     /** Threads are just for conversations metadata. */
-    public static final class Threads implements CommonColumns {
+    public static final class Threads implements BaseColumns {
         private Threads() {}
 
         public static final Uri CONTENT_URI = Uri.parse("content://"
@@ -181,6 +185,16 @@ public final class MyMessages {
         private static final String ITEM_TYPE = BuildConfig.APPLICATION_ID + ".thread";
         public static final String CONTENT_TYPE = "vnd.android.cursor.dir/" + ITEM_TYPE;
         public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/" + ITEM_TYPE;
+
+        public static final String PEER = "peer";
+        public static final String DIRECTION = "direction";
+        public static final String TIMESTAMP = "timestamp";
+        public static final String UNREAD = "unread";
+        public static final String NEW = "new";
+        public static final String STATUS_CHANGED = "status_changed";
+        public static final String STATUS = "status";
+        public static final String MESSAGE_ID = "msg_id";
+        public static final String ENCRYPTED = "encrypted";
 
         public static final String MIME = "mime";
         public static final String CONTENT = "content";
@@ -228,7 +242,7 @@ public final class MyMessages {
         }
 
         public static final String GROUP_JID = "group_jid";
-        public static final String PEER = "group_" + CommonColumns.PEER;
+        public static final String PEER = "group_" + Messages.PEER;
         public static final String THREAD_ID = Messages.THREAD_ID;
         public static final String GROUP_TYPE = "group_type";
         public static final String SUBJECT = "subject";

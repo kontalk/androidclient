@@ -26,8 +26,10 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
 
+import org.kontalk.Log;
 import org.kontalk.crypto.Coder;
 import org.kontalk.message.LocationComponent;
 import org.kontalk.message.TextComponent;
@@ -43,7 +45,7 @@ import org.kontalk.util.Preferences;
  * Utility class for interacting with the {@link MessagesProvider}.
  * @author Daniele Ricci
  */
-public class MessagesProviderUtils {
+public class MessagesProviderClient {
 
     private static final String[] LATEST_THREADS_PROJ = {
         Threads._ID,
@@ -53,7 +55,7 @@ public class MessagesProviderUtils {
     public static final int LATEST_THREADS_COLUMN_ID = 0;
     public static final int LATEST_THREADS_COLUMN_PEER = 1;
 
-    private MessagesProviderUtils() {
+    private MessagesProviderClient() {
     }
 
     /** Checks if the message lives. */
@@ -163,6 +165,23 @@ public class MessagesProviderUtils {
                 Messages.CONTENT_URI, values);
     }
 
+    public static Uri newIncomingMessage(Context context, ContentValues values) {
+        try {
+            return context.getContentResolver().insert(MyMessages.Messages.CONTENT_URI, values);
+        } catch (SQLiteConstraintException econstr) {
+            // duplicated message, skip it
+            return null;
+        }
+    }
+
+    public static Uri newChatRequest(Context context, String jid) {
+        ContentValues values = new ContentValues(2);
+        values.put(Threads.PEER, jid);
+        values.put(Threads.TIMESTAMP, System.currentTimeMillis());
+        return context.getContentResolver()
+            .insert(Threads.Requests.CONTENT_URI, values);
+    }
+
     /** Returns the thread associated with the given message. */
     public static long getThreadByMessage(Context context, Uri message) {
         Cursor c = context.getContentResolver().query(message,
@@ -179,6 +198,20 @@ public class MessagesProviderUtils {
         }
     }
 
+    /** Returns the thread associated with the given peer. */
+    public static long findThread(Context context, String peer) {
+        long threadId = 0;
+        Cursor cp = context.getContentResolver().query(MyMessages.Messages.CONTENT_URI,
+            new String[] { MyMessages.Messages.THREAD_ID }, MyMessages.Messages.PEER
+                + " = ?", new String[] { peer }, null);
+        if (cp != null) {
+            if (cp.moveToFirst())
+                threadId = cp.getLong(0);
+            cp.close();
+        }
+        return threadId;
+    }
+
     public static int updateDraft(Context context, long threadId, String draft) {
         ContentValues values = new ContentValues(1);
         if (draft != null && draft.length() > 0)
@@ -190,22 +223,168 @@ public class MessagesProviderUtils {
             values, null, null);
     }
 
+    public static boolean deleteDatabase(Context ctx) {
+        try {
+            ContentResolver c = ctx.getContentResolver();
+            c.delete(Threads.Conversations.CONTENT_URI, null, null);
+            return true;
+        }
+        catch (Exception e) {
+            Log.e(MessagesProvider.TAG, "error during database delete!", e);
+            return false;
+        }
+    }
+
+    /**
+     * Marks all messages of the given thread as read.
+     * @param context used to request a {@link ContentResolver}
+     * @param id the thread id
+     * @return the number of rows affected in the messages table
+     */
+    public static int markThreadAsRead(Context context, long id) {
+        ContentResolver c = context.getContentResolver();
+        ContentValues values = new ContentValues(2);
+        values.put(Messages.UNREAD, Boolean.FALSE);
+        values.put(Messages.NEW, Boolean.FALSE);
+        return c.update(Messages.CONTENT_URI, values,
+                Messages.THREAD_ID + " = ? AND " +
+                Messages.UNREAD + " <> 0 AND " +
+                Messages.DIRECTION + " = " + Messages.DIRECTION_IN,
+                new String[] { String.valueOf(id) });
+    }
+
+    /**
+     * Marks all messages as read.
+     * @param context used to request a {@link ContentResolver}
+     * @return the number of rows affected in the messages table
+     */
+    public static int markAllThreadsAsRead(Context context) {
+        ContentResolver c = context.getContentResolver();
+        ContentValues values = new ContentValues(1);
+        values.put(Messages.NEW, Boolean.FALSE);
+        values.put(Messages.UNREAD, Boolean.FALSE);
+        return c.update(Messages.CONTENT_URI, values,
+            Messages.UNREAD + " <> 0 AND " +
+                Messages.DIRECTION + " = " + Messages.DIRECTION_IN,
+            null);
+    }
+
+    public static int markThreadAsOld(Context context, long id) {
+        ContentResolver c = context.getContentResolver();
+        ContentValues values = new ContentValues(1);
+        values.put(Messages.NEW, Boolean.FALSE);
+        return c.update(Messages.CONTENT_URI, values,
+            Messages.THREAD_ID + " = ? AND " +
+            Messages.NEW + " <> 0 AND " +
+            Messages.DIRECTION + " = " + Messages.DIRECTION_IN,
+            new String[] { String.valueOf(id) });
+    }
+
+    /**
+     * Marks all messages as old.
+     * @param context used to request a {@link ContentResolver}
+     * @return the number of rows affected in the messages table
+     */
+    public static int markAllThreadsAsOld(Context context) {
+        ContentResolver c = context.getContentResolver();
+        ContentValues values = new ContentValues(1);
+        values.put(Messages.NEW, Boolean.FALSE);
+        return c.update(Messages.CONTENT_URI, values,
+                Messages.NEW + " <> 0 AND " +
+                Messages.DIRECTION + " = " + Messages.DIRECTION_IN,
+                null);
+    }
+
+    public static final class MessageUpdater {
+        private Uri mUri;
+        private ContentResolver mClient;
+        private ContentValues mValues;
+        private String mWhere;
+
+        public static MessageUpdater forMessage(Context context, long id) {
+            return new MessageUpdater(context, Messages.getUri(id));
+        }
+
+        public static MessageUpdater forMessage(Context context, String id, boolean incoming) {
+            MessageUpdater u = new MessageUpdater(context, Messages.getUri(id));
+            if (incoming)
+                u.incomingOnly();
+            else
+                u.outgoingOnly();
+            return u;
+        }
+
+        private MessageUpdater(Context context, Uri uri) {
+            mUri = uri;
+            mClient = context.getContentResolver();
+            mValues = new ContentValues();
+        }
+
+        public MessageUpdater setStatus(int status) {
+            mValues.put(Messages.STATUS, status);
+            return this;
+        }
+
+        public MessageUpdater setStatus(int status, long timestamp) {
+            setStatus(status);
+            mValues.put(Messages.STATUS_CHANGED, timestamp);
+            return this;
+        }
+
+        public MessageUpdater setServerTimestamp(long timestamp) {
+            mValues.put(Messages.SERVER_TIMESTAMP, timestamp);
+            return this;
+        }
+
+        private void outgoingOnly() {
+            mWhere = Messages.DIRECTION + "=" + Messages.DIRECTION_OUT;
+        }
+
+        private void incomingOnly() {
+            mWhere = Messages.DIRECTION + "=" + Messages.DIRECTION_IN;
+        }
+
+        public void commit() {
+            mClient.update(mUri, mValues, mWhere, null);
+        }
+
+        public void clear() {
+            mValues.clear();
+        }
+    }
+
     /**
      * Fills a media message with preview file and local uri, for use e.g.
      * after compressing. Also updates the message status to SENDING.
      */
-    public static int updateMedia(Context context, long id, String previewFile, Uri localUri, long length) {
+    public static void updateMedia(Context context, long id, String previewFile, Uri localUri, long length) {
         ContentValues values = new ContentValues(3);
         values.put(Messages.ATTACHMENT_PREVIEW_PATH, previewFile);
         values.put(Messages.ATTACHMENT_LOCAL_URI, localUri.toString());
         values.put(Messages.ATTACHMENT_LENGTH, length);
         values.put(Messages.STATUS, Messages.STATUS_SENDING);
-        return context.getContentResolver().update(ContentUris
+        context.getContentResolver().update(ContentUris
             .withAppendedId(Messages.CONTENT_URI, id), values, null, null);
     }
 
-    public static int deleteMessage(Context context, long id) {
-        return context.getContentResolver().delete(ContentUris
+    /** Set the fetch URL of a media message, marking it as uploaded. */
+    public static void uploaded(Context context, long msgId, String fetchUrl) {
+        ContentValues values = new ContentValues(1);
+        values.put(Messages.ATTACHMENT_FETCH_URL, fetchUrl);
+        context.getContentResolver().update(Messages.CONTENT_URI, values,
+            Messages._ID + " = " + msgId, null);
+    }
+
+    /** Set the local Uri of a media message, marking it as downloaded. */
+    public static void downloaded(Context context, long msgId, Uri localUri) {
+        ContentValues values = new ContentValues(1);
+        values.put(Messages.ATTACHMENT_LOCAL_URI, localUri.toString());
+        context.getContentResolver().update(ContentUris
+            .withAppendedId(Messages.CONTENT_URI, msgId), values, null, null);
+    }
+
+    public static void deleteMessage(Context context, long id) {
+        context.getContentResolver().delete(ContentUris
             .withAppendedId(Messages.CONTENT_URI, id), null, null);
     }
 
@@ -216,10 +395,10 @@ public class MessagesProviderUtils {
             .build(), null, null) > 0);
     }
 
-    public static int setThreadSticky(Context context, long id, boolean sticky) {
+    public static void setThreadSticky(Context context, long id, boolean sticky) {
         ContentValues values = new ContentValues(1);
         values.put(Threads.STICKY, sticky);
-        return context.getContentResolver().update(
+        context.getContentResolver().update(
             ContentUris.withAppendedId(Threads.CONTENT_URI, id),
             values, null, null);
     }
@@ -298,7 +477,7 @@ public class MessagesProviderUtils {
         values.put(Groups.GROUP_JID, groupJid);
 
         // create new conversation
-        long threadId = MessagesProviderUtils.insertEmptyThread(context, groupJid, draft);
+        long threadId = insertEmptyThread(context, groupJid, draft);
 
         values.put(Groups.THREAD_ID, threadId);
         values.put(Groups.SUBJECT, subject);

@@ -58,8 +58,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.LocationComponent;
-import org.kontalk.provider.MessagesProviderUtils.GroupThreadContent;
-import org.kontalk.provider.MyMessages.CommonColumns;
+import org.kontalk.provider.MessagesProviderClient.GroupThreadContent;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
@@ -89,15 +88,15 @@ public class MessagingNotification {
     private static final String[] MESSAGES_UNREAD_PROJECTION =
     {
         Messages.THREAD_ID,
-        CommonColumns.PEER,
+        Messages.PEER,
         Messages.BODY_MIME,
         Messages.BODY_CONTENT,
         Messages.ATTACHMENT_MIME,
         Messages.GEO_LATITUDE,
-        CommonColumns.ENCRYPTED,
+        Messages.ENCRYPTED,
         Groups.GROUP_JID,
         Groups.SUBJECT,
-        CommonColumns.TIMESTAMP,
+        Messages.TIMESTAMP,
     };
 
     // mapped to MESSAGES_UNREAD_PROJECTION
@@ -114,15 +113,15 @@ public class MessagingNotification {
 
     private static final String[] THREADS_UNREAD_PROJECTION =
     {
-        CommonColumns._ID,
-        CommonColumns.PEER,
+        Threads._ID,
+        Threads.PEER,
         Threads.MIME,
         Threads.CONTENT,
-        CommonColumns.ENCRYPTED,
-        CommonColumns.UNREAD,
+        Threads.ENCRYPTED,
+        Threads.UNREAD,
         Groups.GROUP_JID,
         Groups.SUBJECT,
-        CommonColumns.TIMESTAMP,
+        Threads.TIMESTAMP,
     };
 
     // mapped to THREADS_UNREAD_PROJECTION
@@ -137,8 +136,8 @@ public class MessagingNotification {
     private static final int COLUMN_THREADS_TIMESTAMP = 8;
 
     private static final String MESSAGES_UNREAD_SELECTION =
-        CommonColumns.NEW + " <> 0 AND " +
-        CommonColumns.DIRECTION + " = " + Messages.DIRECTION_IN;
+        Messages.NEW + " <> 0 AND " +
+        Messages.DIRECTION + " = " + Messages.DIRECTION_IN;
 
     /** Pending delayed notification update flag. */
     @SuppressWarnings("WeakerAccess")
@@ -248,7 +247,7 @@ public class MessagingNotification {
         // is there a peer to not notify for?
         final String paused = sPaused;
         if (paused != null) {
-            query += " AND " + CommonColumns.PEER + " <> ? AND " +
+            query += " AND " + Messages.PEER + " <> ? AND " +
                 "(" + Groups.GROUP_JID + " IS NULL OR " + Groups.GROUP_JID + " <> ?)";
             args = new String[] { paused, paused };
         }

@@ -44,8 +44,7 @@ import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PGPUserID;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.Keyring;
-import org.kontalk.provider.MyMessages.CommonColumns;
-import org.kontalk.provider.MyMessages.Threads.Requests;
+import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.provider.UsersProvider;
@@ -217,10 +216,7 @@ class PresenceListener extends MessageCenterPacketListener {
             Contact.invalidate(from);
 
             // insert request into the database
-            values.clear();
-            values.put(CommonColumns.PEER, from);
-            values.put(CommonColumns.TIMESTAMP, System.currentTimeMillis());
-            if (cr.insert(Requests.CONTENT_URI, values) != null) {
+            if (MessagesProviderClient.newChatRequest(ctx, from) != null) {
                 // fire up a notification
                 MessagingNotification.chatInvitation(ctx, from);
             }

@@ -50,7 +50,7 @@ import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.KontalkGroupCommands;
-import org.kontalk.provider.MessagesProvider;
+import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.msgcenter.MessageCenterService;
@@ -207,7 +207,7 @@ public class ConversationsActivity extends MainActivity
             @Override
             public void run() {
                 // mark all messages as old
-                MessagesProvider.markAllThreadsAsOld(context);
+                MessagesProviderClient.markAllThreadsAsOld(context);
                 // update notification
                 MessagingNotification.updateMessagesNotification(context, false);
             }
