@@ -689,4 +689,9 @@
     <string name="err_storage_denied">Kontalk нужен доступ к внутреннему хранилищу устройства, чтобы сохранять медиа-файлы.
 \nЭто можно разрешить в настройках Android.</string>
 
+    <string name="permission_messages_label">Доступ к сообщениям Kontalk</string>
+    <string name="permission_messages_description">Есть разрешение читать сообщения в базе данных Kontalk и писать в неё</string>
+    <string name="permission_users_label">Доступ к информации о пользователях Kontalk</string>
+    <string name="permission_users_description">Есть разрешение читать и править записи о пользователях и пользовательских ключах в базе данных Kontalk</string>
+
     </resources>
