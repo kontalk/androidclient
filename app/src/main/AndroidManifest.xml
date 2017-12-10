@@ -23,6 +23,12 @@
 
     <!-- internal permissions -->
     <permission android:name="${applicationId}.permission.NOTIFICATION_ACTION" android:protectionLevel="signature" />
+    <permission android:name="${applicationId}.permission.MESSAGES" android:protectionLevel="dangerous"
+        android:label="@string/permission_messages_label" android:description="@string/permission_messages_description"
+        android:icon="@mipmap/ic_launcher"/>
+    <permission android:name="${applicationId}.permission.USERS" android:protectionLevel="dangerous"
+        android:label="@string/permission_users_label" android:description="@string/permission_users_description"
+        android:icon="@mipmap/ic_launcher"/>
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -104,12 +110,14 @@
         <!-- Content providers -->
         <provider android:name=".provider.MessagesProvider"
             android:exported="true"
-            android:permission="android.permission.BIND_CHOOSER_TARGET_SERVICE"
+            android:readPermission="android.permission.BIND_CHOOSER_TARGET_SERVICE"
+            android:writePermission="${applicationId}.permission.MESSAGES"
             android:authorities="${applicationId}.messages"/>
 
         <provider android:name=".provider.UsersProvider"
             android:exported="true"
-            android:permission="android.permission.BIND_CHOOSER_TARGET_SERVICE"
+            android:readPermission="android.permission.BIND_CHOOSER_TARGET_SERVICE"
+            android:writePermission="${applicationId}.permission.USERS"
             android:authorities="${applicationId}.users"/>
 
         <!-- Broadcast receivers -->

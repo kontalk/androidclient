@@ -658,6 +658,11 @@
 
     <string name="err_storage_denied">Kontalk needs access to local storage to store media.\nYou can allow access to storage from Android settings.</string>
 
+    <string name="permission_messages_label">Access to Kontalk messages</string>
+    <string name="permission_messages_description">Can read from and write to the Kontalk messages database</string>
+    <string name="permission_users_label">Access to Kontalk users information</string>
+    <string name="permission_users_description">Can read from and write to the Kontalk users database and keyring</string>
+
     <plurals name="confirm_will_delete_threads">
         <item quantity="one">The selected chat will be deleted.</item>
         <item quantity="other">The selected chats will be deleted.</item>
