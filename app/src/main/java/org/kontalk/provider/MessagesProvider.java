@@ -98,11 +98,11 @@ public class MessagesProvider extends ContentProvider {
     private static HashMap<String, String> groupsMembersProjectionMap;
     private static HashMap<String, String> groupsProjectionMap;
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    @VisibleForTesting
     static class DatabaseHelper extends SQLiteOpenHelper {
-        @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+        @VisibleForTesting
         static final int DATABASE_VERSION = 16;
-        @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+        @VisibleForTesting
         static final String DATABASE_NAME = "messages.db";
 
         private static final String _SCHEMA_MESSAGES = "(" +
@@ -395,11 +395,8 @@ public class MessagesProvider extends ContentProvider {
             "ALTER TABLE messages ADD COLUMN in_reply_to INTEGER",
         };
 
-        private Context mContext;
-
-        protected DatabaseHelper(Context context) {
+        DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
-            mContext = context;
         }
 
         @Override
