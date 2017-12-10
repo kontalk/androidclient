@@ -685,4 +685,16 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
 
     <string name="reply_message_deleted">Zpráva byla smazána.</string>
 
+    <string name="err_location_permission">Přístup do umístění byl odmítnut.</string>
+    <string name="err_audio_record_permission">Přístup k mikrofonu byl odmítnut.</string>
+    <string name="err_audio_record_writing_permission">Přístup k externí paměti byl odmítnut.</string>
+    <string name="err_validation_contacts_denied">Aby mohl Kontalk správně fungovat, potřebuje mít přístup ke kontaktům. Jak by jinak mohl znát lidi, se kterými můžete chatovat??
+\nBudete dotázáni znovu po dokončení registrace.</string>
+    <string name="err_contacts_denied">Aby mohl Kontalk správně fungovat, potřebuje mít přístup ke kontaktům. Jak by jinak mohl znát lidi, se kterými můžete chatovat??
+\nPřístup můžete povolit z nastavení Androidu.</string>
+    <string name="warn_contacts_denied">Zakázali jste přístup ke kontaktům. Neuvidíte zde změny v kontaktech.</string>
+
+    <string name="err_storage_denied">Kontalk potřebuje přístup k lokální paměti, aby mohl ukládat média.
+\nPřístup k k paměti můžete povolit z nastavení Androidu.</string>
+
     </resources>
