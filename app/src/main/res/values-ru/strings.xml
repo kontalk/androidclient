@@ -694,4 +694,5 @@
     <string name="permission_users_label">Доступ к информации о пользователях Kontalk</string>
     <string name="permission_users_description">Есть разрешение читать и править записи о пользователях и пользовательских ключах в базе данных Kontalk</string>
 
+    <string name="open_conversation">Прочитать</string>
     </resources>
