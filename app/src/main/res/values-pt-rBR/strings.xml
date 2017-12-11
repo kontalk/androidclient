@@ -665,4 +665,48 @@ Desabilite a criptografia apenas se o seu contato não posuir uma chave pessoal.
     <string name="register_device_requesting">Solicitando registro…</string>
 
     <string name="import_device_title">Importar conta</string>
+    <string name="err_location_permission">O acesso ao local foi negado.</string>
+    <string name="err_audio_record_permission">O acesso ao microfone foi negado.</string>
+    <string name="err_audio_record_writing_permission">O acesso ao armazenamento externo foi negado.</string>
+    <string name="register_device_nonetwork">A rede não está disponível. Por favor, tente novamente mais tarde.</string>
+    <string name="register_device_offline">O modo desconectado está habilitado.</string>
+
+    <string name="import_device_instructions">Digite os dados solicitados abaixo, da mesma forma que eles aparecem no outro dispositivo.</string>
+    <string name="import_device_hint_account">Número de telefone</string>
+    <string name="import_device_hint_server">Nome do servidor</string>
+    <string name="import_device_hint_token">Código secreto</string>
+    <string name="err_import_device_fill_all">Por favor, preencha todos os campos.</string>
+    <string name="import_device_requesting">Solicitando conta…</string>
+    <string name="import_device_invalid_barcode">Não foi encontrado nenhum dado válido no código de barras.</string>
+    <string name="import_device_scan_screen_title">Escanear código secreto</string>
+    <string name="import_device_btn_scan">Escanear código de barras</string>
+    <string name="import_device_btn_input">Digitar</string>
+    <string name="import_device_message">Abra o Kontalk no outro dispositivo, selecione Menu &gt; Configurações &gt; Manutenção &gt; Registrar dispositivo. Serão exibidos um código secreto e um código de barras representando esse dispositivo.</string>
+
+    <string name="btn_device_overwrite">Eu perdi minha conta antiga ou o meu dispositivo</string>
+    <string name="btn_device_import">Transferir conta</string>
+
+    <string name="contactinfo_activity_title">Informações do contato</string>
+    <string name="contactinfo_last_seen">visto pela última vez %s</string>
+    <string name="contactinfo_phone_number">Número de telefone</string>
+    <string name="contactinfo_fingerprint">Impressão digital</string>
+    <string name="contactinfo_userid">ID do usuário</string>
+
+    <string name="btn_reply_cancel_description">Cancelar a resposta</string>
+    <string name="reply_message_deleted">A mensagem foi excluída.</string>
+
+    <string name="err_validation_contacts_denied">O Kontalk precisa acessar os contatos para funcionar corretamente. Como ele vai saber com quem você pode conversar?
+\nVocê será questionado novamente quando se registrar.</string>
+    <string name="err_contacts_denied">O Kontalk precisa acessar os contatos para funcionar corretamente. Como ele vai saber com quem você pode conversar?
+\nVocê pode permitir o acesso aos contatos a partir das configurações do Android.</string>
+    <string name="warn_contacts_denied">Você negou acesso aos seus contatos. Você não poderá ver as alterações dos contatos aqui.</string>
+
+    <string name="err_storage_denied">O Kontalke precisa acessar o armazenamento local para salvar mídias.
+\nVocê pode permitir o acesso ao armazenamento local a partir das configurações do Android.</string>
+
+    <string name="permission_messages_label">Acesso às mensagens do Kontalk</string>
+    <string name="permission_messages_description">Pode ler e escrever no banco de dados de mensagens do Kontalk</string>
+    <string name="permission_users_label">Acesso às informações de usuários do Kontalk</string>
+    <string name="permission_users_description">Pode ler e escrever no banco de dados e no chaveiro dos usuários</string>
+
     </resources>
