@@ -153,7 +153,7 @@
   <string name="title_invalid_number">Número inválido</string>
   <string name="err_store_message_failed">Não foi possível armazenar a mensagem na caixa de saída.</string>
   <string name="msg_invalid_number">Por favor, insira um número de telefone válido.</string>
-  <string name="msg_invalid_cc">Por favor, insira um código de país válido.</string>
+  <string name="msg_invalid_cc">Por favor, selecione um país.</string>
   <string name="title_invalid_code">Código inválido</string>
   <string name="msg_invalid_code">Por favor, insira um código válido.</string>
   <string name="title_no_name">O seu nome</string>
