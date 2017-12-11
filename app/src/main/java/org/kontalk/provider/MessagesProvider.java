@@ -1050,23 +1050,33 @@ public class MessagesProvider extends ContentProvider {
             // retrieve old data for notifying.
             // This was done because of the update call could make the old where
             // condition not working any more.
+            boolean skipUpdate = false;
             String[] msgIdList = null;
             if (table.equals(TABLE_MESSAGES)) {
                 // preserve a list of the matching messages for notification and
                 // fulltext update later
                 Cursor old = db.query(TABLE_MESSAGES, new String[] { Messages._ID },
                         where, args, null, null, null);
-                msgIdList = new String[old.getCount()];
-                int i = 0;
-                while (old.moveToNext()) {
-                    msgIdList[i] = old.getString(0);
-                    i++;
+                int msgCount = old.getCount();
+                if (msgCount > 0) {
+                    msgIdList = new String[msgCount];
+                    int i = 0;
+                    while (old.moveToNext()) {
+                        msgIdList[i] = old.getString(0);
+                        i++;
+                    }
+                }
+                else {
+                    // will skip update if now message was found (what's the point?)
+                    skipUpdate = true;
                 }
 
                 old.close();
             }
 
-            int rows = db.update(table, values, where, args);
+            int rows = 0;
+            if (!skipUpdate)
+                rows = db.update(table, values, where, args);
 
             // notify change only if rows are actually affected
             if (rows > 0) {
@@ -1094,7 +1104,7 @@ public class MessagesProvider extends ContentProvider {
                     }
 
                     // build new IN where condition
-                    if (msgIdList.length > 0) {
+                    if (msgIdList != null) {    // a non-null array means at least 1 element
                         StringBuilder whereBuilder = new StringBuilder(Messages._ID + " IN (?");
                         for (int i = 1; i < msgIdList.length; i++)
                             whereBuilder.append(",?");
