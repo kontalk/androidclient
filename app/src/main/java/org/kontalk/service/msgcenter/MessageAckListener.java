@@ -34,6 +34,9 @@ import org.kontalk.provider.MyMessages.Messages;
  */
 class MessageAckListener extends MessageCenterPacketListener {
 
+    private static final String SELECTION_SENT_EXCLUDE =
+        Messages.STATUS + " NOT IN (" + Messages.STATUS_RECEIVED + "," + Messages.STATUS_NOTDELIVERED + ")";
+
     public MessageAckListener(MessageCenterService instance) {
         super(instance);
     }
@@ -62,11 +65,16 @@ class MessageAckListener extends MessageCenterPacketListener {
                     .commit();
             }
 
+            // TODO analyze implications of not using outgoingOnly and appendWhere
+            // there is something wrong in the updateThreads() method that makes this not work correctly
+
             if (msgId > 0) {
                 // we have a message awaiting ack from server
                 MessageUpdater.forMessage(getContext(), msgId)
                     .setStatus(Messages.STATUS_SENT, now)
                     .setServerTimestamp(now)
+                    .outgoingOnly()
+                    .appendWhere(SELECTION_SENT_EXCLUDE)
                     .commit();
 
                 // we can now release the message center. Hopefully
@@ -80,6 +88,8 @@ class MessageAckListener extends MessageCenterPacketListener {
                 MessageUpdater.forMessage(getContext(), id, false)
                     .setStatus(Messages.STATUS_SENT, now)
                     .setServerTimestamp(now)
+                    .outgoingOnly()
+                    .appendWhere(SELECTION_SENT_EXCLUDE)
                     .commit();
             }
 
