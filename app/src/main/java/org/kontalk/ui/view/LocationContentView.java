@@ -71,10 +71,10 @@ public class LocationContentView extends RelativeLayout
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mContent = (ImageView) findViewById(R.id.content);
-        mPlaceholder = (TextView) findViewById(R.id.placeholder);
-        mName = (TextView) findViewById(R.id.name);
-        mAddress = (TextView) findViewById(R.id.address);
+        mContent = findViewById(R.id.content);
+        mPlaceholder = findViewById(R.id.placeholder);
+        mName = findViewById(R.id.name);
+        mAddress = findViewById(R.id.address);
     }
 
     @Override

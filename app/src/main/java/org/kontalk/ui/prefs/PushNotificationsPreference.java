@@ -74,7 +74,7 @@ public class PushNotificationsPreference extends CheckBoxPreference implements V
     @Override
     protected void onBindView(View view) {
         super.onBindView(view);
-        SwitchCompat checkbox = (SwitchCompat) view.findViewById(android.R.id.checkbox);
+        SwitchCompat checkbox = view.findViewById(android.R.id.checkbox);
         checkbox.setOnClickListener(this);
     }
 

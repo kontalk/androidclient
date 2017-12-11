@@ -60,9 +60,9 @@ public class AvatarMessageTheme extends BaseMessageTheme implements Contact.Cont
     public View inflate(ViewStub stub) {
         View view = super.inflate(stub);
 
-        mBalloonView = (LinearLayout) view.findViewById(R.id.balloon_view);
+        mBalloonView = view.findViewById(R.id.balloon_view);
 
-        mAvatar = (CircleContactBadge) view.findViewById(R.id.avatar);
+        mAvatar = view.findViewById(R.id.avatar);
 
         mHandler = new Handler();
 

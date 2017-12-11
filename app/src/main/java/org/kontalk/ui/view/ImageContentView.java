@@ -72,8 +72,8 @@ public class ImageContentView extends FrameLayout
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mContent = (ImageView) findViewById(R.id.content);
-        mPlaceholder = (TextView) findViewById(R.id.placeholder);
+        mContent = findViewById(R.id.content);
+        mPlaceholder = findViewById(R.id.placeholder);
     }
 
     @Override

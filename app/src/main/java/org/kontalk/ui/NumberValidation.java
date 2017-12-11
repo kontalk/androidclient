@@ -231,10 +231,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         final Intent intent = getIntent();
         mFromInternal = intent.getBooleanExtra(PARAM_FROM_INTERNAL, false);
 
-        mNameText = (EditText) findViewById(R.id.name);
-        mCountryCode = (Spinner) findViewById(R.id.phone_cc);
-        mPhone = (EditText) findViewById(R.id.phone_number);
-        mValidateButton = (Button) findViewById(R.id.button_validate);
+        mNameText = findViewById(R.id.name);
+        mCountryCode = findViewById(R.id.phone_cc);
+        mPhone = findViewById(R.id.phone_number);
+        mValidateButton = findViewById(R.id.button_validate);
 
         // populate country codes
         final CountryCodesAdapter ccList = new CountryCodesAdapter(this,

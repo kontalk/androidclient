@@ -82,10 +82,10 @@ public class AudioContentView extends RelativeLayout
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mPlayButton = (ImageButton) findViewById(R.id.balloon_audio_player);
-        mSeekBar = (SeekBar) findViewById(R.id.balloon_audio_seekbar);
-        mDownloadButton = (ImageView) findViewById(R.id.balloon_audio_download);
-        mTime = (TextView) findViewById(R.id.balloon_audio_time);
+        mPlayButton = findViewById(R.id.balloon_audio_player);
+        mSeekBar = findViewById(R.id.balloon_audio_seekbar);
+        mDownloadButton = findViewById(R.id.balloon_audio_download);
+        mTime = findViewById(R.id.balloon_audio_time);
 
         if (isInEditMode()) {
             mDownloadButton.setVisibility(GONE);

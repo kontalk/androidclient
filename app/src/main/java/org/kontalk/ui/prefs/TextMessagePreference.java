@@ -29,7 +29,7 @@ public class TextMessagePreference extends Preference {
     @Override
     protected View onCreateView(ViewGroup parent) {
         View view = super.onCreateView(parent);
-        TextView textView = (TextView) view.findViewById(android.R.id.title);
+        TextView textView = view.findViewById(android.R.id.title);
         textView.setSingleLine(false);
         textView.setMaxLines(Integer.MAX_VALUE);
         textView.setMovementMethod(LinkMovementMethod.getInstance());

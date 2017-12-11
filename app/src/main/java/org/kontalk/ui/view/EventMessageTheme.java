@@ -56,7 +56,7 @@ public class EventMessageTheme implements MessageListItemTheme {
         mContext = stub.getContext();
         mInflater = LayoutInflater.from(mContext);
 
-        mContent = (MessageContentLayout) view.findViewById(R.id.content);
+        mContent = view.findViewById(R.id.content);
         return view;
     }
 

@@ -59,10 +59,10 @@ public class AboutActivity extends ToolbarActivity {
 
         AboutPagerAdapter adapter = new AboutPagerAdapter(getSupportFragmentManager());
 
-        ViewPager pager = (ViewPager) findViewById(R.id.pager);
+        ViewPager pager = findViewById(R.id.pager);
         pager.setAdapter(adapter);
 
-        TabLayout tabs = (TabLayout) findViewById(R.id.sliding_tabs);
+        TabLayout tabs = findViewById(R.id.sliding_tabs);
         tabs.setupWithViewPager(pager);
 
         Intent intent = getIntent();

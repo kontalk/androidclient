@@ -67,9 +67,9 @@ public class SendLocationRow extends RelativeLayout {
 
         setBackgroundColor(ContextCompat.getColor(getContext(), android.R.color.white));
 
-        mImageView = (ImageView) findViewById(R.id.image);
-        mTitleTextView = (TextView) findViewById(R.id.title);
-        mAccurateTextView = (TextView) findViewById(R.id.accurate);
+        mImageView = findViewById(R.id.image);
+        mTitleTextView = findViewById(R.id.title);
+        mAccurateTextView = findViewById(R.id.accurate);
 
     }
 

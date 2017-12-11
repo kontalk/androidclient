@@ -68,7 +68,7 @@ public class PasswordInputDialog {
             mContext = context;
             setCustomView(prompt1, prompt2);
         }
-        
+
         public Builder setMinLength(int length) {
             mMinLength = length;
             return this;
@@ -147,8 +147,8 @@ public class PasswordInputDialog {
             View view = LayoutInflater.from(mContext)
                 .inflate(R.layout.password_dialog, null, false);
 
-            mPassword1 = (EditText) view.findViewById(R.id.password1);
-            mPassword2 = (EditText) view.findViewById(R.id.password2);
+            mPassword1 = view.findViewById(R.id.password1);
+            mPassword2 = view.findViewById(R.id.password2);
 
             if (prompt1 > 0)
                 ((TextView) view.findViewById(R.id.prompt1)).setText(prompt1);

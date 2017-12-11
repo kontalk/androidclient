@@ -98,11 +98,11 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         setContentView(R.layout.code_validation_screen);
         setupToolbar(true, false);
 
-        mCode = (EditText) findViewById(R.id.validation_code);
-        mButton = (Button) findViewById(R.id.send_button);
-        mFallbackButton = (Button) findViewById(R.id.fallback_button);
-        mCallButton = (Button) findViewById(R.id.code_validation_call);
-        mProgress = (ProgressBar) findViewById(R.id.progressbar);
+        mCode = findViewById(R.id.validation_code);
+        mButton = findViewById(R.id.send_button);
+        mFallbackButton = findViewById(R.id.fallback_button);
+        mCallButton = findViewById(R.id.code_validation_call);
+        mProgress = findViewById(R.id.progressbar);
 
         // configuration change??
         RetainData data = (RetainData) getLastCustomNonConfigurationInstance();
@@ -133,7 +133,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
             String sender = i.getStringExtra("sender");
             boolean canFallback = i.getBooleanExtra("canFallback", false);
 
-            final TextView phoneText = (TextView) findViewById(R.id.code_validation_phone);
+            final TextView phoneText = findViewById(R.id.code_validation_phone);
             String formattedPhone;
             try {
                 PhoneNumberUtil util = PhoneNumberUtil.getInstance();
@@ -241,9 +241,9 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
 
             final View brandParent = findViewById(R.id.brand_parent);
             brandParent.setVisibility(View.VISIBLE);
-            final ProgressBar brandProgress = (ProgressBar) findViewById(R.id.brand_loading);
+            final ProgressBar brandProgress = findViewById(R.id.brand_loading);
             brandProgress.setVisibility(View.VISIBLE);
-            final ImageView brandView = (ImageView) findViewById(R.id.brand);
+            final ImageView brandView = findViewById(R.id.brand);
             brandView.setVisibility(View.VISIBLE);
 
             Glide.with(this)
@@ -256,7 +256,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                         brandView.setVisibility(View.GONE);
                         brandProgress.setVisibility(View.GONE);
                         if (brandLink != null) {
-                            TextView brandTextView = (TextView) findViewById(R.id.brand_text);
+                            TextView brandTextView = findViewById(R.id.brand_text);
                             brandTextView.setText(brandLink);
                             brandTextView.setVisibility(View.VISIBLE);
                         }

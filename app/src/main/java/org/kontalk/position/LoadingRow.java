@@ -67,8 +67,8 @@ public class LoadingRow extends FrameLayout {
 
         setBackgroundColor(ContextCompat.getColor(getContext(), android.R.color.white));
 
-        mProgressBar = (MaterialProgressBar) findViewById(R.id.progress_bar);
-        mText = (TextView) findViewById(R.id.text);
+        mProgressBar = findViewById(R.id.progress_bar);
+        mText = findViewById(R.id.text);
 
     }
 

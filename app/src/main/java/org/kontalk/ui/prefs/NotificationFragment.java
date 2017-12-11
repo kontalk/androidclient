@@ -94,7 +94,7 @@ public class NotificationFragment extends RootPreferenceFragment {
                 };
 
                 try {
-                    new ColorChooserDialog.Builder((BasePreferencesActivity) getActivity(),
+                    new ColorChooserDialog.Builder(getActivity(),
                         R.string.pref_notification_led_color)
                         .customColors(ledColors, null)
                         .preselect(Preferences.getNotificationLEDColor(getContext()))

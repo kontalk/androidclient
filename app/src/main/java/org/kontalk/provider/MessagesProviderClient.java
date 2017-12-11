@@ -254,6 +254,24 @@ public class MessagesProviderClient {
     }
 
     /**
+     * Marks all messages of the given thread as read.
+     * @param context used to request a {@link ContentResolver}
+     * @param peer the thread peer
+     * @return the number of rows affected in the messages table
+     */
+    public static int markThreadAsRead(Context context, String peer) {
+        ContentResolver c = context.getContentResolver();
+        ContentValues values = new ContentValues(2);
+        values.put(Messages.UNREAD, Boolean.FALSE);
+        values.put(Messages.NEW, Boolean.FALSE);
+        return c.update(Messages.CONTENT_URI, values,
+            Messages.PEER + " = ? AND " +
+                Messages.UNREAD + " <> 0 AND " +
+                Messages.DIRECTION + " = " + Messages.DIRECTION_IN,
+            new String[] { peer });
+    }
+
+    /**
      * Marks all messages as read.
      * @param context used to request a {@link ContentResolver}
      * @return the number of rows affected in the messages table

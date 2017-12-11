@@ -58,7 +58,7 @@ public class StatusFragment extends ListFragment implements View.OnClickListener
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.status_fragment, container, false);
 
-        mStatus = (EditText) view.findViewById(android.R.id.input);
+        mStatus = view.findViewById(android.R.id.input);
         // TODO retrieve current status from server?
         mStatus.setText(Preferences.getStatusMessage());
 

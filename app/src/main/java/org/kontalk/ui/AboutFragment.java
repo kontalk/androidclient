@@ -46,7 +46,7 @@ public class AboutFragment extends Fragment implements OnClickListener {
 
         Context parent = getActivity();
         if (parent != null) {
-            TextView txtVersion = (TextView) view.findViewById(R.id.version);
+            TextView txtVersion = view.findViewById(R.id.version);
             txtVersion.setText(SystemUtils.getVersionFullName(parent));
         }
 

@@ -47,4 +47,17 @@
         -->
         <item name="colorAccent">@color/app_accent</item>
     </style>
+
+    <style name="Theme.Light.QuickReplyDialog" parent="Theme.AppCompat.Light.Dialog">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/app_primary</item>
+        <item name="colorPrimaryDark">@color/app_primary_dark</item>
+        <!-- not working pre-Lollipop
+        <item name="android:textColorPrimary">#212121</item>
+        <item name="android:textColorSecondary">#727272</item>
+        -->
+        <item name="colorAccent">@color/app_accent</item>
+    </style>
+
 </resources>
