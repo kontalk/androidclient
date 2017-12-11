@@ -673,4 +673,21 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
     <string name="btn_reply_cancel_description">Cancel·la la resposta</string>
     <string name="reply_message_deleted">S\'ha suprimit el missatge.</string>
 
+    <string name="err_location_permission">S\'ha denegat l\'accés a la ubicació.</string>
+    <string name="err_audio_record_permission">S\'ha denegat l\'accés al micròfon.</string>
+    <string name="err_audio_record_writing_permission">S\'ha denegat l\'accés a emmagatzematge extern.</string>
+    <string name="err_validation_contacts_denied">Kontalk necessita accés als contactes per funcionar correctament. Com podria reconèixer la gent amb la qual fa xats??
+\nSe us tornarà a demanar un cop s\'acabi el registre.</string>
+    <string name="err_contacts_denied">Kontalk necessita accés als contactes per funcionar correctament. Com podria reconèixer la gent amb la qual fa xats??
+\nPodeu permetre l\'accés als contactes des de la configuració d\'Android.</string>
+    <string name="warn_contacts_denied">Has negat l\'accés als contactes. Aquí no podreu veure els canvis dels contactes.</string>
+
+    <string name="err_storage_denied">Kontalk necessita accés a l\'emmagatzematge local per emmagatzemar els suports.
+\nPodeu permetre l\'accés a l\'emmagatzematge des de la configuració d\'Android.</string>
+
+    <string name="permission_messages_label">Accés als missatges de Kontalk</string>
+    <string name="permission_messages_description">Podeu llegir i escriure a la base de dades de missatges Kontalk</string>
+    <string name="permission_users_label">Accés a la informació dels usuaris de Kontalk</string>
+    <string name="permission_users_description">Podeu llegir i escriure a la base de dades i a l\'anell de claus d\'usuaris de Kontalk</string>
+
     </resources>
