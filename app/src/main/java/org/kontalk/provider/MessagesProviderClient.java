@@ -26,6 +26,7 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
 
@@ -354,12 +355,19 @@ public class MessagesProviderClient {
             return this;
         }
 
-        private void outgoingOnly() {
-            mWhere = Messages.DIRECTION + "=" + Messages.DIRECTION_OUT;
+        public MessageUpdater appendWhere(String where) {
+            mWhere = DatabaseUtils.concatenateWhere(mWhere, where);
+            return this;
         }
 
-        private void incomingOnly() {
+        public MessageUpdater outgoingOnly() {
+            mWhere = Messages.DIRECTION + "=" + Messages.DIRECTION_OUT;
+            return this;
+        }
+
+        public MessageUpdater incomingOnly() {
             mWhere = Messages.DIRECTION + "=" + Messages.DIRECTION_IN;
+            return this;
         }
 
         public void commit() {
