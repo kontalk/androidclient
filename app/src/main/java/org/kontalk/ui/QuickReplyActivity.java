@@ -18,56 +18,54 @@
 
 package org.kontalk.ui;
 
-import java.io.IOException;
-import java.util.Random;
-
-import android.app.Activity;
-import android.app.PendingIntent;
-import android.app.PendingIntent.CanceledException;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDiskIOException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.kontalk.Log;
+import org.kontalk.Kontalk;
 import org.kontalk.R;
-import org.kontalk.data.Contact;
-import org.kontalk.provider.MyMessages.Messages;
-import org.kontalk.util.Preferences;
+import org.kontalk.data.Conversation;
+import org.kontalk.provider.MessagesProviderClient;
+import org.kontalk.reporting.ReportingManager;
 
 
-public class QuickReplyActivity extends Activity {
-    private static final String TAG = QuickReplyActivity.class.getSimpleName();
+public class QuickReplyActivity extends ToolbarActivity {
 
-    private TextView mFrom;
+    private static final String EXTRA_THREAD_ID = "org.kontalk.quickreply.THREAD_ID";
+    private static final String EXTRA_MESSAGE = "org.kontalk.quickreply.MESSAGE";
+
     private TextView mContent;
     private EditText mContentEdit;
-    private Button mReply;
-    private PendingIntent mOpenConv;
+    private ImageButton mReply;
 
-    private String userId;
-    private String userString;
-    private Contact mContact;
+    private Conversation mConversation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.quick_reply);
 
-        mFrom = findViewById(R.id.from);
+        setupToolbar(false, false);
+
         mContent = findViewById(R.id.content);
         mContentEdit = findViewById(R.id.content_editor);
         mReply = findViewById(R.id.reply);
 
         processIntent();
+    }
+
+    @Override
+    protected boolean isNormalUpNavigation() {
+        return false;
     }
 
     @Override
@@ -78,18 +76,23 @@ public class QuickReplyActivity extends Activity {
 
     private void processIntent() {
         Intent intent = getIntent();
-        Log.v(TAG, "processing intent: " + intent);
 
-        userId = intent.getStringExtra("org.kontalk.quickreply.FROM");
-        mContact = Contact.findByUserId(this, userId);
+        long threadId = intent.getLongExtra(EXTRA_THREAD_ID, 0);
+        mConversation = Conversation.loadFromId(this, threadId);
+        if (mConversation == null) {
+            // deleted or else
+            finish();
+        }
+        else {
+            String content = intent.getStringExtra(EXTRA_MESSAGE);
 
-        mOpenConv = intent.getParcelableExtra("org.kontalk.quickreply.OPEN_INTENT");
-        userString = (mContact != null) ? mContact.getName() + "<" + mContact.getNumber() + ">" : getString(R.string.peer_unknown);
-        // TODO i18n
-        mFrom.setText("From: " + userString);
+            String title = mConversation.isGroupChat() ?
+                mConversation.getGroupSubject() : mConversation.getContact().getDisplayName();
+            setTitle(title);
 
-        String content = intent.getStringExtra("org.kontalk.quickreply.MESSAGE");
-        mContent.setText(content);
+            // TODO show senders when in group
+            mContent.setText(content);
+        }
     }
 
     public void reply(View view) {
@@ -98,29 +101,25 @@ public class QuickReplyActivity extends Activity {
             sendTextMessage(mContentEdit.getText().toString());
         }
         else {
-            // TODO i18n
-            mFrom.setText("To: " + userString);
+            mReply.setImageResource(R.drawable.ic_menu_send);
             mContent.setVisibility(View.GONE);
             mContentEdit.setVisibility(View.VISIBLE);
             mContentEdit.requestFocus();
         }
     }
 
-    public void close(View view) {
+    public void markRead(View view) {
+        MessagesProviderClient.markThreadAsRead(this, mConversation.getRecipient());
+        MessagingNotification.delayedUpdateMessagesNotification(this, false);
         finish();
     }
 
-    public void delete(View view) {
-        // TODO
-    }
-
     public void openConversation(View view) {
-        try {
-            mOpenConv.send();
-        }
-        catch (CanceledException e) {
-            Log.e(TAG, "intent canceled!", e);
-        }
+        // update draft
+        MessagesProviderClient.updateDraft(this, mConversation.getThreadId(),
+            mContentEdit.getText().toString());
+        // open conversation (draft will appear)
+        startActivity(ComposeMessage.fromConversation(this, mConversation.getThreadId()));
         finish();
     }
 
@@ -128,7 +127,6 @@ public class QuickReplyActivity extends Activity {
         mContentEdit.setEnabled(enabled);
         mReply.setEnabled(enabled);
     }
-
 
     private final class TextMessageThread extends Thread {
         private final String mText;
@@ -139,48 +137,32 @@ public class QuickReplyActivity extends Activity {
 
         @Override
         public void run() {
-            final Context ctx = QuickReplyActivity.this;
+            final Context context = QuickReplyActivity.this;
             try {
-                // get encryption key if needed
-                String key = null;
-                if (Preferences.getEncryptionEnabled(ctx)) {
-                    // use recipient phone number
-                    key = Contact.numberByUserId(ctx, userId);
-                }
+                Uri newMsg = Kontalk.getMessagesController(context)
+                    .sendTextMessage(mConversation, mText, 0);
 
-                byte[] bytes = mText.getBytes();
-
-                // save to local storage
-                ContentValues values = new ContentValues();
-                // must supply a message ID...
-                values.put(Messages.MESSAGE_ID, "draft" + (new Random().nextInt()));
-                values.put(Messages.PEER, userId);
-                //values.put(Messages.MIME, PlainTextMessage.MIME_TYPE);
-                //values.put(Messages.CONTENT, bytes);
-                values.put(Messages.UNREAD, false);
-                values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
-                values.put(Messages.TIMESTAMP, System.currentTimeMillis());
-                values.put(Messages.STATUS, Messages.STATUS_SENDING);
-                //values.put(Messages.ENCRYPT_KEY, key);
-                //values.put(Messages.LENGTH, bytes.length);
-                Uri newMsg = ctx.getContentResolver().insert(
-                        Messages.CONTENT_URI, values);
                 if (newMsg != null) {
-                    // TODO send the message!
-                }
-                else {
-                    throw new IOException();
+                    // mark as read and finish
+                    markRead(null);
                 }
             }
-            catch (Exception e) {
-                // whatever
-                Log.d(TAG, "broken message thread", e);
+            catch (SQLiteDiskIOException e) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(ctx,
-                            R.string.error_store_outbox, Toast.LENGTH_LONG).show();
-                        enableEditing(true);
+                        Toast.makeText(context, R.string.error_store_outbox,
+                            Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+            catch (Exception e) {
+                ReportingManager.logException(e);
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        Toast.makeText(context,
+                            R.string.err_store_message_failed,
+                            Toast.LENGTH_LONG).show();
                     }
                 });
             }
@@ -201,6 +183,14 @@ public class QuickReplyActivity extends Activity {
             imm.hideSoftInputFromWindow(mContentEdit.getWindowToken(),
                     InputMethodManager.HIDE_IMPLICIT_ONLY);
         }
+    }
+
+    public static Intent getStartIntent(Context context, long threadId, String content) {
+        Intent i = new Intent(context, QuickReplyActivity.class);
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        i.putExtra(EXTRA_THREAD_ID, threadId);
+        i.putExtra(EXTRA_MESSAGE, content);
+        return i;
     }
 
 }

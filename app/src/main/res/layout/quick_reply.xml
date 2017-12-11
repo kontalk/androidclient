@@ -2,84 +2,81 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="180dp"
-    tools:ignore="HardcodedText">
+    android:layout_height="220dp">
 
-    <TextView
-        android:id="@+id/from"
+    <include android:id="@+id/toolbar" layout="@layout/toolbar_simple"/>
+
+    <TextView android:id="@+id/content"
+        style="?attr/textAppearanceLargePopupMenu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/buttonbox"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/toolbar"
+        android:layout_margin="14dp"
+        android:maxLines="3"
+        android:ellipsize="end"
+        android:gravity="top|center_horizontal"
+        tools:text="Lorem ipsus has suffered great losses. He will be punished for that!" />
+
+    <EditText android:id="@+id/content_editor"
+        style="?attr/textAppearanceLargePopupMenu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/buttonbox"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/toolbar"
+        android:layout_margin="10dp"
+        android:visibility="gone"
+        android:gravity="top|start"
+        android:maxLines="3"
+        android:inputType="textShortMessage|textAutoCorrect|textCapSentences|textMultiLine" />
+
+    <LinearLayout android:id="@+id/buttonbox"
+        style="?attr/buttonBarStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginBottom="10dp"
-        android:layout_marginTop="5dp"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:scrollHorizontally="true"
-        android:text="From: Daniele Ricci &lt;+39555123456&gt;" />
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true">
 
-    <TextView
-        android:id="@+id/content"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/buttonbox"
-        android:layout_alignLeft="@+id/from"
-        android:layout_alignRight="@+id/from"
-        android:layout_below="@+id/from"
-        android:text="Lorem ipsus has suffered great losses. He will be punished for that!" />
-
-    <EditText
-        android:id="@+id/content_editor"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/buttonbox"
-        android:layout_alignLeft="@+id/from"
-        android:layout_alignRight="@+id/from"
-        android:layout_below="@+id/from"
-        android:visibility="gone"
-        android:gravity="top|left"
-        android:inputType="textShortMessage|textAutoCorrect|textCapSentences|textMultiLine" />
-
-    <LinearLayout
-        android:id="@+id/buttonbox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignRight="@+id/content"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp" >
-
-        <Button android:id="@+id/reply"
+        <ImageButton android:id="@+id/reply"
+            style="?attr/buttonBarButtonStyle"
+            android:contentDescription="@string/reply"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:onClick="reply"
-            android:text="Reply" />
+            android:tint="?attr/colorPrimaryDark"
+            android:src="@drawable/ic_menu_reply"/>
 
-        <Button
+        <ImageButton
+            style="?attr/buttonBarButtonStyle"
+            android:contentDescription="@string/mark_read"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:onClick="close"
-            android:text="Later" />
+            android:onClick="markRead"
+            android:tint="?attr/colorPrimaryDark"
+            android:src="@drawable/ic_menu_check" />
 
-        <Button
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:onClick="delete"
-            android:text="Delete" />
-
-        <Button
+        <ImageButton
+            style="?attr/buttonBarButtonStyle"
+            android:contentDescription="@string/open_conversation"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:onClick="openConversation"
-            android:text="Open" />
+            android:tint="?attr/colorPrimaryDark"
+            android:src="@drawable/ic_menu_open"/>
     </LinearLayout>
 
 </RelativeLayout>

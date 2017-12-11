@@ -465,6 +465,11 @@ public class MessagingNotification {
                 this.content = content;
                 this.timestamp = timestamp;
             }
+
+            @Override
+            public String toString() {
+                return content.toString();
+            }
         }
 
         final List<ConversationMessage> content;
@@ -753,6 +758,8 @@ public class MessagingNotification {
 
                     ((NotificationCompat.MessagingStyle) style)
                         .addMessage(message.content, message.timestamp, name);
+                    if (allContent.length() > 0)
+                        allContent.append("\n");
                     allContent.append(message);
                 }
 
@@ -820,7 +827,7 @@ public class MessagingNotification {
                 // text
                 text = (unread > 1) ?
                     mContext.getResources().getQuantityString(R.plurals.unread_messages, unread, unread)
-                    : allContent;
+                    : last;
 
                 // mark as read pending intent
                 // TODO this should also be used for messages from a single group
@@ -842,6 +849,16 @@ public class MessagingNotification {
                         .addRemoteInput(NotificationActionReceiver.buildReplyInput(mContext))
                         .build()
                     );
+                }
+                else {
+                    // pending intent will start a the quick reply dialog
+                    long firstThreadId = ContentUris.parseId(firstThreadUri);
+                    Intent replyIntent = QuickReplyActivity.getStartIntent(mContext, firstThreadId, allContent.toString());
+                    PendingIntent replyPendingIntent = PendingIntent
+                        .getActivity(mContext, 0, replyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                    // reply action
+                    mBuilder.addAction(R.drawable.ic_menu_reply, mContext.getString(R.string.reply), replyPendingIntent);
                 }
 
                 mBuilder.addAction(R.drawable.ic_menu_check, mContext.getString(R.string.mark_read), readPendingIntent);

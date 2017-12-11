@@ -326,19 +326,12 @@
             android:theme="@style/Theme.Light.Dialog"
             android:label="@string/contactinfo_activity_title" />
 
-        <!--
         <activity android:name=".ui.QuickReplyActivity"
             android:windowSoftInputMode="stateAlwaysVisible|adjustPan"
             android:launchMode="singleInstance"
             android:taskAffinity=""
             android:excludeFromRecents="true"
-            android:theme="@android:style/Theme.Dialog">
-            // this is just for testing
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-            </intent-filter>
-        </activity>
-         -->
+            android:theme="@style/Theme.Light.QuickReplyDialog"/>
 
     </application>
 </manifest>
