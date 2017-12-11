@@ -78,9 +78,9 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     static final String EXTRA_CREATING_GROUP = "org.kontalk.CREATING_GROUP";
 
     /** The SEND intent. */
-    private Intent sendIntent;
+    private Intent mSendIntent;
     /** The SEND intent from direct share. */
-    private Intent directSendIntent;
+    private Intent mDirectSendIntent;
 
     AbstractComposeFragment mFragment;
 
@@ -305,7 +305,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
                     return null;
                 }
                 else {
-                    sendIntent = intent;
+                    mSendIntent = intent;
                     chooseContact();
                     // onActivityResult will handle the rest
                     return null;
@@ -383,7 +383,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
                 startIntent.setAction(ACTION_VIEW_USERID);
                 startIntent.setData(Threads.getUri(userId));
                 startIntent.putExtra(ConversationsActivity.EXTRA_SEND_INTENT,
-                    directShareIntent != null ? directShareIntent : sendIntent);
+                    directShareIntent != null ? directShareIntent : mSendIntent);
                 startActivity(startIntent);
                 finish();
             }
@@ -391,11 +391,11 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
                 onNewIntent(i);
 
                 // process SEND intent if necessary
-                if (sendIntent != null)
+                if (mSendIntent != null)
                     processSendIntent();
                 // otherwise save direct share intent for later
                 else if (directShareIntent != null)
-                    directSendIntent = directShareIntent;
+                    mDirectSendIntent = directShareIntent;
             }
         }
         else {
@@ -483,8 +483,8 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     }
 
     private void processSendIntent() {
-        SendIntentReceiver.processSendIntent(this, sendIntent, mFragment);
-        sendIntent = null;
+        SendIntentReceiver.processSendIntent(this, mSendIntent, mFragment);
+        mSendIntent = null;
     }
 
     @Override
@@ -504,9 +504,9 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     @Override
     protected void onResumeFragments() {
         super.onResumeFragments();
-        if (directSendIntent != null) {
-            SendIntentReceiver.processSendIntent(this, directSendIntent, mFragment);
-            directSendIntent = null;
+        if (mDirectSendIntent != null) {
+            SendIntentReceiver.processSendIntent(this, mDirectSendIntent, mFragment);
+            mDirectSendIntent = null;
         }
     }
 
@@ -543,6 +543,6 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     }
 
     public Intent getSendIntent() {
-        return sendIntent;
+        return mSendIntent;
     }
 }
