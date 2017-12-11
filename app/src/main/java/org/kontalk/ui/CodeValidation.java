@@ -32,7 +32,9 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 
+import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.MenuItem;
@@ -337,8 +339,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     protected void onStart() {
         super.onStart();
         // start a users resync in the meantime
-        // FIXME this is executed in the main thread!!!
-        UsersProvider.resync(this);
+        new UsersResyncTask().execute(getApplicationContext());
     }
 
     @Override
@@ -525,5 +526,14 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     @Override
     public void onPrivateKeyRequestFailed(NumberValidator v, int reason) {
         // not used.
+    }
+
+    private static final class UsersResyncTask extends AsyncTask<Context, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Context... contexts) {
+            UsersProvider.resync(contexts[0]);
+            return null;
+        }
     }
 }
