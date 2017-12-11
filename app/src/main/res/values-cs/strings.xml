@@ -702,4 +702,5 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="permission_users_label">Přístup k informacím o uživatelích Kontalk</string>
     <string name="permission_users_description">Může číst z a zapisovat do databáze uživatelů Kontalk a klíčenky</string>
 
+    <string name="open_conversation">Zobrazit</string>
     </resources>
