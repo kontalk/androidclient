@@ -655,7 +655,7 @@ Desabilite a criptografia apenas se o seu contato não posuir uma chave pessoal.
     <string name="notification_text_service_running">Toque para abrir</string>
 
     <string name="pref_foreground_service">Habilitar serviço em primeiro plano</string>
-    <string name="pref_title_foreground_service">Habilite isso se você quiser que o Kontalk fique ativo em segundo plano quando estiver com poucos recursos. Será exibida uma notificação.</string>
+    <string name="pref_title_foreground_service">Habilite isso se você quiser que o Kontalk fique ativo em segundo plano quando estiver com poucos recursos. Será exibida uma notificação</string>
 
     <string name="pref_register_device">Registrar dispositivo</string>
     <string name="register_device_title">Registrar dispositivo</string>
