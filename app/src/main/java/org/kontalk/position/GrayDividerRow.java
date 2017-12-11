@@ -64,7 +64,7 @@ public class GrayDividerRow extends FrameLayout {
 
         setBackgroundColor(ContextCompat.getColor(getContext(), R.color.gray_background));
 
-        mTextView = (TextView) findViewById(R.id.text);
+        mTextView = findViewById(R.id.text);
     }
 
     @Override

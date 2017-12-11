@@ -72,13 +72,13 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mFromView = (TextView) findViewById(R.id.from);
-        mSubjectView = (TextView) findViewById(R.id.subject);
+        mFromView = findViewById(R.id.from);
+        mSubjectView = findViewById(R.id.subject);
 
-        mDateView = (TextView) findViewById(R.id.date);
-        mSticky = (ImageView) findViewById(R.id.sticky);
-        mErrorIndicator = (ImageView) findViewById(R.id.error);
-        mCounterView = (TextView) findViewById(R.id.counter);
+        mDateView = findViewById(R.id.date);
+        mSticky = findViewById(R.id.sticky);
+        mErrorIndicator = findViewById(R.id.error);
+        mCounterView = findViewById(R.id.counter);
 
         if (isInEditMode()) {
             mFromView.setText("Test zio");

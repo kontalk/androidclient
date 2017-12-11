@@ -137,7 +137,7 @@ public class CountryCodesAdapter extends BaseAdapter {
         View view;
         if (convertView == null) {
             view = mInflater.inflate(mDropdownViewId, parent, false);
-            textView = (CheckedTextView) view.findViewById(android.R.id.text1);
+            textView = view.findViewById(android.R.id.text1);
             view.setTag(textView);
         }
         else {
@@ -165,7 +165,7 @@ public class CountryCodesAdapter extends BaseAdapter {
         View view;
         if (convertView == null) {
             view = mInflater.inflate(mViewId, parent, false);
-            textView = (TextView) view.findViewById(android.R.id.text1);
+            textView = view.findViewById(android.R.id.text1);
             view.setTag(textView);
         }
         else {

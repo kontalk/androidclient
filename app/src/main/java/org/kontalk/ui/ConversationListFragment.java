@@ -91,7 +91,7 @@ public class ConversationListFragment extends ListFragment
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mAction = (FloatingActionMenu) view.findViewById(R.id.action);
+        mAction = view.findViewById(R.id.action);
         mAction.setClosedOnTouchOutside(true);
         mActionVisible = true;
 
@@ -303,7 +303,7 @@ public class ConversationListFragment extends ListFragment
                     Context ctx = getContext();
                     boolean promptCheckBoxChecked = false;
                     if (hasGroupCheckbox) {
-                        CheckBox promptCheckbox = (CheckBox) dialog
+                        CheckBox promptCheckbox = dialog
                             .getCustomView().findViewById(R.id.promptCheckbox);
                         promptCheckBoxChecked = promptCheckbox.isChecked();
                     }
@@ -325,11 +325,11 @@ public class ConversationListFragment extends ListFragment
             .setText(getResources().getQuantityString(R.plurals.confirm_will_delete_threads, checkedCount));
 
         if (addGroupCheckbox) {
-            TextView text2 = (TextView) dialog.getCustomView().findViewById(android.R.id.text2);
+            TextView text2 = dialog.getCustomView().findViewById(android.R.id.text2);
             text2.setText(R.string.delete_threads_groups_disclaimer);
             text2.setVisibility(View.VISIBLE);
 
-            CheckBox promptCheckbox = (CheckBox) dialog.getCustomView().findViewById(R.id.promptCheckbox);
+            CheckBox promptCheckbox = dialog.getCustomView().findViewById(R.id.promptCheckbox);
             promptCheckbox.setText(getResources()
                 .getQuantityString(R.plurals.delete_threads_leave_groups, checkedCount));
             promptCheckbox.setVisibility(View.VISIBLE);

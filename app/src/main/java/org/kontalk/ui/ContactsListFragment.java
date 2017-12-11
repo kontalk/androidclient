@@ -137,7 +137,7 @@ public class ContactsListFragment extends ListFragment implements
         list.setEmptyView(view.findViewById(android.R.id.empty));
         list.setChoiceMode(mMultiselect ? ListView.CHOICE_MODE_MULTIPLE : ListView.CHOICE_MODE_NONE);
 
-        mRefresher = (SwipeRefreshLayout) view.findViewById(R.id.refresher);
+        mRefresher = view.findViewById(R.id.refresher);
         mRefresher.setEnabled(false);
     }
 

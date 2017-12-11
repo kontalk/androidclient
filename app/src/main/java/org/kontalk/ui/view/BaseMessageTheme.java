@@ -63,10 +63,10 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
         mContext = stub.getContext();
         mInflater = LayoutInflater.from(mContext);
 
-        mContent = (MessageContentLayout) view.findViewById(R.id.content);
-        mStatusIcon = (ImageView) view.findViewById(R.id.status_indicator);
-        mWarningIcon = (ImageView) view.findViewById(R.id.warning_icon);
-        mDateView = (TextView) view.findViewById(R.id.date_view);
+        mContent = view.findViewById(R.id.content);
+        mStatusIcon = view.findViewById(R.id.status_indicator);
+        mWarningIcon = view.findViewById(R.id.warning_icon);
+        mDateView = view.findViewById(R.id.date_view);
 
         return view;
     }

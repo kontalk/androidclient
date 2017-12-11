@@ -48,10 +48,10 @@ public class CreditsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.about_credits, container, false);
 
-        TextView coredevs = (TextView) view.findViewById(R.id.coredevs);
-        TextView contrib = (TextView) view.findViewById(R.id.contrib);
-        TextView gfx = (TextView) view.findViewById(R.id.gfx);
-        TextView translators = (TextView) view.findViewById(R.id.translators);
+        TextView coredevs = view.findViewById(R.id.coredevs);
+        TextView contrib = view.findViewById(R.id.contrib);
+        TextView gfx = view.findViewById(R.id.gfx);
+        TextView translators = view.findViewById(R.id.translators);
 
         InputStream in = null;
         try {

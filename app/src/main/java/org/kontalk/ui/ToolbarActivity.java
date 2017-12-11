@@ -43,7 +43,7 @@ public abstract class ToolbarActivity extends AppCompatActivity {
      * @return the toolbar
      */
     protected Toolbar setupToolbar(boolean home, boolean useUpNavigation) {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         mUseUpNavigation = useUpNavigation;

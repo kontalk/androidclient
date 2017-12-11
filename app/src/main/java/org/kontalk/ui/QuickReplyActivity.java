@@ -62,10 +62,10 @@ public class QuickReplyActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.quick_reply);
 
-        mFrom = (TextView) findViewById(R.id.from);
-        mContent = (TextView) findViewById(R.id.content);
-        mContentEdit = (EditText) findViewById(R.id.content_editor);
-        mReply = (Button) findViewById(R.id.reply);
+        mFrom = findViewById(R.id.from);
+        mContent = findViewById(R.id.content);
+        mContentEdit = findViewById(R.id.content_editor);
+        mReply = findViewById(R.id.reply);
 
         processIntent();
     }

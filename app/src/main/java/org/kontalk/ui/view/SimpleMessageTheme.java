@@ -52,8 +52,8 @@ public class SimpleMessageTheme extends BaseMessageTheme {
     @Override
     public View inflate(ViewStub stub) {
         View view = super.inflate(stub);
-        mBalloonView = (LinearLayout) view.findViewById(R.id.balloon_view);
-        mParentView = (LinearLayout) view.findViewById(R.id.message_view_parent);
+        mBalloonView = view.findViewById(R.id.balloon_view);
+        mParentView = view.findViewById(R.id.message_view_parent);
         return view;
     }
 
