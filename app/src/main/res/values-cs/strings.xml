@@ -697,4 +697,9 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="err_storage_denied">Kontalk potřebuje přístup k lokální paměti, aby mohl ukládat média.
 \nPřístup k k paměti můžete povolit z nastavení Androidu.</string>
 
+    <string name="permission_messages_label">Přístup ke zprávám Kontalk</string>
+    <string name="permission_messages_description">Může číst z a zapisovat do databáze zpráv Kontalk</string>
+    <string name="permission_users_label">Přístup k informacím o uživatelích Kontalk</string>
+    <string name="permission_users_description">Může číst z a zapisovat do databáze uživatelů Kontalk a klíčenky</string>
+
     </resources>
