@@ -152,7 +152,7 @@
   <string name="title_invalid_number">Número non válido</string>
   <string name="err_store_message_failed">Non foi posible almacenar a mensaxe na caixa de saída.</string>
   <string name="msg_invalid_number">Por favor, insire un número de teléfono válido.</string>
-  <string name="msg_invalid_cc">Por favor, insire un código de país válido.</string>
+  <string name="msg_invalid_cc">Por favor, selecciona un país.</string>
   <string name="title_invalid_code">Código non válido</string>
   <string name="msg_invalid_code">Por favor, insire un código válido.</string>
   <string name="title_no_name">O teu nome</string>
@@ -679,5 +679,15 @@ Desactivar a cifraxe só se o contacto non ten unha chave persoal.</string>
     <string name="contactinfo_phone_number">Número de teléfono</string>
     <string name="contactinfo_fingerprint">Impresión dixital</string>
     <string name="contactinfo_userid">ID do usuario</string>
+
+    <string name="open_conversation">Ver</string>
+    <string name="err_location_permission">Non se admitiu o acceso á situación.</string>
+    <string name="err_audio_record_permission">O acceso ao micrófono foi denegado.</string>
+    <string name="err_audio_record_writing_permission">O acceso ao almacenamento externo foi denegado.</string>
+    <string name="register_device_nonetwork">A rede non está dispoñible. Tente de novo máis tarde.</string>
+    <string name="register_device_offline">O modo sen conexión está activado.</string>
+
+    <string name="btn_reply_cancel_description">Cancelar a resposta</string>
+    <string name="reply_message_deleted">Mensaxe eliminada.</string>
 
     </resources>
