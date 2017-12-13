@@ -691,4 +691,6 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
     <string name="permission_users_description">Podeu llegir i escriure a la base de dades i a l\'anell de claus d\'usuaris de Kontalk</string>
 
     <string name="open_conversation">Veure</string>
+    <string name="pref_enable_outgoing_sound">Reproduir so per a missatges sortints</string>
+
     </resources>
