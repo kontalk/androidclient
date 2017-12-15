@@ -94,8 +94,6 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content" />
 
-        <include layout="@layout/composer_bar"/>
-
     </LinearLayout>
 
     <include layout="@layout/circular_attach_view" />
