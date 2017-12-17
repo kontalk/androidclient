@@ -39,12 +39,12 @@ public class SimpleMessageTheme extends BaseMessageTheme {
     private LinearLayout mBalloonView;
     private LinearLayout mParentView;
 
-    public SimpleMessageTheme(int incomingDrawableId, int outgoingDrawableId) {
-        this(R.layout.balloon_base_noavatar, incomingDrawableId, outgoingDrawableId);
+    public SimpleMessageTheme(int incomingDrawableId, int outgoingDrawableId, boolean groupChat) {
+        this(R.layout.balloon_base_noavatar, incomingDrawableId, outgoingDrawableId, groupChat);
     }
 
-    protected SimpleMessageTheme(int layoutId, int incomingDrawableId, int outgoingDrawableId) {
-        super(layoutId);
+    protected SimpleMessageTheme(int layoutId, int incomingDrawableId, int outgoingDrawableId, boolean groupChat) {
+        super(layoutId, groupChat);
         mIncomingDrawableId = incomingDrawableId;
         mOutgoingDrawableId = outgoingDrawableId;
     }

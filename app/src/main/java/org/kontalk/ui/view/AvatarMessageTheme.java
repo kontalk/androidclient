@@ -26,6 +26,7 @@ import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.view.ViewStub;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.kontalk.R;
 import org.kontalk.data.Contact;
@@ -50,8 +51,8 @@ public class AvatarMessageTheme extends BaseMessageTheme implements Contact.Cont
 
     private Handler mHandler;
 
-    public AvatarMessageTheme(int layoutId, int drawableId, boolean messageBlocks) {
-        super(layoutId);
+    public AvatarMessageTheme(int layoutId, int drawableId, boolean messageBlocks, boolean groupChat) {
+        super(layoutId, groupChat);
         mDrawableId = drawableId;
         mMessageBlocks = messageBlocks;
     }
