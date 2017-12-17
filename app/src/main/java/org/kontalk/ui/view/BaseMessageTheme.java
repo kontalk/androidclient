@@ -46,13 +46,18 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
     protected Context mContext;
     protected LayoutInflater mInflater;
 
+    private TextView mContactNameView;
     private MessageContentLayout mContent;
     private ImageView mStatusIcon;
     private ImageView mWarningIcon;
     private TextView mDateView;
 
-    protected BaseMessageTheme(int layoutId) {
+    /** If true, we will show the contact name above the message content. */
+    private final boolean mGroupChat;
+
+    protected BaseMessageTheme(int layoutId, boolean groupChat) {
         mLayoutId = layoutId;
+        mGroupChat = groupChat;
     }
 
     @Override
@@ -63,6 +68,7 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
         mContext = stub.getContext();
         mInflater = LayoutInflater.from(mContext);
 
+        mContactNameView = view.findViewById(R.id.contact_name);
         mContent = view.findViewById(R.id.content);
         mStatusIcon = view.findViewById(R.id.status_indicator);
         mWarningIcon = view.findViewById(R.id.warning_icon);
@@ -123,6 +129,20 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
         // no status icon for incoming messages
         mStatusIcon.setImageDrawable(null);
         mStatusIcon.setVisibility(View.GONE);
+
+        if (mGroupChat) {
+            if (contact != null) {
+                mContactNameView.setText(contact.getDisplayName());
+                mContactNameView.setVisibility(View.VISIBLE);
+            }
+            else {
+                // FIXME awkard situation
+                mContactNameView.setVisibility(View.GONE);
+            }
+        }
+        else {
+            mContactNameView.setVisibility(View.GONE);
+        }
     }
 
     @Override

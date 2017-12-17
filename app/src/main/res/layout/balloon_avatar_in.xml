@@ -17,11 +17,20 @@
  -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/balloon_view"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:gravity="start">
+
+    <TextView android:id="@+id/contact_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:visibility="gone"
+        tools:text="Dev-5554"
+        />
 
     <org.kontalk.ui.view.MessageContentLayout
         android:id="@+id/content"
