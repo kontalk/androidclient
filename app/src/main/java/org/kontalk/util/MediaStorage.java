@@ -166,16 +166,17 @@ public abstract class MediaStorage {
             new String[] { MediaStore.Images.ImageColumns.ORIENTATION }, null, null, null);
 
         if (cursor != null) {
-            cursor.moveToFirst();
-            int orientation = cursor.getInt(0);
-            cursor.close();
+            if (cursor.moveToFirst()) {
+                int orientation = cursor.getInt(0);
 
-            if (orientation != 0) {
-                Matrix m = new Matrix();
-                m.postRotate(orientation);
+                if (orientation != 0) {
+                    Matrix m = new Matrix();
+                    m.postRotate(orientation);
 
-                return m;
+                    return m;
+                }
             }
+            cursor.close();
         }
 
         // method 2: write media contents to a temporary file and run ExifInterface
