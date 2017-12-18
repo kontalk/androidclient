@@ -18,7 +18,10 @@
 
 package org.kontalk.ui.view;
 
+import android.view.View;
+
 import org.kontalk.R;
+import org.kontalk.data.Contact;
 import org.kontalk.provider.MyMessages;
 
 
@@ -52,5 +55,19 @@ public class HangoutMessageTheme extends AvatarMessageTheme {
         else {
             super.setView(false);
         }
+    }
+
+    @Override
+    public void setIncoming(Contact contact, boolean sameMessageBlock) {
+        super.setIncoming(contact, sameMessageBlock);
+
+        // hide contact name if message is in the same block
+        if (mGroupChat && !sameMessageBlock) {
+            mContactNameView.setVisibility(View.VISIBLE);
+        }
+        else {
+            mContactNameView.setVisibility(View.GONE);
+        }
+
     }
 }

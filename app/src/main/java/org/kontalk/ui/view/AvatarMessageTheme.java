@@ -26,7 +26,6 @@ import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.view.ViewStub;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import org.kontalk.R;
 import org.kontalk.data.Contact;

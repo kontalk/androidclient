@@ -46,14 +46,14 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
     protected Context mContext;
     protected LayoutInflater mInflater;
 
-    private TextView mContactNameView;
+    protected TextView mContactNameView;
     private MessageContentLayout mContent;
     private ImageView mStatusIcon;
     private ImageView mWarningIcon;
     private TextView mDateView;
 
     /** If true, we will show the contact name above the message content. */
-    private final boolean mGroupChat;
+    protected final boolean mGroupChat;
 
     protected BaseMessageTheme(int layoutId, boolean groupChat) {
         mLayoutId = layoutId;
