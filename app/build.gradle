@@ -37,9 +37,9 @@ android {
     buildToolsVersion '27.0.1'
 
     defaultConfig {
-        applicationId "org.kontalk"
-        versionCode project.appVersionCode
-        versionName project.appVersionName
+        applicationId project.applicationId
+        versionCode project.versionCode
+        versionName project.versionName
         targetSdkVersion project.targetSdkVersion
         minSdkVersion 15
         resConfigs "en", "de", "fr", "it", "es", "ca", "cs", "el", "fa", "gl", "ja", "nl", "pt", "pt-rBR", "ru", "sr", "zh-rCN", "ar", "hi", "tr", "nb-rNO"
