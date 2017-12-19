@@ -25,8 +25,9 @@ allprojects {
 
     evaluationDependsOn ":client-common-java"
     ext {
-        appVersionCode = 281
-        appVersionName = '4.1.2-next'
+        applicationId = 'org.kontalk'
+        versionCode = 281
+        versionName = '4.1.2-next'
         targetSdkVersion = 23
         compileSdkVersion = 27
         smackVersion = project(':client-common-java').smackVersion
