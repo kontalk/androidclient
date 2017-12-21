@@ -697,4 +697,6 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="permission_users_label">Zugriff auf Kontalk Benutzer-Informationen</string>
     <string name="permission_users_description">Kann aus der Kontalk Benutzer-Datenbank und dem Schlüsselbund lesen und in sie schreiben</string>
 
+    <string name="pref_enable_outgoing_sound">Ton für ausgehenden Nachrichten abspielen</string>
+
     </resources>
