@@ -691,4 +691,10 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="err_storage_denied">Kontalk benötigt Zugriff auf den lokalen Speicher, um Medien zu speichern.
 \nSie können den Speicherzugriff in den Android-Einstellungen zulassen.</string>
 
+    <string name="open_conversation">Anschauen</string>
+    <string name="permission_messages_label">Zugriff auf Kontalk-Nachrichten</string>
+    <string name="permission_messages_description">Kann in die Kontalk Nachrichten-Datenbank schreiben und daraus lesen</string>
+    <string name="permission_users_label">Zugriff auf Kontalk Benutzer-Informationen</string>
+    <string name="permission_users_description">Kann aus der Kontalk Benutzer-Datenbank und dem Schlüsselbund lesen und in sie schreiben</string>
+
     </resources>
