@@ -34,6 +34,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.message.MessageComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages;
+import org.kontalk.util.XMPPUtils;
 
 
 /**
@@ -133,6 +134,7 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
         if (mGroupChat) {
             if (contact != null) {
                 mContactNameView.setText(contact.getDisplayName());
+                mContactNameView.setTextColor(XMPPUtils.getJIDColor(contact.getJID()));
                 mContactNameView.setVisibility(View.VISIBLE);
             }
             else {

@@ -33,6 +33,8 @@ import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.support.annotation.ColorInt;
 
 import org.kontalk.client.EndpointServer;
 
@@ -137,6 +139,22 @@ public class XMPPUtils {
     public static boolean isDomainJID(String jid) {
         return XmppStringUtils.parseDomain(jid)
             .equalsIgnoreCase(jid);
+    }
+
+    /**
+     * Returns a color for the given JID calculated with the rules of XEP-0392
+     * @see <a href="https://xmpp.org/extensions/xep-0392.html">XEP-0392</a>
+     */
+    @ColorInt
+    public static int getJIDColor(String jid) {
+        // TODO get correction from accessibility settings
+        double[] rgb = ConsistentColorGeneration.getRGB(jid,
+            ConsistentColorGeneration.CORRECTION_NONE);
+
+        return Color.argb(0xff,
+            (int) (rgb[0] * 255),
+            (int) (rgb[1] * 255),
+            (int) (rgb[2] * 255));
     }
 
 }

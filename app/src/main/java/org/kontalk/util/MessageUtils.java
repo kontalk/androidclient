@@ -277,7 +277,8 @@ public final class MessageUtils {
         return buf.toString();
     }
 
-    /** TODO move somewhere else */
+    /** @deprecated Use {@link org.jivesoftware.smack.util.SHA1#hex(String)} */
+    @Deprecated
     public static String sha1(String text) {
         MessageDigest md = new SHA1.Digest();
         md.update(text.getBytes(), 0, text.length());
