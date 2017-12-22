@@ -77,7 +77,7 @@ public class MessagesProviderTest extends ProviderTestCase2<MessagesProvider> {
     public void testInsertMessages() {
         String msgId = MessageUtils.messageId();
         Uri msg = MessagesProviderClient.newOutgoingMessage(getMockContext(),
-            msgId, TEST_USERID, "Test message for you", true);
+            msgId, TEST_USERID, "Test message for you", true, 0);
         assertNotNull(msg);
         assertQueryValues(msg,
             Messages.MESSAGE_ID, msgId,
@@ -90,7 +90,7 @@ public class MessagesProviderTest extends ProviderTestCase2<MessagesProvider> {
     public void testDeleteMessage() {
         String msgId = MessageUtils.messageId();
         Uri msg = MessagesProviderClient.newOutgoingMessage(getMockContext(),
-            msgId, TEST_USERID, "Test message for you", true);
+            msgId, TEST_USERID, "Test message for you", true, 0);
         assertNotNull(msg);
         MessagesProviderClient.deleteMessage(getMockContext(), ContentUris.parseId(msg));
         assertQueryCount(msg, 0);
@@ -100,7 +100,7 @@ public class MessagesProviderTest extends ProviderTestCase2<MessagesProvider> {
     public void testDeleteThread() {
         String msgId = MessageUtils.messageId();
         Uri msg = MessagesProviderClient.newOutgoingMessage(getMockContext(),
-            msgId, TEST_USERID, "Test message for you", true);
+            msgId, TEST_USERID, "Test message for you", true, 0);
         assertNotNull(msg);
         long threadId = MessagesProviderClient.getThreadByMessage(getMockContext(), msg);
         assertTrue(threadId > 0);
@@ -169,9 +169,9 @@ public class MessagesProviderTest extends ProviderTestCase2<MessagesProvider> {
     @Test
     public void testEmptyPeer() {
         // from MessagingNotification
-        String query = MyMessages.CommonColumns.NEW + " <> 0 AND " +
-            MyMessages.CommonColumns.DIRECTION + " = " + Messages.DIRECTION_IN +
-            " AND " + MyMessages.CommonColumns.PEER + " <> ? AND " +
+        String query = MyMessages.Threads.NEW + " <> 0 AND " +
+            MyMessages.Threads.DIRECTION + " = " + Messages.DIRECTION_IN +
+            " AND " + MyMessages.Threads.PEER + " <> ? AND " +
             Groups.GROUP_JID + " <> ?";
         String[] args = { "", "" };
         Cursor c = getMockContentResolver().query(Threads.CONTENT_URI, null, query, args, null);
