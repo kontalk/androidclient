@@ -671,4 +671,22 @@
     <string name="btn_reply_cancel_description">Ακύρωση απάντησης</string>
     <string name="reply_message_deleted">Το μήνυμα διεγράφη.</string>
 
+    <string name="open_conversation">Εμφάνιση</string>
+    <string name="err_location_permission">Η πρόσβαση στην τοποθεσία απορρίφθηκε.</string>
+    <string name="err_audio_record_permission">Η πρόσβαση στο μικρόφωνο απορρίφθηκε.</string>
+    <string name="err_audio_record_writing_permission">Η πρόσβαση στον εξωτερικό χώρο αποθήκευσης απορρίφθηκε.</string>
+    <string name="err_validation_contacts_denied">Το Kontalk χρειάζεται πρόσβαση στις επαφές για να λειτουργεί κανονικά. Πως αλλιώς να ξέρει τους ανθρώπους που θέλετε να μιλήσετε μαζί τους;;
+\nΘα ξαναρωτηθείτε μόλις εγγραφείτε.</string>
+    <string name="err_contacts_denied">Το Kontalk χρειάζεται πρόσβαση στις επαφές για να λειτουργεί κανονικά. Πως αλλιώς να ξέρει τους ανθρώπους που θέλετε να μιλήσετε μαζί τους;
+\nΜπορείτε να επιτρέψετε την πρόσβαση στις επαφές σας από τις ρυθμίσεις του Android.</string>
+    <string name="warn_contacts_denied">"Έχεις αρνηθεί την πρόσβαση στις επαφές σου.  Δεν θα μπορείς να βλέπεις τις αλλαγές στις επαφές σου εδώ."</string>
+
+    <string name="err_storage_denied">Το Kontalk χρειάζεται πρόσβαση στον τοπικό αποθηκευτικό χώρο για να αποθηκεύει μέσα.
+\nΜπορείς να επιτρέψεις την πρόσβαση στον αποθηκευτικό χώρο από τις ρυθμίσεις του Android.</string>
+
+    <string name="permission_messages_label">Πρόσβαση στα μηνύματα του Kontalk</string>
+    <string name="permission_messages_description">Μπορεί να διαβάσει και να γράψει στη βάση δεδομένων των μηνυμάτων του Kontalk</string>
+    <string name="permission_users_label">Πρόσβαση στις πληροφορίες χρηστών του Kontalk</string>
+    <string name="permission_users_description">Μπορεί να διαβάσει και να γράψει στη βάση δεδομένων των χρηστών του Kontalk και των κλειδιών του</string>
+
     </resources>
