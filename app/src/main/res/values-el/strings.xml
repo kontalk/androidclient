@@ -689,4 +689,6 @@
     <string name="permission_users_label">Πρόσβαση στις πληροφορίες χρηστών του Kontalk</string>
     <string name="permission_users_description">Μπορεί να διαβάσει και να γράψει στη βάση δεδομένων των χρηστών του Kontalk και των κλειδιών του</string>
 
+    <string name="pref_enable_outgoing_sound">Αναπαραγωγή ήχου για εξερχόμενα μηνύματα</string>
+
     </resources>
