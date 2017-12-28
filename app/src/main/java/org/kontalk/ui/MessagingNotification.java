@@ -40,12 +40,12 @@ import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationCompat.InboxStyle;
 import android.support.v4.app.NotificationCompat.Style;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.app.NotificationCompat;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -65,7 +65,6 @@ import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.NotificationActionReceiver;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
-import org.kontalk.util.SystemUtils;
 
 
 /**
@@ -765,8 +764,6 @@ public class MessagingNotification {
 
                 // name now contains data from the latest message
 
-                PendingIntent callPendingIntent = null;
-
                 // add people data
                 for (String peer : conv.allPeers) {
                     Contact contact = Contact.findByUserId(mContext, peer);
@@ -786,14 +783,6 @@ public class MessagingNotification {
                     if (conv.groupJid == null) {
                         Bitmap avatar = contact.getAvatarBitmap(mContext, true);
                         mBuilder.setLargeIcon(avatar);
-
-                        // phone number for call intent
-                        String phoneNumber = contact.getNumber();
-                        if (phoneNumber != null) {
-                            Intent callIntent = SystemUtils.externalIntent(Intent.ACTION_CALL,
-                                Uri.parse("tel:" + phoneNumber));
-                            callPendingIntent = PendingIntent.getActivity(mContext, 0, callIntent, 0);
-                        }
                     }
                 }
 
@@ -862,8 +851,6 @@ public class MessagingNotification {
                 }
 
                 mBuilder.addAction(R.drawable.ic_menu_check, mContext.getString(R.string.mark_read), readPendingIntent);
-                if (callPendingIntent != null)
-                    mBuilder.addAction(R.drawable.ic_menu_call, mContext.getString(R.string.call), callPendingIntent);
             }
 
             mBuilder.setTicker(ticker);
