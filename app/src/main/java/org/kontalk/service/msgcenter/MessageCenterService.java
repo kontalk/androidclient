@@ -56,6 +56,7 @@ import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.roster.RosterEntry;
 import org.jivesoftware.smack.roster.packet.RosterPacket;
+import org.jivesoftware.smack.sm.StreamManagementException;
 import org.jivesoftware.smack.util.Async;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.caps.packet.CapsExtension;
@@ -161,7 +162,7 @@ import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
-import org.kontalk.util.WakefulHashMap;
+import org.kontalk.util.WakefulHashSet;
 
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_FOREGROUND;
 
@@ -533,9 +534,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private boolean mFirstStart = true;
 
     /**
-     * Messages waiting for server receipt (packetId: internalStorageId).
+     * Messages waiting for server ack (type: internalStorageId).
      */
-    WakefulHashMap<String, Long> mWaitingReceipt;
+    WakefulHashSet<Long> mWaitingReceipt;
 
     private RegenerateKeyPairListener mKeyPairRegenerator;
     private ImportKeyPairListener mKeyPairImporter;
@@ -795,7 +796,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // waiting receipt list
         // also used for keeping the device on while waiting for message delivery
-        mWaitingReceipt = new WakefulHashMap<>(this, PowerManager
+        mWaitingReceipt = new WakefulHashSet<>(10, this, PowerManager
             .PARTIAL_WAKE_LOCK, Kontalk.TAG);
 
         // create the global wake lock
@@ -843,6 +844,36 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private void unregisterInactivity() {
         unregisterReceiver(mInactivityReceiver);
+    }
+
+    boolean sendMessage(org.jivesoftware.smack.packet.Message message, long databaseId) {
+        final KontalkConnection conn = mConnection;
+        if (conn != null) {
+            if (databaseId > 0) {
+                // set up an ack listener so we can set message status to sent
+                try {
+                    conn.addStanzaIdAcknowledgedListener(message.getStanzaId(),
+                        new MessageAckListener(this, databaseId));
+                }
+                catch (StreamManagementException.StreamManagementNotEnabledException e) {
+                    return false;
+                }
+
+                // matching release is in SM ack listener
+                mIdleHandler.hold(false);
+                mWaitingReceipt.add(databaseId);
+            }
+
+            boolean sent = sendPacket(message);
+            if (!sent && databaseId > 0) {
+                // message was not sent, remove from waiting queue
+                mWaitingReceipt.remove(databaseId);
+                mIdleHandler.release();
+            }
+
+            return sent;
+        }
+        return false;
     }
 
     boolean sendPacket(Stanza packet) {
@@ -1816,9 +1847,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // add message ack listener
         if (mConnection.isSmEnabled()) {
-            // FIXME ack listener recreated everytime
-            mConnection.removeAllStanzaAcknowledgedListeners();
-            mConnection.addStanzaAcknowledgedListener(new MessageAckListener(this));
+            mConnection.removeAllStanzaIdAcknowledgedListeners();
         }
         else {
             Log.w(TAG, "stream management not available - disabling delivery receipts");
@@ -2603,7 +2632,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // check if message is already pending3
         final long msgId = data.getLong("org.kontalk.message.msgId");
-        if (mWaitingReceipt.containsValue(msgId)) {
+        if (mWaitingReceipt.contains(msgId)) {
             Log.v(TAG, "message already queued and waiting - dropping");
             return;
         }
@@ -2746,12 +2775,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             originalStanza = m;
             boolean isMessage = (m instanceof org.jivesoftware.smack.packet.Message);
 
-            if (to != null) m.setTo(to);
+            if (to != null)
+                m.setTo(to);
 
             // set message id
             m.setStanzaId(id);
-            if (msgId > 0)
-                mWaitingReceipt.put(id, msgId);
 
             // message server id
             String serverId = isMessage ? data.getString("org.kontalk.message.ack") : null;
@@ -2888,9 +2916,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             .setStatus(Messages.STATUS_PENDING)
                             .commit();
 
-                        // do not send the message
-                        if (msgId > 0)
-                            mWaitingReceipt.remove(id);
                         mIdleHandler.release();
                         return;
                     }
@@ -2921,11 +2946,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     if (ackRequest)
                         DeliveryReceiptRequest.addTo((org.jivesoftware.smack.packet.Message) m);
                 }
-            }
 
-            if (!sendPacket(m) && msgId > 0) {
-                // message was not sent, remove it from the pending queue
-                mWaitingReceipt.remove(id);
+                sendMessage((org.jivesoftware.smack.packet.Message) m, msgId);
+            }
+            else {
+                // no wake lock management in this case
+                sendPacket(m);
             }
 
             // no ack request, release message center immediately

@@ -18,14 +18,13 @@
 
 package org.kontalk.service.msgcenter;
 
-import java.util.Map;
-
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 
 import org.kontalk.provider.MessagesProviderClient.MessageUpdater;
 import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.util.WakefulHashSet;
 
 
 /**
@@ -37,65 +36,47 @@ class MessageAckListener extends MessageCenterPacketListener {
     private static final String SELECTION_SENT_EXCLUDE =
         Messages.STATUS + " NOT IN (" + Messages.STATUS_RECEIVED + "," + Messages.STATUS_NOTDELIVERED + ")";
 
-    public MessageAckListener(MessageCenterService instance) {
+    private final long mDatabaseId;
+
+    public MessageAckListener(MessageCenterService instance, long databaseId) {
         super(instance);
+        mDatabaseId = databaseId;
     }
 
     @Override
     public void processStanza(Stanza packet) {
-        if (!(packet instanceof Message)) {
-            return;
-        }
+        // stanzas coming here are always messages
 
-        Map<String, Long> waitingReceipt = getWaitingReceiptList();
+        WakefulHashSet<Long> waitingReceipt = getWaitingReceiptList();
 
         synchronized (waitingReceipt) {
-            String id = packet.getStanzaId();
-            Long _msgId = waitingReceipt.get(id);
-            long msgId = (_msgId != null) ? _msgId : 0;
-
             long now = System.currentTimeMillis();
 
             DeliveryReceipt receipt = DeliveryReceipt.from((Message) packet);
             if (receipt != null) {
                 // ack received for outgoing delivery receipt
                 // mark message as confirmed
-                MessageUpdater.forMessage(getContext(), msgId)
+                MessageUpdater.forMessage(getContext(), mDatabaseId)
                     .setStatus(Messages.STATUS_CONFIRMED)
                     .commit();
             }
-
-            // TODO analyze implications of not using outgoingOnly and appendWhere
-            // there is something wrong in the updateThreads() method that makes this not work correctly
-
-            if (msgId > 0) {
+            else {
                 // we have a message awaiting ack from server
-                MessageUpdater.forMessage(getContext(), msgId)
+                MessageUpdater.forMessage(getContext(), mDatabaseId)
                     .setStatus(Messages.STATUS_SENT, now)
                     .setServerTimestamp(now)
-                    .outgoingOnly()
-                    .appendWhere(SELECTION_SENT_EXCLUDE)
-                    .commit();
-
-                // we can now release the message center. Hopefully
-                // there will be one hold and one matching release.
-                release();
-            }
-            else if (id != null) {
-                // the user wasn't expecting ack for this message
-                // so we simply update it using the packet id as key
-                // FIXME this could lead to fake acks because message IDs are client-generated
-                MessageUpdater.forMessage(getContext(), id, false)
-                    .setStatus(Messages.STATUS_SENT, now)
-                    .setServerTimestamp(now)
-                    .outgoingOnly()
+                    // this will handle receipts that came before the message was acked by the server
                     .appendWhere(SELECTION_SENT_EXCLUDE)
                     .commit();
             }
 
             // remove the packet from the waiting list
             // this will also release the wake lock
-            waitingReceipt.remove(id);
+            waitingReceipt.remove(mDatabaseId);
+
+            // we can now release the message center. Hopefully
+            // there will be one hold and one matching release.
+            release();
         }
     }
 }
