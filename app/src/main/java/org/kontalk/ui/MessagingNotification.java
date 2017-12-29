@@ -19,7 +19,6 @@
 package org.kontalk.ui;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -43,7 +42,6 @@ import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
-import android.provider.MediaStore;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationCompat.BigPictureStyle;
 import android.support.v4.app.NotificationCompat.InboxStyle;
