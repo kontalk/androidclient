@@ -27,7 +27,6 @@ import java.util.regex.Pattern;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.AttributeSet;
@@ -105,16 +104,9 @@ public class ImageContentView extends FrameLayout
         }
     }
 
-    private BitmapFactory.Options bitmapOptions() {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.RGB_565;
-        return options;
-    }
-
     Bitmap loadPreview(File previewFile) throws IOException {
         InputStream in = new FileInputStream(previewFile);
-        BitmapFactory.Options options = bitmapOptions();
-        Bitmap bitmap = BitmapFactory.decodeStream(in, null, options);
+        Bitmap bitmap = MediaStorage.loadBitmapSimple(in);
         in.close();
         return bitmap;
     }

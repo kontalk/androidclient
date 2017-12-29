@@ -128,11 +128,26 @@ public abstract class MediaStorage {
 
     /** Generates {@link BitmapFactory.Options} for the given {@link InputStream}. */
     public static BitmapFactory.Options preloadBitmap(InputStream in, int scaleWidth, int scaleHeight) {
+        BitmapFactory.Options options = bitmapOptionsDecodeBounds();
+        BitmapFactory.decodeStream(in, null, options);
+        return processOptions(options, scaleWidth, scaleHeight);
+    }
+
+    private static BitmapFactory.Options bitmapOptionsDecodeBounds() {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        BitmapFactory.decodeStream(in, null, options);
+        return options;
+    }
 
-        return processOptions(options, scaleWidth, scaleHeight);
+    private static BitmapFactory.Options bitmapOptions() {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
+        return options;
+    }
+
+    public static Bitmap loadBitmapSimple(InputStream in) {
+        BitmapFactory.Options options = bitmapOptions();
+        return BitmapFactory.decodeStream(in, null, options);
     }
 
     /** Writes a thumbnail of a media to the internal cache. */
@@ -478,8 +493,7 @@ public abstract class MediaStorage {
 
         try {
             // decode image size
-            BitmapFactory.Options o = new BitmapFactory.Options();
-            o.inJustDecodeBounds = true;
+            BitmapFactory.Options o = bitmapOptionsDecodeBounds();
             BitmapFactory.decodeStream(in, null, o);
             in.close();
 

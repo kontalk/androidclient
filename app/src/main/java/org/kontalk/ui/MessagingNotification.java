@@ -18,6 +18,9 @@
 
 package org.kontalk.ui;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -40,8 +43,11 @@ import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
+import android.provider.MediaStore;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationCompat.BigPictureStyle;
 import android.support.v4.app.NotificationCompat.InboxStyle;
+import android.support.v4.app.NotificationCompat.MessagingStyle;
 import android.support.v4.app.NotificationCompat.Style;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.app.TaskStackBuilder;
@@ -57,14 +63,17 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.GroupCommandComponent;
+import org.kontalk.message.ImageComponent;
 import org.kontalk.message.LocationComponent;
 import org.kontalk.provider.MessagesProviderClient.GroupThreadContent;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.NotificationActionReceiver;
+import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.SystemUtils;
 
 
 /**
@@ -91,6 +100,7 @@ public class MessagingNotification {
         Messages.BODY_MIME,
         Messages.BODY_CONTENT,
         Messages.ATTACHMENT_MIME,
+        Messages.ATTACHMENT_PREVIEW_PATH,
         Messages.GEO_LATITUDE,
         Messages.ENCRYPTED,
         Groups.GROUP_JID,
@@ -104,11 +114,12 @@ public class MessagingNotification {
     private static final int COLUMN_MESSAGES_BODY_MIME = 2;
     private static final int COLUMN_MESSAGES_BODY_CONTENT = 3;
     private static final int COLUMN_MESSAGES_ATTACHMENT_MIME = 4;
-    private static final int COLUMN_MESSAGES_GEO_LATITUDE = 5;
-    private static final int COLUMN_MESSAGES_ENCRYPTED = 6;
-    private static final int COLUMN_MESSAGES_GROUP_JID = 7;
-    private static final int COLUMN_MESSAGES_GROUP_SUBJECT = 8;
-    private static final int COLUMN_MESSAGES_TIMESTAMP = 9;
+    private static final int COLUMN_MESSAGES_ATTACHMENT_PREVIEW_PATH = 5;
+    private static final int COLUMN_MESSAGES_GEO_LATITUDE = 6;
+    private static final int COLUMN_MESSAGES_ENCRYPTED = 7;
+    private static final int COLUMN_MESSAGES_GROUP_JID = 8;
+    private static final int COLUMN_MESSAGES_GROUP_SUBJECT = 9;
+    private static final int COLUMN_MESSAGES_TIMESTAMP = 10;
 
     private static final String[] THREADS_UNREAD_PROJECTION =
     {
@@ -286,6 +297,7 @@ public class MessagingNotification {
                 String mime = c.getString(COLUMN_MESSAGES_BODY_MIME);
                 byte[] content = c.getBlob(COLUMN_MESSAGES_BODY_CONTENT);
                 String attMime = c.getString(COLUMN_MESSAGES_ATTACHMENT_MIME);
+                String attPreviewPath = c.getString(COLUMN_MESSAGES_ATTACHMENT_PREVIEW_PATH);
                 boolean encrypted = c.getInt(COLUMN_MESSAGES_ENCRYPTED) != 0;
                 String groupJid = c.getString(COLUMN_MESSAGES_GROUP_JID);
                 String groupSubject = c.getString(COLUMN_MESSAGES_GROUP_SUBJECT);
@@ -298,7 +310,8 @@ public class MessagingNotification {
                 // store conversation id for intents
                 conversationIds.add(ContentUris.withAppendedId(Threads.CONTENT_URI, id));
 
-                ngen.addMessage(peer, mime, content, attMime, encrypted, timestamp, groupJid, groupSubject);
+                Uri attPreview = attPreviewPath != null ? Uri.fromFile(new File(attPreviewPath)) : null;
+                ngen.addMessage(peer, mime, content, attMime, attPreview, encrypted, timestamp, groupJid, groupSubject);
                 latestTimestamp = Math.max(latestTimestamp, timestamp);
             }
             c.close();
@@ -401,7 +414,7 @@ public class MessagingNotification {
             notificationDeleteIntent, PendingIntent.FLAG_UPDATE_CURRENT));
 
         if (isNew) {
-            setDefaults(context, builder);
+            setAlerts(context, builder);
         }
 
         // features (priority, category)
@@ -422,7 +435,8 @@ public class MessagingNotification {
         */
     }
 
-    private static void setDefaults(Context context, NotificationCompat.Builder builder) {
+    /** Adds proper alerts to the notification. */
+    private static void setAlerts(Context context, NotificationCompat.Builder builder) {
         int defaults = 0;
 
         if (Preferences.getNotificationLED(context)) {
@@ -447,10 +461,12 @@ public class MessagingNotification {
         builder.setDefaults(defaults);
     }
 
+    /** High priority message with Kontalk colors :-) */
     private static void setFeatures(Context context, NotificationCompat.Builder builder) {
-        builder.setPriority(NotificationCompat.PRIORITY_HIGH);
-        builder.setCategory(NotificationCompat.CATEGORY_MESSAGE);
-        builder.setColor(ContextCompat.getColor(context, R.color.app_accent));
+        builder
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+            .setColor(ContextCompat.getColor(context, R.color.app_accent));
     }
 
     private static final class NotificationConversation {
@@ -458,11 +474,15 @@ public class MessagingNotification {
             final String peer;
             final CharSequence content;
             final long timestamp;
+            final String mime;
+            final Uri media;
 
-            ConversationMessage(String peer, CharSequence content, long timestamp) {
+            ConversationMessage(String peer, CharSequence content, long timestamp, String mime, Uri media) {
                 this.peer = peer;
                 this.content = content;
                 this.timestamp = timestamp;
+                this.mime = mime;
+                this.media = media;
             }
 
             @Override
@@ -525,8 +545,8 @@ public class MessagingNotification {
         Bitmap avatar = contact.getAvatarBitmap(context, true);
         builder.setLargeIcon(avatar);
 
-        // defaults (sound, vibration, lights)
-        setDefaults(context, builder);
+        // alerts (sound, vibration, lights)
+        setAlerts(context, builder);
         // features (priority, category)
         setFeatures(context, builder);
 
@@ -565,7 +585,7 @@ public class MessagingNotification {
             .setContentIntent(pi);
 
         // defaults (sound, vibration, lights)
-        setDefaults(context, builder);
+        setAlerts(context, builder);
 
         // fire it up!
         NotificationManagerCompat nm = NotificationManagerCompat.from(context);
@@ -583,9 +603,7 @@ public class MessagingNotification {
             NOTIFICATION_ID_FOREGROUND, ni, PendingIntent.FLAG_UPDATE_CURRENT);
 
         // build the notification
-        NotificationCompat.Builder builder = new NotificationCompat
-            .Builder(context.getApplicationContext());
-        builder
+        return new NotificationCompat.Builder(context.getApplicationContext())
             .setOngoing(true)
             .setSmallIcon(R.drawable.ic_stat_notify)
             .setPriority(NotificationCompat.PRIORITY_MIN)
@@ -593,9 +611,8 @@ public class MessagingNotification {
             .setTicker(context.getString(R.string.notification_ticker_service_running))
             .setContentTitle(context.getString(R.string.app_name))
             .setContentText(context.getString(R.string.notification_text_service_running))
-            .setContentIntent(pi);
-
-        return builder.build();
+            .setContentIntent(pi)
+            .build();
     }
 
     /**
@@ -613,7 +630,7 @@ public class MessagingNotification {
             mConversations = new LinkedHashMap<>();
         }
 
-        void addMessage(String peer, String mime, byte[] content, String attMime, boolean encrypted, long timestamp,
+        void addMessage(String peer, String mime, byte[] content, String attMime, Uri attPreview, boolean encrypted, long timestamp,
                 String groupJid, String groupSubject) {
             String key = conversationKey(peer, groupJid);
             NotificationConversation conv = mConversations.get(key);
@@ -644,7 +661,7 @@ public class MessagingNotification {
                 }
             }
 
-            conv.addContent(new NotificationConversation.ConversationMessage(peer, textContent, timestamp));
+            conv.addContent(new NotificationConversation.ConversationMessage(peer, textContent, timestamp, attMime, attPreview));
             conv.lastContent = textContent;
         }
 
@@ -653,17 +670,21 @@ public class MessagingNotification {
         }
 
         /**
-         * Called when everything is set. This will fill the builder.
+         * Call this when all messages are added. We will fill the builder with
+         * relevant information.
+         * @param account account information
+         * @param unread total number of unread messages
+         * @param firstThreadUri Uri of first conversation, used for reply intent
          * @return the number of conversations (i.e. threads) involved
          */
         int build(Account account, int unread, Uri firstThreadUri) {
             int convCount = mConversations.size();
-            Style style;
+            Style style = null;
             CharSequence title, text, ticker;
 
             // more than one conversation - use InboxStyle
             if (convCount > 1) {
-                style = new InboxStyle();
+                InboxStyle inboxStyle = new InboxStyle();
 
                 // ticker: "X unread messages"
                 ticker = mContext.getResources().getQuantityString(R.plurals.unread_messages, unread, unread);
@@ -720,7 +741,7 @@ public class MessagingNotification {
                         // take just the last message
                         buf.append(conv.lastContent);
 
-                        ((InboxStyle) style).addLine(buf);
+                        inboxStyle.addLine(buf);
                     }
                 }
 
@@ -740,7 +761,9 @@ public class MessagingNotification {
                     summary = account.name;
                 }
 
-                ((InboxStyle) style).setSummaryText(summary);
+                inboxStyle.setSummaryText(summary);
+
+                style = inboxStyle;
             }
             // one conversation/one group, use MessagingStyle
             else {
@@ -749,17 +772,54 @@ public class MessagingNotification {
                 StringBuilder allContent = new StringBuilder();
                 CharSequence last = conv.lastContent;
 
+                // single image media, use big picture style
+                NotificationConversation.ConversationMessage soloMessage = content.get(0);
+                if (unread == 1 && soloMessage.media != null && ImageComponent.supportsMimeType(soloMessage.mime)) {
+                    InputStream in = null;
+                    try {
+                        in = mContext.getContentResolver().openInputStream(soloMessage.media);
+                        Bitmap bitmap = MediaStorage.loadBitmapSimple(in);
+
+                        style = new BigPictureStyle()
+                            .bigPicture(bitmap);
+                    }
+                    catch (Exception e) {
+                        // unable to load big picture
+                        // will go on with normal notification
+                    }
+                    finally {
+                        SystemUtils.closeStream(in);
+                    }
+                }
+
                 String name = null;
-                style = new NotificationCompat.MessagingStyle(mContext.getString(R.string.person_me));
-                for (NotificationConversation.ConversationMessage message : content) {
+                if (style == null) {
+                    MessagingStyle msgStyle = new MessagingStyle(mContext.getString(R.string.person_me));
+                    for (NotificationConversation.ConversationMessage message : content) {
+                        Contact contact = Contact.findByUserId(mContext, message.peer);
+                        name = contact.getDisplayName();
+
+                        msgStyle.addMessage(message.content, message.timestamp, name);
+                        if (allContent.length() > 0)
+                            allContent.append("\n");
+                        allContent.append(message);
+                    }
+
+                    // group ticker
+                    if (conv.groupJid != null) {
+                        name = mContext.getResources().getString(R.string.notification_group_title,
+                            name, (TextUtils.isEmpty(conv.groupSubject) ?
+                                mContext.getString(R.string.group_untitled) : conv.groupSubject));
+                        msgStyle.setConversationTitle((TextUtils.isEmpty(conv.groupSubject) ?
+                            mContext.getString(R.string.group_untitled) : conv.groupSubject));
+                    }
+
+                    style = msgStyle;
+                }
+                else {
+                    NotificationConversation.ConversationMessage message = content.get(content.size()-1);
                     Contact contact = Contact.findByUserId(mContext, message.peer);
                     name = contact.getDisplayName();
-
-                    ((NotificationCompat.MessagingStyle) style)
-                        .addMessage(message.content, message.timestamp, name);
-                    if (allContent.length() > 0)
-                        allContent.append("\n");
-                    allContent.append(message);
                 }
 
                 // name now contains data from the latest message
@@ -786,21 +846,11 @@ public class MessagingNotification {
                     }
                 }
 
-                // group avatar
+                // group avatar and ticker
                 if (conv.groupJid != null) {
                     mBuilder.setLargeIcon(MessageUtils
                         .drawableToBitmap(ContextCompat
                             .getDrawable(mContext, R.drawable.ic_default_group)));
-                }
-
-                // ticker
-                if (conv.groupJid != null) {
-                    name = mContext.getResources().getString(R.string.notification_group_title,
-                        name, (TextUtils.isEmpty(conv.groupSubject) ?
-                            mContext.getString(R.string.group_untitled) : conv.groupSubject));
-                    ((NotificationCompat.MessagingStyle) style)
-                        .setConversationTitle((TextUtils.isEmpty(conv.groupSubject) ?
-                            mContext.getString(R.string.group_untitled) : conv.groupSubject));
                 }
 
                 SpannableStringBuilder buf = new SpannableStringBuilder();
