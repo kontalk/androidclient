@@ -110,13 +110,21 @@ public final class MyMessages {
         public static final String BODY_CONTENT = "body_content";
         public static final String BODY_LENGTH = "body_length";
 
+        /** Attachment MIME type. */
         public static final String ATTACHMENT_MIME = "att_mime";
+        /** The path to the local preview file for the attachment. */
         public static final String ATTACHMENT_PREVIEW_PATH = "att_preview_path";
+        /** URL to fetch the attachment from. */
         public static final String ATTACHMENT_FETCH_URL = "att_fetch_url";
+        /** Uri to the original media. */
         public static final String ATTACHMENT_LOCAL_URI = "att_local_uri";
+        /** Attachment size in bytes. */
         public static final String ATTACHMENT_LENGTH = "att_length";
+        /** Compression level to use for outgoing attachments. */
         public static final String ATTACHMENT_COMPRESS = "att_compress";
+        /** Encryption flag for outgoing attachments. */
         public static final String ATTACHMENT_ENCRYPTED = "att_encrypted";
+        /** Security flag for attachments. */
         public static final String ATTACHMENT_SECURITY_FLAGS = "att_security_flags";
 
         public static final String GEO_LATITUDE = "geo_lat";
