@@ -361,10 +361,12 @@ public final class SystemUtils {
 
     /** Closes the given stream, ignoring any errors. */
     public static void closeStream(Closeable stream) {
-        try {
-            stream.close();
-        }
-        catch (Exception ignored) {
+        if (stream != null) {
+            try {
+                stream.close();
+            }
+            catch (Exception ignored) {
+            }
         }
     }
 
