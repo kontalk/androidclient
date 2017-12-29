@@ -21,7 +21,6 @@ package org.kontalk.service.msgcenter;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
-import java.util.Map;
 
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.packet.ExtensionElement;
@@ -198,8 +197,6 @@ class MessageListener extends MessageCenterPacketListener {
     }
 
     private void processChatMessage(Message m) throws SmackException.NotConnectedException {
-        Map<String, Long> waitingReceipt = getWaitingReceiptList();
-
         // delayed deliver extension is the first the be processed
         // because it's used also in delivery receipts
         Date stamp = XMPPUtils.getStanzaDelay(m);
@@ -214,36 +211,9 @@ class MessageListener extends MessageCenterPacketListener {
 
         // delivery receipt
         if (deliveryReceipt != null) {
-            synchronized (waitingReceipt) {
-                String id = m.getStanzaId();
-                Long _msgId = waitingReceipt.get(id);
-                long msgId = (_msgId != null) ? _msgId : 0;
-
-                // FIXME it can happen that a delivery receipt comes before the SM ack (e.g. self messages)
-                // This code like it is now may overwrite the message status
-                // and revert it back to "SENT"
-
-                MessageUpdater updater;
-
-                // message has been delivered: check if we have previously stored the server id
-                if (msgId > 0) {
-                    updater = MessageUpdater.forMessage(getContext(), msgId);
-                }
-                else {
-                    updater = MessageUpdater.forMessage(getContext(),
-                        deliveryReceipt.getId(), false);
-                }
-
-                updater
-                    .setStatus(Messages.STATUS_RECEIVED, System.currentTimeMillis())
-                    .commit();
-
-                // remove the packet from the waiting list
-                // this will also release the wake lock
-                // This has the side effect of releasing the wake lock if
-                // the delivery receipt comes before the SM ack (which is rare)
-                waitingReceipt.remove(id);
-            }
+            MessageUpdater.forMessage(getContext(), deliveryReceipt.getId(), false)
+                .setStatus(Messages.STATUS_RECEIVED, System.currentTimeMillis())
+                .commit();
         }
 
         // incoming message
@@ -487,13 +457,12 @@ class MessageListener extends MessageCenterPacketListener {
 
             if (needAck) {
                 // send ack :)
-                sendReceipt(msgUri, msgId, from, waitingReceipt);
+                sendReceipt(msgUri, msgId, from);
             }
         }
     }
 
     private void processErrorMessage(Message m) {
-        Map<String, Long> waitingReceipt = getWaitingReceiptList();
         DeliveryReceipt deliveryReceipt = DeliveryReceipt.from(m);
 
         // delivery receipt error
@@ -504,56 +473,31 @@ class MessageListener extends MessageCenterPacketListener {
                 .commit();
 
             // send receipt again
-            sendReceipt(null, deliveryReceipt.getId(), m.getFrom(), waitingReceipt);
+            sendReceipt(null, deliveryReceipt.getId(), m.getFrom());
         }
 
-        synchronized (waitingReceipt) {
-            String id = m.getStanzaId();
-            Long _msgId = waitingReceipt.get(id);
-            long msgId = (_msgId != null) ? _msgId : 0;
-
-            // message has been rejected: mark as error
-            if (msgId > 0) {
-                MessageUpdater.forMessage(getContext(), msgId)
-                    .setStatus(Messages.STATUS_NOTDELIVERED, System.currentTimeMillis())
-                    .commit();
-
-                // we can now release the message center. Hopefully
-                // there will be one hold and one matching release.
-                release();
-            }
-            else if (id != null) {
-                // FIXME this could lead to fake delivery receipts because message IDs are client-generated
-                MessageUpdater.forMessage(getContext(), id, false)
-                    .setStatus(Messages.STATUS_NOTDELIVERED, System.currentTimeMillis())
-                    .commit();
-            }
-
-            // remove the packet from the waiting list
-            // this will also release the wake lock
-            waitingReceipt.remove(id);
+        String id = m.getStanzaId();
+        if (id != null) {
+            MessageUpdater.forMessage(getContext(), m.getStanzaId(), false)
+                .setStatus(Messages.STATUS_NOTDELIVERED, System.currentTimeMillis())
+                .commit();
         }
     }
 
-    private void sendReceipt(Uri msgUri, String msgId, Jid from, Map<String, Long> waitingReceipt) {
+    private void sendReceipt(Uri msgUri, String msgId, Jid from) {
         DeliveryReceipt receipt = new DeliveryReceipt(msgId);
         org.jivesoftware.smack.packet.Message ack =
             new org.jivesoftware.smack.packet.Message(from,
                 org.jivesoftware.smack.packet.Message.Type.chat);
         ack.addExtension(receipt);
 
+        long storageId = 0;
         if (msgUri != null) {
-            // hold on to message center
-            hold(false);
-            // will mark this message as confirmed
-            long storageId = ContentUris.parseId(msgUri);
-            waitingReceipt.put(ack.getStanzaId(), storageId);
+            // will use this to mark this message as confirmed
+            storageId = ContentUris.parseId(msgUri);
         }
 
-        if (!sendPacket(ack) && msgUri != null) {
-            // receipt was not sent, remove it from the pending queue
-            waitingReceipt.remove(ack.getStanzaId());
-        }
+        sendMessage(ack, storageId);
     }
 
     private Message decryptMessage(CompositeMessage msg, byte[] encryptedData) throws Exception {

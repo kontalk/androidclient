@@ -38,17 +38,21 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.RawRes;
 import android.support.media.ExifInterface;
 import android.support.v4.app.Fragment;
 import android.webkit.MimeTypeMap;
 
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
+import org.kontalk.R;
 
 
 /**
@@ -90,6 +94,13 @@ public abstract class MediaStorage {
 
     public static final String COMPRESS_MIME = "image/jpeg";
     private static final int COMPRESSION_QUALITY = 85;
+
+    public static final int OUTGOING_MESSAGE_SOUND = R.raw.sound_outgoing;
+    // TODO
+    public static final int INCOMING_MESSAGE_SOUND = 0;
+
+    /** Media player used by {@link #playNotificationSound}. */
+    private static QuickMediaPlayer mMediaPlayer;
 
     public static boolean isExternalStorageAvailable() {
         return Environment.getExternalStorageState()
@@ -624,6 +635,72 @@ public abstract class MediaStorage {
         intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
         intent.putExtra(Intent.EXTRA_TITLE, fileName);
         fragment.startActivityForResult(intent, requestCode);
+    }
+
+    public static synchronized void playNotificationSound(Context context, @RawRes int resId) {
+        AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        if (!audioManager.isMusicActive() && audioManager.getRingerMode() == AudioManager.RINGER_MODE_NORMAL) {
+            if (mMediaPlayer == null)
+                mMediaPlayer = new QuickMediaPlayer();
+
+            mMediaPlayer.play(context, resId);
+        }
+    }
+
+    private static final class QuickMediaPlayer {
+        private MediaPlayer mMediaPlayer;
+        @RawRes
+        private int mResId;
+
+        public void play(Context context, @RawRes int resId) {
+            if (mMediaPlayer != null && mResId == resId) {
+                // same file, just play again
+                mMediaPlayer.stop();
+                try {
+                    mMediaPlayer.prepare();
+                    play();
+                    return;
+                }
+                catch (IOException e) {
+                    // will simply re-create the media player
+                }
+            }
+
+            if (mMediaPlayer != null) {
+                mMediaPlayer.release();
+            }
+
+            mMediaPlayer = create(context, resId);
+            if (mMediaPlayer != null) {
+                mResId = resId;
+                play();
+            }
+        }
+
+        private MediaPlayer create(Context context, int resId) {
+            MediaPlayer player = new MediaPlayer();
+            AssetFileDescriptor afd = null;
+            try {
+                player.setAudioStreamType(AudioManager.STREAM_NOTIFICATION);
+
+                afd = context.getResources().openRawResourceFd(resId);
+                if (afd != null) {
+                    player.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
+                    player.prepare();
+                    return player;
+                }
+            }
+            catch (Exception e) {
+                SystemUtils.closeStream(afd);
+                player.release();
+            }
+
+            return null;
+        }
+
+        private void play() {
+            mMediaPlayer.start();
+        }
     }
 
 }

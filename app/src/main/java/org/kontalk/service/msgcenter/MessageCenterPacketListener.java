@@ -19,9 +19,9 @@
 package org.kontalk.service.msgcenter;
 
 import java.lang.ref.WeakReference;
-import java.util.Map;
 
 import org.jivesoftware.smack.StanzaListener;
+import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.roster.RosterEntry;
 import org.jxmpp.jid.BareJid;
@@ -40,6 +40,7 @@ import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.service.msgcenter.MessageCenterService.IdleConnectionHandler;
+import org.kontalk.util.WakefulHashSet;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
@@ -131,6 +132,11 @@ abstract class MessageCenterPacketListener implements StanzaListener {
         return instance != null && instance.sendPacket(packet, bumpIdle);
     }
 
+    protected boolean sendMessage(Message message, long databaseId) {
+        MessageCenterService instance = mInstance.get();
+        return instance != null && instance.sendMessage(message, databaseId);
+    }
+
     protected void addUploadService(IUploadService service) {
         MessageCenterService instance = mInstance.get();
         if (instance != null)
@@ -193,7 +199,7 @@ abstract class MessageCenterPacketListener implements StanzaListener {
             instance.pushRegister();
     }
 
-    protected Map<String, Long> getWaitingReceiptList() {
+    protected WakefulHashSet<Long> getWaitingReceiptList() {
         MessageCenterService instance = mInstance.get();
         return (instance != null) ? instance.mWaitingReceipt : null;
     }

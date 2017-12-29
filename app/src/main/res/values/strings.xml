@@ -664,6 +664,8 @@
     <string name="permission_users_label">Access to Kontalk users information</string>
     <string name="permission_users_description">Can read from and write to the Kontalk users database and keyring</string>
 
+    <string name="pref_enable_outgoing_sound">Play sound for outgoing messages</string>
+
     <plurals name="confirm_will_delete_threads">
         <item quantity="one">The selected chat will be deleted.</item>
         <item quantity="other">The selected chats will be deleted.</item>

@@ -253,6 +253,11 @@ public final class Preferences {
             .commit();
     }
 
+    public static boolean getOutgoingSoundEnabled(Context context) {
+        return getBoolean("pref_enable_outgoing_sound", context
+            .getResources().getBoolean(R.bool.pref_default_enable_outgoing_sound));
+    }
+
     public static int getImageCompression(Context context) {
         return Integer.parseInt(getString("pref_image_resize", String
             .valueOf(context.getResources().getInteger(R.integer.pref_default_image_resize))));

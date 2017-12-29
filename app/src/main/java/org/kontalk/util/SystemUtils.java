@@ -37,6 +37,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.res.AssetFileDescriptor;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -361,6 +362,21 @@ public final class SystemUtils {
 
     /** Closes the given stream, ignoring any errors. */
     public static void closeStream(Closeable stream) {
+        if (stream != null) {
+            try {
+                stream.close();
+            }
+            catch (Exception ignored) {
+            }
+        }
+    }
+
+    /**
+     * Closes the given stream, ignoring any errors.
+     * This method can be safely deleted once we'll have min SDK set to 19,
+     * because AssetFileDescriptor will implement Closeable.
+     */
+    public static void closeStream(AssetFileDescriptor stream) {
         if (stream != null) {
             try {
                 stream.close();
