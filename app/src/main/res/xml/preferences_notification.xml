@@ -18,11 +18,6 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <CheckBoxPreference android:key="pref_enable_notifications"
-        android:summary="@string/pref_title_enable_notifications"
-        android:title="@string/pref_enable_notifications"
-        android:defaultValue="@bool/pref_default_enable_notifications"
-        android:layout="@layout/md_preference_custom"/>
     <Preference android:key="pref_ringtone"
         android:dependency="pref_enable_notifications"
         android:title="@string/pref_ringtone"
@@ -41,10 +36,20 @@
         android:dependency="pref_enable_notifications"
         android:defaultValue="@bool/pref_default_enable_notification_led"
         android:layout="@layout/md_preference_custom"/>
+    <CheckBoxPreference
+        android:defaultValue="@bool/pref_default_enable_notifications"
+        android:key="pref_enable_notifications"
+        android:layout="@layout/md_preference_custom"
+        android:summary="@string/pref_title_enable_notifications"
+        android:title="@string/pref_enable_notifications"/>
     <Preference android:key="pref_notification_led_color"
         android:dependency="pref_enable_notification_led"
         android:title="@string/pref_notification_led_color"
         android:defaultValue="@integer/pref_default_notification_led_color"
+        android:layout="@layout/md_preference_custom"/>
+    <CheckBoxPreference android:key="pref_enable_outgoing_sound"
+        android:title="@string/pref_enable_outgoing_sound"
+        android:defaultValue="@bool/pref_default_enable_outgoing_sound"
         android:layout="@layout/md_preference_custom"/>
 
 </PreferenceScreen>

@@ -38,6 +38,8 @@ import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.msgcenter.group.KontalkGroupController;
+import org.kontalk.ui.MessagingNotification;
+import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 
@@ -316,9 +318,11 @@ public class MessagesProviderClient {
 
     public static final class MessageUpdater {
         private Uri mUri;
-        private ContentResolver mClient;
+        private Context mContext;
         private ContentValues mValues;
         private String mWhere;
+        private int mSound;
+        private String mCheckPaused;
 
         public static MessageUpdater forMessage(Context context, long id) {
             return new MessageUpdater(context, Messages.getUri(id));
@@ -335,7 +339,7 @@ public class MessagesProviderClient {
 
         private MessageUpdater(Context context, Uri uri) {
             mUri = uri;
-            mClient = context.getContentResolver();
+            mContext = context;
             mValues = new ContentValues();
         }
 
@@ -370,8 +374,21 @@ public class MessagesProviderClient {
             return this;
         }
 
+        /**
+         * We will notify of outgoing message handover to the server.
+         * @param jid we will check if notification are paused for this user
+         */
+        public MessageUpdater notifyOutgoing(String jid) {
+            mSound = MediaStorage.OUTGOING_MESSAGE_SOUND;
+            mCheckPaused = jid;
+            return this;
+        }
+
         public void commit() {
-            mClient.update(mUri, mValues, mWhere, null);
+            if (mSound > 0 && Preferences.getOutgoingSoundEnabled(mContext) &&
+                    MessagingNotification.isPaused(mCheckPaused))
+                MediaStorage.playNotificationSound(mContext, mSound);
+            mContext.getContentResolver().update(mUri, mValues, mWhere, null);
         }
 
         public void clear() {

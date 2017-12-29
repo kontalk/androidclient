@@ -65,6 +65,7 @@ class MessageAckListener extends MessageCenterPacketListener {
                 MessageUpdater.forMessage(getContext(), mDatabaseId)
                     .setStatus(Messages.STATUS_SENT, now)
                     .setServerTimestamp(now)
+                    .notifyOutgoing(packet.getTo().asBareJid().toString())
                     // this will handle receipts that came before the message was acked by the server
                     .appendWhere(SELECTION_SENT_EXCLUDE)
                     .commit();
