@@ -49,6 +49,7 @@ import org.kontalk.service.MediaService;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.group.KontalkGroupController;
 import org.kontalk.ui.MessagingNotification;
+import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 
@@ -315,9 +316,15 @@ public class MessagesController {
         // fire notification only if message was actually inserted to database
         // and the conversation is not open already
         String paused = groupInfo != null ? groupInfo.getContent().getJid() : sender;
-        if (notify && msgUri != null && !MessagingNotification.isPaused(paused)) {
-            // update notifications (delayed)
-            MessagingNotification.delayedUpdateMessagesNotification(mContext.getApplicationContext(), true);
+        if (notify && msgUri != null) {
+            if (!MessagingNotification.isPaused(paused)) {
+                // update notifications (delayed)
+                MessagingNotification.delayedUpdateMessagesNotification(mContext.getApplicationContext(), true);
+            }
+            else {
+                // play in-conversation sound
+                MediaStorage.playNotificationSound(mContext.getApplicationContext(), R.raw.sound_incoming);
+            }
         }
 
         // check if we need to autodownload
