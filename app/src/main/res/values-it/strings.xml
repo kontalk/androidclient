@@ -675,4 +675,5 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
 
     <string name="reply_message_deleted">Il messaggio è stato cancellato.</string>
 
+    <string name="open_conversation">Apri</string>
     </resources>
