@@ -19,7 +19,7 @@
   <string name="app_name">Kontalk</string>
   <string name="app_description">Gemeinschaftlich betriebenes Instant-Messaging-Netzwerk</string>
   <string name="service_name">Nachrichtenzentrale</string>
-  <string name="authenticator_name">Authentifikationsdienst</string>
+  <string name="authenticator_name">Authentifizierungsdienst</string>
   <string name="sync_service_name">Synchronisiere Kontakte</string>
   <string name="download_service">Downloadservice</string>
   <string name="yes">Ja</string>
