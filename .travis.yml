@@ -10,7 +10,7 @@ android:
     - build-tools-27.0.1
     # temporarly introduced to fix Cyanogenmod bug
     # https://issuetracker.google.com/issues/64434571#comment35
-    - build-tools-27.0.2
+    - build-tools-27.0.3
     - android-27
     - extra-android-m2repository
     - extra-google-m2repository
