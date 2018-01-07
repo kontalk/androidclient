@@ -18,19 +18,16 @@
 
 package org.kontalk.ui;
 
-import com.google.zxing.WriterException;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.kontalk.Kontalk;
-import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.util.ViewUtils;
@@ -43,6 +40,7 @@ import org.kontalk.util.ViewUtils;
 public class RegisterDeviceActivity extends ToolbarActivity {
     private static final String TAG = Kontalk.TAG;
 
+    private View mViewport;
     private TextView mAccountName;
     private TextView mTextServer;
     private TextView mTextToken;
@@ -55,6 +53,7 @@ public class RegisterDeviceActivity extends ToolbarActivity {
 
         setupToolbar(true, true);
 
+        mViewport = findViewById(R.id.scroller);
         mAccountName = findViewById(R.id.account);
         mTextServer = findViewById(R.id.servername);
         mTextToken = findViewById(R.id.token);
@@ -82,14 +81,8 @@ public class RegisterDeviceActivity extends ToolbarActivity {
             mTextToken.setText(token);
         }
 
-        try {
-            Bitmap qrCode = ViewUtils.getQRCodeBitmap(this, generateTokenText(account, token, from));
-            mQRCode.setImageBitmap(qrCode);
-        }
-        catch (WriterException e) {
-            // TODO handle errors
-            Log.w(TAG, "unable to generate token QR code");
-        }
+        ViewUtils.getQRCodeBitmapAsync(this, mViewport, mQRCode,
+            generateTokenText(account, token, from));
     }
 
     @Override

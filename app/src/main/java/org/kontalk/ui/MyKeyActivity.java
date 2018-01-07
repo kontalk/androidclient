@@ -18,10 +18,8 @@
 
 package org.kontalk.ui;
 
-import com.google.zxing.WriterException;
-
-import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -41,6 +39,7 @@ import org.kontalk.util.ViewUtils;
 public class MyKeyActivity extends ToolbarActivity {
     private static final String TAG = Kontalk.TAG;
 
+    private View mViewport;
     private TextView mAccountName;
     private TextView mTextName;
     private TextView mTextFingerprint;
@@ -53,6 +52,7 @@ public class MyKeyActivity extends ToolbarActivity {
 
         setupToolbar(true, true);
 
+        mViewport = findViewById(R.id.scroller);
         mAccountName = findViewById(R.id.account);
         mTextName = findViewById(R.id.name);
         mTextFingerprint = findViewById(R.id.fingerprint);
@@ -83,14 +83,8 @@ public class MyKeyActivity extends ToolbarActivity {
         mTextFingerprint.setText(PGP.formatFingerprint(fingerprint)
             .replaceFirst("  ", "\n"));
 
-        try {
-            Bitmap qrCode = ViewUtils.getQRCodeBitmap(this, PGP.createFingerprintURI(fingerprint));
-            mQRCode.setImageBitmap(qrCode);
-        }
-        catch (WriterException e) {
-            // TODO handle errors
-            Log.w(TAG, "unable to generate fingerprint QR code");
-        }
+        ViewUtils.getQRCodeBitmapAsync(this, mViewport, mQRCode,
+            PGP.createFingerprintURI(fingerprint));
     }
 
     @Override
