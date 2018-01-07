@@ -31,6 +31,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.view.View;
+import android.view.ViewTreeObserver;
+import android.widget.ImageView;
 
 
 /**
@@ -46,13 +49,41 @@ public class ViewUtils {
         return (int) Math.ceil(context.getResources().getDisplayMetrics().density * value);
     }
 
-    @SuppressWarnings("SuspiciousNameCombination")
-    public static Bitmap getQRCodeBitmap(Context context, String text) throws WriterException {
+    /**
+     * Waits for global layout to happen and set a QR code for the minimum size
+     * between height and width of the given container. The QR code will be
+     * loaded automatically in {@code destination}.
+     */
+    public static void getQRCodeBitmapAsync(final Context context, final View container, final ImageView destination, final String text) {
+        // no need to handle memory leaks because the view tree observer
+        // is created on every activity restart
+        container.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                int size = Math.min(container.getHeight(), container.getWidth());
+                if (size == 0) {
+                    // try display size as last resort
+                    Point displaySize = SystemUtils.getDisplaySize(context);
+                    size = Math.min(displaySize.x, displaySize.y);
+                }
+
+                try {
+                    // TODO load in another thread
+                    Bitmap qrCode = getQRCodeBitmap(size, text);
+                    destination.setImageBitmap(qrCode);
+                }
+                catch (WriterException e) {
+                    // TODO set error image on destination
+                }
+            }
+        });
+    }
+
+    public static Bitmap getQRCodeBitmap(int size, String text) throws WriterException {
         QRCodeWriter writer = new QRCodeWriter();
         Map<EncodeHintType, Object> hints = new HashMap<>();
         hints.put(EncodeHintType.MARGIN, 2);
-        Point size = SystemUtils.getDisplaySize(context);
-        BitMatrix matrix = writer.encode(text, BarcodeFormat.QR_CODE, size.x, size.x, hints);
+        BitMatrix matrix = writer.encode(text, BarcodeFormat.QR_CODE, size, size, hints);
         return toBitmap(matrix);
     }
 

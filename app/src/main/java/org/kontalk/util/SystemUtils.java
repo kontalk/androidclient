@@ -109,29 +109,13 @@ public final class SystemUtils {
             BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE);
     }
 
-    /**
-     * Returns true if on Gingerbread or earlier.
-     * We need this to disable some fancy animations or graphics which would be
-     * too difficult to make them work on these Android versions. Besides, even
-     * Google doesn't want to support them anymore.
-     */
-    public static boolean isLegacySystem() {
-        return Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB;
-    }
-
-    @SuppressWarnings("deprecation")
     public static Point getDisplaySize(Context context) {
         Point displaySize = null;
         WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = manager.getDefaultDisplay();
         if (display != null) {
             displaySize = new Point();
-            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB_MR2) {
-                displaySize.set(display.getWidth(), display.getHeight());
-            }
-            else {
-                display.getSize(displaySize);
-            }
+            display.getSize(displaySize);
         }
 
         return displaySize;
