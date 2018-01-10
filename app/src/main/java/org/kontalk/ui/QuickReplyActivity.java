@@ -47,7 +47,7 @@ public class QuickReplyActivity extends ToolbarActivity {
     private EditText mContentEdit;
     private ImageButton mReply;
 
-    private Conversation mConversation;
+    Conversation mConversation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,13 +84,12 @@ public class QuickReplyActivity extends ToolbarActivity {
             finish();
         }
         else {
-            String content = intent.getStringExtra(EXTRA_MESSAGE);
+            CharSequence content = intent.getCharSequenceExtra(EXTRA_MESSAGE);
 
             String title = mConversation.isGroupChat() ?
                 mConversation.getGroupSubject() : mConversation.getContact().getDisplayName();
             setTitle(title);
 
-            // TODO show senders when in group
             mContent.setText(content);
         }
     }
@@ -123,9 +122,9 @@ public class QuickReplyActivity extends ToolbarActivity {
         finish();
     }
 
-    private void enableEditing(boolean enabled) {
-        mContentEdit.setEnabled(enabled);
-        mReply.setEnabled(enabled);
+    private void disableEditing() {
+        mContentEdit.setEnabled(false);
+        mReply.setEnabled(false);
     }
 
     private final class TextMessageThread extends Thread {
@@ -172,7 +171,7 @@ public class QuickReplyActivity extends ToolbarActivity {
     /** Sends out the text message in the composing entry. */
     public void sendTextMessage(String text) {
         if (!TextUtils.isEmpty(text)) {
-            enableEditing(false);
+            disableEditing();
 
             // start thread
             new TextMessageThread(text).start();
@@ -185,7 +184,7 @@ public class QuickReplyActivity extends ToolbarActivity {
         }
     }
 
-    public static Intent getStartIntent(Context context, long threadId, String content) {
+    public static Intent getStartIntent(Context context, long threadId, CharSequence content) {
         Intent i = new Intent(context, QuickReplyActivity.class);
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         i.putExtra(EXTRA_THREAD_ID, threadId);
