@@ -281,7 +281,7 @@
     <string name="confirm_will_delete_messages">As mensaxes seleccionadas serán borradas.</string>
     <string name="title_user_exists">O usuario existe</string>
     <string name="err_validation_nonetwork">A conexión a Internet non está dispoñible. Kontalk require dunha conexión de Internet activa para funcionar.</string>
-    <string name="err_validation_user_exists"><b> 1 O número que está a usar xa está rexistrado en Kontalk .</b>" 2  Se quere rexistrar outro dispositivo, procedendo deste xeito pode producir erros no Kontalk. Consulte a nosa documentación sobre como copiar a sua conta entre os dispositivos. Seleccione Aceptar para continuar de todos os xeitos."</string>
+    <string name="err_validation_user_exists"><b> 1 O número que está a usar xa está rexistrado en Kontalk .</b>" 2  Se quere rexistrar outro dispositivo, procedendo deste xeito pode producir erros no Kontalk. Se está a rexistrar outro dispositivo seu, seleccione a conta de transferencia."</string>
     <string name="button_validation_fallback">¿Non está a recibir nada?</string>
     <string name="title_nonetwork">Non hai conexión a internet</string>
     <string name="title_fallback">¿Está a ter problemas?</string>
@@ -650,11 +650,11 @@ Desactivar a cifraxe só se o contacto non ten unha chave persoal.</string>
     <string name="notification_text_service_running">Toca para abrir</string>
 
     <string name="pref_foreground_service">Activar o servizo de primeiro plano</string>
-    <string name="pref_title_foreground_service">Active isto se quere que Kontalk estea activo en segundo plano ao baixar os recursos. Aparecerá unha notificación adhesiva</string>
+    <string name="pref_title_foreground_service">Active esta opción si desea que Kontalk esté activo en segundo plano cuando los recursos sean escasos. Aparecerá una notificación adhesiva</string>
 
     <string name="pref_register_device">Rexistro de dispositivo</string>
     <string name="register_device_title">Rexistro de dispositivo</string>
-    <string name="register_device_instructions">Esanee o código de barra a continuación ou insire os seguintes datos manualmente desde o outro dispositivo.</string>
+    <string name="register_device_instructions">Escanea o código de barras que aparece a continuación ou introduce os seguintes datos manualmente desde o teu outro dispositivo.</string>
     <string name="register_device_request_error">Erro ao solicitar o rexistro do dispositivo.</string>
     <string name="register_device_requesting">Solicitude de rexistro …</string>
 
@@ -689,5 +689,21 @@ Desactivar a cifraxe só se o contacto non ten unha chave persoal.</string>
 
     <string name="btn_reply_cancel_description">Cancelar a resposta</string>
     <string name="reply_message_deleted">Mensaxe eliminada.</string>
+
+    <string name="err_validation_contacts_denied">Kontalk necesita acceso aos contactos para funcionar correctamente. ¿Como pode saber con quen podes chatear?
+\nPreguntaráselle de novo unha vez que se rexistrou.</string>
+    <string name="err_contacts_denied">Kontalk necesita acceso aos contactos para funcionar correctamente. ¿Como pode saber con quen podes chatear?
+\nPode permitir o acceso aos contactos desde a configuración de Android.</string>
+    <string name="warn_contacts_denied">Negácheslle o acceso aos contactos. Aquí non poderás ver cambios nos contactos.</string>
+
+    <string name="err_storage_denied">Kontalk necesita acceso ó almacenamento local para almacenar medios
+\nPode permitir o acceso ao almacenamento desde a configuración de Android.</string>
+
+    <string name="permission_messages_label">Acceso ás mensaxes de Kontalk</string>
+    <string name="permission_messages_description">Pode ler e escribir na base de datos de mensaxes de Kontalk</string>
+    <string name="permission_users_label">Acceso á información dos usuarios de Kontalk</string>
+    <string name="permission_users_description">Pode ler e escribir na base de datos de usuarios e no llavero de Kontalk .</string>
+
+    <string name="pref_enable_outgoing_sound">Reproducir son para mensaxes saíntes</string>
 
     </resources>
