@@ -699,4 +699,6 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
 
     <string name="pref_enable_outgoing_sound">Ton für ausgehenden Nachrichten abspielen</string>
 
+    <string name="msg_request_doze_failed_all">Die Batterieoptimierungseinstellungen wurden nicht gefunden. Schauen Sie bitten in den Systemeinstellungen.</string>
+
     </resources>
