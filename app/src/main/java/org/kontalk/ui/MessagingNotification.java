@@ -193,6 +193,10 @@ public class MessagingNotification {
         return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN;
     }
 
+    static boolean supportsDirectReply() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
+    }
+
     /** Starts messages notification updates in another thread. */
     public static void delayedUpdateMessagesNotification(final Context context, final boolean isNew) {
         if (!sPending) {
@@ -767,8 +771,12 @@ public class MessagingNotification {
             else {
                 NotificationConversation conv = mConversations.values().iterator().next();
                 List<NotificationConversation.ConversationMessage> content = conv.content;
-                StringBuilder allContent = new StringBuilder();
                 CharSequence last = conv.lastContent;
+
+                // needed only for custom direct reply
+                SpannableStringBuilder allContent = null;
+                if (!supportsDirectReply())
+                    allContent = new SpannableStringBuilder();
 
                 // single image media, use big picture style
                 NotificationConversation.ConversationMessage soloMessage = content.get(0);
@@ -793,14 +801,22 @@ public class MessagingNotification {
                 String name = null;
                 if (style == null) {
                     MessagingStyle msgStyle = new MessagingStyle(mContext.getString(R.string.person_me));
+                    int start = 0;
                     for (NotificationConversation.ConversationMessage message : content) {
                         Contact contact = Contact.findByUserId(mContext, message.peer);
                         name = contact.getDisplayName();
 
                         msgStyle.addMessage(message.content, message.timestamp, name);
-                        if (allContent.length() > 0)
-                            allContent.append("\n");
-                        allContent.append(message);
+
+                        if (allContent != null) {
+                            if (allContent.length() > 0)
+                                allContent.append("\n");
+
+                            start = allContent.length();
+                            allContent.append(name).append(':').append(' ');
+                            allContent.setSpan(new StyleSpan(Typeface.BOLD), start, start + name.length() + 2, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                            allContent.append(message.toString());
+                        }
                     }
 
                     // group ticker
@@ -873,7 +889,7 @@ public class MessagingNotification {
                 PendingIntent readPendingIntent = PendingIntent.getBroadcast(mContext, 0,
                     markReadIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                if (supportsDirectReply()) {
                     // pending intent will start a broadcast receiver
                     Intent replyIntent = new Intent(ACTION_NOTIFICATION_REPLY, firstThreadUri,
                         mContext, NotificationActionReceiver.class);
@@ -890,7 +906,7 @@ public class MessagingNotification {
                 else {
                     // pending intent will start a the quick reply dialog
                     long firstThreadId = ContentUris.parseId(firstThreadUri);
-                    Intent replyIntent = QuickReplyActivity.getStartIntent(mContext, firstThreadId, allContent.toString());
+                    Intent replyIntent = QuickReplyActivity.getStartIntent(mContext, firstThreadId, allContent);
                     PendingIntent replyPendingIntent = PendingIntent
                         .getActivity(mContext, 0, replyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
