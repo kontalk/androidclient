@@ -695,4 +695,6 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
 
     <string name="pref_enable_outgoing_sound">Suono per messaggi uscenti</string>
 
+    <string name="msg_request_doze_failed_all">Non riesco a trovare le impostazioni della batteria, apro le impostazioni di sistema.</string>
+
     </resources>
