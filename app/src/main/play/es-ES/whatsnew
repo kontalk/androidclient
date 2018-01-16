@@ -1,7 +1,7 @@
-Versión con nuevo proveedor de registro, ofrecido amablemente por https://JMP.Chat
-Ayúdenos a mejorar y corregir los errores informando en GitHub o a discutirlos en el nuevo foro: https://forum.kontalk.org
+Esta versión incorpora nuestro nuevo proveedor de registro, ofrecido amablemente por https://JMP.Chat
+Ayúdenos a mejorar y corregir los errores informando en GitHub o discutiendo en el nuevo foro: https://forum.kontalk.org
 
-* NUEVO: nuevo juego de emojis y teclado 
-* final de soporte para Android 2
+* NUEVO: respuesta contextual
+* workaround para el error de bootloop en los firmware de algunos dispositivos
 * solucionado el retraso en la entrega de mensajes
 * otros errores solucionados

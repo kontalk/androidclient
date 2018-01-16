@@ -1,8 +1,8 @@
-Neues Registrierungsverfahren – Angeboten von https: // JMP.Chat
+Neues Registrierungsverfahren – Angeboten von https://JMP.Chat
 
 Helfen Sie uns bei Verbesserungen und Fehlerbehebungen indem Sie Fehlerreports auf Github posten oder in unserem Forum darüber diskutieren: https://forum.kontalk.org
 
-* NEU: Brandneues Emojiset
-* Ende der Unterstützung für Android 2
-* Behoben: Verzögerte Auslieferung von Nachrichten
-* Weitere Verbesserungen und Fehlerbehebungen
+* NEU: Zitatantwort
+* Workaround für Bootloop-Firmwarefehler bei manchen Geräten
+* Behoben: Verzögerte Auslieferungsbestätigung (Zweiter Haken)
+* Weitere Fehlerbehebungen

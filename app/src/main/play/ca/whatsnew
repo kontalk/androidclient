@@ -1,7 +1,7 @@
 Versió amb nou proveïdor de registre, ofert amablement per https://JMP.Chat
 Ajuda'ns a millorar i corregir els errors informant a GitHub o a discutir-los al nou fòrum: https://forum.kontalk.org
 
-* NOU: nou joc d'emojis i de teclat
-* fi de suport per a Android 2
-* solucionat el retard en el lliurament de missatges
-* corregits altres problemes
+* NOU: resposta contextual
+* solució temporal de l'error de bootloop de firmware d'alguns dispositius
+* solucionat el retard en la notificació de lliuraments
+* altres correccions d'errors
