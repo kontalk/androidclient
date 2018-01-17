@@ -1,5 +1,24 @@
 # Change Log
 
+## [4.1.3] - 2018-01-17
+### Changed
+- Image preview in notifications (#56)
+- Play sound in open chats (#75)
+- Support for Android 6 runtime permissions (#617)
+- Direct reply for older Android versions (#1001)
+- User name in group messages (#1122)
+
+### Fixed
+- Fix error exporting personal key (#1111)
+- Fix crash for older Android versions (#1114)
+- Fix emoji problem in tablets (#1115)
+- Fix upload progress stuck at 100% (#1116)
+- Fix CPU eating problem during download/upload (#1117)
+- Fix wrong sender in contextual reply (#1118)
+- Fix problem on crappy firmwares (#1119)
+- Fix performance problem on very big address books (#1120)
+- Fix QR codes inside viewport (#1131)
+
 ## [4.1.2] - 2017-12-06
 ### Changed
 - Contextual reply (#594)

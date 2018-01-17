@@ -102,8 +102,8 @@ cmd_begin() {
     echo
 
     echo "Setting version code and name"
-    sed -i "s/appVersionCode = .*$/appVersionCode = ${VERSION_CODE}/" ${REPO_DIR}/build.gradle
-    sed -i "s/appVersionName = '.*'$/appVersionName = '${VERSION_NAME}'/" ${REPO_DIR}/build.gradle
+    sed -i "s/versionCode = .*$/versionCode = ${VERSION_CODE}/" ${REPO_DIR}/build.gradle
+    sed -i "s/versionName = '.*'$/versionName = '${VERSION_NAME}'/" ${REPO_DIR}/build.gradle
     echo
 
     echo "Building release packages"
@@ -123,7 +123,7 @@ cmd_continue() {
     check_stage 1 || exit 1
 
     # extract supposed version from build script
-    VERSION_NAME=$(grep appVersionName build.gradle | sed "s/ *appVersionName = '\(.*\)'$/\1/")
+    VERSION_NAME=$(grep versionName build.gradle | sed "s/ *versionName = '\(.*\)'$/\1/")
     BRANCH="release/${VERSION_NAME}"
     check_branch ${BRANCH} || exit 1
 
