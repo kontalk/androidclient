@@ -41,6 +41,7 @@ import org.kontalk.ui.MessagingNotification;
  * @author Daniele Ricci
  */
 public class NotificationActionReceiver extends BroadcastReceiver {
+    private static final String TAG = Kontalk.TAG;
 
     private static final String KEY_TEXT_REPLY = "key_text_reply";
 
@@ -51,9 +52,14 @@ public class NotificationActionReceiver extends BroadcastReceiver {
         if (MessagingNotification.ACTION_NOTIFICATION_DELETED.equals(action)) {
             // mark threads as old
             Parcelable[] threads = intent.getParcelableArrayExtra("org.kontalk.datalist");
-            for (Parcelable uri : threads)
-                MessagesProviderClient.markThreadAsOld(context, ContentUris.parseId((Uri) uri));
-            MessagingNotification.delayedUpdateMessagesNotification(context, false);
+            if (threads == null) {
+                Log.w(TAG, "Notification delete action could not be completed because of a firmware bug");
+            }
+            else {
+                for (Parcelable uri : threads)
+                    MessagesProviderClient.markThreadAsOld(context, ContentUris.parseId((Uri) uri));
+                MessagingNotification.delayedUpdateMessagesNotification(context, false);
+            }
         }
         else if (MessagingNotification.ACTION_NOTIFICATION_REPLY.equals(action)) {
             // mark threads as read
