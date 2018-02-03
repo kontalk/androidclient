@@ -392,7 +392,12 @@ public abstract class SendPositionAbstractFragment extends Fragment
     @Override
     public void onMapReady(final AnyMap anyMap) {
         mMap = anyMap;
-        anyMap.setMyLocationEnabled(true);
+        try {
+            anyMap.setMyLocationEnabled(true);
+        }
+        catch (SecurityException e) {
+            // will enable my location later
+        }
         anyMap.getUiSettings().setMyLocationButtonEnabled(false);
         anyMap.getUiSettings().setMapToolbarEnabled(false);
         anyMap.getUiSettings().setCompassEnabled(false);
@@ -544,6 +549,8 @@ public abstract class SendPositionAbstractFragment extends Fragment
             }
         }
         else {
+            if (mMap != null)
+                mMap.setMyLocationEnabled(true);
             requestLocation();
         }
     }
