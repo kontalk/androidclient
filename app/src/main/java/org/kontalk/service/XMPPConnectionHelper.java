@@ -68,10 +68,13 @@ public class XMPPConnectionHelper extends Thread {
     private static final boolean USE_STARTTLS = true;
 
     /** Max connection retry count if idle. */
-    private static final int MAX_IDLE_BACKOFF = 10;
+    private static final int MAX_IDLE_BACKOFF = 15;
 
     /** Max retries after for authentication error. */
     private static final int MAX_AUTH_ERRORS = 3;
+
+    /** Max number of retries after stopping ourselves out of desperation. */
+    private static final int MAX_RETRY_STRUGGLING = 10;
 
     private final Context mContext;
     private EndpointServer mServer;
@@ -354,7 +357,7 @@ public class XMPPConnectionHelper extends Thread {
     }
 
     public boolean isStruggling() {
-        return mConnecting && mRetryCount > 5;
+        return mConnecting && mRetryCount > MAX_RETRY_STRUGGLING;
     }
 
     public boolean isServerDirty() {
