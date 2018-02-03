@@ -85,6 +85,7 @@ public class ContactsListActivity extends ToolbarActivity
     @Override
     protected void onStart() {
         super.onStart();
+        Assent.setActivity(this, this);
         if (!Assent.isPermissionGranted(Assent.READ_CONTACTS)) {
             Toast.makeText(this, R.string.warn_contacts_denied, Toast.LENGTH_LONG).show();
         }
