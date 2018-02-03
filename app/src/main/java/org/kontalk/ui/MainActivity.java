@@ -28,6 +28,7 @@ import com.afollestad.materialdialogs.MaterialDialog;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
@@ -213,6 +214,7 @@ public abstract class MainActivity extends ToolbarActivity {
         return false;
     }
 
+    @SuppressLint("BatteryLife")
     @RequiresApi(Build.VERSION_CODES.M)
     void requestDozeModeWhitelist() {
         try {
@@ -220,8 +222,15 @@ public abstract class MainActivity extends ToolbarActivity {
                 Uri.parse("package:" + getPackageName())));
         }
         catch (ActivityNotFoundException e) {
-            Toast.makeText(this, R.string.msg_request_doze_failed_manual, Toast.LENGTH_LONG).show();
-            startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
+            try {
+                startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
+                Toast.makeText(this, R.string.msg_request_doze_failed_manual, Toast.LENGTH_LONG).show();
+            }
+            catch (ActivityNotFoundException e2) {
+                // you may as well throw your device out of the window
+                startActivity(new Intent(Settings.ACTION_SETTINGS));
+                Toast.makeText(this, R.string.msg_request_doze_failed_all, Toast.LENGTH_LONG).show();
+            }
         }
     }
 
