@@ -91,10 +91,10 @@ import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
  * Packet listener for message stanzas.
  * @author Daniele Ricci
  */
-class MessageListener extends MessageCenterPacketListener {
+class MessageListener extends WakefulMessageCenterPacketListener {
 
     public MessageListener(MessageCenterService instance) {
-        super(instance);
+        super(instance, "-RECV");
     }
 
     public boolean processGroupMessage(KontalkGroupManager.KontalkGroup group, Stanza packet, CompositeMessage msg)
@@ -158,7 +158,7 @@ class MessageListener extends MessageCenterPacketListener {
     }
 
     @Override
-    public void processStanza(Stanza packet) throws SmackException.NotConnectedException {
+    protected void processWakefulStanza(Stanza packet) throws SmackException.NotConnectedException {
         org.jivesoftware.smack.packet.Message m = (org.jivesoftware.smack.packet.Message) packet;
 
         if (m.getType() == org.jivesoftware.smack.packet.Message.Type.chat) {

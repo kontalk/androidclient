@@ -48,6 +48,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
+import android.os.PowerManager;
 import android.provider.ContactsContract;
 import android.support.annotation.AttrRes;
 import android.support.annotation.ColorRes;
@@ -471,6 +472,13 @@ public final class SystemUtils {
 
         Log.d(Kontalk.TAG, "native proximity screen locking is supported");
         return proximityScreenLockerNative;
+    }
+
+    public static PowerManager.WakeLock createPartialWakeLock(Context context, String tag, boolean referenceCounted) {
+        PowerManager pwm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        PowerManager.WakeLock lock = pwm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, tag);
+        lock.setReferenceCounted(referenceCounted);
+        return lock;
     }
 
 }

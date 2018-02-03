@@ -797,14 +797,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // waiting receipt list
         // also used for keeping the device on while waiting for message delivery
         mWaitingReceipt = new WakefulHashSet<>(10, this, PowerManager
-            .PARTIAL_WAKE_LOCK, Kontalk.TAG);
+            .PARTIAL_WAKE_LOCK, Kontalk.TAG + "-SEND");
 
-        // create the global wake lock
-        PowerManager pwr = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        mWakeLock = pwr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, Kontalk.TAG);
-        mWakeLock.setReferenceCounted(false);
-        mPingLock = pwr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, Kontalk.TAG + "-Ping");
-        mPingLock.setReferenceCounted(false);
+        // create the global wake locks
+        mWakeLock = SystemUtils.createPartialWakeLock(this, Kontalk.TAG + "-Connect", false);
+        mPingLock = SystemUtils.createPartialWakeLock(this, Kontalk.TAG + "-Ping", false);
 
         mAlarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         // cancel any pending alarm intent
