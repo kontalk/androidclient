@@ -352,6 +352,7 @@ public class MessagingNotification {
                 int unreadCount = c.getInt(COLUMN_THREADS_UNREAD);
                 String groupJid = c.getString(COLUMN_THREADS_GROUP_JID);
                 String groupSubject = c.getString(COLUMN_THREADS_GROUP_SUBJECT);
+                long timestamp = c.getLong(COLUMN_THREADS_TIMESTAMP);
 
                 if (encrypted) {
                     content = context.getString(R.string.text_encrypted);
@@ -386,7 +387,7 @@ public class MessagingNotification {
                 );
                 // actually we don't need to check for max since conversations were selected
                 // in timestamp order, but whatever...
-                latestTimestamp = Math.max(latestTimestamp, c.getLong(10));
+                latestTimestamp = Math.max(latestTimestamp, timestamp);
                 conversationIds.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
             }
             c.close();
