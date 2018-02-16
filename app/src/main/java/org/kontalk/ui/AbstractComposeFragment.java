@@ -702,56 +702,35 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     }
 
     /**
-     * Sends out a binary message.
+     * Sends out the text message in the composing entry.
      */
     @Override
-    public void sendBinaryMessage(Uri uri, String mime, boolean media,
-        Class<? extends MessageComponent<?>> klass) {
-        Log.v(TAG, "sending binary content: " + uri);
-
-        try {
-            // TODO convert to thread (?)
-
+    public void sendTextMessage(String message) {
+        if (!TextUtils.isEmpty(message)) {
             offlineModeWarning();
 
-            final Context context = getContext();
-            final Conversation conv = mConversation;
-            Uri newMsg = Kontalk.getMessagesController(context)
-                .sendBinaryMessage(conv, uri, mime, media, klass);
-
-            // update thread id from the inserted message
-            if (threadId <= 0) {
-                threadId = MessagesProviderClient.getThreadByMessage(getContext(), newMsg);
-                if (threadId > 0) {
-                    // we can run it here because progress=false
-                    startQuery();
-                }
-                else {
-                    Log.v(TAG, "no data - cannot start query for this composer");
-                }
-            }
-        }
-        catch (SQLiteDiskIOException e) {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getActivity(), R.string.error_store_outbox,
-                        Toast.LENGTH_LONG).show();
-                }
-            });
-        }
-        catch (Exception e) {
-            ReportingManager.logException(e);
-            getActivity().runOnUiThread(new Runnable() {
-                public void run() {
-                    Toast.makeText(getActivity(),
-                        R.string.err_store_message_failed,
-                        Toast.LENGTH_LONG).show();
-                }
-            });
+            // start thread
+            long inReplyTo = mReplyBar.getMessageId();
+            new TextMessageThread(message, inReplyTo).start();
+            if (inReplyTo > 0)
+                mReplyBar.hide();
         }
     }
 
+    /**
+     * Sends out a binary message.
+     */
+    @Override
+    public void sendBinaryMessage(Uri uri, String mime, boolean media, Class<? extends MessageComponent<?>> klass) {
+        Log.v(TAG, "sending binary content: " + uri);
+        offlineModeWarning();
+        // start thread
+        new BinaryMessageThread(uri, mime, media, klass).start();
+    }
+
+    /**
+     * Sends out a location message.
+     */
     @Override
     public void sendLocationMessage(String message, double lat, double lon, String geoText, String geoStreet) {
         offlineModeWarning();
@@ -770,8 +749,11 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
         @Override
         public void run() {
+            final Activity context = getActivity();
+            if (context == null)
+                return;
+
             try {
-                final Context context = getContext();
                 final Conversation conv = mConversation;
                 Uri newMsg = Kontalk.getMessagesController(context)
                     .sendTextMessage(conv, mText, mInReplyTo);
@@ -788,7 +770,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                 }
             }
             catch (SQLiteDiskIOException e) {
-                getActivity().runOnUiThread(new Runnable() {
+                context.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         Toast.makeText(getActivity(), R.string.error_store_outbox,
@@ -798,7 +780,66 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             }
             catch (Exception e) {
                 ReportingManager.logException(e);
-                getActivity().runOnUiThread(new Runnable() {
+                context.runOnUiThread(new Runnable() {
+                    public void run() {
+                        Toast.makeText(getActivity(),
+                            R.string.err_store_message_failed,
+                            Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        }
+    }
+
+    private final class BinaryMessageThread extends Thread {
+        private final Uri mUri;
+        private final String mMime;
+        private final boolean mMedia;
+        private final Class<? extends MessageComponent<?>> mKlass;
+
+        BinaryMessageThread(Uri uri, String mime, boolean media,
+            Class<? extends MessageComponent<?>> klass) {
+            mUri = uri;
+            mMime = mime;
+            mMedia = media;
+            mKlass = klass;
+        }
+
+        @Override
+        public void run() {
+            final Activity context = getActivity();
+            if (context == null)
+                return;
+
+            try {
+                final Conversation conv = mConversation;
+                Uri newMsg = Kontalk.getMessagesController(context)
+                    .sendBinaryMessage(conv, mUri, mMime, mMedia, mKlass);
+
+                // update thread id from the inserted message
+                if (threadId <= 0) {
+                    threadId = MessagesProviderClient.getThreadByMessage(context, newMsg);
+                    if (threadId > 0) {
+                        // we can run it here because progress=false
+                        startQuery();
+                    }
+                    else {
+                        Log.v(TAG, "no data - cannot start query for this composer");
+                    }
+                }
+            }
+            catch (SQLiteDiskIOException e) {
+                context.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getActivity(), R.string.error_store_outbox,
+                            Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+            catch (Exception e) {
+                ReportingManager.logException(e);
+                context.runOnUiThread(new Runnable() {
                     public void run() {
                         Toast.makeText(getActivity(),
                             R.string.err_store_message_failed,
@@ -815,8 +856,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         private final double mLongitude;
         private final String mGeoText;
         private final String mGeoStreet;
-        private boolean mLocation;
-
 
         LocationMessageThread(String text, double lat, double lon, String geoText, String geoStreet) {
             mText = text;
@@ -824,13 +863,15 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             mLongitude = lon;
             mGeoText = geoText;
             mGeoStreet = geoStreet;
-            mLocation = true;
         }
 
         @Override
         public void run() {
+            final Activity context = getActivity();
+            if (context == null)
+                return;
+
             try {
-                final Context context = getContext();
                 final Conversation conv = mConversation;
                 Uri newMsg = Kontalk.getMessagesController(context)
                     .sendLocationMessage(conv, mText, mLatitude, mLongitude, mGeoText, mGeoStreet);
@@ -847,7 +888,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                 }
             }
             catch (SQLiteDiskIOException e) {
-                getActivity().runOnUiThread(new Runnable() {
+                context.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         Toast.makeText(getActivity(), R.string.error_store_outbox,
@@ -857,7 +898,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             }
             catch (Exception e) {
                 ReportingManager.logException(e);
-                getActivity().runOnUiThread(new Runnable() {
+                context.runOnUiThread(new Runnable() {
                     public void run() {
                         Toast.makeText(getActivity(),
                             R.string.err_store_message_failed,
@@ -865,22 +906,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                     }
                 });
             }
-        }
-    }
-
-    /**
-     * Sends out the text message in the composing entry.
-     */
-    @Override
-    public void sendTextMessage(String message) {
-        if (!TextUtils.isEmpty(message)) {
-            offlineModeWarning();
-
-            // start thread
-            long inReplyTo = mReplyBar.getMessageId();
-            new TextMessageThread(message, inReplyTo).start();
-            if (inReplyTo > 0)
-                mReplyBar.hide();
         }
     }
 
