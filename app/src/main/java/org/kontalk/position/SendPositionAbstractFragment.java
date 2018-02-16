@@ -381,7 +381,8 @@ public abstract class SendPositionAbstractFragment extends Fragment
     @Override
     public void onPermissionResult(PermissionResultSet result) {
         if (result.allPermissionsGranted()) {
-            onMapReady(mMap);
+            if (mMap != null)
+                onMapReady(mMap);
             requestLocation();
         }
     }
