@@ -193,7 +193,7 @@ public class KeyPairGeneratorService extends Service {
                 try {
                     return TrueTime.now();
                 }
-                catch (IllegalStateException ise) {
+                catch (Exception ise) {
                     Log.w("KeyPair", "unable to retrieve real time from network, using system time");
                     return new Date();
                 }
