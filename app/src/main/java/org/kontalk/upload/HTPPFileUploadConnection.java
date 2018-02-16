@@ -97,6 +97,7 @@ public class HTPPFileUploadConnection implements UploadConnection {
             throw innerException("upload error", e);
         }
         finally {
+            currentRequest.disconnect();
             currentRequest = null;
             if (inMessage != null) {
                 try {

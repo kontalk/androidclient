@@ -2650,10 +2650,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 try {
                     // encrypt the file if necessary
                     if (encrypt) {
-                        InputStream in = getContentResolver().openInputStream(preMediaUri);
-                        File encrypted = MessageUtils.encryptFile(this, in, toGroup);
-                        fileLength = encrypted.length();
-                        preMediaUri = Uri.fromFile(encrypted);
+                        InputStream in = null;
+                        try {
+                            in = getContentResolver().openInputStream(preMediaUri);
+                            File encrypted = MessageUtils.encryptFile(this, in, toGroup);
+                            fileLength = encrypted.length();
+                            preMediaUri = Uri.fromFile(encrypted);
+                        }
+                        finally {
+                            SystemUtils.closeStream(in);
+                        }
                     }
                     else {
                         fileLength = MediaStorage.getLength(this, preMediaUri);
