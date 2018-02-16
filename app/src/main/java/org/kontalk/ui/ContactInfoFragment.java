@@ -21,6 +21,8 @@ package org.kontalk.ui;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.afollestad.assent.Assent;
+
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
@@ -446,7 +448,15 @@ public class ContactInfoFragment extends Fragment
     @Override
     public void onResume() {
         super.onResume();
+        Assent.setFragment(this, this);
         reload();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (getActivity() != null && getActivity().isFinishing())
+            Assent.setFragment(this, null);
     }
 
     @Override
@@ -470,6 +480,12 @@ public class ContactInfoFragment extends Fragment
     @Override
     public void onDetach() {
         super.onDetach();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        Assent.handleResult(permissions, grantResults);
     }
 
     public interface ContactInfoParent {
