@@ -29,6 +29,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.afollestad.assent.Assent;
+import com.afollestad.assent.AssentCallback;
+import com.afollestad.assent.PermissionResultSet;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.nispok.snackbar.Snackbar;
@@ -154,6 +156,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     private static final int SELECT_ATTACHMENT_PHOTO = 3;
     private static final int SELECT_ATTACHMENT_LOCATION = 4;
     private static final int REQUEST_INVITE_USERS = 5;
+    private static final int REQUEST_PERMISSIONS = 6;
 
     // use this as base for request codes for child classes
     protected static final int REQUEST_FIRST_CHILD = 100;
@@ -1104,6 +1107,44 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         mAttachmentContainer.toggle();
     }
 
+    void startCameraAttachment() {
+        try {
+            mCurrentPhoto = MediaStorage.getOutgoingPhotoFile();
+            Uri uri = Uri.fromFile(mCurrentPhoto);
+
+            final Intent intent = SystemUtils.externalIntent(MediaStore.ACTION_IMAGE_CAPTURE);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                intent.setClipData(ClipData.newUri(getContext().getContentResolver(),
+                    "Picture path", uri));
+            }
+
+            startActivityForResult(intent, SELECT_ATTACHMENT_PHOTO);
+        }
+        catch (IOException e) {
+            Log.e(TAG, "error creating temp file", e);
+            Toast.makeText(getActivity(), R.string.chooser_error_no_camera,
+                Toast.LENGTH_LONG).show();
+        }
+
+    }
+
+    private void requestCameraPermission() {
+        if (!Assent.isPermissionGranted(Assent.CAMERA)) {
+            Assent.requestPermissions(new AssentCallback() {
+                @Override
+                public void onPermissionResult(PermissionResultSet result) {
+                    if (result.allPermissionsGranted()) {
+                        startCameraAttachment();
+                    }
+                }
+            }, REQUEST_PERMISSIONS, Assent.CAMERA);
+        }
+        else {
+            startCameraAttachment();
+        }
+    }
+
     /**
      * Starts an activity for shooting a picture.
      */
@@ -1116,24 +1157,10 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                 packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
             if (list.size() <= 0) throw new UnsupportedOperationException();
 
-            mCurrentPhoto = MediaStorage.getOutgoingPhotoFile();
-            Uri uri = Uri.fromFile(mCurrentPhoto);
-            Intent take = SystemUtils.externalIntent(MediaStore.ACTION_IMAGE_CAPTURE);
-            take.putExtra(MediaStore.EXTRA_OUTPUT, uri);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                take.setClipData(ClipData.newUri(getContext().getContentResolver(),
-                    "Picture path", uri));
-            }
-
-            startActivityForResult(take, SELECT_ATTACHMENT_PHOTO);
+            requestCameraPermission();
         }
         catch (UnsupportedOperationException ue) {
             Toast.makeText(getActivity(), R.string.chooser_error_no_camera_app,
-                Toast.LENGTH_LONG).show();
-        }
-        catch (IOException e) {
-            Log.e(TAG, "error creating temp file", e);
-            Toast.makeText(getActivity(), R.string.chooser_error_no_camera,
                 Toast.LENGTH_LONG).show();
         }
     }
