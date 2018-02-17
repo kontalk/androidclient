@@ -67,6 +67,7 @@ import android.os.Handler;
 import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.ContextCompat;
@@ -1667,7 +1668,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
     protected abstract void onArgumentsProcessed();
 
-    public void setActivityTitle(CharSequence title, CharSequence status) {
+    public void setActivityTitle(@Nullable CharSequence title, @Nullable CharSequence status) {
         if (mStatusText != null) {
             // tablet UI - ignore title
             mStatusText.setText(status);
@@ -1777,12 +1778,12 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     /**
      * Called when the contact starts typing.
      */
-    protected abstract void onStartTyping(String jid);
+    protected abstract void onStartTyping(String jid, String groupJid);
 
     /**
      * Called when the contact stops typing.
      */
-    protected abstract void onStopTyping(String jid);
+    protected abstract void onStopTyping(String jid, String groupJid);
 
     /**
      * Should return true if the contact is a user ID in the current context.
@@ -1847,11 +1848,13 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
                         // we are receiving a composing notification from our peer
                         if (from != null && isUserId(from)) {
+                            String groupJid = intent.getStringExtra(MessageCenterService.EXTRA_GROUP_JID);
+
                             if (chatState != null && ChatState.composing.toString().equals(chatState)) {
-                                onStartTyping(from);
+                                onStartTyping(from, groupJid);
                             }
                             else {
-                                onStopTyping(from);
+                                onStopTyping(from, groupJid);
                             }
                         }
                     }

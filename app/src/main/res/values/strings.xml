@@ -703,4 +703,10 @@
         <item quantity="other">%d people</item>
     </plurals>
 
+    <plurals name="seen_group_typing_label">
+        <item quantity="one">%s is typing&#8230;</item>
+        <item quantity="two">%1$s and %2$s are typing&#8230;</item>
+        <item quantity="other">%d people are typing&#8230;</item>
+    </plurals>
+
 </resources>

@@ -393,13 +393,13 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
     }
 
     @Override
-    protected void onStartTyping(String jid) {
+    protected void onStartTyping(String jid, String groupJid) {
         mIsTyping = true;
         setStatusText(getString(R.string.seen_typing_label));
     }
 
     @Override
-    protected void onStopTyping(String jid) {
+    protected void onStopTyping(String jid, String groupJid) {
         mIsTyping = false;
         setStatusText(mCurrentStatus != null ? mCurrentStatus : "");
     }
