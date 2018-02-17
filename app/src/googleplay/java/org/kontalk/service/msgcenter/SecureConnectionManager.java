@@ -28,13 +28,39 @@ import org.kontalk.Kontalk;
 
 public class SecureConnectionManager {
 
-    public static void init(Context context) {
-        try {
-            ProviderInstaller.installIfNeeded(context);
-        }
-        catch (Exception e) {
-            Log.w(Kontalk.TAG,
-                "Unable to install Google Play security provider (" + e.toString() + ")");
+    @SuppressWarnings("WeakerAccess")
+    static final Object sLock = new Object();
+    @SuppressWarnings("WeakerAccess")
+    static volatile boolean sInit;
+
+    public static void init(final Context context) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    synchronized (sLock) {
+                        ProviderInstaller.installIfNeeded(context);
+                        sInit = true;
+                        sLock.notifyAll();
+                    }
+                }
+                catch (Exception e) {
+                    Log.w(Kontalk.TAG,
+                        "Unable to install Google Play security provider (" + e.toString() + ")");
+                }
+            }
+        }).start();
+    }
+
+    public static void waitForInit() {
+        synchronized (sLock) {
+            if (!sInit) {
+                try {
+                    sLock.wait();
+                }
+                catch (InterruptedException ignored) {
+                }
+            }
         }
     }
 
