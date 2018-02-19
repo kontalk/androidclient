@@ -600,10 +600,11 @@ public class Contact {
 
     @NonNull
     public static Contact findByUserId(Context context, @NonNull String userId, String numberHint) {
-        Contact c = cache.get(context, userId, numberHint);
+        String normalizedUserId = XmppStringUtils.parseBareJid(userId);
+        Contact c = cache.get(context, normalizedUserId, numberHint);
         // build dummy contact if not found
         if (c == null) {
-            c = new Contact(-1, null, userId, numberHint, userId, false);
+            c = new Contact(-1, null, normalizedUserId, numberHint, userId, false);
             // try to retrieve the key from the keyring
             // We may find one for pending subscription users which have
             // disappeared from the users table after a resync
