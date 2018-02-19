@@ -1046,6 +1046,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (!LegacyAuthentication.isUpgrading())
             endKeyPairRegeneration();
 
+        if (mWakeLock.isHeld() && mIdleHandler != null) {
+            // we release the message center if the wake lock was held
+            // this means that the message center was connecting
+            mIdleHandler.release();
+        }
         // release the wakelock
         mWakeLock.release();
     }
@@ -1707,6 +1712,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if ((mConnection == null || !mConnection.isConnected()) && mHelper == null) {
             // acquire the wakelock
             mWakeLock.acquire();
+            // hold on to the message center
+            mIdleHandler.hold(false);
 
             // reset push notification variable
             mPushNotifications = Preferences.getPushNotificationsEnabled(this) &&
@@ -1893,6 +1900,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // release the wakelock
         mWakeLock.release();
+        // we can release the message center
+        mIdleHandler.release();
     }
 
     void broadcast(String action) {
