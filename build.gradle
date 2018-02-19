@@ -26,8 +26,8 @@ allprojects {
     evaluationDependsOn ":client-common-java"
     ext {
         applicationId = 'org.kontalk'
-        versionCode = 297
-        versionName = '4.1.4-beta2'
+        versionCode = 299
+        versionName = '4.1.4-beta3'
         minSdkVersion = 15
         targetSdkVersion = 23
         compileSdkVersion = 27
