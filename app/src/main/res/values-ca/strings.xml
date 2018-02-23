@@ -693,4 +693,9 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
     <string name="open_conversation">Veure</string>
     <string name="pref_enable_outgoing_sound">Reproduir so per a missatges sortints</string>
 
+    <string name="seen_group_typing_label_one">%s està escrivint…</string>
+    <string name="seen_group_typing_label_two">%1$s y %2$s estan escrivint…</string>
+    <string name="seen_group_typing_label_more">%d persones estan escrivint…</string>
+    <string name="msg_request_doze_failed_all">No s\'ha pogut trobar la configuració d\'optimització de la bateria, portant-vos a la configuració del sistema.</string>
+
     </resources>
