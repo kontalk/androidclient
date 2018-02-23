@@ -707,4 +707,7 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
 
     <string name="pref_enable_outgoing_sound">Hrát zvuk pro odchozí zprávy</string>
 
+    <string name="seen_group_typing_label_one">%s píše…</string>
+    <string name="seen_group_typing_label_two">%1$s a %2$s píšou…</string>
+    <string name="seen_group_typing_label_more">%d lidí píše…</string>
     </resources>
