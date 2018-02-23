@@ -495,24 +495,27 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     private void updateStatusText() {
         int typingPeople = mTypingUsers.size();
         if (typingPeople > 0) {
+            int msgId;
             Object[] args;
             if (typingPeople == 1) {
                 Contact c = Contact.findByUserId(getContext(), mTypingUsers.iterator().next());
                 // TODO we need to use just the first name
+                msgId = R.string.seen_group_typing_label_one;
                 args = new Object[] { c.getDisplayName() };
             }
             else if (typingPeople == 2) {
                 Iterator<String> users = mTypingUsers.iterator();
                 Contact c1 = Contact.findByUserId(getContext(), users.next());
                 Contact c2 = Contact.findByUserId(getContext(), users.next());
+                msgId = R.string.seen_group_typing_label_two;
                 // TODO we need to use just first names
                 args = new Object[] { c1.getDisplayName(), c2.getDisplayName() };
             }
             else {
+                msgId = R.string.seen_group_typing_label_more;
                 args = new Object[] { typingPeople };
             }
-            setActivityTitle(null, getResources().getQuantityString(R.plurals.seen_group_typing_label,
-                typingPeople, args));
+            setActivityTitle(null, getResources().getString(msgId, args));
         }
         else {
             final Conversation conv = mConversation;
