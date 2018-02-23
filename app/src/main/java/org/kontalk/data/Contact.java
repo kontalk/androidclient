@@ -119,6 +119,23 @@ public class Contact {
     /** Timestamp the user was last seen. Not coming from the database. */
     private long mLastSeen;
 
+    /** Cached name information from system contacts. It will override our internal name. */
+    private StructuredName mStructuredName;
+
+    private static final class StructuredName {
+        public final String displayName;
+        public final String givenName;
+        public final String middleName;
+        public final String familyName;
+
+        public StructuredName(String displayName, String givenName, String middleName, String familyName) {
+            this.displayName = displayName;
+            this.givenName = givenName;
+            this.middleName = middleName;
+            this.familyName = familyName;
+        }
+    }
+
     public interface ContactCallback {
         void avatarLoaded(Contact contact, Drawable avatar);
     }
@@ -164,6 +181,11 @@ public class Contact {
                         long cid = cur.getLong(2);
 
                         c = new Contact(cid, lookupKey, name, numberHint, userId, false);
+                        Uri contactUri = c.getUri();
+                        if (contactUri != null) {
+                            c.loadStructuredNameAsync(context);
+                        }
+
                         put(userId, c);
 
                         // insert result into users database immediately
@@ -301,16 +323,77 @@ public class Contact {
     }
 
     public String getName() {
-        return mName;
+        return mStructuredName != null && mStructuredName.displayName != null ?
+            mStructuredName.displayName : mName;
     }
 
     /** Returns a visible and readable name that can be used across the UI. */
     public String getDisplayName() {
-        if (mName != null && mName.length() > 0)
-            return mName;
+        String name = getName();
+        if (name != null && name.length() > 0)
+            return name;
         if (mNumber != null && mNumber.length() > 0)
             return mNumber;
         return mJID;
+    }
+
+    /**
+     * Return a visible and readable name in a short form (e.g. given name).
+     * @return the short name (e.g. given name). If not available, return {@link #getDisplayName()}.
+     */
+    public String getShortDisplayName() {
+        if (mStructuredName != null && mStructuredName.givenName != null)
+            return mStructuredName.givenName;
+        return getDisplayName();
+    }
+
+    private void loadStructuredNameAsync(final Context context) {
+        // avoid keeping a local context from an unrelated thread
+        final Context globalContext = context.getApplicationContext();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mStructuredName = loadStructuredName(globalContext, getUri());
+            }
+        }).start();
+    }
+
+    private static StructuredName loadStructuredName(Context context, Uri uri) {
+        Cursor nameQuery = null;
+        try {
+            nameQuery = context.getContentResolver().query(uri.buildUpon()
+                        .appendPath(Contacts.Data.CONTENT_DIRECTORY).build(), new String[] {
+                    ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME,
+                    ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME,
+                    ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME,
+                    ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME,
+                },
+                ContactsContract.Data.MIMETYPE + "=? AND " + Contacts.DISPLAY_NAME_PRIMARY + "="
+                    + ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME,
+                new String[] { ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE },
+                null);
+            if (nameQuery != null && nameQuery.moveToFirst()) {
+                String displayName = nameQuery.getString(0);
+                String givenName = nameQuery.getString(1);
+                String middleName = nameQuery.getString(2);
+                String familyName = nameQuery.getString(3);
+                return new StructuredName(displayName, givenName, middleName, familyName);
+            }
+        }
+        catch (Exception ignored) {
+            Log.e("CONTACT", "error loading contact data", ignored);
+        }
+        finally {
+            if (nameQuery != null) {
+                try {
+                    nameQuery.close();
+                }
+                catch (Exception ignored) {
+                }
+            }
+        }
+
+        return null;
     }
 
     public String getJID() {
@@ -568,6 +651,11 @@ public class Contact {
             c.mRegistered = registered;
             c.mStatus = status;
 
+            Uri uri = c.getUri();
+            if (uri != null) {
+                c.loadStructuredNameAsync(context);
+            }
+
             retrieveKeyInfo(context, c);
 
             cache.put(jid, c);
@@ -650,6 +738,11 @@ public class Contact {
             Contact contact = new Contact(cid, key, name, number, userId, blocked);
             contact.mRegistered = registered;
             contact.mStatus = status;
+
+            Uri uri = contact.getUri();
+            if (uri != null) {
+                contact.loadStructuredNameAsync(context);
+            }
 
             retrieveKeyInfo(context, contact);
 

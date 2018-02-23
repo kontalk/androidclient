@@ -162,6 +162,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
         org.jivesoftware.smack.packet.Message m = (org.jivesoftware.smack.packet.Message) packet;
 
         if (m.getType() == org.jivesoftware.smack.packet.Message.Type.chat) {
+            // FIXME processing chat state now for encrypted messages would skip group processing
             ExtensionElement chatstate = processChatState(m);
 
             // non-active chat states are not to be processed as messages
