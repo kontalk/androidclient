@@ -39,6 +39,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Handler;
+import android.os.StrictMode;
 import android.preference.PreferenceManager;
 
 import org.kontalk.authenticator.Authenticator;
@@ -155,6 +156,11 @@ public class Kontalk extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        if (BuildConfig.DEBUG) {
+            StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectAll().build());
+            StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().build());
+        }
 
         // init preferences
         // This must be done before registering the reporting manager

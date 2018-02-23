@@ -212,46 +212,51 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
             String source = (draft != null) ? draft : subject;
 
             if (source != null) {
-                if (GroupCommandComponent.supportsMimeType(conv.getMime()) && draft == null) {
-                    if (incoming) {
-                        // content is in a special format
-                        GroupThreadContent parsed = GroupThreadContent.parseIncoming(subject);
-                        subject = parsed.command;
-                    }
-                    text = new SpannableString(GroupCommandComponent.getTextContent(getContext(), subject, incoming));
-                    ((Spannable) text).setSpan(STYLE_ITALIC, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-                }
-                else {
-                    if (incoming && conv.isGroupChat()) {
-                        // content is in a special format
-                        GroupThreadContent parsed = GroupThreadContent.parseIncoming(subject);
-                        contact = parsed.sender != null ? Contact.findByUserId(context, parsed.sender) : null;
-                        source = parsed.command;
-
-                        String displayName = null;
-                        if (contact != null)
-                            displayName = contact.getDisplayName();
-
-                        if (displayName == null) {
-                            if (BuildConfig.DEBUG) {
-                                displayName = conv.getRecipient();
-                            }
-                            else {
-                                displayName = context.getString(R.string.peer_unknown);
-                            }
+                if (draft == null) {
+                    if (GroupCommandComponent.supportsMimeType(conv.getMime())) {
+                        if (incoming) {
+                            // content is in a special format
+                            GroupThreadContent parsed = GroupThreadContent.parseIncoming(subject);
+                            subject = parsed.command;
                         }
-
-                        if (source == null) {
-                            // determine from mime type
-                            source = CompositeMessage.getSampleTextContent(conv.getMime());
-                        }
-
-                        text = new SpannableString(displayName + ": " + source);
-                        ((Spannable) text).setSpan(STYLE_ITALIC, 0, displayName.length()+1, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                        text = new SpannableString(GroupCommandComponent.getTextContent(getContext(), subject, incoming));
+                        ((Spannable) text).setSpan(STYLE_ITALIC, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
                     }
                     else {
-                        text = source;
+                        if (incoming && conv.isGroupChat()) {
+                            // content is in a special format
+                            GroupThreadContent parsed = GroupThreadContent.parseIncoming(subject);
+                            contact = parsed.sender != null ? Contact.findByUserId(context, parsed.sender) : null;
+                            source = parsed.command;
+
+                            String displayName = null;
+                            if (contact != null)
+                                displayName = contact.getDisplayName();
+
+                            if (displayName == null) {
+                                if (BuildConfig.DEBUG) {
+                                    displayName = conv.getRecipient();
+                                }
+                                else {
+                                    displayName = context.getString(R.string.peer_unknown);
+                                }
+                            }
+
+                            if (source == null) {
+                                // determine from mime type
+                                source = CompositeMessage.getSampleTextContent(conv.getMime());
+                            }
+
+                            text = new SpannableString(displayName + ": " + source);
+                            ((Spannable) text).setSpan(STYLE_ITALIC, 0, displayName.length() + 1, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                        }
+                        else {
+                            text = source;
+                        }
                     }
+                }
+                else {
+                    text = draft;
                 }
             }
 

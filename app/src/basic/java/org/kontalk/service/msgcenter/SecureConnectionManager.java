@@ -26,4 +26,7 @@ public class SecureConnectionManager {
     public static void init(Context context) {
     }
 
+    public static void waitForInit() {
+    }
+
 }

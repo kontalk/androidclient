@@ -37,7 +37,6 @@ import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.SASLAuthentication;
 import org.jivesoftware.smack.SmackException;
-import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.StanzaFilter;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Stanza;
@@ -52,6 +51,7 @@ import android.annotation.SuppressLint;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.authenticator.LegacyAuthentication;
+import org.kontalk.service.msgcenter.SecureConnectionManager;
 
 
 public class KontalkConnection extends XMPPTCPConnection {
@@ -64,14 +64,14 @@ public class KontalkConnection extends XMPPTCPConnection {
 
     public KontalkConnection(String resource, EndpointServer server, boolean secure,
         boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken)
-        throws XMPPException, XmppStringprepException {
+        throws XmppStringprepException {
 
         this(resource, server, secure, null, null, acceptAnyCertificate, trustStore, legacyAuthToken);
     }
 
     public KontalkConnection(String resource, EndpointServer server, boolean secure,
             PrivateKey privateKey, X509Certificate bridgeCert,
-            boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken) throws XMPPException, XmppStringprepException {
+            boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken) throws XmppStringprepException {
 
         super(buildConfiguration(resource, server, secure,
             privateKey, bridgeCert, acceptAnyCertificate, trustStore, legacyAuthToken));
@@ -138,6 +138,9 @@ public class KontalkConnection extends XMPPTCPConnection {
                                  boolean direct, PrivateKey privateKey, X509Certificate bridgeCert,
                                  boolean acceptAnyCertificate, KeyStore trustStore) {
         try {
+            // wait for secure connection stuff
+            SecureConnectionManager.waitForInit();
+
             SSLContext ctx = SSLContext.getInstance("TLS");
 
             KeyManager[] km = null;

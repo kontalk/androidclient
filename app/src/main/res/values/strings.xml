@@ -249,6 +249,9 @@
     <string name="seen_away_label">online</string>
     <string name="seen_offline_label">offline</string>
     <string name="seen_typing_label">typing&#8230;</string>
+    <string name="seen_group_typing_label_one">%s is typing&#8230;</string>
+    <string name="seen_group_typing_label_two">%1$s and %2$s are typing&#8230;</string>
+    <string name="seen_group_typing_label_more">%d people are typing&#8230;</string>
     <string name="invitation_sent_label">pending invitation</string>
     <string name="pref_custom_background">Custom background</string>
     <string name="pref_background_uri">Background</string>

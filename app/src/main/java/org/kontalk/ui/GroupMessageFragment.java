@@ -20,12 +20,14 @@ package org.kontalk.ui;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
@@ -71,17 +73,14 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     /** The virtual or real group JID. */
     private String mGroupJID;
 
+    /** List of typing users. */
+    private Set<String> mTypingUsers = new HashSet<>();
+
     private MenuItem mInviteGroupMenu;
     private MenuItem mSetGroupSubjectMenu;
     private MenuItem mGroupInfoMenu;
     private MenuItem mLeaveGroupMenu;
     private MenuItem mAttachMenu;
-
-    @Override
-    public boolean sendInactive() {
-        // TODO
-        return false;
-    }
 
     @Override
     protected void updateUI() {
@@ -331,35 +330,24 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         hideWarning();
 
         super.onConversationCreated();
-        // set group title
-        String subject = mConversation.getGroupSubject();
-        if (TextUtils.isEmpty(subject))
-            subject = getString(R.string.group_untitled);
 
-        String status;
         boolean sendEnabled;
         int membership = mConversation.getGroupMembership();
         switch (membership) {
             case Groups.MEMBERSHIP_PARTED:
-                status = getString(R.string.group_command_text_part_self);
                 sendEnabled = false;
                 break;
             case Groups.MEMBERSHIP_KICKED:
-                status = getString(R.string.group_command_text_part_kicked);
                 sendEnabled = false;
                 break;
             case Groups.MEMBERSHIP_OBSERVER: {
                 int count = mConversation.getGroupPeers().length;
-                status = getResources()
-                    .getQuantityString(R.plurals.group_people, count, count);
                 sendEnabled = count > 1;
                 break;
             }
             case Groups.MEMBERSHIP_MEMBER: {
                 // +1 because we are not included in the members list
                 int count = mConversation.getGroupPeers().length + 1;
-                status = getResources()
-                    .getQuantityString(R.plurals.group_people, count, count);
                 sendEnabled = count > 1;
                 break;
             }
@@ -371,7 +359,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         // disable sending if necessary
         mComposer.setSendEnabled(sendEnabled);
 
-        setActivityTitle(subject, status);
+        updateStatusText();
     }
 
     private void showKeyWarning() {
@@ -439,7 +427,8 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
     @Override
     protected void onConnected() {
-        // TODO
+        mTypingUsers.clear();
+        updateStatusText();
     }
 
     @Override
@@ -448,13 +437,19 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     }
 
     @Override
-    protected void onStartTyping(String jid) {
-        // TODO
+    protected void onStartTyping(String jid, String groupJid) {
+        if (mGroupJID.equals(groupJid)) {
+            mTypingUsers.add(jid);
+            updateStatusText();
+        }
     }
 
     @Override
-    protected void onStopTyping(String jid) {
-        // TODO
+    protected void onStopTyping(String jid, String groupJid) {
+        if (mGroupJID.equals(groupJid)) {
+            mTypingUsers.remove(jid);
+            updateStatusText();
+        }
     }
 
     @Override
@@ -478,12 +473,90 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
     @Override
     public boolean sendTyping() {
-        // TODO
+        if (mAvailableResources.size() > 0) {
+            MessageCenterService.sendGroupChatState(getContext(), mGroupJID,
+                mConversation.getGroupPeers(), ChatState.composing);
+            return true;
+        }
         return false;
     }
 
+    @Override
+    public boolean sendInactive() {
+        if (mAvailableResources.size() > 0) {
+            MessageCenterService.sendGroupChatState(getContext(), mGroupJID,
+                mConversation.getGroupPeers(), ChatState.inactive);
+            return true;
+        }
+        return false;
+    }
+
+    /** Updates the status text in the toolbar. */
+    private void updateStatusText() {
+        int typingPeople = mTypingUsers.size();
+        if (typingPeople > 0) {
+            int msgId;
+            Object[] args;
+            if (typingPeople == 1) {
+                Contact c = Contact.findByUserId(getContext(), mTypingUsers.iterator().next());
+                msgId = R.string.seen_group_typing_label_one;
+                args = new Object[] { c.getShortDisplayName() };
+            }
+            else if (typingPeople == 2) {
+                Iterator<String> users = mTypingUsers.iterator();
+                Contact c1 = Contact.findByUserId(getContext(), users.next());
+                Contact c2 = Contact.findByUserId(getContext(), users.next());
+                msgId = R.string.seen_group_typing_label_two;
+                args = new Object[] { c1.getShortDisplayName(), c2.getShortDisplayName() };
+            }
+            else {
+                msgId = R.string.seen_group_typing_label_more;
+                args = new Object[] { typingPeople };
+            }
+            setActivityTitle(null, getResources().getString(msgId, args));
+        }
+        else {
+            final Conversation conv = mConversation;
+            if (conv != null) {
+                // set group title
+                String subject = conv.getGroupSubject();
+                if (TextUtils.isEmpty(subject))
+                    subject = getString(R.string.group_untitled);
+
+                String status;
+                int membership = conv.getGroupMembership();
+                switch (membership) {
+                    case Groups.MEMBERSHIP_PARTED:
+                        status = getString(R.string.group_command_text_part_self);
+                        break;
+                    case Groups.MEMBERSHIP_KICKED:
+                        status = getString(R.string.group_command_text_part_kicked);
+                        break;
+                    case Groups.MEMBERSHIP_OBSERVER: {
+                        int count = conv.getGroupPeers().length;
+                        status = getResources()
+                            .getQuantityString(R.plurals.group_people, count, count);
+                        break;
+                    }
+                    case Groups.MEMBERSHIP_MEMBER: {
+                        // +1 because we are not included in the members list
+                        int count = conv.getGroupPeers().length + 1;
+                        status = getResources()
+                            .getQuantityString(R.plurals.group_people, count, count);
+                        break;
+                    }
+                    default:
+                        // shouldn't happen
+                        throw new RuntimeException("Unknown membership status: " + membership);
+                }
+
+                setActivityTitle(subject, status);
+            }
+        }
+    }
+
     public void viewGroupInfo() {
-        final Context ctx = getContext();
+        final Activity ctx = getActivity();
         if (ctx == null)
             return;
 

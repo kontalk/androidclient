@@ -61,6 +61,7 @@ import org.spongycastle.openpgp.operator.bc.BcPublicKeyKeyEncryptionMethodGenera
 import org.kontalk.client.EndpointServer;
 import org.kontalk.message.TextComponent;
 import org.kontalk.util.CPIMMessage;
+import org.kontalk.util.SystemUtils;
 import org.kontalk.util.XMPPUtils;
 
 import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INTEGRITY_CHECK;
@@ -228,6 +229,7 @@ public class PGPCoder extends Coder {
         String mime = null;
         Date timestamp = null;
         String out = null;
+        InputStream cDataIn = null;
 
         try {
             PGPObjectFactory pgpF = new PGPObjectFactory(encrypted, sFingerprintCalculator);
@@ -275,7 +277,8 @@ public class PGPCoder extends Coder {
 
             if (message instanceof PGPCompressedData) {
                 PGPCompressedData cData = (PGPCompressedData) message;
-                PGPObjectFactory pgpFact = new PGPObjectFactory(cData.getDataStream(), sFingerprintCalculator);
+                cDataIn = cData.getDataStream();
+                PGPObjectFactory pgpFact = new PGPObjectFactory(cDataIn, sFingerprintCalculator);
 
                 message = pgpFact.nextObject();
 
@@ -491,6 +494,10 @@ public class PGPCoder extends Coder {
             throw new DecryptException(DECRYPT_EXCEPTION_INVALID_DATA, pe);
         }
 
+        finally {
+            SystemUtils.closeStream(cDataIn);
+        }
+
         return new DecryptOutput(out, mime, timestamp, errors);
     }
 
@@ -565,6 +572,8 @@ public class PGPCoder extends Coder {
     public void decryptFile(InputStream input, boolean verify,
         OutputStream output, List<DecryptException> errors)
             throws GeneralSecurityException {
+
+        InputStream cDataIn = null;
         try {
             PGPObjectFactory pgpF = new PGPObjectFactory(input, sFingerprintCalculator);
             PGPEncryptedDataList enc;
@@ -607,7 +616,8 @@ public class PGPCoder extends Coder {
 
             if (message instanceof PGPCompressedData) {
                 PGPCompressedData cData = (PGPCompressedData) message;
-                PGPObjectFactory pgpFact = new PGPObjectFactory(cData.getDataStream(), sFingerprintCalculator);
+                cDataIn = cData.getDataStream();
+                PGPObjectFactory pgpFact = new PGPObjectFactory(cDataIn, sFingerprintCalculator);
 
                 message = pgpFact.nextObject();
 
@@ -712,6 +722,10 @@ public class PGPCoder extends Coder {
 
         catch (PGPException pe) {
             throw new DecryptException(DECRYPT_EXCEPTION_INVALID_DATA, pe);
+        }
+
+        finally {
+            SystemUtils.closeStream(cDataIn);
         }
     }
 

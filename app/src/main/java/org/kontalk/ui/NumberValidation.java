@@ -858,13 +858,29 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                     // do not wait for the generated key
                     stopKeyReceiver();
 
-                    new FileChooserDialog.Builder(NumberValidation.this)
-                        .initialPath(PersonalKeyPack.DEFAULT_KEYPACK.getParent())
-                        .mimeType(PersonalKeyPack.KEYPACK_MIME)
-                        .show(getSupportFragmentManager());
+                    if (!Assent.isPermissionGranted(Assent.READ_EXTERNAL_STORAGE)) {
+                        Assent.requestPermissions(new AssentCallback() {
+                            @Override
+                            public void onPermissionResult(PermissionResultSet result) {
+                                if (result.allPermissionsGranted()) {
+                                    browseImportKey();
+                                }
+                            }
+                        }, REQUEST_PERMISSIONS, Assent.READ_EXTERNAL_STORAGE);
+                    }
+                    else {
+                        browseImportKey();
+                    }
                 }
             }
         });
+    }
+
+    void browseImportKey() {
+        new FileChooserDialog.Builder(NumberValidation.this)
+            .initialPath(PersonalKeyPack.DEFAULT_KEYPACK.getParent())
+            .mimeType(PersonalKeyPack.KEYPACK_MIME)
+            .show(getSupportFragmentManager());
     }
 
     /**

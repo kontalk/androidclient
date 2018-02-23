@@ -20,6 +20,7 @@ package org.kontalk.ui;
 
 
 import android.net.Uri;
+import android.support.annotation.Nullable;
 
 /**
  * Interface implemented by activities that can be parent of
@@ -29,7 +30,7 @@ import android.net.Uri;
 interface ComposeMessageParent {
 
     /** Sets title and subtitle. Pass null to any of them to skip. */
-    void setTitle(CharSequence title, CharSequence subtitle);
+    void setTitle(@Nullable CharSequence title, @Nullable CharSequence subtitle);
 
     /** Sets the subtitle in an updating status. */
     void setUpdatingSubtitle();

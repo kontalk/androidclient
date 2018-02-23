@@ -53,8 +53,6 @@ import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 
-import java.io.IOException;
-
 
 /**
  * Utility class to handle message transmission transactions.
@@ -82,7 +80,7 @@ public class MessagesController {
             // send message!
             if (conv.isGroupChat()) {
                 MessageCenterService.sendGroupTextMessage(mContext,
-                        conv.getGroupJid(), conv.getGroupSubject(), conv.getGroupPeers(),
+                        conv.getGroupJid(), conv.getGroupPeers(),
                         text, encrypted, ContentUris.parseId(newMsg), msgId, inReplyTo);
             } else {
                 MessageCenterService.sendTextMessage(mContext, userId, text,
@@ -109,7 +107,7 @@ public class MessagesController {
             // send message!
             if (conv.isGroupChat()) {
                 MessageCenterService.sendGroupLocationMessage(mContext,
-                        conv.getGroupJid(), conv.getGroupSubject(), conv.getGroupPeers(),
+                        conv.getGroupJid(), conv.getGroupPeers(),
                         text, lat, lon, geoText, geoStreet, encrypted, ContentUris.parseId(newMsg), msgId);
             } else {
                 MessageCenterService.sendLocationMessage(mContext, userId, text, lat, lon,
@@ -123,7 +121,7 @@ public class MessagesController {
     }
 
     public Uri sendBinaryMessage(Conversation conv, Uri uri, String mime, boolean media,
-                                 Class<? extends MessageComponent<?>> klass) throws IOException {
+                                 Class<? extends MessageComponent<?>> klass) throws SQLiteDiskIOException {
         String msgId = MessageCenterService.messageId();
 
         boolean encrypted = MessageUtils.sendEncrypted(mContext, conv.isEncryptionEnabled());
@@ -141,7 +139,8 @@ public class MessagesController {
             // prepare message and send (thumbnail, compression -> send)
             MediaService.prepareMessage(mContext, msgId, ContentUris.parseId(newMsg), uri, mime, media, compress);
             return newMsg;
-        } else {
+        }
+        else {
             throw new SQLiteDiskIOException();
         }
     }

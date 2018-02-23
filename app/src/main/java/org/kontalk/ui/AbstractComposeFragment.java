@@ -29,6 +29,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.afollestad.assent.Assent;
+import com.afollestad.assent.AssentCallback;
+import com.afollestad.assent.PermissionResultSet;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.nispok.snackbar.Snackbar;
@@ -65,6 +67,7 @@ import android.os.Handler;
 import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.ContextCompat;
@@ -154,6 +157,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     private static final int SELECT_ATTACHMENT_PHOTO = 3;
     private static final int SELECT_ATTACHMENT_LOCATION = 4;
     private static final int REQUEST_INVITE_USERS = 5;
+    private static final int REQUEST_PERMISSIONS = 6;
 
     // use this as base for request codes for child classes
     protected static final int REQUEST_FIRST_CHILD = 100;
@@ -699,56 +703,35 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     }
 
     /**
-     * Sends out a binary message.
+     * Sends out the text message in the composing entry.
      */
     @Override
-    public void sendBinaryMessage(Uri uri, String mime, boolean media,
-        Class<? extends MessageComponent<?>> klass) {
-        Log.v(TAG, "sending binary content: " + uri);
-
-        try {
-            // TODO convert to thread (?)
-
+    public void sendTextMessage(String message) {
+        if (!TextUtils.isEmpty(message)) {
             offlineModeWarning();
 
-            final Context context = getContext();
-            final Conversation conv = mConversation;
-            Uri newMsg = Kontalk.getMessagesController(context)
-                .sendBinaryMessage(conv, uri, mime, media, klass);
-
-            // update thread id from the inserted message
-            if (threadId <= 0) {
-                threadId = MessagesProviderClient.getThreadByMessage(getContext(), newMsg);
-                if (threadId > 0) {
-                    // we can run it here because progress=false
-                    startQuery();
-                }
-                else {
-                    Log.v(TAG, "no data - cannot start query for this composer");
-                }
-            }
-        }
-        catch (SQLiteDiskIOException e) {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getActivity(), R.string.error_store_outbox,
-                        Toast.LENGTH_LONG).show();
-                }
-            });
-        }
-        catch (Exception e) {
-            ReportingManager.logException(e);
-            getActivity().runOnUiThread(new Runnable() {
-                public void run() {
-                    Toast.makeText(getActivity(),
-                        R.string.err_store_message_failed,
-                        Toast.LENGTH_LONG).show();
-                }
-            });
+            // start thread
+            long inReplyTo = mReplyBar.getMessageId();
+            new TextMessageThread(message, inReplyTo).start();
+            if (inReplyTo > 0)
+                mReplyBar.hide();
         }
     }
 
+    /**
+     * Sends out a binary message.
+     */
+    @Override
+    public void sendBinaryMessage(Uri uri, String mime, boolean media, Class<? extends MessageComponent<?>> klass) {
+        Log.v(TAG, "sending binary content: " + uri);
+        offlineModeWarning();
+        // start thread
+        new BinaryMessageThread(uri, mime, media, klass).start();
+    }
+
+    /**
+     * Sends out a location message.
+     */
     @Override
     public void sendLocationMessage(String message, double lat, double lon, String geoText, String geoStreet) {
         offlineModeWarning();
@@ -767,8 +750,11 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
         @Override
         public void run() {
+            final Activity context = getActivity();
+            if (context == null)
+                return;
+
             try {
-                final Context context = getContext();
                 final Conversation conv = mConversation;
                 Uri newMsg = Kontalk.getMessagesController(context)
                     .sendTextMessage(conv, mText, mInReplyTo);
@@ -785,7 +771,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                 }
             }
             catch (SQLiteDiskIOException e) {
-                getActivity().runOnUiThread(new Runnable() {
+                context.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         Toast.makeText(getActivity(), R.string.error_store_outbox,
@@ -795,7 +781,66 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             }
             catch (Exception e) {
                 ReportingManager.logException(e);
-                getActivity().runOnUiThread(new Runnable() {
+                context.runOnUiThread(new Runnable() {
+                    public void run() {
+                        Toast.makeText(getActivity(),
+                            R.string.err_store_message_failed,
+                            Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        }
+    }
+
+    private final class BinaryMessageThread extends Thread {
+        private final Uri mUri;
+        private final String mMime;
+        private final boolean mMedia;
+        private final Class<? extends MessageComponent<?>> mKlass;
+
+        BinaryMessageThread(Uri uri, String mime, boolean media,
+            Class<? extends MessageComponent<?>> klass) {
+            mUri = uri;
+            mMime = mime;
+            mMedia = media;
+            mKlass = klass;
+        }
+
+        @Override
+        public void run() {
+            final Activity context = getActivity();
+            if (context == null)
+                return;
+
+            try {
+                final Conversation conv = mConversation;
+                Uri newMsg = Kontalk.getMessagesController(context)
+                    .sendBinaryMessage(conv, mUri, mMime, mMedia, mKlass);
+
+                // update thread id from the inserted message
+                if (threadId <= 0) {
+                    threadId = MessagesProviderClient.getThreadByMessage(context, newMsg);
+                    if (threadId > 0) {
+                        // we can run it here because progress=false
+                        startQuery();
+                    }
+                    else {
+                        Log.v(TAG, "no data - cannot start query for this composer");
+                    }
+                }
+            }
+            catch (SQLiteDiskIOException e) {
+                context.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getActivity(), R.string.error_store_outbox,
+                            Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+            catch (Exception e) {
+                ReportingManager.logException(e);
+                context.runOnUiThread(new Runnable() {
                     public void run() {
                         Toast.makeText(getActivity(),
                             R.string.err_store_message_failed,
@@ -812,8 +857,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         private final double mLongitude;
         private final String mGeoText;
         private final String mGeoStreet;
-        private boolean mLocation;
-
 
         LocationMessageThread(String text, double lat, double lon, String geoText, String geoStreet) {
             mText = text;
@@ -821,13 +864,15 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             mLongitude = lon;
             mGeoText = geoText;
             mGeoStreet = geoStreet;
-            mLocation = true;
         }
 
         @Override
         public void run() {
+            final Activity context = getActivity();
+            if (context == null)
+                return;
+
             try {
-                final Context context = getContext();
                 final Conversation conv = mConversation;
                 Uri newMsg = Kontalk.getMessagesController(context)
                     .sendLocationMessage(conv, mText, mLatitude, mLongitude, mGeoText, mGeoStreet);
@@ -844,7 +889,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                 }
             }
             catch (SQLiteDiskIOException e) {
-                getActivity().runOnUiThread(new Runnable() {
+                context.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         Toast.makeText(getActivity(), R.string.error_store_outbox,
@@ -854,7 +899,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             }
             catch (Exception e) {
                 ReportingManager.logException(e);
-                getActivity().runOnUiThread(new Runnable() {
+                context.runOnUiThread(new Runnable() {
                     public void run() {
                         Toast.makeText(getActivity(),
                             R.string.err_store_message_failed,
@@ -862,22 +907,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                     }
                 });
             }
-        }
-    }
-
-    /**
-     * Sends out the text message in the composing entry.
-     */
-    @Override
-    public void sendTextMessage(String message) {
-        if (!TextUtils.isEmpty(message)) {
-            offlineModeWarning();
-
-            // start thread
-            long inReplyTo = mReplyBar.getMessageId();
-            new TextMessageThread(message, inReplyTo).start();
-            if (inReplyTo > 0)
-                mReplyBar.hide();
         }
     }
 
@@ -1104,6 +1133,44 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         mAttachmentContainer.toggle();
     }
 
+    void startCameraAttachment() {
+        try {
+            mCurrentPhoto = MediaStorage.getOutgoingPhotoFile();
+            Uri uri = Uri.fromFile(mCurrentPhoto);
+
+            final Intent intent = SystemUtils.externalIntent(MediaStore.ACTION_IMAGE_CAPTURE);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                intent.setClipData(ClipData.newUri(getContext().getContentResolver(),
+                    "Picture path", uri));
+            }
+
+            startActivityForResult(intent, SELECT_ATTACHMENT_PHOTO);
+        }
+        catch (IOException e) {
+            Log.e(TAG, "error creating temp file", e);
+            Toast.makeText(getActivity(), R.string.chooser_error_no_camera,
+                Toast.LENGTH_LONG).show();
+        }
+
+    }
+
+    private void requestCameraPermission() {
+        if (!Assent.isPermissionGranted(Assent.CAMERA)) {
+            Assent.requestPermissions(new AssentCallback() {
+                @Override
+                public void onPermissionResult(PermissionResultSet result) {
+                    if (result.allPermissionsGranted()) {
+                        startCameraAttachment();
+                    }
+                }
+            }, REQUEST_PERMISSIONS, Assent.CAMERA);
+        }
+        else {
+            startCameraAttachment();
+        }
+    }
+
     /**
      * Starts an activity for shooting a picture.
      */
@@ -1116,24 +1183,10 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                 packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
             if (list.size() <= 0) throw new UnsupportedOperationException();
 
-            mCurrentPhoto = MediaStorage.getOutgoingPhotoFile();
-            Uri uri = Uri.fromFile(mCurrentPhoto);
-            Intent take = SystemUtils.externalIntent(MediaStore.ACTION_IMAGE_CAPTURE);
-            take.putExtra(MediaStore.EXTRA_OUTPUT, uri);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                take.setClipData(ClipData.newUri(getContext().getContentResolver(),
-                    "Picture path", uri));
-            }
-
-            startActivityForResult(take, SELECT_ATTACHMENT_PHOTO);
+            requestCameraPermission();
         }
         catch (UnsupportedOperationException ue) {
             Toast.makeText(getActivity(), R.string.chooser_error_no_camera_app,
-                Toast.LENGTH_LONG).show();
-        }
-        catch (IOException e) {
-            Log.e(TAG, "error creating temp file", e);
-            Toast.makeText(getActivity(), R.string.chooser_error_no_camera,
                 Toast.LENGTH_LONG).show();
         }
     }
@@ -1615,7 +1668,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
     protected abstract void onArgumentsProcessed();
 
-    public void setActivityTitle(CharSequence title, CharSequence status) {
+    public void setActivityTitle(@Nullable CharSequence title, @Nullable CharSequence status) {
         if (mStatusText != null) {
             // tablet UI - ignore title
             mStatusText.setText(status);
@@ -1725,12 +1778,12 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     /**
      * Called when the contact starts typing.
      */
-    protected abstract void onStartTyping(String jid);
+    protected abstract void onStartTyping(String jid, String groupJid);
 
     /**
      * Called when the contact stops typing.
      */
-    protected abstract void onStopTyping(String jid);
+    protected abstract void onStopTyping(String jid, String groupJid);
 
     /**
      * Should return true if the contact is a user ID in the current context.
@@ -1795,11 +1848,13 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
                         // we are receiving a composing notification from our peer
                         if (from != null && isUserId(from)) {
+                            String groupJid = intent.getStringExtra(MessageCenterService.EXTRA_GROUP_JID);
+
                             if (chatState != null && ChatState.composing.toString().equals(chatState)) {
-                                onStartTyping(from);
+                                onStartTyping(from, groupJid);
                             }
                             else {
-                                onStopTyping(from);
+                                onStopTyping(from, groupJid);
                             }
                         }
                     }

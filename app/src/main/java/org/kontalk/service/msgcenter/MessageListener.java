@@ -84,6 +84,7 @@ import org.kontalk.util.XMPPUtils;
 import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_TIMESTAMP;
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_MESSAGE;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_GROUP_JID;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
 
 
@@ -97,8 +98,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
         super(instance, "-RECV");
     }
 
-    public boolean processGroupMessage(KontalkGroupManager.KontalkGroup group, Stanza packet, CompositeMessage msg)
-            throws SmackException.NotConnectedException {
+    private boolean processGroupMessage(KontalkGroupManager.KontalkGroup group, Stanza packet, CompositeMessage msg) {
 
         if (group.checkRequest(packet) && canHandleGroupCommand(packet)) {
             GroupExtension ext = GroupExtension.from(packet);
@@ -162,6 +162,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
         org.jivesoftware.smack.packet.Message m = (org.jivesoftware.smack.packet.Message) packet;
 
         if (m.getType() == org.jivesoftware.smack.packet.Message.Type.chat) {
+            // FIXME processing chat state now for encrypted messages would skip group processing
             ExtensionElement chatstate = processChatState(m);
 
             // non-active chat states are not to be processed as messages
@@ -176,6 +177,38 @@ class MessageListener extends WakefulMessageCenterPacketListener {
         }
     }
 
+    /**
+     * Retrieve the group JID from a message. Must not be encrypted.
+     * Used mainly for chat states.
+     */
+    private String getGroupJid(Message m) {
+        // group chat
+        KontalkGroupManager.KontalkGroup group;
+        try {
+            group = KontalkGroupManager
+                .getInstanceFor(getConnection()).getGroup(m);
+        }
+        catch (XmppStringprepException e) {
+            Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+            // report it because it's a big deal
+            ReportingManager.logException(e);
+            return null;
+
+        }
+        if (group != null && group.checkRequest(m) && canHandleGroupCommand(m)) {
+            GroupExtension ext = GroupExtension.from(m);
+            String groupJid = ext.getJID();
+            String subject = ext.getSubject();
+
+            // group information
+            GroupInfo groupInfo = new GroupInfo(groupJid, subject,
+                KontalkGroupController.GROUP_TYPE, MyMessages.Groups.MEMBERSHIP_MEMBER);
+            return groupInfo.getJid();
+        }
+
+        return null;
+    }
+
     private ChatStateExtension processChatState(Message m) {
         // check if there is a composing notification
         ExtensionElement _chatstate = m.getExtension("http://jabber.org/protocol/chatstates");
@@ -184,12 +217,20 @@ class MessageListener extends WakefulMessageCenterPacketListener {
             chatstate = (ChatStateExtension) _chatstate;
 
             Jid from = m.getFrom();
-            Contact.setTyping(from.toString(), chatstate.getChatState() == ChatState.composing);
-
             Intent i = new Intent(ACTION_MESSAGE);
             i.putExtra("org.kontalk.message.chatState", chatstate.getElementName());
             i.putExtra(EXTRA_FROM, from.toString());
             i.putExtra(EXTRA_TO, m.getTo().toString());
+
+            String groupJid = getGroupJid(m);
+            // must not be set typing if happening in group
+            if (groupJid == null) {
+                Contact.setTyping(from.toString(), chatstate.getChatState() == ChatState.composing);
+            }
+            else {
+                i.putExtra(EXTRA_GROUP_JID, groupJid);
+            }
+
             sendBroadcast(i);
         }
 

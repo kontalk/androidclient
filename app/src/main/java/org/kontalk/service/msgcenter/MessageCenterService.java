@@ -346,6 +346,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_SUBSCRIBED_FROM = "org.kontalk.presence.subscribed.from";
     public static final String EXTRA_SUBSCRIBED_TO = "org.kontalk.presence.subscribed.to";
     public static final String EXTRA_STAMP = "org.kontalk.packet.delay";
+    public static final String EXTRA_GROUP_JID = "org.kontalk.stanza.groupJid";
 
     // use with org.kontalk.action.ROSTER(_MATCH)
     public static final String EXTRA_JIDLIST = "org.kontalk.roster.JIDList";
@@ -1029,8 +1030,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             disconnectThread.joinTimeout(500);
 
             // clear the connection only if we are quitting
-            if (!restarting)
+            if (!restarting) {
+                // clear the roster store since we are about to close it
+                getRoster().setRosterStore(null);
                 mConnection = null;
+            }
         }
 
         if (mUploadServices != null) {
@@ -1045,6 +1049,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (!LegacyAuthentication.isUpgrading())
             endKeyPairRegeneration();
 
+        if (mWakeLock.isHeld() && mIdleHandler != null) {
+            // we release the message center if the wake lock was held
+            // this means that the message center was connecting
+            mIdleHandler.release();
+        }
         // release the wakelock
         mWakeLock.release();
     }
@@ -1706,6 +1715,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if ((mConnection == null || !mConnection.isConnected()) && mHelper == null) {
             // acquire the wakelock
             mWakeLock.acquire();
+            // hold on to the message center
+            mIdleHandler.hold(false);
 
             // reset push notification variable
             mPushNotifications = Preferences.getPushNotificationsEnabled(this) &&
@@ -1849,6 +1860,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         else {
             Log.w(TAG, "stream management not available - disabling delivery receipts");
         }
+
+        // we can release the message center now
+        // this must be done before sending the presence since it's based on isHeld()
+        mIdleHandler.release();
 
         // send presence
         sendPresence(mIdleHandler.isHeld() ? Presence.Mode.available : Presence.Mode.away);
@@ -2188,7 +2203,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             if (groupJid != null) {
                 b.putString("org.kontalk.message.group.jid", groupJid);
-                b.putString("org.kontalk.message.group.subject", groupSubject);
                 // will be replaced by the group command (if any)
                 b.putStringArray("org.kontalk.message.to", groupMembers);
             }
@@ -2211,6 +2225,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 if ((createMembers = GroupCommandComponent.getCreateCommandMembers(command)) != null) {
                     cmd = GROUP_COMMAND_CREATE;
                     b.putStringArray("org.kontalk.message.to", createMembers);
+                    b.putString("org.kontalk.message.group.subject", groupSubject);
                 }
                 else if (command.equals(GroupCommandComponent.COMMAND_PART)) {
                     cmd = GROUP_COMMAND_PART;
@@ -2220,6 +2235,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     cmd = GROUP_COMMAND_MEMBERS;
                     b.putStringArray("org.kontalk.message.group.add", addMembers);
                     b.putStringArray("org.kontalk.message.group.remove", removeMembers);
+                    b.putString("org.kontalk.message.group.subject", groupSubject);
                 }
                 else if ((subject = GroupCommandComponent.getSubjectCommand(command)) != null) {
                     cmd = GROUP_COMMAND_SUBJECT;
@@ -2650,10 +2666,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 try {
                     // encrypt the file if necessary
                     if (encrypt) {
-                        InputStream in = getContentResolver().openInputStream(preMediaUri);
-                        File encrypted = MessageUtils.encryptFile(this, in, toGroup);
-                        fileLength = encrypted.length();
-                        preMediaUri = Uri.fromFile(encrypted);
+                        InputStream in = null;
+                        try {
+                            in = getContentResolver().openInputStream(preMediaUri);
+                            File encrypted = MessageUtils.encryptFile(this, in, toGroup);
+                            fileLength = encrypted.length();
+                            preMediaUri = Uri.fromFile(encrypted);
+                        }
+                        finally {
+                            SystemUtils.closeStream(in);
+                        }
                     }
                     else {
                         fileLength = MediaStorage.getLength(this, preMediaUri);
@@ -3185,6 +3207,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
+    public static void sendGroupChatState(final Context context, String groupJid, String[] to, ChatState state) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_MESSAGE);
+        i.putExtra("org.kontalk.message.to", to);
+        i.putExtra("org.kontalk.message.chatState", state.name());
+        i.putExtra("org.kontalk.message.standalone", true);
+        i.putExtra("org.kontalk.message.group.jid", groupJid);
+        i.putExtra("org.kontalk.message.to", to);
+        context.startService(i);
+    }
+
     /**
      * Sends a text message.
      */
@@ -3202,8 +3235,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
-    public static void sendGroupTextMessage(final Context context, String groupJid,
-        String groupSubject, String[] to,
+    public static void sendGroupTextMessage(final Context context, String groupJid, String[] to,
         String text, boolean encrypt, long msgId, String packetId, long inReplyTo) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
@@ -3211,7 +3243,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.packetId", packetId);
         i.putExtra("org.kontalk.message.mime", TextComponent.MIME_TYPE);
         i.putExtra("org.kontalk.message.group.jid", groupJid);
-        i.putExtra("org.kontalk.message.group.subject", groupSubject);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.body", text);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
@@ -3371,8 +3402,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /**
      * Sends group location message
      */
-    public static void sendGroupLocationMessage(final Context context, String groupJid,
-        String groupSubject, String[] to,
+    public static void sendGroupLocationMessage(final Context context, String groupJid, String[] to,
         String text, double lat, double lon, String geoText, String geoStreet, boolean encrypt, long msgId, String packetId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
@@ -3380,7 +3410,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.packetId", packetId);
         i.putExtra("org.kontalk.message.mime", LocationComponent.MIME_TYPE);
         i.putExtra("org.kontalk.message.group.jid", groupJid);
-        i.putExtra("org.kontalk.message.group.subject", groupSubject);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.body", text);
         i.putExtra("org.kontalk.message.geo_lat", lat);

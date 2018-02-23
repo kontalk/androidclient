@@ -18,7 +18,7 @@
 
 package org.kontalk.ui;
 
-import android.content.Context;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -86,10 +86,18 @@ public class GroupInfoActivity extends ToolbarActivity implements GroupInfoFragm
         return super.onOptionsItemSelected(item);
     }
 
-    public static void start(Context context, Fragment parent, long threadId, int requestCode) {
+    @Override
+    public void finish() {
+        super.finish();
+        if (!(this instanceof GroupInfoDialog))
+            overridePendingTransition(R.anim.stay, R.anim.slide_down);
+    }
+
+    public static void start(Activity context, Fragment parent, long threadId, int requestCode) {
         Intent intent = new Intent(context, GroupInfoActivity.class);
         intent.putExtra("conversation", threadId);
         parent.startActivityForResult(intent, requestCode);
+        context.overridePendingTransition(R.anim.slide_up, R.anim.stay);
     }
 
     @Override
