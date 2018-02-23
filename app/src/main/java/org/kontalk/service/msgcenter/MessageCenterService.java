@@ -1861,6 +1861,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             Log.w(TAG, "stream management not available - disabling delivery receipts");
         }
 
+        // we can release the message center now
+        // this must be done before sending the presence since it's based on isHeld()
+        mIdleHandler.release();
+
         // send presence
         sendPresence(mIdleHandler.isHeld() ? Presence.Mode.available : Presence.Mode.away);
         // clear upload service
@@ -1903,8 +1907,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // release the wakelock
         mWakeLock.release();
-        // we can release the message center
-        mIdleHandler.release();
     }
 
     void broadcast(String action) {
