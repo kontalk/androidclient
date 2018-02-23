@@ -558,7 +558,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     }
 
     public void viewGroupInfo() {
-        final Context ctx = getContext();
+        final Activity ctx = getActivity();
         if (ctx == null)
             return;
 
