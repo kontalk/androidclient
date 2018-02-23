@@ -690,4 +690,12 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
     <string name="permission_users_label">Acceso a la información de usuarios Kontalk</string>
     <string name="permission_users_description">Puede leer y escribir en la base y anillo de claves de usuarios de Kontalk</string>
 
+    <string name="open_conversation">Vista</string>
+    <string name="seen_group_typing_label_one">%s está escribiendo…</string>
+    <string name="seen_group_typing_label_two">%1$s y %2$s están escribiendo…</string>
+    <string name="seen_group_typing_label_more">%d personas están escribiendo…</string>
+    <string name="msg_request_doze_failed_all">No se pueden encontrar las opciones de optimización de batería, te llevamos a la configuración del sistema.</string>
+
+    <string name="pref_enable_outgoing_sound">Reproducir sonido para mensajes salientes</string>
+
     </resources>
