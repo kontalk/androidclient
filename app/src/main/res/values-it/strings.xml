@@ -697,4 +697,7 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
 
     <string name="msg_request_doze_failed_all">Non riesco a trovare le impostazioni della batteria, apro le impostazioni di sistema.</string>
 
+    <string name="seen_group_typing_label_one">%s sta scrivendo…</string>
+    <string name="seen_group_typing_label_two">%1$s e %2$s scrivono…</string>
+    <string name="seen_group_typing_label_more">%d persone scrivono…</string>
     </resources>
