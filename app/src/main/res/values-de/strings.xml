@@ -701,4 +701,7 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
 
     <string name="msg_request_doze_failed_all">Die Batterieoptimierungseinstellungen wurden nicht gefunden. Schauen Sie bitte selbst in den Systemeinstellungen.</string>
 
+    <string name="seen_group_typing_label_one">%s schreibt…</string>
+    <string name="seen_group_typing_label_two">%1$s und %2$s schreiben…</string>
+    <string name="seen_group_typing_label_more">%d Leute schreiben…</string>
     </resources>
