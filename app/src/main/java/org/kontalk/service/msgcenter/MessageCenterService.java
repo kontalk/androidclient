@@ -414,14 +414,19 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Normal ping tester timeout.
      */
     private static final int SLOW_PING_TIMEOUT = 10000;
+
     /**
      * Fast ping tester timeout.
      */
     private static final int FAST_PING_TIMEOUT = 3000;
+
     /**
      * Minimal interval between connection tests (5 mins).
      */
     private static final int MIN_TEST_INTERVAL = 5 * 60 * 1000;
+
+    /** How long to retain the wakelock to wait for incoming messages. */
+    private static final int WAIT_FOR_MESSAGES_DELAY = 5000;
 
     private static final String[] RESEND_PROJECTION = new String[] {
         Messages._ID,
@@ -602,6 +607,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         private boolean handleMessage(MessageCenterService service, Message msg) {
             if (msg.what == MSG_IDLE) {
+                if (service.isConnecting()) {
+                    // try again next time
+                    queueInactive();
+                }
+
                 // push notifications unavailable: set up an alarm for next time
                 if (service.mPushRegistrationId == null) {
                     service.setWakeupAlarm();
@@ -1049,13 +1059,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (!LegacyAuthentication.isUpgrading())
             endKeyPairRegeneration();
 
-        if (mWakeLock.isHeld() && mIdleHandler != null) {
-            // we release the message center if the wake lock was held
-            // this means that the message center was connecting
-            mIdleHandler.release();
+        if (!restarting) {
+            // release the wakelock if not restarting
+            mWakeLock.release();
         }
-        // release the wakelock
-        mWakeLock.release();
     }
 
     private static final class AbortThread extends Thread {
@@ -1715,8 +1722,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if ((mConnection == null || !mConnection.isConnected()) && mHelper == null) {
             // acquire the wakelock
             mWakeLock.acquire();
-            // hold on to the message center
-            mIdleHandler.hold(false);
 
             // reset push notification variable
             mPushNotifications = Preferences.getPushNotificationsEnabled(this) &&
@@ -1905,8 +1910,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
         });
 
-        // release the wakelock
-        mWakeLock.release();
+        // re-acquire the wakelock for a limited time to allow for messages to come
+        mWakeLock.acquire(WAIT_FOR_MESSAGES_DELAY);
     }
 
     void broadcast(String action) {
