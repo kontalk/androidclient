@@ -211,8 +211,10 @@ public class Keyring {
             new String[] { MyUsers.Keys.TRUST_LEVEL },
             MyUsers.Keys.FINGERPRINT + " = ?",
             new String[] { VALUE_AUTOTRUST }, null);
-        if (c != null && c.moveToNext()) {
-            result = c.getInt(0);
+        if (c != null) {
+            if (c.moveToNext()) {
+                result = c.getInt(0);
+            }
             c.close();
         }
         return result;
