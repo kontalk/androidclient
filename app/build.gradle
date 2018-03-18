@@ -149,7 +149,7 @@ dependencies {
         exclude group: 'junit'
     }
     compile 'info.guardianproject.netcipher:netcipher:1.2.1'
-    compile 'com.googlecode.libphonenumber:libphonenumber:8.8.11'
+    compile 'com.googlecode.libphonenumber:libphonenumber:8.9.2'
     compile 'com.google.zxing:core:3.3.1'
     compile 'me.dm7.barcodescanner:zxing:1.9.8'
     compile 'com.segment.backo:backo:1.0.0'
@@ -164,7 +164,7 @@ dependencies {
     compile 'com.nispok:snackbar:2.11.0'
     // Glide 4 requires API level 14
     compile 'com.github.bumptech.glide:glide:3.8.0'
-    compile 'com.github.instacart.truetime-android:library:3.0'
+    compile 'com.github.instacart.truetime-android:library:3.3'
     compile 'com.github.daniele-athome:FloatingActionButton:2e5bbbf155'
     compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'com.github.vlivanov:ListViewVariants:f606578467'

@@ -281,8 +281,10 @@ public class MessagingNotification {
         }
 
         // notifications are disabled
-        if (!Preferences.getNotificationsEnabled(context) || sDisabled)
+        if (!Preferences.getNotificationsEnabled(context) || sDisabled) {
+            c.close();
             return;
+        }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context.getApplicationContext());
         Set<Uri> conversationIds = new HashSet<>(unread);

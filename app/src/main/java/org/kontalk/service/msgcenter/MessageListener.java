@@ -83,6 +83,7 @@ import org.kontalk.util.XMPPUtils;
 
 import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_TIMESTAMP;
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_MESSAGE;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_CHAT_STATE;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_GROUP_JID;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
@@ -98,7 +99,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
         super(instance, "-RECV");
     }
 
-    private boolean processGroupMessage(KontalkGroupManager.KontalkGroup group, Stanza packet, CompositeMessage msg) {
+    private boolean processGroupMessage(KontalkGroupManager.KontalkGroup group, Stanza packet, CompositeMessage msg, Intent chatStateBroadcast) {
 
         if (group.checkRequest(packet) && canHandleGroupCommand(packet)) {
             GroupExtension ext = GroupExtension.from(packet);
@@ -109,6 +110,11 @@ class MessageListener extends WakefulMessageCenterPacketListener {
             GroupInfo groupInfo = new GroupInfo(groupJid, subject,
                 KontalkGroupController.GROUP_TYPE, MyMessages.Groups.MEMBERSHIP_MEMBER);
             msg.addComponent(new GroupComponent(groupInfo));
+
+            // group typing information
+            if (chatStateBroadcast != null) {
+                chatStateBroadcast.putExtra(EXTRA_GROUP_JID, groupJid);
+            }
 
             if (ext.getType() == GroupExtension.Type.CREATE ||
                     ext.getType() == GroupExtension.Type.PART ||
@@ -162,12 +168,18 @@ class MessageListener extends WakefulMessageCenterPacketListener {
         org.jivesoftware.smack.packet.Message m = (org.jivesoftware.smack.packet.Message) packet;
 
         if (m.getType() == org.jivesoftware.smack.packet.Message.Type.chat) {
-            // FIXME processing chat state now for encrypted messages would skip group processing
-            ExtensionElement chatstate = processChatState(m);
+            // a preliminary object is created here
+            // other info will be filled in by processChatMessage
+            Intent chatStateBroadcast = processChatState(m);
 
             // non-active chat states are not to be processed as messages
-            if (chatstate == null || chatstate.getElementName().equals(ChatState.active.name())) {
-                processChatMessage(m);
+            if (chatStateBroadcast == null || ChatState.active.name().equals(chatStateBroadcast.getStringExtra(EXTRA_CHAT_STATE))) {
+                processChatMessage(m, chatStateBroadcast);
+            }
+
+            if (chatStateBroadcast != null) {
+                // we can send the chat state broadcast now
+                sendBroadcast(chatStateBroadcast);
             }
         }
 
@@ -209,35 +221,35 @@ class MessageListener extends WakefulMessageCenterPacketListener {
         return null;
     }
 
-    private ChatStateExtension processChatState(Message m) {
+    private Intent processChatState(Message m) {
         // check if there is a composing notification
         ExtensionElement _chatstate = m.getExtension("http://jabber.org/protocol/chatstates");
-        ChatStateExtension chatstate = null;
         if (_chatstate != null) {
-            chatstate = (ChatStateExtension) _chatstate;
+            ChatStateExtension chatstate = (ChatStateExtension) _chatstate;
 
             Jid from = m.getFrom();
             Intent i = new Intent(ACTION_MESSAGE);
-            i.putExtra("org.kontalk.message.chatState", chatstate.getElementName());
+            i.putExtra(EXTRA_CHAT_STATE, chatstate.getElementName());
             i.putExtra(EXTRA_FROM, from.toString());
             i.putExtra(EXTRA_TO, m.getTo().toString());
 
             String groupJid = getGroupJid(m);
-            // must not be set typing if happening in group
-            if (groupJid == null) {
-                Contact.setTyping(from.toString(), chatstate.getChatState() == ChatState.composing);
-            }
-            else {
+            if (groupJid != null) {
                 i.putExtra(EXTRA_GROUP_JID, groupJid);
             }
 
-            sendBroadcast(i);
+            return i;
         }
 
-        return chatstate;
+        return null;
     }
 
-    private void processChatMessage(Message m) throws SmackException.NotConnectedException {
+    /**
+     * Process an incoming message packet.
+     * @param m the message
+     * @param chatStateBroadcast a chat state broadcast that will be filled with missing information (e.g. group info in encrypted message)
+     */
+    private void processChatMessage(Message m, Intent chatStateBroadcast) throws SmackException.NotConnectedException {
         // delayed deliver extension is the first the be processed
         // because it's used also in delivery receipts
         Date stamp = XMPPUtils.getStanzaDelay(m);
@@ -481,7 +493,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
                 return;
 
             }
-            if (group != null && !processGroupMessage(group, m, msg)) {
+            if (group != null && !processGroupMessage(group, m, msg, chatStateBroadcast)) {
                 // invalid group command
                 Log.w(TAG, "invalid or unauthorized group command");
                 return;
@@ -490,6 +502,13 @@ class MessageListener extends WakefulMessageCenterPacketListener {
             if (msg.getComponents().size() == 0) {
                 Log.w(TAG, "message has no content, discarding");
                 return;
+            }
+
+            // 1-to-1 message with a chat state
+            // set contact as typing if necessary
+            if (!msg.hasComponent(GroupComponent.class) && chatStateBroadcast != null) {
+                Contact.setTyping(from.toString(),
+                    ChatState.composing.name().equals(chatStateBroadcast.getStringExtra(EXTRA_CHAT_STATE)));
             }
 
             msg.setStatus(needAck ? Messages.STATUS_INCOMING : Messages.STATUS_CONFIRMED);

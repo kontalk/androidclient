@@ -396,6 +396,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     public static final String EXTRA_MESSAGE = "org.kontalk.message";
 
+    public static final String EXTRA_CHAT_STATE = "org.kontalk.message.chatState";
+
     // other
     public static final String PUSH_REGISTRATION_ID = "org.kontalk.PUSH_REGISTRATION_ID";
     private static final String DEFAULT_PUSH_PROVIDER = "gcm";
@@ -414,14 +416,19 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Normal ping tester timeout.
      */
     private static final int SLOW_PING_TIMEOUT = 10000;
+
     /**
      * Fast ping tester timeout.
      */
     private static final int FAST_PING_TIMEOUT = 3000;
+
     /**
      * Minimal interval between connection tests (5 mins).
      */
     private static final int MIN_TEST_INTERVAL = 5 * 60 * 1000;
+
+    /** How long to retain the wakelock to wait for incoming messages. */
+    private static final int WAIT_FOR_MESSAGES_DELAY = 5000;
 
     private static final String[] RESEND_PROJECTION = new String[] {
         Messages._ID,
@@ -602,6 +609,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         private boolean handleMessage(MessageCenterService service, Message msg) {
             if (msg.what == MSG_IDLE) {
+                if (service.isConnecting()) {
+                    // try again next time
+                    queueInactive();
+                }
+
                 // push notifications unavailable: set up an alarm for next time
                 if (service.mPushRegistrationId == null) {
                     service.setWakeupAlarm();
@@ -1049,13 +1061,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (!LegacyAuthentication.isUpgrading())
             endKeyPairRegeneration();
 
-        if (mWakeLock.isHeld() && mIdleHandler != null) {
-            // we release the message center if the wake lock was held
-            // this means that the message center was connecting
-            mIdleHandler.release();
+        if (!restarting) {
+            // release the wakelock if not restarting
+            mWakeLock.release();
         }
-        // release the wakelock
-        mWakeLock.release();
     }
 
     private static final class AbortThread extends Thread {
@@ -1715,8 +1724,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if ((mConnection == null || !mConnection.isConnected()) && mHelper == null) {
             // acquire the wakelock
             mWakeLock.acquire();
-            // hold on to the message center
-            mIdleHandler.hold(false);
 
             // reset push notification variable
             mPushNotifications = Preferences.getPushNotificationsEnabled(this) &&
@@ -1905,8 +1912,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
         });
 
-        // release the wakelock
-        mWakeLock.release();
+        // re-acquire the wakelock for a limited time to allow for messages to come
+        mWakeLock.acquire(WAIT_FOR_MESSAGES_DELAY);
     }
 
     void broadcast(String action) {
@@ -2954,7 +2961,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 else {
                     ChatState chatState;
                     try {
-                        chatState = ChatState.valueOf(data.getString("org.kontalk.message.chatState"));
+                        chatState = ChatState.valueOf(data.getString(EXTRA_CHAT_STATE));
                         // add chat state if message is not a received receipt
                         m.addExtension(new ChatStateExtension(chatState));
                     }
@@ -3200,18 +3207,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     public static void sendChatState(final Context context, String to, ChatState state) {
         Intent i = new Intent(context, MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_MESSAGE);
+        i.setAction(ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.to", to);
-        i.putExtra("org.kontalk.message.chatState", state.name());
+        i.putExtra(EXTRA_CHAT_STATE, state.name());
         i.putExtra("org.kontalk.message.standalone", true);
         context.startService(i);
     }
 
     public static void sendGroupChatState(final Context context, String groupJid, String[] to, ChatState state) {
         Intent i = new Intent(context, MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_MESSAGE);
+        i.setAction(ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.to", to);
-        i.putExtra("org.kontalk.message.chatState", state.name());
+        i.putExtra(EXTRA_CHAT_STATE, state.name());
         i.putExtra("org.kontalk.message.standalone", true);
         i.putExtra("org.kontalk.message.group.jid", groupJid);
         i.putExtra("org.kontalk.message.to", to);
@@ -3223,14 +3230,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     public static void sendTextMessage(final Context context, String to, String text, boolean encrypt, long msgId, String packetId, long inReplyTo) {
         Intent i = new Intent(context, MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_MESSAGE);
+        i.setAction(ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.packetId", packetId);
         i.putExtra("org.kontalk.message.mime", TextComponent.MIME_TYPE);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.body", text);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
+        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
         i.putExtra("org.kontalk.message.inReplyTo", inReplyTo);
         context.startService(i);
     }
@@ -3238,7 +3245,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static void sendGroupTextMessage(final Context context, String groupJid, String[] to,
         String text, boolean encrypt, long msgId, String packetId, long inReplyTo) {
         Intent i = new Intent(context, MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_MESSAGE);
+        i.setAction(ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.packetId", packetId);
         i.putExtra("org.kontalk.message.mime", TextComponent.MIME_TYPE);
@@ -3246,7 +3253,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.body", text);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
+        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
         i.putExtra("org.kontalk.message.inReplyTo", inReplyTo);
         context.startService(i);
     }
@@ -3254,7 +3261,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static void createGroup(final Context context, String groupJid,
         String groupSubject, String[] to, boolean encrypt, long msgId, String packetId) {
         Intent i = new Intent(context, MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_MESSAGE);
+        i.setAction(ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.packetId", packetId);
         i.putExtra("org.kontalk.message.mime", GroupCommandComponent.MIME_TYPE);
@@ -3263,7 +3270,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.group.command", GROUP_COMMAND_CREATE);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
+        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
         context.startService(i);
     }
 
@@ -3278,7 +3285,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.group.command", GROUP_COMMAND_PART);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
+        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
         context.startService(i);
     }
 
@@ -3295,7 +3302,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.group.add", members);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
+        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
         context.startService(i);
     }
 
@@ -3312,7 +3319,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.group.remove", members);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
+        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
         context.startService(i);
     }
 
@@ -3328,7 +3335,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.group.command", GROUP_COMMAND_SUBJECT);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
+        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
         context.startService(i);
     }
 
@@ -3351,7 +3358,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.preview.path", previewPath);
         i.putExtra("org.kontalk.message.compress", compress);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
+        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
         context.startService(i);
     }
 
@@ -3370,7 +3377,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.preview.path", previewPath);
         i.putExtra("org.kontalk.message.compress", compress);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
+        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
         context.startService(i);
     }
 
@@ -3395,7 +3402,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             i.putExtra("org.kontalk.message.geo_street", geoStreet);
 
         i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
+        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
         context.startService(i);
     }
 
@@ -3421,7 +3428,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             i.putExtra("org.kontalk.message.geo_street", geoStreet);
 
         i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
+        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
         context.startService(i);
     }
 
@@ -3441,7 +3448,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.body", fetchUrl);
         i.putExtra("org.kontalk.message.fetch.url", fetchUrl);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
+        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
         context.startService(i);
     }
 
@@ -3460,7 +3467,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.body", fetchUrl);
         i.putExtra("org.kontalk.message.fetch.url", fetchUrl);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
+        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
         context.startService(i);
     }
 
