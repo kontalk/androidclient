@@ -1,5 +1,22 @@
 # Change Log
 
+## [4.1.4] - 2018-03-18
+### Changed
+- Typing status in groups (#1152)
+
+### Fixed
+- Camera permission is needed also for external camera app (#1136)
+- Allow HTTP connections for media uploads (#1137)
+- Keep wake lock during message delivery and incoming processing (#1138)
+- Crash with some balloon themes (#1142)
+- Direct call requires explicit permission (#1144)
+- Permission request loop with Google Maps provider (#1145)
+- Crash with notifications on Android 4 (#1146)
+- Crash requesting permission in contacts list (#1147)
+- Use system-provided time on buggy firmwares (#1149)
+- Request storage permission before importing personal key (#1153)
+- Inapproriate use of plurals leading to crash (#1154)
+
 ## [4.1.3] - 2018-01-17
 ### Changed
 - Image preview in notifications (#56)
