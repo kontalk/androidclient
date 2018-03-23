@@ -1724,6 +1724,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if ((mConnection == null || !mConnection.isConnected()) && mHelper == null) {
             // acquire the wakelock
             mWakeLock.acquire();
+            // hold on to the message center
+            mIdleHandler.hold(false);
 
             // reset push notification variable
             mPushNotifications = Preferences.getPushNotificationsEnabled(this) &&
