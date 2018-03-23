@@ -386,11 +386,38 @@ public class MessagesProvider extends ContentProvider {
 
         private static final String[] SCHEMA_UPGRADE_V16 = {
             "DROP TRIGGER IF EXISTS update_thread_on_insert",
-            TRIGGER_THREADS_INSERT_COUNT,
+            "CREATE TRIGGER update_thread_on_insert AFTER INSERT ON messages" +
+                " BEGIN " +
+                "UPDATE threads SET count = (" +
+                    "SELECT COUNT(_id) FROM messages WHERE thread_id = new.thread_id" +
+                    ") WHERE _id = new.thread_id;" +
+                "UPDATE threads SET " +
+                    "unread = (SELECT COUNT(_id) FROM messages WHERE thread_id = new.thread_id AND unread <> 0), " +
+                    "\"new\" = (SELECT COUNT(_id) FROM messages WHERE thread_id = new.thread_id AND \"new\" <> 0) " +
+                    "WHERE _id = new.thread_id;" +
+                "UPDATE threads SET status = (" +
+                    "SELECT status FROM messages WHERE thread_id = new.thread_id ORDER BY timestamp DESC LIMIT 1)" +
+                    " WHERE _id = new.thread_id;" +
+                "END",
             "DROP TRIGGER IF EXISTS update_thread_on_update",
-            TRIGGER_THREADS_UPDATE_COUNT,
+            "CREATE TRIGGER update_thread_on_update AFTER UPDATE OF " +
+                "status ON messages" +
+                " BEGIN " +
+                "UPDATE threads SET status = (" +
+                    "SELECT status FROM messages WHERE thread_id = new.thread_id ORDER BY timestamp DESC LIMIT 1)" +
+                    " WHERE _id = new.thread_id;" +
+                "END",
             "DROP TRIGGER IF EXISTS update_thread_on_delete",
-            TRIGGER_THREADS_DELETE_COUNT,
+            "CREATE TRIGGER update_thread_on_delete AFTER DELETE ON messages" +
+                " BEGIN " +
+                "UPDATE threads SET count = (" +
+                    "SELECT COUNT(_id) FROM messages WHERE thread_id = old.thread_id" +
+                    ") WHERE _id = old.thread_id;" +
+                "UPDATE threads SET " +
+                    "unread = (SELECT COUNT(_id) FROM messages WHERE thread_id = old.thread_id AND unread <> 0), " +
+                    "\"new\" = (SELECT COUNT(_id) FROM messages WHERE thread_id = old.thread_id AND \"new\" <> 0) " +
+                    "WHERE _id = old.thread_id;" +
+                "END",
         };
 
         DatabaseHelper(Context context) {
