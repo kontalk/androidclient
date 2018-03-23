@@ -76,6 +76,7 @@
     <string name="view_contact">View contact</string>
     <string name="view_conversation">View chat</string>
     <string name="delete_thread">Delete chat</string>
+    <string name="archive_thread">Archive chat</string>
     <string name="menu_sticky">Favorite</string>
     <string name="delete_thread_messages">Delete chat history</string>
     <string name="confirm_delete_thread">Delete chat</string>

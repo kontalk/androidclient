@@ -242,6 +242,11 @@ public class ConversationListFragment extends ListFragment
     @Override
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.menu_archive:
+                archiveSelectedThreads(SystemUtils
+                    .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
+                mode.finish();
+                return true;
             case R.id.menu_delete:
                 // using clone because listview returns its original copy
                 deleteSelectedThreads(SystemUtils
@@ -275,6 +280,16 @@ public class ConversationListFragment extends ListFragment
         boolean singleItem = (mCheckedItemCount == 1);
         menu.findItem(R.id.menu_sticky).setVisible(singleItem);
         return true;
+    }
+
+    private void archiveSelectedThreads(SparseBooleanArray checked) {
+        Context ctx = getContext();
+        for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
+            if (checked.get(i)) {
+                Cursor item = (Cursor) mListAdapter.getItem(i);
+                Conversation.archiveFromCursor(ctx, item);
+            }
+        }
     }
 
     private void deleteSelectedThreads(SparseBooleanArray checked) {
@@ -374,7 +389,7 @@ public class ConversationListFragment extends ListFragment
         Context ctx = getActivity();
         if (ctx != null) {
             try {
-                c = Conversation.startQuery(ctx);
+                c = Conversation.startQuery(ctx, false);
             }
             catch (SQLiteException e) {
                 Log.e(TAG, "query error", e);

@@ -101,7 +101,7 @@ public class MessagesProvider extends ContentProvider {
     @VisibleForTesting
     static class DatabaseHelper extends SQLiteOpenHelper {
         @VisibleForTesting
-        static final int DATABASE_VERSION = 17;
+        static final int DATABASE_VERSION = 18;
         @VisibleForTesting
         static final String DATABASE_NAME = "messages.db";
 
@@ -178,7 +178,8 @@ public class MessagesProvider extends ContentProvider {
             "draft TEXT," +
             "request_status INTEGER NOT NULL DEFAULT 0," +
             "sticky INTEGER NOT NULL DEFAULT 0," +
-            "encryption INTEGER NOT NULL DEFAULT 1" +
+            "encryption INTEGER NOT NULL DEFAULT 1," +
+            "archived NOT NULL DEFAULT 0" +
             ")";
 
         /** This table will contain the latest message from each conversation. */
@@ -420,6 +421,10 @@ public class MessagesProvider extends ContentProvider {
                 "END",
         };
 
+        private static final String[] SCHEMA_UPGRADE_V17 = {
+            "ALTER TABLE threads ADD COLUMN archived NOT NULL DEFAULT 0",
+        };
+
         DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
         }
@@ -489,6 +494,11 @@ public class MessagesProvider extends ContentProvider {
                     // fall through
                 case 16:
                     for (String sql : SCHEMA_UPGRADE_V16) {
+                        db.execSQL(sql);
+                    }
+                    // fall through
+                case 17:
+                    for (String sql : SCHEMA_UPGRADE_V17) {
                         db.execSQL(sql);
                     }
                     // fall through
@@ -911,6 +921,9 @@ public class MessagesProvider extends ContentProvider {
                     initialValues.getAsString(Threads.PEER) : null,
                 values);
         }
+
+        // will reset archived status since we are called for inserting a message
+        values.put(Threads.ARCHIVED, false);
 
         // insert new thread
         try {
@@ -1628,6 +1641,7 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Threads.REQUEST_STATUS, Threads.REQUEST_STATUS);
         threadsProjectionMap.put(Threads.STICKY, Threads.STICKY);
         threadsProjectionMap.put(Threads.ENCRYPTION, Threads.ENCRYPTION);
+        threadsProjectionMap.put(Threads.ARCHIVED, Threads.ARCHIVED);
         threadsProjectionMap.put(Groups.GROUP_JID, Groups.GROUP_JID);
         threadsProjectionMap.put(Groups.SUBJECT, Groups.SUBJECT);
         threadsProjectionMap.put(Groups.GROUP_TYPE, Groups.GROUP_TYPE);

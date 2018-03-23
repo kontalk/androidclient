@@ -211,6 +211,7 @@ public final class MyMessages {
         public static final String REQUEST_STATUS = "request_status";
         public static final String STICKY = "sticky";
         public static final String ENCRYPTION = "encryption";
+        public static final String ARCHIVED = "archived";
 
         public static final String DEFAULT_SORT_ORDER = "sticky DESC, timestamp DESC";
         public static final String INVERTED_SORT_ORDER = "timestamp";
