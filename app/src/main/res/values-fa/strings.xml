@@ -22,7 +22,7 @@
     <string name="sync_service_name">هم‌گام‌سازی مخاطبان</string>
     <string name="yes">بله</string>
     <string name="no">نه</string>
-    <string name="send">فرستادن</string>
+    <string name="send">ارسال</string>
     <string name="menu_delete_all">حذف گپ‌ها</string>
     <string name="menu_search">جست‌وجو</string>
     <string name="mykey_activity_title">کلید شخصی من</string>
@@ -33,7 +33,7 @@
     <string name="menu_offline">برون‌خط شدن</string>
     <string name="menu_online">برخط شو</string>
     <string name="menu_import_key">درون‌ریزی کلید</string>
-    <string name="pref_network_settings">تنظیمات شبکه</string>
+    <string name="pref_network_settings">شبکه</string>
     <string name="pref_network_uri">نشانی کارساز دستی</string>
     <string name="pref_title_network_uri">این کار، مدیریت خودکار فهرست کارساز را پایمال خواهد کرد</string>
     <string name="number_validation_intro1">لطفاً نامتان را وارد کرده، کد کشورتان را برگزیده و شمارهٔ تلفن همراهتان را وارد کنید. در صفحهٔ‌ بعدی دستورالعمل‌های بیش‌تری ارائه خواهد شد.</string>
@@ -371,21 +371,21 @@
     <string name="msg_iab_thankyou_warning">چیزی اشتباه شد، ولی اعانه پرداخت شد. ممنون!</string>
 
     <plurals name="unread_messages">
-        <item quantity="one">%d پیام خوانده نشده</item>
-        <item quantity="other">%d پیام خوانده نشده</item>
-    </plurals>
-<string name="menu_create_group">ساخت گروه</string>
+	<item quantity="one">%d پیام خوانده نشده</item>
+	<item quantity="other">%d پیام‌های خوانده نشده</item>
+</plurals>
+<string name="menu_create_group">ایجاد گروه</string>
     <string name="delete_thread_messages">حذف تاریخچه ی گپ</string>
     <string name="pref_push_notifications_disabled">غیرفعال</string>
 
     <plurals name="confirm_will_delete_threads">
-        <item quantity="one" tools:ignore="ImpliedQuantity">گفت‌وگوی گزیده حذف خواهد شد.</item>
-        <item quantity="other">گفت‌وگوی گزیده حذف خواهد شد.</item>
-    </plurals>
+	<item quantity="one">گفت‌وگوی گزیده حذف خواهد شد.</item>
+	<item quantity="other">گفت‌وگوهتی گزیده حذف خواهند شد.</item>
+</plurals>
 
     <plurals name="delete_threads_leave_groups">
-        <item quantity="one" tools:ignore="ImpliedQuantity">همچنین از گروه ها خارج شو</item>
-        <item quantity="other">همچنین از گروه ها خارج شو</item>
-    </plurals>
+	<item quantity="one">همچنین از گروه خارج شو</item>
+	<item quantity="other">همچنین از گروه‌ها خارج شو</item>
+</plurals>
 
 </resources>
