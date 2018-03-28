@@ -196,6 +196,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     private MenuItem mDeleteThreadMenu;
     private MenuItem mToggleEncryptionMenu;
 
+    private ImageView mBackground;
+
     /**
      * The thread id.
      */
@@ -302,15 +304,15 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         list.addHeaderView(mHeaderView, null, false);
 
         // set custom background (if any)
-        ImageView background = getView().findViewById(R.id.background);
+        mBackground = getView().findViewById(R.id.background);
         Drawable bg = Preferences.getConversationBackground(getActivity());
         if (bg != null) {
-            background.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            background.setImageDrawable(bg);
+            mBackground.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            mBackground.setImageDrawable(bg);
         }
         else {
-            background.setScaleType(ImageView.ScaleType.FIT_XY);
-            background.setImageResource(R.drawable.app_background_tile);
+            mBackground.setScaleType(ImageView.ScaleType.FIT_XY);
+            mBackground.setImageResource(R.drawable.app_background_tile);
         }
 
         processArguments(savedInstanceState);
@@ -2213,21 +2215,36 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             mDeleteThreadMenu.setEnabled(threadEnabled);
         }
 
-        if (mToggleEncryptionMenu != null) {
-            Context context = getActivity();
-            if (context != null) {
-                if (mConversation != null && Preferences.getEncryptionEnabled(context)) {
-                    boolean encryption = mConversation.isEncryptionEnabled();
+        Context context = getActivity();
+        if (context != null) {
+            if (mConversation != null && Preferences.getEncryptionEnabled(context)) {
+                boolean encryption = mConversation.isEncryptionEnabled();
+                if (mToggleEncryptionMenu != null) {
                     mToggleEncryptionMenu
                         .setVisible(true)
                         .setEnabled(true)
                         .setChecked(encryption);
                 }
-                else {
+                if (mBackground != null) {
+                    if (encryption) {
+                        mBackground.clearColorFilter();
+                    }
+                    else {
+                        mBackground.setColorFilter(ContextCompat
+                            .getColor(context, R.color.app_background_unsafe_filter));
+                    }
+                }
+            }
+            else {
+                if (mToggleEncryptionMenu != null) {
                     mToggleEncryptionMenu
                         .setVisible(false)
                         .setEnabled(false)
                         .setChecked(false);
+                }
+                if (mBackground != null) {
+                    mBackground.setColorFilter(ContextCompat
+                        .getColor(context, R.color.app_background_unsafe_filter));
                 }
             }
         }
