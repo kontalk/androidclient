@@ -122,77 +122,76 @@ android {
 }
 
 dependencies {
-    compile (project(':client-common-java')) {
+    api (project(':client-common-java')) {
         exclude group: 'net.sf.kxml'
     }
 
-    compile "com.android.support:appcompat-v7:$appcompatVersion"
-
-    compile "com.android.support:design:$appcompatVersion"
-    compile "com.android.support:gridlayout-v7:$appcompatVersion"
-    compile "com.android.support:exifinterface:$appcompatVersion"
-    compile "com.android.support:recyclerview-v7:$appcompatVersion"
-    compile "com.android.support:support-dynamic-animation:$appcompatVersion"
+    implementation "com.android.support:appcompat-v7:$appcompatVersion"
+    implementation "com.android.support:design:$appcompatVersion"
+    implementation "com.android.support:gridlayout-v7:$appcompatVersion"
+    implementation "com.android.support:exifinterface:$appcompatVersion"
+    implementation "com.android.support:recyclerview-v7:$appcompatVersion"
+    implementation "com.android.support:support-dynamic-animation:$appcompatVersion"
     // these are actually to override an emoji dependency
-    compile "com.android.support:cardview-v7:$appcompatVersion"
-    compile "com.android.support:animated-vector-drawable:$appcompatVersion"
-    compile "com.android.support:support-v13:$appcompatVersion"
+    implementation "com.android.support:cardview-v7:$appcompatVersion"
+    implementation "com.android.support:animated-vector-drawable:$appcompatVersion"
+    implementation "com.android.support:support-v13:$appcompatVersion"
 
-    compile "com.madgag.spongycastle:core:$spongyCastleVersion"
-    compile ("com.madgag.spongycastle:prov:$spongyCastleVersion") {
+    implementation "com.madgag.spongycastle:core:$spongyCastleVersion"
+    implementation ("com.madgag.spongycastle:prov:$spongyCastleVersion") {
         exclude group: 'junit'
     }
-    compile ("com.madgag.spongycastle:bcpkix-jdk15on:$spongyCastleVersion") {
+    implementation ("com.madgag.spongycastle:bcpkix-jdk15on:$spongyCastleVersion") {
         exclude group: 'junit'
     }
-    compile ("com.madgag.spongycastle:bcpg-jdk15on:$spongyCastleVersion") {
+    implementation ("com.madgag.spongycastle:bcpg-jdk15on:$spongyCastleVersion") {
         exclude group: 'junit'
     }
-    compile 'info.guardianproject.netcipher:netcipher:1.2.1'
-    compile 'com.googlecode.libphonenumber:libphonenumber:8.9.2'
-    compile 'com.google.zxing:core:3.3.1'
-    compile 'me.dm7.barcodescanner:zxing:1.9.8'
-    compile 'com.segment.backo:backo:1.0.0'
-    compile 'com.afollestad:assent:0.2.5'
-    compile "org.igniterealtime.smack:smack-tcp:$smackVersion"
-    compile "org.igniterealtime.smack:smack-experimental:$smackVersion"
-    compile "org.igniterealtime.smack:smack-android:$smackVersion"
-    compile 'com.github.machinarius:preferencefragment:0.1.1'
-    compile 'com.afollestad.material-dialogs:core:0.9.6.0'
-    compile 'com.afollestad.material-dialogs:commons:0.9.6.0'
-    compile 'com.github.castorflex.smoothprogressbar:library:1.1.0'
-    compile 'com.nispok:snackbar:2.11.0'
+    implementation 'info.guardianproject.netcipher:netcipher:1.2.1'
+    implementation 'com.googlecode.libphonenumber:libphonenumber:8.9.2'
+    implementation 'com.google.zxing:core:3.3.1'
+    implementation 'me.dm7.barcodescanner:zxing:1.9.8'
+    implementation 'com.segment.backo:backo:1.0.0'
+    implementation 'com.afollestad:assent:0.2.5'
+    implementation "org.igniterealtime.smack:smack-tcp:$smackVersion"
+    implementation "org.igniterealtime.smack:smack-experimental:$smackVersion"
+    implementation "org.igniterealtime.smack:smack-android:$smackVersion"
+    implementation 'com.github.machinarius:preferencefragment:0.1.1'
+    implementation 'com.afollestad.material-dialogs:core:0.9.6.0'
+    implementation 'com.afollestad.material-dialogs:commons:0.9.6.0'
+    implementation 'com.github.castorflex.smoothprogressbar:library:1.1.0'
+    implementation 'com.nispok:snackbar:2.11.0'
     // Glide 4 requires API level 14
-    compile 'com.github.bumptech.glide:glide:3.8.0'
-    compile 'com.github.instacart.truetime-android:library:3.3'
-    compile 'com.github.daniele-athome:FloatingActionButton:2e5bbbf155'
-    compile 'de.hdodenhof:circleimageview:2.1.0'
-    compile 'com.github.vlivanov:ListViewVariants:f606578467'
-    compile 'com.vanniktech:emoji-one:0.5.1'
+    implementation 'com.github.bumptech.glide:glide:3.8.0'
+    implementation 'com.github.instacart.truetime-android:library:3.3'
+    implementation 'com.github.daniele-athome:FloatingActionButton:2e5bbbf155'
+    implementation 'de.hdodenhof:circleimageview:2.1.0'
+    implementation 'com.github.vlivanov:ListViewVariants:f606578467'
+    implementation 'com.vanniktech:emoji-one:0.5.1'
 
-    compile 'com.google.code.gson:gson:2.8.2'
-    compile 'com.squareup.okhttp3:okhttp:3.9.1'
+    implementation 'com.google.code.gson:gson:2.8.2'
+    implementation 'com.squareup.okhttp3:okhttp:3.9.1'
 
-    compile "com.github.kontalk.AnyMaps:anymaps-base:$anyMapsVersion"
-    compile "com.github.kontalk.AnyMaps:anymaps-osm:$anyMapsVersion"
+    implementation "com.github.kontalk.AnyMaps:anymaps-base:$anyMapsVersion"
+    implementation "com.github.kontalk.AnyMaps:anymaps-osm:$anyMapsVersion"
 
-    googleplayCompile "com.github.kontalk.AnyMaps:anymaps-google:$anyMapsVersion"
-    googleplayCompile "com.google.android.gms:play-services-maps:$googlePlayServicesVersion"
-    googleplayCompile "com.google.android.gms:play-services-location:$googlePlayServicesVersion"
+    googleplayImplementation "com.github.kontalk.AnyMaps:anymaps-google:$anyMapsVersion"
+    googleplayImplementation "com.google.android.gms:play-services-maps:$googlePlayServicesVersion"
+    googleplayImplementation "com.google.android.gms:play-services-location:$googlePlayServicesVersion"
 
-    googleplayCompile "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
-    googleplayCompile "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"
-    googleplayCompile('com.crashlytics.sdk.android:crashlytics:2.9.1@aar') {
+    googleplayImplementation "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
+    googleplayImplementation "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"
+    googleplayImplementation('com.crashlytics.sdk.android:crashlytics:2.9.1@aar') {
         transitive = true
     }
 
-    testCompile 'junit:junit:4.12'
-    androidTestCompile 'com.android.support.test:runner:1.0.1'
-    androidTestCompile 'com.android.support.test:rules:1.0.1'
-    androidTestCompile "com.android.support:support-annotations:$appcompatVersion"
-    androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.1'
-    androidTestCompile 'com.android.support.test.espresso:espresso-intents:3.0.1'
-    androidTestCompile 'com.jayway.android.robotium:robotium-solo:5.6.3'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.1'
+    androidTestImplementation 'com.android.support.test:rules:1.0.1'
+    androidTestImplementation "com.android.support:support-annotations:$appcompatVersion"
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-intents:3.0.1'
+    androidTestImplementation 'com.jayway.android.robotium:robotium-solo:5.6.3'
 }
 
 if (travisBuild) {
