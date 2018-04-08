@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'checkstyle'
 apply plugin: 'com.github.triplet.play'
 apply plugin: 'io.fabric'
+apply plugin: 'jacoco-android'
 
 check.dependsOn 'checkstyle'
 
