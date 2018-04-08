@@ -19,6 +19,8 @@ android:
     - extra-android-m2repository
     - extra-google-m2repository
     - extra-google-google_play_services
+    # for emulating
+    - android-24
     - sys-img-${ANDROID_ABI}-${ANDROID_TARGET}
   licences:
     - 'android-sdk-license-.+'
