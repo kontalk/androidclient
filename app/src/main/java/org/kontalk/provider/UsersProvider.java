@@ -74,9 +74,10 @@ import org.kontalk.util.XMPPUtils;
 public class UsersProvider extends ContentProvider {
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".users";
 
-    @VisibleForTesting()
+    @VisibleForTesting
     static final int DATABASE_VERSION = 11;
-    private static final String DATABASE_NAME = "users.db";
+    @VisibleForTesting
+    static final String DATABASE_NAME = "users.db";
     private static final String TABLE_USERS = "users";
     private static final String TABLE_USERS_OFFLINE = "users_offline";
     private static final String TABLE_KEYS = "keys";
@@ -97,7 +98,7 @@ public class UsersProvider extends ContentProvider {
     private static HashMap<String, String> usersProjectionMap;
     private static HashMap<String, String> keysProjectionMap;
 
-    @VisibleForTesting()
+    @VisibleForTesting
     static class DatabaseHelper extends SQLiteOpenHelper {
         private static final String CREATE_TABLE_USERS = "(" +
             "_id INTEGER PRIMARY KEY," +
@@ -174,7 +175,7 @@ public class UsersProvider extends ContentProvider {
         /** A read-only connection to the database. */
         private SQLiteDatabase dbReader;
 
-        protected DatabaseHelper(Context context) {
+        DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
             mContext = context;
         }
