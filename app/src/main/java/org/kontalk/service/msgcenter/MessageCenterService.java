@@ -897,7 +897,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     boolean sendPacket(Stanza packet, boolean bumpIdle) {
         // reset idler if requested
-        if (bumpIdle) mIdleHandler.reset();
+        if (bumpIdle && mIdleHandler != null)
+            mIdleHandler.reset();
 
         final XMPPConnection conn = mConnection;
         if (conn != null) {
@@ -920,7 +921,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     void sendIqWithReply(IQ packet, boolean bumpIdle, StanzaListener callback, ExceptionCallback errorCallback) {
         // reset idler if requested
-        if (bumpIdle) mIdleHandler.reset();
+        if (bumpIdle && mIdleHandler != null)
+            mIdleHandler.reset();
 
         final XMPPConnection conn = mConnection;
         if (conn != null) {
