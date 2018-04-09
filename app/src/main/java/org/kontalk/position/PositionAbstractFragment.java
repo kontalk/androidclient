@@ -299,7 +299,7 @@ public abstract class PositionAbstractFragment extends Fragment
     @Override
     public void onMapReady(final AnyMap anyMap) {
         mMap = anyMap;
-        anyMap.setMyLocationEnabled(true);
+        anyMap.setMyLocationEnabled(hasMyLocationPermission());
         anyMap.getUiSettings().setMyLocationButtonEnabled(false);
         anyMap.getUiSettings().setMapToolbarEnabled(false);
         anyMap.getUiSettings().setCompassEnabled(false);
@@ -331,6 +331,11 @@ public abstract class PositionAbstractFragment extends Fragment
                 mDistance.setText(getString(R.string.kilometers_away, distance / 1000.0f));
             }
         }
+    }
+
+    private boolean hasMyLocationPermission() {
+        return Assent.isPermissionGranted(Assent.ACCESS_COARSE_LOCATION) ||
+            Assent.isPermissionGranted(Assent.ACCESS_FINE_LOCATION);
     }
 
     private void askPermissions() {
