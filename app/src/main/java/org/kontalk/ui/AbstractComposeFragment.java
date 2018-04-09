@@ -1136,6 +1136,10 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     }
 
     void startCameraAttachment() {
+        final Context context = getContext();
+        if (context == null)
+            return;
+
         try {
             mCurrentPhoto = MediaStorage.getOutgoingPhotoFile();
             Uri uri = Uri.fromFile(mCurrentPhoto);
@@ -1143,7 +1147,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             final Intent intent = SystemUtils.externalIntent(MediaStore.ACTION_IMAGE_CAPTURE);
             intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                intent.setClipData(ClipData.newUri(getContext().getContentResolver(),
+                intent.setClipData(ClipData.newUri(context.getContentResolver(),
                     "Picture path", uri));
             }
 
