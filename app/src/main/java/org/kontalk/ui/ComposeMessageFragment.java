@@ -55,6 +55,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import pub.devrel.easypermissions.AfterPermissionGranted;
+
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
@@ -73,6 +75,7 @@ import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.Syncer;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.Permissions;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 import org.kontalk.util.XMPPUtils;
@@ -125,7 +128,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
 
         switch (item.getItemId()) {
             case R.id.call_contact:
-                SystemUtils.call(getContext(), mUserPhone);
+                callContact();
                 return true;
 
             case R.id.view_contact:
@@ -150,6 +153,22 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         if (mLocalBroadcastManager != null && mBroadcastReceiver != null) {
             mLocalBroadcastManager.unregisterReceiver(mBroadcastReceiver);
         }
+    }
+
+    private void callContact() {
+        final Context context = getContext();
+
+        if (Permissions.canCallPhone(context)) {
+            doCallContact();
+        }
+        else {
+            Permissions.requestCallPhone(this, null);
+        }
+    }
+
+    @AfterPermissionGranted(Permissions.RC_CALL_PHONE)
+    void doCallContact() {
+        SystemUtils.call(getContext(), mUserPhone);
     }
 
     public void viewContactInfo() {

@@ -154,7 +154,7 @@ dependencies {
     implementation 'com.google.zxing:core:3.3.1'
     implementation 'me.dm7.barcodescanner:zxing:1.9.8'
     implementation 'com.segment.backo:backo:1.0.0'
-    implementation 'com.afollestad:assent:0.2.5'
+    implementation 'pub.devrel:easypermissions:1.2.0'
     implementation "org.igniterealtime.smack:smack-tcp:$smackVersion"
     implementation "org.igniterealtime.smack:smack-experimental:$smackVersion"
     implementation "org.igniterealtime.smack:smack-android:$smackVersion"

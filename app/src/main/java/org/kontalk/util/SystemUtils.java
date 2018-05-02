@@ -28,10 +28,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.afollestad.assent.Assent;
-import com.afollestad.assent.AssentCallback;
-import com.afollestad.assent.PermissionResultSet;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -79,8 +75,6 @@ import org.kontalk.authenticator.Authenticator;
  * @author Daniele Ricci
  */
 public final class SystemUtils {
-
-    private static final int REQUEST_PERMISSIONS = 301;
 
     private static final Pattern VERSION_CODE_MATCH = Pattern
         .compile("\\(([0-9]+)\\)$");
@@ -222,10 +216,6 @@ public final class SystemUtils {
         }
 
         return false;
-    }
-
-    public static boolean isPermissionGranted(Context context, String permission) {
-        return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED;
     }
 
     public static Bitmap getProfilePhoto(Context context) {
@@ -388,7 +378,7 @@ public final class SystemUtils {
         }
     }
 
-    static void doCall(final Context context, final CharSequence phone) {
+    public static void call(final Context context, final CharSequence phone) {
         try {
             context.startActivity(externalIntent(Intent.ACTION_CALL,
                 Uri.parse("tel:" + phone)));
@@ -396,22 +386,6 @@ public final class SystemUtils {
         catch (ActivityNotFoundException e) {
             Toast.makeText(context, R.string.chooser_error_no_dialer,
                 Toast.LENGTH_LONG).show();
-        }
-    }
-
-    public static void call(final Context context, final CharSequence phone) {
-        if (!Assent.isPermissionGranted(Assent.CALL_PHONE)) {
-            Assent.requestPermissions(new AssentCallback() {
-                @Override
-                public void onPermissionResult(PermissionResultSet result) {
-                    if (result.allPermissionsGranted()) {
-                        doCall(context, phone);
-                    }
-                }
-            }, REQUEST_PERMISSIONS, Assent.CALL_PHONE);
-        }
-        else {
-            doCall(context, phone);
         }
     }
 
