@@ -20,12 +20,10 @@ package org.kontalk.ui;
 
 import java.io.IOException;
 
-import com.afollestad.assent.Assent;
-import com.afollestad.assent.AssentCallback;
-import com.afollestad.assent.PermissionResultSet;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
+import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
@@ -42,12 +40,14 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.InputType;
 import android.widget.CompoundButton;
 import android.widget.Toast;
+
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
 
 import org.kontalk.Kontalk;
 import org.kontalk.R;
@@ -56,6 +56,7 @@ import org.kontalk.authenticator.LegacyAuthentication;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.Permissions;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
@@ -69,8 +70,6 @@ public abstract class MainActivity extends ToolbarActivity {
 
     Dialog mUpgradeProgress;
     BroadcastReceiver mUpgradeReceiver;
-
-    private static final int REQUEST_PERMISSIONS = 100;
 
     private static final int DIALOG_AUTH_ERROR_WARNING = 1;
     private static final int DIALOG_AUTH_REQUEST_PASSWORD = 2;
@@ -97,78 +96,43 @@ public abstract class MainActivity extends ToolbarActivity {
     }
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Assent.setActivity(this, this);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Assent.setActivity(this, this);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (isFinishing())
-            Assent.setActivity(this, null);
-    }
-
-    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        Assent.handleResult(permissions, grantResults);
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
+    @SuppressLint("InlinedApi")
     private void askPermissions() {
-        if (!Preferences.isPermissionAsked(Assent.READ_CONTACTS) ||
-            !Preferences.isPermissionAsked(Assent.WRITE_CONTACTS)) {
+        if (!Preferences.isPermissionAsked(Manifest.permission.READ_CONTACTS) ||
+            !Preferences.isPermissionAsked(Manifest.permission.WRITE_CONTACTS)) {
 
-            if (!Assent.isPermissionGranted(Assent.READ_CONTACTS) ||
-                !Assent.isPermissionGranted(Assent.WRITE_CONTACTS)) {
-                Assent.requestPermissions(new AssentCallback() {
-                    @Override
-                    public void onPermissionResult(PermissionResultSet result) {
-                        if (result.isGranted(Assent.READ_CONTACTS)) {
-                            // we finally have contacts, trigger a sync
-                            SyncAdapter.requestSync(MainActivity.this, true);
-                        }
-                        else {
-                            new MaterialDialog.Builder(MainActivity.this)
-                                .content(R.string.err_contacts_denied)
-                                .positiveText(android.R.string.ok)
-                                .show();
-                        }
-                    }
-                }, REQUEST_PERMISSIONS, Assent.READ_CONTACTS, Assent.WRITE_CONTACTS);
+            if (!Permissions.canWriteContacts(this)) {
+                Permissions.requestContacts(this, getString(R.string.err_contacts_denied));
 
-                Preferences.setPermissionAsked(Assent.READ_CONTACTS);
-                Preferences.setPermissionAsked(Assent.WRITE_CONTACTS);
+                Preferences.setPermissionAsked(Manifest.permission.READ_CONTACTS);
+                Preferences.setPermissionAsked(Manifest.permission.WRITE_CONTACTS);
+            }
+            else {
+                contactsGranted();
             }
         }
 
-        if (!Preferences.isPermissionAsked(Assent.READ_EXTERNAL_STORAGE) ||
-            !Preferences.isPermissionAsked(Assent.WRITE_EXTERNAL_STORAGE)) {
+        if (!Preferences.isPermissionAsked(Manifest.permission.READ_EXTERNAL_STORAGE) ||
+            !Preferences.isPermissionAsked(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 
-            if (!Assent.isPermissionGranted(Assent.READ_EXTERNAL_STORAGE) ||
-                !Assent.isPermissionGranted(Assent.WRITE_EXTERNAL_STORAGE)) {
-                Assent.requestPermissions(new AssentCallback() {
-                    @Override
-                    public void onPermissionResult(PermissionResultSet result) {
-                        if (!result.allPermissionsGranted()) {
-                            new MaterialDialog.Builder(MainActivity.this)
-                                .content(R.string.err_storage_denied)
-                                .positiveText(android.R.string.ok)
-                                .show();
-                        }
-                    }
-                }, REQUEST_PERMISSIONS, Assent.READ_EXTERNAL_STORAGE, Assent.WRITE_EXTERNAL_STORAGE);
+            if (!Permissions.canWriteExternalStorage(this)) {
+                Permissions.requestWriteExternalStorage(this, getString(R.string.err_storage_denied));
 
-                Preferences.setPermissionAsked(Assent.READ_EXTERNAL_STORAGE);
-                Preferences.setPermissionAsked(Assent.WRITE_EXTERNAL_STORAGE);
+                Preferences.setPermissionAsked(Manifest.permission.READ_EXTERNAL_STORAGE);
+                Preferences.setPermissionAsked(Manifest.permission.WRITE_EXTERNAL_STORAGE);
             }
         }
+    }
+
+    @AfterPermissionGranted(Permissions.RC_CONTACTS)
+    void contactsGranted() {
+        // we finally have contacts, trigger a sync
+        SyncAdapter.requestSync(MainActivity.this, true);
     }
 
     private boolean ifDozeAlert() {

@@ -18,12 +18,19 @@
 
 package org.kontalk.ui;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+import com.afollestad.materialdialogs.MaterialDialog;
+
 import android.animation.Animator;
 import android.animation.Animator.AnimatorListener;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -42,20 +49,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.afollestad.assent.Assent;
-import com.afollestad.assent.AssentCallback;
-import com.afollestad.assent.PermissionResultSet;
-import com.afollestad.materialdialogs.MaterialDialog;
-
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.ui.view.CircularSeekBar;
 import org.kontalk.util.MediaStorage;
-import org.kontalk.util.SystemUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
+import org.kontalk.util.Permissions;
 
 
 /**
@@ -63,7 +61,7 @@ import java.util.concurrent.TimeUnit;
  * @author Andrea Cappelli
  * @author Daniele Ricci
  */
-public class AudioDialog extends AlertDialog implements AssentCallback {
+public class AudioDialog extends AlertDialog {
     static final String TAG = ComposeMessage.TAG;
 
     private static final String STATE_PREFIX = "AudioDialog_";
@@ -81,8 +79,6 @@ public class AudioDialog extends AlertDialog implements AssentCallback {
     /** Max duration of recorded audio in milliseconds. */
     private static final long MAX_AUDIO_DURATION = TimeUnit.MINUTES.toMillis(5);
     private static final int MAX_PROGRESS = 100;
-
-    private static final int REQUEST_PERMISSIONS = 300;
 
     static final String MAX_AUDIO_DURATION_TEXT = DateUtils
         .formatElapsedTime(MAX_AUDIO_DURATION / 1000);
@@ -128,20 +124,11 @@ public class AudioDialog extends AlertDialog implements AssentCallback {
         mProgressBar.setVisibility(View.INVISIBLE);
         getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.GONE);
 
-        if (!Assent.isPermissionGranted(Assent.READ_EXTERNAL_STORAGE) ||
-            !Assent.isPermissionGranted(Assent.WRITE_EXTERNAL_STORAGE) ||
-            !Assent.isPermissionGranted(Assent.RECORD_AUDIO)) {
-
-            Assent.requestPermissions(this, REQUEST_PERMISSIONS,
-                Assent.READ_EXTERNAL_STORAGE,
-                Assent.WRITE_EXTERNAL_STORAGE,
-                Assent.RECORD_AUDIO);
+        Activity context = (Activity) getContext();
+        if (!Permissions.canRecordAudio(context)) {
+            // TODO rationale
+            Permissions.requestRecordAudio(context, null);
         }
-    }
-
-    @Override
-    public void onPermissionResult(PermissionResultSet result) {
-        // nothing to do actually, user will proceed
     }
 
     @Override
@@ -395,10 +382,14 @@ public class AudioDialog extends AlertDialog implements AssentCallback {
             Log.e(TAG, "error writing on external storage", e);
             cancel();
 
-            int resId = !SystemUtils.isPermissionGranted(getContext(), Assent.READ_EXTERNAL_STORAGE) ||
-                !SystemUtils.isPermissionGranted(getContext(), Assent.WRITE_EXTERNAL_STORAGE) ?
-                R.string.err_audio_record_writing_permission :
-                R.string.err_audio_record_writing;
+            int resId;
+            if (Permissions.canWriteExternalStorage(getContext())) {
+                resId = R.string.err_audio_record_writing;
+            }
+            else {
+                resId = R.string.err_audio_record_writing_permission;
+            }
+
             new MaterialDialog.Builder(getContext())
                 .content(resId)
                 .positiveText(android.R.string.ok)
@@ -408,9 +399,14 @@ public class AudioDialog extends AlertDialog implements AssentCallback {
             Log.e(TAG, "error starting audio recording", e);
             cancel();
 
-            int resId = !SystemUtils.isPermissionGranted(getContext(), Assent.RECORD_AUDIO) ?
-                R.string.err_audio_record_permission :
-                R.string.err_audio_record;
+            int resId;
+            if (Permissions.canRecordAudioOnly(getContext())) {
+                resId = R.string.err_audio_record;
+            }
+            else {
+                resId = R.string.err_audio_record_permission;
+            }
+
             new MaterialDialog.Builder(getContext())
                 .content(resId)
                 .positiveText(android.R.string.ok)

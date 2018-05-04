@@ -18,9 +18,6 @@
 
 package org.kontalk.position;
 
-import com.afollestad.assent.Assent;
-import com.afollestad.assent.AssentCallback;
-import com.afollestad.assent.PermissionResultSet;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.car2go.maps.AnyMap;
 import com.car2go.maps.CameraUpdateFactory;
@@ -48,11 +45,14 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
 
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.ui.PositionActivity;
+import org.kontalk.util.Permissions;
 
 
 /**
@@ -62,10 +62,8 @@ import org.kontalk.ui.PositionActivity;
  * @author Daniele Ricci
  */
 public abstract class PositionAbstractFragment extends Fragment
-        implements OnMapReadyCallback, AssentCallback {
+        implements OnMapReadyCallback {
     final static String TAG = PositionAbstractFragment.class.getSimpleName();
-
-    private static final int REQUEST_PERMISSIONS = 320;
 
     final static int DEFAULT_ZOOM = 12;
 
@@ -89,7 +87,6 @@ public abstract class PositionAbstractFragment extends Fragment
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Assent.setFragment(this, this);
         setHasOptionsMenu(true);
     }
 
@@ -186,16 +183,14 @@ public abstract class PositionAbstractFragment extends Fragment
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        Assent.handleResult(permissions, grantResults);
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
-    @Override
-    public void onPermissionResult(PermissionResultSet result) {
-        if (result.allPermissionsGranted()) {
-            if (mMap != null)
-                onMapReady(mMap);
-            requestLocation();
-        }
+    @AfterPermissionGranted(Permissions.RC_LOCATION)
+    void onLocationAccess() {
+        if (mMap != null)
+            onMapReady(mMap);
+        requestLocation();
     }
 
     /** Child classes should override this to begin location requests. */
@@ -211,15 +206,12 @@ public abstract class PositionAbstractFragment extends Fragment
     @Override
     public void onPause() {
         super.onPause();
-        if (getActivity() != null && getActivity().isFinishing())
-            Assent.setFragment(this, null);
         mMapView.onPause();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        Assent.setFragment(this, this);
         mMapView.onResume();
         askPermissions();
     }
@@ -334,18 +326,14 @@ public abstract class PositionAbstractFragment extends Fragment
     }
 
     private boolean hasMyLocationPermission() {
-        return Assent.isPermissionGranted(Assent.ACCESS_COARSE_LOCATION) ||
-            Assent.isPermissionGranted(Assent.ACCESS_FINE_LOCATION);
+        return Permissions.canAccessSomeLocation(getContext());
     }
 
     private void askPermissions() {
-        if (!Assent.isPermissionGranted(Assent.ACCESS_COARSE_LOCATION) ||
-            !Assent.isPermissionGranted(Assent.ACCESS_FINE_LOCATION)) {
-
+        if (!Permissions.canAccessLocation(getContext())) {
             if (!mPermissionAsked) {
-                Assent.requestPermissions(this, REQUEST_PERMISSIONS,
-                    Assent.ACCESS_COARSE_LOCATION,
-                    Assent.ACCESS_FINE_LOCATION);
+                // TODO rationale
+                Permissions.requestLocation(this, null);
                 mPermissionAsked = true;
             }
         }
@@ -355,4 +343,3 @@ public abstract class PositionAbstractFragment extends Fragment
     }
 
 }
-

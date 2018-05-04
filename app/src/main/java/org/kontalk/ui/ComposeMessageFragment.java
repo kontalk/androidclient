@@ -162,6 +162,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
             doCallContact();
         }
         else {
+            // TODO rationale
             Permissions.requestCallPhone(this, null);
         }
     }

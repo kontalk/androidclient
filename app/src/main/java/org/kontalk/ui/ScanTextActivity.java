@@ -21,9 +21,6 @@ package org.kontalk.ui;
 import java.util.Collections;
 import java.util.List;
 
-import com.afollestad.assent.Assent;
-import com.afollestad.assent.AssentCallback;
-import com.afollestad.assent.PermissionResultSet;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
 
@@ -35,8 +32,10 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
+import pub.devrel.easypermissions.EasyPermissions;
 
 import org.kontalk.R;
+import org.kontalk.util.Permissions;
 
 
 /**
@@ -44,9 +43,7 @@ import org.kontalk.R;
  * @author Daniele Ricci
  */
 public class ScanTextActivity extends ToolbarActivity
-        implements ZXingScannerView.ResultHandler, AssentCallback {
-
-    private static final int REQUEST_PERMISSIONS = 60;
+        implements ZXingScannerView.ResultHandler, EasyPermissions.PermissionCallbacks {
 
     private ZXingScannerView mScannerView;
 
@@ -54,7 +51,6 @@ public class ScanTextActivity extends ToolbarActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.scan_text_screen);
-        Assent.setActivity(this, this);
 
         mScannerView = new ZXingScannerView(this);
         List<BarcodeFormat> formats = Collections.singletonList(BarcodeFormat.QR_CODE);
@@ -82,22 +78,20 @@ public class ScanTextActivity extends ToolbarActivity
     @Override
     protected void onResume() {
         super.onResume();
-        Assent.setActivity(this, this);
         mScannerView.setResultHandler(this);
 
-        if (Assent.isPermissionGranted(Assent.CAMERA)) {
+        if (Permissions.canUseCamera(this)) {
             startCamera();
         }
         else {
-            Assent.requestPermissions(this, REQUEST_PERMISSIONS, Assent.CAMERA);
+            // TODO rationale
+            Permissions.requestCamera(this, null);
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (isFinishing())
-            Assent.setActivity(this, null);
         stopCamera();
     }
 
@@ -115,19 +109,9 @@ public class ScanTextActivity extends ToolbarActivity
     }
 
     @Override
-    public void onPermissionResult(PermissionResultSet result) {
-        if (result.allPermissionsGranted()) {
-            startCamera();
-        }
-        else {
-            finish();
-        }
-    }
-
-    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        Assent.handleResult(permissions, grantResults);
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
     @Override
@@ -144,4 +128,13 @@ public class ScanTextActivity extends ToolbarActivity
         activity.startActivityForResult(i, requestCode);
     }
 
+    @Override
+    public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
+        startCamera();
+    }
+
+    @Override
+    public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
+        finish();
+    }
 }

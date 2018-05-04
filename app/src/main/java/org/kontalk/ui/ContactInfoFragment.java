@@ -425,6 +425,7 @@ public class ContactInfoFragment extends Fragment
             doCallContact();
         }
         else {
+            // TODO rationale
             Permissions.requestCallPhone(this, null);
         }
     }
@@ -433,7 +434,6 @@ public class ContactInfoFragment extends Fragment
     void doCallContact() {
         SystemUtils.call(getContext(), mContact.getNumber());
     }
-
 
     void trustKey(String fingerprint, int trustLevel) {
         String jid = mContact.getJID();
@@ -496,7 +496,7 @@ public class ContactInfoFragment extends Fragment
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
     public interface ContactInfoParent {

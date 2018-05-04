@@ -28,9 +28,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import com.afollestad.assent.Assent;
-import com.afollestad.assent.AssentCallback;
-import com.afollestad.assent.PermissionResultSet;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.nispok.snackbar.Snackbar;
@@ -88,6 +85,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
+
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
@@ -124,6 +124,7 @@ import org.kontalk.ui.view.MessageListItem;
 import org.kontalk.ui.view.ReplyBar;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.Permissions;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
@@ -157,7 +158,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     private static final int SELECT_ATTACHMENT_PHOTO = 3;
     private static final int SELECT_ATTACHMENT_LOCATION = 4;
     private static final int REQUEST_INVITE_USERS = 5;
-    private static final int REQUEST_PERMISSIONS = 6;
 
     // use this as base for request codes for child classes
     protected static final int REQUEST_FIRST_CHILD = 100;
@@ -375,7 +375,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Assent.setFragment(this, this);
 
         setHasOptionsMenu(true);
         mQueryHandler = new MessageListQueryHandler(this);
@@ -1135,6 +1134,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         mAttachmentContainer.toggle();
     }
 
+    @AfterPermissionGranted(Permissions.RC_CAMERA)
     void startCameraAttachment() {
         final Context context = getContext();
         if (context == null)
@@ -1162,15 +1162,9 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     }
 
     private void requestCameraPermission() {
-        if (!Assent.isPermissionGranted(Assent.CAMERA)) {
-            Assent.requestPermissions(new AssentCallback() {
-                @Override
-                public void onPermissionResult(PermissionResultSet result) {
-                    if (result.allPermissionsGranted()) {
-                        startCameraAttachment();
-                    }
-                }
-            }, REQUEST_PERMISSIONS, Assent.CAMERA);
+        if (!Permissions.canUseCamera(getContext())) {
+            // TODO rationale
+            Permissions.requestCamera(this, null);
         }
         else {
             startCameraAttachment();
@@ -2030,7 +2024,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     @Override
     public void onResume() {
         super.onResume();
-        Assent.setFragment(this, this);
 
         if (Authenticator.getDefaultAccount(getActivity()) == null) {
             NumberValidation.start(getActivity());
@@ -2064,8 +2057,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     @Override
     public void onPause() {
         super.onPause();
-        if (getActivity() != null && getActivity().isFinishing())
-            Assent.setFragment(this, null);
 
         // unsubcribe presence notifications
         unsubscribePresence();
@@ -2182,7 +2173,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        Assent.handleResult(permissions, grantResults);
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
     private void pauseContentListener() {
