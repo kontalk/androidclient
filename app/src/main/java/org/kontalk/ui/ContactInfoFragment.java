@@ -19,6 +19,7 @@
 package org.kontalk.ui;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.jivesoftware.smack.packet.IQ;
@@ -26,6 +27,7 @@ import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jxmpp.util.XmppStringUtils;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -42,7 +44,6 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
 import org.kontalk.Kontalk;
@@ -63,7 +64,7 @@ import org.kontalk.util.XMPPUtils;
  * @author Daniele Ricci
  */
 public class ContactInfoFragment extends Fragment
-        implements Contact.ContactChangeListener {
+        implements Contact.ContactChangeListener, EasyPermissions.PermissionCallbacks {
 
     Contact mContact;
 
@@ -424,15 +425,34 @@ public class ContactInfoFragment extends Fragment
         if (Permissions.canCallPhone(context)) {
             doCallContact();
         }
+        else if (EasyPermissions.permissionPermanentlyDenied(this, Manifest.permission.CALL_PHONE)) {
+            doDialContact();
+        }
         else {
-            // TODO rationale
-            Permissions.requestCallPhone(this, null);
+            Permissions.requestCallPhone(this);
         }
     }
 
-    @AfterPermissionGranted(Permissions.RC_CALL_PHONE)
-    void doCallContact() {
+    private void doCallContact() {
         SystemUtils.call(getContext(), mContact.getNumber());
+    }
+
+    private void doDialContact() {
+        SystemUtils.dial(getContext(), mContact.getNumber());
+    }
+
+    @Override
+    public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
+        if (perms.contains(Manifest.permission.CALL_PHONE)) {
+            doCallContact();
+        }
+    }
+
+    @Override
+    public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
+        if (perms.contains(Manifest.permission.CALL_PHONE)) {
+            doDialContact();
+        }
     }
 
     void trustKey(String fingerprint, int trustLevel) {

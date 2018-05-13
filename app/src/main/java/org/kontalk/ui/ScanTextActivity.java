@@ -84,8 +84,7 @@ public class ScanTextActivity extends ToolbarActivity
             startCamera();
         }
         else {
-            // TODO rationale
-            Permissions.requestCamera(this, null);
+            Permissions.requestCamera(this, getString(R.string.err_camera_scanner_denied));
         }
     }
 

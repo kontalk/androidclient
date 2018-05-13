@@ -19,6 +19,7 @@
 package org.kontalk.ui;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.afollestad.materialdialogs.DialogAction;
@@ -32,6 +33,7 @@ import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -55,7 +57,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
 
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
@@ -91,7 +93,8 @@ import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK
  * @author Daniele Ricci
  * @author Andrea Cappelli
  */
-public class ComposeMessageFragment extends AbstractComposeFragment {
+public class ComposeMessageFragment extends AbstractComposeFragment
+        implements EasyPermissions.PermissionCallbacks {
     private static final String TAG = ComposeMessage.TAG;
 
     ViewGroup mInvitationBar;
@@ -161,15 +164,34 @@ public class ComposeMessageFragment extends AbstractComposeFragment {
         if (Permissions.canCallPhone(context)) {
             doCallContact();
         }
+        else if (EasyPermissions.permissionPermanentlyDenied(this, Manifest.permission.CALL_PHONE)) {
+            doDialContact();
+        }
         else {
-            // TODO rationale
-            Permissions.requestCallPhone(this, null);
+            Permissions.requestCallPhone(this);
         }
     }
 
-    @AfterPermissionGranted(Permissions.RC_CALL_PHONE)
-    void doCallContact() {
+    private void doCallContact() {
         SystemUtils.call(getContext(), mUserPhone);
+    }
+
+    private void doDialContact() {
+        SystemUtils.dial(getContext(), mUserPhone);
+    }
+
+    @Override
+    public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
+        if (perms.contains(Manifest.permission.CALL_PHONE)) {
+            doCallContact();
+        }
+    }
+
+    @Override
+    public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
+        if (perms.contains(Manifest.permission.CALL_PHONE)) {
+            doDialContact();
+        }
     }
 
     public void viewContactInfo() {

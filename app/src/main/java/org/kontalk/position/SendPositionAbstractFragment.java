@@ -534,8 +534,7 @@ public abstract class SendPositionAbstractFragment extends Fragment
     private void askPermissions() {
         if (!Permissions.canAccessLocation(getContext())) {
             if (!mPermissionAsked) {
-                // TODO rationale
-                Permissions.requestLocation(this, null);
+                Permissions.requestLocation(this, getString(R.string.err_location_denied));
                 mPermissionAsked = true;
             }
         }

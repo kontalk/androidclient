@@ -1163,8 +1163,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
     private void requestCameraPermission() {
         if (!Permissions.canUseCamera(getContext())) {
-            // TODO rationale
-            Permissions.requestCamera(this, null);
+            Permissions.requestCamera(this, getString(R.string.err_camera_picture_denied));
         }
         else {
             startCameraAttachment();
@@ -1256,19 +1255,25 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     }
 
     void selectAudioAttachment() {
-        // create audio fragment if needed
-        AudioFragment audio = getAudioFragment();
-        // stop everything
-        if (mAudioControl != null) {
-            resetAudio(mAudioControl);
+        Activity context = getActivity();
+        if (context != null) {
+            // create audio fragment if needed
+            AudioFragment audio = getAudioFragment();
+
+            // stop everything
+            if (mAudioControl != null) {
+                resetAudio(mAudioControl);
+            }
+            else {
+                audio.resetPlayer();
+                audio.setMessageId(-1);
+            }
+
+            // show dialog
+            mAudioDialog = new AudioDialog(context, audio, this);
+            mAudioDialog.setOwnerActivity(context);
+            mAudioDialog.show();
         }
-        else {
-            audio.resetPlayer();
-            audio.setMessageId(-1);
-        }
-        // show dialog
-        mAudioDialog = new AudioDialog(getActivity(), audio, this);
-        mAudioDialog.show();
     }
 
     void selectPositionAttachment() {

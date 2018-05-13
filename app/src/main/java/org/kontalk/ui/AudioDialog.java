@@ -124,10 +124,10 @@ public class AudioDialog extends AlertDialog {
         mProgressBar.setVisibility(View.INVISIBLE);
         getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.GONE);
 
-        Activity context = (Activity) getContext();
+        Activity context = getOwnerActivity();
         if (!Permissions.canRecordAudio(context)) {
-            // TODO rationale
-            Permissions.requestRecordAudio(context, null);
+            Permissions.requestRecordAudio(context, context
+                .getString(R.string.err_audio_or_storage_denied));
         }
     }
 

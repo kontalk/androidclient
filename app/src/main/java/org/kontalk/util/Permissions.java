@@ -24,6 +24,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.support.v4.app.Fragment;
 
+import pub.devrel.easypermissions.AppSettingsDialog;
 import pub.devrel.easypermissions.EasyPermissions;
 
 
@@ -45,8 +46,8 @@ public class Permissions {
             Manifest.permission.CALL_PHONE);
     }
 
-    public static void requestCallPhone(Fragment fragment, String rationale) {
-        EasyPermissions.requestPermissions(fragment, rationale, RC_CALL_PHONE,
+    public static void requestCallPhone(Fragment fragment) {
+        EasyPermissions.requestPermissions(fragment, null, RC_CALL_PHONE,
             Manifest.permission.CALL_PHONE);
     }
 
@@ -100,13 +101,29 @@ public class Permissions {
     }
 
     public static void requestCamera(Activity activity, String rationale) {
-        EasyPermissions.requestPermissions(activity, rationale, RC_CAMERA,
-            Manifest.permission.CAMERA);
+        if (EasyPermissions.permissionPermanentlyDenied(activity, Manifest.permission.CAMERA)) {
+            new AppSettingsDialog.Builder(activity)
+                .setRationale(rationale)
+                .build()
+                .show();
+        }
+        else {
+            EasyPermissions.requestPermissions(activity, rationale, RC_CAMERA,
+                Manifest.permission.CAMERA);
+        }
     }
 
     public static void requestCamera(Fragment fragment, String rationale) {
-        EasyPermissions.requestPermissions(fragment, rationale, RC_CAMERA,
-            Manifest.permission.CAMERA);
+        if (EasyPermissions.permissionPermanentlyDenied(fragment, Manifest.permission.CAMERA)) {
+            new AppSettingsDialog.Builder(fragment)
+                .setRationale(rationale)
+                .build()
+                .show();
+        }
+        else {
+            EasyPermissions.requestPermissions(fragment, rationale, RC_CAMERA,
+                Manifest.permission.CAMERA);
+        }
     }
 
     @SuppressLint("InlinedApi")
@@ -124,10 +141,20 @@ public class Permissions {
 
     @SuppressLint("InlinedApi")
     public static void requestRecordAudio(Activity activity, String rationale) {
-        EasyPermissions.requestPermissions(activity, rationale, RC_RECORD_AUDIO,
-            Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (EasyPermissions.permissionPermanentlyDenied(activity, Manifest.permission.RECORD_AUDIO) ||
+                EasyPermissions.permissionPermanentlyDenied(activity, Manifest.permission.READ_EXTERNAL_STORAGE) ||
+                EasyPermissions.permissionPermanentlyDenied(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            new AppSettingsDialog.Builder(activity)
+                .setRationale(rationale)
+                .build()
+                .show();
+        }
+        else {
+            EasyPermissions.requestPermissions(activity, rationale, RC_RECORD_AUDIO,
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
     }
 
     public static boolean canAccessLocation(Context context) {
