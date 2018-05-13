@@ -267,6 +267,12 @@ public class ComposerBar extends RelativeLayout implements
                 submitSend();
             }
         });
+        findViewById(R.id.attach_button).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO
+            }
+        });
 
         if (AudioDialog.isSupported(mContext)) {
             mAudioButton = findViewById(R.id.audio_send_button);

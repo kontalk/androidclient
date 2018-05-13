@@ -47,11 +47,11 @@
         android:textSize="16sp"
         android:layout_toRightOf="@id/emoji_button"
         android:layout_toEndOf="@id/emoji_button"
-        android:layout_toLeftOf="@id/send_button"
-        android:layout_toStartOf="@id/send_button"
+        android:layout_toLeftOf="@id/attach_button"
+        android:layout_toStartOf="@id/attach_button"
         android:layout_alignParentTop="true"
         app:emojiSize="@dimen/emoji_edittext_size"
-        android:nextFocusRight="@+id/send_button"
+        android:nextFocusRight="@+id/attach_button"
         android:hint="@string/hint_enter_text"
         android:minHeight="48dip"
         android:inputType="textAutoCorrect|textCapSentences|textMultiLine"
@@ -129,24 +129,38 @@
     </org.kontalk.ui.FrameLayoutFixed>
 
     <ImageButton
+        android:id="@+id/attach_button"
+        style="?attr/borderlessButtonStyle"
+        android:src="@drawable/ic_attach"
+        android:drawablePadding="0dip"
+        android:layout_width="48dip"
+        android:layout_height="wrap_content"
+        android:minHeight="48dip"
+        android:layout_alignBottom="@id/text_editor"
+        android:layout_toLeftOf="@+id/send_button"
+        android:layout_toStartOf="@+id/send_button"
+        android:contentDescription="@string/menu_attachment"
+        android:nextFocusLeft="@+id/text_editor" />
+
+    <ImageButton
         android:id="@+id/send_button"
         style="?attr/borderlessButtonStyle"
         android:src="@drawable/send_button_selector"
         android:drawablePadding="0dip"
-        android:layout_width="60dip"
+        android:layout_width="48dip"
         android:layout_height="wrap_content"
         android:minHeight="48dip"
         android:layout_alignBottom="@id/text_editor"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:contentDescription="@string/send"
-        android:nextFocusLeft="@+id/text_editor" />
+        android:nextFocusLeft="@+id/attach_button" />
 
     <ImageButton
         android:id="@+id/audio_send_button"
         style="?attr/borderlessButtonStyle"
         android:src="@drawable/ptt_button_state"
-        android:layout_width="60dip"
+        android:layout_width="48dip"
         android:layout_height="wrap_content"
         android:visibility="invisible"
         android:minHeight="48dip"
