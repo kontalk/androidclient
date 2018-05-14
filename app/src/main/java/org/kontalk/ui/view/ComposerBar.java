@@ -517,8 +517,8 @@ public class ComposerBar extends RelativeLayout implements
             mListener.stopAllSounds();
 
         if (!Permissions.canRecordAudio(getContext())) {
-            // TODO rationale
-            Permissions.requestRecordAudio((Activity) getContext(), null);
+            Permissions.requestRecordAudio((Activity) getContext(),
+                getContext().getString(R.string.err_audio_or_storage_denied));
         }
         else {
             doStartRecording();
