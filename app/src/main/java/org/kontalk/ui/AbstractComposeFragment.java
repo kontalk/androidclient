@@ -316,7 +316,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         }
 
         processArguments(savedInstanceState);
-        initAttachmentView();
     }
 
     @Override
@@ -361,6 +360,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
         Configuration config = getResources().getConfiguration();
         mComposer.onKeyboardStateChanged(config.keyboardHidden == KEYBOARDHIDDEN_NO);
+
+        initAttachmentView(view);
 
         return view;
     }
@@ -634,9 +635,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             .show();
     }
 
-    private void initAttachmentView() {
-        View view = getView();
-
+    private void initAttachmentView(View view) {
         mAttachmentContainer = view.findViewById(R.id.attachment_container);
 
         View.OnClickListener hideAttachmentListener = new View.OnClickListener() {
