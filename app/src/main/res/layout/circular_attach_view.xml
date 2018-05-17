@@ -21,18 +21,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/attachment_container"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:visibility="invisible"
-    android:descendantFocusability="blocksDescendants"
-    android:layout_alignParentTop="true">
+    android:layout_height="match_parent"
+    android:descendantFocusability="blocksDescendants">
 
     <View android:id="@+id/attachment_overlay"
         android:background="@color/alpha_black"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent" />
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <FrameLayout android:id="@+id/circular_card"
         android:background="@android:color/white"
+        android:layout_gravity="bottom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 

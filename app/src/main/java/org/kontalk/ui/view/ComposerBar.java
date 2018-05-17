@@ -91,6 +91,7 @@ public class ComposerBar extends RelativeLayout implements
     // for the text entry
     boolean mSendEnabled = true;
     EmojiEditText mTextEntry;
+    private View mAttachButton;
     View mSendButton;
     ComposerListener mListener;
     private TextWatcher mChatStateListener;
@@ -181,6 +182,8 @@ public class ComposerBar extends RelativeLayout implements
         mTextEntry.addTextChangedListener(new TextWatcher() {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (mListener != null)
+                    mListener.onTextEntryFocus();
             }
 
             @Override
@@ -250,12 +253,19 @@ public class ComposerBar extends RelativeLayout implements
             public void onClick(View v) {
                 if (isEmojiVisible())
                     hideEmojiDrawer(false);
+                if (mListener != null)
+                    mListener.onTextEntryFocus();
             }
         });
         mTextEntry.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus && isEmojiVisible())
-                    hideEmojiDrawer(false);
+                if (hasFocus) {
+                    if (isEmojiVisible()) {
+                        hideEmojiDrawer(false);
+                    }
+                    if (mListener != null)
+                        mListener.onTextEntryFocus();
+                }
             }
         });
 
@@ -270,9 +280,12 @@ public class ComposerBar extends RelativeLayout implements
         findViewById(R.id.attach_button).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO
+                if (mListener != null)
+                    mListener.onAttachClick();
             }
         });
+
+        mAttachButton = findViewById(R.id.attach_button);
 
         if (AudioDialog.isSupported(mContext)) {
             mAudioButton = findViewById(R.id.audio_send_button);
@@ -392,6 +405,7 @@ public class ComposerBar extends RelativeLayout implements
 
     private void doSetSendEnabled() {
         mSendButton.setEnabled(mSendEnabled);
+        mAttachButton.setEnabled(mSendEnabled);
         if (mAudioButton != null)
             mAudioButton.setEnabled(mSendEnabled);
     }

@@ -20,7 +20,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <!-- actions -->
-    <item android:icon="@drawable/ic_menu_attach" android:title="@string/menu_attachment" android:id="@+id/menu_attachment" app:showAsAction="always"/>
     <item android:icon="@drawable/ic_menu_call" android:title="@string/call" android:id="@+id/call_contact" app:showAsAction="ifRoom"/>
     <item android:icon="@drawable/ic_menu_contact" android:title="@string/view_contact" android:id="@+id/view_contact" app:showAsAction="ifRoom"/>
 

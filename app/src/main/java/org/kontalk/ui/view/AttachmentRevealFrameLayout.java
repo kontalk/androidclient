@@ -18,6 +18,7 @@
 
 package org.kontalk.ui.view;
 
+import android.animation.Animator;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
@@ -25,7 +26,6 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 
-import io.codetail.animation.SupportAnimator;
 import io.codetail.animation.ViewAnimationUtils;
 import io.codetail.widget.RevealFrameLayout;
 
@@ -34,15 +34,11 @@ import org.kontalk.R;
 
 /**
  * Composite view for the attachment reveal frame layout.
- * Created mainly for handling animators concurrency. It seems like an overkill,
- * but I was getting crazy with race conditions. If someone has a better idea,
- * please propose a patch.
  * @author Daniele Ricci
  */
 public class AttachmentRevealFrameLayout extends RevealFrameLayout {
 
     private View mContent;
-    private SupportAnimator mHideAnimator;
 
     public AttachmentRevealFrameLayout(Context context) {
         super(context);
@@ -71,65 +67,33 @@ public class AttachmentRevealFrameLayout extends RevealFrameLayout {
         int right = mContent.getRight();
         int top = mContent.getTop();
         float f = (float) Math.sqrt(Math.pow(mContent.getWidth(), 2D) + Math.pow(mContent.getHeight(), 2D));
-        SupportAnimator showAnimator = ViewAnimationUtils.createCircularReveal(mContent, right, top, 0, f);
+        Animator showAnimator = ViewAnimationUtils.createCircularReveal(mContent, right, top, 0, f);
         setAnimatorParams(showAnimator);
-        showAnimator.addListener(new SupportAnimator.AnimatorListener() {
+        showAnimator.addListener(new Animator.AnimatorListener() {
             @Override
-            public void onAnimationStart() {
+            public void onAnimationStart(Animator animation) {
             }
 
             @Override
-            public void onAnimationEnd() {
+            public void onAnimationEnd(Animator animation) {
             }
 
             @Override
-            public void onAnimationCancel() {
+            public void onAnimationCancel(Animator animation) {
             }
 
             @Override
-            public void onAnimationRepeat() {
-            }
-        });
-
-        // create hide animation now
-        mHideAnimator = showAnimator.reverse();
-        setAnimatorParams(mHideAnimator);
-        mHideAnimator.addListener(new SupportAnimator.AnimatorListener() {
-            @Override
-            public void onAnimationStart() {
-            }
-
-            @Override
-            public void onAnimationEnd() {
-                hideNow();
-            }
-
-            @Override
-            public void onAnimationCancel() {
-            }
-
-            @Override
-            public void onAnimationRepeat() {
+            public void onAnimationRepeat(Animator animation) {
             }
         });
-
         showAnimator.start();
     }
 
     public void hide() {
-        hide(false);
-    }
-
-    public void hide(boolean instant) {
         // cancel show animation (if any)
         mContent.clearAnimation();
-
-        if (instant) {
-            hideNow();
-        }
-        else if (mHideAnimator != null && !mHideAnimator.isRunning()) {
-            mHideAnimator.start();
-        }
+        // hide immediately
+        hideNow();
     }
 
     public void toggle() {
@@ -141,16 +105,11 @@ public class AttachmentRevealFrameLayout extends RevealFrameLayout {
         }
     }
 
-    public boolean isClosing() {
-        return mHideAnimator != null && mHideAnimator.isRunning();
-    }
-
-    void hideNow() {
+    private void hideNow() {
         setVisibility(INVISIBLE);
-        mHideAnimator = null;
     }
 
-    private void setAnimatorParams(SupportAnimator anim) {
+    private void setAnimatorParams(Animator anim) {
         anim.setInterpolator(new AccelerateDecelerateInterpolator());
         anim.setDuration(250);
     }

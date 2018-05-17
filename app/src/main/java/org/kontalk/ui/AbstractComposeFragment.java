@@ -703,6 +703,16 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         });
     }
 
+    @Override
+    public void onAttachClick() {
+        toggleAttachmentView();
+    }
+
+    @Override
+    public void onTextEntryFocus() {
+        tryHideAttachmentView(true);
+    }
+
     /**
      * Sends out the text message in the composing entry.
      */
@@ -933,10 +943,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             return true;
 
         switch (item.getItemId()) {
-            case R.id.menu_attachment:
-                toggleAttachmentView();
-                return true;
-
             case R.id.delete_thread:
                 if (threadId > 0)
                     deleteThread();
@@ -1111,15 +1117,14 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
     boolean tryHideAttachmentView(boolean instant) {
         if (isAttachmentViewVisible()) {
-            mAttachmentContainer.hide(instant);
+            mAttachmentContainer.hide();
             return true;
         }
         return false;
     }
 
     private boolean isAttachmentViewVisible() {
-        return mAttachmentContainer.getVisibility() == View.VISIBLE &&
-            !mAttachmentContainer.isClosing();
+        return mAttachmentContainer.getVisibility() == View.VISIBLE;
     }
 
     void hideAttachmentView() {
@@ -1130,7 +1135,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
      * Show or hide the attachment selector.
      */
     private void toggleAttachmentView() {
-        mComposer.forceHideKeyboard();
         mAttachmentContainer.toggle();
     }
 
