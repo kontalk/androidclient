@@ -112,9 +112,6 @@ public abstract class MainActivity extends ToolbarActivity {
                 Preferences.setPermissionAsked(Manifest.permission.READ_CONTACTS);
                 Preferences.setPermissionAsked(Manifest.permission.WRITE_CONTACTS);
             }
-            else {
-                contactsGranted();
-            }
         }
 
         if (!Preferences.isPermissionAsked(Manifest.permission.READ_EXTERNAL_STORAGE) ||
