@@ -1821,6 +1821,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         roster.addRosterLoadedListener(rosterListener);
         roster.addRosterListener(rosterListener);
         roster.setRosterStore(mRosterStore);
+        roster.addSubscribeListener(presenceListener);
 
         // enable ping manager
         AndroidAdaptiveServerPingManager
