@@ -140,6 +140,7 @@ class PublicKeyListener extends MessageCenterPacketListener implements Exception
 
     @Override
     public void processException(Exception exception) {
+        Log.w(TAG, "error processing public key", exception);
         Intent i = prepareResponseIntent(mRequest, ACTION_PUBLICKEY);
         i.putExtra(EXTRA_TYPE, IQ.Type.error.toString());
         i.putExtra(EXTRA_ERROR_EXCEPTION, exception);
