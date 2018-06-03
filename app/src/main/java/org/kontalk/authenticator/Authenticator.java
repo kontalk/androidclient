@@ -316,6 +316,11 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static void removeDefaultAccount(Context ctx, AccountManagerCallback<Boolean> callback) {
         AccountManager am = AccountManager.get(ctx);
         Account account = getDefaultAccount(am);
+
+        // there is something wrong with this, isn't it? [cit.]
+        if (account == null)
+            return;
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             final boolean result = am.removeAccountExplicitly(account);
             callback.run(new AccountManagerFuture<Boolean>() {
