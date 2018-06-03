@@ -1910,8 +1910,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     Jid jid = conn.getServiceName();
                     if (Keyring.getPublicKey(MessageCenterService.this, jid.toString(), MyUsers.Keys.TRUST_UNKNOWN) == null) {
                         PublicKeyPublish pub = new PublicKeyPublish();
+                        pub.setStanzaId();
                         pub.setTo(jid);
-                        sendPacket(pub, false);
+                        PublicKeyListener listener = new PublicKeyListener(MessageCenterService.this, pub);
+                        sendIqWithReply(pub, false, listener, listener);
                     }
                 }
             }
