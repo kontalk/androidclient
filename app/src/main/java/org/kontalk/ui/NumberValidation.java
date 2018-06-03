@@ -107,6 +107,7 @@ import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
 import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
+import org.kontalk.service.msgcenter.SQLiteRosterStore;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.adapter.CountryCodesAdapter;
 import org.kontalk.ui.adapter.CountryCodesAdapter.CountryCode;
@@ -1582,6 +1583,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 // Set contacts sync for this account.
                 ContentResolver.setSyncAutomatically(account, ContactsContract.AUTHORITY, true);
                 ContentResolver.setIsSyncable(account, ContactsContract.AUTHORITY, 1);
+
+                // clear old roster information
+                SQLiteRosterStore.purge(ctx);
 
                 // send back result
                 final Intent intent = new Intent();

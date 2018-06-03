@@ -300,6 +300,10 @@ public class SQLiteRosterStore extends SQLiteOpenHelper implements RosterStore {
         return Preferences.setRosterVersion(version);
     }
 
+    public static void purge(Context context) {
+        new SQLiteRosterStore(context).resetStore();
+    }
+
     /* Transactions compatibility layer */
 
     @TargetApi(android.os.Build.VERSION_CODES.HONEYCOMB)
