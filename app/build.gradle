@@ -150,7 +150,7 @@ dependencies {
         exclude group: 'junit'
     }
     implementation 'info.guardianproject.netcipher:netcipher:1.2.1'
-    implementation 'com.googlecode.libphonenumber:libphonenumber:8.9.2'
+    implementation 'com.googlecode.libphonenumber:libphonenumber:8.9.7'
     implementation 'com.google.zxing:core:3.3.1'
     implementation 'me.dm7.barcodescanner:zxing:1.9.8'
     implementation 'com.segment.backo:backo:1.0.0'
@@ -186,16 +186,16 @@ dependencies {
 
     googleplayImplementation "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
     googleplayImplementation "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"
-    googleplayImplementation('com.crashlytics.sdk.android:crashlytics:2.9.1@aar') {
+    googleplayImplementation('com.crashlytics.sdk.android:crashlytics:2.9.3@aar') {
         transitive = true
     }
 
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.1'
-    androidTestImplementation 'com.android.support.test:rules:1.0.1'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test:rules:1.0.2'
     androidTestImplementation "com.android.support:support-annotations:$appcompatVersion"
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-intents:3.0.1'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-intents:3.0.2'
     androidTestImplementation 'com.jayway.android.robotium:robotium-solo:5.6.3'
 }
 
