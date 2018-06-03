@@ -1473,7 +1473,13 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                     if (MediaStorage.isStorageAccessFrameworkAvailable()) {
                         for (Uri uri : uris) {
                             if (uri != null && !"file".equals(uri.getScheme())) {
-                                MediaStorage.requestPersistablePermissions(getActivity(), uri);
+                                try {
+                                    MediaStorage.requestPersistablePermissions(getActivity(), uri);
+                                }
+                                catch (SecurityException e) {
+                                    // we'll try to access the file anyway later
+                                    Log.w(TAG, "unable to request persistable permissions - will try access anyway");
+                                }
                             }
                         }
                     }
