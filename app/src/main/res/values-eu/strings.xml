@@ -691,4 +691,29 @@ Desgaitu enkriptatzea zure kontaktuak gako pertsonalik ez badu bakarrik.</string
     <string name="btn_reply_cancel_description">Bertan behera utzi erantzuna</string>
     <string name="reply_message_deleted">Mezua ezabatu da.</string>
 
+    <string name="open_conversation">Ikusi</string>
+    <string name="seen_group_typing_label_one">%s idazten ari da…</string>
+    <string name="seen_group_typing_label_two">%1$s eta %2$s idazten ari dira…</string>
+    <string name="seen_group_typing_label_more">%d pertsona idazten ari dira…</string>
+    <string name="err_location_permission">Kokalekua atzitzea ukatu da.</string>
+    <string name="err_audio_record_permission">Mikrofonoa atzitzea ukatu da.</string>
+    <string name="err_audio_record_writing_permission">Kanpo biltegiratzea atzitzea ukatu da.</string>
+    <string name="msg_request_doze_failed_all">Ezin izan dira bateria optimizatzeko ezarpenak aurkitu, sistemaren ezarpenetara daramakizugu.</string>
+
+    <string name="err_validation_contacts_denied">Kontalk aplikazioak kontaktuak atzitzeko baimena behar du behar bezala funtzionatzeko. Zelan jakingo du bestela norekin hitz egin nahi duzun?
+\nIzena eman eta gero berriro galdetuko zaizu hau.</string>
+    <string name="err_contacts_denied">Kontalk aplikazioak kontaktuak atzitzeko baimena behar du behar bezala funtzionatzeko. Zelan jakingo du bestela norekin hitz egin nahi duzun?
+\nKontaktuak atzitzeko baimena eman dezakezu Android ezarpenetan.</string>
+    <string name="warn_contacts_denied">Kontaktuak atzitzeko baimena ukatu duzu. Ezin izango dituzu kontaktuen aldaketak ikusi hemen.</string>
+
+    <string name="err_storage_denied">Kontalk aplikazioak biltegiratze lokalera sarbidea behar du multimedia gordetzeko.
+\nBiltegiratzea atzitzeko baimena eman dezakezu Android ezarpenetan.</string>
+
+    <string name="permission_messages_label">Atzitu Kontalk mezuak</string>
+    <string name="permission_messages_description">Koltalk mezuen datu-basean irakurri eta idatzi dezake</string>
+    <string name="permission_users_label">Atzitu Kontalk erabiltzaileen informazioa</string>
+    <string name="permission_users_description">Kontalk erabiltzaileen datu-basean eta gako-eraztunean irakurri eta idatzi dezake</string>
+
+    <string name="pref_enable_outgoing_sound">Jo soinua bidalitako mezuekin</string>
+
     </resources>
