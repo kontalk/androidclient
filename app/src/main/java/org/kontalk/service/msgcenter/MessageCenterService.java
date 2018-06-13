@@ -1823,6 +1823,23 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         roster.setRosterStore(mRosterStore);
         roster.addSubscribeListener(presenceListener);
 
+        StanzaFilter filter;
+
+        filter = new StanzaTypeFilter(Presence.class);
+        connection.addAsyncStanzaListener(presenceListener, filter);
+
+        filter = new StanzaTypeFilter(org.jivesoftware.smack.packet.Message.class);
+        connection.addSyncStanzaListener(new MessageListener(this), filter);
+
+        // this is used as a reply callback
+        mLastActivityListener = new LastActivityListener(this);
+
+        filter = new StanzaTypeFilter(Version.class);
+        connection.addAsyncStanzaListener(new VersionListener(this), filter);
+    }
+
+    @Override
+    public void connected(final XMPPConnection connection) {
         // enable ping manager
         AndroidAdaptiveServerPingManager
             .getInstanceFor(connection, this)
@@ -1840,25 +1857,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         PingManager pingManager = PingManager.getInstanceFor(connection);
         pingManager.registerPingFailedListener(mPingFailedListener);
         pingManager.setPingInterval(0);
-
-        StanzaFilter filter;
-
-        filter = new StanzaTypeFilter(Presence.class);
-        connection.addAsyncStanzaListener(presenceListener, filter);
-
-        filter = new StanzaTypeFilter(org.jivesoftware.smack.packet.Message.class);
-        connection.addSyncStanzaListener(new MessageListener(this), filter);
-
-        // this is used as a reply callback
-        mLastActivityListener = new LastActivityListener(this);
-
-        filter = new StanzaTypeFilter(Version.class);
-        connection.addAsyncStanzaListener(new VersionListener(this), filter);
-    }
-
-    @Override
-    public void connected(XMPPConnection connection) {
-        // not used.
     }
 
     @Override
