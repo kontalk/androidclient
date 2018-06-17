@@ -169,7 +169,7 @@ dependencies {
     implementation 'com.github.daniele-athome:FloatingActionButton:2e5bbbf155'
     implementation 'de.hdodenhof:circleimageview:2.1.0'
     implementation 'com.github.vlivanov:ListViewVariants:f606578467'
-    implementation 'com.vanniktech:emoji-one:0.5.1'
+    implementation 'com.vanniktech:emoji-one:0.6.0-SNAPSHOT'
     implementation ('com.github.ozodrukh:CircularReveal:2.0.1@aar') {
         transitive = true
     }
