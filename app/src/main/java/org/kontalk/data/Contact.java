@@ -354,6 +354,19 @@ public class Contact {
             @Override
             public void run() {
                 mStructuredName = loadStructuredName(globalContext, getUri());
+                if (mStructuredName != null && mStructuredName.displayName != null &&
+                    !mStructuredName.displayName.equals(mName)) {
+
+                    // name changed, update user immediately
+                    mName = mStructuredName.displayName;
+
+                    ContentValues values = new ContentValues(1);
+                    values.put(Users.DISPLAY_NAME, mName);
+                    globalContext.getContentResolver().update(Users.CONTENT_URI,
+                        values, Users.JID + "=?", new String[] { mJID });
+
+                    Contact.invalidate(mJID);
+                }
             }
         }).start();
     }
