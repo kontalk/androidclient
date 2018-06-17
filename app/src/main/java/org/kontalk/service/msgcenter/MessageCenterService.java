@@ -719,6 +719,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         public void quit() {
             abortIdle();
+            abortTest();
             getLooper().quit();
         }
 
@@ -774,6 +775,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     }
                 }
             });
+        }
+
+        private void abortTest() {
+            removeMessages(MSG_TEST);
         }
     }
 
