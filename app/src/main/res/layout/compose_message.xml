@@ -79,7 +79,7 @@
             android:layout_height=".9dp" />
 
         <org.kontalk.ui.view.ReplyBar android:id="@+id/reply_bar"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="@dimen/reply_bar_height"
             android:padding="8dp"
@@ -98,7 +98,7 @@
 
         <include android:id="@+id/composer_bar"
             layout="@layout/composer_bar"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
     </LinearLayout>
