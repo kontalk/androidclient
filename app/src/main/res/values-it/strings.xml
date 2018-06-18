@@ -708,4 +708,9 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
 
     <string name="err_location_denied">Devo accedere alla tua posizione se vuoi condividerla.</string>
 
-    </resources>
+    <plurals name="group_people_online">
+	<item quantity="one">1 online</item>
+	<item quantity="other">%d online</item>
+</plurals>
+
+</resources>
