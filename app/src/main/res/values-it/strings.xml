@@ -679,8 +679,8 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
     <string name="err_location_permission">Accesso alla posizione negato.</string>
     <string name="err_audio_record_permission">Accesso al microfono negato.</string>
     <string name="err_audio_record_writing_permission">Accesso alla memoria esterna negato.</string>
-    <string name="err_validation_contacts_denied">Kontalk ha bisogno di accedere ai contatti per funzionare. Come può sapere con chi puoi chattare?
-\nTi chiederemo di nuovo il permesso una volta che ti sarai registrato.</string>
+    <string name="err_validation_contacts_denied">Kontalk ha bisogno di accedere ai contatti per funzionare. Come può sapere con chi puoi chattare? 
+\nPuoi scegliere annulla ora, ma ti chiederemo di nuovo il permesso una volta che ti sarai registrato.</string>
     <string name="err_contacts_denied">Kontalk ha bisogno di accedere ai contatti per funzionare. Come può sapere con chi puoi chattare?
 \nPuoi concedere l\'accesso ai contatti dalle impostazioni di Android.</string>
     <string name="warn_contacts_denied">Hai negato l\'accesso ai contatti. Non vedrai cambiamenti nei contatti qui.</string>
@@ -700,4 +700,12 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
     <string name="seen_group_typing_label_one">%s sta scrivendo…</string>
     <string name="seen_group_typing_label_two">%1$s e %2$s scrivono…</string>
     <string name="seen_group_typing_label_more">%d persone scrivono…</string>
+    <string name="archive_thread">Archivia chat</string>
+    <string name="err_camera_scanner_denied">Devo accedere alla fotocamera per scansionare il codice dall\'altro dispositivo.</string>
+    <string name="err_camera_picture_denied">Devo accedere alla fotocamera per scattare foto.</string>
+
+    <string name="err_audio_or_storage_denied">Devo accedere al microfono per registrare la tua voce e alla memoria esterna per salvare le tue registrazioni.</string>
+
+    <string name="err_location_denied">Devo accedere alla tua posizione se vuoi condividerla.</string>
+
     </resources>
