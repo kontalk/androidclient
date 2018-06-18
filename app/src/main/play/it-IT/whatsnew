@@ -1,7 +1,9 @@
 Questa versione è supportata dal servizio di registrazione offerto da https://JMP.Chat
 Aiutaci a migliorarla e correggere bug segnalandoli su GitHub o discutendoli sul nostro forum: https://forum.kontalk.org
 
-* NUOVO: risposta contestuale
-* aggira un bug del firmware per alcuni device
-* corretto problema ritardi nelle ricevute di consegna
+* NUOVO: anteprima immagini nelle notifiche
+* NEW: suono di notifica nelle chat aperte
+* supporto per i permessi runtime di Android
+* risposta rapida per vecchie versioni di Android
+* correzione bug emoji sui tablet
 * altre correzioni

@@ -20,7 +20,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <!-- actions -->
-    <item android:id="@+id/menu_sticky" android:title="@string/menu_sticky" android:icon="@drawable/ic_menu_favorite" app:showAsAction="ifRoom"/>
+    <item android:id="@+id/menu_archive" android:title="@string/archive_thread" android:icon="@drawable/ic_menu_archive" app:showAsAction="always"/>
     <item android:id="@+id/menu_delete" android:title="@string/delete_thread" android:icon="@drawable/ic_menu_delete" app:showAsAction="always"/>
+    <item android:id="@+id/menu_sticky" android:title="@string/menu_sticky" android:icon="@drawable/ic_menu_favorite" app:showAsAction="ifRoom"/>
 
 </menu>

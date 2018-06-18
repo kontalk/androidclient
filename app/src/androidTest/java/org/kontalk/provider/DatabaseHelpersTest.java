@@ -46,51 +46,64 @@ public class DatabaseHelpersTest {
 
     @Test
     public void testMessagesDatabaseUpgrades() throws IOException {
-        MessagesProvider.DatabaseHelper dbHelper = new MessagesProvider
-            .DatabaseHelper(InstrumentationRegistry.getTargetContext());
+        // ensure database is closed
+        new MessagesProvider.DatabaseHelper(InstrumentationRegistry.getTargetContext()).close();
 
         for (int i = 8; i < MessagesProvider.DatabaseHelper.DATABASE_VERSION; i++) {
-            dbHelper.close();
+            MessagesProvider.DatabaseHelper dbHelper = null;
             try {
-                copyDatabase("messages", i);
-                Log.d(getClass().getSimpleName(), "Testing upgrade from version: " + i);
+                copyDatabase("messages", MessagesProvider.DatabaseHelper.DATABASE_NAME, i);
+                Log.d(getClass().getSimpleName(), "Testing messages upgrade from version: " + i);
             }
             catch (FileNotFoundException e) {
-                Log.d(getClass().getSimpleName(), "Skipping upgrade from version: " + i);
+                Log.d(getClass().getSimpleName(), "Skipping messages upgrade from version: " + i);
+                continue;
             }
 
-            MessagesProvider.DatabaseHelper dbHelperNew = new MessagesProvider
-                .DatabaseHelper(InstrumentationRegistry.getTargetContext());
-            Assert.assertEquals(MessagesProvider.DatabaseHelper.DATABASE_VERSION,
-                dbHelperNew.getWritableDatabase().getVersion());
+            try {
+                dbHelper = new MessagesProvider
+                    .DatabaseHelper(InstrumentationRegistry.getTargetContext());
+                Assert.assertEquals(MessagesProvider.DatabaseHelper.DATABASE_VERSION,
+                    dbHelper.getWritableDatabase().getVersion());
+            }
+            finally {
+                if (dbHelper != null)
+                    dbHelper.close();
+            }
         }
     }
 
     @Test
     public void testUsersDatabaseUpgrades() throws IOException {
-        UsersProvider.DatabaseHelper dbHelper = new UsersProvider
-            .DatabaseHelper(InstrumentationRegistry.getTargetContext());
+        new UsersProvider.DatabaseHelper(InstrumentationRegistry.getTargetContext()).close();
 
         for (int i = 7; i < UsersProvider.DATABASE_VERSION; i++) {
-            dbHelper.close();
+            UsersProvider.DatabaseHelper dbHelper = null;
             try {
-                copyDatabase("users", i);
-                Log.d(getClass().getSimpleName(), "Testing upgrade from version: " + i);
+                copyDatabase("users", UsersProvider.DATABASE_NAME, i);
+                Log.d(getClass().getSimpleName(), "Testing users upgrade from version: " + i);
             }
             catch (FileNotFoundException e) {
-                Log.d(getClass().getSimpleName(), "Skipping upgrade from version: " + i);
+                Log.d(getClass().getSimpleName(), "Skipping users upgrade from version: " + i);
+                continue;
             }
 
-            UsersProvider.DatabaseHelper dbHelperNew = new UsersProvider
-                .DatabaseHelper(InstrumentationRegistry.getTargetContext());
-            Assert.assertEquals(UsersProvider.DATABASE_VERSION,
-                dbHelperNew.getWritableDatabase().getVersion());
+            try {
+                dbHelper = new UsersProvider
+                    .DatabaseHelper(InstrumentationRegistry.getTargetContext());
+                Assert.assertEquals(UsersProvider.DATABASE_VERSION,
+                    dbHelper.getWritableDatabase().getVersion());
+            }
+            finally {
+                if (dbHelper != null)
+                    dbHelper.close();
+            }
         }
     }
 
-    private void copyDatabase(String prefix, int version) throws IOException {
+    private void copyDatabase(String prefix, String dbNameDest, int version) throws IOException {
         String dbPath = InstrumentationRegistry.getTargetContext()
-            .getDatabasePath(MessagesProvider.DatabaseHelper.DATABASE_NAME).getAbsolutePath();
+            .getDatabasePath(dbNameDest).getAbsolutePath();
 
         String dbName = String.format(Locale.US, prefix + "_v%d.db", version);
         InputStream mInput = InstrumentationRegistry.getContext().getAssets().open(dbName);

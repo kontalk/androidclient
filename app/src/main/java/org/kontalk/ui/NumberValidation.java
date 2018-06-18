@@ -34,9 +34,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipInputStream;
 
-import com.afollestad.assent.Assent;
-import com.afollestad.assent.AssentCallback;
-import com.afollestad.assent.PermissionResultSet;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.folderselector.FileChooserDialog;
@@ -88,6 +85,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
+
 import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
@@ -107,12 +107,14 @@ import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
 import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
+import org.kontalk.service.msgcenter.SQLiteRosterStore;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.adapter.CountryCodesAdapter;
 import org.kontalk.ui.adapter.CountryCodesAdapter.CountryCode;
 import org.kontalk.ui.prefs.PreferencesActivity;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.ParameterRunnable;
+import org.kontalk.util.Permissions;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 import org.kontalk.util.XMPPUtils;
@@ -127,7 +129,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     static final int REQUEST_VALIDATION_CODE = 772;
     static final int REQUEST_SCAN_TOKEN = 773;
     static final int REQUEST_ASK_TOKEN = 774;
-    static final int REQUEST_PERMISSIONS = 775;
 
     public static final int RESULT_FALLBACK = RESULT_FIRST_USER + 1;
 
@@ -221,7 +222,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.number_validation);
         setupToolbar(false, false);
-        Assent.setActivity(this, this);
 
         mAccountManager = AccountManager.get(this);
         mHandler = new Handler();
@@ -478,16 +478,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     @Override
     protected void onResume() {
         super.onResume();
-        Assent.setActivity(this, this);
         // ask for access to contacts
         askPermissions();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (isFinishing())
-            Assent.setActivity(this, null);
     }
 
     void stopKeyReceiver() {
@@ -498,7 +490,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        Assent.handleResult(permissions, grantResults);
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
     @Override
@@ -565,18 +557,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         if (mPermissionsAsked)
             return;
 
-        if (!Assent.isPermissionGranted(Assent.READ_CONTACTS) ||
-            !Assent.isPermissionGranted(Assent.WRITE_CONTACTS)) {
-            Assent.requestPermissions(new AssentCallback() {
-                @Override
-                public void onPermissionResult(PermissionResultSet result) {
-                    // we can go by write contacts denied, but not read contacts
-                    if (!result.isGranted(Assent.READ_CONTACTS)) {
-                        // just notify the user for now, we'll ask again later
-                        error(R.string.err_validation_contacts_denied);
-                    }
-                }
-            }, REQUEST_PERMISSIONS, Assent.READ_CONTACTS, Assent.WRITE_CONTACTS);
+        if (!Permissions.canWriteContacts(this)) {
+            Permissions.requestContacts(this, getString(R.string.err_validation_contacts_denied));
             mPermissionsAsked = true;
         }
     }
@@ -858,15 +840,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                     // do not wait for the generated key
                     stopKeyReceiver();
 
-                    if (!Assent.isPermissionGranted(Assent.READ_EXTERNAL_STORAGE)) {
-                        Assent.requestPermissions(new AssentCallback() {
-                            @Override
-                            public void onPermissionResult(PermissionResultSet result) {
-                                if (result.allPermissionsGranted()) {
-                                    browseImportKey();
-                                }
-                            }
-                        }, REQUEST_PERMISSIONS, Assent.READ_EXTERNAL_STORAGE);
+                    if (!Permissions.canReadExternalStorage(NumberValidation.this)) {
+                        // TODO rationale
+                        Permissions.requestReadExternalStorage(NumberValidation.this, null);
                     }
                     else {
                         browseImportKey();
@@ -876,6 +852,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         });
     }
 
+    @AfterPermissionGranted(Permissions.RC_READ_EXT_STORAGE)
     void browseImportKey() {
         new FileChooserDialog.Builder(NumberValidation.this)
             .initialPath(PersonalKeyPack.DEFAULT_KEYPACK.getParent())
@@ -1606,6 +1583,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 // Set contacts sync for this account.
                 ContentResolver.setSyncAutomatically(account, ContactsContract.AUTHORITY, true);
                 ContentResolver.setIsSyncable(account, ContactsContract.AUTHORITY, 1);
+
+                // clear old roster information
+                SQLiteRosterStore.purge(ctx);
 
                 // send back result
                 final Intent intent = new Intent();

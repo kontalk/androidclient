@@ -19,15 +19,15 @@
 package org.kontalk.ui;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-
-import com.afollestad.assent.Assent;
 
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jxmpp.util.XmppStringUtils;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -44,6 +44,8 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import pub.devrel.easypermissions.EasyPermissions;
+
 import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.crypto.PGP;
@@ -52,6 +54,7 @@ import org.kontalk.provider.MyUsers;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.view.ContactInfoBanner;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.Permissions;
 import org.kontalk.util.SystemUtils;
 import org.kontalk.util.XMPPUtils;
 
@@ -61,7 +64,7 @@ import org.kontalk.util.XMPPUtils;
  * @author Daniele Ricci
  */
 public class ContactInfoFragment extends Fragment
-        implements Contact.ContactChangeListener {
+        implements Contact.ContactChangeListener, EasyPermissions.PermissionCallbacks {
 
     Contact mContact;
 
@@ -374,7 +377,7 @@ public class ContactInfoFragment extends Fragment
         mCallButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                SystemUtils.call(getContext(), mContact.getNumber());
+                callContact();
             }
         });
 
@@ -416,6 +419,42 @@ public class ContactInfoFragment extends Fragment
         return view;
     }
 
+    void callContact() {
+        final Context context = getContext();
+
+        if (Permissions.canCallPhone(context)) {
+            doCallContact();
+        }
+        else if (EasyPermissions.permissionPermanentlyDenied(this, Manifest.permission.CALL_PHONE)) {
+            doDialContact();
+        }
+        else {
+            Permissions.requestCallPhone(this);
+        }
+    }
+
+    private void doCallContact() {
+        SystemUtils.call(getContext(), mContact.getNumber());
+    }
+
+    private void doDialContact() {
+        SystemUtils.dial(getContext(), mContact.getNumber());
+    }
+
+    @Override
+    public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
+        if (perms.contains(Manifest.permission.CALL_PHONE)) {
+            doCallContact();
+        }
+    }
+
+    @Override
+    public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
+        if (perms.contains(Manifest.permission.CALL_PHONE)) {
+            doDialContact();
+        }
+    }
+
     void trustKey(String fingerprint, int trustLevel) {
         String jid = mContact.getJID();
         Kontalk.getMessagesController(getContext())
@@ -448,15 +487,7 @@ public class ContactInfoFragment extends Fragment
     @Override
     public void onResume() {
         super.onResume();
-        Assent.setFragment(this, this);
         reload();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (getActivity() != null && getActivity().isFinishing())
-            Assent.setFragment(this, null);
     }
 
     @Override
@@ -485,7 +516,7 @@ public class ContactInfoFragment extends Fragment
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        Assent.handleResult(permissions, grantResults);
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
     public interface ContactInfoParent {

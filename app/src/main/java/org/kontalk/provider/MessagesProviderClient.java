@@ -673,8 +673,16 @@ public class MessagesProviderClient {
         ContentValues values = new ContentValues(1);
         values.put(Threads.ENCRYPTION, encryption);
         return context.getContentResolver().update(
-                ContentUris.withAppendedId(Threads.CONTENT_URI, threadId),
-                values, null, null);
+            ContentUris.withAppendedId(Threads.CONTENT_URI, threadId),
+            values, null, null);
+    }
+
+    public static int setArchived(Context context, long threadId, boolean archived) {
+        ContentValues values = new ContentValues(1);
+        values.put(Threads.ARCHIVED, archived);
+        return context.getContentResolver().update(
+            ContentUris.withAppendedId(Threads.CONTENT_URI, threadId),
+            values, null, null);
     }
 
 }

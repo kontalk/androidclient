@@ -129,9 +129,11 @@ public class RosterListener implements RosterLoadedListener, org.jivesoftware.sm
             // assuming the user has allowed us, request it
 
             PublicKeyPublish pkey = new PublicKeyPublish();
+            pkey.setStanzaId();
             pkey.setTo(jid.asBareJid());
 
-            service.sendPacket(pkey);
+            PublicKeyListener listener = new PublicKeyListener(service, pkey);
+            service.sendIqWithReply(pkey, true, listener, listener);
         }
 
         // invalidate cached contact

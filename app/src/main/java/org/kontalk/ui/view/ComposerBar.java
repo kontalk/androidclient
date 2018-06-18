@@ -22,9 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import com.afollestad.assent.Assent;
-import com.afollestad.assent.AssentCallback;
-import com.afollestad.assent.PermissionResultSet;
 import com.vanniktech.emoji.EmojiEditText;
 import com.vanniktech.emoji.EmojiPopup;
 import com.vanniktech.emoji.listeners.OnEmojiPopupDismissListener;
@@ -67,6 +64,7 @@ import org.kontalk.ui.AudioDialog;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.Permissions;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
@@ -77,7 +75,7 @@ import org.kontalk.util.SystemUtils;
  * @author Andrea Cappelli
  */
 public class ComposerBar extends RelativeLayout implements
-        OnEmojiPopupShownListener, OnEmojiPopupDismissListener, AssentCallback {
+        OnEmojiPopupShownListener, OnEmojiPopupDismissListener {
     private static final String TAG = ComposeMessage.TAG;
 
     private static final int MIN_RECORDING_TIME = 900;
@@ -88,13 +86,12 @@ public class ComposerBar extends RelativeLayout implements
     private static final String MAX_RECORDING_TIME_TEXT = DateUtils
         .formatElapsedTime(MAX_RECORDING_TIME / 1000);
 
-    private static final int REQUEST_PERMISSIONS = 200;
-
     Context mContext;
 
     // for the text entry
     boolean mSendEnabled = true;
     EmojiEditText mTextEntry;
+    private View mAttachButton;
     View mSendButton;
     ComposerListener mListener;
     private TextWatcher mChatStateListener;
@@ -185,6 +182,8 @@ public class ComposerBar extends RelativeLayout implements
         mTextEntry.addTextChangedListener(new TextWatcher() {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (mListener != null)
+                    mListener.onTextEntryFocus();
             }
 
             @Override
@@ -254,12 +253,19 @@ public class ComposerBar extends RelativeLayout implements
             public void onClick(View v) {
                 if (isEmojiVisible())
                     hideEmojiDrawer(false);
+                if (mListener != null)
+                    mListener.onTextEntryFocus();
             }
         });
         mTextEntry.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus && isEmojiVisible())
-                    hideEmojiDrawer(false);
+                if (hasFocus) {
+                    if (isEmojiVisible()) {
+                        hideEmojiDrawer(false);
+                    }
+                    if (mListener != null)
+                        mListener.onTextEntryFocus();
+                }
             }
         });
 
@@ -271,6 +277,15 @@ public class ComposerBar extends RelativeLayout implements
                 submitSend();
             }
         });
+        findViewById(R.id.attach_button).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mListener != null)
+                    mListener.onAttachClick();
+            }
+        });
+
+        mAttachButton = findViewById(R.id.attach_button);
 
         if (AudioDialog.isSupported(mContext)) {
             mAudioButton = findViewById(R.id.audio_send_button);
@@ -390,6 +405,7 @@ public class ComposerBar extends RelativeLayout implements
 
     private void doSetSendEnabled() {
         mSendButton.setEnabled(mSendEnabled);
+        mAttachButton.setEnabled(mSendEnabled);
         if (mAudioButton != null)
             mAudioButton.setEnabled(mSendEnabled);
     }
@@ -509,24 +525,14 @@ public class ComposerBar extends RelativeLayout implements
         }
     }
 
-    @Override
-    public void onPermissionResult(PermissionResultSet result) {
-        // nothing to do actually, user will just try again
-    }
-
     void startRecording() {
         // ask parent to stop all sounds
         if (mListener != null)
             mListener.stopAllSounds();
 
-        if (!Assent.isPermissionGranted(Assent.READ_EXTERNAL_STORAGE) ||
-            !Assent.isPermissionGranted(Assent.WRITE_EXTERNAL_STORAGE) ||
-            !Assent.isPermissionGranted(Assent.RECORD_AUDIO)) {
-
-            Assent.requestPermissions(this, REQUEST_PERMISSIONS,
-                Assent.READ_EXTERNAL_STORAGE,
-                Assent.WRITE_EXTERNAL_STORAGE,
-                Assent.RECORD_AUDIO);
+        if (!Permissions.canRecordAudio(getContext())) {
+            Permissions.requestRecordAudio((Activity) getContext(),
+                getContext().getString(R.string.err_audio_or_storage_denied));
         }
         else {
             doStartRecording();
@@ -540,10 +546,14 @@ public class ComposerBar extends RelativeLayout implements
         catch (IOException e) {
             Log.e(TAG, "error creating audio file", e);
 
-            int resId = (!SystemUtils.isPermissionGranted(getContext(), Assent.READ_EXTERNAL_STORAGE) ||
-                !SystemUtils.isPermissionGranted(getContext(), Assent.WRITE_EXTERNAL_STORAGE)) ?
-                R.string.err_audio_record_writing_permission :
-                R.string.err_audio_record_writing;
+            int resId;
+            if (Permissions.canWriteExternalStorage(getContext())) {
+                resId = R.string.err_audio_record_writing;
+            }
+            else {
+                resId = R.string.err_audio_record_writing_permission;
+            }
+
             Toast.makeText(mContext, resId, Toast.LENGTH_LONG).show();
             return;
         }
@@ -574,9 +584,13 @@ public class ComposerBar extends RelativeLayout implements
         catch (RuntimeException e) {
             Log.e(TAG, "error starting audio recording:", e);
 
-            int resId = !SystemUtils.isPermissionGranted(getContext(), Assent.RECORD_AUDIO) ?
-                R.string.err_audio_record_permission :
-                R.string.err_audio_record;
+            int resId;
+            if (Permissions.canRecordAudioOnly(getContext())) {
+                resId = R.string.err_audio_record;
+            }
+            else {
+                resId = R.string.err_audio_record_permission;
+            }
             Toast.makeText(mContext, resId, Toast.LENGTH_LONG).show();
         }
     }

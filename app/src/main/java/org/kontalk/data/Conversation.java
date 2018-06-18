@@ -212,6 +212,11 @@ public class Conversation {
         return holder.groupJid != null && holder.groupMembership == requiredMembership;
     }
 
+    public static void archiveFromCursor(Context context, Cursor cursor) {
+        long threadId = cursor.getLong(COLUMN_ID);
+        MessagesProviderClient.setArchived(context, threadId, true);
+    }
+
     public static void deleteFromCursor(Context context, DeleteThreadHolder holder, boolean leaveGroup) {
         String[] groupPeers = null;
         if (holder.groupJid != null) {
@@ -449,9 +454,10 @@ public class Conversation {
                 ALL_THREADS_PROJECTION, Threads._ID + " = " + threadId, null, null);
     }
 
-    public static Cursor startQuery(Context context) {
+    public static Cursor startQuery(Context context, boolean archived) {
         return context.getContentResolver().query(Threads.CONTENT_URI,
-                ALL_THREADS_PROJECTION, null, null, Threads.DEFAULT_SORT_ORDER);
+            ALL_THREADS_PROJECTION, Threads.ARCHIVED + " = " + (archived ? "1" : "0"),
+            null, Threads.DEFAULT_SORT_ORDER);
     }
 
     public static Cursor startQuery(Context context, long threadId) {

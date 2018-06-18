@@ -21,17 +21,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/root_view"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <ImageView android:id="@+id/background"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         tools:ignore="ContentDescription"/>
 
     <LinearLayout android:id="@+id/container"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:orientation="vertical">
 
         <include layout="@layout/invitation_bar"
@@ -42,26 +42,36 @@
             android:layout_height="wrap_content"
             android:layout_width="match_parent"/>
 
-        <ListView android:id="@android:id/list"
-            style="?android:attr/listViewWhiteStyle"
-            android:background="@android:color/transparent"
-            android:divider="@null"
-            android:dividerHeight="0.0sp"
-            android:layout_width="fill_parent"
+        <FrameLayout
+            android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1.0"
-            android:drawSelectorOnTop="false"
-            android:transcriptMode="normal"
-            android:smoothScrollbar="false"
-            android:fadeScrollbars="true"
-            android:scrollbarAlwaysDrawVerticalTrack="true"
-            android:fastScrollEnabled="false"
-            android:scrollbarStyle="insideOverlay"
-            android:stackFromBottom="true"
-            android:fadingEdgeLength="8dp"
-            >
-            <!-- Preview: listitem=@layout/message_list_item -->
-        </ListView>
+            android:layout_weight="1.0">
+
+            <ListView android:id="@android:id/list"
+                style="?android:attr/listViewWhiteStyle"
+                android:background="@android:color/transparent"
+                android:divider="@null"
+                android:dividerHeight="0.0sp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:drawSelectorOnTop="false"
+                android:transcriptMode="normal"
+                android:smoothScrollbar="false"
+                android:fadeScrollbars="true"
+                android:scrollbarAlwaysDrawVerticalTrack="true"
+                android:fastScrollEnabled="false"
+                android:scrollbarStyle="insideOverlay"
+                android:stackFromBottom="true"
+                android:fadingEdgeLength="8dp"
+                >
+                <!-- Preview: listitem=@layout/message_list_item -->
+            </ListView>
+
+            <include layout="@layout/circular_attach_view"
+                android:visibility="invisible"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </FrameLayout>
 
         <!-- Divider. (Yes, the .9dp is on purpose.) -->
         <View android:background="?attr/dividerHorizontal"
@@ -69,7 +79,7 @@
             android:layout_height=".9dp" />
 
         <org.kontalk.ui.view.ReplyBar android:id="@+id/reply_bar"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="@dimen/reply_bar_height"
             android:padding="8dp"
@@ -88,11 +98,9 @@
 
         <include android:id="@+id/composer_bar"
             layout="@layout/composer_bar"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
     </LinearLayout>
-
-    <include layout="@layout/circular_attach_view" />
 
 </RelativeLayout>

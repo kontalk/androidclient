@@ -80,7 +80,6 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     private MenuItem mSetGroupSubjectMenu;
     private MenuItem mGroupInfoMenu;
     private MenuItem mLeaveGroupMenu;
-    private MenuItem mAttachMenu;
 
     @Override
     protected void updateUI() {
@@ -116,8 +115,6 @@ public class GroupMessageFragment extends AbstractComposeFragment {
                 }
             }
 
-            mAttachMenu.setVisible(visible);
-            mAttachMenu.setEnabled(visible);
             if (!visible)
                 tryHideAttachmentView();
         }
@@ -130,7 +127,6 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         mSetGroupSubjectMenu = menu.findItem(R.id.group_subject);
         mGroupInfoMenu = menu.findItem(R.id.group_info);
         mLeaveGroupMenu = menu.findItem(R.id.leave_group);
-        mAttachMenu = menu.findItem(R.id.menu_attachment);
     }
 
     @Override

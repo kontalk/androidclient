@@ -28,9 +28,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import com.afollestad.assent.Assent;
-import com.afollestad.assent.AssentCallback;
-import com.afollestad.assent.PermissionResultSet;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.nispok.snackbar.Snackbar;
@@ -88,6 +85,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
+
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
@@ -124,6 +124,7 @@ import org.kontalk.ui.view.MessageListItem;
 import org.kontalk.ui.view.ReplyBar;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.Permissions;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
@@ -157,7 +158,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     private static final int SELECT_ATTACHMENT_PHOTO = 3;
     private static final int SELECT_ATTACHMENT_LOCATION = 4;
     private static final int REQUEST_INVITE_USERS = 5;
-    private static final int REQUEST_PERMISSIONS = 6;
 
     // use this as base for request codes for child classes
     protected static final int REQUEST_FIRST_CHILD = 100;
@@ -195,6 +195,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     private TextView mStatusText;
     private MenuItem mDeleteThreadMenu;
     private MenuItem mToggleEncryptionMenu;
+
+    private ImageView mBackground;
 
     /**
      * The thread id.
@@ -302,19 +304,18 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         list.addHeaderView(mHeaderView, null, false);
 
         // set custom background (if any)
-        ImageView background = getView().findViewById(R.id.background);
+        mBackground = getView().findViewById(R.id.background);
         Drawable bg = Preferences.getConversationBackground(getActivity());
         if (bg != null) {
-            background.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            background.setImageDrawable(bg);
+            mBackground.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            mBackground.setImageDrawable(bg);
         }
         else {
-            background.setScaleType(ImageView.ScaleType.FIT_XY);
-            background.setImageResource(R.drawable.app_background_tile);
+            mBackground.setScaleType(ImageView.ScaleType.FIT_XY);
+            mBackground.setImageResource(R.drawable.app_background_tile);
         }
 
         processArguments(savedInstanceState);
-        initAttachmentView();
     }
 
     @Override
@@ -360,6 +361,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         Configuration config = getResources().getConfiguration();
         mComposer.onKeyboardStateChanged(config.keyboardHidden == KEYBOARDHIDDEN_NO);
 
+        initAttachmentView(view);
+
         return view;
     }
 
@@ -373,7 +376,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Assent.setFragment(this, this);
 
         setHasOptionsMenu(true);
         mQueryHandler = new MessageListQueryHandler(this);
@@ -633,9 +635,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             .show();
     }
 
-    private void initAttachmentView() {
-        View view = getView();
-
+    private void initAttachmentView(View view) {
         mAttachmentContainer = view.findViewById(R.id.attachment_container);
 
         View.OnClickListener hideAttachmentListener = new View.OnClickListener() {
@@ -700,6 +700,16 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                 hideAttachmentView();
             }
         });
+    }
+
+    @Override
+    public void onAttachClick() {
+        toggleAttachmentView();
+    }
+
+    @Override
+    public void onTextEntryFocus() {
+        tryHideAttachmentView(true);
     }
 
     /**
@@ -932,10 +942,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             return true;
 
         switch (item.getItemId()) {
-            case R.id.menu_attachment:
-                toggleAttachmentView();
-                return true;
-
             case R.id.delete_thread:
                 if (threadId > 0)
                     deleteThread();
@@ -1110,15 +1116,14 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
     boolean tryHideAttachmentView(boolean instant) {
         if (isAttachmentViewVisible()) {
-            mAttachmentContainer.hide(instant);
+            mAttachmentContainer.hide();
             return true;
         }
         return false;
     }
 
     private boolean isAttachmentViewVisible() {
-        return mAttachmentContainer.getVisibility() == View.VISIBLE &&
-            !mAttachmentContainer.isClosing();
+        return mAttachmentContainer.getVisibility() == View.VISIBLE;
     }
 
     void hideAttachmentView() {
@@ -1129,11 +1134,15 @@ public abstract class AbstractComposeFragment extends ListFragment implements
      * Show or hide the attachment selector.
      */
     private void toggleAttachmentView() {
-        mComposer.forceHideKeyboard();
         mAttachmentContainer.toggle();
     }
 
+    @AfterPermissionGranted(Permissions.RC_CAMERA)
     void startCameraAttachment() {
+        final Context context = getContext();
+        if (context == null)
+            return;
+
         try {
             mCurrentPhoto = MediaStorage.getOutgoingPhotoFile();
             Uri uri = Uri.fromFile(mCurrentPhoto);
@@ -1141,7 +1150,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             final Intent intent = SystemUtils.externalIntent(MediaStore.ACTION_IMAGE_CAPTURE);
             intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                intent.setClipData(ClipData.newUri(getContext().getContentResolver(),
+                intent.setClipData(ClipData.newUri(context.getContentResolver(),
                     "Picture path", uri));
             }
 
@@ -1156,15 +1165,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     }
 
     private void requestCameraPermission() {
-        if (!Assent.isPermissionGranted(Assent.CAMERA)) {
-            Assent.requestPermissions(new AssentCallback() {
-                @Override
-                public void onPermissionResult(PermissionResultSet result) {
-                    if (result.allPermissionsGranted()) {
-                        startCameraAttachment();
-                    }
-                }
-            }, REQUEST_PERMISSIONS, Assent.CAMERA);
+        if (!Permissions.canUseCamera(getContext())) {
+            Permissions.requestCamera(this, getString(R.string.err_camera_picture_denied));
         }
         else {
             startCameraAttachment();
@@ -1256,19 +1258,25 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     }
 
     void selectAudioAttachment() {
-        // create audio fragment if needed
-        AudioFragment audio = getAudioFragment();
-        // stop everything
-        if (mAudioControl != null) {
-            resetAudio(mAudioControl);
+        Activity context = getActivity();
+        if (context != null) {
+            // create audio fragment if needed
+            AudioFragment audio = getAudioFragment();
+
+            // stop everything
+            if (mAudioControl != null) {
+                resetAudio(mAudioControl);
+            }
+            else {
+                audio.resetPlayer();
+                audio.setMessageId(-1);
+            }
+
+            // show dialog
+            mAudioDialog = new AudioDialog(context, audio, this);
+            mAudioDialog.setOwnerActivity(context);
+            mAudioDialog.show();
         }
-        else {
-            audio.resetPlayer();
-            audio.setMessageId(-1);
-        }
-        // show dialog
-        mAudioDialog = new AudioDialog(getActivity(), audio, this);
-        mAudioDialog.show();
     }
 
     void selectPositionAttachment() {
@@ -1465,7 +1473,13 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                     if (MediaStorage.isStorageAccessFrameworkAvailable()) {
                         for (Uri uri : uris) {
                             if (uri != null && !"file".equals(uri.getScheme())) {
-                                MediaStorage.requestPersistablePermissions(getActivity(), uri);
+                                try {
+                                    MediaStorage.requestPersistablePermissions(getActivity(), uri);
+                                }
+                                catch (SecurityException e) {
+                                    // we'll try to access the file anyway later
+                                    Log.w(TAG, "unable to request persistable permissions - will try access anyway");
+                                }
                             }
                         }
                     }
@@ -2024,7 +2038,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     @Override
     public void onResume() {
         super.onResume();
-        Assent.setFragment(this, this);
 
         if (Authenticator.getDefaultAccount(getActivity()) == null) {
             NumberValidation.start(getActivity());
@@ -2058,8 +2071,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     @Override
     public void onPause() {
         super.onPause();
-        if (getActivity() != null && getActivity().isFinishing())
-            Assent.setFragment(this, null);
 
         // unsubcribe presence notifications
         unsubscribePresence();
@@ -2176,7 +2187,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        Assent.handleResult(permissions, grantResults);
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
     private void pauseContentListener() {
@@ -2213,21 +2224,36 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             mDeleteThreadMenu.setEnabled(threadEnabled);
         }
 
-        if (mToggleEncryptionMenu != null) {
-            Context context = getActivity();
-            if (context != null) {
-                if (mConversation != null && Preferences.getEncryptionEnabled(context)) {
-                    boolean encryption = mConversation.isEncryptionEnabled();
+        Context context = getActivity();
+        if (context != null) {
+            if (mConversation != null && Preferences.getEncryptionEnabled(context)) {
+                boolean encryption = mConversation.isEncryptionEnabled();
+                if (mToggleEncryptionMenu != null) {
                     mToggleEncryptionMenu
                         .setVisible(true)
                         .setEnabled(true)
                         .setChecked(encryption);
                 }
-                else {
+                if (mBackground != null) {
+                    if (encryption) {
+                        mBackground.clearColorFilter();
+                    }
+                    else {
+                        mBackground.setColorFilter(ContextCompat
+                            .getColor(context, R.color.app_background_unsafe_filter));
+                    }
+                }
+            }
+            else {
+                if (mToggleEncryptionMenu != null) {
                     mToggleEncryptionMenu
                         .setVisible(false)
                         .setEnabled(false)
                         .setChecked(false);
+                }
+                if (mBackground != null) {
+                    mBackground.setColorFilter(ContextCompat
+                        .getColor(context, R.color.app_background_unsafe_filter));
                 }
             }
         }

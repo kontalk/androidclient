@@ -96,7 +96,7 @@ public class SendPositionGoogleFragment extends SendPositionAbstractFragment imp
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
 
         MapsConfiguration.getInstance().initialize(getContext());

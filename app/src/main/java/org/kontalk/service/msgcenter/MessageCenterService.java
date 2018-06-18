@@ -719,6 +719,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         public void quit() {
             abortIdle();
+            abortTest();
             getLooper().quit();
         }
 
@@ -774,6 +775,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     }
                 }
             });
+        }
+
+        private void abortTest() {
+            removeMessages(MSG_TEST);
         }
     }
 
@@ -897,7 +902,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     boolean sendPacket(Stanza packet, boolean bumpIdle) {
         // reset idler if requested
-        if (bumpIdle) mIdleHandler.reset();
+        if (bumpIdle && mIdleHandler != null)
+            mIdleHandler.reset();
 
         final XMPPConnection conn = mConnection;
         if (conn != null) {
@@ -920,7 +926,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     void sendIqWithReply(IQ packet, boolean bumpIdle, StanzaListener callback, ExceptionCallback errorCallback) {
         // reset idler if requested
-        if (bumpIdle) mIdleHandler.reset();
+        if (bumpIdle && mIdleHandler != null)
+            mIdleHandler.reset();
 
         final XMPPConnection conn = mConnection;
         if (conn != null) {
@@ -1724,6 +1731,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if ((mConnection == null || !mConnection.isConnected()) && mHelper == null) {
             // acquire the wakelock
             mWakeLock.acquire();
+            // hold on to the message center
+            mIdleHandler.hold(false);
 
             // reset push notification variable
             mPushNotifications = Preferences.getPushNotificationsEnabled(this) &&
@@ -1817,24 +1826,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         roster.addRosterLoadedListener(rosterListener);
         roster.addRosterListener(rosterListener);
         roster.setRosterStore(mRosterStore);
-
-        // enable ping manager
-        AndroidAdaptiveServerPingManager
-            .getInstanceFor(connection, this)
-            .setEnabled(true);
-        mPingFailedListener = new PingFailedListener() {
-            @Override
-            public void pingFailed() {
-                if (isStarted() && mConnection == connection) {
-                    Log.v(TAG, "ping failed, restarting message center");
-                    // restart message center
-                    restart(getApplicationContext());
-                }
-            }
-        };
-        PingManager pingManager = PingManager.getInstanceFor(connection);
-        pingManager.registerPingFailedListener(mPingFailedListener);
-        pingManager.setPingInterval(0);
+        roster.addSubscribeListener(presenceListener);
 
         StanzaFilter filter;
 
@@ -1852,8 +1844,24 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @Override
-    public void connected(XMPPConnection connection) {
-        // not used.
+    public void connected(final XMPPConnection connection) {
+        // enable ping manager
+        AndroidAdaptiveServerPingManager
+            .getInstanceFor(connection, this)
+            .setEnabled(true);
+        mPingFailedListener = new PingFailedListener() {
+            @Override
+            public void pingFailed() {
+                if (isStarted() && mConnection == connection) {
+                    Log.v(TAG, "ping failed, restarting message center");
+                    // restart message center
+                    restart(getApplicationContext());
+                }
+            }
+        };
+        PingManager pingManager = PingManager.getInstanceFor(connection);
+        pingManager.registerPingFailedListener(mPingFailedListener);
+        pingManager.setPingInterval(0);
     }
 
     @Override
@@ -1905,8 +1913,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     Jid jid = conn.getServiceName();
                     if (Keyring.getPublicKey(MessageCenterService.this, jid.toString(), MyUsers.Keys.TRUST_UNKNOWN) == null) {
                         PublicKeyPublish pub = new PublicKeyPublish();
+                        pub.setStanzaId();
                         pub.setTo(jid);
-                        sendPacket(pub, false);
+                        PublicKeyListener listener = new PublicKeyListener(MessageCenterService.this, pub);
+                        sendIqWithReply(pub, false, listener, listener);
                     }
                 }
             }

@@ -101,7 +101,7 @@ public class MessagesProvider extends ContentProvider {
     @VisibleForTesting
     static class DatabaseHelper extends SQLiteOpenHelper {
         @VisibleForTesting
-        static final int DATABASE_VERSION = 16;
+        static final int DATABASE_VERSION = 18;
         @VisibleForTesting
         static final String DATABASE_NAME = "messages.db";
 
@@ -178,7 +178,8 @@ public class MessagesProvider extends ContentProvider {
             "draft TEXT," +
             "request_status INTEGER NOT NULL DEFAULT 0," +
             "sticky INTEGER NOT NULL DEFAULT 0," +
-            "encryption INTEGER NOT NULL DEFAULT 1" +
+            "encryption INTEGER NOT NULL DEFAULT 1," +
+            "archived NOT NULL DEFAULT 0" +
             ")";
 
         /** This table will contain the latest message from each conversation. */
@@ -251,25 +252,17 @@ public class MessagesProvider extends ContentProvider {
             "SELECT COUNT(_id) FROM " + TABLE_MESSAGES + " WHERE thread_id = old.thread_id" +
             ") WHERE _id = old.thread_id";
 
-        /** Updates the thread unread count. */
+        /** Updates the thread unread/new count. */
         private static final String UPDATE_UNREAD_COUNT_NEW =
-            "UPDATE " + TABLE_THREADS + " SET unread = (" +
-            "SELECT COUNT(_id) FROM " + TABLE_MESSAGES + " WHERE thread_id = new.thread_id " +
-            "AND unread <> 0) WHERE _id = new.thread_id";
+            "UPDATE " + TABLE_THREADS + " SET " +
+                "unread = (SELECT COUNT(_id) FROM " + TABLE_MESSAGES + " WHERE thread_id = new.thread_id AND unread <> 0), " +
+                "\"new\" = (SELECT COUNT(_id) FROM " + TABLE_MESSAGES + " WHERE thread_id = new.thread_id AND \"new\" <> 0) " +
+                "WHERE _id = new.thread_id";
         private static final String UPDATE_UNREAD_COUNT_OLD =
-            "UPDATE " + TABLE_THREADS + " SET unread = (" +
-            "SELECT COUNT(_id) FROM " + TABLE_MESSAGES + " WHERE thread_id = old.thread_id " +
-            "AND unread <> 0) WHERE _id = old.thread_id";
-
-        /** Updates the thread new count. */
-        private static final String UPDATE_NEW_COUNT_NEW =
-            "UPDATE " + TABLE_THREADS + " SET \"new\" = (" +
-            "SELECT COUNT(_id) FROM " + TABLE_MESSAGES + " WHERE thread_id = new.thread_id " +
-            "AND \"new\" <> 0) WHERE _id = new.thread_id";
-        private static final String UPDATE_NEW_COUNT_OLD =
-            "UPDATE " + TABLE_THREADS + " SET \"new\" = (" +
-            "SELECT COUNT(_id) FROM " + TABLE_MESSAGES + " WHERE thread_id = old.thread_id " +
-            "AND \"new\" <> 0) WHERE _id = old.thread_id";
+            "UPDATE " + TABLE_THREADS + " SET " +
+                "unread = (SELECT COUNT(_id) FROM " + TABLE_MESSAGES + " WHERE thread_id = old.thread_id AND unread <> 0), " +
+                "\"new\" = (SELECT COUNT(_id) FROM " + TABLE_MESSAGES + " WHERE thread_id = old.thread_id AND \"new\" <> 0) " +
+                "WHERE _id = old.thread_id";
 
         /** Updates the thread status reflected by the latest message. */
         /*
@@ -289,17 +282,14 @@ public class MessagesProvider extends ContentProvider {
             " BEGIN " +
             UPDATE_MESSAGES_COUNT_NEW + ";" +
             UPDATE_UNREAD_COUNT_NEW   + ";" +
-            UPDATE_NEW_COUNT_NEW      + ";" +
             UPDATE_STATUS_NEW         + ";" +
             "END";
 
         /** This trigger will update the threads table counters on UPDATE. */
         private static final String TRIGGER_THREADS_UPDATE_COUNT =
-            "CREATE TRIGGER update_thread_on_update AFTER UPDATE ON " + TABLE_MESSAGES +
+            "CREATE TRIGGER update_thread_on_update AFTER UPDATE OF " +
+                Messages.STATUS + " ON " + TABLE_MESSAGES +
             " BEGIN " +
-            UPDATE_MESSAGES_COUNT_NEW + ";" +
-            UPDATE_UNREAD_COUNT_NEW   + ";" +
-            UPDATE_NEW_COUNT_NEW      + ";" +
             UPDATE_STATUS_NEW         + ";" +
             "END";
 
@@ -313,7 +303,6 @@ public class MessagesProvider extends ContentProvider {
             " BEGIN " +
             UPDATE_MESSAGES_COUNT_OLD + ";" +
             UPDATE_UNREAD_COUNT_OLD   + ";" +
-            UPDATE_NEW_COUNT_OLD      + ";" +
             // do not call this here -- UPDATE_STATUS_OLD         + ";" +
             "END";
 
@@ -396,6 +385,46 @@ public class MessagesProvider extends ContentProvider {
             "ALTER TABLE messages ADD COLUMN in_reply_to INTEGER",
         };
 
+        private static final String[] SCHEMA_UPGRADE_V16 = {
+            "DROP TRIGGER IF EXISTS update_thread_on_insert",
+            "CREATE TRIGGER update_thread_on_insert AFTER INSERT ON messages" +
+                " BEGIN " +
+                "UPDATE threads SET count = (" +
+                    "SELECT COUNT(_id) FROM messages WHERE thread_id = new.thread_id" +
+                    ") WHERE _id = new.thread_id;" +
+                "UPDATE threads SET " +
+                    "unread = (SELECT COUNT(_id) FROM messages WHERE thread_id = new.thread_id AND unread <> 0), " +
+                    "\"new\" = (SELECT COUNT(_id) FROM messages WHERE thread_id = new.thread_id AND \"new\" <> 0) " +
+                    "WHERE _id = new.thread_id;" +
+                "UPDATE threads SET status = (" +
+                    "SELECT status FROM messages WHERE thread_id = new.thread_id ORDER BY timestamp DESC LIMIT 1)" +
+                    " WHERE _id = new.thread_id;" +
+                "END",
+            "DROP TRIGGER IF EXISTS update_thread_on_update",
+            "CREATE TRIGGER update_thread_on_update AFTER UPDATE OF " +
+                "status ON messages" +
+                " BEGIN " +
+                "UPDATE threads SET status = (" +
+                    "SELECT status FROM messages WHERE thread_id = new.thread_id ORDER BY timestamp DESC LIMIT 1)" +
+                    " WHERE _id = new.thread_id;" +
+                "END",
+            "DROP TRIGGER IF EXISTS update_thread_on_delete",
+            "CREATE TRIGGER update_thread_on_delete AFTER DELETE ON messages" +
+                " BEGIN " +
+                "UPDATE threads SET count = (" +
+                    "SELECT COUNT(_id) FROM messages WHERE thread_id = old.thread_id" +
+                    ") WHERE _id = old.thread_id;" +
+                "UPDATE threads SET " +
+                    "unread = (SELECT COUNT(_id) FROM messages WHERE thread_id = old.thread_id AND unread <> 0), " +
+                    "\"new\" = (SELECT COUNT(_id) FROM messages WHERE thread_id = old.thread_id AND \"new\" <> 0) " +
+                    "WHERE _id = old.thread_id;" +
+                "END",
+        };
+
+        private static final String[] SCHEMA_UPGRADE_V17 = {
+            "ALTER TABLE threads ADD COLUMN archived NOT NULL DEFAULT 0",
+        };
+
         DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
         }
@@ -460,6 +489,16 @@ public class MessagesProvider extends ContentProvider {
                     // fall through
                 case 15:
                     for (String sql : SCHEMA_UPGRADE_V15) {
+                        db.execSQL(sql);
+                    }
+                    // fall through
+                case 16:
+                    for (String sql : SCHEMA_UPGRADE_V16) {
+                        db.execSQL(sql);
+                    }
+                    // fall through
+                case 17:
+                    for (String sql : SCHEMA_UPGRADE_V17) {
                         db.execSQL(sql);
                     }
                     // fall through
@@ -595,7 +634,7 @@ public class MessagesProvider extends ContentProvider {
     }
 
     @Override
-    public synchronized Uri insert(@NonNull Uri uri, ContentValues initialValues) {
+    public Uri insert(@NonNull Uri uri, ContentValues initialValues) {
         if (initialValues == null)
             throw new IllegalArgumentException("No data");
 
@@ -883,6 +922,9 @@ public class MessagesProvider extends ContentProvider {
                 values);
         }
 
+        // will reset archived status since we are called for inserting a message
+        values.put(Threads.ARCHIVED, false);
+
         // insert new thread
         try {
             threadId = db.insertOrThrow(TABLE_THREADS, null, values);
@@ -928,7 +970,7 @@ public class MessagesProvider extends ContentProvider {
     }
 
     @Override
-    public synchronized int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+    public int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         String table;
         String where;
         String[] args;
@@ -1111,11 +1153,15 @@ public class MessagesProvider extends ContentProvider {
                         whereBuilder.append(")");
 
                         Cursor c = db.query(TABLE_MESSAGES, projection,
-                                whereBuilder.toString(), msgIdList, null, null, null);
+                                whereBuilder.toString(), msgIdList, null, null, Messages.THREAD_ID);
 
+                        long oldThreadId = 0;
                         while (c.moveToNext()) {
                             long threadId = c.getLong(0);
-                            updateThreadInfo(db, threadId, notifications);
+                            if (oldThreadId != threadId) {
+                                updateThreadInfo(db, threadId, notifications);
+                                oldThreadId = threadId;
+                            }
 
                             // update fulltext if necessary
                             if (doUpdateFulltext) {
@@ -1174,7 +1220,7 @@ public class MessagesProvider extends ContentProvider {
     }
 
     @Override
-    public synchronized int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
+    public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
         String table;
         String where;
         String[] args;
@@ -1474,12 +1520,25 @@ public class MessagesProvider extends ContentProvider {
                 v.putNull(Threads.STATUS);
                 setThreadContent(new byte[0], TextComponent.MIME_TYPE, null, null, v);
             }
+            c.close();
+
+            // extract counters now
+            c = db.rawQuery("SELECT SUM(unread), SUM(\"new\") FROM " + TABLE_MESSAGES + " WHERE " +
+                    Messages.THREAD_ID + " = ?",
+                new String[] { String.valueOf(threadId) });
+            if (c != null) {
+                if (c.moveToFirst()) {
+                    v.put(Threads.UNREAD, c.getLong(0));
+                    v.put(Threads.NEW, c.getLong(1));
+                }
+                c.close();
+            }
+
             db.update(TABLE_THREADS, v, Threads._ID + "=" + threadId, null);
             if (notifications != null) {
                 notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
                 notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
             }
-            c.close();
         }
     }
 
@@ -1582,6 +1641,7 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Threads.REQUEST_STATUS, Threads.REQUEST_STATUS);
         threadsProjectionMap.put(Threads.STICKY, Threads.STICKY);
         threadsProjectionMap.put(Threads.ENCRYPTION, Threads.ENCRYPTION);
+        threadsProjectionMap.put(Threads.ARCHIVED, Threads.ARCHIVED);
         threadsProjectionMap.put(Groups.GROUP_JID, Groups.GROUP_JID);
         threadsProjectionMap.put(Groups.SUBJECT, Groups.SUBJECT);
         threadsProjectionMap.put(Groups.GROUP_TYPE, Groups.GROUP_TYPE);

@@ -50,4 +50,10 @@ public interface ComposerListener {
     /** Text has been changed. */
     void textChanged(CharSequence text);
 
+    /** The attach button has been clicked. */
+    void onAttachClick();
+
+    /** The text entry has gained focus. */
+    void onTextEntryFocus();
+
 }

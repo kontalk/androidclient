@@ -691,8 +691,10 @@ public abstract class MediaStorage {
                 }
             }
             catch (Exception e) {
-                SystemUtils.closeStream(afd);
                 player.release();
+            }
+            finally {
+                SystemUtils.closeStream(afd);
             }
 
             return null;

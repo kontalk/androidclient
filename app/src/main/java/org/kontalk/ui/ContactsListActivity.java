@@ -21,8 +21,6 @@ package org.kontalk.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.afollestad.assent.Assent;
-
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -34,6 +32,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.view.ContactPickerListener;
+import org.kontalk.util.Permissions;
 import org.kontalk.util.Preferences;
 
 
@@ -50,7 +49,6 @@ public class ContactsListActivity extends ToolbarActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Assent.setActivity(this, this);
 
         setContentView(R.layout.contacts_list_screen);
 
@@ -85,8 +83,7 @@ public class ContactsListActivity extends ToolbarActivity
     @Override
     protected void onStart() {
         super.onStart();
-        Assent.setActivity(this, this);
-        if (!Assent.isPermissionGranted(Assent.READ_CONTACTS)) {
+        if (!Permissions.canReadContacts(this)) {
             Toast.makeText(this, R.string.warn_contacts_denied, Toast.LENGTH_LONG).show();
         }
     }
@@ -94,8 +91,6 @@ public class ContactsListActivity extends ToolbarActivity
     @Override
     protected void onPause() {
         super.onPause();
-        if (isFinishing())
-            Assent.setActivity(this, null);
         // release message center
         MessageCenterService.release(this);
     }
@@ -109,8 +104,6 @@ public class ContactsListActivity extends ToolbarActivity
             finish();
             return;
         }
-
-        Assent.setActivity(this, this);
 
         // hold message center
         MessageCenterService.hold(this, true);

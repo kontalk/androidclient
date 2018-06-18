@@ -18,6 +18,13 @@
 
 package org.kontalk.position;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.car2go.maps.AnyMap;
+import com.car2go.maps.model.LatLng;
+import com.car2go.maps.osm.CameraUpdateFactory;
+import com.car2go.maps.osm.MapsConfiguration;
+
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
@@ -38,17 +45,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.afollestad.assent.Assent;
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
-import com.car2go.maps.AnyMap;
-import com.car2go.maps.model.LatLng;
-import com.car2go.maps.osm.CameraUpdateFactory;
-import com.car2go.maps.osm.MapsConfiguration;
-
 import org.kontalk.Log;
 import org.kontalk.R;
-import org.kontalk.util.SystemUtils;
+import org.kontalk.util.Permissions;
 import org.kontalk.util.ViewUtils;
 
 
@@ -79,7 +78,7 @@ public class SendPositionOsmFragment extends SendPositionAbstractFragment implem
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
 
         MapsConfiguration.getInstance().initialize(getContext());
@@ -145,8 +144,7 @@ public class SendPositionOsmFragment extends SendPositionAbstractFragment implem
     }
 
     protected boolean isLocationEnabled() {
-        if (!SystemUtils.isPermissionGranted(getContext(), Assent.ACCESS_COARSE_LOCATION) ||
-            !SystemUtils.isPermissionGranted(getContext(), Assent.ACCESS_FINE_LOCATION))
+        if (!Permissions.canAccessLocation(getContext()))
             return false;
 
         if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) &&
@@ -241,7 +239,7 @@ public class SendPositionOsmFragment extends SendPositionAbstractFragment implem
     public void onMapReady(final AnyMap anyMap) {
         super.onMapReady(anyMap);
 
-        if (SystemUtils.isPermissionGranted(getContext(), Assent.ACCESS_FINE_LOCATION)) {
+        if (Permissions.canAccessFineLocation(getContext())) {
             @SuppressLint("MissingPermission")
             Location lastLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             // Note that this can be NULL if last location isn't already known.

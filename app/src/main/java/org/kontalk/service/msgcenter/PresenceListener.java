@@ -18,18 +18,17 @@
 
 package org.kontalk.service.msgcenter;
 
-import java.io.IOException;
 import java.util.Date;
 
-import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.roster.RosterEntry;
+import org.jivesoftware.smack.roster.SubscribeListener;
 import org.jivesoftware.smack.roster.packet.RosterPacket;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.delay.packet.DelayInformation;
-import org.spongycastle.openpgp.PGPException;
+import org.jxmpp.jid.Jid;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
@@ -70,40 +69,10 @@ import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TYPE;
  * Packet listener for presence stanzas.
  * @author Daniele Ricci
  */
-class PresenceListener extends MessageCenterPacketListener {
+class PresenceListener extends MessageCenterPacketListener implements SubscribeListener {
 
     public PresenceListener(MessageCenterService instance) {
         super(instance);
-    }
-
-    private Stanza createSubscribed(Presence p) {
-        ExtensionElement _pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
-
-        try {
-
-            if (_pkey instanceof PublicKeyPresence) {
-                PublicKeyPresence pkey = (PublicKeyPresence) _pkey;
-
-                byte[] keydata = pkey.getKey();
-                // just to ensure it's valid data
-                PGP.readPublicKeyring(keydata);
-
-                String jid = p.getFrom().asBareJid().toString();
-                // store key to users table
-                Keyring.setKey(getContext(), jid, keydata, MyUsers.Keys.TRUST_VERIFIED);
-            }
-
-            Presence p2 = new Presence(Presence.Type.subscribed);
-            p2.setTo(p.getFrom());
-            return p2;
-
-        }
-        catch (Exception e) {
-            Log.w(MessageCenterService.TAG, "unable to accept subscription from user", e);
-            // TODO should we notify the user about this?
-            // TODO throw new PGPException(...)
-            return null;
-        }
     }
 
     @Override
@@ -111,27 +80,13 @@ class PresenceListener extends MessageCenterPacketListener {
         try {
             Presence p = (Presence) packet;
 
-            // presence subscription request
-            if (p.getType() == Presence.Type.subscribe) {
-
-                handleSubscribe(p);
-
-            }
-
-            /*
-            else if (p.getType() == Presence.Type.unsubscribed) {
-                // TODO can this even happen?
-            }
-            */
-
-            else if (p.getType() == Presence.Type.available || p.getType() == Presence.Type.unavailable) {
+            if (p.getType() == Presence.Type.available || p.getType() == Presence.Type.unavailable) {
                 if (p.getType() == Presence.Type.unavailable) {
                     // clear contact volatile state and cached data
                     Contact.invalidateData(p.getFrom().toString());
                 }
 
                 handlePresence(p);
-
             }
         }
         catch (Exception e) {
@@ -139,29 +94,39 @@ class PresenceListener extends MessageCenterPacketListener {
         }
     }
 
-    /**
-     * @deprecated We should use a {@link org.jivesoftware.smack.roster.SubscribeListener}.
-     */
-    @Deprecated
-    private void handleSubscribe(Presence p)
-            throws NotConnectedException, IOException, PGPException, InterruptedException {
-
+    @Override
+    public SubscribeAnswer processSubscribe(Jid from, Presence subscribeRequest) {
         Context ctx = getContext();
 
         // auto-accept subscription
-        if (Preferences.getAutoAcceptSubscriptions(ctx) || isAlreadyTrusted(p)) {
-
+        if (Preferences.getAutoAcceptSubscriptions(ctx) || isAlreadyTrusted(subscribeRequest)) {
             // TODO user database entry should be stored here too
 
-            Stanza r = createSubscribed(p);
-            if (r != null)
-                getConnection().sendStanza(r);
+            ExtensionElement _pkey = subscribeRequest.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
 
+            try {
+                if (_pkey instanceof PublicKeyPresence) {
+                    PublicKeyPresence pkey = (PublicKeyPresence) _pkey;
+
+                    byte[] keydata = pkey.getKey();
+                    // just to ensure it's valid data
+                    PGP.readPublicKeyring(keydata);
+
+                    String jid = from.asBareJid().toString();
+                    // store key to users table
+                    Keyring.setKey(getContext(), jid, keydata, MyUsers.Keys.TRUST_VERIFIED);
+                }
+            }
+            catch (Exception e) {
+                Log.w(TAG, "invalid public key from " + from, e);
+                // TODO should we notify the user about this?
+            }
+
+            return SubscribeAnswer.Approve;
         }
 
         // ask the user
         else {
-
             /*
              * Subscription procedure:
              * 1. update (or insert) users table with the public key just received
@@ -169,17 +134,23 @@ class PresenceListener extends MessageCenterPacketListener {
              * 3. user will either accept or refuse
              */
 
-            String from = p.getFrom().asBareJid().toString();
+            String fromStr = from.asBareJid().toString();
 
             // extract public key
             String name = null;
             byte[] publicKey = null;
-            ExtensionElement _pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
+            ExtensionElement _pkey = subscribeRequest.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
             if (_pkey instanceof PublicKeyPresence) {
                 PublicKeyPresence pkey = (PublicKeyPresence) _pkey;
                 byte[] _publicKey = pkey.getKey();
                 // extract the name from the uid
-                PGPPublicKeyRing ring = PGP.readPublicKeyring(_publicKey);
+                PGPPublicKeyRing ring = null;
+                try {
+                    ring = PGP.readPublicKeyring(_publicKey);
+                }
+                catch (Exception e) {
+                    Log.w(TAG, "invalid public key from " + fromStr, e);
+                }
                 if (ring != null) {
                     PGPPublicKey pk = PGP.getMasterKey(ring);
                     if (pk != null) {
@@ -193,14 +164,14 @@ class PresenceListener extends MessageCenterPacketListener {
             }
 
             ContentResolver cr = ctx.getContentResolver();
-            ContentValues values = new ContentValues(7);
+            ContentValues values = new ContentValues(4);
 
             if (name == null)
-                name = from;
+                name = fromStr;
 
             // insert public key into the users table
-            values.put(Users.JID, from);
-            values.put(Users.NUMBER, from);
+            values.put(Users.JID, fromStr);
+            values.put(Users.NUMBER, fromStr);
             values.put(Users.DISPLAY_NAME, name);
             values.put(Users.REGISTERED, true);
             cr.insert(Users.CONTENT_URI.buildUpon()
@@ -209,17 +180,24 @@ class PresenceListener extends MessageCenterPacketListener {
 
             // insert key if any
             if (publicKey != null) {
-                Keyring.setKey(ctx, from, publicKey, MyUsers.Keys.TRUST_UNKNOWN);
+                try {
+                    Keyring.setKey(ctx, fromStr, publicKey, MyUsers.Keys.TRUST_UNKNOWN);
+                }
+                catch (Exception e) {
+                    Log.w(TAG, "invalid public key from " + fromStr, e);
+                }
             }
 
             // invalidate cache for this user
-            Contact.invalidate(from);
+            Contact.invalidate(fromStr);
 
             // insert request into the database
-            if (MessagesProviderClient.newChatRequest(ctx, from) != null) {
+            if (MessagesProviderClient.newChatRequest(ctx, fromStr) != null) {
                 // fire up a notification
-                MessagingNotification.chatInvitation(ctx, from);
+                MessagingNotification.chatInvitation(ctx, fromStr);
             }
+
+            return null;
         }
     }
 
