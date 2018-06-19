@@ -138,7 +138,7 @@ public class QuickReplyActivity extends ToolbarActivity {
         public void run() {
             final Context context = QuickReplyActivity.this;
             try {
-                Uri newMsg = Kontalk.getMessagesController(context)
+                Uri newMsg = Kontalk.get().getMessagesController()
                     .sendTextMessage(mConversation, mText, 0);
 
                 if (newMsg != null) {

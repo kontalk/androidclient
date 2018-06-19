@@ -250,7 +250,7 @@ public abstract class MainActivity extends ToolbarActivity {
 
     boolean isPasswordValid() {
         try {
-            Kontalk.get(MainActivity.this).getPersonalKey();
+            Kontalk.get().getPersonalKey();
             return true;
         }
         catch (Exception e) {
@@ -262,7 +262,7 @@ public abstract class MainActivity extends ToolbarActivity {
         if (Authenticator.getDefaultAccount(this) == null)
             return false;
 
-        if (Kontalk.get(this).getCachedPassphrase() == null || !isPasswordValid()) {
+        if (Kontalk.get().getCachedPassphrase() == null || !isPasswordValid()) {
             askForPassword();
             return true;
         }
@@ -387,7 +387,7 @@ public abstract class MainActivity extends ToolbarActivity {
                             // user-entered passphrase is hashed
                             String hashed = MessageUtils.sha1(passphrase);
                             Authenticator.setPassphrase(MainActivity.this, hashed, true);
-                            Kontalk.get(MainActivity.this).invalidatePersonalKey();
+                            Kontalk.get().invalidatePersonalKey();
                             if (isPasswordValid()) {
                                 MessageCenterService.start(MainActivity.this);
                             }

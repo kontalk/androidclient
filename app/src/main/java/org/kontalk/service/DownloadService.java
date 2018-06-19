@@ -273,7 +273,7 @@ public class DownloadService extends IntentService implements DownloadListener {
             OutputStream out = null;
             try {
                 EndpointServer server = Preferences.getEndpointServer(this);
-                PersonalKey key = ((Kontalk) getApplicationContext()).getPersonalKey();
+                PersonalKey key = Kontalk.get().getPersonalKey();
                 Coder coder = Keyring.getDecryptCoder(this, server, key, mPeer);
                 if (coder != null) {
                     in = new FileInputStream(destination);

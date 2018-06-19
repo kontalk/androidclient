@@ -68,7 +68,7 @@ public class MyKeyActivity extends ToolbarActivity {
         // load personal key
         PersonalKey key;
         try {
-            key = Kontalk.get(this).getPersonalKey();
+            key = Kontalk.get().getPersonalKey();
         }
         catch (Exception e) {
             // TODO handle errors

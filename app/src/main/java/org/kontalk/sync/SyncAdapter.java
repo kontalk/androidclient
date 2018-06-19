@@ -71,6 +71,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             // broadcast sync start
             mBroadcastManager.sendBroadcast(new Intent(ACTION_SYNC_START));
 
+            // ensure preferences are initialized
+            // Kontalk.onCreate might run later on some devices
+            Preferences.init(getContext());
+
             final long startTime = SystemClock.elapsedRealtime();
             boolean force = extras.getBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, false);
 

@@ -68,8 +68,10 @@ abstract class MessageCenterPacketListener implements StanzaListener {
         return mInstance.get();
     }
 
+    /** @deprecated Use {@link Kontalk#get()}. */
+    @Deprecated
     protected Kontalk getApplication() {
-        return (Kontalk) mInstance.get().getApplicationContext();
+        return Kontalk.get();
     }
 
     protected KontalkConnection getConnection() {
@@ -207,7 +209,7 @@ abstract class MessageCenterPacketListener implements StanzaListener {
     protected Uri incoming(CompositeMessage msg) {
         Context context = getContext();
         return (context != null) ? Kontalk
-            .getMessagesController(context).incoming(msg) : null;
+            .get().getMessagesController().incoming(msg) : null;
     }
 
     protected IdleConnectionHandler getIdleHandler() {

@@ -45,6 +45,7 @@ import android.net.Uri;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
+import android.support.annotation.NonNull;
 import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 import android.util.Base64;
@@ -74,14 +75,16 @@ public final class Preferences {
     private static String sBalloonGroupsTheme;
 
     @SuppressLint("CommitPrefEdits")
-    public static void init(Context context) {
-        sPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+    public static void init(@NonNull Context context) {
+        if (sPreferences == null) {
+            sPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 
-        // set the new default theme if this is the first upgrade
-        String newTheme = context.getString(R.string.pref_default_balloons);
-        if (!getBooleanOnce("has_new_theme." + newTheme))
-            sPreferences.edit().putString("pref_balloons", newTheme)
-                .commit();
+            // set the new default theme if this is the first upgrade
+            String newTheme = context.getString(R.string.pref_default_balloons);
+            if (!getBooleanOnce("has_new_theme." + newTheme))
+                sPreferences.edit().putString("pref_balloons", newTheme)
+                    .commit();
+        }
     }
 
     public static void setCachedCustomBackground(Drawable customBackground) {

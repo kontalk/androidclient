@@ -310,7 +310,7 @@ public class MaintenanceFragment extends RootPreferenceFragment {
                         String passphrase = input.toString();
                         // user-entered passphrase is hashed, so compare with SHA-1 version
                         String hashed = MessageUtils.sha1(passphrase);
-                        if (hashed.equals(Kontalk.get(getActivity())
+                        if (hashed.equals(Kontalk.get()
                                 .getCachedPassphrase())) {
                             action.onValidPassphrase(passphrase);
                         }
@@ -335,13 +335,13 @@ public class MaintenanceFragment extends RootPreferenceFragment {
                 .positiveText(android.R.string.ok, new PasswordInputDialog.OnPasswordInputListener() {
                     public void onClick(DialogInterface dialog, int which, String password) {
                         Context ctx = getActivity();
-                        String oldPassword = Kontalk.get(getActivity()).getCachedPassphrase();
+                        String oldPassword = Kontalk.get().getCachedPassphrase();
                         try {
 
                             // user-entered passphrase must be hashed
                             String hashed = MessageUtils.sha1(password);
                             Authenticator.changePassphrase(ctx, oldPassword, hashed, true);
-                            Kontalk.get(ctx).invalidatePersonalKey();
+                            Kontalk.get().invalidatePersonalKey();
 
                             if (action != null)
                                 action.onPassphraseChanged(password);
@@ -464,7 +464,7 @@ public class MaintenanceFragment extends RootPreferenceFragment {
 
     public void exportPersonalKey(Context ctx, OutputStream out) {
         try {
-            Kontalk.get(ctx).exportPersonalKey(out, mPassphrase);
+            Kontalk.get().exportPersonalKey(out, mPassphrase);
             mPassphrase = null;
 
             Toast.makeText(ctx,

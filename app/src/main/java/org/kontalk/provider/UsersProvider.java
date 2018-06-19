@@ -767,7 +767,7 @@ public class UsersProvider extends ContentProvider {
                 String fingerprint = null;
                 byte[] publicKeyData = null;
                 try {
-                    PersonalKey myKey = Kontalk.get(getContext()).getPersonalKey();
+                    PersonalKey myKey = Kontalk.get().getPersonalKey();
                     if (myKey != null) {
                         fingerprint = myKey.getFingerprint();
                         publicKeyData = myKey.getEncodedPublicKeyRing();

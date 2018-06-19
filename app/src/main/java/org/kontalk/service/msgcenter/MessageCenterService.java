@@ -847,7 +847,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private void createIdleHandler() {
         HandlerThread thread = new HandlerThread("IdleThread", Process.THREAD_PRIORITY_BACKGROUND);
         thread.start();
-        int refCount = Kontalk.get(this).getReferenceCounter();
+        int refCount = Kontalk.get().getReferenceCounter();
         mIdleHandler = new IdleConnectionHandler(this, refCount, thread.getLooper());
     }
 
@@ -1005,7 +1005,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
         else {
             // reset the reference counter
-            int refCount = ((Kontalk) getApplicationContext()).getReferenceCounter();
+            int refCount = Kontalk.get().getReferenceCounter();
             mIdleHandler.reset(refCount);
         }
 
@@ -2458,7 +2458,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private String getMyFingerprint() {
         try {
-            PersonalKey key = Kontalk.get(this).getPersonalKey();
+            PersonalKey key = Kontalk.get().getPersonalKey();
             return key.getFingerprint();
         }
         catch (Exception e) {
@@ -2648,7 +2648,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         PersonalKey key;
         try {
-            key = ((Kontalk) getApplicationContext()).getPersonalKey();
+            key = Kontalk.get().getPersonalKey();
         }
         catch (Exception pgpe) {
             Log.w(TAG, "no personal key available - not allowed to send messages");
@@ -3093,7 +3093,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private void beginUploadPrivateKey(String exportPasshrase) {
         try {
-            String passphrase = Kontalk.get(this).getCachedPassphrase();
+            String passphrase = Kontalk.get().getCachedPassphrase();
             byte[] privateKeyData = Authenticator.getPrivateKeyExportData(this, passphrase, exportPasshrase);
             PrivateKeyUploadListener uploadListener = new PrivateKeyUploadListener(this, privateKeyData);
             uploadListener.uploadAndListen();
@@ -3180,7 +3180,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     public static void hold(final Context context, boolean activate) {
         // increment the application counter
-        ((Kontalk) context.getApplicationContext()).hold();
+        Kontalk.get().hold();
 
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(ACTION_HOLD);
@@ -3194,7 +3194,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     public static void release(final Context context) {
         // decrement the application counter
-        ((Kontalk) context.getApplicationContext()).release();
+        Kontalk.get().release();
 
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(ACTION_RELEASE);

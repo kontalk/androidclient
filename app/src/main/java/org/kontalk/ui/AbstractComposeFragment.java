@@ -766,7 +766,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
             try {
                 final Conversation conv = mConversation;
-                Uri newMsg = Kontalk.getMessagesController(context)
+                Uri newMsg = Kontalk.get().getMessagesController()
                     .sendTextMessage(conv, mText, mInReplyTo);
 
                 // update thread id from the inserted message
@@ -824,7 +824,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
             try {
                 final Conversation conv = mConversation;
-                Uri newMsg = Kontalk.getMessagesController(context)
+                Uri newMsg = Kontalk.get().getMessagesController()
                     .sendBinaryMessage(conv, mUri, mMime, mMedia, mKlass);
 
                 // update thread id from the inserted message
@@ -884,7 +884,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
             try {
                 final Conversation conv = mConversation;
-                Uri newMsg = Kontalk.getMessagesController(context)
+                Uri newMsg = Kontalk.get().getMessagesController()
                     .sendLocationMessage(conv, mText, mLatitude, mLongitude, mGeoText, mGeoStreet);
 
                 // update thread id from the inserted message
