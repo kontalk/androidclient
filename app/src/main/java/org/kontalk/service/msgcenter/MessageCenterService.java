@@ -3124,8 +3124,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return Preferences.getOfflineMode();
     }
 
-    private static Intent getStartIntent(Context context) {
+    private static Intent getBaseIntent(Context context) {
         return new Intent(context, MessageCenterService.class);
+    }
+
+    private static Intent getStartIntent(Context context) {
+        return getBaseIntent(context);
     }
 
     public static void start(Context context) {
@@ -3148,26 +3152,26 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     public static void stop(Context context) {
         Log.d(TAG, "shutting down message center");
-        context.stopService(new Intent(context, MessageCenterService.class));
+        context.stopService(getBaseIntent(context));
     }
 
     public static void restart(Context context) {
         Log.d(TAG, "restarting message center");
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(ACTION_RESTART);
         context.startService(i);
     }
 
     public static void test(Context context) {
         Log.d(TAG, "testing message center connection");
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(ACTION_TEST);
         context.startService(i);
     }
 
     public static void ping(Context context) {
         Log.d(TAG, "ping message center connection");
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(ACTION_PING);
         context.startService(i);
     }
@@ -3182,7 +3186,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // increment the application counter
         Kontalk.get().hold();
 
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(ACTION_HOLD);
         i.putExtra("org.kontalk.activate", activate);
         context.startService(i);
@@ -3196,7 +3200,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // decrement the application counter
         Kontalk.get().release();
 
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(ACTION_RELEASE);
         context.startService(i);
     }
@@ -3206,7 +3210,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     public static void updateStatus(final Context context) {
         // FIXME this is what sendPresence already does
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(ACTION_PRESENCE);
         i.putExtra(EXTRA_STATUS, Preferences.getStatusMessage());
         context.startService(i);
@@ -3216,7 +3220,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Sends a chat state message.
      */
     public static void sendChatState(final Context context, String to, ChatState state) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra(EXTRA_CHAT_STATE, state.name());
@@ -3225,7 +3229,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static void sendGroupChatState(final Context context, String groupJid, String[] to, ChatState state) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra(EXTRA_CHAT_STATE, state.name());
@@ -3239,7 +3243,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Sends a text message.
      */
     public static void sendTextMessage(final Context context, String to, String text, boolean encrypt, long msgId, String packetId, long inReplyTo) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.packetId", packetId);
@@ -3254,7 +3258,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     public static void sendGroupTextMessage(final Context context, String groupJid, String[] to,
         String text, boolean encrypt, long msgId, String packetId, long inReplyTo) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.packetId", packetId);
@@ -3270,7 +3274,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     public static void createGroup(final Context context, String groupJid,
         String groupSubject, String[] to, boolean encrypt, long msgId, String packetId) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.packetId", packetId);
@@ -3286,7 +3290,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     public static void leaveGroup(final Context context, String groupJid,
         String[] to, boolean encrypt, long msgId, String packetId) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.packetId", packetId);
@@ -3301,7 +3305,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     public static void addGroupMembers(final Context context, String groupJid,
         String groupSubject, String[] to, String[] members, boolean encrypt, long msgId, String packetId) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.packetId", packetId);
@@ -3318,7 +3322,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     public static void removeGroupMembers(final Context context, String groupJid,
         String groupSubject, String[] to, String[] members, boolean encrypt, long msgId, String packetId) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.packetId", packetId);
@@ -3335,7 +3339,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     public static void setGroupSubject(final Context context, String groupJid,
         String groupSubject, String[] to, boolean encrypt, long msgId, String packetId) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.packetId", packetId);
@@ -3357,7 +3361,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         String mime, Uri localUri, long length, String previewPath,
         boolean encrypt, int compress,
         long msgId, String packetId) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.packetId", packetId);
@@ -3375,7 +3379,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static void sendGroupBinaryMessage(final Context context, String groupJid, String[] to,
         String mime, Uri localUri, long length, String previewPath,
         boolean encrypt, int compress, long msgId, String packetId) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.packetId", packetId);
@@ -3396,7 +3400,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     public static void sendLocationMessage(final Context context, String to, String text,
         double lat, double lon, String geoText, String geoStreet, boolean encrypt, long msgId, String packetId) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.packetId", packetId);
@@ -3421,7 +3425,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     public static void sendGroupLocationMessage(final Context context, String groupJid, String[] to,
         String text, double lat, double lon, String geoText, String geoStreet, boolean encrypt, long msgId, String packetId) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.packetId", packetId);
@@ -3445,7 +3449,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static void sendGroupUploadedMedia(final Context context, String groupJid, String[] to,
         String mime, Uri localUri, long length, String previewPath, String fetchUrl,
         boolean encrypt, long msgId, String packetId) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.packetId", packetId);
@@ -3465,7 +3469,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static void sendUploadedMedia(final Context context, String to,
         String mime, Uri localUri, long length, String previewPath, String fetchUrl,
         boolean encrypt, long msgId, String packetId) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.packetId", packetId);
@@ -3482,7 +3486,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static void sendMedia(final Context context, long msgId) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_MEDIA_READY);
         i.putExtra("org.kontalk.message.msgId", msgId);
         context.startService(i);
@@ -3492,7 +3496,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         boolean encrypted = Preferences.getEncryptionEnabled(context) && chatEncryptionEnabled;
         Uri uri = ContentUris.withAppendedId(Messages.CONTENT_URI, id);
         MessagesProviderClient.retryMessage(context, uri, encrypted);
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_RETRY);
         // TODO not implemented yet
         i.putExtra(MessageCenterService.EXTRA_MESSAGE, uri);
@@ -3501,7 +3505,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     public static void retryMessagesTo(final Context context, String to) {
         MessagesProviderClient.retryMessagesTo(context, to);
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_RETRY);
         // TODO not implemented yet
         i.putExtra(MessageCenterService.EXTRA_TO, to);
@@ -3510,7 +3514,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     public static void retryAllMessages(final Context context) {
         MessagesProviderClient.retryAllMessages(context);
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_RETRY);
         context.startService(i);
     }
@@ -3523,7 +3527,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Replies to a presence subscription request.
      */
     public static void replySubscription(final Context context, String to, int action) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_SUBSCRIBED);
         i.putExtra(EXTRA_TO, to);
         i.putExtra(EXTRA_PRIVACY, action);
@@ -3531,14 +3535,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static void regenerateKeyPair(final Context context, String passphrase) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_REGENERATE_KEYPAIR);
         i.putExtra(EXTRA_PASSPHRASE, passphrase);
         context.startService(i);
     }
 
     public static void importKeyPair(final Context context, Uri keypack, String passphrase) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_IMPORT_KEYPAIR);
         i.putExtra(EXTRA_KEYPACK, keypack);
         i.putExtra(EXTRA_PASSPHRASE, passphrase);
@@ -3546,33 +3550,33 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static void uploadPrivateKey(final Context context, String exportPassphrase) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_UPLOAD_PRIVATEKEY);
         i.putExtra(EXTRA_EXPORT_PASSPHRASE, exportPassphrase);
         context.startService(i);
     }
 
     public static void requestConnectionStatus(final Context context) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_CONNECTED);
         context.startService(i);
     }
 
     public static void requestRosterStatus(final Context context) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_ROSTER_LOADED);
         context.startService(i);
     }
 
     public static void requestRosterEntryStatus(final Context context, String to) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_ROSTER_STATUS);
         i.putExtra(MessageCenterService.EXTRA_TO, to);
         context.startService(i);
     }
 
     public static void requestPresence(final Context context, String to) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_PRESENCE);
         i.putExtra(MessageCenterService.EXTRA_TO, to);
         i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.probe.name());
@@ -3580,7 +3584,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static void requestLastActivity(final Context context, String to, String id) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_LAST_ACTIVITY);
         i.putExtra(EXTRA_TO, to);
         i.putExtra(EXTRA_PACKET_ID, id);
@@ -3588,7 +3592,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static void requestVersionInfo(final Context context, String to, String id) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_VERSION);
         i.putExtra(EXTRA_TO, to);
         i.putExtra(EXTRA_PACKET_ID, id);
@@ -3596,7 +3600,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static void requestVCard(final Context context, String to) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_VCARD);
         i.putExtra(EXTRA_TO, to);
         context.startService(i);
@@ -3607,7 +3611,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static void requestPublicKey(final Context context, String to, String id) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_PUBLICKEY);
         i.putExtra(EXTRA_TO, to);
         i.putExtra(EXTRA_PACKET_ID, id);
@@ -3615,13 +3619,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static void requestServerList(final Context context) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_SERVERLIST);
         context.startService(i);
     }
 
     public static void updateForegroundStatus(final Context context) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_FOREGROUND);
         context.startService(i);
     }
@@ -3630,7 +3634,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Starts the push notifications registration process.
      */
     public static void enablePushNotifications(Context context) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(ACTION_PUSH_START);
         context.startService(i);
     }
@@ -3639,7 +3643,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Starts the push notifications unregistration process.
      */
     public static void disablePushNotifications(Context context) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(ACTION_PUSH_STOP);
         context.startService(i);
     }
@@ -3648,7 +3652,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Caches the given registration Id for use with push notifications.
      */
     public static void registerPushNotifications(Context context, String registrationId) {
-        Intent i = new Intent(context, MessageCenterService.class);
+        Intent i = getBaseIntent(context);
         i.setAction(ACTION_PUSH_REGISTERED);
         i.putExtra(PUSH_REGISTRATION_ID, registrationId);
         context.startService(i);
