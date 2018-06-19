@@ -263,7 +263,9 @@ public class MessageCenterClient {
     /** Listener for connection-related events. */
     public interface ConnectionLifecycleListener {
         void onConnected();
+
         void onDisconnected();
+
         void onRosterLoaded();
     }
 
