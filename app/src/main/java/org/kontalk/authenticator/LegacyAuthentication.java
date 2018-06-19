@@ -77,7 +77,7 @@ public class LegacyAuthentication {
             am.setPassword(account, passphrase);
 
             // invalidate personal key and passphrase
-            ((Kontalk) context.getApplicationContext()).invalidatePersonalKey();
+            Kontalk.get().invalidatePersonalKey();
 
             // start key pair generation
             MessageCenterService.regenerateKeyPair(context, null);

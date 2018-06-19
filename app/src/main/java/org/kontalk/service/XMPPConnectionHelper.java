@@ -223,7 +223,7 @@ public class XMPPConnectionHelper extends Thread {
             if (keyProv != null) {
                 PGP.PGPKeyPairRing keyring = keyProv.getKeyPair();
                 if (keyring != null) {
-                    String passphrase = ((Kontalk) mContext.getApplicationContext()).getCachedPassphrase();
+                    String passphrase = Kontalk.get().getCachedPassphrase();
 
                     try {
                         X509Certificate bridgeCert = X509Bridge.createCertificate(keyring.publicKey,
@@ -242,7 +242,7 @@ public class XMPPConnectionHelper extends Thread {
 
         if (key == null) {
             try {
-                key = ((Kontalk) mContext.getApplicationContext()).getPersonalKey();
+                key = Kontalk.get().getPersonalKey();
             }
             catch (Exception e) {
                 Log.e(TAG, "unable to retrieve personal key - not using SSL", e);

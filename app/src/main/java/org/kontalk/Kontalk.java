@@ -72,6 +72,13 @@ import org.kontalk.util.Preferences;
 public class Kontalk extends Application {
     public static final String TAG = Kontalk.class.getSimpleName();
 
+    /**
+     * The singleton instance.
+     * Used to use {@link #getApplicationContext()} to retrieve this instance,
+     * but apparently there are places where it doesn't return a Kontalk object.
+     */
+    private static Kontalk sInstance;
+
     // @deprecated
     static {
         try {
@@ -156,6 +163,7 @@ public class Kontalk extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        sInstance = this;
 
         if (BuildConfig.DEBUG) {
             StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectAll().build());
@@ -307,19 +315,14 @@ public class Kontalk extends Application {
         return mMessagesController;
     }
 
-    /** Returns the messages controller singleton instance. */
-    public static MessagesController getMessagesController(Context context) {
-        return get(context).getMessagesController();
-    }
-
     /** Returns true if we are using a two-panes UI. */
     public static boolean hasTwoPanesUI(Context context) {
         return context.getResources().getBoolean(R.bool.has_two_panes);
     }
 
     /** Returns the singleton {@link Kontalk} instance. */
-    public static Kontalk get(Context context) {
-        return (Kontalk) context.getApplicationContext();
+    public static Kontalk get() {
+        return sInstance;
     }
 
     /** Enable/disable application components when account is added or removed. */

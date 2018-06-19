@@ -457,7 +457,7 @@ public class ContactInfoFragment extends Fragment
 
     void trustKey(String fingerprint, int trustLevel) {
         String jid = mContact.getJID();
-        Kontalk.getMessagesController(getContext())
+        Kontalk.get().getMessagesController()
             .setTrustLevelAndRetryMessages(getContext(), jid, fingerprint, trustLevel);
         Contact.invalidate(jid);
         reload();

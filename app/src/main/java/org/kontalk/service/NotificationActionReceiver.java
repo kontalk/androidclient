@@ -72,7 +72,7 @@ public class NotificationActionReceiver extends BroadcastReceiver {
                 Conversation conv = Conversation.loadFromId(context, threadId);
                 CharSequence text = result.getCharSequence(KEY_TEXT_REPLY);
                 if (text != null) {
-                    Kontalk.get(context).getMessagesController()
+                    Kontalk.get().getMessagesController()
                         .sendTextMessage(conv, text.toString(), 0);
                 }
                 else {

@@ -794,7 +794,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         // accept invitation
         if (action == PRIVACY_ACCEPT) {
             // trust the key
-            Kontalk.getMessagesController(getContext())
+            Kontalk.get().getMessagesController()
                 .setTrustLevelAndRetryMessages(ctx, mUserJID,
                     getContact().getFingerprint(), MyUsers.Keys.TRUST_VERIFIED);
         }
@@ -968,7 +968,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         // mark current key as trusted
         if (fingerprint == null)
             fingerprint = getContact().getFingerprint();
-        Kontalk.getMessagesController(context)
+        Kontalk.get().getMessagesController()
             .setTrustLevelAndRetryMessages(context, mUserJID, fingerprint, MyUsers.Keys.TRUST_VERIFIED);
         // reload contact
         invalidateContact();

@@ -598,7 +598,7 @@ public class GroupInfoFragment extends ListFragment
     }
 
     void trustKey(String jid, String fingerprint, int trustLevel) {
-        Kontalk.getMessagesController(getContext())
+        Kontalk.get().getMessagesController()
             .setTrustLevelAndRetryMessages(getContext(), jid, fingerprint, trustLevel);
         Contact.invalidate(jid);
         reload();

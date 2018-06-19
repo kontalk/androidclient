@@ -566,7 +566,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
 
         try {
             Context context = getContext();
-            PersonalKey key = Kontalk.get(context).getPersonalKey();
+            PersonalKey key = Kontalk.get().getPersonalKey();
 
             EndpointServer server = getServer();
             if (server == null)

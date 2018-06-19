@@ -596,7 +596,7 @@ public final class MessageUtils {
 
     public static File encryptFile(Context context, InputStream in, String[] users)
             throws GeneralSecurityException, IOException, PGPException {
-        PersonalKey key = Kontalk.get(context).getPersonalKey();
+        PersonalKey key = Kontalk.get().getPersonalKey();
         EndpointServer server = Preferences.getEndpointServer(context);
         Coder coder = Keyring.getEncryptCoder(context, server, key, users);
         // create a temporary file to store encrypted data
