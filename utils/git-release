@@ -107,7 +107,7 @@ cmd_begin() {
     echo
 
     echo "Building release packages"
-    (cd ${REPO_DIR} && ./gradlew assembleRelease)
+    (cd ${REPO_DIR} && ./gradlew clean build test assembleRelease)
     echo
 
     # stage 1: waiting for changelog and distribution listings update
