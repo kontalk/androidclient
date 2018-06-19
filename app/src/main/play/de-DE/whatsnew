@@ -2,9 +2,7 @@ Neues Registrierungsverfahren – Angeboten von https://JMP.Chat
 
 Helfen Sie uns bei Verbesserungen und Fehlerbehebungen indem Sie Fehlerreports auf Github posten oder in unserem Forum darüber diskutieren: https://forum.kontalk.org
 
-* NEU: Bildervorschau in Benachrichtigen
-* NEU: Benachrichtigungstöne in offenen Chats
-* Neue Android-Berechtigungsverwaltung
-* Direktantwort für ältere Androidversionen
-* Behoben: Emoji Problem bei Tablets
+* NEU: "...schreibt" Anzeige in Gruppenchats
+* Behoben: Einige Probleme bei Nachrichtenzustellung
+* Behoben: Einige Probleme mit Berechtigungserteilung
 * Weitere Fehler behoben

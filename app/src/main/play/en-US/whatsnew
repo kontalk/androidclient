@@ -1,7 +1,6 @@
-This release features our new registration provider kindly offered by https://JMP.Chat
+Registration provider kindly offered by https://JMP.Chat
 Help us improve and fix bugs by reporting them on GitHub or discussing them on our forum: https://forum.kontalk.org
 
-* NEW: typing status in groups
-* fix some message delivery issues
+* some major performance improvements
 * fix some permission issues
 * a lot of other bugfixes
