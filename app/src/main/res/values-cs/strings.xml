@@ -688,8 +688,8 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="err_location_permission">Přístup do umístění byl odmítnut.</string>
     <string name="err_audio_record_permission">Přístup k mikrofonu byl odmítnut.</string>
     <string name="err_audio_record_writing_permission">Přístup k externí paměti byl odmítnut.</string>
-    <string name="err_validation_contacts_denied">Aby mohl Kontalk správně fungovat, potřebuje mít přístup ke kontaktům. Jak by jinak mohl znát lidi, se kterými můžete chatovat??
-\nBudete dotázáni znovu po dokončení registrace.</string>
+    <string name="err_validation_contacts_denied">Aby mohl Kontalk správně fungovat, potřebuje mít přístup ke kontaktům. Jak by jinak mohl znát lidi, se kterými můžete chatovat?? 
+\nTeď můžete odmítnout, ale budete dotázáni znovu po dokončení registrace.</string>
     <string name="err_contacts_denied">Aby mohl Kontalk správně fungovat, potřebuje mít přístup ke kontaktům. Jak by jinak mohl znát lidi, se kterými můžete chatovat??
 \nPřístup můžete povolit z nastavení Androidu.</string>
     <string name="warn_contacts_denied">Zakázali jste přístup ke kontaktům. Neuvidíte zde změny v kontaktech.</string>
@@ -710,4 +710,12 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="seen_group_typing_label_one">%s píše…</string>
     <string name="seen_group_typing_label_two">%1$s a %2$s píšou…</string>
     <string name="seen_group_typing_label_more">%d lidí píše…</string>
+    <string name="archive_thread">Archivovat konverzaci</string>
+    <string name="err_camera_scanner_denied">Potřebujeme přístup k vaší kameře, abychom mohli načíst čárový kód z druhého zařízení.</string>
+    <string name="err_camera_picture_denied">Potřebujeme přístup k vaší kameře, aby bylo možné pořizovat fotky.</string>
+
+    <string name="err_audio_or_storage_denied">Potřebujeme přístup k mikrofonu, aby bylo možné nahrávat váš hlas, a přístup k externímu úložišti, aby bylo možné nahrávky uložit.</string>
+
+    <string name="err_location_denied">Potřebujeme přístup k vaší poloze, pokud ji chcete sdílet.</string>
+
     </resources>
