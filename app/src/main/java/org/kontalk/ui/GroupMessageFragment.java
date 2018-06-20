@@ -391,6 +391,8 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         }
 
         else if (type == Presence.Type.available || type == Presence.Type.unavailable) {
+            updateStatusText();
+
             // no encryption - pointless to verify keys
             if (!Preferences.getEncryptionEnabled(context))
                 return;
@@ -530,15 +532,13 @@ public class GroupMessageFragment extends AbstractComposeFragment {
                         break;
                     case Groups.MEMBERSHIP_OBSERVER: {
                         int count = conv.getGroupPeers().length;
-                        status = getResources()
-                            .getQuantityString(R.plurals.group_people, count, count);
+                        status = getMemberCountQuantityString(count, mAvailableResources.size());
                         break;
                     }
                     case Groups.MEMBERSHIP_MEMBER: {
                         // +1 because we are not included in the members list
                         int count = conv.getGroupPeers().length + 1;
-                        status = getResources()
-                            .getQuantityString(R.plurals.group_people, count, count);
+                        status = getMemberCountQuantityString(count, mAvailableResources.size() + 1);
                         break;
                     }
                     default:
@@ -549,6 +549,19 @@ public class GroupMessageFragment extends AbstractComposeFragment {
                 setActivityTitle(subject, status);
             }
         }
+    }
+
+    // FIXME not i18n-friendly (especially for RTL)
+    private String getMemberCountQuantityString(int count, int online) {
+        StringBuilder msg = new StringBuilder();
+        msg.append(getResources().getQuantityString(R.plurals.group_people, count, count));
+
+        if (online > 0) {
+            msg.append(", ")
+                .append(getResources().getQuantityString(R.plurals.group_people_online, online, online));
+        }
+
+        return msg.toString();
     }
 
     public void viewGroupInfo() {
