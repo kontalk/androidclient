@@ -154,9 +154,10 @@ public class GroupInfoFragment extends ListFragment
                 showIgnoreAll = true;
             boolean owner = KontalkGroup.checkOwnership(mConversation.getGroupJid(), jid);
             boolean isSelfJid = jid.equalsIgnoreCase(selfJid);
-            mMembersAdapter.add(c, owner, isSelfJid);
+            mMembersAdapter.add(c, owner, isSelfJid ? true : null);
             if (!isSelfJid) {
                 // request roster entry status
+                // FIXME use MessageCenterClient, which will reply by reading directly from the roster store if offline mode is enabled
                 MessageCenterService.requestRosterEntryStatus(getContext(), jid);
             }
         }
@@ -167,6 +168,7 @@ public class GroupInfoFragment extends ListFragment
         // It will prevent the blocked/unsubscribed icon flickering.
         // Roster status is just a query to the roster database so it will work
         // also when disconnected.
+        // FIXME roster status is not available while offline
 
         updateUI();
     }
@@ -429,7 +431,7 @@ public class GroupInfoFragment extends ListFragment
         showIdentityDialog(member.contact, member.subscribed);
     }
 
-    private void showIdentityDialog(Contact c, boolean subscribed) {
+    private void showIdentityDialog(Contact c, Boolean subscribed) {
         final String jid = c.getJID();
         final String dialogFingerprint;
         final String fingerprint;
@@ -479,9 +481,12 @@ public class GroupInfoFragment extends ListFragment
         text.setSpan(SystemUtils.getTypefaceSpan(Typeface.BOLD), start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         int trustStringId;
-        CharacterStyle[] trustSpans;
+        CharacterStyle[] trustSpans = null;
 
-        if (subscribed) {
+        if (subscribed == null) {
+            trustStringId = 0;
+        }
+        else if (subscribed) {
             int trustedLevel;
             if (c.isKeyChanged()) {
                 // the key has changed and was not trusted yet
@@ -525,17 +530,19 @@ public class GroupInfoFragment extends ListFragment
             };
         }
 
-        text.append('\n').append(getString(R.string.status_label));
-        start = text.length();
-        text.append(getString(trustStringId));
-        for (CharacterStyle span : trustSpans)
-            text.setSpan(span, start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        if (trustStringId > 0) {
+            text.append('\n').append(getString(R.string.status_label));
+            start = text.length();
+            text.append(getString(trustStringId));
+            for (CharacterStyle span : trustSpans)
+                text.setSpan(span, start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
 
         MaterialDialog.Builder builder = new MaterialDialog.Builder(getContext())
             .content(text)
             .title(titleResId);
 
-        if (dialogFingerprint != null && subscribed) {
+        if (dialogFingerprint != null && subscribed == Boolean.TRUE) {
             builder.onAny(new MaterialDialog.SingleButtonCallback() {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
@@ -658,9 +665,9 @@ public class GroupInfoFragment extends ListFragment
     private static final class GroupMembersAdapter extends BaseAdapter {
         private static final class GroupMember {
             final Contact contact;
-            boolean subscribed;
+            Boolean subscribed;
 
-            GroupMember(Contact contact, boolean subscribed) {
+            GroupMember(Contact contact, Boolean subscribed) {
                 this.contact = contact;
                 this.subscribed = subscribed;
             }
@@ -691,7 +698,7 @@ public class GroupInfoFragment extends ListFragment
             super.notifyDataSetChanged();
         }
 
-        public void add(Contact contact, boolean isOwner, boolean subscribed) {
+        public void add(Contact contact, boolean isOwner, Boolean subscribed) {
             mMembers.add(new GroupMember(contact, subscribed));
             if (isOwner)
                 mOwner = contact.getJID();

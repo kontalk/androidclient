@@ -259,6 +259,10 @@ public class Kontalk extends Application {
 
         // enable/disable components
         setServicesEnabled(this, account != null);
+
+        // disable backend services in offline mode (helps after installs)
+        if (account != null && Preferences.getOfflineMode())
+            setBackendEnabled(this, false);
     }
 
     private void xmppUpgrade() {
