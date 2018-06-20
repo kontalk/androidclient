@@ -163,7 +163,11 @@ public class GroupInfoFragment extends ListFragment
 
         mIgnoreAll.setVisibility(showIgnoreAll ? View.VISIBLE : View.GONE);
 
-        mMembersAdapter.notifyDataSetChanged();
+        // notifyDataSetChanged() will be called after receiving roster status.
+        // It will prevent the blocked/unsubscribed icon flickering.
+        // Roster status is just a query to the roster database so it will work
+        // also when disconnected.
+
         updateUI();
     }
 
