@@ -186,7 +186,7 @@ dependencies {
 
     googleplayImplementation "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
     googleplayImplementation "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"
-    googleplayImplementation('com.crashlytics.sdk.android:crashlytics:2.9.3@aar') {
+    googleplayImplementation('com.crashlytics.sdk.android:crashlytics:2.9.4@aar') {
         transitive = true
     }
 
