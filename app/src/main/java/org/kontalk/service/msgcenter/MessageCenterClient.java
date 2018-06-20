@@ -230,7 +230,7 @@ public class MessageCenterClient {
         return this;
     }
 
-    public MessageCenterClient removeRemovePresenceListener(@NonNull PresenceListener l) {
+    public MessageCenterClient removeGlobalPresenceListener(@NonNull PresenceListener l) {
         mPresenceListeners.remove(l);
         maybeUnregisterEvents();
         return this;

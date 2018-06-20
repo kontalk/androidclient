@@ -232,7 +232,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     private File mCurrentPhoto;
 
     protected LocalBroadcastManager mLocalBroadcastManager;
-    private BroadcastReceiver mPresenceReceiver;
+    private PresenceReceiver mPresenceReceiver;
 
     private boolean mOfflineModeWarned;
     protected CharSequence mCurrentStatus;
@@ -1808,7 +1808,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
      */
     protected abstract boolean isUserId(String jid);
 
-    // TODO this needs serious refactoring
     class PresenceReceiver extends BroadcastReceiver implements
             ConnectionLifecycleListener,
             PresenceListener {
@@ -1864,6 +1863,13 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             String rosterName, boolean subscribedFrom, boolean subscribedTo,
             String fingerprint) {
 
+            // since this listener is used also for global presence (for groups),
+            // check that the origin is among group members
+            if (mConversation.isGroupChat() && !isUserId(from.toString())) {
+                // not for us
+                return;
+            }
+
             boolean removed = false;
             if (type == Presence.Type.available) {
                 mAvailableResources.add(from.toString());
@@ -1887,9 +1893,18 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
 
             Context ctx = getContext();
-            MessageCenterClient.getInstance(ctx)
-                .addConnectionLifecycleListener((ConnectionLifecycleListener) mPresenceReceiver)
-                .addPresenceListener((PresenceListener) mPresenceReceiver, getUserId());
+            MessageCenterClient msgc = MessageCenterClient.getInstance(ctx);
+            msgc.addConnectionLifecycleListener(mPresenceReceiver);
+
+            if (mConversation.isGroupChat()) {
+                // we will filter out unwanted presences.
+                // It may be inelegant, but this way we don't have to change our
+                // subscription when group members change
+                msgc.addGlobalPresenceListener(mPresenceReceiver);
+            }
+            else {
+                msgc.addPresenceListener(mPresenceReceiver, getUserId());
+            }
 
             // request connection and roster load status
             if (ctx != null) {
@@ -1903,8 +1918,9 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         if (mPresenceReceiver != null) {
             mLocalBroadcastManager.unregisterReceiver(mPresenceReceiver);
             MessageCenterClient.getInstance(getContext())
-                .removeConnectionLifecycleListener((ConnectionLifecycleListener) mPresenceReceiver)
-                .removePresenceListener((PresenceListener) mPresenceReceiver, getUserId());
+                .removeConnectionLifecycleListener(mPresenceReceiver)
+                .removePresenceListener(mPresenceReceiver, getUserId())
+                .removeGlobalPresenceListener(mPresenceReceiver);
             mPresenceReceiver = null;
         }
     }
