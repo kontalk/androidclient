@@ -712,4 +712,9 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
 
     <string name="err_location_denied">Wir benötigen Zugriff auf Ihren Standort, wenn Sie ihn teilen möchten.</string>
 
-    </resources>
+    <plurals name="group_people_online">
+	<item quantity="one">1 online</item>
+	<item quantity="other">%d online</item>
+</plurals>
+
+</resources>
