@@ -209,6 +209,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     protected Conversation mConversation;
     protected String mUserName;
 
+    protected boolean mConnected;
+
     /**
      * Available resources.
      */
@@ -1788,6 +1790,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
     protected abstract void onConnected();
 
+    protected abstract void onDisconnected();
+
     /**
      * Called when the roster has been loaded (ACTION_ROSTER).
      */
@@ -1843,12 +1847,14 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             // reset available resources list
             mAvailableResources.clear();
 
+            mConnected = true;
             AbstractComposeFragment.this.onConnected();
         }
 
         @Override
         public void onDisconnected() {
-            // TODO
+            mConnected = false;
+            AbstractComposeFragment.this.onDisconnected();
         }
 
         @Override

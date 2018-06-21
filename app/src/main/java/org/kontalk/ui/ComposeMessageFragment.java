@@ -429,6 +429,11 @@ public class ComposeMessageFragment extends AbstractComposeFragment
     }
 
     @Override
+    protected void onDisconnected() {
+        onConnected();
+    }
+
+    @Override
     protected void onRosterLoaded() {
         // probe presence
         requestPresence();

@@ -43,6 +43,7 @@ import org.kontalk.Log;
 import org.kontalk.reporting.ReportingManager;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_CONNECTED;
+import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_DISCONNECTED;
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_PRESENCE;
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_ROSTER_LOADED;
 
@@ -77,11 +78,9 @@ public class MessageCenterClient {
                 case ACTION_CONNECTED:
                     notifyConnected();
                     break;
-                /*
                 case ACTION_DISCONNECTED:
                     notifyDisconnected();
                     break;
-                 */
                 case ACTION_ROSTER_LOADED:
                     notifyRosterLoaded();
                     break;
@@ -109,7 +108,7 @@ public class MessageCenterClient {
             IntentFilter filter = new IntentFilter();
             filter.addAction(ACTION_PRESENCE);
             filter.addAction(ACTION_CONNECTED);
-            //filter.addAction(ACTION_DISCONNECTED);
+            filter.addAction(ACTION_DISCONNECTED);
             filter.addAction(ACTION_ROSTER_LOADED);
 
             mBroadcasts.registerReceiver(mReceiver, filter);
@@ -142,6 +141,13 @@ public class MessageCenterClient {
     void notifyConnected() {
         for (ConnectionLifecycleListener l : mConnectionListeners) {
             l.onConnected();
+        }
+    }
+
+    @MainThread
+    void notifyDisconnected() {
+        for (ConnectionLifecycleListener l : mConnectionListeners) {
+            l.onDisconnected();
         }
     }
 

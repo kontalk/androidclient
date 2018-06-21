@@ -391,8 +391,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         }
 
         else if (type == Presence.Type.available || type == Presence.Type.unavailable) {
-            // stating true here because we received a valid presence, so we must be connected
-            updateStatusText(true);
+            updateStatusText();
 
             // no encryption - pointless to verify keys
             if (!Preferences.getEncryptionEnabled(context))
@@ -428,6 +427,11 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     protected void onConnected() {
         mTypingUsers.clear();
         updateStatusText();
+    }
+
+    @Override
+    protected void onDisconnected() {
+        onConnected();
     }
 
     @Override
@@ -490,12 +494,8 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         return false;
     }
 
-    private void updateStatusText() {
-        updateStatusText(false);
-    }
-
     /** Updates the status text in the toolbar. */
-    private void updateStatusText(boolean connected) {
+    private void updateStatusText() {
         Context context = getContext();
         if (context == null)
             return;
@@ -548,7 +548,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
                         // +1 because we are not included in the members list
                         int count = conv.getGroupPeers().length + 1;
                         // the "connected" here is used to show ourselves as online
-                        status = getMemberCountQuantityString(count, connected ? mAvailableResources.size() + 1 : 0);
+                        status = getMemberCountQuantityString(count, mConnected ? mAvailableResources.size() + 1 : 0);
                         break;
                     }
                     default:

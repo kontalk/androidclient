@@ -227,6 +227,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_CONNECTED = "org.kontalk.action.CONNECTED";
 
     /**
+     * Broadcasted when we are disconnected from the server.
+     */
+    public static final String ACTION_DISCONNECTED = "org.kontalk.action.DISCONNECTED";
+
+    /**
      * Broadcasted when the roster has been loaded.
      * Send this intent to receive the same as a broadcast if the roster has
      * already been loaded.
@@ -1067,6 +1072,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // stop any key pair regeneration service
         if (!LegacyAuthentication.isUpgrading())
             endKeyPairRegeneration();
+
+        broadcast(ACTION_DISCONNECTED);
 
         if (!restarting) {
             // release the wakelock if not restarting
