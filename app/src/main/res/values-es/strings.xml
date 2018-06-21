@@ -678,7 +678,8 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
     <string name="err_location_permission">El acceso a la ubicación fue denegado.</string>
     <string name="err_audio_record_permission">El acceso al micrófono fue denegado.</string>
     <string name="err_audio_record_writing_permission">El acceso al almacenamiento externo fue denegado.</string>
-    <string name="err_validation_contacts_denied">Kontalk necesita acceso a los contactos para funcionar correctamente. Cómo podría conocer a las personas con quien chateas? Se te volverá a pedir una vez que te hayas registrado.</string>
+    <string name="err_validation_contacts_denied">Kontalk necesita acceso a los contactos para funcionar correctamente. Cómo podría conocer a las personas con quien chateas?
+\nPuedes cancelar ahora, pero se te volverá a preguntará después de haberte registrado.</string>
     <string name="err_contacts_denied">Kontalk necesita acceso a los contactos para funcionar correctamente. Cómo podría conocer a las personas con quien chateas? Puedes permitir el acceso a los contactos desde la configuración de Android.</string>
     <string name="warn_contacts_denied">Has negado el acceso a los contactos. Aquí no podrás ver cambios en los contactos.</string>
 
@@ -697,5 +698,13 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
     <string name="msg_request_doze_failed_all">No se pueden encontrar las opciones de optimización de batería, te llevamos a la configuración del sistema.</string>
 
     <string name="pref_enable_outgoing_sound">Reproducir sonido para mensajes salientes</string>
+
+    <string name="archive_thread">Archiva el chat</string>
+    <string name="err_camera_scanner_denied">Necesitamos acceso a su cámara para escanear el código de barras desde el otro dispositivo.</string>
+    <string name="err_camera_picture_denied">Necesitamos acceso a su cámara para tomar fotos.</string>
+
+    <string name="err_audio_or_storage_denied">Necesitamos acceso al micrófono para grabar su voz y acceder al almacenamiento externo para guardar las grabaciones.</string>
+
+    <string name="err_location_denied">Necesitamos acceso a su ubicación si desea compartirla.</string>
 
     </resources>
