@@ -682,8 +682,8 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="err_location_permission">Standortzugriff wurde verweigert.</string>
     <string name="err_audio_record_permission">Mikrofonzugriff wurde verweigert.</string>
     <string name="err_audio_record_writing_permission">Speicherzugriff wurde verweigert.</string>
-    <string name="err_validation_contacts_denied">"Kontalk benötigt Zugriff auf  Ihre Kontakte um ordnungsgemäß funktionieren zu können.  Woher soll es sonst Leute kennen mit denen Sie chatten können??
-\nNach der Registrierung werden Sie erneut gefragt."</string>
+    <string name="err_validation_contacts_denied">"Kontalk benötigt Zugriff auf  Ihre Kontakte um ordnungsgemäß funktionieren zu können.  Woher soll es sonst Leute kennen mit denen Sie chatten können?? 
+\nSie können jetzt abbrechen, aber Sie werden nach der Registrierung erneut gefragt."</string>
     <string name="err_contacts_denied">"Kontalk benötigt Zugriff auf  Ihre Kontakte um ordnungsgemäß funktionieren zu können.  Woher soll es sonst Leute kennen mit denen Sie chatten können??
 \nSie können den Zugriff auf Kontakte über Android-Einstellungen zulassen."</string>
     <string name="warn_contacts_denied">Sie haben den Zugriff auf Ihre Kontakte verweigert. Änderungen der Kontakte können Sie hier nicht sehen.</string>
@@ -704,4 +704,12 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="seen_group_typing_label_one">%s schreibt…</string>
     <string name="seen_group_typing_label_two">%1$s und %2$s schreiben…</string>
     <string name="seen_group_typing_label_more">%d Leute schreiben…</string>
+    <string name="archive_thread">Chat archivieren</string>
+    <string name="err_camera_scanner_denied">Wir benötigen Zugriff auf Ihre Kamera, um den Barcode vom anderen Gerät zu scannen.</string>
+    <string name="err_camera_picture_denied">Wir benötigen Zugang zu Ihrer Kamera, um Bilder aufzunehmen.</string>
+
+    <string name="err_audio_or_storage_denied">Wir benötigen Zugriff auf das Mikrofon und den externen Speicher um Ihre Sprachnachricht aufzunehmen und zu speichern.</string>
+
+    <string name="err_location_denied">Wir benötigen Zugriff auf Ihren Standort, wenn Sie ihn teilen möchten.</string>
+
     </resources>
