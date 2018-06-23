@@ -676,8 +676,8 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
     <string name="err_location_permission">S\'ha denegat l\'accés a la ubicació.</string>
     <string name="err_audio_record_permission">S\'ha denegat l\'accés al micròfon.</string>
     <string name="err_audio_record_writing_permission">S\'ha denegat l\'accés a emmagatzematge extern.</string>
-    <string name="err_validation_contacts_denied">Kontalk necessita accés als contactes per funcionar correctament. Com podria reconèixer la gent amb la qual fa xats??
-\nSe us tornarà a demanar un cop s\'acabi el registre.</string>
+    <string name="err_validation_contacts_denied">Kontalk necessita accés als contactes per funcionar correctament. Com podria reconèixer la gent amb la qual fa xats?? 
+\nPodeu cancel·lar-ho ara, però se us tornarà a demanar un cop s\'acabi el registre.</string>
     <string name="err_contacts_denied">Kontalk necessita accés als contactes per funcionar correctament. Com podria reconèixer la gent amb la qual fa xats??
 \nPodeu permetre l\'accés als contactes des de la configuració d\'Android.</string>
     <string name="warn_contacts_denied">Has negat l\'accés als contactes. Aquí no podreu veure els canvis dels contactes.</string>
@@ -697,5 +697,13 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
     <string name="seen_group_typing_label_two">%1$s y %2$s estan escrivint…</string>
     <string name="seen_group_typing_label_more">%d persones estan escrivint…</string>
     <string name="msg_request_doze_failed_all">No s\'ha pogut trobar la configuració d\'optimització de la bateria, portant-vos a la configuració del sistema.</string>
+
+    <string name="archive_thread">Arxiva el xat</string>
+    <string name="err_camera_scanner_denied">Necessitem accés a la càmera per tal d\'escanejar el codi de barres de l\'altre dispositiu.</string>
+    <string name="err_camera_picture_denied">Necessitem accés a la càmera per fer fotos.</string>
+
+    <string name="err_audio_or_storage_denied">Necessitem tenir accés al micròfon per gravar la vostra veu i accedir a l\'emmagatzematge extern per guardar els enregistraments.</string>
+
+    <string name="err_location_denied">Necessitem accés a la vostra ubicació si voleu compartir-la.</string>
 
     </resources>
