@@ -1536,7 +1536,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 if (to == null) {
                     for (RosterEntry entry : roster.getEntries()) {
-                        broadcastPresence(entry, id);
+                        broadcastPresence(roster, entry, id);
                     }
 
                     // broadcast our own presence
@@ -1550,7 +1550,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         queueTask(new Runnable() {
                             @Override
                             public void run() {
-                                broadcastPresence(entry, jid, id);
+                                broadcastPresence(roster, entry, jid, id);
                             }
                         });
                     }
@@ -2413,41 +2413,39 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             !entry.isSubscriptionPending());
     }
 
-    private void broadcastPresence(RosterEntry entry, String id) {
-        broadcastPresence(entry, entry.getJid(), id);
+    private void broadcastPresence(Roster roster, RosterEntry entry, String id) {
+        broadcastPresence(roster, entry, entry.getJid(), id);
     }
 
-    private void broadcastPresence(RosterEntry entry, BareJid jid, String id) {
+    private void broadcastPresence(Roster roster, RosterEntry entry, BareJid jid, String id) {
         // this method might be called async
         final LocalBroadcastManager lbm = mLocalBroadcastManager;
         if (lbm == null)
             return;
 
         Intent i;
+
+        // asking our own presence
+        if (Authenticator.isSelfJID(this, jid)) {
+            broadcastMyPresence(id);
+            return;
+        }
+
         // entry present and not pending subscription
-        if (isRosterEntrySubscribed(entry) || Authenticator.isSelfJID(this, jid)) {
+        else if (isRosterEntrySubscribed(entry)) {
             // roster entry found, send presence probe
-            try {
-                Presence probe = new Presence(JidCreate.from(entry.getJid()), Presence.Type.probe);
-                // to keep track of request-reply
-                probe.setStanzaId(id);
-                sendPacket(probe);
-            }
-            catch (XmppStringprepException e) {
-                Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
-                // report it because it's a big deal
-                ReportingManager.logException(e);
-                throw new IllegalArgumentException(e);
-            }
+            Presence presence = roster.getPresence(jid);
+            i = PresenceListener.createIntent(this, presence, entry);
         }
         else {
             // null type indicates no roster entry found or not authorized
             i = new Intent(ACTION_PRESENCE);
             i.putExtra(EXTRA_FROM, jid.toString());
-            // to keep track of request-reply
-            i.putExtra(EXTRA_PACKET_ID, id);
-            lbm.sendBroadcast(i);
         }
+
+        // to keep track of request-reply
+        i.putExtra(EXTRA_PACKET_ID, id);
+        lbm.sendBroadcast(i);
     }
 
     /**
