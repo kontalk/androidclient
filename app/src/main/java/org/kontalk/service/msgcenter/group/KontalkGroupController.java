@@ -215,7 +215,7 @@ public class KontalkGroupController implements GroupController<Message> {
 
     @Override
     public boolean canSendWithNoSubscription() {
-        return false;
+        return true;
     }
 
 }

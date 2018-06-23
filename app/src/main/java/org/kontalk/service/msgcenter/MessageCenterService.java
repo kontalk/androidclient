@@ -1532,54 +1532,33 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             final String to = intent.getStringExtra(EXTRA_TO);
 
             if ("probe".equals(type)) {
-                // probing is actually looking into the roster
                 final Roster roster = getRoster();
 
                 if (to == null) {
                     for (RosterEntry entry : roster.getEntries()) {
-                        try {
-                            Presence probe = new Presence(JidCreate.from(entry.getJid()), Presence.Type.probe);
-                            probe.setStanzaId(id);
-                            sendPacket(probe);
-                        }
-                        catch (XmppStringprepException e) {
-                            Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
-                            // report it because it's a big deal
-                            ReportingManager.logException(e);
-                            throw new IllegalArgumentException(e);
-                        }
+                        broadcastPresence(entry, id);
                     }
 
                     // broadcast our own presence
                     broadcastMyPresence(id);
                 }
                 else {
+                    final BareJid jid;
                     try {
-                        Presence probe = new Presence(JidCreate.from(to), Presence.Type.probe);
-                        probe.setStanzaId(id);
-                        sendPacket(probe);
+                        jid = JidCreate.bareFrom(to);
+                        final RosterEntry entry = roster.getEntry(jid);
+                        queueTask(new Runnable() {
+                            @Override
+                            public void run() {
+                                broadcastPresence(entry, jid, id);
+                            }
+                        });
                     }
                     catch (XmppStringprepException e) {
                         Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
                         // report it because it's a big deal
                         ReportingManager.logException(e);
-                        throw new IllegalArgumentException(e);
                     }
-
-                    queueTask(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                broadcastPresence(roster, JidCreate.bareFrom(to), id);
-                            }
-                            catch (XmppStringprepException e) {
-                                Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
-                                // report it because it's a big deal
-                                ReportingManager.logException(e);
-                                throw new IllegalArgumentException(e);
-                            }
-                        }
-                    });
                 }
             }
             else {
@@ -1645,14 +1624,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 // request public keys for the whole roster
                 Collection<RosterEntry> buddies = getRoster().getEntries();
                 for (RosterEntry buddy : buddies) {
-                    if (isRosterEntrySubscribed(buddy)) {
-                        PublicKeyPublish p = new PublicKeyPublish();
-                        p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
-                        p.setTo(buddy.getJid());
+                    PublicKeyPublish p = new PublicKeyPublish();
+                    p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
+                    p.setTo(buddy.getJid());
 
-                        PublicKeyListener listener = new PublicKeyListener(this, p);
-                        sendIqWithReply(p, true, listener, listener);
-                    }
+                    PublicKeyListener listener = new PublicKeyListener(this, p);
+                    sendIqWithReply(p, true, listener, listener);
                 }
 
                 // request our own public key (odd eh?)
@@ -2436,15 +2413,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             !entry.isSubscriptionPending());
     }
 
-    private void broadcastPresence(Roster roster, RosterEntry entry, String id) {
-        broadcastPresence(roster, entry, entry.getJid(), id);
+    private void broadcastPresence(RosterEntry entry, String id) {
+        broadcastPresence(entry, entry.getJid(), id);
     }
 
-    void broadcastPresence(Roster roster, BareJid jid, String id) {
-        broadcastPresence(roster, roster.getEntry(jid), jid, id);
-    }
-
-    private void broadcastPresence(Roster roster, RosterEntry entry, BareJid jid, String id) {
+    private void broadcastPresence(RosterEntry entry, BareJid jid, String id) {
         // this method might be called async
         final LocalBroadcastManager lbm = mLocalBroadcastManager;
         if (lbm == null)
@@ -2453,19 +2426,28 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Intent i;
         // entry present and not pending subscription
         if (isRosterEntrySubscribed(entry) || Authenticator.isSelfJID(this, jid)) {
-            // roster entry found, look for presence
-            Presence presence = roster.getPresence(jid);
-            i = PresenceListener.createIntent(this, presence, entry);
+            // roster entry found, send presence probe
+            try {
+                Presence probe = new Presence(JidCreate.from(entry.getJid()), Presence.Type.probe);
+                // to keep track of request-reply
+                probe.setStanzaId(id);
+                sendPacket(probe);
+            }
+            catch (XmppStringprepException e) {
+                Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+                // report it because it's a big deal
+                ReportingManager.logException(e);
+                throw new IllegalArgumentException(e);
+            }
         }
         else {
             // null type indicates no roster entry found or not authorized
             i = new Intent(ACTION_PRESENCE);
             i.putExtra(EXTRA_FROM, jid.toString());
+            // to keep track of request-reply
+            i.putExtra(EXTRA_PACKET_ID, id);
+            lbm.sendBroadcast(i);
         }
-
-        // to keep track of request-reply
-        i.putExtra(EXTRA_PACKET_ID, id);
-        lbm.sendBroadcast(i);
     }
 
     /**
@@ -2652,27 +2634,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             to = data.getString("org.kontalk.message.to");
             toGroup = new String[]{to};
             convJid = to;
-        }
-
-        Jid toJid;
-        try {
-            toJid = JidCreate.from(to);
-        }
-        catch (XmppStringprepException e) {
-            Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
-            // report it because it's a big deal
-            ReportingManager.logException(e);
-            return;
-        }
-
-        if (group == null && !isAuthorized(toJid.asBareJid())) {
-            Log.i(TAG, "not subscribed to " + to + ", not sending message");
-            // warn user: message will not be sent
-            if (!retrying && MessagingNotification.isPaused(to)) {
-                Toast.makeText(this, R.string.warn_not_subscribed,
-                    Toast.LENGTH_LONG).show();
-            }
-            return;
         }
 
         PersonalKey key;
