@@ -2590,8 +2590,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             return;
         }
 
-        boolean retrying = data.getBoolean("org.kontalk.message.retrying");
-
         final String groupJid = data.getString("org.kontalk.message.group.jid");
         String to;
         // used for verifying isPaused()
@@ -2648,7 +2646,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             return;
         }
 
-        // check if message is already pending3
+        // check if message is already pending
         final long msgId = data.getLong("org.kontalk.message.msgId");
         if (mWaitingReceipt.contains(msgId)) {
             Log.v(TAG, "message already queued and waiting - dropping");
