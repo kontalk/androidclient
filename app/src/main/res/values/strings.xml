@@ -713,4 +713,9 @@
         <item quantity="other">%d people</item>
     </plurals>
 
+    <plurals name="group_people_online">
+        <item quantity="one">1 online</item>
+        <item quantity="other">%d online</item>
+    </plurals>
+
 </resources>

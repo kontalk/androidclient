@@ -1,5 +1,13 @@
 # Change Log
 
+## [4.1.5] - 2018-06-19
+### Changed
+- Some major performance improvements (#1160)
+
+### Fixed
+- Fix rare crash on some devices (#1175, #1182, #1183)
+- Fix several issues (#1167, #1169, 1170)
+
 ## [4.1.4] - 2018-03-18
 ### Changed
 - Typing status in groups (#1152)

@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,7 +38,7 @@ import com.nispok.snackbar.listeners.ActionClickListener;
 
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.chatstates.ChatState;
-import org.jxmpp.util.XmppStringUtils;
+import org.jxmpp.jid.Jid;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -112,6 +113,9 @@ import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.DownloadService;
+import org.kontalk.service.msgcenter.MessageCenterClient;
+import org.kontalk.service.msgcenter.MessageCenterClient.ConnectionLifecycleListener;
+import org.kontalk.service.msgcenter.MessageCenterClient.PresenceListener;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.adapter.MessageListAdapter;
 import org.kontalk.ui.view.AttachmentRevealFrameLayout;
@@ -205,6 +209,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     protected Conversation mConversation;
     protected String mUserName;
 
+    protected boolean mConnected;
+
     /**
      * Available resources.
      */
@@ -228,7 +234,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     private File mCurrentPhoto;
 
     protected LocalBroadcastManager mLocalBroadcastManager;
-    private BroadcastReceiver mPresenceReceiver;
+    private PresenceReceiver mPresenceReceiver;
 
     private boolean mOfflineModeWarned;
     protected CharSequence mCurrentStatus;
@@ -1784,6 +1790,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
     protected abstract void onConnected();
 
+    protected abstract void onDisconnected();
+
     /**
      * Called when the roster has been loaded (ACTION_ROSTER).
      */
@@ -1804,89 +1812,107 @@ public abstract class AbstractComposeFragment extends ListFragment implements
      */
     protected abstract boolean isUserId(String jid);
 
-    private void subscribePresence() {
-        // TODO this needs serious refactoring
-        if (mPresenceReceiver == null) {
-            mPresenceReceiver = new BroadcastReceiver() {
-                public void onReceive(Context context, Intent intent) {
-                    // activity is terminating
-                    if (getContext() == null)
-                        return;
+    class PresenceReceiver extends BroadcastReceiver implements
+            ConnectionLifecycleListener,
+            PresenceListener {
+        public void onReceive(Context context, Intent intent) {
+            // activity is terminating
+            if (getContext() == null)
+                return;
 
-                    String action = intent.getAction();
+            String action = intent.getAction();
 
-                    if (MessageCenterService.ACTION_PRESENCE.equals(action)) {
-                        String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                        String bareFrom = from != null ? XmppStringUtils.parseBareJid(from) : null;
+            if (MessageCenterService.ACTION_MESSAGE.equals(action)) {
+                String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                String chatState = intent.getStringExtra("org.kontalk.message.chatState");
 
-                        // we are receiving a presence from our peer
-                        if (from != null && isUserId(bareFrom)) {
+                // we are receiving a composing notification from our peer
+                if (from != null && isUserId(from)) {
+                    String groupJid = intent.getStringExtra(MessageCenterService.EXTRA_GROUP_JID);
 
-                            // we handle only (un)available presence stanzas
-                            String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
-                            Presence.Type presenceType = (type != null) ? Presence.Type.fromString(type) : null;
-
-                            String mode = intent.getStringExtra(MessageCenterService.EXTRA_SHOW);
-                            Presence.Mode presenceMode = (mode != null) ? Presence.Mode.fromString(mode) : null;
-
-                            String fingerprint = intent.getStringExtra(MessageCenterService.EXTRA_FINGERPRINT);
-
-                            boolean removed = false;
-                            if (presenceType == Presence.Type.available) {
-                                mAvailableResources.add(from);
-                            }
-                            else if (presenceType == Presence.Type.unavailable) {
-                                removed = mAvailableResources.remove(from);
-                            }
-
-                            onPresence(from, presenceType, removed, presenceMode, fingerprint);
-                        }
+                    if (chatState != null && ChatState.composing.toString().equals(chatState)) {
+                        onStartTyping(from, groupJid);
                     }
-
-                    else if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
-                        // reset compose sent flag
-                        mComposer.resetCompose();
-                        // reset available resources list
-                        mAvailableResources.clear();
-
-                        onConnected();
+                    else {
+                        onStopTyping(from, groupJid);
                     }
-
-                    else if (MessageCenterService.ACTION_ROSTER_LOADED.equals(action)) {
-                        onRosterLoaded();
-                    }
-
-                    else if (MessageCenterService.ACTION_MESSAGE.equals(action)) {
-                        String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                        String chatState = intent.getStringExtra("org.kontalk.message.chatState");
-
-                        // we are receiving a composing notification from our peer
-                        if (from != null && isUserId(from)) {
-                            String groupJid = intent.getStringExtra(MessageCenterService.EXTRA_GROUP_JID);
-
-                            if (chatState != null && ChatState.composing.toString().equals(chatState)) {
-                                onStartTyping(from, groupJid);
-                            }
-                            else {
-                                onStopTyping(from, groupJid);
-                            }
-                        }
-                    }
-
                 }
-            };
+            }
+        }
+
+        @Override
+        public void onConnected() {
+            // reset compose sent flag
+            mComposer.resetCompose();
+            // reset available resources list
+            mAvailableResources.clear();
+
+            mConnected = true;
+            AbstractComposeFragment.this.onConnected();
+        }
+
+        @Override
+        public void onDisconnected() {
+            mConnected = false;
+            AbstractComposeFragment.this.onDisconnected();
+        }
+
+        @Override
+        public void onRosterLoaded() {
+            AbstractComposeFragment.this.onRosterLoaded();
+        }
+
+        @Override
+        public void onPresence(Jid from,
+            Presence.Type type, Presence.Mode mode, int priority,
+            String status, Date delay,
+            String rosterName, boolean subscribedFrom, boolean subscribedTo,
+            String fingerprint) {
+
+            // since this listener is used also for global presence (for groups),
+            // check that the origin is among group members
+            if (mConversation.isGroupChat() && !isUserId(from.toString())) {
+                // not for us
+                return;
+            }
+
+            boolean removed = false;
+            if (type == Presence.Type.available) {
+                mAvailableResources.add(from.toString());
+            }
+            else if (type == Presence.Type.unavailable) {
+                removed = mAvailableResources.remove(from.toString());
+            }
+
+            AbstractComposeFragment.this.onPresence(from.toString(), type, removed, mode, fingerprint);
+        }
+    }
+
+    private void subscribePresence() {
+        if (mPresenceReceiver == null) {
+            mPresenceReceiver = new PresenceReceiver();
 
             // listen for user presence, connection and incoming messages
             IntentFilter filter = new IntentFilter();
-            filter.addAction(MessageCenterService.ACTION_PRESENCE);
-            filter.addAction(MessageCenterService.ACTION_CONNECTED);
-            filter.addAction(MessageCenterService.ACTION_ROSTER_LOADED);
             filter.addAction(MessageCenterService.ACTION_MESSAGE);
 
             mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
 
-            // request connection and roster load status
             Context ctx = getContext();
+            MessageCenterClient msgc = MessageCenterClient.getInstance(ctx);
+            msgc.addConnectionLifecycleListener(mPresenceReceiver);
+
+            if (mConversation.isGroupChat()) {
+                // we will filter out unwanted presences.
+                // It may be inelegant, but this way we don't have to change our
+                // subscription when group members change
+                msgc.addGlobalPresenceListener(mPresenceReceiver);
+            }
+            else {
+                msgc.addPresenceListener(mPresenceReceiver, getUserId());
+            }
+
+            // request connection and roster load status
             if (ctx != null) {
                 MessageCenterService.requestConnectionStatus(ctx);
                 MessageCenterService.requestRosterStatus(ctx);
@@ -1897,6 +1923,10 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     private void unsubscribePresence() {
         if (mPresenceReceiver != null) {
             mLocalBroadcastManager.unregisterReceiver(mPresenceReceiver);
+            MessageCenterClient.getInstance(getContext())
+                .removeConnectionLifecycleListener(mPresenceReceiver)
+                .removePresenceListener(mPresenceReceiver, getUserId())
+                .removeGlobalPresenceListener(mPresenceReceiver);
             mPresenceReceiver = null;
         }
     }

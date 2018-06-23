@@ -77,7 +77,7 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
         bind(context, contact, prependStatus, prependStyle, true);
     }
 
-    public final void bind(Context context, final Contact contact, String prependStatus, CharacterStyle prependStyle, boolean subscribed) {
+    public final void bind(Context context, final Contact contact, String prependStatus, CharacterStyle prependStyle, Boolean subscribed) {
         mContact = contact;
 
         setChecked(false);
@@ -112,7 +112,10 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
         if (mTrustStatus != null) {
             int resId;
 
-            if (!subscribed) {
+            if (subscribed == null) {
+                resId = 0;
+            }
+            else if (!subscribed) {
                 resId = R.drawable.ic_denied;
             }
             else if (contact.isKeyChanged()) {

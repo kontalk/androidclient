@@ -391,6 +391,8 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         }
 
         else if (type == Presence.Type.available || type == Presence.Type.unavailable) {
+            updateStatusText();
+
             // no encryption - pointless to verify keys
             if (!Preferences.getEncryptionEnabled(context))
                 return;
@@ -425,6 +427,11 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     protected void onConnected() {
         mTypingUsers.clear();
         updateStatusText();
+    }
+
+    @Override
+    protected void onDisconnected() {
+        onConnected();
     }
 
     @Override
@@ -489,19 +496,23 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
     /** Updates the status text in the toolbar. */
     private void updateStatusText() {
+        Context context = getContext();
+        if (context == null)
+            return;
+
         int typingPeople = mTypingUsers.size();
         if (typingPeople > 0) {
             int msgId;
             Object[] args;
             if (typingPeople == 1) {
-                Contact c = Contact.findByUserId(getContext(), mTypingUsers.iterator().next());
+                Contact c = Contact.findByUserId(context, mTypingUsers.iterator().next());
                 msgId = R.string.seen_group_typing_label_one;
                 args = new Object[] { c.getShortDisplayName() };
             }
             else if (typingPeople == 2) {
                 Iterator<String> users = mTypingUsers.iterator();
-                Contact c1 = Contact.findByUserId(getContext(), users.next());
-                Contact c2 = Contact.findByUserId(getContext(), users.next());
+                Contact c1 = Contact.findByUserId(context, users.next());
+                Contact c2 = Contact.findByUserId(context, users.next());
                 msgId = R.string.seen_group_typing_label_two;
                 args = new Object[] { c1.getShortDisplayName(), c2.getShortDisplayName() };
             }
@@ -509,7 +520,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
                 msgId = R.string.seen_group_typing_label_more;
                 args = new Object[] { typingPeople };
             }
-            setActivityTitle(null, getResources().getString(msgId, args));
+            setActivityTitle(null, context.getResources().getString(msgId, args));
         }
         else {
             final Conversation conv = mConversation;
@@ -517,28 +528,27 @@ public class GroupMessageFragment extends AbstractComposeFragment {
                 // set group title
                 String subject = conv.getGroupSubject();
                 if (TextUtils.isEmpty(subject))
-                    subject = getString(R.string.group_untitled);
+                    subject = context.getString(R.string.group_untitled);
 
                 String status;
                 int membership = conv.getGroupMembership();
                 switch (membership) {
                     case Groups.MEMBERSHIP_PARTED:
-                        status = getString(R.string.group_command_text_part_self);
+                        status = context.getString(R.string.group_command_text_part_self);
                         break;
                     case Groups.MEMBERSHIP_KICKED:
-                        status = getString(R.string.group_command_text_part_kicked);
+                        status = context.getString(R.string.group_command_text_part_kicked);
                         break;
                     case Groups.MEMBERSHIP_OBSERVER: {
                         int count = conv.getGroupPeers().length;
-                        status = getResources()
-                            .getQuantityString(R.plurals.group_people, count, count);
+                        status = getMemberCountQuantityString(count, mAvailableResources.size());
                         break;
                     }
                     case Groups.MEMBERSHIP_MEMBER: {
                         // +1 because we are not included in the members list
                         int count = conv.getGroupPeers().length + 1;
-                        status = getResources()
-                            .getQuantityString(R.plurals.group_people, count, count);
+                        // the "connected" here is used to show ourselves as online
+                        status = getMemberCountQuantityString(count, mConnected ? mAvailableResources.size() + 1 : 0);
                         break;
                     }
                     default:
@@ -549,6 +559,19 @@ public class GroupMessageFragment extends AbstractComposeFragment {
                 setActivityTitle(subject, status);
             }
         }
+    }
+
+    // FIXME not i18n-friendly (especially for RTL)
+    private String getMemberCountQuantityString(int count, int online) {
+        StringBuilder msg = new StringBuilder();
+        msg.append(getResources().getQuantityString(R.plurals.group_people, count, count));
+
+        if (online > 0) {
+            msg.append(", ")
+                .append(getResources().getQuantityString(R.plurals.group_people_online, online, online));
+        }
+
+        return msg.toString();
     }
 
     public void viewGroupInfo() {
