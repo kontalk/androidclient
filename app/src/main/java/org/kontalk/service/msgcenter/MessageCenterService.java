@@ -1537,13 +1537,35 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 if (to == null) {
                     for (RosterEntry entry : roster.getEntries()) {
-                        broadcastPresence(roster, entry, id);
+                        try {
+                            Presence probe = new Presence(JidCreate.from(entry.getJid()), Presence.Type.probe);
+                            probe.setStanzaId(id);
+                            sendPacket(probe);
+                        }
+                        catch (XmppStringprepException e) {
+                            Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+                            // report it because it's a big deal
+                            ReportingManager.logException(e);
+                            throw new IllegalArgumentException(e);
+                        }
                     }
 
                     // broadcast our own presence
                     broadcastMyPresence(id);
                 }
                 else {
+                    try {
+                        Presence probe = new Presence(JidCreate.from(to), Presence.Type.probe);
+                        probe.setStanzaId(id);
+                        sendPacket(probe);
+                    }
+                    catch (XmppStringprepException e) {
+                        Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+                        // report it because it's a big deal
+                        ReportingManager.logException(e);
+                        throw new IllegalArgumentException(e);
+                    }
+
                     queueTask(new Runnable() {
                         @Override
                         public void run() {
