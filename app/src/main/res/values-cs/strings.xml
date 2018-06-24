@@ -722,7 +722,9 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
 	<item quantity="one">1 online</item>
 	<item quantity="few">"%d  online"</item>
 	<item quantity="many">%d online</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
 
-</resources>
+<string name="menu_import_messages">Importovat zprávy</string>
+
+    </resources>
