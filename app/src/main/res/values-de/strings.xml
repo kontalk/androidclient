@@ -717,4 +717,6 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
 	<item quantity="other">%d online</item>
 </plurals>
 
-</resources>
+<string name="menu_import_messages">Nachrichten importieren</string>
+
+    </resources>
