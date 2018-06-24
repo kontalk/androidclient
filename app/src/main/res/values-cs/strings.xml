@@ -718,4 +718,11 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
 
     <string name="err_location_denied">Potřebujeme přístup k vaší poloze, pokud ji chcete sdílet.</string>
 
-    </resources>
+    <plurals name="group_people_online">
+	<item quantity="one">1 online</item>
+	<item quantity="few">"%d  online"</item>
+	<item quantity="many">%d online</item>
+	<item quantity="other"></item>
+</plurals>
+
+</resources>
