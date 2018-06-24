@@ -680,8 +680,8 @@
     <string name="err_location_permission">Недостаточно прав для доступа к местоположению.</string>
     <string name="err_audio_record_permission">Недостаточно прав для доступа к микрофону.</string>
     <string name="err_audio_record_writing_permission">Недостаточно прав для доступа к внешнему хранилищу.</string>
-    <string name="err_validation_contacts_denied">Для правильной работы Kontalk нужен доступ к вашим контактам, иначе как он узнает о ваших потенциальных собеседниках?
-\nВы можете дать это разрешение после того, как зарегистрируетесь.</string>
+    <string name="err_validation_contacts_denied">Для правильной работы Kontalk нужен доступ к вашим контактам, иначе как он узнает о ваших потенциальных собеседниках? 
+\nВы можете разрешить это и после того, как зарегистрируетесь.</string>
     <string name="err_contacts_denied">Для правильной работы Kontalk нужен доступ к вашим контактам, иначе как он узнает о ваших потенциальных собеседниках?
 \nЭто разрешение можно дать в настройках Android.</string>
     <string name="warn_contacts_denied">Вы запретили доступ к контактам. Вам не будут приходить уведомления, у кого из них появился Kontalk.</string>
@@ -702,4 +702,19 @@
     <string name="seen_group_typing_label_more">%d человек набирают…</string>
     <string name="msg_request_doze_failed_all">Режим энергосбережения не настроен, переходим в системные настройки.</string>
 
-    </resources>
+    <string name="archive_thread">Поместить чат в архив</string>
+    <string name="err_camera_scanner_denied">Для того, чтобы сканировать штрих-коды с другого устройства, нужен доступ к камере на вашем.</string>
+    <string name="err_camera_picture_denied">Для того, чтобы делать фотографии, нужен доступ к камере.</string>
+
+    <string name="err_audio_or_storage_denied">"Для того, чтобы создавать голосовые сообщения, нужен доступ к микрофону, а чтобы сохранять их  — к внешнему хранилищу."</string>
+
+    <string name="err_location_denied">Если вы хотите поделиться, где находитесь, нужен доступ к местоположению.</string>
+
+    <plurals name="group_people_online">
+	<item quantity="one">Присутствует: 1 человек</item>
+	<item quantity="few">Присутствуют: %d людей</item>
+	<item quantity="many">Присутствуют: %d людей</item>
+	<item quantity="other"></item>
+</plurals>
+
+</resources>
