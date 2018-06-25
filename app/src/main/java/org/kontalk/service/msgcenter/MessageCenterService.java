@@ -41,6 +41,7 @@ import java.util.zip.ZipInputStream;
 
 import org.jivesoftware.smack.ExceptionCallback;
 import org.jivesoftware.smack.SmackConfiguration;
+import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPConnection;
@@ -1624,12 +1625,53 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 // request public keys for the whole roster
                 Collection<RosterEntry> buddies = getRoster().getEntries();
                 for (RosterEntry buddy : buddies) {
-                    PublicKeyPublish p = new PublicKeyPublish();
-                    p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
+                    String stanzaId = intent.getStringExtra(EXTRA_PACKET_ID);
+
+                    final PublicKeyPublish p = new PublicKeyPublish();
                     p.setTo(buddy.getJid());
 
-                    PublicKeyListener listener = new PublicKeyListener(this, p);
-                    sendIqWithReply(p, true, listener, listener);
+                    StanzaListener iqListener;
+                    ExceptionCallback exListener;
+                    final PublicKeyListener listener = new PublicKeyListener(this, p);
+
+                    if (stanzaId != null) {
+                        // add a prefix to the ID
+                        // this was done to properly create request/response pairs
+                        // Smack was getting angry at this
+                        final String randomId = StringUtils.randomString(6);
+                        stanzaId = randomId + stanzaId;
+
+                        // TODO this class may be useful to others
+                        iqListener = new StanzaListener() {
+                            @Override
+                            public void processStanza(Stanza packet) throws NotConnectedException, InterruptedException, SmackException.NotLoggedInException {
+                                // remove the prefix and call the original listener
+                                String currentId = packet.getStanzaId();
+                                if (currentId != null && currentId.length() > randomId.length())
+                                    packet.setStanzaId(currentId.substring(randomId.length()));
+                                listener.processStanza(packet);
+                            }
+                        };
+                        // TODO this class may be useful to others
+                        exListener = new ExceptionCallback() {
+                            @Override
+                            public void processException(Exception exception) {
+                                // remove the prefix and call the original listener
+                                String currentId = p.getStanzaId();
+                                if (currentId != null && currentId.length() > randomId.length())
+                                    p.setStanzaId(currentId.substring(randomId.length()));
+                                listener.processException(exception);
+                            }
+                        };
+                    }
+                    else {
+                        iqListener = listener;
+                        exListener = listener;
+                    }
+
+                    p.setStanzaId(stanzaId);
+
+                    sendIqWithReply(p, true, iqListener, exListener);
                 }
 
                 // request our own public key (odd eh?)
