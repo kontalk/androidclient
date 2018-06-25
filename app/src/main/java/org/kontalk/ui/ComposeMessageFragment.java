@@ -74,6 +74,7 @@ import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.UsersProvider;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.Syncer;
 import org.kontalk.util.MessageUtils;
@@ -799,9 +800,10 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         // accept invitation
         if (action == PRIVACY_ACCEPT) {
             // trust the key
+            String fingerprint = getContact().getFingerprint();
             Kontalk.get().getMessagesController()
                 .setTrustLevelAndRetryMessages(ctx, mUserJID,
-                    getContact().getFingerprint(), MyUsers.Keys.TRUST_VERIFIED);
+                    fingerprint, MyUsers.Keys.TRUST_VERIFIED);
         }
 
         // reload contact

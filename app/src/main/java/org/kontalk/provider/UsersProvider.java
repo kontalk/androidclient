@@ -75,7 +75,7 @@ public class UsersProvider extends ContentProvider {
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".users";
 
     @VisibleForTesting
-    static final int DATABASE_VERSION = 11;
+    static final int DATABASE_VERSION = 12;
     @VisibleForTesting
     static final String DATABASE_NAME = "users.db";
     private static final String TABLE_USERS = "users";
@@ -158,6 +158,11 @@ public class UsersProvider extends ContentProvider {
             SCHEMA_USERS_OFFLINE,
         };
 
+        /** Upgrade: fix null fingerprint bug */
+        private static final String[] SCHEMA_UPGRADE_V11 = {
+            "DELETE FROM keys WHERE fingerprint = 'null'",
+        };
+
         // any upgrade - just re-create all tables
         private static final String[] SCHEMA_UPGRADE = {
             "DROP TABLE IF EXISTS " + TABLE_USERS,
@@ -200,6 +205,10 @@ public class UsersProvider extends ContentProvider {
                     for (String sql : SCHEMA_UPGRADE_V10)
                         db.execSQL(sql);
                     mNew = true;
+                    break;
+                case 11:
+                    for (String sql : SCHEMA_UPGRADE_V11)
+                        db.execSQL(sql);
                     break;
                 default:
                     for (String sql : SCHEMA_UPGRADE)

@@ -24,6 +24,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDiskIOException;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.kontalk.authenticator.Authenticator;
@@ -152,6 +153,9 @@ public class MessagesController {
      * @return true if the trust level is high enough to retry messages
      */
     public boolean setTrustLevelAndRetryMessages(Context context, String jid, String fingerprint, int trustLevel) {
+        if (fingerprint == null)
+            throw new NullPointerException("fingerprint");
+
         Keyring.setTrustLevel(context, jid, fingerprint, trustLevel);
         if (trustLevel >= MyUsers.Keys.TRUST_IGNORED) {
             MessageCenterService.retryMessagesTo(context, jid);
