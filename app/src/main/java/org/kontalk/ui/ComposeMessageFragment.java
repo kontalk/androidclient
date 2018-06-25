@@ -74,7 +74,6 @@ import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.UsersProvider;
-import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.Syncer;
 import org.kontalk.util.MessageUtils;

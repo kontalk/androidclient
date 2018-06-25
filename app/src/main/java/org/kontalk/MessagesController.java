@@ -24,7 +24,6 @@ import android.content.Context;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDiskIOException;
 import android.net.Uri;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.kontalk.authenticator.Authenticator;
