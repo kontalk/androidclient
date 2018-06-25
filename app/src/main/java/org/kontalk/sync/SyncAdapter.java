@@ -18,6 +18,8 @@
 
 package org.kontalk.sync;
 
+import java.util.Locale;
+
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;
 import android.content.AbstractThreadedSyncAdapter;
@@ -125,7 +127,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 Preferences.setLastSyncTimestamp(System.currentTimeMillis());
                 // some stats :)
                 long endTime = SystemClock.elapsedRealtime();
-                Log.d(TAG, String.format("sync took %.5f seconds",
+                Log.d(TAG, String.format(Locale.US, "sync took %.5f seconds",
                     ((float) (endTime - startTime)) / 1000));
             }
         }
