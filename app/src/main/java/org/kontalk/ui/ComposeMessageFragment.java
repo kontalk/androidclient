@@ -483,7 +483,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
 
             CharSequence statusText = null;
             // hide any present warning
-            hideWarning();
+            hideWarning(WarningType.FATAL);
 
             // really not much sense in requesting the key for a non-existing contact
             Contact contact = getContact();
