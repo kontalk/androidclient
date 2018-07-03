@@ -75,9 +75,13 @@ public class Permissions {
             Manifest.permission.READ_EXTERNAL_STORAGE);
     }
 
-    @SuppressLint("InlinedApi")
     public static void requestReadExternalStorage(Activity activity, String rationale) {
-        EasyPermissions.requestPermissions(activity, rationale, RC_READ_EXT_STORAGE,
+        requestReadExternalStorage(activity, rationale, 0);
+    }
+
+    @SuppressLint("InlinedApi")
+    public static void requestReadExternalStorage(Activity activity, String rationale, int index) {
+        EasyPermissions.requestPermissions(activity, rationale, RC_READ_EXT_STORAGE + (index * 100),
             Manifest.permission.READ_EXTERNAL_STORAGE);
     }
 
