@@ -25,6 +25,10 @@ import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -37,9 +41,11 @@ import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.SASLAuthentication;
 import org.jivesoftware.smack.SmackException;
+import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.filter.StanzaFilter;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smack.sm.StreamManagementException;
 import org.jivesoftware.smack.sm.predicates.ForMatchingPredicateOrAfterXStanzas;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
@@ -61,6 +67,9 @@ public class KontalkConnection extends XMPPTCPConnection {
     public static final int DEFAULT_PACKET_TIMEOUT = 15000;
 
     protected EndpointServer mServer;
+
+    /** Actually a copy of the same Smack map, but since we need access to the listeners... */
+    private final Map<String, AckMultiListener> mStanzaIdAcknowledgedListeners = new ConcurrentHashMap<>();
 
     public KontalkConnection(String resource, EndpointServer server, boolean secure,
         boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken)
@@ -237,6 +246,46 @@ public class KontalkConnection extends XMPPTCPConnection {
 
     public EndpointServer getServer() {
         return mServer;
+    }
+
+    @Override
+    public StanzaListener addStanzaIdAcknowledgedListener(String id, StanzaListener listener) throws StreamManagementException.StreamManagementNotEnabledException {
+        AckMultiListener multi = mStanzaIdAcknowledgedListeners.get(id);
+        StanzaListener old = null;
+        if (multi == null) {
+            multi = new AckMultiListener();
+            mStanzaIdAcknowledgedListeners.put(id, multi);
+            old = super.addStanzaIdAcknowledgedListener(id, multi);
+        }
+
+        multi.addListener(listener);
+        return old;
+    }
+
+    @Override
+    public StanzaListener removeStanzaIdAcknowledgedListener(String id) {
+        mStanzaIdAcknowledgedListeners.remove(id);
+        return super.removeStanzaIdAcknowledgedListener(id);
+    }
+
+    /** An ack listener for handling multiple listeners for a given stanza ID. */
+    static final class AckMultiListener implements StanzaListener {
+        private Collection<StanzaListener> mListeners = new ConcurrentLinkedQueue<>();
+
+        @Override
+        public void processStanza(Stanza packet) throws SmackException.NotConnectedException, InterruptedException, SmackException.NotLoggedInException {
+            for (StanzaListener l : mListeners) {
+                l.processStanza(packet);
+            }
+        }
+
+        void addListener(StanzaListener listener) {
+            mListeners.add(listener);
+        }
+
+        void removeListener(StanzaListener listener) {
+            mListeners.remove(listener);
+        }
     }
 
     /**

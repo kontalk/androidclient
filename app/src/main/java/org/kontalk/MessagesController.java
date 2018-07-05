@@ -152,6 +152,9 @@ public class MessagesController {
      * @return true if the trust level is high enough to retry messages
      */
     public boolean setTrustLevelAndRetryMessages(Context context, String jid, String fingerprint, int trustLevel) {
+        if (fingerprint == null)
+            throw new NullPointerException("fingerprint");
+
         Keyring.setTrustLevel(context, jid, fingerprint, trustLevel);
         if (trustLevel >= MyUsers.Keys.TRUST_IGNORED) {
             MessageCenterService.retryMessagesTo(context, jid);

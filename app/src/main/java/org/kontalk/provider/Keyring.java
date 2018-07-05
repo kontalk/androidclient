@@ -118,11 +118,17 @@ public class Keyring {
 
     /** Updates the fingerprint and the date (for fingerprint in presence). */
     public static void setKey(Context context, String jid, String fingerprint, Date date) {
+        if (fingerprint == null)
+            throw new NullPointerException("fingerprint");
+
         setKey(context, jid, fingerprint, date, -1);
     }
 
     /** Updates the fingerprint and the date (for fingerprint in presence). */
     public static void setKey(Context context, String jid, String fingerprint, Date date, int trustLevel) {
+        if (fingerprint == null)
+            throw new NullPointerException("fingerprint");
+
         ContentValues values = new ContentValues(2);
         values.put(MyUsers.Keys.TIMESTAMP, date.getTime());
         if (trustLevel >= 0)
@@ -134,6 +140,9 @@ public class Keyring {
 
     /** Sets the trust level for the given key. */
     public static void setTrustLevel(Context context, String jid, String fingerprint, int trustLevel) {
+        if (fingerprint == null)
+            throw new NullPointerException("fingerprint");
+
         ContentValues values = new ContentValues(1);
         values.put(MyUsers.Keys.TRUST_LEVEL, trustLevel);
         context.getContentResolver().insert(MyUsers.Keys.getUri(jid, fingerprint), values);

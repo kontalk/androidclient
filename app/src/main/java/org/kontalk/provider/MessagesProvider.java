@@ -18,6 +18,7 @@
 
 package org.kontalk.provider;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +35,8 @@ import android.database.DatabaseUtils;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDatabaseLockedException;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.support.annotation.NonNull;
@@ -89,6 +92,9 @@ public class MessagesProvider extends ContentProvider {
     private static final int GROUPS_MEMBERS_ID = 12;
     private static final int FULLTEXT_ID = 13;
     private static final int REQUESTS = 14;
+    private static final int IMPORT_LOCK = 15;
+    private static final int IMPORT_UNLOCK = 16;
+    private static final int RELOAD = 17;
 
     private DatabaseHelper dbHelper;
     private static final UriMatcher sUriMatcher;
@@ -425,6 +431,9 @@ public class MessagesProvider extends ContentProvider {
             "ALTER TABLE threads ADD COLUMN archived NOT NULL DEFAULT 0",
         };
 
+        /** If true, fail all operations. */
+        private boolean mLocked;
+
         DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
         }
@@ -503,6 +512,28 @@ public class MessagesProvider extends ContentProvider {
                     }
                     // fall through
             }
+        }
+
+        public void lock() {
+            mLocked = true;
+        }
+
+        public void unlock() {
+            mLocked = false;
+        }
+
+        @Override
+        public SQLiteDatabase getReadableDatabase() {
+            if (mLocked)
+                throw new SQLiteDatabaseLockedException("locked by user");
+            return super.getReadableDatabase();
+        }
+
+        @Override
+        public SQLiteDatabase getWritableDatabase() {
+            if (mLocked)
+                throw new SQLiteDatabaseLockedException("locked by user");
+            return super.getWritableDatabase();
         }
     }
 
@@ -1071,6 +1102,31 @@ public class MessagesProvider extends ContentProvider {
                 break;
             }
 
+            case IMPORT_LOCK: {
+                dbHelper.lock();
+                return 0;
+            }
+
+            case IMPORT_UNLOCK: {
+                dbHelper.unlock();
+                return 0;
+            }
+
+            case RELOAD: {
+                dbHelper.close();
+                try {
+                    onCreate();
+                    dbHelper.getReadableDatabase();
+                }
+                catch (Exception e) {
+                    // restart from scratch
+                    getContext().deleteDatabase(DatabaseHelper.DATABASE_NAME);
+                    onCreate();
+                    throw new SQLiteException(e.toString());
+                }
+                return 0;
+            }
+
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
         }
@@ -1567,6 +1623,28 @@ public class MessagesProvider extends ContentProvider {
         }
     }
 
+    public static File getDatabaseUri(Context context) {
+        return context.getDatabasePath(DatabaseHelper.DATABASE_NAME);
+    }
+
+    public static void reload(Context context) {
+        context.getContentResolver().update(Uri
+            .parse("content://" + MessagesProvider.AUTHORITY + "/" + Messages.RELOAD),
+            null, null, null);
+    }
+
+    public static void lockForImport(Context context) {
+        context.getContentResolver().update(Uri
+                .parse("content://" + MessagesProvider.AUTHORITY + "/" + Messages.IMPORT_LOCK),
+            null, null, null);
+    }
+
+    public static void unlockForImport(Context context) {
+        context.getContentResolver().update(Uri
+                .parse("content://" + MessagesProvider.AUTHORITY + "/" + Messages.IMPORT_UNLOCK),
+            null, null, null);
+    }
+
     static {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         sUriMatcher.addURI(AUTHORITY, TABLE_THREADS, THREADS);
@@ -1583,6 +1661,9 @@ public class MessagesProvider extends ContentProvider {
         sUriMatcher.addURI(AUTHORITY, TABLE_GROUPS + "/*/members/*", GROUPS_MEMBERS_ID);
         sUriMatcher.addURI(AUTHORITY, TABLE_FULLTEXT, FULLTEXT_ID);
         sUriMatcher.addURI(AUTHORITY, "requests", REQUESTS);
+        sUriMatcher.addURI(AUTHORITY, Messages.IMPORT_LOCK, IMPORT_LOCK);
+        sUriMatcher.addURI(AUTHORITY, Messages.IMPORT_UNLOCK, IMPORT_UNLOCK);
+        sUriMatcher.addURI(AUTHORITY, Messages.RELOAD, RELOAD);
 
         messagesProjectionMap = new HashMap<>();
         messagesProjectionMap.put(Messages._ID, Messages._ID);

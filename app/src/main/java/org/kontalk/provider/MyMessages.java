@@ -144,6 +144,11 @@ public final class MyMessages {
         public static final String CLEAR_PENDING = "clear_pending";
         public static final String KEEP_GROUP = "keep_group";
 
+        // appended as path (commands)
+        public static final String IMPORT_LOCK = "ilock";
+        public static final String IMPORT_UNLOCK = "iunlock";
+        public static final String RELOAD = "reload";
+
         // special thread_id value for not creating a new thread
         public static final long NO_THREAD = -1;
     }

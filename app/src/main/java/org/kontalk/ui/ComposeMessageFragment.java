@@ -482,7 +482,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
 
             CharSequence statusText = null;
             // hide any present warning
-            hideWarning();
+            hideWarning(WarningType.FATAL);
 
             // really not much sense in requesting the key for a non-existing contact
             Contact contact = getContact();
@@ -799,9 +799,10 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         // accept invitation
         if (action == PRIVACY_ACCEPT) {
             // trust the key
+            String fingerprint = getContact().getFingerprint();
             Kontalk.get().getMessagesController()
                 .setTrustLevelAndRetryMessages(ctx, mUserJID,
-                    getContact().getFingerprint(), MyUsers.Keys.TRUST_VERIFIED);
+                    fingerprint, MyUsers.Keys.TRUST_VERIFIED);
         }
 
         // reload contact

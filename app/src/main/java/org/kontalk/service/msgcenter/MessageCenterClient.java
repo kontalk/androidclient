@@ -180,7 +180,7 @@ public class MessageCenterClient {
             boolean subscribedFrom = data.getBoolean(MessageCenterService.EXTRA_SUBSCRIBED_FROM, false);
             boolean subscribedTo = data.getBoolean(MessageCenterService.EXTRA_SUBSCRIBED_TO, false);
 
-                String fingerprint = data.getString(MessageCenterService.EXTRA_FINGERPRINT);
+            String fingerprint = data.getString(MessageCenterService.EXTRA_FINGERPRINT);
 
             Jid fromJid;
             try {

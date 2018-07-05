@@ -1941,8 +1941,19 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         return false;
     }
 
+    /** Hides the warning bar. */
     protected void hideWarning() {
         SnackbarManager.dismiss();
+    }
+
+    /** Hides the warning bar only if type matches. */
+    protected void hideWarning(WarningType type) {
+        Snackbar bar = SnackbarManager.getCurrentSnackbar();
+        if (bar != null) {
+            WarningType oldType = (WarningType) bar.getTag();
+            if (oldType == type)
+                bar.dismiss();
+        }
     }
 
     protected void showWarning(CharSequence text, final View.OnClickListener listener, WarningType type) {

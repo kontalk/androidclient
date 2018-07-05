@@ -207,10 +207,12 @@ public class ConversationsActivity extends MainActivity
         new Thread(new Runnable() {
             @Override
             public void run() {
-                // mark all messages as old
-                MessagesProviderClient.markAllThreadsAsOld(context);
-                // update notification
-                MessagingNotification.updateMessagesNotification(context, false);
+                if (Authenticator.getDefaultAccount(context) != null) {
+                    // mark all messages as old
+                    MessagesProviderClient.markAllThreadsAsOld(context);
+                    // update notification
+                    MessagingNotification.updateMessagesNotification(context, false);
+                }
             }
         }).start();
 

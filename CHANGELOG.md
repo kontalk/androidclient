@@ -1,5 +1,11 @@
 # Change Log
 
+## [4.1.6] - 2018-06-24
+### Fixed
+- Temporarily revert to stable emoji version
+- Fix public key retrieval
+- Fix attachment panel close icon (#1184) 
+
 ## [4.1.5] - 2018-06-19
 ### Changed
 - Some major performance improvements (#1160)

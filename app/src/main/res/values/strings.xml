@@ -615,6 +615,8 @@
     <string name="pref_foreground_service">Enable foreground service</string>
     <string name="pref_title_foreground_service">Activate this if you want Kontalk to be active in the background when going low on resources. A sticky notification will be displayed</string>
 
+    <string name="menu_import_messages">Import messages</string>
+
     <string name="pref_debug_log">Enable debug log</string>
     <string name="pref_send_debug_log">Send debug log</string>
 

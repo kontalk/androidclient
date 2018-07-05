@@ -51,6 +51,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -59,6 +60,7 @@ import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
@@ -104,9 +106,11 @@ import org.kontalk.crypto.PersonalKeyPack;
 import org.kontalk.crypto.X509Bridge;
 import org.kontalk.provider.Keyring;
 import org.kontalk.reporting.ReportingManager;
+import org.kontalk.service.DatabaseImporterService;
 import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
 import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
+import org.kontalk.service.MessagesImporterService;
 import org.kontalk.service.msgcenter.SQLiteRosterStore;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.adapter.CountryCodesAdapter;
@@ -140,6 +144,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public static final String PARAM_CHALLENGE = "org.kontalk.challenge";
     public static final String PARAM_TRUSTED_KEYS = "org.kontalk.trustedkeys";
 
+    private static final String CHOOSER_TAG_MESSAGES_DB = "messages.db";
+
     private AccountManager mAccountManager;
     private EditText mNameText;
     private Spinner mCountryCode;
@@ -172,6 +178,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private boolean mPermissionsAsked;
 
     private KeyGeneratorReceiver mKeyReceiver;
+    private BroadcastReceiver mMessagesImporterReceiver;
 
     private static final class RetainData {
         NumberValidator validator;
@@ -366,6 +373,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.number_validation_menu, menu);
         menu.findItem(R.id.menu_manual_verification).setVisible(BuildConfig.DEBUG);
+        menu.findItem(R.id.menu_import_messages_database).setVisible(BuildConfig.DEBUG);
         return true;
     }
 
@@ -386,6 +394,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             }
             case R.id.menu_manual_verification: {
                 validateCode();
+                break;
+            }
+            case R.id.menu_import_messages_database: {
+                importMessagesDatabase();
                 break;
             }
             default:
@@ -466,6 +478,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         keepScreenOn(false);
 
         stopKeyReceiver();
+        stopMessagesImporterReceiver();
 
         if (mProgress != null) {
             if (isFinishing())
@@ -483,8 +496,17 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     void stopKeyReceiver() {
-        if (mKeyReceiver != null)
+        if (mKeyReceiver != null) {
             lbm.unregisterReceiver(mKeyReceiver);
+            mKeyReceiver = null;
+        }
+    }
+
+    void stopMessagesImporterReceiver() {
+        if (mMessagesImporterReceiver != null) {
+            lbm.unregisterReceiver(mMessagesImporterReceiver);
+            mMessagesImporterReceiver = null;
+        }
     }
 
     @Override
@@ -827,6 +849,25 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         });
     }
 
+    private void importMessagesDatabase() {
+        if (!Permissions.canReadExternalStorage(NumberValidation.this)) {
+            // TODO rationale
+            Permissions.requestReadExternalStorage(NumberValidation.this, null, 1);
+        }
+        else {
+            browseImportMessagesDatabase();
+        }
+    }
+
+    // Permissions added 1*100 because of index 1 provided in the call
+    @AfterPermissionGranted(Permissions.RC_READ_EXT_STORAGE + 100)
+    void browseImportMessagesDatabase() {
+        new FileChooserDialog.Builder(NumberValidation.this)
+            .mimeType("*/*")
+            .tag(CHOOSER_TAG_MESSAGES_DB)
+            .show(getSupportFragmentManager());
+    }
+
     /** Opens import keys from another device wizard. */
     private void importKey() {
         checkInput(true, new ParameterRunnable<Boolean>() {
@@ -975,14 +1016,44 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     @Override
     public void onFileSelection(@NonNull FileChooserDialog fileChooserDialog, @NonNull File file) {
-        try {
-            startImport(new FileInputStream(file));
+        if (CHOOSER_TAG_MESSAGES_DB.equals(fileChooserDialog.getTag())) {
+            // TODO this whole progress and report system is for debug purposes only
+            if (mMessagesImporterReceiver == null) {
+                mMessagesImporterReceiver = new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        stopMessagesImporterReceiver();
+
+                        String error = intent.getStringExtra(DatabaseImporterService.EXTRA_ERROR);
+                        if (error == null)
+                            // TODO i18n
+                            error = "Messages imported successfully.";
+
+                        new MaterialDialog.Builder(NumberValidation.this)
+                            // TODO i18n
+                            .title("Import messages")
+                            .content(error)
+                            .positiveText(android.R.string.ok)
+                            .show();
+                    }
+                };
+                lbm.registerReceiver(mMessagesImporterReceiver,
+                    new IntentFilter(DatabaseImporterService.ACTION_FINISH));
+            }
+
+            // TODO setup progress dialog
+            MessagesImporterService.startImport(this, Uri.fromFile(file));
         }
-        catch (FileNotFoundException e) {
-            Log.e(TAG, "error importing keys", e);
-            Toast.makeText(this,
-                R.string.err_import_keypair_read,
-                Toast.LENGTH_LONG).show();
+        else {
+            try {
+                startImport(new FileInputStream(file));
+            }
+            catch (FileNotFoundException e) {
+                Log.e(TAG, "error importing keys", e);
+                Toast.makeText(this,
+                    R.string.err_import_keypair_read,
+                    Toast.LENGTH_LONG).show();
+            }
         }
     }
 

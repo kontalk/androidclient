@@ -106,6 +106,7 @@
                 <action android:name="android.service.chooser.ChooserTargetService" />
             </intent-filter>
         </service>
+        <service android:name=".service.MessagesImporterService"/>
 
         <!-- Content providers -->
         <provider android:name=".provider.MessagesProvider"

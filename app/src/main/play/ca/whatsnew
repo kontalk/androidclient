@@ -1,7 +1,6 @@
-Versió amb nou proveïdor de registre, ofert amablement per https://JMP.Chat
+Nou proveïdor de registre, ofert amablement per https://JMP.Chat
 Ajuda'ns a millorar i corregir els errors informant a GitHub o a discutir-los al nou fòrum: https://forum.kontalk.org
 
-* NOU: resposta contextual
-* solució temporal de l'error de bootloop de firmware d'alguns dispositius
-* solucionat el retard en la notificació de lliuraments
+* algunes millores importants en el rendiment
+* solucionats certs problemes de permisos
 * altres correccions d'errors

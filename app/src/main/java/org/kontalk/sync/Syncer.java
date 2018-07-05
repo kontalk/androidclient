@@ -226,23 +226,25 @@ public class Syncer {
 
             else if (MessageCenterService.ACTION_PUBLICKEY.equals(action)) {
                 if (response != null) {
-                    String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                    // see if bare JID is present in roster response
-                    String compare = XmppStringUtils.parseBareJid(jid);
-                    for (PresenceItem item : response) {
-                        if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(compare)) {
-                            item.publicKey = intent.getByteArrayExtra(MessageCenterService.EXTRA_PUBLIC_KEY);
+                    String requestId = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
+                    if (IQ_PACKET_ID.equals(requestId)) {
+                        String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                        // see if bare JID is present in roster response
+                        String compare = XmppStringUtils.parseBareJid(jid);
+                        for (PresenceItem item : response) {
+                            if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(compare)) {
+                                item.publicKey = intent.getByteArrayExtra(MessageCenterService.EXTRA_PUBLIC_KEY);
 
-                            // increment vcard count
-                            pubkeyCount++;
-                            break;
+                                // increment vcard count
+                                pubkeyCount++;
+                                break;
+                            }
                         }
+
+                        // done with presence data and blocklist
+                        if (pubkeyCount == presenceCount && blocklistReceived && notMatched.size() == 0)
+                            finish();
                     }
-
-                    // done with presence data and blocklist
-                    if (pubkeyCount == presenceCount && blocklistReceived && notMatched.size() == 0)
-                        finish();
-
                 }
 
             }
