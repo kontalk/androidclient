@@ -719,4 +719,6 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
 
 <string name="menu_import_messages">Nachrichten importieren</string>
 
+    <string name="contact_name_server">Ihr Server</string>
+
     </resources>
