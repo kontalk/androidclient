@@ -719,4 +719,6 @@
 
 <string name="menu_import_messages">Импортировать сообщения</string>
 
+    <string name="contact_name_server">Имя сервера</string>
+
     </resources>
