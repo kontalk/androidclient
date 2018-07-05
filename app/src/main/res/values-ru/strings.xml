@@ -423,7 +423,7 @@
     <string name="button_load_next_page">Загрузить больше сообщений</string>
 
     <string name="menu_create_group">Создать группу</string>
-    <string name="confirm_cancel_registration">Если вы вернётесь назад в меню, Вам придётся заново начать регистрацию. Для того, чтобы переключиться на другую программу, просто нажмите кнопку с домиком.</string>
+    <string name="confirm_cancel_registration">Если вы вернётесь назад в меню, вуам придётся заново начать регистрацию. Для того, чтобы переключиться на другую программу, просто нажмите кнопку с домиком.</string>
     <string name="text_search_results_empty">Ни одного сообщения не найдено.</string>
     <string name="title_fallback">Имеете проблемы?</string>
     <string name="msg_fallback">Мы попробуем другой путь, чтобы подтвердить Ваш номер телефона.</string>
@@ -522,8 +522,8 @@
 	<item quantity="other"/>
 </plurals>
 
-<string name="code_validation_intro_callerid">Нажмите на кнопку и перезвоните на этот номер. Пожалуйста, имейте в виду: <b>звонок возможен только с вашего зарегистрированного телефонного номера</b>. Звонок бесплатный, повесьте трубку как только услышите первый гудок. Нам этого достаточно.</string>
-    <string name="code_validation_intro2_callerid">После завершения звонка вернитесь сюда и нажмите кнопку верификации.</string>
+<string name="code_validation_intro_callerid">Нажмите на кнопку и перезвоните на этот номер. Пожалуйста, обратите внимание: <b>позвонить можно только с номера, который вы регистрируете</b>. Звонок бесплатный. Повесьте трубку как только услышите первый гудок, нам этого достаточно.</string>
+    <string name="code_validation_intro2_callerid">После завершения звонка вернитесь сюда и нажмите на кнопку подтверждения.</string>
     <string name="menu_sticky">Избранное</string>
     <string name="delete_thread_messages">Удалить историю чата</string>
     <string name="pref_push_notifications_disabled">Отключено</string>
@@ -714,7 +714,9 @@
 	<item quantity="one">Присутствует: 1 человек</item>
 	<item quantity="few">Присутствуют: %d людей</item>
 	<item quantity="many">Присутствуют: %d людей</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
 
-</resources>
+<string name="menu_import_messages">Импортировать сообщения</string>
+
+    </resources>
