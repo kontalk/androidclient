@@ -727,4 +727,6 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
 
 <string name="menu_import_messages">Importovat zprávy</string>
 
+    <string name="contact_name_server">Váš server</string>
+
     </resources>
