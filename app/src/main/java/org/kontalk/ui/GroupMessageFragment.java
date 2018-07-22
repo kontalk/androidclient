@@ -19,21 +19,26 @@
 package org.kontalk.ui;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.sqlite.SQLiteDiskIOException;
 import android.net.Uri;
 import android.os.Bundle;
@@ -54,8 +59,10 @@ import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Groups;
+import org.kontalk.provider.MyUsers;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.XMPPUtils;
@@ -76,10 +83,15 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     /** List of typing users. */
     private Set<String> mTypingUsers = new HashSet<>();
 
+    /** Map of request IDs for public key requests. */
+    private Map<String, String> mKeyRequestIds = new HashMap<>();
+
     private MenuItem mInviteGroupMenu;
     private MenuItem mSetGroupSubjectMenu;
     private MenuItem mGroupInfoMenu;
     private MenuItem mLeaveGroupMenu;
+
+    private BroadcastReceiver mBroadcastReceiver;
 
     @Override
     protected void updateUI() {
@@ -147,6 +159,14 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         }
 
         return false;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mLocalBroadcastManager != null && mBroadcastReceiver != null) {
+            mLocalBroadcastManager.unregisterReceiver(mBroadcastReceiver);
+        }
     }
 
     @Override
@@ -327,6 +347,33 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
         super.onConversationCreated();
 
+        // setup broadcast receiver
+        if (mBroadcastReceiver == null) {
+            mBroadcastReceiver = new BroadcastReceiver() {
+                public void onReceive(Context context, Intent intent) {
+                    String jid = XmppStringUtils.parseBareJid(intent
+                        .getStringExtra(MessageCenterService.EXTRA_FROM));
+
+                    String action = intent.getAction();
+
+                    if (MessageCenterService.ACTION_PUBLICKEY.equals(action)) {
+                        String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
+                        if (id != null && id.equals(mKeyRequestIds.get(jid))) {
+                            // invalidate contact
+                            Contact.invalidate(jid);
+                            // request presence again
+                            requestPresence();
+                        }
+                    }
+                }
+            };
+
+            // listen for some stuff we need
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(MessageCenterService.ACTION_PUBLICKEY);
+            mLocalBroadcastManager.registerReceiver(mBroadcastReceiver, filter);
+        }
+
         boolean sendEnabled;
         int membership = mConversation.getGroupMembership();
         switch (membership) {
@@ -370,6 +417,15 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         }
     }
 
+    private void requestPublicKey(String jid) {
+        Context context = getActivity();
+        if (context != null) {
+            String requestId = StringUtils.randomString(6);
+            mKeyRequestIds.put(jid, requestId);
+            MessageCenterService.requestPublicKey(context, jid, requestId);
+        }
+    }
+
     @Override
     protected void onPresence(String jid, Presence.Type type, boolean removed, Presence.Mode mode, String fingerprint) {
         Context context = getContext();
@@ -380,46 +436,45 @@ public class GroupMessageFragment extends AbstractComposeFragment {
             Log.d(TAG, "group member presence from " + jid + " (type=" + type + ", fingerprint=" + fingerprint + ")");
         }
 
-        // handle null type - meaning no subscription (warn user)
-        if (type == null) {
-            // some users are missing subscription - disable sending
-            // FIXME a toast isn't the right way to warn about this (discussion going on in #179)
-            Toast.makeText(context,
-                "You can't chat with some of the group members because you haven't been authorized yet. Open a private chat with unknown users first.",
-                Toast.LENGTH_LONG).show();
-            mComposer.setSendEnabled(false);
+        updateStatusText();
+
+        // no encryption - pointless to verify keys
+        if (!Preferences.getEncryptionEnabled(context))
+            return;
+
+        String bareJid = XmppStringUtils.parseBareJid(jid);
+
+        Contact contact = Contact.findByUserId(context, bareJid);
+        // if this is null, we are accepting the key for the first time
+        PGPPublicKeyRing trustedPublicKey = contact.getTrustedPublicKeyRing();
+
+        // request the key if we don't have a trusted one and of course if the user has a key
+        boolean unknownKey = (trustedPublicKey == null && contact.getFingerprint() != null);
+        boolean changedKey = false;
+        // check if fingerprint changed (only if we have roster presence)
+        if (type != null && trustedPublicKey != null && fingerprint != null) {
+            String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(trustedPublicKey));
+            if (!fingerprint.equalsIgnoreCase(oldFingerprint)) {
+                // fingerprint has changed since last time
+                changedKey = true;
+            }
+        }
+        // user has no key (or we have no roster presence) or it couldn't be found: request it
+        else if ((trustedPublicKey == null && fingerprint == null) || type == null) {
+            if (mKeyRequestIds.containsKey(jid)) {
+                // avoid request loop
+                mKeyRequestIds.remove(jid);
+            }
+            else {
+                // autotrust the key we are about to request
+                // but set the trust level to ignored because we didn't really verify it
+                Keyring.setAutoTrustLevel(context, jid, MyUsers.Keys.TRUST_IGNORED);
+                requestPublicKey(jid);
+            }
         }
 
-        else if (type == Presence.Type.available || type == Presence.Type.unavailable) {
-            updateStatusText();
-
-            // no encryption - pointless to verify keys
-            if (!Preferences.getEncryptionEnabled(context))
-                return;
-
-            String bareJid = XmppStringUtils.parseBareJid(jid);
-
-            Contact contact = Contact.findByUserId(context, bareJid);
-            if (contact != null) {
-                // if this is null, we are accepting the key for the first time
-                PGPPublicKeyRing trustedPublicKey = contact.getTrustedPublicKeyRing();
-
-                // request the key if we don't have a trusted one and of course if the user has a key
-                boolean unknownKey = (trustedPublicKey == null && contact.getFingerprint() != null);
-                boolean changedKey = false;
-                // check if fingerprint changed
-                if (trustedPublicKey != null && fingerprint != null) {
-                    String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(trustedPublicKey));
-                    if (!fingerprint.equalsIgnoreCase(oldFingerprint)) {
-                        // fingerprint has changed since last time
-                        changedKey = true;
-                    }
-                }
-
-                if (changedKey || unknownKey) {
-                    showKeyWarning();
-                }
-            }
+        if (Keyring.isAdvancedMode(context, jid) && (changedKey || unknownKey)) {
+            showKeyWarning();
         }
     }
 
@@ -427,6 +482,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     protected void onConnected() {
         mTypingUsers.clear();
         updateStatusText();
+        mKeyRequestIds.clear();
     }
 
     @Override

@@ -80,6 +80,7 @@ public class MyUsers {
         public static final String FINGERPRINT = "fingerprint";
         public static final String TIMESTAMP = "timestamp";
         public static final String TRUST_LEVEL = "trust_level";
+        public static final String MANUAL_TRUST = "manual_trust";
 
         public static final Uri CONTENT_URI = Uri.parse("content://"
             + UsersProvider.AUTHORITY + "/keys");

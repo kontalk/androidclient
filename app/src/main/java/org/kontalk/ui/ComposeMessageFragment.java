@@ -460,7 +460,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         // hide any present warning
         hideWarning(WarningType.FATAL);
 
-        // really not much sense in requesting the key for a non-existing contact
         Contact contact = getContact();
         if (contact != null) {
             // if this is null, we are accepting the key for the first time
@@ -484,24 +483,30 @@ public class ComposeMessageFragment extends AbstractComposeFragment
                     mKeyRequestId = null;
                 }
                 else {
+                    // autotrust the key we are about to request
+                    // but set the trust level to ignored because we didn't really verify it
+                    Keyring.setAutoTrustLevel(context, jid, MyUsers.Keys.TRUST_IGNORED);
                     requestPublicKey(jid);
                 }
             }
 
-            if (changedKey) {
-                // warn user that public key is changed
-                showKeyChangedWarning(fingerprint);
-            }
-            else if (unknownKey) {
-                // warn user that public key is unknown
-                showKeyUnknownWarning(fingerprint);
+            // key checks are to be done in advanced mode only
+            if (Keyring.isAdvancedMode(context, jid)) {
+                if (changedKey) {
+                    // warn user that public key is changed
+                    showKeyChangedWarning(fingerprint);
+                }
+                else if (unknownKey) {
+                    // warn user that public key is unknown
+                    showKeyUnknownWarning(fingerprint);
+                }
             }
         }
 
         if (type == null) {
             // no roster entry found, request subscription
 
-            // pre-approve our presence if we don't have contact's key
+            // pre-approve our presence
             Intent i = new Intent(context, MessageCenterService.class);
             i.setAction(MessageCenterService.ACTION_PRESENCE);
             i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
