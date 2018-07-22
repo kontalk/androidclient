@@ -48,7 +48,7 @@ import org.kontalk.util.Preferences;
  */
 public class SQLiteRosterStore extends SQLiteOpenHelper implements RosterStore {
 
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
     private static final String DATABASE_NAME = "roster.db";
 
     private static final String TABLE_ROSTER = "roster";
