@@ -63,6 +63,7 @@ import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
@@ -271,6 +272,21 @@ public class ComposeMessageFragment extends AbstractComposeFragment
             .show();
     }
 
+    /** Translates special contacts into special strings. */
+    private String getDisplayName(@NonNull Contact contact) {
+        Context context = getContext();
+        if (context == null)
+            return contact.getDisplayName();
+
+        EndpointServer server = Preferences.getEndpointServer(context);
+        if (contact.getJID().equalsIgnoreCase(server.getNetwork())) {
+            return context.getString(R.string.contact_name_server);
+        }
+        else {
+            return contact.getDisplayName();
+        }
+    }
+
     @Override
     protected void loadConversationMetadata(Uri uri) {
         super.loadConversationMetadata(uri);
@@ -278,7 +294,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
             mUserJID = mConversation.getRecipient();
             Contact contact = mConversation.getContact();
             if (contact != null) {
-                mUserName = contact.getDisplayName();
+                mUserName = getDisplayName(contact);
                 mUserPhone = contact.getNumber();
             }
             else {
@@ -349,7 +365,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         setThreadId(mConversation.getThreadId());
         Contact contact = mConversation.getContact();
         if (contact != null) {
-            mUserName = contact.getDisplayName();
+            mUserName = getDisplayName(contact);
             mUserPhone = contact.getNumber();
         }
         else {
