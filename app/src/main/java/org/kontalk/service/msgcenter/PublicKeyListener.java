@@ -107,7 +107,8 @@ class PublicKeyListener extends MessageCenterPacketListener implements Exception
                 if (from.isDomainBareJid()) {
                     Log.v("pubkey", "Updating server key for " + from);
                     try {
-                        Keyring.setKey(getContext(), from.toString(), _publicKey);
+                        Keyring.setKey(getContext(), from.toString(), _publicKey,
+                            MyUsers.Keys.TRUST_VERIFIED);
                     }
                     catch (Exception e) {
                         // TODO warn user

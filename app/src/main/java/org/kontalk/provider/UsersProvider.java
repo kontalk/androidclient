@@ -164,12 +164,14 @@ public class UsersProvider extends ContentProvider {
             "DELETE FROM keys WHERE fingerprint = 'null'",
         };
 
-        /** Upgrade: introduce manual trust level bit */
+        /** Upgrade: introduce manual trust level */
         private static final String[] SCHEMA_UPGRADE_V12 = {
             "ALTER TABLE keys ADD COLUMN manual_trust INTEGER NOT NULL DEFAULT 0",
             // bring everything to a starting scenario
             // no way to know which keys were manually approved and which not
-            "UPDATE keys SET trust_level = 1"
+            "UPDATE keys SET trust_level = 1",
+            // mark server key as verified
+            "UPDATE keys SET trust_level = 2 WHERE jid NOT LIKE '%@%'"
         };
 
         // any upgrade - just re-create all tables
