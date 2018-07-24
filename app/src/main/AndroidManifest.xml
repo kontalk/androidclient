@@ -72,7 +72,8 @@
         android:icon="@mipmap/ic_launcher"
         android:theme="@style/Theme.Light"
         android:fullBackupContent="false"
-        android:allowBackup="false">
+        android:allowBackup="false"
+        tools:replace="android:allowBackup">
 
         <!-- Services -->
         <service android:name=".service.msgcenter.MessageCenterService"
