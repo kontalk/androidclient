@@ -23,6 +23,7 @@ import android.support.v4.app.NavUtils;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.ActionMode;
 import android.view.MenuItem;
 
 import org.kontalk.R;
@@ -100,4 +101,13 @@ public abstract class ToolbarActivity extends AppCompatActivity {
      */
     protected abstract boolean isNormalUpNavigation();
 
+    /** Workarounding Android bug https://issuetracker.google.com/issues/37032031 */
+    @Override
+    public ActionMode startActionMode(final ActionMode.Callback callback) {
+        final ActionMode mode = super.startActionMode(callback);
+        if (mode != null) {
+            mode.invalidate();
+        }
+        return mode;
+    }
 }
