@@ -233,6 +233,21 @@ public class CompositeMessage {
         return mStatus;
     }
 
+    /** Generates a text content for this message. Useful for exporting a message to a text stream. */
+    public String toTextContent() {
+        // loop until the first known component is found
+        for (MessageComponent<?> cmp : mComponents) {
+            if (cmp instanceof TextComponent) {
+                return ((TextComponent) cmp).getContent();
+            }
+            else if (cmp instanceof AttachmentComponent) {
+                return getSampleTextContent(((AttachmentComponent) cmp).getMime());
+            }
+        }
+
+        return null;
+    }
+
     @Override
     public String toString() {
         // FIXME include components

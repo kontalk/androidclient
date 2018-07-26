@@ -431,7 +431,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         replyMenu.setVisible(false);
         retryMenu.setVisible(false);
         shareMenu.setVisible(false);
-        copyTextMenu.setVisible(false);
+        copyTextMenu.setVisible(true);
         detailsMenu.setVisible(false);
         openMenu.setVisible(false);
         dlMenu.setVisible(false);
@@ -545,18 +545,13 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             }
 
             case R.id.menu_copy_text: {
-                CompositeMessage msg = getCheckedItem();
-
-                TextComponent txt = msg.getComponent(TextComponent.class);
-
-                String text = (txt != null) ? txt.getContent() : "";
-
-                ClipboardManager cpm = (ClipboardManager) getActivity()
-                    .getSystemService(Context.CLIPBOARD_SERVICE);
-                cpm.setText(text);
-
-                Toast.makeText(getActivity(), R.string.message_text_copied,
-                    Toast.LENGTH_SHORT).show();
+                if (mCheckedItemCount == 1) {
+                    CompositeMessage msg = getCheckedItem();
+                    copyMessage(msg);
+                }
+                else {
+                    copySelectedMessages(getListView().getCheckedItemPositions());
+                }
                 mode.finish();
                 return true;
             }
@@ -610,6 +605,62 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     private int getCheckedItemPosition() {
         SparseBooleanArray checked = getListView().getCheckedItemPositions();
         return checked.keyAt(checked.indexOfValue(true));
+    }
+
+    private void copyMessage(CompositeMessage msg) {
+        ClipboardManager cpm = (ClipboardManager) getActivity()
+            .getSystemService(Context.CLIPBOARD_SERVICE);
+        cpm.setText(msg.toTextContent());
+
+        Toast.makeText(getContext(), R.string.message_text_copied,
+            Toast.LENGTH_SHORT).show();
+    }
+
+    private void copySelectedMessages(final SparseBooleanArray checked) {
+        String prevUserId = null;
+        String selfJid = Authenticator.getSelfJID(getContext());
+        StringBuilder massText = new StringBuilder();
+
+        for (int i = 0, c = getListView().getCount()+getListView().getHeaderViewsCount(); i < c; ++i) {
+            if (checked.get(i)) {
+                Cursor cursor = (Cursor) getListView().getItemAtPosition(i);
+                CompositeMessage msg = CompositeMessage.fromCursor(getContext(), cursor);
+                String userId = msg.getDirection() == Messages.DIRECTION_IN ?
+                    msg.getSender() : Authenticator.getSelfJID(getContext());
+
+                if (prevUserId == null || !prevUserId.equalsIgnoreCase(userId)) {
+                    String displayName;
+                    if (msg.getDirection() == Messages.DIRECTION_IN) {
+                        Contact contact = Contact.findByUserId(getContext(), userId);
+                        displayName = contact.getDisplayName();
+                    }
+                    else {
+                        displayName = Authenticator.getDefaultDisplayName(getContext());
+                    }
+
+                    if (massText.length() > 0)
+                        massText.append("\n");
+
+                    massText.append(displayName)
+                        .append(":\n");
+
+                    prevUserId = userId;
+                }
+
+                String text = msg.toTextContent();
+                if (text != null) {
+                    massText.append(text)
+                        .append("\n");
+                }
+            }
+        }
+
+        ClipboardManager cpm = (ClipboardManager) getActivity()
+            .getSystemService(Context.CLIPBOARD_SERVICE);
+        cpm.setText(massText.toString());
+
+        Toast.makeText(getContext(), R.string.message_text_copied,
+            Toast.LENGTH_SHORT).show();
     }
 
     private void deleteSelectedMessages(final SparseBooleanArray checked) {
