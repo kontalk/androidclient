@@ -90,10 +90,6 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static final String DATA_USER_PASSPHRASE = "org.kontalk.userPassphrase";
     public static final String DATA_SERVER_URI = "org.kontalk.server";
 
-    /** @deprecated This was obviously deprecated from the beginning. */
-    @Deprecated
-    public static final String DATA_AUTHTOKEN = "org.kontalk.token";
-
     @SuppressWarnings("WeakerAccess")
     final Context mContext;
     private final Handler mHandler;

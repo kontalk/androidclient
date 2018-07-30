@@ -37,7 +37,6 @@ import android.widget.Toast;
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.authenticator.LegacyAuthentication;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
@@ -111,14 +110,8 @@ class RegenerateKeyPairListener extends RegisterKeyPairListener {
                         // listen for connection events
                         setupConnectedReceiver();
 
-                        if (LegacyAuthentication.isUpgrading()) {
-                            // we need to login with the new certificate
-                            MessageCenterService.restart(context);
-                        }
-                        else {
-                            // request connection status to proceed
-                            MessageCenterService.requestConnectionStatus(context);
-                        }
+                        // request connection status to proceed
+                        MessageCenterService.requestConnectionStatus(context);
 
                         // CONNECTED listener will do the rest
                     }
@@ -154,8 +147,6 @@ class RegenerateKeyPairListener extends RegisterKeyPairListener {
                     Toast.LENGTH_LONG).show();
             }
         });
-
-        LegacyAuthentication.endUpgrade();
     }
 
 }

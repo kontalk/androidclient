@@ -24,16 +24,11 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import android.Manifest;
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -41,7 +36,6 @@ import android.os.PowerManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
-import android.support.v4.content.LocalBroadcastManager;
 import android.text.InputType;
 import android.widget.CompoundButton;
 import android.widget.Toast;
@@ -52,7 +46,6 @@ import pub.devrel.easypermissions.EasyPermissions;
 import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.authenticator.LegacyAuthentication;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.util.MessageUtils;
@@ -67,9 +60,6 @@ import org.kontalk.util.SystemUtils;
  * @version 1.0
  */
 public abstract class MainActivity extends ToolbarActivity {
-
-    Dialog mUpgradeProgress;
-    BroadcastReceiver mUpgradeReceiver;
 
     private static final int DIALOG_AUTH_ERROR_WARNING = 1;
     private static final int DIALOG_AUTH_REQUEST_PASSWORD = 2;
@@ -92,7 +82,7 @@ public abstract class MainActivity extends ToolbarActivity {
     protected boolean afterOnCreate() {
         askPermissions();
 
-        return !xmppUpgrade() && !checkPassword() && (ifHuaweiAlert() || ifDozeAlert());
+        return !checkPassword() && (ifHuaweiAlert() || ifDozeAlert());
     }
 
     @Override
@@ -272,98 +262,6 @@ public abstract class MainActivity extends ToolbarActivity {
 
     private void askForPassword() {
         showDialog(DIALOG_AUTH_REQUEST_PASSWORD);
-    }
-
-    /** Big upgrade: asymmetric key encryption (for XMPP). */
-    private boolean xmppUpgrade() {
-        AccountManager am = (AccountManager) getSystemService(Context.ACCOUNT_SERVICE);
-        Account account = Authenticator.getDefaultAccount(am);
-        if (account != null) {
-            if (!Authenticator.hasPersonalKey(am, account)) {
-                // first of all, disable offline mode
-                Preferences.setOfflineMode(this, false);
-
-                String name = Authenticator.getDefaultDisplayName(this);
-                if (name == null || name.length() == 0) {
-                    // ask for user name
-                    askForPersonalName();
-                }
-                else {
-                    // proceed to upgrade immediately
-                    proceedXmppUpgrade(name);
-                }
-
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private void askForPersonalName() {
-        new MaterialDialog.Builder(this)
-            .content(R.string.msg_no_name)
-            .positiveText(android.R.string.ok)
-            .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PERSON_NAME)
-            .input(R.string.hint_validation_name, 0, false, new MaterialDialog.InputCallback() {
-                @Override
-                public void onInput(MaterialDialog dialog, CharSequence input) {
-                    // no key pair found, generate a new one
-                    String name = input.toString();
-
-                    // upgrade account
-                    proceedXmppUpgrade(name);
-                }
-            })
-            .onNegative(new MaterialDialog.SingleButtonCallback() {
-                @Override
-                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction dialogAction) {
-                    dialog.cancel();
-                }
-            })
-            .negativeText(android.R.string.cancel)
-            .cancelListener(new DialogInterface.OnCancelListener() {
-                public void onCancel(DialogInterface dialog) {
-                    new MaterialDialog.Builder(MainActivity.this)
-                        .title(R.string.title_no_personal_key)
-                        .content(R.string.msg_no_personal_key)
-                        .positiveText(android.R.string.ok)
-                        .show();
-                }
-            })
-            .show();
-    }
-
-    void proceedXmppUpgrade(String name) {
-        // start progress dialog
-        mUpgradeProgress = new LockedDialog.Builder(this)
-            .progress(true, 0)
-            .content(R.string.msg_xmpp_upgrading)
-            .show();
-
-        // setup operation completed received
-        mUpgradeReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                LocalBroadcastManager lbm = LocalBroadcastManager
-                    .getInstance(getApplicationContext());
-                lbm.unregisterReceiver(mUpgradeReceiver);
-                mUpgradeReceiver = null;
-
-                // force contact list update
-                SyncAdapter.requestSync(MainActivity.this, true);
-
-                if (mUpgradeProgress != null) {
-                    mUpgradeProgress.dismiss();
-                    mUpgradeProgress = null;
-                }
-            }
-        };
-        IntentFilter filter = new IntentFilter(MessageCenterService.ACTION_REGENERATE_KEYPAIR);
-        LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(this);
-        lbm.registerReceiver(mUpgradeReceiver, filter);
-
-        LegacyAuthentication.doUpgrade(getApplicationContext(), name);
     }
 
     @Override

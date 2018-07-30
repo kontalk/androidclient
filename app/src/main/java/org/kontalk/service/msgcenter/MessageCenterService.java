@@ -112,7 +112,6 @@ import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.authenticator.LegacyAuthentication;
 import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.BlockingCommand;
 import org.kontalk.client.E2EEncryption;
@@ -1069,8 +1068,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Contact.invalidateData();
 
         // stop any key pair regeneration service
-        if (!LegacyAuthentication.isUpgrading())
-            endKeyPairRegeneration();
+        endKeyPairRegeneration();
 
         broadcast(ACTION_DISCONNECTED);
 

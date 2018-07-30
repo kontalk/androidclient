@@ -56,7 +56,6 @@ import android.annotation.SuppressLint;
 
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
-import org.kontalk.authenticator.LegacyAuthentication;
 import org.kontalk.service.msgcenter.SecureConnectionManager;
 
 
@@ -72,18 +71,18 @@ public class KontalkConnection extends XMPPTCPConnection {
     private final Map<String, AckMultiListener> mStanzaIdAcknowledgedListeners = new ConcurrentHashMap<>();
 
     public KontalkConnection(String resource, EndpointServer server, boolean secure,
-        boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken)
+        boolean acceptAnyCertificate, KeyStore trustStore)
         throws XmppStringprepException {
 
-        this(resource, server, secure, null, null, acceptAnyCertificate, trustStore, legacyAuthToken);
+        this(resource, server, secure, null, null, acceptAnyCertificate, trustStore);
     }
 
     public KontalkConnection(String resource, EndpointServer server, boolean secure,
             PrivateKey privateKey, X509Certificate bridgeCert,
-            boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken) throws XmppStringprepException {
+            boolean acceptAnyCertificate, KeyStore trustStore) throws XmppStringprepException {
 
         super(buildConfiguration(resource, server, secure,
-            privateKey, bridgeCert, acceptAnyCertificate, trustStore, legacyAuthToken));
+            privateKey, bridgeCert, acceptAnyCertificate, trustStore));
 
         mServer = server;
 
@@ -98,7 +97,7 @@ public class KontalkConnection extends XMPPTCPConnection {
 
     private static XMPPTCPConnectionConfiguration buildConfiguration(String resource,
         EndpointServer server, boolean secure, PrivateKey privateKey, X509Certificate bridgeCert,
-        boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken) throws XmppStringprepException {
+        boolean acceptAnyCertificate, KeyStore trustStore) throws XmppStringprepException {
         XMPPTCPConnectionConfiguration.Builder builder =
             XMPPTCPConnectionConfiguration.builder();
 
@@ -127,8 +126,6 @@ public class KontalkConnection extends XMPPTCPConnection {
             .setPort(secure ? server.getSecurePort() : server.getPort())
             .setXmppDomain(server.getNetwork())
             .setResource(resource)
-            // the dummy value is not actually used
-            .setUsernameAndPassword(null, legacyAuthToken != null ? legacyAuthToken : "dummy")
             // for EXTERNAL
             .allowEmptyOrNullUsernames()
             // enable compression
@@ -172,11 +169,8 @@ public class KontalkConnection extends XMPPTCPConnection {
 
                 km = kmFactory.getKeyManagers();
 
-                // disable PLAIN mechanism if not upgrading from legacy
-                if (!LegacyAuthentication.isUpgrading()) {
-                    // blacklist PLAIN mechanism
-                    SASLAuthentication.blacklistSASLMechanism("PLAIN");
-                }
+                // blacklist PLAIN mechanism
+                SASLAuthentication.blacklistSASLMechanism("PLAIN");
             }
 
             // trust managers

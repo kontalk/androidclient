@@ -24,7 +24,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.concurrent.TimeUnit;
 
 import com.segment.backo.Backo;
@@ -45,12 +44,9 @@ import android.provider.Settings;
 
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
-import org.kontalk.authenticator.LegacyAuthentication;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
-import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
-import org.kontalk.crypto.X509Bridge;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.PGPKeyPairRingProvider;
 import org.kontalk.util.InternalTrustStore;
@@ -151,13 +147,6 @@ public class XMPPConnectionHelper extends Thread {
             PGPException, KeyStoreException, NoSuchProviderException,
             NoSuchAlgorithmException, CertificateException, IOException, InterruptedException {
 
-        connectOnce(key, null, forceLogin);
-    }
-
-    private void connectOnce(PersonalKey key, String token, boolean forceLogin) throws XMPPException,
-            SmackException, PGPException, IOException, KeyStoreException,
-            NoSuchProviderException, NoSuchAlgorithmException, CertificateException, InterruptedException {
-
         Log.d(TAG, "using server " + mServer.toString());
 
         if (mServerDirty) {
@@ -183,7 +172,7 @@ public class XMPPConnectionHelper extends Thread {
 
             if (key == null) {
                 mConn = new KontalkConnection(resource, mServer, !USE_STARTTLS,
-                    acceptAnyCertificate, trustStore, token);
+                    acceptAnyCertificate, trustStore);
             }
 
             else {
@@ -191,7 +180,7 @@ public class XMPPConnectionHelper extends Thread {
                     key.getBridgePrivateKey(),
                     key.getBridgeCertificate(),
                     acceptAnyCertificate,
-                    trustStore, token);
+                    trustStore);
             }
 
             // apply packet timeout based on retry count
@@ -211,7 +200,7 @@ public class XMPPConnectionHelper extends Thread {
         }
 
         // login
-        if ((!mLimited || forceLogin) && (key != null || token != null))
+        if ((!mLimited || forceLogin) && (key != null))
             mConn.login();
 
     }
@@ -219,40 +208,14 @@ public class XMPPConnectionHelper extends Thread {
     public void connect() {
         PersonalKey key = null;
 
-        if (LegacyAuthentication.isUpgrading() && mListener != null) {
-            PGPKeyPairRingProvider keyProv = mListener.getKeyPairRingProvider();
-            if (keyProv != null) {
-                PGP.PGPKeyPairRing keyring = keyProv.getKeyPair();
-                if (keyring != null) {
-                    String passphrase = Kontalk.get().getCachedPassphrase();
-
-                    try {
-                        X509Certificate bridgeCert = X509Bridge.createCertificate(keyring.publicKey,
-                            keyring.secretKey.getSecretKey(), passphrase);
-
-                        key = PersonalKey.load(keyring.secretKey, keyring.publicKey,
-                            passphrase, bridgeCert);
-                    }
-                    catch (Exception e) {
-                        // this will go crap...
-                        Log.e(TAG, "unable to create temporary personal key - not using SSL", e);
-                    }
-                }
-            }
+        try {
+            key = Kontalk.get().getPersonalKey();
+        }
+        catch (Exception e) {
+            Log.e(TAG, "unable to retrieve personal key - not using SSL", e);
         }
 
-        if (key == null) {
-            try {
-                key = Kontalk.get().getPersonalKey();
-            }
-            catch (Exception e) {
-                Log.e(TAG, "unable to retrieve personal key - not using SSL", e);
-            }
-        }
-
-        String token = LegacyAuthentication.getAuthToken(mContext);
-
-        if (key == null && token == null && !mLimited) {
+        if (key == null && !mLimited) {
             Log.w(TAG, "no personal key found - exiting");
             // unrecoverable error
             if (mListener != null)
@@ -262,7 +225,7 @@ public class XMPPConnectionHelper extends Thread {
 
         while (mConnecting) {
             try {
-                connectOnce(key, token, false);
+                connectOnce(key, false);
 
                 // this should be the right moment
                 mRetryCount = 0;
