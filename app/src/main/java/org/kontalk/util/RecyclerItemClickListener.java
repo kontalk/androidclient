@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,12 +19,12 @@
 package org.kontalk.util;
 
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;  
-import android.view.GestureDetector;  
-import android.view.MotionEvent;  
+import android.support.v7.widget.RecyclerView;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 
-public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListener {  
+public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListener {
     private OnItemClickListener mListener;
 
     public interface OnItemClickListener {

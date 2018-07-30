@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Kontalk Android client
-     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -688,7 +688,7 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="err_location_permission">Přístup do umístění byl odmítnut.</string>
     <string name="err_audio_record_permission">Přístup k mikrofonu byl odmítnut.</string>
     <string name="err_audio_record_writing_permission">Přístup k externí paměti byl odmítnut.</string>
-    <string name="err_validation_contacts_denied">Aby mohl Kontalk správně fungovat, potřebuje mít přístup ke kontaktům. Jak by jinak mohl znát lidi, se kterými můžete chatovat?? 
+    <string name="err_validation_contacts_denied">Aby mohl Kontalk správně fungovat, potřebuje mít přístup ke kontaktům. Jak by jinak mohl znát lidi, se kterými můžete chatovat??
 \nTeď můžete odmítnout, ale budete dotázáni znovu po dokončení registrace.</string>
     <string name="err_contacts_denied">Aby mohl Kontalk správně fungovat, potřebuje mít přístup ke kontaktům. Jak by jinak mohl znát lidi, se kterými můžete chatovat??
 \nPřístup můžete povolit z nastavení Androidu.</string>

@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Kontalk Android client
-     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -683,7 +683,7 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
     <string name="err_contacts_denied">Kontalk necesita acceso a los contactos para funcionar correctamente. Cómo podría conocer a las personas con quien chateas? Puedes permitir el acceso a los contactos desde la configuración de Android.</string>
     <string name="warn_contacts_denied">Has negado el acceso a los contactos. Aquí no podrás ver cambios en los contactos.</string>
 
-    <string name="err_storage_denied">Kontalk necesita acceso al almacenamiento local para almacenar medios. 
+    <string name="err_storage_denied">Kontalk necesita acceso al almacenamiento local para almacenar medios.
 \nPuedes permitir acceso al almacenamiento en la configuración de Android.</string>
 
     <string name="permission_messages_label">Acceso a mensajes de Kontalk</string>

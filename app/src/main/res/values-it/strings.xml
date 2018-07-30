@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Kontalk Android client
-     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -679,7 +679,7 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
     <string name="err_location_permission">Accesso alla posizione negato.</string>
     <string name="err_audio_record_permission">Accesso al microfono negato.</string>
     <string name="err_audio_record_writing_permission">Accesso alla memoria esterna negato.</string>
-    <string name="err_validation_contacts_denied">Kontalk ha bisogno di accedere ai contatti per funzionare. Come può sapere con chi puoi chattare? 
+    <string name="err_validation_contacts_denied">Kontalk ha bisogno di accedere ai contatti per funzionare. Come può sapere con chi puoi chattare?
 \nPuoi scegliere annulla ora, ma ti chiederemo di nuovo il permesso una volta che ti sarai registrato.</string>
     <string name="err_contacts_denied">Kontalk ha bisogno di accedere ai contatti per funzionare. Come può sapere con chi puoi chattare?
 \nPuoi concedere l\'accesso ai contatti dalle impostazioni di Android.</string>
