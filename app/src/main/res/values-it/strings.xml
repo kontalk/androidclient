@@ -713,4 +713,8 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
 	<item quantity="other">%d online</item>
 </plurals>
 
-</resources>
+<string name="menu_import_messages">Importa messaggi</string>
+
+    <string name="contact_name_server">Il tuo server</string>
+
+    </resources>
