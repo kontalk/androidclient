@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,6 +63,7 @@ import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
@@ -271,6 +272,21 @@ public class ComposeMessageFragment extends AbstractComposeFragment
             .show();
     }
 
+    /** Translates special contacts into special strings. */
+    private String getDisplayName(@NonNull Contact contact) {
+        Context context = getContext();
+        if (context == null)
+            return contact.getDisplayName();
+
+        EndpointServer server = Preferences.getEndpointServer(context);
+        if (contact.getJID().equalsIgnoreCase(server.getNetwork())) {
+            return context.getString(R.string.contact_name_server);
+        }
+        else {
+            return contact.getDisplayName();
+        }
+    }
+
     @Override
     protected void loadConversationMetadata(Uri uri) {
         super.loadConversationMetadata(uri);
@@ -278,7 +294,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
             mUserJID = mConversation.getRecipient();
             Contact contact = mConversation.getContact();
             if (contact != null) {
-                mUserName = contact.getDisplayName();
+                mUserName = getDisplayName(contact);
                 mUserPhone = contact.getNumber();
             }
             else {
@@ -349,7 +365,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         setThreadId(mConversation.getThreadId());
         Contact contact = mConversation.getContact();
         if (contact != null) {
-            mUserName = contact.getDisplayName();
+            mUserName = getDisplayName(contact);
             mUserPhone = contact.getNumber();
         }
         else {
@@ -457,10 +473,56 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         if (context == null)
             return;
 
+        // hide any present warning
+        hideWarning(WarningType.FATAL);
+
+        Contact contact = getContact();
+        if (contact != null) {
+            // if this is null, we are accepting the key for the first time
+            PGPPublicKeyRing trustedPublicKey = contact.getTrustedPublicKeyRing();
+
+            // request the key if we don't have a trusted one and of course if the user has a key
+            boolean unknownKey = (trustedPublicKey == null && contact.getFingerprint() != null);
+            boolean changedKey = false;
+            // check if fingerprint changed (only if we have roster presence)
+            if (type != null && trustedPublicKey != null && fingerprint != null) {
+                String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(trustedPublicKey));
+                if (!fingerprint.equalsIgnoreCase(oldFingerprint)) {
+                    // fingerprint has changed since last time
+                    changedKey = true;
+                }
+            }
+            // user has no key (or we have no roster presence) or it couldn't be found: request it
+            else if ((trustedPublicKey == null && fingerprint == null) || type == null) {
+                if (mKeyRequestId != null) {
+                    // avoid request loop
+                    mKeyRequestId = null;
+                }
+                else {
+                    // autotrust the key we are about to request
+                    // but set the trust level to ignored because we didn't really verify it
+                    Keyring.setAutoTrustLevel(context, jid, MyUsers.Keys.TRUST_IGNORED);
+                    requestPublicKey(jid);
+                }
+            }
+
+            // key checks are to be done in advanced mode only
+            if (Keyring.isAdvancedMode(context, jid)) {
+                if (changedKey) {
+                    // warn user that public key is changed
+                    showKeyChangedWarning(fingerprint);
+                }
+                else if (unknownKey) {
+                    // warn user that public key is unknown
+                    showKeyUnknownWarning(fingerprint);
+                }
+            }
+        }
+
         if (type == null) {
             // no roster entry found, request subscription
 
-            // pre-approve our presence if we don't have contact's key
+            // pre-approve our presence
             Intent i = new Intent(context, MessageCenterService.class);
             i.setAction(MessageCenterService.ACTION_PRESENCE);
             i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
@@ -481,41 +543,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         else if (type == Presence.Type.available || type == Presence.Type.unavailable) {
 
             CharSequence statusText = null;
-            // hide any present warning
-            hideWarning(WarningType.FATAL);
-
-            // really not much sense in requesting the key for a non-existing contact
-            Contact contact = getContact();
-            if (contact != null) {
-                // if this is null, we are accepting the key for the first time
-                PGPPublicKeyRing trustedPublicKey = contact.getTrustedPublicKeyRing();
-
-                // request the key if we don't have a trusted one and of course if the user has a key
-                boolean unknownKey = (trustedPublicKey == null && contact.getFingerprint() != null);
-                boolean changedKey = false;
-                // check if fingerprint changed
-                if (trustedPublicKey != null && fingerprint != null) {
-                    String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(trustedPublicKey));
-                    if (!fingerprint.equalsIgnoreCase(oldFingerprint)) {
-                        // fingerprint has changed since last time
-                        changedKey = true;
-                    }
-                }
-                // user has no key or it couldn't be found
-                // request it
-                else if (trustedPublicKey == null && fingerprint == null) {
-                    requestPublicKey(jid);
-                }
-
-                if (changedKey) {
-                    // warn user that public key is changed
-                    showKeyChangedWarning(fingerprint);
-                }
-                else if (unknownKey) {
-                    // warn user that public key is unknown
-                    showKeyUnknownWarning(fingerprint);
-                }
-            }
 
             if (type == Presence.Type.available) {
                 mIsTyping = mIsTyping || Contact.isTyping(jid);
@@ -672,7 +699,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment
                     else if (MessageCenterService.ACTION_PUBLICKEY.equals(action)) {
                         String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
                         if (id != null && id.equals(mKeyRequestId)) {
-                            mKeyRequestId = null;
                             // reload contact
                             invalidateContact();
                             // request presence again

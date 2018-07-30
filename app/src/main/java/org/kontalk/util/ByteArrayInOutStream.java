@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ import java.io.ByteArrayOutputStream;
 
 
 /**
- * This class extends the ByteArrayOutputStream by 
+ * This class extends the ByteArrayOutputStream by
  * providing a method that returns a new ByteArrayInputStream
  * which uses the internal byte array buffer. This buffer
  * is not copied, so no additional memory is used.

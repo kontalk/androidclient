@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -107,7 +107,8 @@ class PublicKeyListener extends MessageCenterPacketListener implements Exception
                 if (from.isDomainBareJid()) {
                     Log.v("pubkey", "Updating server key for " + from);
                     try {
-                        Keyring.setKey(getContext(), from.toString(), _publicKey);
+                        Keyring.setKey(getContext(), from.toString(), _publicKey,
+                            MyUsers.Keys.TRUST_VERIFIED);
                     }
                     catch (Exception e) {
                         // TODO warn user

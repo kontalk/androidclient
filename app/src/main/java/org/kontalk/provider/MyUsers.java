@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -80,6 +80,7 @@ public class MyUsers {
         public static final String FINGERPRINT = "fingerprint";
         public static final String TIMESTAMP = "timestamp";
         public static final String TRUST_LEVEL = "trust_level";
+        public static final String MANUAL_TRUST = "manual_trust";
 
         public static final Uri CONTENT_URI = Uri.parse("content://"
             + UsersProvider.AUTHORITY + "/keys");

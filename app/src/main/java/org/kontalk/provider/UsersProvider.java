@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,7 +75,7 @@ public class UsersProvider extends ContentProvider {
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".users";
 
     @VisibleForTesting
-    static final int DATABASE_VERSION = 12;
+    static final int DATABASE_VERSION = 13;
     @VisibleForTesting
     static final String DATABASE_NAME = "users.db";
     private static final String TABLE_USERS = "users";
@@ -126,6 +126,7 @@ public class UsersProvider extends ContentProvider {
             "trust_level INTEGER NOT NULL DEFAULT 0," +
             "timestamp INTEGER NOT NULL," +  // key creation timestamp
             "public_key BLOB," +
+            "manual_trust INTEGER NOT NULL DEFAULT 0," +
             "PRIMARY KEY (jid, fingerprint)" +
             ")";
 
@@ -161,6 +162,16 @@ public class UsersProvider extends ContentProvider {
         /** Upgrade: fix null fingerprint bug */
         private static final String[] SCHEMA_UPGRADE_V11 = {
             "DELETE FROM keys WHERE fingerprint = 'null'",
+        };
+
+        /** Upgrade: introduce manual trust level */
+        private static final String[] SCHEMA_UPGRADE_V12 = {
+            "ALTER TABLE keys ADD COLUMN manual_trust INTEGER NOT NULL DEFAULT 0",
+            // bring everything to a starting scenario
+            // no way to know which keys were manually approved and which not
+            "UPDATE keys SET trust_level = 1",
+            // mark server key as verified
+            "UPDATE keys SET trust_level = 2 WHERE jid NOT LIKE '%@%'"
         };
 
         // any upgrade - just re-create all tables
@@ -208,6 +219,10 @@ public class UsersProvider extends ContentProvider {
                     break;
                 case 11:
                     for (String sql : SCHEMA_UPGRADE_V11)
+                        db.execSQL(sql);
+                    // fall through
+                case 12:
+                    for (String sql : SCHEMA_UPGRADE_V12)
                         db.execSQL(sql);
                     break;
                 default:
@@ -1155,6 +1170,7 @@ public class UsersProvider extends ContentProvider {
         keysProjectionMap.put(Keys.PUBLIC_KEY, Keys.PUBLIC_KEY);
         keysProjectionMap.put(Keys.TIMESTAMP, Keys.TIMESTAMP);
         keysProjectionMap.put(Keys.TRUST_LEVEL, Keys.TRUST_LEVEL);
+        keysProjectionMap.put(Keys.MANUAL_TRUST, Keys.MANUAL_TRUST);
     }
 
 }

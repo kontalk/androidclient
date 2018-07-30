@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Kontalk Android client
-     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -676,7 +676,7 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
     <string name="err_location_permission">S\'ha denegat l\'accés a la ubicació.</string>
     <string name="err_audio_record_permission">S\'ha denegat l\'accés al micròfon.</string>
     <string name="err_audio_record_writing_permission">S\'ha denegat l\'accés a emmagatzematge extern.</string>
-    <string name="err_validation_contacts_denied">Kontalk necessita accés als contactes per funcionar correctament. Com podria reconèixer la gent amb la qual fa xats?? 
+    <string name="err_validation_contacts_denied">Kontalk necessita accés als contactes per funcionar correctament. Com podria reconèixer la gent amb la qual fa xats??
 \nPodeu cancel·lar-ho ara, però se us tornarà a demanar un cop s\'acabi el registre.</string>
     <string name="err_contacts_denied">Kontalk necessita accés als contactes per funcionar correctament. Com podria reconèixer la gent amb la qual fa xats??
 \nPodeu permetre l\'accés als contactes des de la configuració d\'Android.</string>

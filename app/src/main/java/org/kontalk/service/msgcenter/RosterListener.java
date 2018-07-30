@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,6 @@ import android.content.Intent;
 import android.os.Handler;
 
 import org.kontalk.Log;
-import org.kontalk.client.PublicKeyPublish;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MyUsers;
@@ -88,7 +87,14 @@ public class RosterListener implements RosterLoadedListener, org.jivesoftware.sm
 
     @Override
     public void entriesAdded(Collection<Jid> addresses) {
-        // TODO something to do here?
+        final MessageCenterService service = mService.get();
+        for (Jid jid : addresses) {
+            if (Keyring.getPublicKey(service, jid.toString(), MyUsers.Keys.TRUST_UNKNOWN) == null) {
+                // autotrust the first key we have
+                // but set the trust level to ignored because we didn't really verify it
+                Keyring.setAutoTrustLevel(service, jid.toString(), MyUsers.Keys.TRUST_IGNORED);
+            }
+        }
     }
 
     @Override
@@ -119,22 +125,6 @@ public class RosterListener implements RosterLoadedListener, org.jivesoftware.sm
 
     private void userSubscribed(MessageCenterService service, PresenceListener presenceListener, Jid jid) {
         String from = jid.asBareJid().toString();
-
-        if (Keyring.getPublicKey(service, from, MyUsers.Keys.TRUST_UNKNOWN) == null) {
-            // autotrust the key we are about to request
-            // but set the trust level to ignored because we didn't really verify it
-            Keyring.setAutoTrustLevel(service, from, MyUsers.Keys.TRUST_IGNORED);
-
-            // public key not found
-            // assuming the user has allowed us, request it
-
-            PublicKeyPublish pkey = new PublicKeyPublish();
-            pkey.setStanzaId();
-            pkey.setTo(jid.asBareJid());
-
-            PublicKeyListener listener = new PublicKeyListener(service, pkey);
-            service.sendIqWithReply(pkey, true, listener, listener);
-        }
 
         // invalidate cached contact
         Contact.invalidate(from);

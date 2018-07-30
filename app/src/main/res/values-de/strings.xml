@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Kontalk Android client
-     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -682,7 +682,7 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="err_location_permission">Standortzugriff wurde verweigert.</string>
     <string name="err_audio_record_permission">Mikrofonzugriff wurde verweigert.</string>
     <string name="err_audio_record_writing_permission">Speicherzugriff wurde verweigert.</string>
-    <string name="err_validation_contacts_denied">"Kontalk benötigt Zugriff auf  Ihre Kontakte um ordnungsgemäß funktionieren zu können.  Woher soll es sonst Leute kennen mit denen Sie chatten können?? 
+    <string name="err_validation_contacts_denied">"Kontalk benötigt Zugriff auf  Ihre Kontakte um ordnungsgemäß funktionieren zu können.  Woher soll es sonst Leute kennen mit denen Sie chatten können??
 \nSie können jetzt abbrechen, aber Sie werden nach der Registrierung erneut gefragt."</string>
     <string name="err_contacts_denied">"Kontalk benötigt Zugriff auf  Ihre Kontakte um ordnungsgemäß funktionieren zu können.  Woher soll es sonst Leute kennen mit denen Sie chatten können??
 \nSie können den Zugriff auf Kontakte über Android-Einstellungen zulassen."</string>

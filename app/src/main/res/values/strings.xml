@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -678,6 +678,8 @@
     <string name="permission_users_description">Can read from and write to the Kontalk users database and keyring</string>
 
     <string name="pref_enable_outgoing_sound">Play sound for outgoing messages</string>
+
+    <string name="contact_name_server">Your server</string>
 
     <plurals name="confirm_will_delete_threads">
         <item quantity="one">The selected chat will be deleted.</item>

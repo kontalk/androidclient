@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -231,6 +231,21 @@ public class CompositeMessage {
 
     public int getStatus() {
         return mStatus;
+    }
+
+    /** Generates a text content for this message. Useful for exporting a message to a text stream. */
+    public String toTextContent() {
+        // loop until the first known component is found
+        for (MessageComponent<?> cmp : mComponents) {
+            if (cmp instanceof TextComponent) {
+                return ((TextComponent) cmp).getContent();
+            }
+            else if (cmp instanceof AttachmentComponent) {
+                return getSampleTextContent(((AttachmentComponent) cmp).getMime());
+            }
+        }
+
+        return null;
     }
 
     @Override

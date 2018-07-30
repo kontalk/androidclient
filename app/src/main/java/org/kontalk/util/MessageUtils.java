@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,6 +57,7 @@ import android.text.format.Time;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 
+import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
@@ -501,6 +502,13 @@ public final class MessageUtils {
         details.append(length >= 0 ?
             humanReadableByteCount(length, false) :
                 res.getString(R.string.size_unknown));
+
+        // message Id (debug only)
+        if (BuildConfig.DEBUG) {
+            details.append('\n')
+                .append("ID: ")
+                .append(msg.getId());
+        }
 
         // Date
         int status = msg.getStatus();

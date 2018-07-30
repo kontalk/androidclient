@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2017 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,7 +62,7 @@ public class Keyring {
         // get recipients public keys from users database
         PGPPublicKeyRing keys[] = new PGPPublicKeyRing[recipients.length];
         for (int i = 0; i < recipients.length; i++) {
-            PGPPublicKeyRing ring = getPublicKey(context, recipients[i], MyUsers.Keys.TRUST_IGNORED);
+            PGPPublicKeyRing ring = getPublicKey(context, recipients[i], MyUsers.Keys.TRUST_UNKNOWN);
             if (ring == null)
                 throw new IllegalArgumentException("public key not found for user " + recipients[i]);
 
@@ -143,8 +143,9 @@ public class Keyring {
         if (fingerprint == null)
             throw new NullPointerException("fingerprint");
 
-        ContentValues values = new ContentValues(1);
+        ContentValues values = new ContentValues(2);
         values.put(MyUsers.Keys.TRUST_LEVEL, trustLevel);
+        values.put(MyUsers.Keys.MANUAL_TRUST, true);
         context.getContentResolver().insert(MyUsers.Keys.getUri(jid, fingerprint), values);
     }
 
@@ -194,17 +195,36 @@ public class Keyring {
         TrustedPublicKeyData data = null;
 
         Cursor c = queryLatestWithMinimumTrustLevel(context, jid, trustLevel,
-            MyUsers.Keys.PUBLIC_KEY, MyUsers.Keys.TRUST_LEVEL);
+            MyUsers.Keys.PUBLIC_KEY, MyUsers.Keys.TRUST_LEVEL, MyUsers.Keys.MANUAL_TRUST);
         if (c.moveToFirst()) {
             byte[] keydata = c.getBlob(0);
             int trustStatus = c.getInt(1);
+            boolean manualTrust = c.getInt(2) != 0;
             if (keydata != null)
-                data = new TrustedPublicKeyData(keydata, trustStatus);
+                data = new TrustedPublicKeyData(keydata, trustStatus, manualTrust);
         }
 
         c.close();
 
         return data;
+    }
+
+    /**
+     * Returns true if the contact is in advanced mode, i.e. the user has
+     * manually verified one of the user's key.
+     * This is called <b>advanced mode</b> and will enable stricter key checks.
+     */
+    public static boolean isAdvancedMode(Context context, String jid) {
+        boolean result;
+        Cursor c = context.getContentResolver().query(MyUsers.Keys.getUri(jid),
+            new String[] { MyUsers.Keys.TRUST_LEVEL } ,
+            MyUsers.Keys.FINGERPRINT + " <> ? AND " +
+            MyUsers.Keys.MANUAL_TRUST + " <> 0",
+            new String[] { VALUE_AUTOTRUST },
+            null);
+        result = c.moveToFirst();
+        c.close();
+        return result;
     }
 
     private static Cursor queryLatestWithMinimumTrustLevel(Context context, String jid, int trustLevel, String... columns) {
@@ -326,10 +346,12 @@ public class Keyring {
     public static final class TrustedPublicKeyData {
         public final byte[] keyData;
         public final int trustLevel;
+        public final boolean manualTrust;
 
-        private TrustedPublicKeyData(byte[] keyData, int trustLevel) {
+        private TrustedPublicKeyData(byte[] keyData, int trustLevel, boolean manualTrust) {
             this.keyData = keyData;
             this.trustLevel = trustLevel;
+            this.manualTrust = manualTrust;
         }
     }
 
