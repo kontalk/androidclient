@@ -423,7 +423,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /**
      * Fast ping tester timeout.
      */
-    private static final int FAST_PING_TIMEOUT = 3000;
+    private static final int FAST_PING_TIMEOUT = 5000;
 
     /**
      * Minimal interval between connection tests (5 mins).
