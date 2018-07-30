@@ -195,7 +195,7 @@ public class XMPPConnectionHelper extends Thread {
             }
 
             // apply packet timeout based on retry count
-            mConn.setPacketReplyTimeout((mRetryCount + 1) * KontalkConnection.DEFAULT_PACKET_TIMEOUT);
+            mConn.setReplyTimeout((mRetryCount + 1) * KontalkConnection.DEFAULT_PACKET_TIMEOUT);
 
             if (mListener != null)
                 mListener.created(mConn);
@@ -206,6 +206,7 @@ public class XMPPConnectionHelper extends Thread {
 
         if (mListener != null) {
             mConn.addConnectionListener(mListener);
+
             mListener.connected(mConn);
         }
 
@@ -395,13 +396,20 @@ public class XMPPConnectionHelper extends Thread {
 
     public interface ConnectionHelperListener extends ConnectionListener {
         /** Connection has been created. */
-        public void created(XMPPConnection connection);
+        void created(XMPPConnection connection);
 
         /** Connection was aborted and will never be tried again. */
-        public void aborted(Exception e);
+        void aborted(Exception e);
 
-        public void authenticationFailed();
+        /**
+         * The connection will retry to reconnect in the specified number of seconds.
+         * @param seconds remaining seconds before attempting a reconnection.
+         */
+        void reconnectingIn(int seconds);
 
-        public PGPKeyPairRingProvider getKeyPairRingProvider();
+        void authenticationFailed();
+
+        PGPKeyPairRingProvider getKeyPairRingProvider();
+
     }
 }

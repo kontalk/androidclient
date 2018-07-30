@@ -24,6 +24,7 @@ task checkstyle(type: Checkstyle){
         '**/FrameLayoutFixed.java',
         '**/AbsListViewScrollDetector.java',
         '**/XMPPTCPConnection.java',
+        '**/BundleAndDefer*.java',
         '**/ProximityScreenLocker*.java',
         'main/java/com/**'
     def configProps = ['baseDir': projectDir.absolutePath]

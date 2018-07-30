@@ -101,7 +101,7 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener imple
 
                 Registration iq = new Registration();
                 iq.setType(IQ.Type.set);
-                iq.setTo(getConnection().getServiceName());
+                iq.setTo(getConnection().getXMPPServiceDomain());
                 Form form = new Form(DataForm.Type.submit);
 
                 // form type: register#key
@@ -192,7 +192,7 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener imple
                 List<FormField> fields = response.getFields();
                 for (FormField field : fields) {
                     if ("publickey".equals(field.getVariable())) {
-                        publicKey = field.getValues().get(0);
+                        publicKey = field.getFirstValue();
                         break;
                     }
                 }

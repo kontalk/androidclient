@@ -93,7 +93,7 @@ public class KontalkConnection extends XMPPTCPConnection {
         // set custom ack predicate
         addRequestAckPredicate(AckPredicate.INSTANCE);
         // set custom packet reply timeout
-        setPacketReplyTimeout(DEFAULT_PACKET_TIMEOUT);
+        setReplyTimeout(DEFAULT_PACKET_TIMEOUT);
     }
 
     private static XMPPTCPConnectionConfiguration buildConfiguration(String resource,
@@ -113,11 +113,17 @@ public class KontalkConnection extends XMPPTCPConnection {
             }
         }
 
-        builder
-            // connection parameters
-            .setHostAddress(inetAddress)
+        // connection parameters
+        if (inetAddress != null) {
+            builder.setHostAddress(inetAddress);
+        }
+        else if (host != null) {
             // try a last time through Smack
-            .setHost(inetAddress != null ? null : host)
+            builder.setHost(host);
+        }
+        // else: try with XMPP domain
+
+        builder
             .setPort(secure ? server.getSecurePort() : server.getPort())
             .setXmppDomain(server.getNetwork())
             .setResource(resource)
@@ -130,11 +136,12 @@ public class KontalkConnection extends XMPPTCPConnection {
             // enable encryption
             .setSecurityMode(secure ? SecurityMode.disabled : SecurityMode.required)
             // we will send a custom presence
-            .setSendPresence(false)
-            // disable session initiation
-            .setLegacySessionDisabled(true)
+            .setSendPresence(false);
+
+        if (Log.isDebug()) {
             // enable debugging
-            .setDebuggerEnabled(Log.isDebug());
+            builder.enableDefaultDebugger();
+        }
 
         // setup SSL
         setupSSL(builder, secure, privateKey, bridgeCert, acceptAnyCertificate, trustStore);

@@ -123,7 +123,7 @@ class PublicKeyListener extends MessageCenterPacketListener implements Exception
                             selfJid ? MyUsers.Keys.TRUST_VERIFIED : -1);
 
                         // update display name with uid (if empty)
-                        PGPUserID keyUid = PGP.parseUserId(_publicKey, getConnection().getServiceName().toString());
+                        PGPUserID keyUid = PGP.parseUserId(_publicKey, getConnection().getXMPPServiceDomain().toString());
                         if (keyUid != null && keyUid.getName() != null)
                             UsersProvider.updateDisplayNameIfEmpty(getContext(), from.toString(), keyUid.getName());
 

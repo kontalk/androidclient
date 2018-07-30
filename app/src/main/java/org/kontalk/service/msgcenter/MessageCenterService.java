@@ -21,8 +21,6 @@ package org.kontalk.service.msgcenter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.Writer;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -181,10 +179,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     static {
         SmackConfiguration.DEBUG = Log.isDebug();
         // we need our own debugger factory because of our internal logging system
-        SmackConfiguration.setDebuggerFactory(new SmackDebuggerFactory() {
+        SmackConfiguration.setDefaultSmackDebuggerFactory(new SmackDebuggerFactory() {
             @Override
-            public SmackDebugger create(XMPPConnection connection, Writer writer, Reader reader) throws IllegalArgumentException {
-                return new AbstractDebugger(connection, writer, reader) {
+            public SmackDebugger create(XMPPConnection connection) throws IllegalArgumentException {
+                return new AbstractDebugger(connection) {
                     @Override
                     protected void log(String logMessage) {
                         Log.d("SMACK", logMessage);
@@ -1838,16 +1836,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @Override
-    public void reconnectionFailed(Exception error) {
-        // not used
-    }
-
-    @Override
-    public void reconnectionSuccessful() {
-        // not used
-    }
-
-    @Override
     public void aborted(Exception e) {
         if (e != null) {
             // we are being called from the connection helper because of
@@ -1958,7 +1946,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             public void run() {
                 final XMPPConnection conn = mConnection;
                 if (conn != null && conn.isConnected()) {
-                    Jid jid = conn.getServiceName();
+                    Jid jid = conn.getXMPPServiceDomain();
                     if (Keyring.getPublicKey(MessageCenterService.this, jid.toString(), MyUsers.Keys.TRUST_UNKNOWN) == null) {
                         PublicKeyPublish pub = new PublicKeyPublish();
                         pub.setStanzaId();
@@ -2642,7 +2630,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (groupJid != null) {
             toGroup = data.getStringArray("org.kontalk.message.to");
             // TODO this should be discovered first
-            to = XmppStringUtils.completeJidFrom("multicast", mConnection.getServiceName());
+            to = XmppStringUtils.completeJidFrom("multicast", mConnection.getXMPPServiceDomain());
             convJid = groupJid;
 
             // TODO take type from data
@@ -2939,7 +2927,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                             // some extension, encrypt whole stanza just to be sure
                             else {
-                                toMessage = coder.encryptStanza(m.toXML());
+                                toMessage = coder.encryptStanza(m.toXML(null));
                             }
 
                             org.jivesoftware.smack.packet.Message encMsg =

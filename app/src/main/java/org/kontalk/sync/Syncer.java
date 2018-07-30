@@ -28,7 +28,7 @@ import java.util.Set;
 
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smack.packet.XMPPError;
+import org.jivesoftware.smack.packet.StanzaError;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
@@ -283,7 +283,7 @@ public class Syncer {
                     String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
                     // consider only item-not-found (404) errors
                     if (type != null && type.equalsIgnoreCase(IQ.Type.error.toString()) &&
-                            XMPPError.Condition.item_not_found.toString().equals(intent
+                            StanzaError.Condition.item_not_found.toString().equals(intent
                                 .getStringExtra(MessageCenterService.EXTRA_ERROR_CONDITION))) {
                         // user does not exist!
                         String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
