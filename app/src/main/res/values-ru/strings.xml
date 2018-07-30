@@ -721,4 +721,7 @@
 
     <string name="contact_name_server">Имя сервера</string>
 
+    <string name="err_validation_phone_state_denied">Если вы дадите Kontalk доступ к звонкам, он сможет автоматически определить ваш собственный номер.
+\nМы не будем пользоваться этим разрешением ни для чего больше.</string>
+
     </resources>
