@@ -729,4 +729,7 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
 
     <string name="contact_name_server">Váš server</string>
 
+    <string name="err_validation_phone_state_denied">Pokud Kontalku přidělíte právo spravovat hovory, může automaticky detekovat vaše telefonní číslo.
+\nKontalk nepoužije toto právo kničemu jinému.</string>
+
     </resources>
