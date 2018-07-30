@@ -717,4 +717,7 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
 
     <string name="contact_name_server">Il tuo server</string>
 
+    <string name="err_validation_phone_state_denied">Se permetti a Kontalk di gestire le telefonate, possiamo rilevare il tuo numero automaticamente.
+\nKontalk non userà il permesso per nient\'altro.</string>
+
     </resources>
