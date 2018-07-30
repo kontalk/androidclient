@@ -70,7 +70,6 @@ import org.kontalk.crypto.PersonalKeyExporter;
 import org.kontalk.provider.Keyring;
 import org.kontalk.ui.MainActivity;
 import org.kontalk.ui.NumberValidation;
-import org.kontalk.util.MessageUtils;
 import org.kontalk.util.XMPPUtils;
 
 
@@ -120,7 +119,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static String getSelfJID(Context ctx) {
         String name = getDefaultAccountName(ctx);
         return (name != null) ?
-            XMPPUtils.createLocalJID(ctx, MessageUtils.sha1(name)) : null;
+            XMPPUtils.createLocalJID(ctx, XMPPUtils.createLocalpart(name)) : null;
     }
 
     public static boolean isSelfJID(Context ctx, BareJid jid) {

@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jxmpp.util.XmppStringUtils;
+import org.kontalk.util.XMPPUtils;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
@@ -39,14 +40,13 @@ import android.test.ProviderTestCase2;
 import android.util.Base64;
 
 import org.kontalk.crypto.PGP;
-import org.kontalk.util.MessageUtils;
 
 
 @RunWith(AndroidJUnit4.class)
 public class UsersProviderTest extends ProviderTestCase2<UsersProvider> {
 
     private static final String TEST_USERID = XmppStringUtils
-        .completeJidFrom(MessageUtils.sha1("+15555215554"), "prime.kontalk.net");
+        .completeJidFrom(XMPPUtils.createLocalpart("+15555215554"), "prime.kontalk.net");
     private static final String TEST_KEYDATA =
         "mQENBFRhD1UBCADEtFP2NtlMbcPtIsWBoCnwNkuFT0RF9QLr2G9/UD4wbaoRksgbh3qplYkpgN0O\n" +
         "HWzi7ea3YbpOCJPDZQLut5a2W8Bl7O1sAjwxLv9qUhDwSWLa9KS28nqh6TbtxtNl86/2JweFhBLe\n" +

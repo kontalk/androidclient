@@ -116,7 +116,6 @@ import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.adapter.CountryCodesAdapter;
 import org.kontalk.ui.adapter.CountryCodesAdapter.CountryCode;
 import org.kontalk.ui.prefs.PreferencesActivity;
-import org.kontalk.util.MessageUtils;
 import org.kontalk.util.ParameterRunnable;
 import org.kontalk.util.Permissions;
 import org.kontalk.util.Preferences;
@@ -1096,7 +1095,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
             // check that uid matches phone number
             String email = uid.getEmail();
-            String numberHash = MessageUtils.sha1(mPhoneNumber);
+            String numberHash = XMPPUtils.createLocalpart(mPhoneNumber);
             String localpart = XmppStringUtils.parseLocalpart(email);
             if (!numberHash.equalsIgnoreCase(localpart))
                 throw new PGPUidMismatchException("email does not match phone number: " + email);

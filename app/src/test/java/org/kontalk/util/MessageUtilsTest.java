@@ -18,17 +18,7 @@
 
 package org.kontalk.util;
 
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
 
 public class MessageUtilsTest {
 
-    @Test
-    public void testBytesToHex() throws Exception {
-        byte[] input = new byte[]{0, 2, 39, 81, 21, 100, 127, 102, 100, 111, 8};
-        String out = MessageUtils.bytesToHex(input);
-        assertEquals("0002275115647f66646f08", out);
-    }
 }

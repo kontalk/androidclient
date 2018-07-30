@@ -23,7 +23,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
-import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -35,7 +34,6 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 
 import org.jivesoftware.smack.util.StringUtils;
-import org.spongycastle.jcajce.provider.digest.SHA1;
 import org.spongycastle.openpgp.PGPException;
 
 import android.content.ContentValues;
@@ -260,32 +258,6 @@ public final class MessageUtils {
 
     public static int getMessageDirection(Cursor c) {
         return c.getInt(CompositeMessage.COLUMN_DIRECTION);
-    }
-
-    public static String bytesToHex(byte[] data) {
-        StringBuilder buf = new StringBuilder();
-        for (int i = 0; i < data.length; i++) {
-            int halfbyte = (data[i] >>> 4) & 0x0F;
-            int two_halfs = 0;
-            do {
-                if ((0 <= halfbyte) && (halfbyte <= 9))
-                    buf.append((char) ('0' + halfbyte));
-                else
-                    buf.append((char) ('a' + (halfbyte - 10)));
-                halfbyte = data[i] & 0x0F;
-            } while(two_halfs++ < 1);
-        }
-        return buf.toString();
-    }
-
-    /** @deprecated Use {@link org.jivesoftware.smack.util.SHA1#hex(String)} */
-    @Deprecated
-    public static String sha1(String text) {
-        MessageDigest md = new SHA1.Digest();
-        md.update(text.getBytes(), 0, text.length());
-        byte[] sha1hash = md.digest();
-
-        return bytesToHex(sha1hash);
     }
 
     public static ByteArrayInOutStream readFully(InputStream in, long maxSize) throws IOException {

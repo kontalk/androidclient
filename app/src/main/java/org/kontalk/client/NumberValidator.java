@@ -51,6 +51,7 @@ import org.jivesoftware.smackx.iqregister.packet.Registration;
 import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
+import org.kontalk.util.XMPPUtils;
 import org.spongycastle.openpgp.PGPException;
 
 import android.annotation.SuppressLint;
@@ -71,7 +72,6 @@ import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.XMPPConnectionHelper;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.service.msgcenter.PGPKeyPairRingProvider;
-import org.kontalk.util.MessageUtils;
 
 
 /**
@@ -433,7 +433,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 // generate keyring immediately
                 // needed for connection
                 if (mKey != null) {
-                    String userId = MessageUtils.sha1(mPhone);
+                    String userId = XMPPUtils.createLocalpart(mPhone);
                     mKeyRing = mKey.storeNetwork(userId, mConnector.getNetwork(),
                         mName, mPassphrase);
                 }

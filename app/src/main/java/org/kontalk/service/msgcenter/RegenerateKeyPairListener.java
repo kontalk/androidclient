@@ -24,6 +24,7 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 
 import org.jivesoftware.smack.packet.Stanza;
+import org.kontalk.util.XMPPUtils;
 import org.spongycastle.openpgp.PGPException;
 
 import android.accounts.Account;
@@ -41,7 +42,6 @@ import org.kontalk.crypto.PersonalKey;
 import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
 import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
-import org.kontalk.util.MessageUtils;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_REGENERATE_KEYPAIR;
 
@@ -102,7 +102,7 @@ class RegenerateKeyPairListener extends RegisterKeyPairListener {
                         Account acc = Authenticator.getDefaultAccount(am);
                         String name = Authenticator.getDisplayName(am, acc);
 
-                        String userId = MessageUtils.sha1(acc.name);
+                        String userId = XMPPUtils.createLocalpart(acc.name);
                         mKeyRing = key.storeNetwork(userId, getServer().getNetwork(), name,
                             // TODO should we ask passphrase to the user?
                             getApplication().getCachedPassphrase());

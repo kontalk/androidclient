@@ -43,12 +43,12 @@ import android.widget.Toast;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
+import org.jivesoftware.smack.util.SHA1;
 import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.SyncAdapter;
-import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Permissions;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
@@ -283,7 +283,7 @@ public abstract class MainActivity extends ToolbarActivity {
                         public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                             String passphrase = input.toString();
                             // user-entered passphrase is hashed
-                            String hashed = MessageUtils.sha1(passphrase);
+                            String hashed = SHA1.hex(passphrase);
                             Authenticator.setPassphrase(MainActivity.this, hashed, true);
                             Kontalk.get().invalidatePersonalKey();
                             if (isPasswordValid()) {

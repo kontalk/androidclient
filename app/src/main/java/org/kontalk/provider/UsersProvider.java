@@ -61,7 +61,6 @@ import org.kontalk.provider.MyUsers.Keys;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.sync.SyncAdapter;
-import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.XMPPUtils;
 
@@ -478,7 +477,7 @@ public class UsersProvider extends ContentProvider {
                 }
 
                 try {
-                    String hash = MessageUtils.sha1(number);
+                    String hash = SHA1.hex(number);
                     if (hash.equalsIgnoreCase(matchHash)) {
                         ContentValues values = new ContentValues();
                         values.put(Users.HASH, matchHash);
@@ -689,7 +688,7 @@ public class UsersProvider extends ContentProvider {
                         }
 
                         try {
-                            String hash = MessageUtils.sha1(number);
+                            String hash = XMPPUtils.createLocalpart(number);
                             String lookupKey = phones.getString(2);
                             long contactId = phones.getLong(3);
                             String jid = XMPPUtils.createLocalJID(getContext(), hash);
@@ -764,7 +763,7 @@ public class UsersProvider extends ContentProvider {
                             }
 
                             try {
-                                String hash = MessageUtils.sha1(number);
+                                String hash = XMPPUtils.createLocalpart(number);
                                 String jid = XMPPUtils.createLocalJID(getContext(), hash);
                                 long contactId = phones.getLong(phones.getColumnIndex(BaseColumns._ID));
 
@@ -801,7 +800,7 @@ public class UsersProvider extends ContentProvider {
                         Log.w(SyncAdapter.TAG, "unable to load personal key", e);
                     }
                     try {
-                        String hash = MessageUtils.sha1(ownNumber);
+                        String hash = XMPPUtils.createLocalpart(ownNumber);
                         String jid = XMPPUtils.createLocalJID(getContext(), hash);
 
                         addResyncContact(db, stm, onlineUpd, onlineIns,

@@ -26,6 +26,7 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.packet.StanzaError;
 import org.jivesoftware.smack.util.PacketParserUtils;
+import org.jivesoftware.smack.util.SHA1;
 import org.jivesoftware.smackx.delay.packet.DelayInformation;
 import org.jxmpp.util.XmppStringUtils;
 import org.xmlpull.v1.XmlPullParser;
@@ -132,7 +133,7 @@ public class XMPPUtils {
     }
 
     public static String createLocalpart(String uid) {
-        return MessageUtils.sha1(uid);
+        return SHA1.hex(uid);
     }
 
     /** Returns true if the given JID is a domain JID (e.g. beta.kontalk.net). */
