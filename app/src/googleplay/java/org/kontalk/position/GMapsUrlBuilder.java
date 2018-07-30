@@ -26,7 +26,7 @@ import java.util.Locale;
  * @author Daniele Ricci
  */
 public class GMapsUrlBuilder {
-    private static final String URL = "http://maps.google.com/?ll=%1$,.2f,%2$,.2f&q=%1$,.2f,%2$,.2f";
+    private static final String URL = "https://maps.google.com/?ll=%1$,.6f,%2$,.6f&q=%1$,.6f,%2$,.6f&z=15";
 
     private GMapsUrlBuilder() {
     }
