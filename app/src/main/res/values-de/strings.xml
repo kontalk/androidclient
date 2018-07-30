@@ -721,4 +721,7 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
 
     <string name="contact_name_server">Ihr Server</string>
 
+    <string name="err_validation_phone_state_denied">Wenn Sie zulassen, dass Kontalk Telefonanrufe verwaltet, kann Ihre Telefonnummer automatisch erkannt werden.
+\nKontalk verwendet die erteilte Berechtigung für nichts anderes.</string>
+
     </resources>
