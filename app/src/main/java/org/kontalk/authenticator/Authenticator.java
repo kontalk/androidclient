@@ -127,7 +127,6 @@ public class Authenticator extends AbstractAccountAuthenticator {
         return self != null && jid.equals(self);
     }
 
-    @Deprecated
     public static boolean isSelfJID(Context ctx, String bareJid) {
         String jid = getSelfJID(ctx);
         return jid != null && jid.equalsIgnoreCase(bareJid);
