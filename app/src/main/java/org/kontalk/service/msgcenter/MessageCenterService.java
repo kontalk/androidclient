@@ -1169,7 +1169,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     break;
 
                 case ACTION_UPLOAD_PRIVATEKEY:
-                    doConnect = handleUploadPrivateKey(intent, canConnect);
+                    doConnect = handleUploadPrivateKey(intent);
                     break;
 
                 case ACTION_CONNECTED:
@@ -1189,15 +1189,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     break;
 
                 case ACTION_MESSAGE:
-                    doConnect = handleMessage(intent, canConnect);
+                    doConnect = handleMessage(intent);
                     break;
 
                 case ACTION_ROSTER:
-                    doConnect = handleRoster(intent, canConnect);
+                    doConnect = handleRoster(intent);
                     break;
 
                 case ACTION_ROSTER_MATCH:
-                    doConnect = handleRosterMatch(intent, canConnect);
+                    doConnect = handleRosterMatch(intent);
                     break;
 
                 case ACTION_ROSTER_LOADED:
@@ -1209,27 +1209,27 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     break;
 
                 case ACTION_PRESENCE:
-                    doConnect = handlePresence(intent, canConnect);
+                    doConnect = handlePresence(intent);
                     break;
 
                 case ACTION_LAST_ACTIVITY:
-                    doConnect = handleLastActivity(intent, canConnect);
+                    doConnect = handleLastActivity(intent);
                     break;
 
                 case ACTION_VCARD:
-                    doConnect = handleVCard(intent, canConnect);
+                    doConnect = handleVCard(intent);
                     break;
 
                 case ACTION_PUBLICKEY:
-                    doConnect = handlePublicKey(intent, canConnect);
+                    doConnect = handlePublicKey(intent);
                     break;
 
                 case ACTION_SERVERLIST:
-                    doConnect = handleServerList(canConnect);
+                    doConnect = handleServerList();
                     break;
 
                 case ACTION_SUBSCRIBED:
-                    doConnect = handleSubscribed(intent, canConnect);
+                    doConnect = handleSubscribed(intent);
                     break;
 
                 case ACTION_RETRY:
@@ -1352,8 +1352,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_UPLOAD_PRIVATEKEY)
-    private boolean handleUploadPrivateKey(Intent intent, boolean canConnect) {
-        if (canConnect && isConnected()) {
+    private boolean handleUploadPrivateKey(Intent intent) {
+        if (isConnected()) {
             String exportPassprase = intent.getStringExtra(EXTRA_EXPORT_PASSPHRASE);
             beginUploadPrivateKey(exportPassprase);
         }
@@ -1435,15 +1435,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_MESSAGE)
-    private boolean handleMessage(Intent intent, boolean canConnect) {
-        if (canConnect && isConnected())
+    private boolean handleMessage(Intent intent) {
+        if (isConnected())
             sendMessage(intent.getExtras());
         return false;
     }
 
     @CommandHandler(name = ACTION_ROSTER)
-    private boolean handleRoster(Intent intent, boolean canConnect) {
-        if (canConnect && isConnected()) {
+    private boolean handleRoster(Intent intent) {
+        if (isConnected()) {
             Stanza iq = new RosterPacket();
             String id = intent.getStringExtra(EXTRA_PACKET_ID);
             iq.setStanzaId(id);
@@ -1455,8 +1455,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_ROSTER_MATCH)
-    private boolean handleRosterMatch(Intent intent, boolean canConnect) {
-        if (canConnect && isConnected()) {
+    private boolean handleRosterMatch(Intent intent) {
+        if (isConnected()) {
             RosterMatch iq = new RosterMatch();
             String[] list = intent.getStringArrayExtra(EXTRA_JIDLIST);
 
@@ -1522,8 +1522,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_PRESENCE)
-    private boolean handlePresence(Intent intent, boolean canConnect) {
-        if (canConnect && isConnected()) {
+    private boolean handlePresence(Intent intent) {
+        if (isConnected()) {
             final String id = intent.getStringExtra(EXTRA_PACKET_ID);
             String type = intent.getStringExtra(EXTRA_TYPE);
             final String to = intent.getStringExtra(EXTRA_TO);
@@ -1581,8 +1581,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_LAST_ACTIVITY)
-    private boolean handleLastActivity(Intent intent, boolean canConnect) {
-        if (canConnect && isConnected()) {
+    private boolean handleLastActivity(Intent intent) {
+        if (isConnected()) {
             LastActivity p = new LastActivity();
 
             p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
@@ -1594,8 +1594,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_VCARD)
-    private boolean handleVCard(Intent intent, boolean canConnect) {
-        if (canConnect && isConnected()) {
+    private boolean handleVCard(Intent intent) {
+        if (isConnected()) {
             VCard4 p = new VCard4();
             p.setTo(intent.getStringExtra(EXTRA_TO));
 
@@ -1605,8 +1605,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_PUBLICKEY)
-    private boolean handlePublicKey(Intent intent, boolean canConnect) {
-        if (canConnect && isConnected()) {
+    private boolean handlePublicKey(Intent intent) {
+        if (isConnected()) {
             String to = intent.getStringExtra(EXTRA_TO);
             if (to != null) {
                 // request public key for a specific user
@@ -1682,8 +1682,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_SERVERLIST)
-    private boolean handleServerList(boolean canConnect) {
-        if (canConnect && isConnected()) {
+    private boolean handleServerList() {
+        if (isConnected()) {
             ServerlistCommand p = new ServerlistCommand();
             p.setTo(XmppStringUtils.completeJidFrom("network", mServer.getNetwork()));
 
@@ -1711,8 +1711,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_SUBSCRIBED)
-    private boolean handleSubscribed(Intent intent, boolean canConnect) {
-        if (canConnect && isConnected()) {
+    private boolean handleSubscribed(Intent intent) {
+        if (isConnected()) {
             sendSubscriptionReply(intent.getStringExtra(EXTRA_TO),
                 intent.getStringExtra(EXTRA_PACKET_ID),
                 intent.getIntExtra(EXTRA_PRIVACY, PRIVACY_ACCEPT));
