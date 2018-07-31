@@ -76,8 +76,9 @@ import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 import org.jxmpp.jid.BareJid;
 import org.jxmpp.jid.Jid;
 import org.jxmpp.jid.impl.JidCreate;
+import org.jxmpp.jid.parts.Domainpart;
+import org.jxmpp.jid.parts.Localpart;
 import org.jxmpp.stringprep.XmppStringprepException;
-import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPException;
 
 import android.accounts.Account;
@@ -1465,7 +1466,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             // directed to the probe component
-            iq.setTo(XmppStringUtils.completeJidFrom("probe", mServer.getNetwork()));
+            try {
+                iq.setTo(JidCreate.bareFrom(Localpart.from("probe"),
+                    Domainpart.from(mServer.getNetwork())));
+            }
+            catch (XmppStringprepException e) {
+                // cannot happen
+                throw new RuntimeException(e);
+            }
 
             String id = intent.getStringExtra(EXTRA_PACKET_ID);
             iq.setStanzaId(id);
@@ -1597,7 +1605,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private boolean handleVCard(Intent intent) {
         if (isConnected()) {
             VCard4 p = new VCard4();
-            p.setTo(intent.getStringExtra(EXTRA_TO));
+            String to = intent.getStringExtra(EXTRA_TO);
+            try {
+                p.setTo(JidCreate.from(to));
+            }
+            catch (XmppStringprepException e) {
+                Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+                // report it because it's a big deal
+                ReportingManager.logException(e);
+                return false;
+            }
 
             sendPacket(p);
         }
@@ -1612,7 +1629,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 // request public key for a specific user
                 PublicKeyPublish p = new PublicKeyPublish();
                 p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
-                p.setTo(to);
+                try {
+                    p.setTo(JidCreate.from(to));
+                }
+                catch (XmppStringprepException e) {
+                    Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+                    // report it because it's a big deal
+                    ReportingManager.logException(e);
+                    return false;
+                }
 
                 PublicKeyListener listener = new PublicKeyListener(this, p);
                 sendIqWithReply(p, true, listener, listener);
@@ -1685,7 +1710,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private boolean handleServerList() {
         if (isConnected()) {
             ServerlistCommand p = new ServerlistCommand();
-            p.setTo(XmppStringUtils.completeJidFrom("network", mServer.getNetwork()));
+            try {
+                p.setTo(JidCreate.from("network", mServer.getNetwork(), ""));
+            }
+            catch (XmppStringprepException e) {
+                Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+                // report it because it's a big deal
+                ReportingManager.logException(e);
+                return false;
+            }
 
             StanzaFilter filter = new StanzaIdFilter(p.getStanzaId());
             // TODO cache the listener (it shouldn't change)
@@ -1980,14 +2013,25 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private void discovery() {
         StanzaFilter filter;
 
+        Jid to;
+        try {
+            to = JidCreate.domainBareFrom(mServer.getNetwork());
+        }
+        catch (XmppStringprepException e) {
+            Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+            // report it because it's a big deal
+            ReportingManager.logException(e);
+            return;
+        }
+
         DiscoverInfo info = new DiscoverInfo();
-        info.setTo(mServer.getNetwork());
+        info.setTo(to);
         filter = new StanzaIdFilter(info.getStanzaId());
         mConnection.addAsyncStanzaListener(new DiscoverInfoListener(this), filter);
         sendPacket(info);
 
         DiscoverItems items = new DiscoverItems();
-        items.setTo(mServer.getNetwork());
+        items.setTo(to);
         filter = new StanzaIdFilter(items.getStanzaId());
         mConnection.addAsyncStanzaListener(new DiscoverItemsListener(this), filter);
         sendPacket(items);
@@ -2619,17 +2663,25 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         final String groupJid = data.getString("org.kontalk.message.group.jid");
-        String to;
+        Jid to;
         // used for verifying isPaused()
-        String convJid;
+        Jid convJid;
         String[] toGroup;
         GroupController group = null;
 
         if (groupJid != null) {
             toGroup = data.getStringArray("org.kontalk.message.to");
-            // TODO this should be discovered first
-            to = XmppStringUtils.completeJidFrom("multicast", mConnection.getXMPPServiceDomain());
-            convJid = groupJid;
+            try {
+                // TODO this should be discovered first
+                to = JidCreate.from("multicast", mConnection.getXMPPServiceDomain(), "");
+                convJid = JidCreate.from(groupJid);
+            }
+            catch (XmppStringprepException e) {
+                Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+                // report it because it's a big deal
+                ReportingManager.logException(e);
+                return;
+            }
 
             // TODO take type from data
             group = GroupControllerFactory
@@ -2655,8 +2707,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
         }
         else {
-            to = data.getString("org.kontalk.message.to");
-            toGroup = new String[]{to};
+            try {
+                to = JidCreate.from(data.getString("org.kontalk.message.to"));
+            }
+            catch (XmppStringprepException e) {
+                Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+                // report it because it's a big deal
+                ReportingManager.logException(e);
+                return;
+            }
+            toGroup = new String[]{to.toString()};
             convJid = to;
         }
 
@@ -2729,7 +2789,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     filename = MediaStorage.UNKNOWN_FILENAME;
 
                 // media message - start upload service
-                final String uploadTo = to;
+                final String uploadTo = to.toString();
                 final String[] uploadGroupTo = toGroup;
                 uploadService.getPostUrl(filename, fileLength, mime, new IUploadService.UrlCallback() {
                     @Override

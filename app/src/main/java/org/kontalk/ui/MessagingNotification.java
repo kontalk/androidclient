@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jxmpp.jid.Jid;
 import org.jxmpp.util.XmppStringUtils;
 
 import android.accounts.Account;
@@ -173,6 +174,10 @@ public class MessagingNotification {
 
     public static void setPaused(String jid) {
         sPaused = jid;
+    }
+
+    public static boolean isPaused(Jid jid) {
+        return sPaused != null && sPaused.equalsIgnoreCase(jid.asBareJid().toString());
     }
 
     public static boolean isPaused(String jid) {
