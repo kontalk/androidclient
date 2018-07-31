@@ -177,10 +177,7 @@ public class CountryCodesAdapter extends BaseAdapter {
 
         StringBuilder text = new StringBuilder(3)
             .append('+')
-            .append(e.countryCode)
-            .append(" (")
-            .append(e.regionName)
-            .append(')');
+            .append(e.countryCode);
 
         textView.setText(text);
 
