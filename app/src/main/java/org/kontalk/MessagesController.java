@@ -82,13 +82,15 @@ public class MessagesController {
                 MessageCenterService.sendGroupTextMessage(mContext,
                         conv.getGroupJid(), conv.getGroupPeers(),
                         text, encrypted, ContentUris.parseId(newMsg), msgId, inReplyTo);
-            } else {
+            }
+            else {
                 MessageCenterService.sendTextMessage(mContext, userId, text,
                         encrypted, ContentUris.parseId(newMsg), msgId, inReplyTo);
             }
 
             return newMsg;
-        } else {
+        }
+        else {
             throw new SQLiteDiskIOException();
         }
     }
@@ -109,13 +111,15 @@ public class MessagesController {
                 MessageCenterService.sendGroupLocationMessage(mContext,
                         conv.getGroupJid(), conv.getGroupPeers(),
                         text, lat, lon, geoText, geoStreet, encrypted, ContentUris.parseId(newMsg), msgId);
-            } else {
+            }
+            else {
                 MessageCenterService.sendLocationMessage(mContext, userId, text, lat, lon,
                         geoText, geoStreet, encrypted, ContentUris.parseId(newMsg), msgId);
             }
 
             return newMsg;
-        } else {
+        }
+        else {
             throw new SQLiteDiskIOException();
         }
     }
