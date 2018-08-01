@@ -74,6 +74,8 @@ import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
+import me.leolin.shortcutbadger.ShortcutBadger;
+
 
 /**
  * Various utility methods for managing system notifications.
@@ -273,7 +275,7 @@ public class MessagingNotification {
 
         // this shouldn't happen, but who knows...
         if (c == null) {
-            nm.cancel(NOTIFICATION_ID_MESSAGES);
+            clearMessageNotification(context);
             return;
         }
 
@@ -281,7 +283,7 @@ public class MessagingNotification {
         int unread = c.getCount();
         if (unread == 0) {
             c.close();
-            nm.cancel(NOTIFICATION_ID_MESSAGES);
+            clearMessageNotification(context);
             return;
         }
 
@@ -410,6 +412,9 @@ public class MessagingNotification {
             builder.setContentTitle(accumulator.getTitle());
             builder.setContentText(accumulator.getText());
             builder.setContentIntent(accumulator.getPendingIntent());
+
+            // overwrite thread count with message count (used for badges later)
+            unread = accumulator.unreadCount;
         }
 
         // shouldn't happen, but let's check it anyway
@@ -430,7 +435,13 @@ public class MessagingNotification {
         // features (priority, category)
         setFeatures(context, builder);
 
-        nm.notify(NOTIFICATION_ID_MESSAGES, builder.build());
+        Notification notification = builder.build();
+
+        // set badge counter
+        ShortcutBadger.applyNotification(context, notification, unread);
+        ShortcutBadger.applyCount(context, unread);
+
+        nm.notify(NOTIFICATION_ID_MESSAGES, notification);
 
         /* TODO take this from configuration
         boolean quickReply = false;
@@ -477,6 +488,12 @@ public class MessagingNotification {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             .setColor(ContextCompat.getColor(context, R.color.app_accent));
+    }
+
+    private static void clearMessageNotification(Context context) {
+        NotificationManagerCompat nm = NotificationManagerCompat.from(context);
+        nm.cancel(NOTIFICATION_ID_MESSAGES);
+        ShortcutBadger.removeCount(context);
     }
 
     private static final class NotificationConversation {
