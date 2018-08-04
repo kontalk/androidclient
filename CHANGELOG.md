@@ -14,6 +14,7 @@
 - Fix mixup with keys (#1127, #1171)
 - Verify server key automatically (#1130)
 - Fix group commands not processed (#1189)
+- Fix crash in location view (#1991)
 - Workaround Android bug 37032031 (#1192)
 - Fix messages not marked as sent (#1193)
 - Fix database deadlock (#1194)
