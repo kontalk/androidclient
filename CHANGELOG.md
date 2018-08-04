@@ -495,3 +495,7 @@
 - Fix crash during sync (#454)
 
 [Next]: https://github.com/kontalk/androidclient/compare/v4.1.6...HEAD
+[4.1.6]: https://github.com/kontalk/androidclient/compare/v4.1.5...v4.1.6
+[4.1.5]: https://github.com/kontalk/androidclient/compare/v4.1.4...v4.1.5
+[4.1.4]: https://github.com/kontalk/androidclient/compare/v4.1.3...v4.1.4
+[4.1.3]: https://github.com/kontalk/androidclient/compare/v4.1.2...v4.1.3
