@@ -1,4 +1,4 @@
-# Change Log
+# Changelog
 
 ## [Next]
 ### Changed
@@ -493,3 +493,5 @@
 - Fix communication with unknown contacts (#446)
 - Fix draft saving on incoming message (#448)
 - Fix crash during sync (#454)
+
+[Next]: https://github.com/kontalk/androidclient/compare/v4.1.6...HEAD
