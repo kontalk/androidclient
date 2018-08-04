@@ -54,12 +54,14 @@ import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.kontalk.util.XMPPUtils;
 import org.spongycastle.openpgp.PGPException;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresPermission;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Base64;
@@ -936,7 +938,8 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     }
 
     /** Returns the (parsed) number stored in this device SIM card. */
-    @SuppressLint("HardwareIds")
+    @SuppressLint({"HardwareIds", "MissingPermission"})
+    @RequiresPermission(Manifest.permission.READ_PHONE_STATE)
     public static PhoneNumber getMyNumber(Context context) {
         try {
             final TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);

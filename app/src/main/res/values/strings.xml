@@ -672,6 +672,8 @@
 
     <string name="err_location_denied">We need access to your location if you want to share it.</string>
 
+    <string name="err_validation_phone_state_denied">If you allow Kontalk to manage phone calls, it can automatically detect your phone number.\nKontalk won\'t use the granted permission for anything else.</string>
+
     <string name="permission_messages_label">Access to Kontalk messages</string>
     <string name="permission_messages_description">Can read from and write to the Kontalk messages database</string>
     <string name="permission_users_label">Access to Kontalk users information</string>

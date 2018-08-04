@@ -18,6 +18,7 @@
 - Workaround Android bug 37032031 (#1192)
 - Fix messages not marked as sent (#1193)
 - Fix database deadlock (#1194)
+- Ask for permission to detect user's phone number (#1201)
 
 ## [4.1.6] - 2018-06-24
 ### Fixed
