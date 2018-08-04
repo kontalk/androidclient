@@ -1,5 +1,23 @@
 # Change Log
 
+## [Next]
+### Changed
+- Badge indicators for OEMs supporting it (#292)
+- Migrate to Firebase Cloud Messaging (#779)
+- Copy multiple messages to clipboard (#841)
+- Upgrade to Smack 4.3 (#1058)
+- Blind Trust Before Verification (#947)
+- Accepted invitation is no longer required to chat (#947)
+- More precise Google Maps location (#1197)
+
+### Fixed
+- Fix mixup with keys (#1127, #1171)
+- Verify server key automatically (#1130)
+- Fix group commands not processed (#1189)
+- Workaround Android bug 37032031 (#1192)
+- Fix messages not marked as sent (#1193)
+- Fix database deadlock (#1194)
+
 ## [4.1.6] - 2018-06-24
 ### Fixed
 - Temporarily revert to stable emoji version
