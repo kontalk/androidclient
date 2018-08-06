@@ -125,6 +125,9 @@ public class AudioDialog extends AlertDialog {
         getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.GONE);
 
         Activity context = getOwnerActivity();
+        if (context == null)
+            dismiss();
+
         if (!Permissions.canRecordAudio(context)) {
             Permissions.requestRecordAudio(context, context
                 .getString(R.string.err_audio_or_storage_denied));
