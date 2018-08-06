@@ -1,6 +1,6 @@
 # Changelog
 
-## [Next]
+## [4.2.0-beta1] - 2018-08-06
 ### Changed
 - Badge indicators for OEMs supporting it (#292)
 - Migrate to Firebase Cloud Messaging (#779)
@@ -24,7 +24,7 @@
 ### Fixed
 - Temporarily revert to stable emoji version
 - Fix public key retrieval
-- Fix attachment panel close icon (#1184) 
+- Fix attachment panel close icon (#1184)
 
 ## [4.1.5] - 2018-06-19
 ### Changed
@@ -494,7 +494,7 @@
 - Fix draft saving on incoming message (#448)
 - Fix crash during sync (#454)
 
-[Next]: https://github.com/kontalk/androidclient/compare/v4.1.6...HEAD
+[4.2.0-beta1]: https://github.com/kontalk/androidclient/compare/v4.1.6...v4.2.0-beta1
 [4.1.6]: https://github.com/kontalk/androidclient/compare/v4.1.5...v4.1.6
 [4.1.5]: https://github.com/kontalk/androidclient/compare/v4.1.4...v4.1.5
 [4.1.4]: https://github.com/kontalk/androidclient/compare/v4.1.3...v4.1.4
