@@ -40,6 +40,7 @@ public class Permissions {
     public static final int RC_CAMERA = 1004;
     public static final int RC_RECORD_AUDIO = 1005;
     public static final int RC_LOCATION = 1006;
+    public static final int RC_PHONE_STATE = 1007;
 
     public static boolean canCallPhone(Context context) {
         return EasyPermissions.hasPermissions(context,
@@ -183,6 +184,11 @@ public class Permissions {
         EasyPermissions.requestPermissions(fragment, rationale, RC_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.ACCESS_FINE_LOCATION);
+    }
+
+    public static void requestPhoneState(Activity activity, String rationale) {
+        EasyPermissions.requestPermissions(activity, rationale, RC_PHONE_STATE,
+            Manifest.permission.READ_PHONE_STATE);
     }
 
 }

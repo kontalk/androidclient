@@ -23,7 +23,7 @@ import org.jivesoftware.smack.filter.StanzaFilter;
 import org.jivesoftware.smack.filter.StanzaIdFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Stanza;
-import org.jivesoftware.smack.packet.XMPPError;
+import org.jivesoftware.smack.packet.StanzaError;
 import org.jivesoftware.smackx.iqregister.packet.Registration;
 import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
@@ -84,20 +84,20 @@ public class PrivateKeyUploadListener extends MessageCenterPacketListener {
 
         IQ iq = (IQ) packet;
         if (iq.getType() != IQ.Type.result) {
-            finish(XMPPError.Condition.internal_server_error);
+            finish(StanzaError.Condition.internal_server_error);
             return;
         }
 
         DataForm response = iq.getExtension("x", "jabber:x:data");
         if (response == null) {
-            finish(XMPPError.Condition.internal_server_error);
+            finish(StanzaError.Condition.internal_server_error);
             return;
         }
 
         String token = null;
         FormField field = response.getField("token");
         if (field != null)
-            token = field.getValues().get(0);
+            token = field.getFirstValue();
 
         EndpointServer from = Preferences.getEndpointServer(getContext());
         finish(token, from != null ? from.toString() : conn.getXMPPServiceDomain().toString());
@@ -107,11 +107,11 @@ public class PrivateKeyUploadListener extends MessageCenterPacketListener {
         finish(token, from, null);
     }
 
-    private void finish(XMPPError.Condition errorCondition) {
+    private void finish(StanzaError.Condition errorCondition) {
         finish(null, null, errorCondition);
     }
 
-    private void finish(String token, String from, XMPPError.Condition errorCondition) {
+    private void finish(String token, String from, StanzaError.Condition errorCondition) {
         Intent i = new Intent(ACTION_UPLOAD_PRIVATEKEY);
         if (token != null) {
             i.putExtra(MessageCenterService.EXTRA_TOKEN, token);
@@ -129,7 +129,7 @@ public class PrivateKeyUploadListener extends MessageCenterPacketListener {
 
         Registration iq = new Registration();
         iq.setType(IQ.Type.set);
-        iq.setTo(getConnection().getServiceName());
+        iq.setTo(getConnection().getXMPPServiceDomain());
         Form form = new Form(DataForm.Type.submit);
 
         // form type: register#privatekey

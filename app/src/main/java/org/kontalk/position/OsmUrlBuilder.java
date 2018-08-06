@@ -26,7 +26,7 @@ import java.util.Locale;
  * @author Daniele Ricci
  */
 public class OsmUrlBuilder {
-    private static final String URL = "https://www.openstreetmap.org/#map=12/%1$,.2f/%2$,.2f";
+    private static final String URL = "https://www.openstreetmap.org/#map=15/%1$,.6f/%2$,.6f";
 
     private OsmUrlBuilder() {
     }

@@ -24,6 +24,7 @@ task checkstyle(type: Checkstyle){
         '**/FrameLayoutFixed.java',
         '**/AbsListViewScrollDetector.java',
         '**/XMPPTCPConnection.java',
+        '**/BundleAndDefer*.java',
         '**/ProximityScreenLocker*.java',
         'main/java/com/**'
     def configProps = ['baseDir': projectDir.absolutePath]
@@ -173,6 +174,7 @@ dependencies {
     implementation ('com.github.ozodrukh:CircularReveal:2.0.1@aar') {
         transitive = true
     }
+    implementation 'me.leolin:ShortcutBadger:1.1.22@aar'
 
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.squareup.okhttp3:okhttp:3.10.0'
@@ -185,7 +187,8 @@ dependencies {
     googleplayImplementation "com.google.android.gms:play-services-location:$googlePlayServicesVersion"
 
     googleplayImplementation "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
-    googleplayImplementation "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"
+    googleplayImplementation "com.google.firebase:firebase-core:16.0.1"
+    googleplayImplementation "com.google.firebase:firebase-messaging:17.1.0"
     googleplayImplementation('com.crashlytics.sdk.android:crashlytics:2.9.4@aar') {
         transitive = true
     }
@@ -218,4 +221,8 @@ else if (project.hasProperty('GOOGLE_PLAY_DEVELOPER_KEY_FILE')) {
         jsonFile = file(GOOGLE_PLAY_DEVELOPER_KEY_FILE)
         untrackOld = true
     }
+}
+
+if (getGradle().getStartParameter().getTaskRequests().toString().contains("Googleplay")) {
+    apply plugin: 'com.google.gms.google-services'
 }

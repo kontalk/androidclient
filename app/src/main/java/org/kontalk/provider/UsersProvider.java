@@ -61,7 +61,6 @@ import org.kontalk.provider.MyUsers.Keys;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.sync.SyncAdapter;
-import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.XMPPUtils;
 
@@ -478,7 +477,7 @@ public class UsersProvider extends ContentProvider {
                 }
 
                 try {
-                    String hash = MessageUtils.sha1(number);
+                    String hash = SHA1.hex(number);
                     if (hash.equalsIgnoreCase(matchHash)) {
                         ContentValues values = new ContentValues();
                         values.put(Users.HASH, matchHash);
@@ -614,133 +613,58 @@ public class UsersProvider extends ContentProvider {
 
         // begin transaction
         db.beginTransactionNonExclusive();
-        boolean success = false;
 
         int count = 0;
 
-        // delete old users content
         try {
-            db.execSQL("DELETE FROM " + TABLE_USERS_OFFLINE);
-        }
-        catch (SQLException e) {
-            // table might not exist - create it! (shouldn't happen since version 4)
-            db.execSQL(DatabaseHelper.SCHEMA_USERS_OFFLINE);
-        }
-
-        // we are trying to be fast here
-        SQLiteStatement stm = db.compileStatement("INSERT INTO " + TABLE_USERS_OFFLINE +
-            " (number, jid, display_name, lookup_key, contact_id, registered)" +
-            " VALUES(?, ?, ?, ?, ?, ?)");
-
-        // these two statements are used to immediately update data in the online table
-        // even if the data is dummy, it will be soon replaced by sync or by manual request
-        SQLiteStatement onlineUpd = db.compileStatement("UPDATE " + TABLE_USERS +
-            " SET number = ?, display_name = ?, lookup_key = ?, contact_id = ? WHERE jid = ?");
-        SQLiteStatement onlineIns = db.compileStatement("INSERT INTO " + TABLE_USERS +
-            " (number, jid, display_name, lookup_key, contact_id, registered)" +
-            " VALUES(?, ?, ?, ?, ?, ?)");
-
-        Cursor phones = null;
-        String dialPrefix = Preferences.getDialPrefix();
-        int dialPrefixLen = dialPrefix != null ? dialPrefix.length() : 0;
-
-        try {
-            String where = !Preferences.getSyncInvisibleContacts(context) ?
-                ContactsContract.Contacts.IN_VISIBLE_GROUP + "=1 AND " :
-                "";
-
-            // query for phone numbers
-            phones = cr.query(Phone.CONTENT_URI,
-                new String[] { Phone.NUMBER, Phone.DISPLAY_NAME, Phone.LOOKUP_KEY, Phone.CONTACT_ID, RawContacts.ACCOUNT_TYPE },
-                where + " (" +
-                // this will filter out RawContacts from Kontalk
-                RawContacts.ACCOUNT_TYPE + " IS NULL OR " +
-                RawContacts.ACCOUNT_TYPE + " NOT IN (?, ?))",
-                new String[] {
-                    Authenticator.ACCOUNT_TYPE, Authenticator.ACCOUNT_TYPE_LEGACY
-                }, null);
-
-            if (phones != null) {
-                while (phones.moveToNext()) {
-                    String number = phones.getString(0);
-                    String name = phones.getString(1);
-
-                    // buggy provider - skip entry
-                    if (name == null || number == null)
-                        continue;
-
-                    // remove dial prefix first
-                    if (dialPrefix != null && number.startsWith(dialPrefix))
-                        number = number.substring(dialPrefixLen);
-
-                    // a phone number with less than 4 digits???
-                    if (number.length() < 4)
-                        continue;
-
-                    // fix number
-                    try {
-                        number = NumberValidator.fixNumber(context, number,
-                            Authenticator.getDefaultAccountName(context), 0);
-                    }
-                    catch (Exception e) {
-                        Log.e(SyncAdapter.TAG, "unable to normalize number: " + number + " - skipping", e);
-                        // skip number
-                        continue;
-                    }
-
-                    try {
-                        String hash = MessageUtils.sha1(number);
-                        String lookupKey = phones.getString(2);
-                        long contactId = phones.getLong(3);
-                        String jid = XMPPUtils.createLocalJID(getContext(), hash);
-
-                        addResyncContact(db, stm, onlineUpd, onlineIns,
-                            number, jid, name,
-                            lookupKey, contactId, false);
-                        count++;
-                    }
-                    catch (IllegalArgumentException iae) {
-                        Log.w(SyncAdapter.TAG, "doing sync with no server?");
-                    }
-                    catch (SQLiteConstraintException sqe) {
-                        // skip duplicate number
-                    }
-                }
-
-                phones.close();
+            // delete old users content
+            try {
+                db.execSQL("DELETE FROM " + TABLE_USERS_OFFLINE);
             }
-            else {
-                Log.e(SyncAdapter.TAG, "query to contacts failed!");
+            catch (SQLException e) {
+                // table might not exist - create it! (shouldn't happen since version 4)
+                db.execSQL(DatabaseHelper.SCHEMA_USERS_OFFLINE);
             }
 
-            if (Preferences.getSyncSIMContacts(getContext())) {
-                // query for SIM contacts
-                // column selection doesn't work because of a bug in Android
-                // TODO this is a bit unclear...
-                try {
-                    phones = cr.query(Uri.parse("content://icc/adn/"),
-                        null, null, null, null);
-                }
-                catch (Exception e) {
-                    /*
-                    On some phones:
-                    java.lang.NullPointerException
-                        at android.os.Parcel.readException(Parcel.java:1431)
-                        at android.database.DatabaseUtils.readExceptionFromParcel(DatabaseUtils.java:185)
-                        at android.database.DatabaseUtils.readExceptionFromParcel(DatabaseUtils.java:137)
-                        at android.content.ContentProviderProxy.query(ContentProviderNative.java:366)
-                        at android.content.ContentResolver.query(ContentResolver.java:372)
-                        at android.content.ContentResolver.query(ContentResolver.java:315)
-                     */
-                    Log.w(SyncAdapter.TAG, "unable to retrieve SIM contacts", e);
-                    phones = null;
-                }
+            // we are trying to be fast here
+            SQLiteStatement stm = db.compileStatement("INSERT INTO " + TABLE_USERS_OFFLINE +
+                " (number, jid, display_name, lookup_key, contact_id, registered)" +
+                " VALUES(?, ?, ?, ?, ?, ?)");
+
+            // these two statements are used to immediately update data in the online table
+            // even if the data is dummy, it will be soon replaced by sync or by manual request
+            SQLiteStatement onlineUpd = db.compileStatement("UPDATE " + TABLE_USERS +
+                " SET number = ?, display_name = ?, lookup_key = ?, contact_id = ? WHERE jid = ?");
+            SQLiteStatement onlineIns = db.compileStatement("INSERT INTO " + TABLE_USERS +
+                " (number, jid, display_name, lookup_key, contact_id, registered)" +
+                " VALUES(?, ?, ?, ?, ?, ?)");
+
+            Cursor phones = null;
+            String dialPrefix = Preferences.getDialPrefix();
+            int dialPrefixLen = dialPrefix != null ? dialPrefix.length() : 0;
+
+            try {
+                String where = !Preferences.getSyncInvisibleContacts(context) ?
+                    ContactsContract.Contacts.IN_VISIBLE_GROUP + "=1 AND " :
+                    "";
+
+                // query for phone numbers
+                phones = cr.query(Phone.CONTENT_URI,
+                    new String[]{Phone.NUMBER, Phone.DISPLAY_NAME, Phone.LOOKUP_KEY, Phone.CONTACT_ID, RawContacts.ACCOUNT_TYPE},
+                    where + " (" +
+                        // this will filter out RawContacts from Kontalk
+                        RawContacts.ACCOUNT_TYPE + " IS NULL OR " +
+                        RawContacts.ACCOUNT_TYPE + " NOT IN (?, ?))",
+                    new String[]{
+                        Authenticator.ACCOUNT_TYPE, Authenticator.ACCOUNT_TYPE_LEGACY
+                    }, null);
 
                 if (phones != null) {
                     while (phones.moveToNext()) {
-                        String name = phones.getString(phones.getColumnIndex("name"));
-                        String number = phones.getString(phones.getColumnIndex("number"));
-                        // buggy firmware - skip entry
+                        String number = phones.getString(0);
+                        String name = phones.getString(1);
+
+                        // buggy provider - skip entry
                         if (name == null || number == null)
                             continue;
 
@@ -755,7 +679,7 @@ public class UsersProvider extends ContentProvider {
                         // fix number
                         try {
                             number = NumberValidator.fixNumber(context, number,
-                                    Authenticator.getDefaultAccountName(context), 0);
+                                Authenticator.getDefaultAccountName(context), 0);
                         }
                         catch (Exception e) {
                             Log.e(SyncAdapter.TAG, "unable to normalize number: " + number + " - skipping", e);
@@ -764,14 +688,14 @@ public class UsersProvider extends ContentProvider {
                         }
 
                         try {
-                            String hash = MessageUtils.sha1(number);
+                            String hash = XMPPUtils.createLocalpart(number);
+                            String lookupKey = phones.getString(2);
+                            long contactId = phones.getLong(3);
                             String jid = XMPPUtils.createLocalJID(getContext(), hash);
-                            long contactId = phones.getLong(phones.getColumnIndex(BaseColumns._ID));
 
                             addResyncContact(db, stm, onlineUpd, onlineIns,
                                 number, jid, name,
-                                null, contactId,
-                                false);
+                                lookupKey, contactId, false);
                             count++;
                         }
                         catch (IllegalArgumentException iae) {
@@ -781,59 +705,141 @@ public class UsersProvider extends ContentProvider {
                             // skip duplicate number
                         }
                     }
-                }
-            }
 
-            // try to add account number with display name
-            String ownNumber = Authenticator.getDefaultAccountName(getContext());
-            if (ownNumber != null) {
-                String ownName = Authenticator.getDefaultDisplayName(getContext());
-                String fingerprint = null;
-                byte[] publicKeyData = null;
-                try {
-                    PersonalKey myKey = Kontalk.get().getPersonalKey();
-                    if (myKey != null) {
-                        fingerprint = myKey.getFingerprint();
-                        publicKeyData = myKey.getEncodedPublicKeyRing();
+                    phones.close();
+                }
+                else {
+                    Log.e(SyncAdapter.TAG, "query to contacts failed!");
+                }
+
+                if (Preferences.getSyncSIMContacts(getContext())) {
+                    // query for SIM contacts
+                    // column selection doesn't work because of a bug in Android
+                    // TODO this is a bit unclear...
+                    try {
+                        phones = cr.query(Uri.parse("content://icc/adn/"),
+                            null, null, null, null);
+                    }
+                    catch (Exception e) {
+                    /*
+                    On some phones:
+                    java.lang.NullPointerException
+                        at android.os.Parcel.readException(Parcel.java:1431)
+                        at android.database.DatabaseUtils.readExceptionFromParcel(DatabaseUtils.java:185)
+                        at android.database.DatabaseUtils.readExceptionFromParcel(DatabaseUtils.java:137)
+                        at android.content.ContentProviderProxy.query(ContentProviderNative.java:366)
+                        at android.content.ContentResolver.query(ContentResolver.java:372)
+                        at android.content.ContentResolver.query(ContentResolver.java:315)
+                     */
+                        Log.w(SyncAdapter.TAG, "unable to retrieve SIM contacts", e);
+                        phones = null;
+                    }
+
+                    if (phones != null) {
+                        while (phones.moveToNext()) {
+                            String name = phones.getString(phones.getColumnIndex("name"));
+                            String number = phones.getString(phones.getColumnIndex("number"));
+                            // buggy firmware - skip entry
+                            if (name == null || number == null)
+                                continue;
+
+                            // remove dial prefix first
+                            if (dialPrefix != null && number.startsWith(dialPrefix))
+                                number = number.substring(dialPrefixLen);
+
+                            // a phone number with less than 4 digits???
+                            if (number.length() < 4)
+                                continue;
+
+                            // fix number
+                            try {
+                                number = NumberValidator.fixNumber(context, number,
+                                    Authenticator.getDefaultAccountName(context), 0);
+                            }
+                            catch (Exception e) {
+                                Log.e(SyncAdapter.TAG, "unable to normalize number: " + number + " - skipping", e);
+                                // skip number
+                                continue;
+                            }
+
+                            try {
+                                String hash = XMPPUtils.createLocalpart(number);
+                                String jid = XMPPUtils.createLocalJID(getContext(), hash);
+                                long contactId = phones.getLong(phones.getColumnIndex(BaseColumns._ID));
+
+                                addResyncContact(db, stm, onlineUpd, onlineIns,
+                                    number, jid, name,
+                                    null, contactId,
+                                    false);
+                                count++;
+                            }
+                            catch (IllegalArgumentException iae) {
+                                Log.w(SyncAdapter.TAG, "doing sync with no server?");
+                            }
+                            catch (SQLiteConstraintException sqe) {
+                                // skip duplicate number
+                            }
+                        }
                     }
                 }
-                catch (Exception e) {
-                    Log.w(SyncAdapter.TAG, "unable to load personal key", e);
-                }
-                try {
-                    String hash = MessageUtils.sha1(ownNumber);
-                    String jid = XMPPUtils.createLocalJID(getContext(), hash);
 
-                    addResyncContact(db, stm, onlineUpd, onlineIns,
-                        ownNumber, jid, ownName,
-                        null, null,
-                        true);
-                    insertOrUpdateKey(jid, fingerprint, publicKeyData, false);
-                    count++;
+                // try to add account number with display name
+                String ownNumber = Authenticator.getDefaultAccountName(getContext());
+                if (ownNumber != null) {
+                    String ownName = Authenticator.getDefaultDisplayName(getContext());
+                    String fingerprint = null;
+                    byte[] publicKeyData = null;
+                    try {
+                        PersonalKey myKey = Kontalk.get().getPersonalKey();
+                        if (myKey != null) {
+                            fingerprint = myKey.getFingerprint();
+                            publicKeyData = myKey.getEncodedPublicKeyRing();
+                        }
+                    }
+                    catch (Exception e) {
+                        Log.w(SyncAdapter.TAG, "unable to load personal key", e);
+                    }
+                    try {
+                        String hash = XMPPUtils.createLocalpart(ownNumber);
+                        String jid = XMPPUtils.createLocalJID(getContext(), hash);
+
+                        addResyncContact(db, stm, onlineUpd, onlineIns,
+                            ownNumber, jid, ownName,
+                            null, null,
+                            true);
+                        insertOrUpdateKey(jid, fingerprint, publicKeyData, false);
+                        count++;
+                    }
+                    catch (IllegalArgumentException iae) {
+                        Log.w(SyncAdapter.TAG, "doing sync with no server?");
+                    }
+                    catch (SQLiteConstraintException sqe) {
+                        // skip duplicate number
+                    }
                 }
-                catch (IllegalArgumentException iae) {
-                    Log.w(SyncAdapter.TAG, "doing sync with no server?");
-                }
-                catch (SQLiteConstraintException sqe) {
-                    // skip duplicate number
-                }
+
+                db.setTransactionSuccessful();
             }
+            catch (SecurityException e) {
+                Log.w(SyncAdapter.TAG, "no access to contacts. Did you deny the permission?", e);
+                ReportingManager.logException(e);
+            }
+            finally {
+                if (phones != null)
+                    phones.close();
+                stm.close();
 
-            db.setTransactionSuccessful();
-        }
-        catch (SecurityException e) {
-            Log.w(SyncAdapter.TAG, "no access to contacts. Did you deny the permission?", e);
-            ReportingManager.logException(e);
+                // time to invalidate contacts cache (because of updates to online)
+                Contact.invalidate();
+            }
         }
         finally {
             db.endTransaction();
-            if (phones != null)
-                phones.close();
-            stm.close();
 
             // time to invalidate contacts cache (because of updates to online)
             Contact.invalidate();
         }
+
         return count;
     }
 

@@ -46,19 +46,22 @@ import org.jivesoftware.smack.filter.StanzaIdFilter;
 import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Stanza;
-import org.jivesoftware.smack.packet.XMPPError;
+import org.jivesoftware.smack.packet.StanzaError;
 import org.jivesoftware.smackx.iqregister.packet.Registration;
 import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
+import org.kontalk.util.XMPPUtils;
 import org.spongycastle.openpgp.PGPException;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresPermission;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Base64;
@@ -71,7 +74,6 @@ import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.XMPPConnectionHelper;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.service.msgcenter.PGPKeyPairRingProvider;
-import org.kontalk.util.MessageUtils;
 
 
 /**
@@ -346,16 +348,16 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                                 for (FormField field : iter) {
                                     String fieldName = field.getVariable();
                                     if ("from".equals(fieldName)) {
-                                        smsFrom = field.getValues().get(0);
+                                        smsFrom = field.getFirstValue();
                                     }
                                     else if ("challenge".equals(fieldName)) {
-                                        challenge = field.getValues().get(0);
+                                        challenge = field.getFirstValue();
                                     }
                                     else if ("brand-link".equals(fieldName)) {
-                                        brandLink = field.getValues().get(0);
+                                        brandLink = field.getFirstValue();
                                     }
                                     else if ("can-fallback".equals(fieldName) && field.getType() == FormField.Type.bool) {
-                                        String val = field.getValues().get(0);
+                                        String val = field.getFirstValue();
                                         canFallback = "1".equals(val) || "true".equalsIgnoreCase(val) || "yes".equalsIgnoreCase(val);
                                     }
                                 }
@@ -378,16 +380,16 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                         }
 
                         else if (iq.getType() == IQ.Type.error) {
-                            XMPPError error = iq.getError();
+                            StanzaError error = iq.getError();
 
-                            if (error.getCondition() == XMPPError.Condition.conflict) {
+                            if (error.getCondition() == StanzaError.Condition.conflict) {
                                 reason = ERROR_USER_EXISTS;
 
                             }
 
-                            else if (error.getCondition() == XMPPError.Condition.service_unavailable) {
+                            else if (error.getCondition() == StanzaError.Condition.service_unavailable) {
 
-                                if (error.getType() == XMPPError.Type.WAIT) {
+                                if (error.getType() == StanzaError.Type.WAIT) {
                                     reason = ERROR_THROTTLING;
 
                                 }
@@ -433,7 +435,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 // generate keyring immediately
                 // needed for connection
                 if (mKey != null) {
-                    String userId = MessageUtils.sha1(mPhone);
+                    String userId = XMPPUtils.createLocalpart(mPhone);
                     mKeyRing = mKey.storeNetwork(userId, mConnector.getNetwork(),
                         mName, mPassphrase);
                 }
@@ -464,7 +466,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                                 List<FormField> iter = response.getFields();
                                 for (FormField field : iter) {
                                     if ("publickey".equals(field.getVariable())) {
-                                        publicKey = field.getValues().get(0);
+                                        publicKey = field.getFirstValue();
                                     }
                                 }
 
@@ -676,7 +678,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private Stanza createRegistrationForm() {
         Registration iq = new Registration();
         iq.setType(IQ.Type.set);
-        iq.setTo(mConnector.getConnection().getServiceName());
+        iq.setTo(mConnector.getConnection().getXMPPServiceDomain());
         Form form = new Form(DataForm.Type.submit);
 
         FormField type = new FormField("FORM_TYPE");
@@ -721,7 +723,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private Stanza createValidationForm() throws IOException {
         Registration iq = new Registration();
         iq.setType(IQ.Type.set);
-        iq.setTo(mConnector.getConnection().getServiceName());
+        iq.setTo(mConnector.getConnection().getXMPPServiceDomain());
         Form form = new Form(DataForm.Type.submit);
 
         FormField type = new FormField("FORM_TYPE");
@@ -744,7 +746,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private Stanza createPrivateKeyRequest() {
         Registration iq = new Registration();
         iq.setType(IQ.Type.get);
-        iq.setTo(mConnector.getConnection().getServiceName());
+        iq.setTo(mConnector.getConnection().getXMPPServiceDomain());
 
         Account account = new Account();
         account.setPrivateKeyToken(mPrivateKeyToken);
@@ -789,11 +791,11 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private String findField(DataForm form, String name) {
         FormField field = form.getField(name);
         if (field != null) {
-            List<String> values = field.getValues();
+            List<CharSequence> values = field.getValues();
             if (values != null && values.size() > 0) {
-                String value = values.get(0);
-                return value != null && value.trim().length() > 0 ?
-                    value : null;
+                CharSequence value = values.get(0);
+                return value != null && value.toString().trim().length() > 0 ?
+                    value.toString() : null;
             }
         }
         return null;
@@ -936,7 +938,8 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     }
 
     /** Returns the (parsed) number stored in this device SIM card. */
-    @SuppressLint("HardwareIds")
+    @SuppressLint({"HardwareIds", "MissingPermission"})
+    @RequiresPermission(Manifest.permission.READ_PHONE_STATE)
     public static PhoneNumber getMyNumber(Context context) {
         try {
             final TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
@@ -967,16 +970,6 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
     @Override
     public void reconnectingIn(int seconds) {
-        // not used
-    }
-
-    @Override
-    public void reconnectionFailed(Exception e) {
-        // not used
-    }
-
-    @Override
-    public void reconnectionSuccessful() {
         // not used
     }
 

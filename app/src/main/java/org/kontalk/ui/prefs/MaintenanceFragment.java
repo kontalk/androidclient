@@ -42,6 +42,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.text.InputType;
 import android.widget.Toast;
 
+import org.jivesoftware.smack.util.SHA1;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
@@ -54,7 +55,6 @@ import org.kontalk.ui.LockedDialog;
 import org.kontalk.ui.PasswordInputDialog;
 import org.kontalk.ui.RegisterDeviceActivity;
 import org.kontalk.util.MediaStorage;
-import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
@@ -309,7 +309,7 @@ public class MaintenanceFragment extends RootPreferenceFragment {
                     public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                         String passphrase = input.toString();
                         // user-entered passphrase is hashed, so compare with SHA-1 version
-                        String hashed = MessageUtils.sha1(passphrase);
+                        String hashed = SHA1.hex(passphrase);
                         if (hashed.equals(Kontalk.get()
                                 .getCachedPassphrase())) {
                             action.onValidPassphrase(passphrase);
@@ -339,7 +339,7 @@ public class MaintenanceFragment extends RootPreferenceFragment {
                         try {
 
                             // user-entered passphrase must be hashed
-                            String hashed = MessageUtils.sha1(password);
+                            String hashed = SHA1.hex(password);
                             Authenticator.changePassphrase(ctx, oldPassword, hashed, true);
                             Kontalk.get().invalidatePersonalKey();
 

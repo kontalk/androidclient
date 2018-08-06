@@ -51,6 +51,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -116,7 +117,6 @@ import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.adapter.CountryCodesAdapter;
 import org.kontalk.ui.adapter.CountryCodesAdapter.CountryCode;
 import org.kontalk.ui.prefs.PreferencesActivity;
-import org.kontalk.util.MessageUtils;
 import org.kontalk.util.ParameterRunnable;
 import org.kontalk.util.Permissions;
 import org.kontalk.util.Preferences;
@@ -267,28 +267,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 // TODO Auto-generated method stub
             }
         });
-
-        // FIXME this doesn't consider creation because of configuration change
-        PhoneNumber myNum = NumberValidator.getMyNumber(this);
-        if (myNum != null) {
-            CountryCode cc = new CountryCode();
-            cc.regionCode = util.getRegionCodeForNumber(myNum);
-            if (cc.regionCode == null)
-                cc.regionCode = util.getRegionCodeForCountryCode(myNum.getCountryCode());
-            mCountryCode.setSelection(ccList.getPositionForId(cc));
-            mPhone.setText(String.valueOf(myNum.getNationalNumber()));
-        }
-        else {
-            final TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-            String country = tm.getSimCountryIso();
-            if (country != null) {
-                final String regionCode = country.toUpperCase(Locale.US);
-                CountryCode cc = new CountryCode();
-                cc.regionCode = regionCode;
-                cc.countryCode = util.getCountryCodeForRegion(regionCode);
-                mCountryCode.setSelection(ccList.getPositionForId(cc));
-            }
-        }
 
         // listener for autoselecting country code from typed phone number
         mPhone.addTextChangedListener(new TextWatcher() {
@@ -575,14 +553,46 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         }
     }
 
+    @AfterPermissionGranted(Permissions.RC_PHONE_STATE)
+    @SuppressLint("MissingPermission")
+    void detectMyNumber() {
+        PhoneNumberUtil util = PhoneNumberUtil.getInstance();
+
+        // FIXME this doesn't consider creation because of configuration change
+        CountryCodesAdapter ccList = (CountryCodesAdapter) mCountryCode.getAdapter();
+        PhoneNumber myNum = NumberValidator.getMyNumber(this);
+        if (myNum != null) {
+            CountryCode cc = new CountryCode();
+            cc.regionCode = util.getRegionCodeForNumber(myNum);
+            if (cc.regionCode == null)
+                cc.regionCode = util.getRegionCodeForCountryCode(myNum.getCountryCode());
+            mCountryCode.setSelection(ccList.getPositionForId(cc));
+            mPhone.setText(String.valueOf(myNum.getNationalNumber()));
+        }
+        else {
+            final TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+            String country = tm.getSimCountryIso();
+            if (country != null) {
+                final String regionCode = country.toUpperCase(Locale.US);
+                CountryCode cc = new CountryCode();
+                cc.regionCode = regionCode;
+                cc.countryCode = util.getCountryCodeForRegion(regionCode);
+                mCountryCode.setSelection(ccList.getPositionForId(cc));
+            }
+        }
+    }
+
     private void askPermissions() {
         if (mPermissionsAsked)
             return;
 
+        Permissions.requestPhoneState(this, getString(R.string.err_validation_phone_state_denied));
+
         if (!Permissions.canWriteContacts(this)) {
             Permissions.requestContacts(this, getString(R.string.err_validation_contacts_denied));
-            mPermissionsAsked = true;
         }
+
+        mPermissionsAsked = true;
     }
 
     void keepScreenOn(boolean active) {
@@ -1096,7 +1106,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
             // check that uid matches phone number
             String email = uid.getEmail();
-            String numberHash = MessageUtils.sha1(mPhoneNumber);
+            String numberHash = XMPPUtils.createLocalpart(mPhoneNumber);
             String localpart = XmppStringUtils.parseLocalpart(email);
             if (!numberHash.equalsIgnoreCase(localpart))
                 throw new PGPUidMismatchException("email does not match phone number: " + email);

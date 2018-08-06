@@ -18,26 +18,27 @@
 
 package org.kontalk.service.gcm;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.SystemClock;
-import org.kontalk.Log;
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.concurrent.TimeUnit;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.google.android.gms.tasks.OnCanceledListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.support.annotation.NonNull;
 
 import org.kontalk.Kontalk;
+import org.kontalk.Log;
 import org.kontalk.service.msgcenter.IPushListener;
 import org.kontalk.service.msgcenter.IPushService;
 import org.kontalk.util.SystemUtils;
-
-import java.io.IOException;
-import java.sql.Timestamp;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -51,16 +52,7 @@ public class GcmPushService implements IPushService {
      * Default lifespan (7 days) of the {@link #isRegisteredOnServer()}
      * flag until it is considered expired.
      */
-    // NOTE: cannot use TimeUnit.DAYS because it's not available on API Level 8
-    public static final long DEFAULT_ON_SERVER_LIFESPAN_MS =
-            1000 * 3600 * 24 * 7;
-
-    private static final Random sRandom = new Random();
-
-    private static final String BACKOFF_MS = "backoff_ms";
-    private static final int DEFAULT_BACKOFF_MS = 3000;
-    private static final int MAX_BACKOFF_MS =
-            (int) TimeUnit.SECONDS.toMillis(3600); // 1 hour
+    private static final long DEFAULT_ON_SERVER_LIFESPAN_MS = TimeUnit.DAYS.toMillis(7);
 
     private static final String PROPERTY_REG_ID = "registration_id";
     private static final String PROPERTY_APP_VERSION = "appVersion";
@@ -72,54 +64,48 @@ public class GcmPushService implements IPushService {
 
     private IPushListener mListener;
     private Context mContext;
-    private GoogleCloudMessaging mGcm;
 
     public GcmPushService(Context context) {
         mContext = context.getApplicationContext();
     }
 
-    private void ensureGcmInstance() {
-        if (mGcm == null)
-            mGcm = GoogleCloudMessaging.getInstance(mContext);
-    }
-
     @Override
     public void register(final IPushListener listener, final String senderId) {
         mListener = listener;
-        resetBackoff();
 
-        new Thread(new Runnable() {
-            public void run() {
-                ensureGcmInstance();
-
-                try {
-                    String regId = mGcm.register(senderId);
-
+        FirebaseInstanceId.getInstance().getInstanceId()
+            .addOnSuccessListener(new OnSuccessListener<InstanceIdResult>() {
+                @Override
+                public void onSuccess(InstanceIdResult instanceIdResult) {
                     // persist the regID - no need to register again.
-                    storeRegistrationId(regId);
+                    storeRegistrationId(instanceIdResult.getToken());
 
                     // call the listener
-                    listener.onRegistered(mContext, regId);
-
+                    listener.onRegistered(mContext, instanceIdResult.getToken());
                 }
-                catch (IOException e) {
+            })
+            .addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
                     listener.onError(mContext, e.toString());
                 }
-            }
-        }).start();
+            })
+            .addOnCanceledListener(new OnCanceledListener() {
+                @Override
+                public void onCanceled() {
+                    listener.onError(mContext, "canceled");
+                }
+            });
     }
 
     @Override
     public void unregister(final IPushListener listener) {
         mListener = listener;
-        resetBackoff();
 
         new Thread(new Runnable() {
             public void run() {
-                ensureGcmInstance();
-
                 try {
-                    mGcm.unregister();
+                    FirebaseInstanceId.getInstance().deleteInstanceId();
 
                     // persist the regID - no need to register again.
                     storeRegistrationId("");
@@ -130,8 +116,6 @@ public class GcmPushService implements IPushService {
                 }
                 catch (IOException e) {
                     listener.onError(mContext, e.toString());
-
-                    retryOnError();
                 }
             }
         }).start();
@@ -146,7 +130,6 @@ public class GcmPushService implements IPushService {
         else {
             register(mListener, senderId);
         }
-
     }
 
     @Override
@@ -230,42 +213,6 @@ public class GcmPushService implements IPushService {
         editor.commit();
     }
 
-    /**
-     * Resets the backoff counter.
-     * <p>
-     * This method should be called after a GCM call succeeds.
-     *
-     */
-    void resetBackoff() {
-        Log.d(TAG, "resetting backoff for " + mContext.getPackageName());
-        setBackoff(DEFAULT_BACKOFF_MS);
-    }
-
-    /**
-     * Gets the current backoff counter.
-     *
-     * @return current backoff counter, in milliseconds.
-     */
-    int getBackoff() {
-        final SharedPreferences prefs = getGCMPreferences(mContext);
-        return prefs.getInt(BACKOFF_MS, DEFAULT_BACKOFF_MS);
-    }
-
-    /**
-     * Sets the backoff counter.
-     * <p>
-     * This method should be called after a GCM call fails, passing an
-     * exponential value.
-     *
-     * @param backoff new backoff counter, in milliseconds.
-     */
-    void setBackoff(int backoff) {
-        final SharedPreferences prefs = getGCMPreferences(mContext);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putInt(BACKOFF_MS, backoff);
-        editor.commit();
-    }
-
     private void storeRegistrationId(String regId) {
         final SharedPreferences prefs = getGCMPreferences(mContext);
         int appVersion = SystemUtils.getVersionCode();
@@ -273,25 +220,6 @@ public class GcmPushService implements IPushService {
             .putString(PROPERTY_REG_ID, regId)
             .putInt(PROPERTY_APP_VERSION, appVersion)
             .commit();
-    }
-
-    private void retryOnError() {
-        int backoffTimeMs = getBackoff();
-        int nextAttempt = backoffTimeMs / 2 + sRandom.nextInt(backoffTimeMs);
-        Log.d(TAG, "Scheduling registration retry, backoff = "
-                + nextAttempt + " (" + backoffTimeMs + ")");
-
-        PendingIntent retryPendingIntent = GcmIntentService.getRetryIntent(mContext);
-        AlarmManager am = (AlarmManager) mContext
-                .getSystemService(Context.ALARM_SERVICE);
-        am.set(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime()
-                + nextAttempt, retryPendingIntent);
-
-        // Next retry should wait longer.
-        if (backoffTimeMs < MAX_BACKOFF_MS) {
-            setBackoff(backoffTimeMs * 2);
-        }
-
     }
 
     private static SharedPreferences getGCMPreferences(Context context) {

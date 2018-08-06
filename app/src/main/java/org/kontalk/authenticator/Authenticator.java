@@ -70,7 +70,6 @@ import org.kontalk.crypto.PersonalKeyExporter;
 import org.kontalk.provider.Keyring;
 import org.kontalk.ui.MainActivity;
 import org.kontalk.ui.NumberValidation;
-import org.kontalk.util.MessageUtils;
 import org.kontalk.util.XMPPUtils;
 
 
@@ -89,10 +88,6 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static final String DATA_NAME = "org.kontalk.key.name";
     public static final String DATA_USER_PASSPHRASE = "org.kontalk.userPassphrase";
     public static final String DATA_SERVER_URI = "org.kontalk.server";
-
-    /** @deprecated This was obviously deprecated from the beginning. */
-    @Deprecated
-    public static final String DATA_AUTHTOKEN = "org.kontalk.token";
 
     @SuppressWarnings("WeakerAccess")
     final Context mContext;
@@ -124,7 +119,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static String getSelfJID(Context ctx) {
         String name = getDefaultAccountName(ctx);
         return (name != null) ?
-            XMPPUtils.createLocalJID(ctx, MessageUtils.sha1(name)) : null;
+            XMPPUtils.createLocalJID(ctx, XMPPUtils.createLocalpart(name)) : null;
     }
 
     public static boolean isSelfJID(Context ctx, BareJid jid) {
@@ -132,7 +127,6 @@ public class Authenticator extends AbstractAccountAuthenticator {
         return self != null && jid.equals(self);
     }
 
-    @Deprecated
     public static boolean isSelfJID(Context ctx, String bareJid) {
         String jid = getSelfJID(ctx);
         return jid != null && jid.equalsIgnoreCase(bareJid);

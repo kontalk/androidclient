@@ -116,6 +116,14 @@ public class GroupInfoFragment extends ListFragment
 
     private void loadConversation(long threadId) {
         mConversation = Conversation.loadFromId(getContext(), threadId);
+        if (mConversation == null) {
+            // conversation diseappared?? End now.
+            Activity parent = getActivity();
+            if (parent != null)
+                parent.finish();
+            return;
+        }
+
         mMembersAdapter.setGroupJid(mConversation.getGroupJid());
         String subject = mConversation.getGroupSubject();
         mTitle.setText(TextUtils.isEmpty(subject) ?

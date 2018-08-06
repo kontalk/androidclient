@@ -1,4 +1,24 @@
-# Change Log
+# Changelog
+
+## [Next]
+### Changed
+- Badge indicators for OEMs supporting it (#292)
+- Migrate to Firebase Cloud Messaging (#779)
+- Copy multiple messages to clipboard (#841)
+- Upgrade to Smack 4.3 (#1058)
+- Blind Trust Before Verification (#947)
+- Accepted invitation is no longer required to chat (#947)
+- More precise Google Maps location (#1197)
+
+### Fixed
+- Fix mixup with keys (#1127, #1171)
+- Verify server key automatically (#1130)
+- Fix group commands not processed (#1189)
+- Fix crash in location view (#1991)
+- Workaround Android bug 37032031 (#1192)
+- Fix messages not marked as sent (#1193)
+- Fix database deadlock (#1194)
+- Ask for permission to detect user's phone number (#1201)
 
 ## [4.1.6] - 2018-06-24
 ### Fixed
@@ -473,3 +493,50 @@
 - Fix communication with unknown contacts (#446)
 - Fix draft saving on incoming message (#448)
 - Fix crash during sync (#454)
+
+[Next]: https://github.com/kontalk/androidclient/compare/v4.1.6...HEAD
+[4.1.6]: https://github.com/kontalk/androidclient/compare/v4.1.5...v4.1.6
+[4.1.5]: https://github.com/kontalk/androidclient/compare/v4.1.4...v4.1.5
+[4.1.4]: https://github.com/kontalk/androidclient/compare/v4.1.3...v4.1.4
+[4.1.3]: https://github.com/kontalk/androidclient/compare/v4.1.2...v4.1.3
+[4.1.2]: https://github.com/kontalk/androidclient/compare/v4.1.1...v4.1.2
+[4.1.1]: https://github.com/kontalk/androidclient/compare/v4.1.0...v4.1.1
+[4.1.0]: https://github.com/kontalk/androidclient/compare/v4.1.0-beta4...v4.1.0
+[4.1.0-beta4]: https://github.com/kontalk/androidclient/compare/v4.1.0-beta3...v4.1.0-beta4
+[4.1.0-beta3]: https://github.com/kontalk/androidclient/compare/v4.1.0-beta2...v4.1.0-beta3
+[4.1.0-beta2]: https://github.com/kontalk/androidclient/compare/v4.1.0-beta1...v4.1.0-beta2
+[4.1.0-beta1]: https://github.com/kontalk/androidclient/compare/v4.0.4...v4.1.0-beta1
+[4.0.4]: https://github.com/kontalk/androidclient/compare/v4.0.3...v4.0.4
+[4.0.3]: https://github.com/kontalk/androidclient/compare/v4.0.2...v4.0.3
+[4.0.2]: https://github.com/kontalk/androidclient/compare/v4.0.1...v4.0.2
+[4.0.1]: https://github.com/kontalk/androidclient/compare/v4.0.0...v4.0.1
+[4.0.0]: https://github.com/kontalk/androidclient/compare/v4.0.0-beta6.1...v4.0.0
+[4.0.0-beta6.1]: https://github.com/kontalk/androidclient/compare/v4.0.0-beta6...v4.0.0-beta6.1
+[4.0.0-beta6]: https://github.com/kontalk/androidclient/compare/v4.0.0-beta5...v4.0.0-beta6
+[4.0.0-beta5]: https://github.com/kontalk/androidclient/compare/v4.0.0-beta4...v4.0.0-beta5
+[4.0.0-beta4]: https://github.com/kontalk/androidclient/compare/v4.0.0-beta3...v4.0.0-beta4
+[4.0.0-beta3]: https://github.com/kontalk/androidclient/compare/v4.0.0-beta2...v4.0.0-beta3
+[4.0.0-beta2]: https://github.com/kontalk/androidclient/compare/v4.0.0-beta1...v4.0.0-beta2
+[4.0.0-beta1]: https://github.com/kontalk/androidclient/compare/v3.1.10...v4.0.0-beta1
+[3.1.10]: https://github.com/kontalk/androidclient/compare/v3.1.9.1...v3.1.10
+[3.1.9.1]: https://github.com/kontalk/androidclient/compare/v3.1.9...v3.1.9.1
+[3.1.9]: https://github.com/kontalk/androidclient/compare/v3.1.8...v3.1.9
+[3.1.8]: https://github.com/kontalk/androidclient/compare/v3.1.7...v3.1.8
+[3.1.7]: https://github.com/kontalk/androidclient/compare/v3.1.6...v3.1.7
+[3.1.6]: https://github.com/kontalk/androidclient/compare/v3.1.5...v3.1.6
+[3.1.5]: https://github.com/kontalk/androidclient/compare/v3.1.4...v3.1.5
+[3.1.4]: https://github.com/kontalk/androidclient/compare/v3.1.3...v3.1.4
+[3.1.3]: https://github.com/kontalk/androidclient/compare/v3.1.2...v3.1.3
+[3.1.2]: https://github.com/kontalk/androidclient/compare/v3.1.1...v3.1.2
+[3.1.1]: https://github.com/kontalk/androidclient/compare/v3.1...v3.1.1
+[3.1]: https://github.com/kontalk/androidclient/compare/v3.1-beta3...v3.1
+[3.1-beta3]: https://github.com/kontalk/androidclient/compare/v3.0.6...v3.1-beta3
+[3.0.6]: https://github.com/kontalk/androidclient/compare/v3.0.5...v3.0.6
+[3.0.5]: https://github.com/kontalk/androidclient/compare/v3.0.4...v3.0.5
+[3.0.4]: https://github.com/kontalk/androidclient/compare/v3.1-beta2...v3.0.4
+[3.1-beta2]: https://github.com/kontalk/androidclient/compare/v3.1-beta1...v3.1-beta2
+[3.1-beta1]: https://github.com/kontalk/androidclient/compare/v3.0.3...v3.1-beta1
+[3.0.3]: https://github.com/kontalk/androidclient/compare/v3.0.2...v3.0.3
+[3.0.2]: https://github.com/kontalk/androidclient/compare/v3.0.1...v3.0.2
+[3.0.1]: https://github.com/kontalk/androidclient/compare/v3.0...v3.0.1
+[3.0]: https://github.com/kontalk/androidclient/compare/v3.0-rc4...v3.0

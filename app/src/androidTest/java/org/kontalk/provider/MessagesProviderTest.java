@@ -39,6 +39,7 @@ import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.SystemUtils;
+import org.kontalk.util.XMPPUtils;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
@@ -48,7 +49,7 @@ import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 public class MessagesProviderTest extends ProviderTestCase2<MessagesProvider> {
 
     private static final String TEST_USERID = XmppStringUtils
-        .completeJidFrom(MessageUtils.sha1("+15555215554"), "prime.kontalk.net");
+        .completeJidFrom(XMPPUtils.createLocalpart("+15555215554"), "prime.kontalk.net");
 
     public MessagesProviderTest() {
         super(MessagesProvider.class, MessagesProvider.AUTHORITY);

@@ -21,8 +21,6 @@ package org.kontalk.service.msgcenter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.Writer;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -78,8 +76,9 @@ import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 import org.jxmpp.jid.BareJid;
 import org.jxmpp.jid.Jid;
 import org.jxmpp.jid.impl.JidCreate;
+import org.jxmpp.jid.parts.Domainpart;
+import org.jxmpp.jid.parts.Localpart;
 import org.jxmpp.stringprep.XmppStringprepException;
-import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPException;
 
 import android.accounts.Account;
@@ -114,7 +113,6 @@ import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.authenticator.LegacyAuthentication;
 import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.BlockingCommand;
 import org.kontalk.client.E2EEncryption;
@@ -181,10 +179,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     static {
         SmackConfiguration.DEBUG = Log.isDebug();
         // we need our own debugger factory because of our internal logging system
-        SmackConfiguration.setDebuggerFactory(new SmackDebuggerFactory() {
+        SmackConfiguration.setDefaultSmackDebuggerFactory(new SmackDebuggerFactory() {
             @Override
-            public SmackDebugger create(XMPPConnection connection, Writer writer, Reader reader) throws IllegalArgumentException {
-                return new AbstractDebugger(connection, writer, reader) {
+            public SmackDebugger create(XMPPConnection connection) throws IllegalArgumentException {
+                return new AbstractDebugger(connection) {
                     @Override
                     protected void log(String logMessage) {
                         Log.d("SMACK", logMessage);
@@ -426,7 +424,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /**
      * Fast ping tester timeout.
      */
-    private static final int FAST_PING_TIMEOUT = 3000;
+    private static final int FAST_PING_TIMEOUT = 5000;
 
     /**
      * Minimal interval between connection tests (5 mins).
@@ -1071,8 +1069,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Contact.invalidateData();
 
         // stop any key pair regeneration service
-        if (!LegacyAuthentication.isUpgrading())
-            endKeyPairRegeneration();
+        endKeyPairRegeneration();
 
         broadcast(ACTION_DISCONNECTED);
 
@@ -1173,7 +1170,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     break;
 
                 case ACTION_UPLOAD_PRIVATEKEY:
-                    doConnect = handleUploadPrivateKey(intent, canConnect);
+                    doConnect = handleUploadPrivateKey(intent);
                     break;
 
                 case ACTION_CONNECTED:
@@ -1193,15 +1190,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     break;
 
                 case ACTION_MESSAGE:
-                    doConnect = handleMessage(intent, canConnect);
+                    doConnect = handleMessage(intent);
                     break;
 
                 case ACTION_ROSTER:
-                    doConnect = handleRoster(intent, canConnect);
+                    doConnect = handleRoster(intent);
                     break;
 
                 case ACTION_ROSTER_MATCH:
-                    doConnect = handleRosterMatch(intent, canConnect);
+                    doConnect = handleRosterMatch(intent);
                     break;
 
                 case ACTION_ROSTER_LOADED:
@@ -1213,27 +1210,27 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     break;
 
                 case ACTION_PRESENCE:
-                    doConnect = handlePresence(intent, canConnect);
+                    doConnect = handlePresence(intent);
                     break;
 
                 case ACTION_LAST_ACTIVITY:
-                    doConnect = handleLastActivity(intent, canConnect);
+                    doConnect = handleLastActivity(intent);
                     break;
 
                 case ACTION_VCARD:
-                    doConnect = handleVCard(intent, canConnect);
+                    doConnect = handleVCard(intent);
                     break;
 
                 case ACTION_PUBLICKEY:
-                    doConnect = handlePublicKey(intent, canConnect);
+                    doConnect = handlePublicKey(intent);
                     break;
 
                 case ACTION_SERVERLIST:
-                    doConnect = handleServerList(canConnect);
+                    doConnect = handleServerList();
                     break;
 
                 case ACTION_SUBSCRIBED:
-                    doConnect = handleSubscribed(intent, canConnect);
+                    doConnect = handleSubscribed(intent);
                     break;
 
                 case ACTION_RETRY:
@@ -1356,8 +1353,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_UPLOAD_PRIVATEKEY)
-    private boolean handleUploadPrivateKey(Intent intent, boolean canConnect) {
-        if (canConnect && isConnected()) {
+    private boolean handleUploadPrivateKey(Intent intent) {
+        if (isConnected()) {
             String exportPassprase = intent.getStringExtra(EXTRA_EXPORT_PASSPHRASE);
             beginUploadPrivateKey(exportPassprase);
         }
@@ -1439,15 +1436,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_MESSAGE)
-    private boolean handleMessage(Intent intent, boolean canConnect) {
-        if (canConnect && isConnected())
+    private boolean handleMessage(Intent intent) {
+        if (isConnected())
             sendMessage(intent.getExtras());
         return false;
     }
 
     @CommandHandler(name = ACTION_ROSTER)
-    private boolean handleRoster(Intent intent, boolean canConnect) {
-        if (canConnect && isConnected()) {
+    private boolean handleRoster(Intent intent) {
+        if (isConnected()) {
             Stanza iq = new RosterPacket();
             String id = intent.getStringExtra(EXTRA_PACKET_ID);
             iq.setStanzaId(id);
@@ -1459,8 +1456,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_ROSTER_MATCH)
-    private boolean handleRosterMatch(Intent intent, boolean canConnect) {
-        if (canConnect && isConnected()) {
+    private boolean handleRosterMatch(Intent intent) {
+        if (isConnected()) {
             RosterMatch iq = new RosterMatch();
             String[] list = intent.getStringArrayExtra(EXTRA_JIDLIST);
 
@@ -1469,7 +1466,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             // directed to the probe component
-            iq.setTo(XmppStringUtils.completeJidFrom("probe", mServer.getNetwork()));
+            try {
+                iq.setTo(JidCreate.bareFrom(Localpart.from("probe"),
+                    Domainpart.from(mServer.getNetwork())));
+            }
+            catch (XmppStringprepException e) {
+                // cannot happen
+                throw new RuntimeException(e);
+            }
 
             String id = intent.getStringExtra(EXTRA_PACKET_ID);
             iq.setStanzaId(id);
@@ -1526,8 +1530,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_PRESENCE)
-    private boolean handlePresence(Intent intent, boolean canConnect) {
-        if (canConnect && isConnected()) {
+    private boolean handlePresence(Intent intent) {
+        if (isConnected()) {
             final String id = intent.getStringExtra(EXTRA_PACKET_ID);
             String type = intent.getStringExtra(EXTRA_TYPE);
             final String to = intent.getStringExtra(EXTRA_TO);
@@ -1585,8 +1589,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_LAST_ACTIVITY)
-    private boolean handleLastActivity(Intent intent, boolean canConnect) {
-        if (canConnect && isConnected()) {
+    private boolean handleLastActivity(Intent intent) {
+        if (isConnected()) {
             LastActivity p = new LastActivity();
 
             p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
@@ -1598,10 +1602,19 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_VCARD)
-    private boolean handleVCard(Intent intent, boolean canConnect) {
-        if (canConnect && isConnected()) {
+    private boolean handleVCard(Intent intent) {
+        if (isConnected()) {
             VCard4 p = new VCard4();
-            p.setTo(intent.getStringExtra(EXTRA_TO));
+            String to = intent.getStringExtra(EXTRA_TO);
+            try {
+                p.setTo(JidCreate.from(to));
+            }
+            catch (XmppStringprepException e) {
+                Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+                // report it because it's a big deal
+                ReportingManager.logException(e);
+                return false;
+            }
 
             sendPacket(p);
         }
@@ -1609,14 +1622,22 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_PUBLICKEY)
-    private boolean handlePublicKey(Intent intent, boolean canConnect) {
-        if (canConnect && isConnected()) {
+    private boolean handlePublicKey(Intent intent) {
+        if (isConnected()) {
             String to = intent.getStringExtra(EXTRA_TO);
             if (to != null) {
                 // request public key for a specific user
                 PublicKeyPublish p = new PublicKeyPublish();
                 p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
-                p.setTo(to);
+                try {
+                    p.setTo(JidCreate.from(to));
+                }
+                catch (XmppStringprepException e) {
+                    Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+                    // report it because it's a big deal
+                    ReportingManager.logException(e);
+                    return false;
+                }
 
                 PublicKeyListener listener = new PublicKeyListener(this, p);
                 sendIqWithReply(p, true, listener, listener);
@@ -1686,10 +1707,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_SERVERLIST)
-    private boolean handleServerList(boolean canConnect) {
-        if (canConnect && isConnected()) {
+    private boolean handleServerList() {
+        if (isConnected()) {
             ServerlistCommand p = new ServerlistCommand();
-            p.setTo(XmppStringUtils.completeJidFrom("network", mServer.getNetwork()));
+            try {
+                p.setTo(JidCreate.from("network", mServer.getNetwork(), ""));
+            }
+            catch (XmppStringprepException e) {
+                Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+                // report it because it's a big deal
+                ReportingManager.logException(e);
+                return false;
+            }
 
             StanzaFilter filter = new StanzaIdFilter(p.getStanzaId());
             // TODO cache the listener (it shouldn't change)
@@ -1715,8 +1744,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_SUBSCRIBED)
-    private boolean handleSubscribed(Intent intent, boolean canConnect) {
-        if (canConnect && isConnected()) {
+    private boolean handleSubscribed(Intent intent) {
+        if (isConnected()) {
             sendSubscriptionReply(intent.getStringExtra(EXTRA_TO),
                 intent.getStringExtra(EXTRA_PACKET_ID),
                 intent.getIntExtra(EXTRA_PRIVACY, PRIVACY_ACCEPT));
@@ -1838,16 +1867,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @Override
-    public void reconnectionFailed(Exception error) {
-        // not used
-    }
-
-    @Override
-    public void reconnectionSuccessful() {
-        // not used
-    }
-
-    @Override
     public void aborted(Exception e) {
         if (e != null) {
             // we are being called from the connection helper because of
@@ -1958,7 +1977,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             public void run() {
                 final XMPPConnection conn = mConnection;
                 if (conn != null && conn.isConnected()) {
-                    Jid jid = conn.getServiceName();
+                    Jid jid = conn.getXMPPServiceDomain();
                     if (Keyring.getPublicKey(MessageCenterService.this, jid.toString(), MyUsers.Keys.TRUST_UNKNOWN) == null) {
                         PublicKeyPublish pub = new PublicKeyPublish();
                         pub.setStanzaId();
@@ -1994,14 +2013,25 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private void discovery() {
         StanzaFilter filter;
 
+        Jid to;
+        try {
+            to = JidCreate.domainBareFrom(mServer.getNetwork());
+        }
+        catch (XmppStringprepException e) {
+            Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+            // report it because it's a big deal
+            ReportingManager.logException(e);
+            return;
+        }
+
         DiscoverInfo info = new DiscoverInfo();
-        info.setTo(mServer.getNetwork());
+        info.setTo(to);
         filter = new StanzaIdFilter(info.getStanzaId());
         mConnection.addAsyncStanzaListener(new DiscoverInfoListener(this), filter);
         sendPacket(info);
 
         DiscoverItems items = new DiscoverItems();
-        items.setTo(mServer.getNetwork());
+        items.setTo(to);
         filter = new StanzaIdFilter(items.getStanzaId());
         mConnection.addAsyncStanzaListener(new DiscoverItemsListener(this), filter);
         sendPacket(items);
@@ -2633,17 +2663,25 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         final String groupJid = data.getString("org.kontalk.message.group.jid");
-        String to;
+        Jid to;
         // used for verifying isPaused()
-        String convJid;
+        Jid convJid;
         String[] toGroup;
         GroupController group = null;
 
         if (groupJid != null) {
             toGroup = data.getStringArray("org.kontalk.message.to");
-            // TODO this should be discovered first
-            to = XmppStringUtils.completeJidFrom("multicast", mConnection.getServiceName());
-            convJid = groupJid;
+            try {
+                // TODO this should be discovered first
+                to = JidCreate.from("multicast", mConnection.getXMPPServiceDomain(), "");
+                convJid = JidCreate.from(groupJid);
+            }
+            catch (XmppStringprepException e) {
+                Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+                // report it because it's a big deal
+                ReportingManager.logException(e);
+                return;
+            }
 
             // TODO take type from data
             group = GroupControllerFactory
@@ -2669,8 +2707,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
         }
         else {
-            to = data.getString("org.kontalk.message.to");
-            toGroup = new String[]{to};
+            try {
+                to = JidCreate.from(data.getString("org.kontalk.message.to"));
+            }
+            catch (XmppStringprepException e) {
+                Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
+                // report it because it's a big deal
+                ReportingManager.logException(e);
+                return;
+            }
+            toGroup = new String[]{to.toString()};
             convJid = to;
         }
 
@@ -2743,7 +2789,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     filename = MediaStorage.UNKNOWN_FILENAME;
 
                 // media message - start upload service
-                final String uploadTo = to;
+                final String uploadTo = to.toString();
                 final String[] uploadGroupTo = toGroup;
                 uploadService.getPostUrl(filename, fileLength, mime, new IUploadService.UrlCallback() {
                     @Override
@@ -2939,7 +2985,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                             // some extension, encrypt whole stanza just to be sure
                             else {
-                                toMessage = coder.encryptStanza(m.toXML());
+                                toMessage = coder.encryptStanza(m.toXML(null));
                             }
 
                             org.jivesoftware.smack.packet.Message encMsg =

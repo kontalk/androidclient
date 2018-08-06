@@ -35,6 +35,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
 
+import org.jivesoftware.smack.util.StringUtils;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.bcpg.ArmoredInputStream;
 import org.spongycastle.bcpg.BCPGInputStream;
@@ -75,8 +76,6 @@ import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
 import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyEncryptorBuilder;
 
 import android.os.Parcel;
-
-import org.kontalk.util.MessageUtils;
 
 
 /** Some PGP utility method, mainly for use by {@link PersonalKey}. */
@@ -434,7 +433,7 @@ public class PGP {
     }
 
     public static String getFingerprint(PGPPublicKey publicKey) {
-        return MessageUtils.bytesToHex(publicKey.getFingerprint()).toUpperCase(Locale.US);
+        return StringUtils.encodeHex(publicKey.getFingerprint()).toUpperCase(Locale.US);
     }
 
     public static String getFingerprint(byte[] publicKeyring) throws IOException, PGPException {

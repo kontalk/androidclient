@@ -27,6 +27,7 @@ import com.car2go.maps.model.BitmapDescriptor;
 import com.car2go.maps.model.LatLng;
 import com.car2go.maps.model.MarkerOptions;
 
+import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.net.Uri;
@@ -309,18 +310,22 @@ public abstract class PositionAbstractFragment extends Fragment
     }
 
     private void positionMarker(Location location) {
-        if (location == null) {
+        if (location == null)
             return;
-        }
+
+        Context context = getContext();
+        if (context == null)
+            return;
+
         mMyLocation = new Location(location);
 
         if (mUserLocation != null && mDistance != null) {
             float distance = location.distanceTo(mUserLocation);
             if (distance < 1000) {
-                mDistance.setText(getString(R.string.meters_away, (int) (distance)));
+                mDistance.setText(context.getString(R.string.meters_away, (int) (distance)));
             }
             else {
-                mDistance.setText(getString(R.string.kilometers_away, distance / 1000.0f));
+                mDistance.setText(context.getString(R.string.kilometers_away, distance / 1000.0f));
             }
         }
     }
