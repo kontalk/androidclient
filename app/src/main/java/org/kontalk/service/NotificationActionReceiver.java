@@ -54,6 +54,10 @@ public class NotificationActionReceiver extends BroadcastReceiver {
             Parcelable[] threads = intent.getParcelableArrayExtra("org.kontalk.datalist");
             if (threads == null) {
                 Log.w(TAG, "Notification delete action could not be completed because of a firmware bug");
+                // mark all threads as read instead
+                MessagesProviderClient.markAllThreadsAsOld(context);
+
+                ReportingManager.logException(new IllegalArgumentException("notification action data is null"));
             }
             else {
                 for (Parcelable uri : threads)
@@ -89,8 +93,18 @@ public class NotificationActionReceiver extends BroadcastReceiver {
             MessagingNotification.delayedUpdateMessagesNotification(context, false);
         }
         else if (MessagingNotification.ACTION_NOTIFICATION_MARK_READ.equals(action)) {
-            // mark threads as read
-            MessagesProviderClient.markThreadAsRead(context, ContentUris.parseId(intent.getData()));
+            // do not crash on buggy firmware
+            if (intent.getData() == null) {
+                // mark all threads as read instead
+                MessagesProviderClient.markAllThreadsAsRead(context);
+
+                ReportingManager.logException(new IllegalArgumentException("notification action data is null"));
+            }
+            else {
+                // mark threads as read
+                MessagesProviderClient.markThreadAsRead(context, ContentUris.parseId(intent.getData()));
+            }
+
             MessagingNotification.delayedUpdateMessagesNotification(context, false);
         }
     }
