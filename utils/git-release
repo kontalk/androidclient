@@ -142,7 +142,7 @@ cmd_continue() {
     git add ${REPO_DIR}/app/src/main/play
     git commit -as
     git push -u origin ${BRANCH}
-    git tag -a -m "${VERSION_NAME} release" -s -u devteam@kontalk.org v${VERSION_NAME}
+    git tag -a -m "${VERSION_NAME} release" -s -u F28947756EB27311E86F6309274BE2A3BD56E37A v${VERSION_NAME}
     git push --tags
 
     echo "Uploading builds to mirror"
