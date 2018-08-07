@@ -20,6 +20,13 @@
 - Fix database deadlock (#1194)
 - Ask for permission to detect user's phone number (#1201)
 
+## [Next]
+### Fixed
+- ...
+
+### Changed
+- ...
+
 ## [4.1.6] - 2018-06-24
 ### Fixed
 - Temporarily revert to stable emoji version
@@ -494,6 +501,7 @@
 - Fix draft saving on incoming message (#448)
 - Fix crash during sync (#454)
 
+[Next]: https://github.com/kontalk/androidclient/compare/v4.2.0-beta1...HEAD
 [4.2.0-beta1]: https://github.com/kontalk/androidclient/compare/v4.1.6...v4.2.0-beta1
 [4.1.6]: https://github.com/kontalk/androidclient/compare/v4.1.5...v4.1.6
 [4.1.5]: https://github.com/kontalk/androidclient/compare/v4.1.4...v4.1.5
