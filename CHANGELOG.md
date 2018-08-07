@@ -1,5 +1,12 @@
 # Changelog
 
+## [Next]
+### Fixed
+- ...
+
+### Changed
+- ...
+
 ## [4.2.0-beta1] - 2018-08-06
 ### Changed
 - Badge indicators for OEMs supporting it (#292)
@@ -19,13 +26,6 @@
 - Fix messages not marked as sent (#1193)
 - Fix database deadlock (#1194)
 - Ask for permission to detect user's phone number (#1201)
-
-## [Next]
-### Fixed
-- ...
-
-### Changed
-- ...
 
 ## [4.1.6] - 2018-06-24
 ### Fixed
