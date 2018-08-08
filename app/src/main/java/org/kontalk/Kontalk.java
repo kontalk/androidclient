@@ -201,9 +201,6 @@ public class Kontalk extends Application {
         AccountManager am = AccountManager.get(this);
         Account account = Authenticator.getDefaultAccount(am);
         if (account != null) {
-            // update notifications from locally unread messages
-            MessagingNotification.delayedUpdateMessagesNotification(this, false);
-
             // register account change listener
             final OnAccountsUpdateListener listener = new OnAccountsUpdateListener() {
                 @Override
