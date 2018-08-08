@@ -5,7 +5,8 @@
 - ...
 
 ### Changed
-- ...
+- Notification channels (aka notification categoris)
+- Opt-out of server administrator messages (#1132)
 
 ## [4.2.0-beta1] - 2018-08-06
 ### Changed

@@ -458,6 +458,9 @@
     <string name="pref_sync_invisible_contacts">Include invisible contacts</string>
     <string name="pref_title_sync_invisible_contacts">Include contacts not displayed in Contacts app. Enable if you use DAVDroid</string>
 
+    <string name="pref_server_messages">Receive server messages</string>
+    <string name="pref_title_server_messages">Allow messages from server administrators. You might miss important news if you disable this</string>
+
     <string name="pref_accept_any_certificate">Accept any SSL certificate</string>
 
     <string name="pref_delete_account">Delete your account</string>

@@ -276,6 +276,14 @@ class MessageListener extends WakefulMessageCenterPacketListener {
                 msgId = MessageUtils.messageId();
 
             Jid from = m.getFrom();
+
+            // check if user opted out of server messages
+            if (!Preferences.isServerMessagesEnabled(getContext()) &&
+                from.asBareJid().toString().equalsIgnoreCase(getServer().getNetwork())) {
+                Log.w(TAG, "user opted out of server messages, message will be ignored");
+                return;
+            }
+
             String body = m.getBody();
 
             // create message

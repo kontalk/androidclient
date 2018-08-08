@@ -44,5 +44,10 @@
         android:title="@string/pref_sync_invisible_contacts"
         android:defaultValue="@bool/pref_default_sync_invisible_contacts"
         android:layout="@layout/md_preference_custom"/>
+    <CheckBoxPreference android:key="pref_server_messages"
+        android:summary="@string/pref_title_server_messages"
+        android:title="@string/pref_server_messages"
+        android:defaultValue="@bool/pref_default_server_messages"
+        android:layout="@layout/md_preference_custom"/>
 
 </PreferenceScreen>
