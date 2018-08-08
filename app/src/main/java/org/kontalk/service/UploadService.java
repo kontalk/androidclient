@@ -42,6 +42,7 @@ import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.ConversationsActivity;
+import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.ProgressNotificationBuilder;
 import org.kontalk.upload.HTPPFileUploadConnection;
 import org.kontalk.upload.UploadConnection;
@@ -234,6 +235,7 @@ public class UploadService extends IntentService implements ProgressListener {
 
         if (mNotificationBuilder == null) {
             mNotificationBuilder = new ProgressNotificationBuilder(getApplicationContext(),
+                MessagingNotification.CHANNEL_MEDIA_UPLOAD,
                 R.layout.progress_notification,
                 getString(R.string.sending_message),
                 R.drawable.ic_stat_notify,
@@ -300,13 +302,14 @@ public class UploadService extends IntentService implements ProgressListener {
             NOTIFICATION_ID_UPLOAD_ERROR, i, 0);
 
         // create notification
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context.getApplicationContext())
+        NotificationCompat.Builder builder = new NotificationCompat
+            .Builder(context.getApplicationContext(), MessagingNotification.CHANNEL_MEDIA_UPLOAD)
             .setSmallIcon(R.drawable.ic_stat_notify)
             .setContentTitle(context.getString(R.string.notify_title_upload_error))
             .setContentText(text)
             .setTicker(ticker)
             .setContentIntent(pi)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setCategory(NotificationCompat.CATEGORY_ERROR)
             .setAutoCancel(true);
 

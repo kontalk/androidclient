@@ -20,6 +20,10 @@ package org.kontalk.ui;
 
 import java.io.File;
 import java.io.InputStream;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -32,17 +36,21 @@ import org.jxmpp.util.XmppStringUtils;
 
 import android.accounts.Account;
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationCompat.BigPictureStyle;
 import android.support.v4.app.NotificationCompat.InboxStyle;
@@ -56,6 +64,8 @@ import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
+
+import me.leolin.shortcutbadger.ShortcutBadger;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
@@ -74,25 +84,58 @@ import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
-import me.leolin.shortcutbadger.ShortcutBadger;
-
 
 /**
  * Various utility methods for managing system notifications.
  * @author Daniele Ricci
  */
 public class MessagingNotification {
+
+    /**
+     * A simple documentation annotation to link a notification ID constant
+     * with a channel ID. Be sure to respect that.
+     */
+    @Target(ElementType.FIELD)
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface NotificationChannelId {
+        String value();
+    }
+
+    public static final String CHANNEL_INCOMING_MESSAGE = "incoming_message";
+    public static final String CHANNEL_MEDIA_DOWNLOAD = "media_download";
+    public static final String CHANNEL_MEDIA_UPLOAD = "media_upload";
+    public static final String CHANNEL_MESSAGE_CENTER = "message_center";
+    public static final String CHANNEL_OTHER = "other";
+
+    @NotificationChannelId(CHANNEL_INCOMING_MESSAGE)
     public static final int NOTIFICATION_ID_MESSAGES        = 101;
+
+    @NotificationChannelId(CHANNEL_MEDIA_UPLOAD)
     public static final int NOTIFICATION_ID_UPLOADING       = 102;
+
+    @NotificationChannelId(CHANNEL_MEDIA_UPLOAD)
     public static final int NOTIFICATION_ID_UPLOAD_ERROR    = 103;
+
+    @NotificationChannelId(CHANNEL_MEDIA_DOWNLOAD)
     public static final int NOTIFICATION_ID_DOWNLOADING     = 104;
+
+    @NotificationChannelId(CHANNEL_MEDIA_DOWNLOAD)
     public static final int NOTIFICATION_ID_DOWNLOAD_OK     = 105;
+
+    @NotificationChannelId(CHANNEL_MEDIA_DOWNLOAD)
     public static final int NOTIFICATION_ID_DOWNLOAD_ERROR  = 106;
-    public static final int NOTIFICATION_ID_QUICK_REPLY     = 107;
-    public static final int NOTIFICATION_ID_KEYPAIR_GEN     = 108;
-    public static final int NOTIFICATION_ID_INVITATION      = 109;
-    public static final int NOTIFICATION_ID_AUTH_ERROR      = 110;
-    public static final int NOTIFICATION_ID_FOREGROUND      = 111;
+
+    @NotificationChannelId(CHANNEL_OTHER)
+    public static final int NOTIFICATION_ID_KEYPAIR_GEN     = 107;
+
+    @NotificationChannelId(CHANNEL_INCOMING_MESSAGE)
+    public static final int NOTIFICATION_ID_INVITATION      = 108;
+
+    @NotificationChannelId(CHANNEL_OTHER)
+    public static final int NOTIFICATION_ID_AUTH_ERROR      = 109;
+
+    @NotificationChannelId(CHANNEL_MESSAGE_CENTER)
+    public static final int NOTIFICATION_ID_FOREGROUND      = 110;
 
     private static final String[] MESSAGES_UNREAD_PROJECTION =
     {
@@ -172,6 +215,90 @@ public class MessagingNotification {
     private MessagingNotification() {}
 
     public static void init(Context context) {
+        createChannels(context);
+    }
+
+    private static void createChannels(Context context) {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Resources resources = context.getResources();
+            NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+            createMessageChannel(resources, notificationManager);
+            createDownloadChannel(resources, notificationManager);
+            createUploadChannel(resources, notificationManager);
+            createMessageCenterChannel(resources, notificationManager);
+            createOtherChannel(resources, notificationManager);
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private static void createMessageChannel(Resources resources, NotificationManager notificationManager) {
+        CharSequence name = resources.getString(R.string.notify_incoming_message_channel_name);
+        String description = resources.getString(R.string.notify_incoming_message_channel_description);
+        NotificationChannel channel = new NotificationChannel(CHANNEL_INCOMING_MESSAGE, name,
+            NotificationManager.IMPORTANCE_HIGH);
+        channel.setDescription(description);
+        channel.enableVibration(true);
+        channel.enableLights(true);
+        channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+        notificationManager.createNotificationChannel(channel);
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private static void createDownloadChannel(Resources resources, NotificationManager notificationManager) {
+        CharSequence name = resources.getString(R.string.notify_media_download_channel_name);
+        String description = resources.getString(R.string.notify_media_download_channel_description);
+        NotificationChannel channel = new NotificationChannel(CHANNEL_MEDIA_DOWNLOAD, name,
+            NotificationManager.IMPORTANCE_MIN);
+        channel.setDescription(description);
+        channel.enableLights(false);
+        channel.enableVibration(false);
+        channel.setShowBadge(false);
+        channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+        notificationManager.createNotificationChannel(channel);
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private static void createUploadChannel(Resources resources, NotificationManager notificationManager) {
+        CharSequence name = resources.getString(R.string.notify_media_upload_channel_name);
+        String description = resources.getString(R.string.notify_media_upload_channel_description);
+        NotificationChannel channel = new NotificationChannel(CHANNEL_MEDIA_UPLOAD, name,
+            NotificationManager.IMPORTANCE_MIN);
+        channel.setDescription(description);
+        channel.enableLights(false);
+        channel.enableVibration(false);
+        channel.setShowBadge(false);
+        channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+        notificationManager.createNotificationChannel(channel);
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private static void createMessageCenterChannel(Resources resources, NotificationManager notificationManager) {
+        CharSequence name = resources.getString(R.string.notify_message_center_channel_name);
+        String description = resources.getString(R.string.notify_message_center_channel_description);
+        NotificationChannel channel = new NotificationChannel(CHANNEL_MESSAGE_CENTER, name,
+            NotificationManager.IMPORTANCE_MIN);
+        channel.setDescription(description);
+        channel.enableLights(false);
+        channel.enableVibration(false);
+        channel.setShowBadge(false);
+        channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+        notificationManager.createNotificationChannel(channel);
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private static void createOtherChannel(Resources resources, NotificationManager notificationManager) {
+        CharSequence name = resources.getString(R.string.notify_other_channel_name);
+        String description = resources.getString(R.string.notify_other_channel_description);
+        NotificationChannel channel = new NotificationChannel(CHANNEL_OTHER, name,
+            NotificationManager.IMPORTANCE_DEFAULT);
+        channel.setDescription(description);
+        channel.enableLights(true);
+        channel.enableVibration(true);
+        channel.setShowBadge(true);
+        channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+        notificationManager.createNotificationChannel(channel);
     }
 
     public static void setPaused(String jid) {
@@ -293,7 +420,8 @@ public class MessagingNotification {
             return;
         }
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context.getApplicationContext());
+        NotificationCompat.Builder builder = new NotificationCompat
+            .Builder(context.getApplicationContext(), CHANNEL_INCOMING_MESSAGE);
         Set<Uri> conversationIds = new HashSet<>(unread);
         long latestTimestamp = 0;
 
@@ -485,7 +613,7 @@ public class MessagingNotification {
     /** High priority message with Kontalk colors :-) */
     private static void setFeatures(Context context, NotificationCompat.Builder builder) {
         builder
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             .setColor(ContextCompat.getColor(context, R.color.app_accent));
     }
@@ -559,11 +687,11 @@ public class MessagingNotification {
 
         // build the notification
         NotificationCompat.Builder builder = new NotificationCompat
-            .Builder(context.getApplicationContext());
-        builder
+            .Builder(context.getApplicationContext(), CHANNEL_INCOMING_MESSAGE)
             .setAutoCancel(true)
             .setSmallIcon(R.drawable.ic_stat_notify)
             .setTicker(context.getString(R.string.title_invitation))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentTitle(title)
             .setContentText(context.getString(R.string.invite_notification))
             .setContentIntent(pi);
@@ -602,8 +730,7 @@ public class MessagingNotification {
 
         // build the notification
         NotificationCompat.Builder builder = new NotificationCompat
-            .Builder(context.getApplicationContext());
-        builder
+            .Builder(context.getApplicationContext(), CHANNEL_OTHER)
             .setAutoCancel(true)
             .setSmallIcon(R.drawable.ic_stat_notify)
             .setTicker(context.getString(R.string.title_auth_error))
@@ -630,7 +757,8 @@ public class MessagingNotification {
             NOTIFICATION_ID_FOREGROUND, ni, PendingIntent.FLAG_UPDATE_CURRENT);
 
         // build the notification
-        return new NotificationCompat.Builder(context.getApplicationContext())
+        return new NotificationCompat
+            .Builder(context.getApplicationContext(), CHANNEL_MESSAGE_CENTER)
             .setOngoing(true)
             .setSmallIcon(R.drawable.ic_stat_notify)
             .setPriority(NotificationCompat.PRIORITY_MIN)
@@ -1081,21 +1209,6 @@ public class MessagingNotification {
                 ni = ComposeMessage.fromConversation(mContext, conversation.id);
             }
             return createPendingIntent(mContext, ni);
-        }
-
-        public String getLastMessageText() {
-            return conversation.content;
-        }
-
-        public String getLastMessagePeer() {
-            return conversation.peer;
-        }
-
-        public PendingIntent getLastMessagePendingIntent() {
-            // one unread conversation - open ComposeMessage on that peer
-            Intent ni = ComposeMessage.fromConversation(mContext, conversation.id);
-            return PendingIntent.getActivity(mContext, NOTIFICATION_ID_QUICK_REPLY,
-                    ni, 0);
         }
     }
 }

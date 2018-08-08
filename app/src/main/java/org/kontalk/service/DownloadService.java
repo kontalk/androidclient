@@ -223,6 +223,7 @@ public class DownloadService extends IntentService implements DownloadListener {
 
         if (mNotificationBuilder == null) {
             mNotificationBuilder = new ProgressNotificationBuilder(getApplicationContext(),
+                MessagingNotification.CHANNEL_MEDIA_DOWNLOAD,
                 R.layout.progress_notification,
                 getString(R.string.downloading_attachment),
                 R.drawable.ic_stat_notify,
@@ -343,13 +344,14 @@ public class DownloadService extends IntentService implements DownloadListener {
                 NOTIFICATION_ID_DOWNLOAD_OK, i, 0);
 
             // create notification
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext())
+            NotificationCompat.Builder builder = new NotificationCompat
+                .Builder(getApplicationContext(), MessagingNotification.CHANNEL_MEDIA_DOWNLOAD)
                 .setSmallIcon(R.drawable.ic_stat_notify)
                 .setContentTitle(getString(R.string.notify_title_download_completed))
                 .setContentText(getString(R.string.notify_text_download_completed))
                 .setTicker(getString(R.string.notify_ticker_download_completed))
                 .setContentIntent(pi)
-                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setPriority(NotificationCompat.PRIORITY_MIN)
                 .setAutoCancel(true);
 
             // notify!!
@@ -376,12 +378,13 @@ public class DownloadService extends IntentService implements DownloadListener {
                 NOTIFICATION_ID_DOWNLOAD_ERROR, i, 0);
 
         // create notification
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext())
+        NotificationCompat.Builder builder = new NotificationCompat
+            .Builder(getApplicationContext(), MessagingNotification.CHANNEL_MEDIA_DOWNLOAD)
             .setSmallIcon(R.drawable.ic_stat_notify)
             .setContentTitle(getString(R.string.notify_title_download_error))
             .setContentText(text)
             .setTicker(ticker)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setCategory(NotificationCompat.CATEGORY_ERROR)
             .setContentIntent(pi)
             .setAutoCancel(true);

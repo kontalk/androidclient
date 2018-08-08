@@ -40,6 +40,7 @@ import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.ui.ConversationsActivity;
+import org.kontalk.ui.MessagingNotification;
 
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_KEYPAIR_GEN;
 
@@ -108,13 +109,15 @@ public class KeyPairGeneratorService extends Service {
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
             NOTIFICATION_ID_KEYPAIR_GEN, ni, 0);
 
-        Notification no = new NotificationCompat.Builder(this)
+        Notification no = new NotificationCompat
+            .Builder(this, MessagingNotification.CHANNEL_OTHER)
             .setOngoing(true)
             .setTicker(getString(R.string.notify_gen_keypair_ticker))
             .setSmallIcon(R.drawable.ic_stat_notify)
             .setContentTitle(getString(R.string.notify_gen_keypair_title))
             .setContentText(getString(R.string.notify_gen_keypair_text))
             .setContentIntent(pi)
+            .setPriority(NotificationCompat.PRIORITY_MIN)
             .build();
 
         startForeground(NOTIFICATION_ID_KEYPAIR_GEN, no);
