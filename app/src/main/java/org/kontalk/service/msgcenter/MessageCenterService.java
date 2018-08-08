@@ -3130,15 +3130,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
-    /**
-     * Used by {@link XMPPConnectionHelper} to retrieve the keyring that will
-     * be used for the next login while upgrading from legacy.
-     */
-    @Override
-    public PGPKeyPairRingProvider getKeyPairRingProvider() {
-        return mKeyPairRegenerator;
-    }
-
     private void beginKeyPairImport(Uri keypack, String passphrase) {
         if (mKeyPairImporter == null) {
             try {

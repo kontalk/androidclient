@@ -42,6 +42,7 @@ import android.content.IntentFilter;
 import android.text.TextUtils;
 import android.util.Base64;
 
+import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.SmackInitializer;
@@ -53,7 +54,7 @@ import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_CONNECTE
 
 
 /** Abstract listener and manager for a key pair registration cycle. */
-abstract class RegisterKeyPairListener extends MessageCenterPacketListener implements PGPKeyPairRingProvider {
+abstract class RegisterKeyPairListener extends MessageCenterPacketListener {
     private BroadcastReceiver mConnReceiver;
     protected PGPKeyPairRing mKeyRing;
     protected PGPPublicKey mRevoked;
@@ -64,11 +65,6 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener imple
     public RegisterKeyPairListener(MessageCenterService instance, String passphrase) {
         super(instance);
         mPassphrase = passphrase;
-    }
-
-    @Override
-    public PGPKeyPairRing getKeyPair() {
-        return mKeyRing;
     }
 
     protected void configure() {
@@ -175,7 +171,7 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener imple
     protected void revokeCurrentKey()
             throws CertificateException, PGPException, IOException, SignatureException {
 
-        PersonalKey oldKey = getApplication().getPersonalKey();
+        PersonalKey oldKey = Kontalk.get().getPersonalKey();
         if (oldKey != null)
             mRevoked = oldKey.revoke(false);
     }
@@ -222,13 +218,13 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener imple
                             publicKeyData, privateKeyData, bridgeCertData,
                             mPassphrase);
                         // invalidate cached personal key
-                        getApplication().invalidatePersonalKey();
+                        Kontalk.get().invalidatePersonalKey();
 
                         unconfigure();
                         finish();
 
                         // restart message center
-                        MessageCenterService.restart(getApplication());
+                        MessageCenterService.restart(Kontalk.get());
                     }
 
                     // TODO else?

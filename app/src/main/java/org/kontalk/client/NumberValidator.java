@@ -73,7 +73,6 @@ import org.kontalk.crypto.X509Bridge;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.XMPPConnectionHelper;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
-import org.kontalk.service.msgcenter.PGPKeyPairRingProvider;
 
 
 /**
@@ -219,12 +218,6 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
     public void setFallback(boolean fallback) {
         mFallback = fallback;
-    }
-
-    @Override
-    public PGPKeyPairRingProvider getKeyPairRingProvider() {
-        // not supported
-        return null;
     }
 
     public void importKey(byte[] privateKeyData, byte[] publicKeyData) {

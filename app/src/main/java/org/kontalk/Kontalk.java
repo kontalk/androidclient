@@ -50,7 +50,6 @@ import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.NetworkStateReceiver;
-import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.SystemBootStartup;
 import org.kontalk.service.UploadService;
 import org.kontalk.service.msgcenter.IPushService;
@@ -61,7 +60,6 @@ import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.SearchActivity;
-import org.kontalk.util.MediaStorage;
 import org.kontalk.util.Preferences;
 
 
@@ -78,15 +76,6 @@ public class Kontalk extends Application {
      * but apparently there are places where it doesn't return a Kontalk object.
      */
     private static Kontalk sInstance;
-
-    // @deprecated
-    static {
-        try {
-            Class.forName(MediaStorage.class.getName());
-        }
-        catch (ClassNotFoundException ignored) {
-        }
-    }
 
     private PersonalKey mDefaultKey;
 
@@ -212,9 +201,6 @@ public class Kontalk extends Application {
         AccountManager am = AccountManager.get(this);
         Account account = Authenticator.getDefaultAccount(am);
         if (account != null) {
-            if (!Authenticator.hasPersonalKey(am, account))
-                xmppUpgrade();
-
             // update notifications from locally unread messages
             MessagingNotification.delayedUpdateMessagesNotification(this, false);
 
@@ -263,13 +249,6 @@ public class Kontalk extends Application {
         // disable backend services in offline mode (helps after installs)
         if (account != null && Preferences.getOfflineMode())
             setBackendEnabled(this, false);
-    }
-
-    private void xmppUpgrade() {
-        // delete custom server
-        Preferences.setServerURI(null);
-        // delete cached server list
-        ServerListUpdater.deleteCachedList(this);
     }
 
     public PersonalKey getPersonalKey() throws PGPException, IOException, CertificateException {
