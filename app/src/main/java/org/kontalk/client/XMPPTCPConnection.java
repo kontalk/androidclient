@@ -424,7 +424,8 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
         if (unacknowledgedStanzas != null) {
             // There was a previous connection with SM enabled but that was either not resumable or
             // failed to resume. Make sure that we (re-)send the unacknowledged stanzas.
-            unacknowledgedStanzas.drainTo(previouslyUnackedStanzas);
+            // HACK this line below was commented out to avoid re-sending lost stanzas automatically
+            // unacknowledgedStanzas.drainTo(previouslyUnackedStanzas);
             // Reset unacknowledged stanzas to 'null' to signal that we never send 'enable' in this
             // XMPP session (There maybe was an enabled in a previous XMPP session of this
             // connection instance though). This is used in writePackets to decide if stanzas should

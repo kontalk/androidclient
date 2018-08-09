@@ -2,7 +2,7 @@
 
 ## [Next]
 ### Fixed
-- ...
+- Fix messages stuck in sending state
 
 ### Changed
 - Notification channels (aka notification categoris)
