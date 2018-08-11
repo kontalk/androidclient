@@ -45,7 +45,7 @@ import org.kontalk.util.MessageUtils;
  */
 public class Conversation {
 
-    private static final String[] ALL_THREADS_PROJECTION = {
+    public static final String[] PROJECTION = {
         Threads._ID,
         Threads.PEER,
         Threads.COUNT,
@@ -159,7 +159,7 @@ public class Conversation {
     public static Conversation loadFromUserId(Context context, String userId) {
         Conversation cv = null;
         Cursor cp = context.getContentResolver().query(Threads.CONTENT_URI,
-                ALL_THREADS_PROJECTION, Threads.PEER + " = ?", new String[] { userId }, null);
+            PROJECTION, Threads.PEER + " = ?", new String[] { userId }, null);
         if (cp.moveToFirst())
             cv = createFromCursor(context, cp);
 
@@ -171,7 +171,7 @@ public class Conversation {
         Conversation cv = null;
         Cursor cp = context.getContentResolver().query(
                 ContentUris.withAppendedId(Threads.CONTENT_URI, id),
-                ALL_THREADS_PROJECTION, null, null, null);
+            PROJECTION, null, null, null);
         if (cp.moveToFirst())
             cv = createFromCursor(context, cp);
 
@@ -240,7 +240,7 @@ public class Conversation {
 
     public static void deleteAll(Context context, boolean leaveGroups) {
         Cursor c = context.getContentResolver().query(Threads.CONTENT_URI,
-            ALL_THREADS_PROJECTION, null, null, null);
+            PROJECTION, null, null, null);
         while (c.moveToNext()) {
             deleteFromCursor(context, c, leaveGroups);
         }
@@ -440,29 +440,32 @@ public class Conversation {
         return MessagesProviderClient.getGroupMembers(context, groupJid, 0);
     }
 
+    @Deprecated
     public static void startQuery(AsyncQueryHandler handler, int token) {
         // cancel previous operations
         handler.cancelOperation(token);
         handler.startQuery(token, null, Threads.CONTENT_URI,
-                ALL_THREADS_PROJECTION, null, null, Threads.DEFAULT_SORT_ORDER);
+            PROJECTION, null, null, Threads.DEFAULT_SORT_ORDER);
     }
 
     public static void startQuery(AsyncQueryHandler handler, int token, long threadId) {
         // cancel previous operations
         handler.cancelOperation(token);
         handler.startQuery(token, null, Threads.CONTENT_URI,
-                ALL_THREADS_PROJECTION, Threads._ID + " = " + threadId, null, null);
+            PROJECTION, Threads._ID + " = " + threadId, null, null);
     }
 
+    @Deprecated
     public static Cursor startQuery(Context context, boolean archived) {
         return context.getContentResolver().query(Threads.CONTENT_URI,
-            ALL_THREADS_PROJECTION, Threads.ARCHIVED + " = " + (archived ? "1" : "0"),
+            PROJECTION, Threads.ARCHIVED + " = " + (archived ? "1" : "0"),
             null, Threads.DEFAULT_SORT_ORDER);
     }
 
+    @Deprecated
     public static Cursor startQuery(Context context, long threadId) {
         return context.getContentResolver().query(Threads.CONTENT_URI,
-                ALL_THREADS_PROJECTION, Threads._ID + " = " + threadId, null, null);
+            PROJECTION, Threads._ID + " = " + threadId, null, null);
     }
 
     /**

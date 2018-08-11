@@ -18,22 +18,17 @@
 
 package org.kontalk.ui;
 
-import java.util.LinkedList;
-import java.util.List;
-
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.github.clans.fab.FloatingActionMenu;
 
-import android.content.AsyncQueryHandler;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteException;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
+import android.arch.paging.PagedList;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ListFragment;
-import android.util.SparseBooleanArray;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -41,32 +36,26 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.AbsListView;
-import android.widget.CheckBox;
 import android.widget.ListView;
-import android.widget.TextView;
 
-import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
-import org.kontalk.provider.MyMessages;
 import org.kontalk.ui.adapter.ConversationListAdapter;
-import org.kontalk.ui.view.AbsListViewScrollDetector;
+import org.kontalk.ui.model.ConversationsViewModel;
 import org.kontalk.ui.view.ConversationListItem;
-import org.kontalk.util.SystemUtils;
 
 
-public class ConversationListFragment extends ListFragment
+public class ConversationListFragment extends Fragment
         implements Contact.ContactChangeListener, AbsListView.MultiChoiceModeListener {
     static final String TAG = ConversationsActivity.TAG;
 
-    private static final int THREAD_LIST_QUERY_TOKEN = 8720;
-
-    private ThreadListQueryHandler mQueryHandler;
+    View mEmptyView;
+    private RecyclerView mListView;
     ConversationListAdapter mListAdapter;
+    private ConversationsViewModel mViewModel;
+
     private boolean mDualPane;
 
     FloatingActionMenu mAction;
@@ -74,21 +63,19 @@ public class ConversationListFragment extends ListFragment
 
     private int mCheckedItemCount;
 
-    private final ConversationListAdapter.OnContentChangedListener mContentChangedListener =
-        new ConversationListAdapter.OnContentChangedListener() {
-        public void onContentChanged(ConversationListAdapter adapter) {
-            if (!isFinishing())
-                startQuery();
-        }
-    };
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mViewModel = ViewModelProviders.of(this).get(ConversationsViewModel.class);
+    }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.conversation_list, container, false);
     }
 
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         mAction = view.findViewById(R.id.action);
@@ -108,7 +95,29 @@ public class ConversationListFragment extends ListFragment
             }
         });
 
-        getListView().setOnScrollListener(new AbsListViewScrollDetector() {
+        mEmptyView = view.findViewById(android.R.id.empty);
+
+        mListView = view.findViewById(android.R.id.list);
+
+        mListView.setLayoutManager(new LinearLayoutManager(view.getContext(),
+            LinearLayoutManager.VERTICAL, false));
+
+        mListAdapter = new ConversationListAdapter(view.getContext());
+        mListView.setAdapter(mListAdapter);
+        // TODO mListView.setMultiChoiceModeListener(this);
+
+        mViewModel.load(view.getContext());
+        mViewModel.getData().observe(this, new Observer<PagedList<Conversation>>() {
+            @Override
+            public void onChanged(@Nullable PagedList<Conversation> conversations) {
+                mListAdapter.submitList(conversations);
+                mEmptyView.setVisibility(mListAdapter.getItemCount() > 0 ?
+                    View.GONE : View.VISIBLE);
+            }
+        });
+
+        /* TODO
+        mListView.addOnScrollListener(new AbsListViewScrollDetector() {
             @Override
             public void onScrollUp() {
                 if (mActionVisible) {
@@ -167,17 +176,12 @@ public class ConversationListFragment extends ListFragment
                 return mAction.getAnimation() != null;
             }
         });
+        */
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        mQueryHandler = new ThreadListQueryHandler(getActivity().getContentResolver());
-        mListAdapter = new ConversationListAdapter(getActivity(), null, getListView());
-        mListAdapter.setOnContentChangedListener(mContentChangedListener);
-
-        ListView list = getListView();
 
         // Check to see if we have a frame in which to embed the details
         // fragment directly in the containing UI.
@@ -187,26 +191,22 @@ public class ConversationListFragment extends ListFragment
 
         if (mDualPane) {
             // TODO restore state
-            list.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-            list.setItemsCanFocus(true);
+            /* TODO
+            mListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+            mListView.setItemsCanFocus(true);
+            */
         }
         else {
-            list.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+            /* TODO
+            mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+            */
         }
-
-        setListAdapter(mListAdapter);
-        list.setMultiChoiceModeListener(this);
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         // TODO save state
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
     }
 
     @Override
@@ -243,18 +243,22 @@ public class ConversationListFragment extends ListFragment
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_archive:
+                /* TODO
                 archiveSelectedThreads(SystemUtils
                     .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
+                    */
                 mode.finish();
                 return true;
             case R.id.menu_delete:
                 // using clone because listview returns its original copy
+                /* TODO
                 deleteSelectedThreads(SystemUtils
                     .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
+                    */
                 mode.finish();
                 return true;
             case R.id.menu_sticky:
-                stickSelectedThread();
+                // TODO stickSelectedThread();
                 mode.finish();
                 return true;
         }
@@ -271,7 +275,7 @@ public class ConversationListFragment extends ListFragment
     @Override
     public void onDestroyActionMode(ActionMode mode) {
         mCheckedItemCount = 0;
-        getListView().clearChoices();
+        // TODO getListView().clearChoices();
         mListAdapter.notifyDataSetChanged();
     }
 
@@ -282,6 +286,7 @@ public class ConversationListFragment extends ListFragment
         return true;
     }
 
+    /* TODO
     private void archiveSelectedThreads(SparseBooleanArray checked) {
         Context ctx = getContext();
         for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
@@ -291,7 +296,9 @@ public class ConversationListFragment extends ListFragment
             }
         }
     }
+    */
 
+    /* TODO
     private void deleteSelectedThreads(SparseBooleanArray checked) {
         boolean addGroupCheckbox = false;
         int checkedCount = 0;
@@ -352,7 +359,9 @@ public class ConversationListFragment extends ListFragment
 
         dialog.show();
     }
+    */
 
+    /* TODO
     private Conversation getCheckedItem() {
         if (mCheckedItemCount != 1)
             throw new IllegalStateException("checked items count must be exactly 1");
@@ -360,12 +369,16 @@ public class ConversationListFragment extends ListFragment
         Cursor cursor = (Cursor) getListView().getItemAtPosition(getCheckedItemPosition());
         return Conversation.createFromCursor(getActivity(), cursor);
     }
+    */
 
+    /* TODO
     private int getCheckedItemPosition() {
         SparseBooleanArray checked = getListView().getCheckedItemPositions();
         return checked.keyAt(checked.indexOfValue(true));
     }
+    */
 
+    /* TODO
     private void stickSelectedThread() {
         Conversation conv = getCheckedItem();
         if (conv != null) {
@@ -373,6 +386,7 @@ public class ConversationListFragment extends ListFragment
         }
         mListAdapter.notifyDataSetChanged();
     }
+    */
 
     public void chooseContact(boolean multiselect) {
         ConversationsActivity parent = getParentActivity();
@@ -384,24 +398,13 @@ public class ConversationListFragment extends ListFragment
         return (ConversationsActivity) getActivity();
     }
 
-    public void startQuery() {
-        Cursor c = null;
-        Context ctx = getActivity();
-        if (ctx != null) {
-            try {
-                c = Conversation.startQuery(ctx, false);
-            }
-            catch (SQLiteException e) {
-                Log.e(TAG, "query error", e);
-            }
-        }
-        mQueryHandler.onQueryComplete(THREAD_LIST_QUERY_TOKEN, null, c);
+    public ConversationListAdapter getListAdapter() {
+        return mListAdapter;
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        startQuery();
         Contact.registerContactChangeListener(this);
     }
 
@@ -409,12 +412,11 @@ public class ConversationListFragment extends ListFragment
     public void onStop() {
         super.onStop();
         Contact.unregisterContactChangeListener(this);
-        mListAdapter.changeCursor(null);
         if (isActionMenuOpen())
             mAction.close(false);
     }
 
-    @Override
+    // TODO @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         ConversationListItem cv = (ConversationListItem) v;
         Conversation conv = cv.getConversation();
@@ -437,50 +439,11 @@ public class ConversationListFragment extends ListFragment
 
     @Override
     public void onContactInvalidated(String userId) {
-        mQueryHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                // just requery
-                startQuery();
-            }
-        });
+        // TODO mListAdapter.refresh();
     }
 
     public boolean hasListItems() {
-        return mListAdapter != null && !mListAdapter.isEmpty();
-    }
-
-    /**
-     * The conversation list query handler.
-     */
-    private final class ThreadListQueryHandler extends AsyncQueryHandler {
-        public ThreadListQueryHandler(ContentResolver contentResolver) {
-            super(contentResolver);
-        }
-
-        @Override
-        protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
-            if (cursor == null || isFinishing()) {
-                // close cursor - if any
-                if (cursor != null) cursor.close();
-
-                Log.w(TAG, "query aborted or error!");
-                mListAdapter.changeCursor(null);
-                return;
-            }
-
-            switch (token) {
-                case THREAD_LIST_QUERY_TOKEN:
-                    mListAdapter.changeCursor(cursor);
-                    ConversationsActivity parent = getParentActivity();
-                    if (parent != null)
-                        parent.onDatabaseChanged();
-                    break;
-
-                default:
-                    Log.e(TAG, "onQueryComplete called with unknown token " + token);
-            }
-        }
+        return mListAdapter != null && mListAdapter.getItemCount() > 0;
     }
 
     public boolean isDualPane() {

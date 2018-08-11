@@ -38,13 +38,14 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.UiThread;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ListAdapter;
 import android.widget.Toast;
 
 import org.kontalk.R;
@@ -56,7 +57,6 @@ import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.Syncer;
-import org.kontalk.ui.adapter.ConversationListAdapter;
 import org.kontalk.ui.prefs.HelpPreference;
 import org.kontalk.ui.prefs.PreferencesActivity;
 import org.kontalk.util.Preferences;
@@ -86,6 +86,8 @@ public class ConversationsActivity extends MainActivity
     /** Offline mode menu item. */
     private MenuItem mOfflineMenu;
 
+    private RecyclerView.AdapterDataObserver mObserver;
+
     private static final int REQUEST_CONTACT_PICKER = 7720;
 
     @Override
@@ -98,6 +100,17 @@ public class ConversationsActivity extends MainActivity
 
         mFragment = (ConversationListFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_conversation_list);
+        mObserver = new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        onDatabaseChanged();
+                    }
+                });
+            }
+        };
 
         if (Authenticator.getDefaultAccount(this) != null && !afterOnCreate())
             handleIntent(getIntent());
@@ -108,8 +121,8 @@ public class ConversationsActivity extends MainActivity
     protected void onNewIntent(Intent intent) {
         handleIntent(intent);
 
-        ConversationListFragment fragment = getListFragment();
-        fragment.startQuery();
+        // TODO ConversationListFragment fragment = getListFragment();
+        // TODO already called by onStart -- fragment.getListAdapter().refresh();
     }
 
     protected boolean handleIntent(Intent intent) {
@@ -165,9 +178,8 @@ public class ConversationsActivity extends MainActivity
     public boolean onSearchRequested() {
         ConversationListFragment fragment = getListFragment();
 
-        ListAdapter list = fragment.getListAdapter();
         // no data found
-        if (list == null || list.getCount() == 0)
+        if (!fragment.hasListItems())
             return false;
 
         toggleSearch();
@@ -181,6 +193,18 @@ public class ConversationsActivity extends MainActivity
             else
                 MenuItemCompat.expandActionView(mSearchMenu);
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mFragment.getListAdapter().registerAdapterDataObserver(mObserver);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mFragment.getListAdapter().unregisterAdapterDataObserver(mObserver);
     }
 
     @Override
@@ -355,6 +379,9 @@ public class ConversationsActivity extends MainActivity
         // Intent i = new Intent(Intent.ACTION_PICK, Users.CONTENT_URI);
         Intent i = new Intent(this, ContactsListActivity.class);
         i.putExtra(ContactsListActivity.MODE_MULTI_SELECT, multiselect);
+        // FIXME when in single pane mode, onActivityResult will cause us to requery for nothing!!
+        // maybe we should let handle the start of ComposeMessage to the contacts list activity
+        // use two subclass activities: one for returning a result, one for launching compose message
         startActivityForResult(i, REQUEST_CONTACT_PICKER);
     }
 
@@ -382,7 +409,7 @@ public class ConversationsActivity extends MainActivity
 
     public void openConversation(Conversation conv, int position) {
         if (isDualPane()) {
-            mFragment.getListView().setItemChecked(position, true);
+            // TODO mFragment.getListView().setItemChecked(position, true);
 
             // get the old fragment
             AbstractComposeFragment f = getCurrentConversation();
@@ -559,6 +586,7 @@ public class ConversationsActivity extends MainActivity
     }
 
     /** Updates various UI elements after a database change. */
+    @UiThread
     void onDatabaseChanged() {
         boolean visible = mFragment.hasListItems();
         if (mSearchMenu != null) {
@@ -574,9 +602,11 @@ public class ConversationsActivity extends MainActivity
         // select the current conversation item
         AbstractComposeFragment f = getCurrentConversation();
         if (f != null) {
+            /* TODO
             int position = ((ConversationListAdapter) mFragment.getListAdapter())
                 .getItemPosition(f.getUserId());
             mFragment.getListView().setItemChecked(position, true);
+            */
         }
     }
 

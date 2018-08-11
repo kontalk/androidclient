@@ -18,86 +18,62 @@
 
 package org.kontalk.ui.adapter;
 
-import android.content.Context;
-import android.database.Cursor;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AbsListView.RecyclerListener;
-import android.widget.CursorAdapter;
-import android.widget.ListView;
+import org.jivesoftware.smack.util.StringUtils;
 
-import org.kontalk.Log;
+import android.arch.paging.PagedListAdapter;
+import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.v7.util.DiffUtil;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
+
 import org.kontalk.R;
 import org.kontalk.data.Conversation;
-import org.kontalk.ui.ConversationsActivity;
 import org.kontalk.ui.view.ConversationListItem;
 
 
-public class ConversationListAdapter extends CursorAdapter {
-    private static final String TAG = ConversationsActivity.TAG;
+public class ConversationListAdapter extends PagedListAdapter<Conversation, ConversationViewHolder> {
+    private static final DiffUtil.ItemCallback<Conversation> sDiffCallback = new DiffUtil.ItemCallback<Conversation>() {
+        @Override
+        public boolean areItemsTheSame(Conversation oldItem, Conversation newItem) {
+            return oldItem.getThreadId() == newItem.getThreadId();
+        }
+
+        @Override
+        public boolean areContentsTheSame(Conversation oldItem, Conversation newItem) {
+            // include any attribute that might change the state of the UI
+            return oldItem.getThreadId() == newItem.getThreadId() &&
+                oldItem.getStatus() == newItem.getStatus() &&
+                oldItem.getDate() == newItem.getDate() &&
+                oldItem.isSticky() == newItem.isSticky() &&
+                oldItem.getRequestStatus() == newItem.getRequestStatus() &&
+                StringUtils.nullSafeCharSequenceEquals(oldItem.getSubject(), newItem.getSubject()) &&
+                StringUtils.nullSafeCharSequenceEquals(oldItem.getDraft(), newItem.getDraft());
+        }
+    };
 
     private final LayoutInflater mFactory;
-    private OnContentChangedListener mOnContentChangedListener;
 
-    public ConversationListAdapter(Context context, Cursor cursor, ListView list) {
-        super(context, cursor, false);
+    public ConversationListAdapter(Context context) {
+        super(sDiffCallback);
         mFactory = LayoutInflater.from(context);
+    }
 
-        list.setRecyclerListener(new RecyclerListener() {
-            public void onMovedToScrapHeap(View view) {
-                if (view instanceof ConversationListItem) {
-                    ((ConversationListItem) view).unbind();
-                }
-            }
-        });
+    @NonNull
+    @Override
+    public ConversationViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return new ConversationViewHolder((ConversationListItem) mFactory
+            .inflate(R.layout.conversation_list_item, parent, false));
     }
 
     @Override
-    public void bindView(View view, Context context, Cursor cursor) {
-        if (!(view instanceof ConversationListItem)) {
-            Log.e(TAG, "Unexpected bound view: " + view);
-            return;
-        }
-
-        ConversationListItem headerView = (ConversationListItem) view;
-        Conversation conv = Conversation.createFromCursor(context, cursor);
-
-        headerView.bind(context, conv);
+    public void onBindViewHolder(@NonNull ConversationViewHolder holder, int position) {
+        holder.bindView(mFactory.getContext(), getItem(position));
     }
 
     @Override
-    public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        return mFactory.inflate(R.layout.conversation_list_item, parent, false);
-    }
-
-    public interface OnContentChangedListener {
-        void onContentChanged(ConversationListAdapter adapter);
-    }
-
-    public void setOnContentChangedListener(OnContentChangedListener l) {
-        mOnContentChangedListener = l;
-    }
-
-    @Override
-    protected void onContentChanged() {
-        Cursor c = getCursor();
-        if (c != null && !c.isClosed() && mOnContentChangedListener != null) {
-            mOnContentChangedListener.onContentChanged(this);
-        }
-    }
-
-    /** Search for an item and return its position. */
-    public int getItemPosition(String peer) {
-        Cursor cursor = getCursor();
-        if (cursor != null) {
-            cursor.moveToPosition(-1);
-            while (cursor.moveToNext()) {
-                if (peer.equals(Conversation.getPeer(cursor)))
-                    return cursor.getPosition();
-            }
-        }
-        return -1;
+    public void onViewRecycled(@NonNull ConversationViewHolder holder) {
+        holder.unbindView();
     }
 
 }
