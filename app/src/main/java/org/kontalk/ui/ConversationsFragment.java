@@ -47,7 +47,7 @@ import org.kontalk.ui.model.ConversationsViewModel;
 import org.kontalk.ui.view.ConversationListItem;
 
 
-public class ConversationListFragment extends Fragment
+public class ConversationsFragment extends Fragment
         implements Contact.ContactChangeListener, AbsListView.MultiChoiceModeListener {
     static final String TAG = ConversationsActivity.TAG;
 

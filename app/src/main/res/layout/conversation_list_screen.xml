@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<fragment android:name="org.kontalk.ui.ConversationListFragment"
+<fragment android:name="org.kontalk.ui.ConversationsFragment"
     android:id="@+id/fragment_conversation_list"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"

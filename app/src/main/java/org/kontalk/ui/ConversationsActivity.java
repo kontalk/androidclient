@@ -78,7 +78,7 @@ public class ConversationsActivity extends MainActivity
     /** An intent extra for storing an ACTION_SEND intent from {@link ComposeMessage}. */
     public static final String EXTRA_SEND_INTENT = "org.kontalk.SEND_INTENT";
 
-    private ConversationListFragment mFragment;
+    private ConversationsFragment mFragment;
 
     /** Search menu item. */
     private MenuItem mSearchMenu;
@@ -98,7 +98,7 @@ public class ConversationsActivity extends MainActivity
 
         setupToolbar(false, false);
 
-        mFragment = (ConversationListFragment) getSupportFragmentManager()
+        mFragment = (ConversationsFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_conversation_list);
         mObserver = new RecyclerView.AdapterDataObserver() {
             @Override
@@ -176,7 +176,7 @@ public class ConversationsActivity extends MainActivity
 
     @Override
     public boolean onSearchRequested() {
-        ConversationListFragment fragment = getListFragment();
+        ConversationsFragment fragment = getListFragment();
 
         // no data found
         if (!fragment.hasListItems())
@@ -366,7 +366,7 @@ public class ConversationsActivity extends MainActivity
         setTitle(offline ? R.string.app_name_offline : R.string.app_name);
     }
 
-    public ConversationListFragment getListFragment() {
+    public ConversationsFragment getListFragment() {
         return mFragment;
     }
 
