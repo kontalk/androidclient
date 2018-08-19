@@ -90,6 +90,7 @@ public abstract class SendPositionAbstractFragment extends Fragment
     private SendLocationRow mSendLocationRow;
 
     boolean mUserLocationMoved;
+    boolean mUserLocationCurrent;
 
     private int mOverScrollHeight;
     int mMarkerTop;
@@ -109,6 +110,8 @@ public abstract class SendPositionAbstractFragment extends Fragment
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = onInflateView(inflater, container, savedInstanceState);
+
+        mUserLocationCurrent = true;
 
         if (isPlacesEnabled()) {
             mMapViewClip = view.findViewById(R.id.mapview_clip);
@@ -158,6 +161,7 @@ public abstract class SendPositionAbstractFragment extends Fragment
         mFabMyLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                mUserLocationCurrent = true;
                 if (mMyLocation != null && mMap != null && isLocationEnabled()) {
                     AnimatorSet animatorSet = new AnimatorSet();
                     animatorSet.setDuration(200);
@@ -403,8 +407,11 @@ public abstract class SendPositionAbstractFragment extends Fragment
             ((IPlacesAdapter) mAdapter).setGpsPosition(mMyLocation);
         }
         else {
-            mSendLocationRow.setText(getString(R.string.send_location),
-                getString(R.string.accurate_to, String.valueOf((int) location.getAccuracy())));
+            //Show "Send your current location" only if the Curser is on the current location
+            if (mUserLocationCurrent) {
+                mSendLocationRow.setText(getString(R.string.send_location),
+                    getString(R.string.accurate_to, String.valueOf((int) location.getAccuracy())));
+            }
         }
     }
 
@@ -413,6 +420,7 @@ public abstract class SendPositionAbstractFragment extends Fragment
             ((IPlacesAdapter) mAdapter).setCustomLocation(location);
         }
         else {
+            mUserLocationCurrent = false;
             mSendLocationRow.setText(getString(R.string.send_selected_location),
                 String.format(Locale.US, "(%f, %f)", location.getLatitude(), location.getLongitude()));
         }
