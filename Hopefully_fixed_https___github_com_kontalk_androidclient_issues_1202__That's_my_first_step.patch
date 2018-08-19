@@ -1,0 +1,70 @@
+Index: build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- build.gradle	(revision ab062c2880954aa369fa026fa1cadbe95e72623c)
++++ build.gradle	(date 1534611203000)
+@@ -6,7 +6,7 @@
+         maven { url 'https://maven.fabric.io/public' }
+     }
+     dependencies {
+-        classpath 'com.android.tools.build:gradle:3.1.3'
++        classpath 'com.android.tools.build:gradle:3.1.4'
+         classpath 'com.google.gms:google-services:4.0.0'
+         classpath 'com.github.triplet.gradle:play-publisher:1.2.0'
+         classpath 'io.fabric.tools:gradle:1.25.1'
+Index: app/src/main/java/org/kontalk/position/SendPositionAbstractFragment.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/org/kontalk/position/SendPositionAbstractFragment.java	(revision ab062c2880954aa369fa026fa1cadbe95e72623c)
++++ app/src/main/java/org/kontalk/position/SendPositionAbstractFragment.java	(date 1534678639000)
+@@ -90,6 +90,7 @@
+     private SendLocationRow mSendLocationRow;
+ 
+     boolean mUserLocationMoved;
++    boolean mUserLocationCurrent;
+ 
+     private int mOverScrollHeight;
+     int mMarkerTop;
+@@ -110,6 +111,8 @@
+     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+         View view = onInflateView(inflater, container, savedInstanceState);
+ 
++        mUserLocationCurrent = true;
++
+         if (isPlacesEnabled()) {
+             mMapViewClip = view.findViewById(R.id.mapview_clip);
+             mRecyclerView = view.findViewById(R.id.recyclerView);
+@@ -158,6 +161,7 @@
+         mFabMyLocation.setOnClickListener(new View.OnClickListener() {
+             @Override
+             public void onClick(View view) {
++                mUserLocationCurrent = true;
+                 if (mMyLocation != null && mMap != null && isLocationEnabled()) {
+                     AnimatorSet animatorSet = new AnimatorSet();
+                     animatorSet.setDuration(200);
+@@ -403,8 +407,11 @@
+             ((IPlacesAdapter) mAdapter).setGpsPosition(mMyLocation);
+         }
+         else {
+-            mSendLocationRow.setText(getString(R.string.send_location),
+-                getString(R.string.accurate_to, String.valueOf((int) location.getAccuracy())));
++            //Show "Send your current location" only if the Curser is on the current location
++            if (mUserLocationCurrent) {
++                mSendLocationRow.setText(getString(R.string.send_location),
++                    getString(R.string.accurate_to, String.valueOf((int) location.getAccuracy())));
++            }
+         }
+     }
+ 
+@@ -413,6 +420,7 @@
+             ((IPlacesAdapter) mAdapter).setCustomLocation(location);
+         }
+         else {
++            mUserLocationCurrent = false;
+             mSendLocationRow.setText(getString(R.string.send_selected_location),
+                 String.format(Locale.US, "(%f, %f)", location.getLatitude(), location.getLongitude()));
+         }
