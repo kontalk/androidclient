@@ -18,17 +18,29 @@
 
 package org.kontalk.ui.adapter;
 
+import com.bignerdranch.android.multiselector.MultiSelector;
+import com.bignerdranch.android.multiselector.SwappingHolder;
+
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
+import android.view.View;
 
 import org.kontalk.data.Conversation;
 import org.kontalk.ui.view.ConversationListItem;
 
 
-class ConversationViewHolder extends RecyclerView.ViewHolder {
+class ConversationViewHolder extends SwappingHolder implements
+        View.OnClickListener, View.OnLongClickListener {
 
-    ConversationViewHolder(ConversationListItem itemView) {
-        super(itemView);
+    private final MultiSelector mMultiSelector;
+    private final ConversationListAdapter.OnItemClickListener mListener;
+
+    ConversationViewHolder(ConversationListItem itemView, MultiSelector multiSelector,
+            ConversationListAdapter.OnItemClickListener listener) {
+        super(itemView, multiSelector);
+        mMultiSelector = multiSelector;
+        mListener = listener;
+        itemView.setOnClickListener(this);
+        itemView.setOnLongClickListener(this);
     }
 
     void bindView(Context context, Conversation conversation) {
@@ -41,4 +53,37 @@ class ConversationViewHolder extends RecyclerView.ViewHolder {
         ((ConversationListItem) itemView).unbind();
     }
 
+    @Override
+    public void onClick(View v) {
+        if (!mMultiSelector.tapSelection(this)) {
+            if (mListener != null) {
+                mListener.onItemClick((ConversationListItem) itemView,
+                    getAdapterPosition());
+            }
+        }
+        else {
+            // multiselecting
+            if (mListener != null) {
+                mListener.onItemSelected((ConversationListItem) itemView,
+                    getAdapterPosition());
+            }
+        }
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        if (!mMultiSelector.isSelectable()) {
+            if (mListener != null) {
+                mListener.onStartMultiselect();
+            }
+            mMultiSelector.setSelectable(true);
+            mMultiSelector.setSelected(this, true);
+            if (mListener != null) {
+                mListener.onItemSelected((ConversationListItem) itemView,
+                    getAdapterPosition());
+            }
+            return true;
+        }
+        return false;
+    }
 }

@@ -18,6 +18,8 @@
 
 package org.kontalk.ui.adapter;
 
+import com.bignerdranch.android.multiselector.MultiSelector;
+
 import org.jivesoftware.smack.util.StringUtils;
 
 import android.arch.paging.PagedListAdapter;
@@ -53,17 +55,21 @@ public class ConversationListAdapter extends PagedListAdapter<Conversation, Conv
     };
 
     private final LayoutInflater mFactory;
+    private final MultiSelector mMultiSelector;
+    private final OnItemClickListener mListener;
 
-    public ConversationListAdapter(Context context) {
+    public ConversationListAdapter(Context context, MultiSelector multiSelector, OnItemClickListener listener) {
         super(sDiffCallback);
         mFactory = LayoutInflater.from(context);
+        mMultiSelector = multiSelector;
+        mListener = listener;
     }
 
     @NonNull
     @Override
     public ConversationViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return new ConversationViewHolder((ConversationListItem) mFactory
-            .inflate(R.layout.conversation_list_item, parent, false));
+            .inflate(R.layout.conversation_list_item, parent, false), mMultiSelector, mListener);
     }
 
     @Override
@@ -74,6 +80,14 @@ public class ConversationListAdapter extends PagedListAdapter<Conversation, Conv
     @Override
     public void onViewRecycled(@NonNull ConversationViewHolder holder) {
         holder.unbindView();
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(ConversationListItem item, int position);
+
+        void onStartMultiselect();
+
+        void onItemSelected(ConversationListItem item, int position);
     }
 
 }

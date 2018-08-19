@@ -18,6 +18,13 @@
 
 package org.kontalk.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.bignerdranch.android.multiselector.ModalMultiSelectorCallback;
+import com.bignerdranch.android.multiselector.MultiSelector;
 import com.github.clans.fab.FloatingActionMenu;
 
 import android.arch.lifecycle.Observer;
@@ -27,46 +34,54 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.view.ActionMode;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
-import android.widget.ListView;
+import android.widget.CheckBox;
+import android.widget.TextView;
 
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
+import org.kontalk.provider.MyMessages;
 import org.kontalk.ui.adapter.ConversationListAdapter;
 import org.kontalk.ui.model.ConversationsViewModel;
 import org.kontalk.ui.view.ConversationListItem;
 
 
 public class ConversationsFragment extends Fragment
-        implements Contact.ContactChangeListener, AbsListView.MultiChoiceModeListener {
+        implements Contact.ContactChangeListener, ConversationListAdapter.OnItemClickListener {
     static final String TAG = ConversationsActivity.TAG;
+
+    private static final String STATE_MULTISELECTOR = ConversationsFragment.class
+        .getName() + ".multiselector";
 
     View mEmptyView;
     private RecyclerView mListView;
     ConversationListAdapter mListAdapter;
     private ConversationsViewModel mViewModel;
 
+    private MultiSelector mMultiSelector;
+    private ModalMultiSelectorCallback mActionModeCallback;
+    private ActionMode mActionMode;
+
     private boolean mDualPane;
 
     FloatingActionMenu mAction;
     boolean mActionVisible;
 
-    private int mCheckedItemCount;
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mViewModel = ViewModelProviders.of(this).get(ConversationsViewModel.class);
+        mMultiSelector = new MultiSelector();
+        mActionModeCallback = new ActionModeCallback();
     }
 
     @Override
@@ -98,20 +113,18 @@ public class ConversationsFragment extends Fragment
         mEmptyView = view.findViewById(android.R.id.empty);
 
         mListView = view.findViewById(android.R.id.list);
-
         mListView.setLayoutManager(new LinearLayoutManager(view.getContext(),
             LinearLayoutManager.VERTICAL, false));
 
-        mListAdapter = new ConversationListAdapter(view.getContext());
+        mListAdapter = new ConversationListAdapter(getContext(), mMultiSelector, this);
         mListView.setAdapter(mListAdapter);
-        // TODO mListView.setMultiChoiceModeListener(this);
 
-        mViewModel.load(view.getContext());
+        mViewModel.load(getContext());
         mViewModel.getData().observe(this, new Observer<PagedList<Conversation>>() {
             @Override
             public void onChanged(@Nullable PagedList<Conversation> conversations) {
                 mListAdapter.submitList(conversations);
-                mEmptyView.setVisibility(mListAdapter.getItemCount() > 0 ?
+                mEmptyView.setVisibility(conversations != null && conversations.size() > 0 ?
                     View.GONE : View.VISIBLE);
             }
         });
@@ -189,6 +202,16 @@ public class ConversationsFragment extends Fragment
         mDualPane = detailsFrame != null
                 && detailsFrame.getVisibility() == View.VISIBLE;
 
+        if (savedInstanceState != null) {
+            mMultiSelector.restoreSelectionStates(savedInstanceState
+                .getBundle(STATE_MULTISELECTOR));
+        }
+
+        if (mMultiSelector.isSelectable()) {
+            mActionModeCallback.setClearOnPrepare(false);
+            mActionMode = getParentActivity().startSupportActionMode(mActionModeCallback);
+        }
+
         if (mDualPane) {
             // TODO restore state
             /* TODO
@@ -206,6 +229,7 @@ public class ConversationsFragment extends Fragment
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
+        outState.putBundle(STATE_MULTISELECTOR, mMultiSelector.saveSelectionStates());
         // TODO save state
     }
 
@@ -224,105 +248,40 @@ public class ConversationsFragment extends Fragment
     }
 
     public boolean isActionModeActive() {
-        return mCheckedItemCount > 0;
+        return mMultiSelector.getSelectedPositions().size() > 0;
     }
 
-    @Override
-    public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
-        if (checked)
-            mCheckedItemCount++;
-        else
-            mCheckedItemCount--;
-        mode.setTitle(getResources()
-            .getQuantityString(R.plurals.context_selected,
-                mCheckedItemCount, mCheckedItemCount));
-        mode.invalidate();
-    }
-
-    @Override
-    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_archive:
-                /* TODO
-                archiveSelectedThreads(SystemUtils
-                    .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
-                    */
-                mode.finish();
-                return true;
-            case R.id.menu_delete:
-                // using clone because listview returns its original copy
-                /* TODO
-                deleteSelectedThreads(SystemUtils
-                    .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
-                    */
-                mode.finish();
-                return true;
-            case R.id.menu_sticky:
-                // TODO stickSelectedThread();
-                mode.finish();
-                return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-        MenuInflater inflater = mode.getMenuInflater();
-        inflater.inflate(R.menu.conversation_list_ctx, menu);
-        return true;
-    }
-
-    @Override
-    public void onDestroyActionMode(ActionMode mode) {
-        mCheckedItemCount = 0;
-        // TODO getListView().clearChoices();
-        mListAdapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-        boolean singleItem = (mCheckedItemCount == 1);
-        menu.findItem(R.id.menu_sticky).setVisible(singleItem);
-        return true;
-    }
-
-    /* TODO
-    private void archiveSelectedThreads(SparseBooleanArray checked) {
-        Context ctx = getContext();
-        for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
-            if (checked.get(i)) {
-                Cursor item = (Cursor) mListAdapter.getItem(i);
-                Conversation.archiveFromCursor(ctx, item);
-            }
+    private void archiveSelectedThreads() {
+        List<Integer> selected = mMultiSelector.getSelectedPositions();
+        for (int position: selected) {
+            mViewModel.getData().getValue().get(position)
+                .archive();
         }
     }
-    */
 
-    /* TODO
-    private void deleteSelectedThreads(SparseBooleanArray checked) {
+    private void deleteSelectedThreads() {
         boolean addGroupCheckbox = false;
         int checkedCount = 0;
-        final List<Conversation.DeleteThreadHolder> list = new LinkedList<>();
-        for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
-            if (checked.get(i)) {
-                checkedCount++;
-                Cursor item = (Cursor) mListAdapter.getItem(i);
-                if (!addGroupCheckbox && Conversation.isGroup(item, MyMessages.Groups.MEMBERSHIP_MEMBER)) {
-                    addGroupCheckbox = true;
-                }
-                list.add(new Conversation.DeleteThreadHolder(item));
+
+        final List<Integer> selected = mMultiSelector.getSelectedPositions();
+        final List<Conversation> list = new ArrayList<>(selected.size());
+        for (int position: selected) {
+            Conversation conv = mViewModel.getData().getValue().get(position);
+            if (!addGroupCheckbox && conv.isGroupChat() &&
+                    conv.getGroupMembership() == MyMessages.Groups.MEMBERSHIP_MEMBER) {
+                addGroupCheckbox = true;
             }
+            list.add(conv);
         }
 
         final boolean hasGroupCheckbox = addGroupCheckbox;
-        MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(getContext())
             .customView(R.layout.dialog_text2_check, false)
             .positiveText(android.R.string.ok)
             .positiveColorRes(R.color.button_danger)
             .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                    Context ctx = getContext();
                     boolean promptCheckBoxChecked = false;
                     if (hasGroupCheckbox) {
                         CheckBox promptCheckbox = dialog
@@ -330,11 +289,11 @@ public class ConversationsFragment extends Fragment
                         promptCheckBoxChecked = promptCheckbox.isChecked();
                     }
 
-                    for (Conversation.DeleteThreadHolder item : list) {
-                        boolean hasLeftGroup = Conversation.isGroup(item, MyMessages.Groups.MEMBERSHIP_PARTED) ||
-                            Conversation.isGroup(item, MyMessages.Groups.MEMBERSHIP_KICKED);
-                        Conversation.deleteFromCursor(ctx, item,
-                            hasGroupCheckbox ? promptCheckBoxChecked : hasLeftGroup);
+                    for (Conversation conv : list) {
+                        boolean hasLeftGroup = conv.isGroupChat() &&
+                            (conv.getGroupMembership() == MyMessages.Groups.MEMBERSHIP_PARTED ||
+                            conv.getGroupMembership() == MyMessages.Groups.MEMBERSHIP_KICKED);
+                        conv.delete(hasGroupCheckbox ? promptCheckBoxChecked : hasLeftGroup);
                     }
                     mListAdapter.notifyDataSetChanged();
                 }
@@ -359,26 +318,15 @@ public class ConversationsFragment extends Fragment
 
         dialog.show();
     }
-    */
 
-    /* TODO
     private Conversation getCheckedItem() {
-        if (mCheckedItemCount != 1)
+        List<Integer> selected = mMultiSelector.getSelectedPositions();
+        if (selected.size() != 1)
             throw new IllegalStateException("checked items count must be exactly 1");
 
-        Cursor cursor = (Cursor) getListView().getItemAtPosition(getCheckedItemPosition());
-        return Conversation.createFromCursor(getActivity(), cursor);
+        return mViewModel.getData().getValue().get(selected.get(0));
     }
-    */
 
-    /* TODO
-    private int getCheckedItemPosition() {
-        SparseBooleanArray checked = getListView().getCheckedItemPositions();
-        return checked.keyAt(checked.indexOfValue(true));
-    }
-    */
-
-    /* TODO
     private void stickSelectedThread() {
         Conversation conv = getCheckedItem();
         if (conv != null) {
@@ -386,7 +334,6 @@ public class ConversationsFragment extends Fragment
         }
         mListAdapter.notifyDataSetChanged();
     }
-    */
 
     public void chooseContact(boolean multiselect) {
         ConversationsActivity parent = getParentActivity();
@@ -416,14 +363,38 @@ public class ConversationsFragment extends Fragment
             mAction.close(false);
     }
 
-    // TODO @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
-        ConversationListItem cv = (ConversationListItem) v;
-        Conversation conv = cv.getConversation();
+    @Override
+    public void onItemClick(ConversationListItem item, int position) {
+        Conversation conv = item.getConversation();
 
         ConversationsActivity parent = getParentActivity();
-        if (parent != null)
+        if (parent != null) {
             parent.openConversation(conv, position);
+        }
+    }
+
+    @Override
+    public void onStartMultiselect() {
+        ConversationsActivity parent = getParentActivity();
+        if (parent != null) {
+            mActionMode = parent.startSupportActionMode(mActionModeCallback);
+        }
+    }
+
+    @Override
+    public void onItemSelected(ConversationListItem item, int position) {
+        if (mActionMode != null) {
+            int count = mMultiSelector.getSelectedPositions().size();
+            if (count == 0) {
+                mActionMode.finish();
+            }
+            else {
+                mActionMode.setTitle(getResources()
+                    .getQuantityString(R.plurals.context_selected,
+                        count, count));
+                mActionMode.invalidate();
+            }
+        }
     }
 
     /** Used only in fragment contexts. */
@@ -448,6 +419,59 @@ public class ConversationsFragment extends Fragment
 
     public boolean isDualPane() {
         return mDualPane;
+    }
+
+    private final class ActionModeCallback extends ModalMultiSelectorCallback {
+
+        public ActionModeCallback() {
+            super(mMultiSelector);
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.menu_archive:
+                    mode.finish();
+                    archiveSelectedThreads();
+                    mMultiSelector.clearSelections();
+                    return true;
+                case R.id.menu_delete:
+                    mode.finish();
+                    deleteSelectedThreads();
+                    mMultiSelector.clearSelections();
+                    return true;
+                case R.id.menu_sticky:
+                    mode.finish();
+                    stickSelectedThread();
+                    mMultiSelector.clearSelections();
+                    return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            super.onCreateActionMode(mode, menu);
+            MenuInflater inflater = mode.getMenuInflater();
+            inflater.inflate(R.menu.conversation_list_ctx, menu);
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            super.onPrepareActionMode(mode, menu);
+            boolean singleItem = (mMultiSelector.getSelectedPositions().size() == 1);
+            menu.findItem(R.id.menu_sticky).setVisible(singleItem);
+            return true;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode actionMode) {
+            super.onDestroyActionMode(actionMode);
+            mActionMode = null;
+            // TODO getListView().clearChoices();
+            //mListAdapter.notifyDataSetChanged();
+        }
     }
 
 }

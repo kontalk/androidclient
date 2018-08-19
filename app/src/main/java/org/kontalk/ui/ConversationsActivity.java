@@ -425,7 +425,8 @@ public class ConversationsActivity extends MainActivity
                 ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
                 ft.commit();
             }
-        } else {
+        }
+        else {
             Intent i = ComposeMessage.fromConversation(this, conv);
             startActivity(i);
         }

@@ -424,6 +424,11 @@ public class Conversation {
         }
     }
 
+    public void archive() {
+        if (mThreadId > 0)
+            MessagesProviderClient.setArchived(mContext, mThreadId, true);
+    }
+
     public void setSticky(boolean sticky) {
         mSticky = sticky;
         if (mThreadId > 0)
