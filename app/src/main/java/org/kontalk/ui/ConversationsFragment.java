@@ -56,7 +56,8 @@ import org.kontalk.ui.view.ConversationListItem;
 
 
 public class ConversationsFragment extends Fragment
-        implements Contact.ContactChangeListener, ConversationListAdapter.OnItemClickListener {
+        implements Contact.ContactChangeListener, ConversationListAdapter.OnItemClickListener,
+            ConversationListAdapter.OnFooterClickListener {
     static final String TAG = ConversationsActivity.TAG;
 
     private static final String STATE_MULTISELECTOR = ConversationsFragment.class
@@ -116,7 +117,7 @@ public class ConversationsFragment extends Fragment
         mListView.setLayoutManager(new LinearLayoutManager(view.getContext(),
             LinearLayoutManager.VERTICAL, false));
 
-        mListAdapter = new ConversationListAdapter(getContext(), mMultiSelector, this);
+        mListAdapter = new ConversationListAdapter(getContext(), mMultiSelector, this, this);
         mListView.setAdapter(mListAdapter);
     }
 
@@ -139,6 +140,16 @@ public class ConversationsFragment extends Fragment
                     View.GONE : View.VISIBLE);
             }
         });
+
+        /*
+        mViewModel.getArchivedCountData().observe(getViewLifecycleOwner(), new Observer<Integer>() {
+            @Override
+            public void onChanged(@Nullable Integer count) {
+                mListAdapter.setArchivedCount(count);
+                // TODO how to manage empty view?
+            }
+        });
+        */
 
         if (savedInstanceState != null) {
             mMultiSelector.restoreSelectionStates(savedInstanceState
@@ -333,6 +344,11 @@ public class ConversationsFragment extends Fragment
                 mActionMode.invalidate();
             }
         }
+    }
+
+    @Override
+    public void onFooterClick() {
+        // TODO start archived conversations screen
     }
 
     /** Used only in fragment contexts. */

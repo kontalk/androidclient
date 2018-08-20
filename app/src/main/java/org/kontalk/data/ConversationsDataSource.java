@@ -55,8 +55,9 @@ public class ConversationsDataSource extends PositionalDataSource<Conversation> 
 
     @Override
     public void loadInitial(@NonNull LoadInitialParams params, @NonNull LoadInitialCallback<Conversation> callback) {
-        int totalCount = countItems(false);
-        if (totalCount == 0) {
+        final int totalCount = countItems(false);
+        final int archivedCount = countItems(true);
+        if (totalCount == 0 && archivedCount == 0) {
             callback.onResult(Collections.<Conversation>emptyList(), 0, 0);
             return;
         }
@@ -67,7 +68,14 @@ public class ConversationsDataSource extends PositionalDataSource<Conversation> 
 
         List<Conversation> list = loadRange(firstLoadPosition, firstLoadSize);
         if (list != null && list.size() == firstLoadSize) {
-            callback.onResult(list, firstLoadPosition, totalCount);
+            int reportedCount = totalCount;
+            // take into account the footer item if we have archived conversations
+            if (archivedCount > 0) {
+                // add the footer item
+                list.add(new Conversation(archivedCount));
+                reportedCount++;
+            }
+            callback.onResult(list, firstLoadPosition, reportedCount);
         }
         else {
             // null list, or size doesn't match request - DB modified between count and load

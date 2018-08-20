@@ -148,6 +148,12 @@ public class Conversation {
         }
     }
 
+    /** Used as an archived chats count placeholder. */
+    Conversation(int count) {
+        mContext = null;
+        mMessageCount = count;
+    }
+
     public static Conversation createNew(Context context) {
         return new Conversation(context);
     }
@@ -252,6 +258,10 @@ public class Conversation {
             mContact = null;
         else
             mContact = Contact.findByUserId(mContext, mRecipient, mNumberHint);
+    }
+
+    public boolean isCountOnly() {
+        return mContext == null;
     }
 
     public Contact getContact() {

@@ -28,6 +28,7 @@ import android.support.annotation.UiThread;
 import org.kontalk.data.Conversation;
 import org.kontalk.data.ConversationsDataSourceFactory;
 
+
 public class ConversationsViewModel extends ViewModel {
 
     private LiveData<PagedList<Conversation>> mData;
