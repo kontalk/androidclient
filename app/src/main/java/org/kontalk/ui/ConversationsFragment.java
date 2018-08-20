@@ -369,19 +369,16 @@ public class ConversationsFragment extends Fragment
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.menu_archive:
-                    mode.finish();
                     archiveSelectedThreads();
-                    mMultiSelector.clearSelections();
+                    mode.finish();
                     return true;
                 case R.id.menu_delete:
-                    mode.finish();
                     deleteSelectedThreads();
-                    mMultiSelector.clearSelections();
+                    mode.finish();
                     return true;
                 case R.id.menu_sticky:
-                    mode.finish();
                     stickSelectedThread();
-                    mMultiSelector.clearSelections();
+                    mode.finish();
                     return true;
             }
             return false;
@@ -405,10 +402,9 @@ public class ConversationsFragment extends Fragment
 
         @Override
         public void onDestroyActionMode(ActionMode actionMode) {
-            super.onDestroyActionMode(actionMode);
             mActionMode = null;
-            // TODO getListView().clearChoices();
-            //mListAdapter.notifyDataSetChanged();
+            mMultiSelector.clearSelections();
+            super.onDestroyActionMode(actionMode);
         }
     }
 
