@@ -118,16 +118,6 @@ public class ConversationsFragment extends Fragment
 
         mListAdapter = new ConversationListAdapter(getContext(), mMultiSelector, this);
         mListView.setAdapter(mListAdapter);
-
-        mViewModel.load(getContext());
-        mViewModel.getData().observe(this, new Observer<PagedList<Conversation>>() {
-            @Override
-            public void onChanged(@Nullable PagedList<Conversation> conversations) {
-                mListAdapter.submitList(conversations);
-                mEmptyView.setVisibility(conversations != null && conversations.size() > 0 ?
-                    View.GONE : View.VISIBLE);
-            }
-        });
     }
 
     @Override
@@ -139,6 +129,16 @@ public class ConversationsFragment extends Fragment
         View detailsFrame = getActivity().findViewById(R.id.fragment_compose_message);
         mDualPane = detailsFrame != null
                 && detailsFrame.getVisibility() == View.VISIBLE;
+
+        mViewModel.load(getContext());
+        mViewModel.getData().observe(getViewLifecycleOwner(), new Observer<PagedList<Conversation>>() {
+            @Override
+            public void onChanged(@Nullable PagedList<Conversation> conversations) {
+                mListAdapter.submitList(conversations);
+                mEmptyView.setVisibility(conversations != null && conversations.size() > 0 ?
+                    View.GONE : View.VISIBLE);
+            }
+        });
 
         if (savedInstanceState != null) {
             mMultiSelector.restoreSelectionStates(savedInstanceState

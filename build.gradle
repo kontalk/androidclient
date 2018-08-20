@@ -33,10 +33,10 @@ allprojects {
         versionName = '4.2.0-beta1-next'
         minSdkVersion = 15
         targetSdkVersion = 23
-        compileSdkVersion = 27
+        compileSdkVersion = 28
         smackVersion = project(':client-common-java').smackVersion
         spongyCastleVersion = '1.58.0.0'
-        appcompatVersion = '27.1.1'
+        appcompatVersion = '28.0.0-rc01'
         anyMapsVersion = 'ed538f90d9'
         googlePlayServicesVersion = '15.0.1'
 
