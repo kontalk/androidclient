@@ -120,9 +120,6 @@ public class ConversationsActivity extends MainActivity
     @Override
     protected void onNewIntent(Intent intent) {
         handleIntent(intent);
-
-        // TODO ConversationListFragment fragment = getListFragment();
-        // TODO already called by onStart -- fragment.getListAdapter().refresh();
     }
 
     protected boolean handleIntent(Intent intent) {
@@ -188,10 +185,10 @@ public class ConversationsActivity extends MainActivity
 
     private void toggleSearch() {
         if (mSearchMenu != null) {
-            if (MenuItemCompat.isActionViewExpanded(mSearchMenu))
-                MenuItemCompat.collapseActionView(mSearchMenu);
+            if (mSearchMenu.isActionViewExpanded())
+                mSearchMenu.collapseActionView();
             else
-                MenuItemCompat.expandActionView(mSearchMenu);
+                mSearchMenu.expandActionView();
         }
     }
 
@@ -509,7 +506,7 @@ public class ConversationsActivity extends MainActivity
 
         // search
         mSearchMenu = menu.findItem(R.id.menu_search);
-        SearchView searchView = (SearchView) MenuItemCompat.getActionView(mSearchMenu);
+        SearchView searchView = (SearchView) mSearchMenu.getActionView();
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         // LayoutParams.MATCH_PARENT does not work, use a big value instead
