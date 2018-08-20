@@ -128,68 +128,6 @@ public class ConversationsFragment extends Fragment
                     View.GONE : View.VISIBLE);
             }
         });
-
-        /* TODO
-        mListView.addOnScrollListener(new AbsListViewScrollDetector() {
-            @Override
-            public void onScrollUp() {
-                if (mActionVisible) {
-                    mActionVisible = false;
-                    if (isAnimating())
-                        mAction.clearAnimation();
-
-                    Animation anim = AnimationUtils.loadAnimation(getActivity(), R.anim.exit_to_bottom);
-                    anim.setAnimationListener(new Animation.AnimationListener() {
-                        @Override
-                        public void onAnimationStart(Animation animation) {
-                        }
-
-                        @Override
-                        public void onAnimationEnd(Animation animation) {
-                            mAction.clearAnimation();
-                            mAction.setVisibility(View.GONE);
-                        }
-
-                        @Override
-                        public void onAnimationRepeat(Animation animation) {
-                        }
-                    });
-                    mAction.startAnimation(anim);
-                }
-            }
-
-            @Override
-            public void onScrollDown() {
-                if (!mActionVisible) {
-                    mActionVisible = true;
-                    if (isAnimating())
-                        mAction.clearAnimation();
-
-                    Animation anim = AnimationUtils.loadAnimation(getActivity(), R.anim.enter_from_bottom);
-                    mAction.startAnimation(anim);
-                    anim.setAnimationListener(new Animation.AnimationListener() {
-                        @Override
-                        public void onAnimationStart(Animation animation) {
-                            mAction.setVisibility(View.VISIBLE);
-                        }
-
-                        @Override
-                        public void onAnimationEnd(Animation animation) {
-                            mAction.clearAnimation();
-                        }
-
-                        @Override
-                        public void onAnimationRepeat(Animation animation) {
-                        }
-                    });
-                }
-            }
-
-            private boolean isAnimating() {
-                return mAction.getAnimation() != null;
-            }
-        });
-        */
     }
 
     @Override
