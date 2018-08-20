@@ -141,16 +141,6 @@ public class ConversationsFragment extends Fragment
             }
         });
 
-        /*
-        mViewModel.getArchivedCountData().observe(getViewLifecycleOwner(), new Observer<Integer>() {
-            @Override
-            public void onChanged(@Nullable Integer count) {
-                mListAdapter.setArchivedCount(count);
-                // TODO how to manage empty view?
-            }
-        });
-        */
-
         if (savedInstanceState != null) {
             mMultiSelector.restoreSelectionStates(savedInstanceState
                 .getBundle(STATE_MULTISELECTOR));

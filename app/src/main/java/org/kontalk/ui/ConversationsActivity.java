@@ -109,6 +109,31 @@ public class ConversationsActivity extends MainActivity
                     }
                 });
             }
+
+            @Override
+            public void onItemRangeChanged(int positionStart, int itemCount) {
+                onChanged();
+            }
+
+            @Override
+            public void onItemRangeChanged(int positionStart, int itemCount, @Nullable Object payload) {
+                onChanged();
+            }
+
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                onChanged();
+            }
+
+            @Override
+            public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
+                onChanged();
+            }
+
+            @Override
+            public void onItemRangeRemoved(int positionStart, int itemCount) {
+                onChanged();
+            }
         };
 
         if (Authenticator.getDefaultAccount(this) != null && !afterOnCreate())
@@ -639,7 +664,7 @@ public class ConversationsActivity extends MainActivity
             .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                    Conversation.deleteAll(ConversationsActivity.this, dialog.isPromptCheckBoxChecked());
+                    Conversation.deleteAll(ConversationsActivity.this, dialog.isPromptCheckBoxChecked(), false);
                     MessagingNotification.updateMessagesNotification(getApplicationContext(), false);
                 }
             })

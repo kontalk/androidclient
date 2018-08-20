@@ -52,6 +52,8 @@ public class ConversationListAdapter extends PagedListAdapter<Conversation, Recy
                 oldItem.getStatus() == newItem.getStatus() &&
                 oldItem.getDate() == newItem.getDate() &&
                 oldItem.isSticky() == newItem.isSticky() &&
+                // this is for the count-only item
+                oldItem.getMessageCount() == newItem.getMessageCount() &&
                 oldItem.getUnreadCount() == newItem.getUnreadCount() &&
                 oldItem.getRequestStatus() == newItem.getRequestStatus() &&
                 StringUtils.nullSafeCharSequenceEquals(oldItem.getSubject(), newItem.getSubject()) &&

@@ -201,9 +201,9 @@ public class Conversation {
         deleteInternal(context, cursor.getLong(COLUMN_ID), groupJid, groupPeers, groupType, leaveGroup, encrypted);
     }
 
-    public static void deleteAll(Context context, boolean leaveGroups) {
+    public static void deleteAll(Context context, boolean leaveGroups, boolean archived) {
         Cursor c = context.getContentResolver().query(Threads.CONTENT_URI,
-            PROJECTION, null, null, null);
+            PROJECTION, Threads.ARCHIVED + " = " + (archived ? "1" : "0"), null, null);
         while (c.moveToNext()) {
             deleteFromCursor(context, c, leaveGroups);
         }

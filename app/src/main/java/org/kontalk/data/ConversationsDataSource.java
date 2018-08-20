@@ -57,7 +57,15 @@ public class ConversationsDataSource extends PositionalDataSource<Conversation> 
     public void loadInitial(@NonNull LoadInitialParams params, @NonNull LoadInitialCallback<Conversation> callback) {
         final int totalCount = countItems(false);
         final int archivedCount = countItems(true);
-        if (totalCount == 0 && archivedCount == 0) {
+        if (totalCount == 0) {
+            // archived count only
+            if (archivedCount > 0) {
+                List<Conversation> list = new ArrayList<>(1);
+                list.add(new Conversation(archivedCount));
+                callback.onResult(list, 0, 1);
+                return;
+            }
+
             callback.onResult(Collections.<Conversation>emptyList(), 0, 0);
             return;
         }
