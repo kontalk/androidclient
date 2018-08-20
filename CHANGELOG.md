@@ -3,6 +3,7 @@
 ## [Next]
 ### Fixed
 - Fix messages stuck in sending state
+- Fix push notifications not working
 
 ### Changed
 - Notification channels (aka notification categoris)
