@@ -48,6 +48,7 @@ public class ConversationListAdapter extends PagedListAdapter<Conversation, Conv
                 oldItem.getStatus() == newItem.getStatus() &&
                 oldItem.getDate() == newItem.getDate() &&
                 oldItem.isSticky() == newItem.isSticky() &&
+                oldItem.getUnreadCount() == newItem.getUnreadCount() &&
                 oldItem.getRequestStatus() == newItem.getRequestStatus() &&
                 StringUtils.nullSafeCharSequenceEquals(oldItem.getSubject(), newItem.getSubject()) &&
                 StringUtils.nullSafeCharSequenceEquals(oldItem.getDraft(), newItem.getDraft());
