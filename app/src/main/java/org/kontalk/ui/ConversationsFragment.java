@@ -67,6 +67,7 @@ public class ConversationsFragment extends Fragment
     private RecyclerView mListView;
     ConversationListAdapter mListAdapter;
     private ConversationsViewModel mViewModel;
+    private RecyclerView.AdapterDataObserver mObserver;
 
     private MultiSelector mMultiSelector;
     private ModalMultiSelectorCallback mActionModeCallback;
@@ -83,6 +84,45 @@ public class ConversationsFragment extends Fragment
         mViewModel = ViewModelProviders.of(this).get(ConversationsViewModel.class);
         mMultiSelector = new MultiSelector();
         mActionModeCallback = new ActionModeCallback();
+        mObserver = new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                final ConversationsActivity parent = getParentActivity();
+                if (parent != null) {
+                    parent.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            parent.onDatabaseChanged();
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onItemRangeChanged(int positionStart, int itemCount) {
+                onChanged();
+            }
+
+            @Override
+            public void onItemRangeChanged(int positionStart, int itemCount, @Nullable Object payload) {
+                onChanged();
+            }
+
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                onChanged();
+            }
+
+            @Override
+            public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
+                onChanged();
+            }
+
+            @Override
+            public void onItemRangeRemoved(int positionStart, int itemCount) {
+                onChanged();
+            }
+        };
     }
 
     @Override
@@ -140,6 +180,7 @@ public class ConversationsFragment extends Fragment
                     View.GONE : View.VISIBLE);
             }
         });
+        mListAdapter.registerAdapterDataObserver(mObserver);
 
         if (savedInstanceState != null) {
             mMultiSelector.restoreSelectionStates(savedInstanceState
@@ -170,6 +211,13 @@ public class ConversationsFragment extends Fragment
         super.onSaveInstanceState(outState);
         outState.putBundle(STATE_MULTISELECTOR, mMultiSelector.saveSelectionStates());
         // TODO save state
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (mListAdapter != null)
+            mListAdapter.unregisterAdapterDataObserver(mObserver);
     }
 
     @Override
@@ -284,10 +332,6 @@ public class ConversationsFragment extends Fragment
         return (ConversationsActivity) getActivity();
     }
 
-    public ConversationListAdapter getListAdapter() {
-        return mListAdapter;
-    }
-
     @Override
     public void onStart() {
         super.onStart();
@@ -358,7 +402,7 @@ public class ConversationsFragment extends Fragment
     }
 
     public boolean hasListItems() {
-        return mListAdapter != null && mListAdapter.getItemCount() > 0;
+        return mListAdapter != null && mListAdapter.getRealItemCount() > 0;
     }
 
     public boolean isDualPane() {

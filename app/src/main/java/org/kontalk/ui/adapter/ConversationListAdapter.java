@@ -74,6 +74,16 @@ public class ConversationListAdapter extends PagedListAdapter<Conversation, Recy
         mFooterListener = footerListener;
     }
 
+    public int getRealItemCount() {
+        if (getItemCount() > 0) {
+            int count = getItemCount();
+            Conversation conv = getItem(count - 1);
+            return conv != null && conv.isCountOnly() ?
+                count - 1 : count;
+        }
+        return 0;
+    }
+
     @Override
     public int getItemViewType(int position) {
         Conversation conv = getItem(position);

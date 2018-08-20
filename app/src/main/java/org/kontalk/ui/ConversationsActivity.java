@@ -40,7 +40,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
 import android.view.Menu;
@@ -85,8 +84,6 @@ public class ConversationsActivity extends MainActivity
     /** Offline mode menu item. */
     private MenuItem mOfflineMenu;
 
-    private RecyclerView.AdapterDataObserver mObserver;
-
     private static final int REQUEST_CONTACT_PICKER = 7720;
 
     @Override
@@ -99,42 +96,6 @@ public class ConversationsActivity extends MainActivity
 
         mFragment = (ConversationsFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_conversation_list);
-        mObserver = new RecyclerView.AdapterDataObserver() {
-            @Override
-            public void onChanged() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        onDatabaseChanged();
-                    }
-                });
-            }
-
-            @Override
-            public void onItemRangeChanged(int positionStart, int itemCount) {
-                onChanged();
-            }
-
-            @Override
-            public void onItemRangeChanged(int positionStart, int itemCount, @Nullable Object payload) {
-                onChanged();
-            }
-
-            @Override
-            public void onItemRangeInserted(int positionStart, int itemCount) {
-                onChanged();
-            }
-
-            @Override
-            public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
-                onChanged();
-            }
-
-            @Override
-            public void onItemRangeRemoved(int positionStart, int itemCount) {
-                onChanged();
-            }
-        };
 
         if (Authenticator.getDefaultAccount(this) != null && !afterOnCreate())
             handleIntent(getIntent());
@@ -214,18 +175,6 @@ public class ConversationsActivity extends MainActivity
             else
                 mSearchMenu.expandActionView();
         }
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        mFragment.getListAdapter().registerAdapterDataObserver(mObserver);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        mFragment.getListAdapter().unregisterAdapterDataObserver(mObserver);
     }
 
     @Override
