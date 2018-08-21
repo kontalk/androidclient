@@ -5,7 +5,7 @@ Help us improve and fix bugs by reporting them on GitHub or discussing them on o
 * Badge indicators for OEMs supporting it
 * Migrate to Firebase Cloud Messaging
 * Upgrade to Smack 4.3
+* Support for notification categories
 * Accepted invitation is no longer required to chat
-* More precise Google Maps location
 * Fix some annoying public key issues
 * Fix several other bugs

@@ -223,6 +223,4 @@ else if (project.hasProperty('GOOGLE_PLAY_DEVELOPER_KEY_FILE')) {
     }
 }
 
-if (getGradle().getStartParameter().getTaskRequests().toString().contains("Googleplay")) {
-    apply plugin: 'com.google.gms.google-services'
-}
+apply plugin: 'com.google.gms.google-services'
