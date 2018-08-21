@@ -724,4 +724,22 @@
     <string name="err_validation_phone_state_denied">Если вы дадите Kontalk доступ к звонкам, он сможет автоматически определить ваш собственный номер.
 \nМы не будем пользоваться этим разрешением ни для чего больше.</string>
 
+    <string name="pref_server_messages">Получать сервисные сообщения</string>
+    <string name="pref_title_server_messages">Разрешить администрации сервера посылать вам сообщения. Если эта опция отключена, можно пропустить что-нибудь по-настоящему важное</string>
+
+    <string name="notify_incoming_message_channel_name">Сообщения</string>
+    <string name="notify_incoming_message_channel_description">Входящие сообщения</string>
+
+    <string name="notify_media_download_channel_name">Загрузки</string>
+    <string name="notify_media_download_channel_description">Загрузки медиа</string>
+
+    <string name="notify_media_upload_channel_name">Выложено</string>
+    <string name="notify_media_upload_channel_description">Выложено медиа</string>
+
+    <string name="notify_message_center_channel_name">Центр сообщений</string>
+    <string name="notify_message_center_channel_description">Необходимо для того, чтобы сервис Kontalk оставался активным</string>
+
+    <string name="notify_other_channel_name">Другое</string>
+    <string name="notify_other_channel_description">Другие уведомления</string>
+
     </resources>
