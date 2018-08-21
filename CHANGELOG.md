@@ -1,6 +1,6 @@
 # Changelog
 
-## [Next]
+## [4.2.0-beta2] - 2018-08-21
 ### Fixed
 - Fix messages stuck in sending state
 - Fix push notifications not working
@@ -503,7 +503,7 @@
 - Fix draft saving on incoming message (#448)
 - Fix crash during sync (#454)
 
-[Next]: https://github.com/kontalk/androidclient/compare/v4.2.0-beta1...HEAD
+[4.2.0-beta2]: https://github.com/kontalk/androidclient/compare/v4.2.0-beta1...v4.2.0-beta2
 [4.2.0-beta1]: https://github.com/kontalk/androidclient/compare/v4.1.6...v4.2.0-beta1
 [4.1.6]: https://github.com/kontalk/androidclient/compare/v4.1.5...v4.1.6
 [4.1.5]: https://github.com/kontalk/androidclient/compare/v4.1.4...v4.1.5
