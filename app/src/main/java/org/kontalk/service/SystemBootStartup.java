@@ -19,7 +19,10 @@
 package org.kontalk.service;
 
 import org.kontalk.Kontalk;
+import org.kontalk.authenticator.Authenticator;
+import org.kontalk.ui.MessagingNotification;
 
+import android.accounts.Account;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -27,13 +30,19 @@ import android.content.Intent;
 
 /**
  * Receiver for the BOOT_COMPLETED action.
- * This is actually just a dummy to allow {@link Kontalk} do its jobs.
+ * Fires up any unread notifications before the last reboot.
  * @author Daniele Ricci
- * @version 1.0
  */
 public class SystemBootStartup extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        // nothing to do here
+        if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
+            Account account = Authenticator.getDefaultAccount(Kontalk.get());
+            if (account != null) {
+                // update notifications from locally unread messages
+                MessagingNotification
+                    .delayedUpdateMessagesNotification(Kontalk.get(), false);
+            }
+        }
     }
 }

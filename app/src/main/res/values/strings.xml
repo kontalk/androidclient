@@ -458,6 +458,9 @@
     <string name="pref_sync_invisible_contacts">Include invisible contacts</string>
     <string name="pref_title_sync_invisible_contacts">Include contacts not displayed in Contacts app. Enable if you use DAVDroid</string>
 
+    <string name="pref_server_messages">Receive server messages</string>
+    <string name="pref_title_server_messages">Allow messages from server administrators. You might miss important news if you disable this</string>
+
     <string name="pref_accept_any_certificate">Accept any SSL certificate</string>
 
     <string name="pref_delete_account">Delete your account</string>
@@ -682,6 +685,21 @@
     <string name="pref_enable_outgoing_sound">Play sound for outgoing messages</string>
 
     <string name="contact_name_server">Your server</string>
+
+    <string name="notify_incoming_message_channel_name">Messages</string>
+    <string name="notify_incoming_message_channel_description">Incoming messages</string>
+
+    <string name="notify_media_download_channel_name">Downloads</string>
+    <string name="notify_media_download_channel_description">Media downloads</string>
+
+    <string name="notify_media_upload_channel_name">Uploads</string>
+    <string name="notify_media_upload_channel_description">Media uploads</string>
+
+    <string name="notify_message_center_channel_name">Message Center</string>
+    <string name="notify_message_center_channel_description">Required to keep Kontalk service alive</string>
+
+    <string name="notify_other_channel_name">Other</string>
+    <string name="notify_other_channel_description">Other notifications</string>
 
     <plurals name="confirm_will_delete_threads">
         <item quantity="one">The selected chat will be deleted.</item>

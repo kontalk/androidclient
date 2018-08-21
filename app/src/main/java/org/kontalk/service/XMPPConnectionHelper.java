@@ -48,7 +48,6 @@ import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.service.msgcenter.MessageCenterService;
-import org.kontalk.service.msgcenter.PGPKeyPairRingProvider;
 import org.kontalk.util.InternalTrustStore;
 import org.kontalk.util.Preferences;
 
@@ -371,8 +370,5 @@ public class XMPPConnectionHelper extends Thread {
         void reconnectingIn(int seconds);
 
         void authenticationFailed();
-
-        PGPKeyPairRingProvider getKeyPairRingProvider();
-
     }
 }

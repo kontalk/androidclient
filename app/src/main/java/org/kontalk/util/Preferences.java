@@ -603,6 +603,11 @@ public final class Preferences {
             .getResources().getBoolean(R.bool.pref_default_debug_log));
     }
 
+    public static boolean isServerMessagesEnabled(Context context) {
+        return getBoolean("pref_server_messages", context
+            .getResources().getBoolean(R.bool.pref_default_server_messages));
+    }
+
     public static long getPingAlarmInterval(Context context, long defaultValue) {
         String networkType = SystemUtils.getCurrentNetworkName(context);
         return (networkType != null) ?

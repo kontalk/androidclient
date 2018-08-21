@@ -40,11 +40,12 @@ public class ProgressNotificationBuilder extends NotificationCompat.Builder {
     private int mLayout;
 
     public ProgressNotificationBuilder(Context context,
+            String channelId,
             int layout,
             CharSequence tickerText,
             int smallIcon,
             PendingIntent intent) {
-        super(context);
+        super(context, channelId);
 
         mContext = context;
         mLayout = layout;
@@ -55,7 +56,9 @@ public class ProgressNotificationBuilder extends NotificationCompat.Builder {
         setContentIntent(intent);
         setOngoing(true);
         setCategory(NotificationCompat.CATEGORY_PROGRESS);
-        setPriority(NotificationCompat.PRIORITY_LOW);
+        // apparently PRIORITY_MIN/IMPORTANCE_MIN is not compatible with setOnGoing
+        // system will raise this to PRIORITY_LOW/IMPORTANCE_MIN unless changed by user
+        setPriority(NotificationCompat.PRIORITY_MIN);
     }
 
     /**

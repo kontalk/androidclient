@@ -20,6 +20,7 @@ package org.kontalk.service.msgcenter;
 
 import android.widget.Toast;
 
+import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.crypto.PersonalKeyImporter;
 
@@ -92,7 +93,7 @@ class ImportKeyPairListener extends RegisterKeyPairListener {
     protected void finish() {
         runOnUiThread(new Runnable() {
             public void run() {
-                Toast.makeText(getApplication(),
+                Toast.makeText(Kontalk.get(),
                     R.string.msg_import_keypair_complete,
                     Toast.LENGTH_LONG).show();
             }

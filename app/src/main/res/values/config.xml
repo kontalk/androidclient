@@ -32,6 +32,7 @@
     <bool name="pref_default_show_blocked_users">false</bool>
     <bool name="pref_default_sync_sim_contacts">false</bool>
     <bool name="pref_default_sync_invisible_contacts">false</bool>
+    <bool name="pref_default_server_messages">true</bool>
 
     <!-- appearance settings defaults -->
     <string name="pref_default_font_size">medium</string>

@@ -1,7 +1,11 @@
 Registration provider kindly offered by https://JMP.Chat
-Help us improve and fix bugs by reporting them on GitHub or discussing them on our forum: https://forum.kontalk.org
+Help us improve and fix bugs by reporting them on GitHub or discussing them on our forum!
 
-* fix some public key issues
-* some major performance improvements
-* fix some permission issues
-* a lot of other bugfixes
+* NEW: Copy multiple messages to clipboard
+* Badge indicators for OEMs supporting it
+* Migrate to Firebase Cloud Messaging
+* Upgrade to Smack 4.3
+* Accepted invitation is no longer required to chat
+* More precise Google Maps location
+* Fix some annoying public key issues
+* Fix several other bugs
