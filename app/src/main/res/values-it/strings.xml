@@ -720,4 +720,22 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
     <string name="err_validation_phone_state_denied">Se permetti a Kontalk di gestire le telefonate, possiamo rilevare il tuo numero automaticamente.
 \nKontalk non userà il permesso per nient\'altro.</string>
 
+    <string name="pref_server_messages">Ricevi messaggi dal server</string>
+    <string name="pref_title_server_messages">Permetti messaggi dagli amministratori. Potresti perdere notizie importanti se disabilitato</string>
+
+    <string name="notify_incoming_message_channel_name">Messaggi</string>
+    <string name="notify_incoming_message_channel_description">Messaggi ricevuti</string>
+
+    <string name="notify_media_download_channel_name">Download</string>
+    <string name="notify_media_download_channel_description">Download allegati</string>
+
+    <string name="notify_media_upload_channel_name">Upload</string>
+    <string name="notify_media_upload_channel_description">Invio allegati</string>
+
+    <string name="notify_message_center_channel_name">Centro messaggi</string>
+    <string name="notify_message_center_channel_description">Richiesto per mantenere attivo il servizio di Kontalk</string>
+
+    <string name="notify_other_channel_name">Altro</string>
+    <string name="notify_other_channel_description">Altre notifiche</string>
+
     </resources>
