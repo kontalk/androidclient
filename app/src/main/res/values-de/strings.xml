@@ -724,4 +724,22 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="err_validation_phone_state_denied">Wenn Sie zulassen, dass Kontalk Telefonanrufe verwaltet, kann Ihre Telefonnummer automatisch erkannt werden.
 \nKontalk verwendet die erteilte Berechtigung für nichts anderes.</string>
 
+    <string name="pref_server_messages">Servernachrichten empfangen</string>
+    <string name="pref_title_server_messages">Nachrichten von Serveradministratoren erlauben. Sie könnten wichtige Informationen verpassen, wenn Sie dies deaktivieren.</string>
+
+    <string name="notify_incoming_message_channel_name">Nachrichten</string>
+    <string name="notify_incoming_message_channel_description">Eingehende Nachrichten</string>
+
+    <string name="notify_media_download_channel_name">Downloads</string>
+    <string name="notify_media_download_channel_description">Mediendownloads</string>
+
+    <string name="notify_media_upload_channel_name">Uploads</string>
+    <string name="notify_media_upload_channel_description">Medienuploads</string>
+
+    <string name="notify_message_center_channel_name">Nachrichten-Center</string>
+    <string name="notify_message_center_channel_description">Erforderlich, um den Kontalk-Dienst am Leben zu erhalten</string>
+
+    <string name="notify_other_channel_name">Andere</string>
+    <string name="notify_other_channel_description">Andere Benachrichtigungen</string>
+
     </resources>
