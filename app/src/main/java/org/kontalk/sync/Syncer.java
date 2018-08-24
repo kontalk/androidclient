@@ -250,28 +250,31 @@ public class Syncer {
             }
 
             else if (MessageCenterService.ACTION_BLOCKLIST.equals(action)) {
-                blocklistReceived = true;
+                String requestId = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
+                if (IQ_PACKET_ID.equals(requestId)) {
+                    blocklistReceived = true;
 
-                String[] list = intent.getStringArrayExtra(MessageCenterService.EXTRA_BLOCKLIST);
-                if (list != null) {
+                    String[] list = intent.getStringArrayExtra(MessageCenterService.EXTRA_BLOCKLIST);
+                    if (list != null) {
 
-                    for (String jid : list) {
-                        // see if bare JID is present in roster response
-                        String compare = XmppStringUtils.parseBareJid(jid);
-                        for (PresenceItem item : response) {
-                            if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(compare)) {
-                                item.blocked = true;
+                        for (String jid : list) {
+                            // see if bare JID is present in roster response
+                            String compare = XmppStringUtils.parseBareJid(jid);
+                            for (PresenceItem item : response) {
+                                if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(compare)) {
+                                    item.blocked = true;
 
-                                break;
+                                    break;
+                                }
                             }
                         }
+
                     }
 
+                    // done with presence data and blocklist
+                    if (pubkeyCount >= presenceCount && notMatched.size() == 0)
+                        finish();
                 }
-
-                // done with presence data and blocklist
-                if (pubkeyCount >= presenceCount && notMatched.size() == 0)
-                    finish();
             }
 
             // last activity (for user existance verification)
@@ -709,6 +712,7 @@ public class Syncer {
     void requestBlocklist() {
         Intent i = new Intent(mContext, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_BLOCKLIST);
+        i.putExtra(MessageCenterService.EXTRA_PACKET_ID, IQ_PACKET_ID);
         mContext.startService(i);
     }
 
