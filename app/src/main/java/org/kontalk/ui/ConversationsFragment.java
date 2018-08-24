@@ -190,6 +190,7 @@ public class ConversationsFragment extends Fragment
         if (mMultiSelector.isSelectable()) {
             mActionModeCallback.setClearOnPrepare(false);
             mActionMode = getParentActivity().startSupportActionMode(mActionModeCallback);
+            updateActionModeTitle(mMultiSelector.getSelectedPositions().size());
         }
 
         if (mDualPane) {
@@ -372,9 +373,7 @@ public class ConversationsFragment extends Fragment
                 mActionMode.finish();
             }
             else {
-                mActionMode.setTitle(getResources()
-                    .getQuantityString(R.plurals.context_selected,
-                        count, count));
+                updateActionModeTitle(count);
                 mActionMode.invalidate();
             }
         }
@@ -384,6 +383,13 @@ public class ConversationsFragment extends Fragment
     public void onFooterClick() {
         // TODO start archived conversations screen
     }
+
+    private void updateActionModeTitle(int count) {
+        mActionMode.setTitle(getResources()
+            .getQuantityString(R.plurals.context_selected,
+                count, count));
+    }
+
 
     /** Used only in fragment contexts. */
     public void endConversation(AbstractComposeFragment composer) {
