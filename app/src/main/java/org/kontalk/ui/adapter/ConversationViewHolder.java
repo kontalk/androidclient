@@ -22,8 +22,10 @@ import com.bignerdranch.android.multiselector.MultiSelector;
 import com.bignerdranch.android.multiselector.SwappingHolder;
 
 import android.content.Context;
+import android.support.v4.content.res.ResourcesCompat;
 import android.view.View;
 
+import org.kontalk.R;
 import org.kontalk.data.Conversation;
 import org.kontalk.ui.view.ConversationListItem;
 
@@ -41,6 +43,9 @@ class ConversationViewHolder extends SwappingHolder implements
         mListener = listener;
         itemView.setOnClickListener(this);
         itemView.setOnLongClickListener(this);
+        // TODO this is not compatible with theme change (e.g. dark theme)
+        setSelectionModeBackgroundDrawable(ResourcesCompat.getDrawable(itemView.getResources(),
+            R.drawable.list_item_background, itemView.getContext().getTheme()));
     }
 
     void bindView(Context context, Conversation conversation) {
