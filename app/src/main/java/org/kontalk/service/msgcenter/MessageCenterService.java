@@ -207,7 +207,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_PUSH_REGISTERED = "org.kontalk.push.REGISTERED";
     public static final String ACTION_IDLE = "org.kontalk.action.IDLE";
     public static final String ACTION_PING = "org.kontalk.action.PING";
-    public static final String ACTION_MEDIA_READY = "org.kontalk.action.MEDIA_READY";
 
     /**
      * Request the roster.
@@ -303,7 +302,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     /**
      * Send this intent to retry to send a pending-user-review message.
+     * @deprecated Use MessagesController
      */
+    @Deprecated
     public static final String ACTION_RETRY = "org.kontalk.action.RETRY";
 
     /**
@@ -332,6 +333,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Send this intent to update the foreground service status of the message center.
      */
     public static final String ACTION_FOREGROUND = "org.kontalk.action.FOREGROUND";
+
+    /**
+     * Broadcasted when an upload service has been discovered.
+     */
+    public static final String ACTION_UPLOAD_SERVICE_FOUND = "org.kontalk.action.UPLOAD_SERVICE_FOUND";
+
+    /**
+     * Broadcasted when group creation has been confirmed by the server.
+     */
+    public static final String ACTION_GROUP_CREATED = "org.kontalk.action.GROUP_CREATED";
 
     // common parameters
     public static final String EXTRA_PACKET_ID = "org.kontalk.packet.id";
@@ -406,10 +417,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String PUSH_REGISTRATION_ID = "org.kontalk.PUSH_REGISTRATION_ID";
     private static final String DEFAULT_PUSH_PROVIDER = "gcm";
 
-    private static final int GROUP_COMMAND_CREATE = 1;
-    private static final int GROUP_COMMAND_SUBJECT = 2;
-    private static final int GROUP_COMMAND_PART = 3;
-    private static final int GROUP_COMMAND_MEMBERS = 4;
+    public static final int GROUP_COMMAND_CREATE = 1;
+    public static final int GROUP_COMMAND_SUBJECT = 2;
+    public static final int GROUP_COMMAND_PART = 3;
+    public static final int GROUP_COMMAND_MEMBERS = 4;
 
     /**
      * Minimal wakeup time.
@@ -433,30 +444,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     /** How long to retain the wakelock to wait for incoming messages. */
     private static final int WAIT_FOR_MESSAGES_DELAY = 5000;
-
-    private static final String[] RESEND_PROJECTION = new String[] {
-        Messages._ID,
-        Messages.THREAD_ID,
-        Messages.MESSAGE_ID,
-        Messages.PEER,
-        Messages.BODY_CONTENT,
-        Messages.BODY_MIME,
-        Messages.SECURITY_FLAGS,
-        Messages.ATTACHMENT_MIME,
-        Messages.ATTACHMENT_LOCAL_URI,
-        Messages.ATTACHMENT_FETCH_URL,
-        Messages.ATTACHMENT_PREVIEW_PATH,
-        Messages.ATTACHMENT_LENGTH,
-        Messages.ATTACHMENT_COMPRESS,
-        // TODO Messages.ATTACHMENT_SECURITY_FLAGS,
-        Groups.GROUP_JID,
-        Groups.SUBJECT,
-        Messages.GEO_LATITUDE,
-        Messages.GEO_LONGITUDE,
-        Messages.GEO_TEXT,
-        Messages.GEO_STREET,
-        Messages.IN_REPLY_TO,
-    };
 
     static final IPushListener sPushListener = PushServiceManager.getDefaultListener();
 
@@ -1245,10 +1232,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     doConnect = handleVersion(intent);
                     break;
 
-                case ACTION_MEDIA_READY:
-                    doConnect = handleMediaReady(intent);
-                    break;
-
                 case ACTION_FOREGROUND:
                     doConnect = handleForeground();
                     break;
@@ -1753,7 +1736,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return false;
     }
 
+    /** @deprecated Use MessagesController. */
     @CommandHandler(name = ACTION_RETRY)
+    @Deprecated
     private boolean handleRetry() {
         // TODO we should retry only the requested message(s)
         // already connected: resend pending messages
@@ -1784,14 +1769,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
         }
         return false;
-    }
-
-    @CommandHandler(name = ACTION_MEDIA_READY)
-    private boolean handleMediaReady(Intent intent) {
-        long msgId = intent.getLongExtra("org.kontalk.message.msgId", 0);
-        if (msgId > 0)
-            sendReadyMedia(msgId);
-        return true;
     }
 
     @CommandHandler(name = ACTION_FOREGROUND)
@@ -1888,7 +1865,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // setup presence and roster listener
         PresenceListener presenceListener = new PresenceListener(this);
-        RosterListener rosterListener = new RosterListener(this, presenceListener);
+        RosterListener rosterListener = new RosterListener(this);
         Roster roster = getRoster();
         roster.addRosterLoadedListener(rosterListener);
         roster.addRosterListener(rosterListener);
@@ -2132,327 +2109,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         p.addExtension(new CapsExtension("http://www.kontalk.org/", "none", "sha-1"));
 
         return p;
-    }
-
-    private void sendReadyMedia(long databaseId) {
-        Cursor c = getContentResolver().query(ContentUris
-                .withAppendedId(Messages.CONTENT_URI, databaseId), RESEND_PROJECTION, null, null, null);
-
-        sendMessages(c, false);
-
-        c.close();
-    }
-
-    void resendPendingMessages(boolean retrying, boolean forcePending) {
-        resendPendingMessages(retrying, forcePending, null);
-    }
-
-    /**
-     * Queries for pending messages and send them through.
-     *
-     * @param retrying     if true, we are retrying to send media messages after
-     *                     receiving upload info (non-media messages will be filtered out)
-     * @param forcePending true to include pending user review messages
-     * @param to           filter by recipient (optional)
-     */
-    void resendPendingMessages(boolean retrying, boolean forcePending, String to) {
-        String[] filterArgs = null;
-
-        StringBuilder filter = new StringBuilder()
-            .append(Messages.DIRECTION)
-            .append('=')
-            .append(Messages.DIRECTION_OUT)
-            .append(" AND ")
-            .append(Messages.STATUS)
-            .append("<>")
-            .append(Messages.STATUS_SENT)
-            .append(" AND ")
-            .append(Messages.STATUS)
-            .append("<>")
-            .append(Messages.STATUS_RECEIVED)
-            .append(" AND ")
-            .append(Messages.STATUS)
-            .append("<>")
-            .append(Messages.STATUS_NOTDELIVERED)
-            .append(" AND ")
-            .append(Messages.STATUS)
-            .append("<>")
-            .append(Messages.STATUS_QUEUED);
-
-
-        // filter out pending messages
-        if (!forcePending) filter
-            .append(" AND ")
-            .append(Messages.STATUS)
-            .append("<>")
-            .append(Messages.STATUS_PENDING);
-
-        // filter out non-media non-uploaded messages
-        if (retrying) filter
-            .append(" AND ")
-            .append(Messages.ATTACHMENT_FETCH_URL)
-            .append(" IS NULL AND ")
-            .append(Messages.ATTACHMENT_LOCAL_URI)
-            .append(" IS NOT NULL");
-
-        if (to != null) {
-            filter
-                .append(" AND (")
-                .append(Messages.PEER)
-                .append("=? OR EXISTS (SELECT 1 FROM group_members WHERE ")
-                .append(Groups.GROUP_JID)
-                .append("=")
-                .append(Messages.PEER)
-                .append(" AND ")
-                .append(Groups.PEER)
-                .append("=?))");
-            filterArgs = new String[]{to, to};
-        }
-
-        Cursor c = getContentResolver().query(Messages.CONTENT_URI,
-            RESEND_PROJECTION, filter.toString(), filterArgs, Messages._ID);
-
-        sendMessages(c, retrying);
-
-        c.close();
-    }
-
-    private void sendMessages(Cursor c, boolean retrying) {
-        // this set will cache thread IDs within this cursor with
-        // pending group commands (i.e. just processed group commands)
-        // This will be looked up when sending consecutive message in the group
-        // and stop them
-        Set<Long> pendingGroupCommandThreads = new HashSet<>();
-
-        while (c.moveToNext()) {
-            // TODO constants for column indexes
-            long id = c.getLong(0);
-            long threadId = c.getLong(1);
-            String msgId = c.getString(2);
-            String peer = c.getString(3);
-            byte[] textContent = c.getBlob(4);
-            String bodyMime = c.getString(5);
-            int securityFlags = c.getInt(6);
-            String attMime = c.getString(7);
-            String attFileUri = c.getString(8);
-            String attFetchUrl = c.getString(9);
-            String attPreviewPath = c.getString(10);
-            long attLength = c.getLong(11);
-            int compress = c.getInt(12);
-            // TODO int attSecurityFlags = c.getInt(13);
-
-            String groupJid = c.getString(13); // 14
-            String groupSubject = c.getString(14); // 15
-
-            long inReplyToId = c.getLong(19); // 20
-
-            if (pendingGroupCommandThreads.contains(threadId)) {
-                Log.v(TAG, "group message for pending group command - delaying");
-                continue;
-            }
-
-            final boolean isGroupCommand = GroupCommandComponent.supportsMimeType(bodyMime);
-            if (isGroupCommand) {
-                if (groupJid == null) {
-                    // orphan group command waiting to be sent
-                    groupJid = peer;
-                }
-                else {
-                    // cache the thread -- it will block future messages until
-                    // this command is received by the server
-                    pendingGroupCommandThreads.add(threadId);
-                }
-            }
-
-            String[] groupMembers = null;
-            if (groupJid != null) {
-                /*
-                 * Huge potential issue here. Selecting all members, regardless of pending flags,
-                 * might e.g. deliver messages to removed users if there is a content message right
-                 * after a remove command.
-                 * However, selecting members with zero flags will make a remove command to be sent
-                 * only to existing members and not to the ones being removed.
-                 */
-                groupMembers = MessagesProviderClient.getGroupMembers(this, groupJid, -1);
-                if (groupMembers.length == 0) {
-                    // no group member left - skip message
-                    // this might be a pending message that was queued before we realized there were no members left
-                    // since the group might get populated again, we just skip the message but keep it
-                    Log.d(TAG, "no members in group - skipping message");
-                    continue;
-                }
-            }
-
-            // media message encountered and no upload service available - delay message
-            if (attFileUri != null && attFetchUrl == null && getUploadService() == null && !retrying) {
-                Log.w(TAG, "no upload info received yet, delaying media message");
-                continue;
-            }
-
-            Bundle b = new Bundle();
-            // mark as retrying
-            b.putBoolean("org.kontalk.message.retrying", true);
-
-            b.putLong("org.kontalk.message.msgId", id);
-            b.putString("org.kontalk.message.packetId", msgId);
-
-            if (groupJid != null) {
-                b.putString("org.kontalk.message.group.jid", groupJid);
-                // will be replaced by the group command (if any)
-                b.putStringArray("org.kontalk.message.to", groupMembers);
-            }
-            else {
-                b.putString("org.kontalk.message.to", peer);
-            }
-
-            // TODO shouldn't we pass security flags directly here??
-            b.putBoolean("org.kontalk.message.encrypt", securityFlags != Coder.SECURITY_CLEARTEXT);
-
-            if (isGroupCommand) {
-                int cmd = 0;
-                byte[] _command = c.getBlob(4);
-                String command = new String(_command);
-
-                String[] createMembers;
-                String[] addMembers;
-                String[] removeMembers = null;
-                String subject;
-                if ((createMembers = GroupCommandComponent.getCreateCommandMembers(command)) != null) {
-                    cmd = GROUP_COMMAND_CREATE;
-                    b.putStringArray("org.kontalk.message.to", createMembers);
-                    b.putString("org.kontalk.message.group.subject", groupSubject);
-                }
-                else if (command.equals(GroupCommandComponent.COMMAND_PART)) {
-                    cmd = GROUP_COMMAND_PART;
-                }
-                else if ((addMembers = GroupCommandComponent.getAddCommandMembers(command)) != null ||
-                    (removeMembers = GroupCommandComponent.getRemoveCommandMembers(command)) != null) {
-                    cmd = GROUP_COMMAND_MEMBERS;
-                    b.putStringArray("org.kontalk.message.group.add", addMembers);
-                    b.putStringArray("org.kontalk.message.group.remove", removeMembers);
-                    b.putString("org.kontalk.message.group.subject", groupSubject);
-                }
-                else if ((subject = GroupCommandComponent.getSubjectCommand(command)) != null) {
-                    cmd = GROUP_COMMAND_SUBJECT;
-                    b.putString("org.kontalk.message.group.subject", subject);
-                }
-
-                b.putInt("org.kontalk.message.group.command", cmd);
-            }
-            else if (textContent != null) {
-                b.putString("org.kontalk.message.body", MessageUtils.toString(textContent));
-            }
-
-            // message has already been uploaded - just send media
-            if (attFetchUrl != null) {
-                b.putString("org.kontalk.message.mime", attMime);
-                b.putString("org.kontalk.message.fetch.url", attFetchUrl);
-                b.putString("org.kontalk.message.preview.uri", attFileUri);
-                b.putString("org.kontalk.message.preview.path", attPreviewPath);
-            }
-            // check if the message contains some large file to be sent
-            else if (attFileUri != null) {
-                b.putString("org.kontalk.message.mime", attMime);
-                b.putString("org.kontalk.message.media.uri", attFileUri);
-                b.putString("org.kontalk.message.preview.path", attPreviewPath);
-                b.putLong("org.kontalk.message.length", attLength);
-                b.putInt("org.kontalk.message.compress", compress);
-            }
-
-            if (!c.isNull(15)) {
-                double lat = c.getDouble(15);
-                double lon = c.getDouble(16);
-                b.putDouble("org.kontalk.message.geo_lat", lat);
-                b.putDouble("org.kontalk.message.geo_lon", lon);
-
-                if (!c.isNull(17)) {
-                    String geoText = c.getString(17);
-                    b.putString("org.kontalk.message.geo_text", geoText);
-                }
-
-                if (!c.isNull(18)) {
-                    String geoStreet = c.getString(18);
-                    b.putString("org.kontalk.message.geo_street", geoStreet);
-                }
-            }
-
-            if (inReplyToId > 0) {
-                b.putLong("org.kontalk.message.inReplyTo", inReplyToId);
-            }
-
-            Log.v(TAG, "resending pending message " + id);
-            sendMessage(b);
-        }
-    }
-
-    void resendPendingReceipts() {
-        Cursor c = getContentResolver().query(Messages.CONTENT_URI,
-            new String[]{
-                Messages._ID,
-                Messages.MESSAGE_ID,
-                Messages.PEER,
-            },
-            Messages.DIRECTION + " = " + Messages.DIRECTION_IN + " AND " +
-                Messages.STATUS + " = " + Messages.STATUS_INCOMING,
-            null, Messages._ID);
-
-        while (c.moveToNext()) {
-            long id = c.getLong(0);
-            String msgId = c.getString(1);
-            String peer = c.getString(2);
-
-            Bundle b = new Bundle();
-
-            b.putLong("org.kontalk.message.msgId", id);
-            b.putString("org.kontalk.message.packetId", msgId);
-            b.putString("org.kontalk.message.to", peer);
-            b.putString("org.kontalk.message.ack", msgId);
-
-            Log.v(TAG, "resending pending receipt for message " + id);
-            sendMessage(b);
-        }
-
-        c.close();
-    }
-
-    void sendPendingSubscriptionReplies() {
-        Cursor c = getContentResolver().query(Threads.CONTENT_URI,
-            new String[]{
-                Threads.PEER,
-                Threads.REQUEST_STATUS,
-            },
-            Threads.REQUEST_STATUS + "=" + Threads.REQUEST_REPLY_PENDING_ACCEPT + " OR " +
-                Threads.REQUEST_STATUS + "=" + Threads.REQUEST_REPLY_PENDING_BLOCK,
-            null, Threads._ID);
-
-        while (c.moveToNext()) {
-            String to = c.getString(0);
-            int reqStatus = c.getInt(1);
-
-            int action;
-
-            switch (reqStatus) {
-                case Threads.REQUEST_REPLY_PENDING_ACCEPT:
-                    action = PRIVACY_ACCEPT;
-                    break;
-
-                case Threads.REQUEST_REPLY_PENDING_BLOCK:
-                    action = PRIVACY_BLOCK;
-                    break;
-
-                case Threads.REQUEST_REPLY_PENDING_UNBLOCK:
-                    action = PRIVACY_UNBLOCK;
-                    break;
-
-                default:
-                    // skip this one
-                    continue;
-            }
-
-            sendSubscriptionReply(to, null, action);
-        }
-
-        c.close();
     }
 
     Roster getRoster() {
@@ -3080,11 +2736,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     void addUploadService(IUploadService service) {
         ensureUploadServices();
         mUploadServices.add(service);
+        broadcast(ACTION_UPLOAD_SERVICE_FOUND);
     }
 
     void addUploadService(IUploadService service, int priority) {
         ensureUploadServices();
         mUploadServices.add(priority, service);
+        broadcast(ACTION_UPLOAD_SERVICE_FOUND);
     }
 
     /**
@@ -3280,6 +2938,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Intent i = getBaseIntent(context);
         i.setAction(ACTION_PRESENCE);
         i.putExtra(EXTRA_STATUS, Preferences.getStatusMessage());
+        context.startService(i);
+    }
+
+    /** Sends a previously prepared message. */
+    public static void sendMessage(final Context context, Bundle data) {
+        Intent i = MessageCenterService.getBaseIntent(context);
+        i.setAction(MessageCenterService.ACTION_MESSAGE);
+        i.putExtras(data);
         context.startService(i);
     }
 
@@ -3552,13 +3218,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
-    public static void sendMedia(final Context context, long msgId) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_MEDIA_READY);
-        i.putExtra("org.kontalk.message.msgId", msgId);
-        context.startService(i);
-    }
-
+    /** @deprecated Should go through MessagesController */
+    @Deprecated
     public static void retryMessage(final Context context, long id, boolean chatEncryptionEnabled) {
         boolean encrypted = Preferences.getEncryptionEnabled(context) && chatEncryptionEnabled;
         Uri uri = ContentUris.withAppendedId(Messages.CONTENT_URI, id);
@@ -3570,6 +3231,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
+    /** @deprecated Should go through MessagesController */
+    @Deprecated
     public static void retryMessagesTo(final Context context, String to) {
         MessagesProviderClient.retryMessagesTo(context, to);
         Intent i = getBaseIntent(context);
@@ -3579,6 +3242,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
+    /** @deprecated Should go through MessagesController */
+    @Deprecated
     public static void retryAllMessages(final Context context) {
         MessagesProviderClient.retryAllMessages(context);
         Intent i = getBaseIntent(context);
