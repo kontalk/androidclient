@@ -45,7 +45,7 @@ import org.kontalk.util.MessageUtils;
  */
 public class Conversation {
 
-    private static final String[] ALL_THREADS_PROJECTION = {
+    public static final String[] PROJECTION = {
         Threads._ID,
         Threads.PEER,
         Threads.COUNT,
@@ -148,6 +148,12 @@ public class Conversation {
         }
     }
 
+    /** Used as an archived chats count placeholder. */
+    Conversation(int count) {
+        mContext = null;
+        mMessageCount = count;
+    }
+
     public static Conversation createNew(Context context) {
         return new Conversation(context);
     }
@@ -159,7 +165,7 @@ public class Conversation {
     public static Conversation loadFromUserId(Context context, String userId) {
         Conversation cv = null;
         Cursor cp = context.getContentResolver().query(Threads.CONTENT_URI,
-                ALL_THREADS_PROJECTION, Threads.PEER + " = ?", new String[] { userId }, null);
+            PROJECTION, Threads.PEER + " = ?", new String[] { userId }, null);
         if (cp.moveToFirst())
             cv = createFromCursor(context, cp);
 
@@ -171,7 +177,7 @@ public class Conversation {
         Conversation cv = null;
         Cursor cp = context.getContentResolver().query(
                 ContentUris.withAppendedId(Threads.CONTENT_URI, id),
-                ALL_THREADS_PROJECTION, null, null, null);
+            PROJECTION, null, null, null);
         if (cp.moveToFirst())
             cv = createFromCursor(context, cp);
 
@@ -181,49 +187,6 @@ public class Conversation {
 
     public static long getMessageId(Cursor cursor) {
         return cursor.getLong(COLUMN_ID);
-    }
-
-    public static String getPeer(Cursor cursor) {
-        return cursor.getString(COLUMN_PEER);
-    }
-
-    /** Holder for thread delete information. */
-    public static final class DeleteThreadHolder {
-        long id;
-        String groupJid;
-        String groupType;
-        int groupMembership;
-        boolean encrypted;
-
-        public DeleteThreadHolder(Cursor cursor) {
-            id = cursor.getLong(COLUMN_ID);
-            groupJid = cursor.getString(COLUMN_GROUP_JID);
-            groupType = cursor.getString(COLUMN_GROUP_TYPE);
-            groupMembership = cursor.getInt(COLUMN_GROUP_MEMBERSHIP);
-            encrypted = cursor.getInt(COLUMN_ENCRYPTED) != 0;
-        }
-    }
-
-    public static boolean isGroup(Cursor cursor, int requiredMembership) {
-        return cursor.getString(COLUMN_GROUP_JID) != null && cursor.getInt(COLUMN_GROUP_MEMBERSHIP) == requiredMembership;
-    }
-
-    public static boolean isGroup(DeleteThreadHolder holder, int requiredMembership) {
-        return holder.groupJid != null && holder.groupMembership == requiredMembership;
-    }
-
-    public static void archiveFromCursor(Context context, Cursor cursor) {
-        long threadId = cursor.getLong(COLUMN_ID);
-        MessagesProviderClient.setArchived(context, threadId, true);
-    }
-
-    public static void deleteFromCursor(Context context, DeleteThreadHolder holder, boolean leaveGroup) {
-        String[] groupPeers = null;
-        if (holder.groupJid != null) {
-            groupPeers = loadGroupPeersInternal(context, holder.groupJid);
-        }
-        boolean encrypted = MessageUtils.sendEncrypted(context, holder.encrypted);
-        deleteInternal(context, holder.id, holder.groupJid, groupPeers, holder.groupType, leaveGroup, encrypted);
     }
 
     public static void deleteFromCursor(Context context, Cursor cursor, boolean leaveGroup) {
@@ -238,9 +201,9 @@ public class Conversation {
         deleteInternal(context, cursor.getLong(COLUMN_ID), groupJid, groupPeers, groupType, leaveGroup, encrypted);
     }
 
-    public static void deleteAll(Context context, boolean leaveGroups) {
+    public static void deleteAll(Context context, boolean leaveGroups, boolean archived) {
         Cursor c = context.getContentResolver().query(Threads.CONTENT_URI,
-            ALL_THREADS_PROJECTION, null, null, null);
+            PROJECTION, Threads.ARCHIVED + " = " + (archived ? "1" : "0"), null, null);
         while (c.moveToNext()) {
             deleteFromCursor(context, c, leaveGroups);
         }
@@ -252,6 +215,10 @@ public class Conversation {
             mContact = null;
         else
             mContact = Contact.findByUserId(mContext, mRecipient, mNumberHint);
+    }
+
+    public boolean isCountOnly() {
+        return mContext == null;
     }
 
     public Contact getContact() {
@@ -424,6 +391,11 @@ public class Conversation {
         }
     }
 
+    public void archive() {
+        if (mThreadId > 0)
+            MessagesProviderClient.setArchived(mContext, mThreadId, true);
+    }
+
     public void setSticky(boolean sticky) {
         mSticky = sticky;
         if (mThreadId > 0)
@@ -440,29 +412,32 @@ public class Conversation {
         return MessagesProviderClient.getGroupMembers(context, groupJid, 0);
     }
 
+    @Deprecated
     public static void startQuery(AsyncQueryHandler handler, int token) {
         // cancel previous operations
         handler.cancelOperation(token);
         handler.startQuery(token, null, Threads.CONTENT_URI,
-                ALL_THREADS_PROJECTION, null, null, Threads.DEFAULT_SORT_ORDER);
+            PROJECTION, null, null, Threads.DEFAULT_SORT_ORDER);
     }
 
     public static void startQuery(AsyncQueryHandler handler, int token, long threadId) {
         // cancel previous operations
         handler.cancelOperation(token);
         handler.startQuery(token, null, Threads.CONTENT_URI,
-                ALL_THREADS_PROJECTION, Threads._ID + " = " + threadId, null, null);
+            PROJECTION, Threads._ID + " = " + threadId, null, null);
     }
 
+    @Deprecated
     public static Cursor startQuery(Context context, boolean archived) {
         return context.getContentResolver().query(Threads.CONTENT_URI,
-            ALL_THREADS_PROJECTION, Threads.ARCHIVED + " = " + (archived ? "1" : "0"),
+            PROJECTION, Threads.ARCHIVED + " = " + (archived ? "1" : "0"),
             null, Threads.DEFAULT_SORT_ORDER);
     }
 
+    @Deprecated
     public static Cursor startQuery(Context context, long threadId) {
         return context.getContentResolver().query(Threads.CONTENT_URI,
-                ALL_THREADS_PROJECTION, Threads._ID + " = " + threadId, null, null);
+            PROJECTION, Threads._ID + " = " + threadId, null, null);
     }
 
     /**
