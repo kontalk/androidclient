@@ -458,9 +458,11 @@ public class ConversationsFragment extends Fragment
         }
 
         public void setSelectedPosition(int selectedPosition) {
-            super.clearSelections();
-            mSelectedPosition = selectedPosition;
-            setSelectedPosition();
+            if (mSingleSelection) {
+                super.clearSelections();
+                mSelectedPosition = selectedPosition;
+                setSelectedPosition();
+            }
         }
 
         private void setSelectedPosition() {
@@ -478,7 +480,7 @@ public class ConversationsFragment extends Fragment
 
         @Override
         public void setSelectable(boolean isSelectable) {
-            if (isSelectable) {
+            if (mSingleSelection && isSelectable) {
                 // clear any selection first
                 super.clearSelections();
             }
@@ -488,14 +490,18 @@ public class ConversationsFragment extends Fragment
         @Override
         public Bundle saveSelectionStates() {
             Bundle state = super.saveSelectionStates();
-            state.putInt("singleSelection", mSelectedPosition);
+            if (mSingleSelection) {
+                state.putInt("singleSelection", mSelectedPosition);
+            }
             return state;
         }
 
         @Override
         public void restoreSelectionStates(Bundle savedStates) {
             super.restoreSelectionStates(savedStates);
-            mSelectedPosition = savedStates.getInt("singleSelection", -1);
+            if (mSingleSelection) {
+                mSelectedPosition = savedStates.getInt("singleSelection", -1);
+            }
         }
     }
 
