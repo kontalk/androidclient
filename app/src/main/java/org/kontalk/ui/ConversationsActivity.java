@@ -377,10 +377,8 @@ public class ConversationsActivity extends MainActivity
         openConversation(threadUri, false);
     }
 
-    public void openConversation(Conversation conv, int position) {
+    public void openConversation(Conversation conv) {
         if (isDualPane()) {
-            // TODO mFragment.getListView().setItemChecked(position, true);
-
             // get the old fragment
             AbstractComposeFragment f = getCurrentConversation();
 
@@ -567,17 +565,6 @@ public class ConversationsActivity extends MainActivity
         if (mSearchMenu != null) {
             mSearchMenu.setEnabled(visible).setVisible(visible);
             mDeleteAllMenu.setEnabled(visible).setVisible(visible);
-        }
-
-        // for tablet interface
-        // select the current conversation item
-        AbstractComposeFragment f = getCurrentConversation();
-        if (f != null) {
-            /* TODO
-            int position = ((ConversationListAdapter) mFragment.getListAdapter())
-                .getItemPosition(f.getUserId());
-            mFragment.getListView().setItemChecked(position, true);
-            */
         }
     }
 

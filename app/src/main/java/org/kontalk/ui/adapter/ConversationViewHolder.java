@@ -19,7 +19,6 @@
 package org.kontalk.ui.adapter;
 
 import com.bignerdranch.android.multiselector.MultiSelector;
-import com.bignerdranch.android.multiselector.SwappingHolder;
 
 import android.content.Context;
 import android.support.v4.content.res.ResourcesCompat;
