@@ -18,6 +18,12 @@
 
 package org.kontalk;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+
 import android.content.BroadcastReceiver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -31,7 +37,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.Message;
+import android.support.annotation.AnyThread;
 import android.support.annotation.WorkerThread;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
@@ -50,6 +56,7 @@ import org.kontalk.message.LocationComponent;
 import org.kontalk.message.MessageComponent;
 import org.kontalk.message.VCardComponent;
 import org.kontalk.provider.Keyring;
+import org.kontalk.provider.KontalkGroupCommands;
 import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyUsers;
@@ -62,11 +69,6 @@ import org.kontalk.ui.MessagingNotification;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
-
-import java.util.HashSet;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
 
 
 /**
@@ -103,7 +105,6 @@ public class MessagesController {
 
     private final Context mContext;
     private final MessageQueueThread mWorker;
-    private final Queue<MessageStub> mQueue;
 
     private boolean mUploadServiceFound;
 
@@ -111,39 +112,46 @@ public class MessagesController {
         mContext = context;
         new MessageCenterListener(context);
 
-        mQueue = new LinkedBlockingQueue<>();
         mWorker = new MessageQueueThread();
         mWorker.start();
     }
 
-    public Uri sendTextMessage(Conversation conv, String text, long inReplyTo) {
-        boolean encrypted = MessageUtils.sendEncrypted(mContext, conv.isEncryptionEnabled());
+    public Future<Uri> sendTextMessage(final Conversation conv, final String text, final long inReplyTo) {
+        FutureTask<Uri> result = new FutureTask<>(new Callable<Uri>() {
+            @Override
+            public Uri call() throws Exception {
+                boolean encrypted = MessageUtils.sendEncrypted(mContext, conv.isEncryptionEnabled());
 
-        String msgId = MessageUtils.messageId();
-        String userId = conv.isGroupChat() ? conv.getGroupJid() : conv.getRecipient();
+                String msgId = MessageUtils.messageId();
+                String userId = conv.isGroupChat() ? conv.getGroupJid() : conv.getRecipient();
 
-        // save to local storage
-        Uri newMsg = MessagesProviderClient.newOutgoingMessage(mContext,
-                msgId, userId, text, encrypted, inReplyTo);
-        if (newMsg != null) {
-            // send message!
-            if (conv.isGroupChat()) {
-                MessageCenterService.sendGroupTextMessage(mContext,
-                        conv.getGroupJid(), conv.getGroupPeers(),
-                        text, encrypted, ContentUris.parseId(newMsg), msgId, inReplyTo);
+                // save to local storage
+                Uri newMsg = MessagesProviderClient.newOutgoingMessage(mContext,
+                    msgId, userId, text, encrypted, inReplyTo);
+                if (newMsg != null) {
+                    // send message!
+                    if (conv.isGroupChat()) {
+                        MessageCenterService.sendGroupTextMessage(mContext,
+                            conv.getGroupJid(), conv.getGroupPeers(),
+                            text, encrypted, ContentUris.parseId(newMsg), msgId, inReplyTo);
+                    }
+                    else {
+                        MessageCenterService.sendTextMessage(mContext, userId, text,
+                            encrypted, ContentUris.parseId(newMsg), msgId, inReplyTo);
+                    }
+
+                    return newMsg;
+                }
+                else {
+                    throw new SQLiteDiskIOException();
+                }
             }
-            else {
-                MessageCenterService.sendTextMessage(mContext, userId, text,
-                        encrypted, ContentUris.parseId(newMsg), msgId, inReplyTo);
-            }
-
-            return newMsg;
-        }
-        else {
-            throw new SQLiteDiskIOException();
-        }
+        });
+        mWorker.postAction(result);
+        return result;
     }
 
+    // TODO go through the message queue and return a promise
     public Uri sendLocationMessage(Conversation conv, String text, double lat, double lon,
         String geoText, String geoStreet) {
         boolean encrypted = MessageUtils.sendEncrypted(mContext, conv.isEncryptionEnabled());
@@ -173,6 +181,7 @@ public class MessagesController {
         }
     }
 
+    // TODO go through the message queue and return a promise
     public Uri sendBinaryMessage(Conversation conv, Uri uri, String mime, boolean media,
                                  Class<? extends MessageComponent<?>> klass) throws SQLiteDiskIOException {
         String msgId = MessageCenterService.messageId();
@@ -198,19 +207,85 @@ public class MessagesController {
         }
     }
 
+    public void retryMessage(final long id, final boolean chatEncryptionEnabled) {
+        mWorker.postAction(new Runnable() {
+            @Override
+            public void run() {
+                boolean encrypted = Preferences.getEncryptionEnabled(mContext) && chatEncryptionEnabled;
+                Uri uri = ContentUris.withAppendedId(MyMessages.Messages.CONTENT_URI, id);
+                MessagesProviderClient.retryMessage(mContext, uri, encrypted);
+                // TODO we should retry only the requested message(s)
+                resendPendingMessages(false, false);
+            }
+        });
+    }
+
+    public void retryMessagesTo(final String to) {
+        mWorker.postAction(new Runnable() {
+            @Override
+            public void run() {
+                MessagesProviderClient.retryMessagesTo(mContext, to);
+                // TODO we should retry only message to the request user
+                resendPendingMessages(false, false);
+            }
+        });
+    }
+
+    public void retryAllMessages() {
+        mWorker.postAction(new Runnable() {
+            @Override
+            public void run() {
+                MessagesProviderClient.retryAllMessages(mContext);
+                resendPendingMessages(false, false);
+            }
+        });
+    }
+
+    /** Creates a group chat. */
+    public Future<Uri> createGroup(final String[] users, final String groupJid, final String title) {
+        FutureTask<Uri> result = new FutureTask<>(new Callable<Uri>() {
+            @Override
+            public Uri call() throws Exception {
+                long groupThreadId = Conversation.initGroupChat(mContext,
+                    groupJid, title, users, "");
+
+                // store create group command to outbox
+                // NOTE: group chats can currently only be created with chat encryption enabled
+                boolean encrypted = Preferences.getEncryptionEnabled(mContext);
+                String msgId = MessageCenterService.messageId();
+                Uri cmdMsg = KontalkGroupCommands.createGroup(mContext,
+                    groupThreadId, groupJid, users, msgId, encrypted);
+
+                if (cmdMsg != null) {
+                    // send create group command now
+                    MessageCenterService.createGroup(mContext, groupJid, title,
+                        users, encrypted, ContentUris.parseId(cmdMsg), msgId);
+
+                    return cmdMsg;
+                }
+                else {
+                    throw new SQLiteDiskIOException();
+                }
+
+            }
+        });
+        mWorker.postAction(result);
+        return result;
+    }
+
     /**
      * Set the trust level for the given key and, if the trust level is high
      * enough, send pending messages to the given user.
      *
      * @return true if the trust level is high enough to retry messages
      */
-    public boolean setTrustLevelAndRetryMessages(Context context, String jid, String fingerprint, int trustLevel) {
+    public boolean setTrustLevelAndRetryMessages(String jid, String fingerprint, int trustLevel) {
         if (fingerprint == null)
             throw new NullPointerException("fingerprint");
 
-        Keyring.setTrustLevel(context, jid, fingerprint, trustLevel);
+        Keyring.setTrustLevel(mContext, jid, fingerprint, trustLevel);
         if (trustLevel >= MyUsers.Keys.TRUST_IGNORED) {
-            MessageCenterService.retryMessagesTo(context, jid);
+            retryMessagesTo(jid);
             return true;
         }
         return false;
@@ -413,6 +488,7 @@ public class MessagesController {
         MessageCenterListener(Context context) {
             IntentFilter filter = new IntentFilter();
             filter.addAction(MessageCenterService.ACTION_CONNECTED);
+            filter.addAction(MessageCenterService.ACTION_DISCONNECTED);
             filter.addAction(MessageCenterService.ACTION_ROSTER_LOADED);
             filter.addAction(MessageCenterService.ACTION_SUBSCRIBED);
             filter.addAction(MessageCenterService.ACTION_UPLOAD_SERVICE_FOUND);
@@ -426,11 +502,17 @@ public class MessagesController {
         public void onReceive(Context context, final Intent intent) {
             String action = intent.getAction();
             switch (action != null ? action : "") {
-                case MessageCenterService.ACTION_CONNECTED:
+                case MessageCenterService.ACTION_CONNECTED: {
                     connected();
                     break;
+                }
 
-                case MessageCenterService.ACTION_ROSTER_LOADED:
+                case MessageCenterService.ACTION_DISCONNECTED: {
+                    disconnected();
+                    break;
+                }
+
+                case MessageCenterService.ACTION_ROSTER_LOADED: {
                     mWorker.postAction(new Runnable() {
                         @Override
                         public void run() {
@@ -438,17 +520,20 @@ public class MessagesController {
                         }
                     });
                     break;
+                }
 
-                case MessageCenterService.ACTION_SUBSCRIBED:
+                case MessageCenterService.ACTION_SUBSCRIBED: {
+                    final String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
                     mWorker.postAction(new Runnable() {
                         @Override
                         public void run() {
-                            subscribed(intent.getStringExtra(MessageCenterService.EXTRA_FROM));
+                            subscribed(from);
                         }
                     });
                     break;
+                }
 
-                case MessageCenterService.ACTION_UPLOAD_SERVICE_FOUND:
+                case MessageCenterService.ACTION_UPLOAD_SERVICE_FOUND: {
                     mWorker.postAction(new Runnable() {
                         @Override
                         public void run() {
@@ -456,8 +541,9 @@ public class MessagesController {
                         }
                     });
                     break;
+                }
 
-                case MessageCenterService.ACTION_GROUP_CREATED:
+                case MessageCenterService.ACTION_GROUP_CREATED: {
                     mWorker.postAction(new Runnable() {
                         @Override
                         public void run() {
@@ -465,39 +551,27 @@ public class MessagesController {
                         }
                     });
                     break;
+                }
 
-                case MediaService.ACTION_MEDIA_READY:
+                case MediaService.ACTION_MEDIA_READY: {
+                    final long messageId = intent.getLongExtra("org.kontalk.message.msgId", 0);
                     mWorker.postAction(new Runnable() {
                         @Override
                         public void run() {
-                            readyMedia(intent.getLongExtra("org.kontalk.message.msgId", 0));
+                            readyMedia(messageId);
                         }
                     });
                     break;
+                }
             }
         }
     }
 
-    private final class MessageQueueThread extends HandlerThread implements Handler.Callback {
+    private final class MessageQueueThread extends HandlerThread {
         private Handler mHandler;
 
         MessageQueueThread() {
             super(MessagesController.class.getSimpleName());
-        }
-
-        @Override
-        protected void onLooperPrepared() {
-            mHandler = new Handler(getLooper(), this);
-        }
-
-        public Handler getHandler() {
-            return mHandler;
-        }
-
-        public void postMessage(MessageStub msg) {
-            Message env = mHandler.obtainMessage();
-            env.obj = msg;
-            mHandler.sendMessage(env);
         }
 
         public void postAction(Runnable action) {
@@ -505,19 +579,20 @@ public class MessagesController {
         }
 
         @Override
-        public boolean handleMessage(Message message) {
-            // TODO
-            Log.d(TAG, "got message: " + message);
-            return false;
+        public synchronized void start() {
+            super.start();
+            // getLooper will block until ready
+            mHandler = new Handler(getLooper());
         }
     }
 
-    private final class MessageStub {
-        // TODO
+    @AnyThread
+    void connected() {
+        mUploadServiceFound = false;
     }
 
-    @WorkerThread
-    void connected() {
+    @AnyThread
+    void disconnected() {
         mUploadServiceFound = false;
     }
 

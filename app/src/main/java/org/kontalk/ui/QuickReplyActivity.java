@@ -18,6 +18,8 @@
 
 package org.kontalk.ui;
 
+import java.util.concurrent.ExecutionException;
+
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDiskIOException;
@@ -138,8 +140,15 @@ public class QuickReplyActivity extends ToolbarActivity {
         public void run() {
             final Context context = QuickReplyActivity.this;
             try {
-                Uri newMsg = Kontalk.get().getMessagesController()
-                    .sendTextMessage(mConversation, mText, 0);
+                Uri newMsg;
+                try {
+                    newMsg = Kontalk.get().getMessagesController()
+                        .sendTextMessage(mConversation, mText, 0).get();
+                }
+                catch (ExecutionException e) {
+                    // unwrap exception
+                    throw e.getCause();
+                }
 
                 if (newMsg != null) {
                     // mark as read and finish
@@ -155,7 +164,7 @@ public class QuickReplyActivity extends ToolbarActivity {
                     }
                 });
             }
-            catch (Exception e) {
+            catch (Throwable e) {
                 ReportingManager.logException(e);
                 runOnUiThread(new Runnable() {
                     public void run() {

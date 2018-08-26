@@ -30,9 +30,7 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.zip.ZipInputStream;
@@ -86,12 +84,10 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -135,9 +131,7 @@ import org.kontalk.message.LocationComponent;
 import org.kontalk.message.ReferencedMessage;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.Keyring;
-import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.provider.MessagesProviderClient.MessageUpdater;
-import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Requests;
@@ -301,13 +295,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_SERVERLIST = "org.kontalk.action.SERVERLIST";
 
     /**
-     * Send this intent to retry to send a pending-user-review message.
-     * @deprecated Use MessagesController
-     */
-    @Deprecated
-    public static final String ACTION_RETRY = "org.kontalk.action.RETRY";
-
-    /**
      * Broadcasted when the blocklist is received.
      * Send this intent to request the blocklist.
      */
@@ -405,11 +392,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Reject subscription and block.
      */
     public static final int PRIVACY_REJECT = 3;
-
-    /**
-     * Message URI.
-     */
-    public static final String EXTRA_MESSAGE = "org.kontalk.message";
 
     public static final String EXTRA_CHAT_STATE = "org.kontalk.message.chatState";
 
@@ -1220,10 +1202,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     doConnect = handleSubscribed(intent);
                     break;
 
-                case ACTION_RETRY:
-                    doConnect = handleRetry();
-                    break;
-
                 case ACTION_BLOCKLIST:
                     doConnect = handleBlocklist(intent);
                     break;
@@ -1733,17 +1711,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 intent.getStringExtra(EXTRA_PACKET_ID),
                 intent.getIntExtra(EXTRA_PRIVACY, PRIVACY_ACCEPT));
         }
-        return false;
-    }
-
-    /** @deprecated Use MessagesController. */
-    @CommandHandler(name = ACTION_RETRY)
-    @Deprecated
-    private boolean handleRetry() {
-        // TODO we should retry only the requested message(s)
-        // already connected: resend pending messages
-        if (isConnected())
-            resendPendingMessages(false, false);
         return false;
     }
 
@@ -3215,39 +3182,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.fetch.url", fetchUrl);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        context.startService(i);
-    }
-
-    /** @deprecated Should go through MessagesController */
-    @Deprecated
-    public static void retryMessage(final Context context, long id, boolean chatEncryptionEnabled) {
-        boolean encrypted = Preferences.getEncryptionEnabled(context) && chatEncryptionEnabled;
-        Uri uri = ContentUris.withAppendedId(Messages.CONTENT_URI, id);
-        MessagesProviderClient.retryMessage(context, uri, encrypted);
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_RETRY);
-        // TODO not implemented yet
-        i.putExtra(MessageCenterService.EXTRA_MESSAGE, uri);
-        context.startService(i);
-    }
-
-    /** @deprecated Should go through MessagesController */
-    @Deprecated
-    public static void retryMessagesTo(final Context context, String to) {
-        MessagesProviderClient.retryMessagesTo(context, to);
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_RETRY);
-        // TODO not implemented yet
-        i.putExtra(MessageCenterService.EXTRA_TO, to);
-        context.startService(i);
-    }
-
-    /** @deprecated Should go through MessagesController */
-    @Deprecated
-    public static void retryAllMessages(final Context context) {
-        MessagesProviderClient.retryAllMessages(context);
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_RETRY);
         context.startService(i);
     }
 

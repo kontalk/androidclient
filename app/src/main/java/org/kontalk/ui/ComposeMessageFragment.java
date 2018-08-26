@@ -827,7 +827,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
             // trust the key
             String fingerprint = getContact().getFingerprint();
             Kontalk.get().getMessagesController()
-                .setTrustLevelAndRetryMessages(ctx, mUserJID,
+                .setTrustLevelAndRetryMessages(mUserJID,
                     fingerprint, MyUsers.Keys.TRUST_VERIFIED);
         }
 
@@ -1001,7 +1001,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         if (fingerprint == null)
             fingerprint = getContact().getFingerprint();
         Kontalk.get().getMessagesController()
-            .setTrustLevelAndRetryMessages(context, mUserJID, fingerprint, MyUsers.Keys.TRUST_VERIFIED);
+            .setTrustLevelAndRetryMessages(mUserJID, fingerprint, MyUsers.Keys.TRUST_VERIFIED);
         // reload contact
         invalidateContact();
     }
