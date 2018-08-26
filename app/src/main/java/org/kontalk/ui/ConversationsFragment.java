@@ -27,6 +27,7 @@ import com.bignerdranch.android.multiselector.ModalMultiSelectorCallback;
 import com.bignerdranch.android.multiselector.MultiSelector;
 import com.github.clans.fab.FloatingActionMenu;
 
+import android.app.Activity;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.arch.paging.PagedList;
@@ -391,7 +392,15 @@ public class ConversationsFragment extends Fragment
 
     @Override
     public void onContactInvalidated(String userId) {
-        mListAdapter.notifyDataSetChanged();
+        Activity parent = getActivity();
+        if (parent != null) {
+            parent.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mListAdapter.notifyDataSetChanged();
+                }
+            });
+        }
     }
 
     public boolean hasListItems() {
