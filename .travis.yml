@@ -12,10 +12,8 @@ android:
     - tools
     - build-tools-26.0.2
     - build-tools-27.0.1
-    # temporarly introduced to fix Cyanogenmod bug
-    # https://issuetracker.google.com/issues/64434571#comment35
-    - build-tools-27.0.3
-    - android-27
+    - build-tools-28.0.2
+    - android-28
     - extra-android-m2repository
     - extra-google-m2repository
     - extra-google-google_play_services
@@ -25,7 +23,7 @@ android:
   licences:
     - 'android-sdk-license-.+'
 before_install:
-  - yes | sdkmanager "platforms;android-27"
+  - yes | sdkmanager "platforms;android-28"
 #before_script:
 #  - echo no | android create avd --force -n test -t $ANDROID_TARGET --abi $ANDROID_ABI
 #  - emulator -avd test -no-skin -no-audio -no-window &

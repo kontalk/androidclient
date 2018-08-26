@@ -38,13 +38,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.UiThread;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ListAdapter;
 import android.widget.Toast;
 
 import org.kontalk.R;
@@ -56,7 +55,6 @@ import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.Syncer;
-import org.kontalk.ui.adapter.ConversationListAdapter;
 import org.kontalk.ui.prefs.HelpPreference;
 import org.kontalk.ui.prefs.PreferencesActivity;
 import org.kontalk.util.Preferences;
@@ -78,7 +76,7 @@ public class ConversationsActivity extends MainActivity
     /** An intent extra for storing an ACTION_SEND intent from {@link ComposeMessage}. */
     public static final String EXTRA_SEND_INTENT = "org.kontalk.SEND_INTENT";
 
-    private ConversationListFragment mFragment;
+    private ConversationsFragment mFragment;
 
     /** Search menu item. */
     private MenuItem mSearchMenu;
@@ -96,7 +94,7 @@ public class ConversationsActivity extends MainActivity
 
         setupToolbar(false, false);
 
-        mFragment = (ConversationListFragment) getSupportFragmentManager()
+        mFragment = (ConversationsFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_conversation_list);
 
         if (Authenticator.getDefaultAccount(this) != null && !afterOnCreate())
@@ -107,9 +105,6 @@ public class ConversationsActivity extends MainActivity
     @Override
     protected void onNewIntent(Intent intent) {
         handleIntent(intent);
-
-        ConversationListFragment fragment = getListFragment();
-        fragment.startQuery();
     }
 
     protected boolean handleIntent(Intent intent) {
@@ -163,11 +158,10 @@ public class ConversationsActivity extends MainActivity
 
     @Override
     public boolean onSearchRequested() {
-        ConversationListFragment fragment = getListFragment();
+        ConversationsFragment fragment = getListFragment();
 
-        ListAdapter list = fragment.getListAdapter();
         // no data found
-        if (list == null || list.getCount() == 0)
+        if (!fragment.hasListItems())
             return false;
 
         toggleSearch();
@@ -176,10 +170,10 @@ public class ConversationsActivity extends MainActivity
 
     private void toggleSearch() {
         if (mSearchMenu != null) {
-            if (MenuItemCompat.isActionViewExpanded(mSearchMenu))
-                MenuItemCompat.collapseActionView(mSearchMenu);
+            if (mSearchMenu.isActionViewExpanded())
+                mSearchMenu.collapseActionView();
             else
-                MenuItemCompat.expandActionView(mSearchMenu);
+                mSearchMenu.expandActionView();
         }
     }
 
@@ -342,7 +336,7 @@ public class ConversationsActivity extends MainActivity
         setTitle(offline ? R.string.app_name_offline : R.string.app_name);
     }
 
-    public ConversationListFragment getListFragment() {
+    public ConversationsFragment getListFragment() {
         return mFragment;
     }
 
@@ -355,6 +349,9 @@ public class ConversationsActivity extends MainActivity
         // Intent i = new Intent(Intent.ACTION_PICK, Users.CONTENT_URI);
         Intent i = new Intent(this, ContactsListActivity.class);
         i.putExtra(ContactsListActivity.MODE_MULTI_SELECT, multiselect);
+        // FIXME when in single pane mode, onActivityResult will cause us to requery for nothing!!
+        // maybe we should let handle the start of ComposeMessage to the contacts list activity
+        // use two subclass activities: one for returning a result, one for launching compose message
         startActivityForResult(i, REQUEST_CONTACT_PICKER);
     }
 
@@ -380,10 +377,8 @@ public class ConversationsActivity extends MainActivity
         openConversation(threadUri, false);
     }
 
-    public void openConversation(Conversation conv, int position) {
+    public void openConversation(Conversation conv) {
         if (isDualPane()) {
-            mFragment.getListView().setItemChecked(position, true);
-
             // get the old fragment
             AbstractComposeFragment f = getCurrentConversation();
 
@@ -398,7 +393,8 @@ public class ConversationsActivity extends MainActivity
                 ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
                 ft.commit();
             }
-        } else {
+        }
+        else {
             Intent i = ComposeMessage.fromConversation(this, conv);
             startActivity(i);
         }
@@ -481,7 +477,7 @@ public class ConversationsActivity extends MainActivity
 
         // search
         mSearchMenu = menu.findItem(R.id.menu_search);
-        SearchView searchView = (SearchView) MenuItemCompat.getActionView(mSearchMenu);
+        SearchView searchView = (SearchView) mSearchMenu.getActionView();
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         // LayoutParams.MATCH_PARENT does not work, use a big value instead
@@ -559,6 +555,7 @@ public class ConversationsActivity extends MainActivity
     }
 
     /** Updates various UI elements after a database change. */
+    @UiThread
     void onDatabaseChanged() {
         boolean visible = mFragment.hasListItems();
         if (mSearchMenu != null) {
@@ -568,15 +565,6 @@ public class ConversationsActivity extends MainActivity
         if (mSearchMenu != null) {
             mSearchMenu.setEnabled(visible).setVisible(visible);
             mDeleteAllMenu.setEnabled(visible).setVisible(visible);
-        }
-
-        // for tablet interface
-        // select the current conversation item
-        AbstractComposeFragment f = getCurrentConversation();
-        if (f != null) {
-            int position = ((ConversationListAdapter) mFragment.getListAdapter())
-                .getItemPosition(f.getUserId());
-            mFragment.getListView().setItemChecked(position, true);
         }
     }
 
@@ -612,7 +600,7 @@ public class ConversationsActivity extends MainActivity
             .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                    Conversation.deleteAll(ConversationsActivity.this, dialog.isPromptCheckBoxChecked());
+                    Conversation.deleteAll(ConversationsActivity.this, dialog.isPromptCheckBoxChecked(), false);
                     MessagingNotification.updateMessagesNotification(getApplicationContext(), false);
                 }
             })

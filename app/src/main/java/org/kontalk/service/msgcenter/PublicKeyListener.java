@@ -101,7 +101,7 @@ class PublicKeyListener extends MessageCenterPacketListener implements Exception
 
             // if we are not syncing and this is not a response for the Syncer
             // save the key immediately
-            if (!SyncAdapter.getIQPacketId().equals(id) || !SyncAdapter.isActive(getContext())) {
+            if (!SyncAdapter.getIQKeysPacketId().equals(id) || !SyncAdapter.isActive(getContext())) {
 
                 // updating server key
                 if (from.isDomainBareJid()) {

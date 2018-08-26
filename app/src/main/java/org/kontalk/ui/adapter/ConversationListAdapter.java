@@ -18,86 +18,127 @@
 
 package org.kontalk.ui.adapter;
 
+import android.arch.paging.PagedListAdapter;
 import android.content.Context;
-import android.database.Cursor;
+import android.support.annotation.NonNull;
+import android.support.v7.util.DiffUtil;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView.RecyclerListener;
-import android.widget.CursorAdapter;
-import android.widget.ListView;
 
-import org.kontalk.Log;
+import com.bignerdranch.android.multiselector.MultiSelector;
+
+import org.jivesoftware.smack.util.StringUtils;
 import org.kontalk.R;
 import org.kontalk.data.Conversation;
-import org.kontalk.ui.ConversationsActivity;
 import org.kontalk.ui.view.ConversationListItem;
 
 
-public class ConversationListAdapter extends CursorAdapter {
-    private static final String TAG = ConversationsActivity.TAG;
+public class ConversationListAdapter extends PagedListAdapter<Conversation, RecyclerView.ViewHolder> {
+
+    private static final int ITEM_TYPE_ITEM = 0;
+    private static final int ITEM_TYPE_FOOTER = 1;
+
+    private static final DiffUtil.ItemCallback<Conversation> sDiffCallback = new DiffUtil.ItemCallback<Conversation>() {
+        @Override
+        public boolean areItemsTheSame(Conversation oldItem, Conversation newItem) {
+            return oldItem.getThreadId() == newItem.getThreadId();
+        }
+
+        @Override
+        public boolean areContentsTheSame(Conversation oldItem, Conversation newItem) {
+            // include any attribute that might change the state of the UI
+            return oldItem.getThreadId() == newItem.getThreadId() &&
+                oldItem.getStatus() == newItem.getStatus() &&
+                oldItem.getDate() == newItem.getDate() &&
+                oldItem.isSticky() == newItem.isSticky() &&
+                // this is for the count-only item
+                oldItem.getMessageCount() == newItem.getMessageCount() &&
+                oldItem.getUnreadCount() == newItem.getUnreadCount() &&
+                oldItem.getRequestStatus() == newItem.getRequestStatus() &&
+                StringUtils.nullSafeCharSequenceEquals(oldItem.getSubject(), newItem.getSubject()) &&
+                StringUtils.nullSafeCharSequenceEquals(oldItem.getDraft(), newItem.getDraft());
+        }
+    };
 
     private final LayoutInflater mFactory;
-    private OnContentChangedListener mOnContentChangedListener;
+    private final MultiSelector mMultiSelector;
+    private final OnItemClickListener mItemListener;
+    private final OnFooterClickListener mFooterListener;
 
-    public ConversationListAdapter(Context context, Cursor cursor, ListView list) {
-        super(context, cursor, false);
+    public ConversationListAdapter(Context context, MultiSelector multiSelector, OnItemClickListener itemListener, OnFooterClickListener footerListener) {
+        super(sDiffCallback);
         mFactory = LayoutInflater.from(context);
+        mMultiSelector = multiSelector;
+        mItemListener = itemListener;
+        mFooterListener = footerListener;
+    }
 
-        list.setRecyclerListener(new RecyclerListener() {
-            public void onMovedToScrapHeap(View view) {
-                if (view instanceof ConversationListItem) {
-                    ((ConversationListItem) view).unbind();
-                }
-            }
-        });
+    public int getRealItemCount() {
+        if (getItemCount() > 0) {
+            int count = getItemCount();
+            Conversation conv = getItem(count - 1);
+            return conv != null && conv.isCountOnly() ?
+                count - 1 : count;
+        }
+        return 0;
     }
 
     @Override
-    public void bindView(View view, Context context, Cursor cursor) {
-        if (!(view instanceof ConversationListItem)) {
-            Log.e(TAG, "Unexpected bound view: " + view);
-            return;
+    public int getItemViewType(int position) {
+        Conversation conv = getItem(position);
+        if (conv != null && conv.isCountOnly()) {
+            return ITEM_TYPE_FOOTER;
         }
+        else {
+            return ITEM_TYPE_ITEM;
+        }
+    }
 
-        ConversationListItem headerView = (ConversationListItem) view;
-        Conversation conv = Conversation.createFromCursor(context, cursor);
-
-        headerView.bind(context, conv);
+    @NonNull
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        switch (viewType) {
+            case ITEM_TYPE_FOOTER:
+                return new ConversationFooterViewHolder(mFactory
+                    .inflate(R.layout.conversation_list_footer, parent, false), mFooterListener);
+            case ITEM_TYPE_ITEM:
+            default:
+                return new ConversationViewHolder((ConversationListItem) mFactory
+                    .inflate(R.layout.conversation_list_item, parent, false), mMultiSelector, mItemListener);
+        }
     }
 
     @Override
-    public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        return mFactory.inflate(R.layout.conversation_list_item, parent, false);
-    }
-
-    public interface OnContentChangedListener {
-        void onContentChanged(ConversationListAdapter adapter);
-    }
-
-    public void setOnContentChangedListener(OnContentChangedListener l) {
-        mOnContentChangedListener = l;
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        if (holder instanceof ConversationViewHolder) {
+            ((ConversationViewHolder) holder).bindView(mFactory.getContext(), getItem(position));
+        }
+        else if (holder instanceof ConversationFooterViewHolder) {
+            Conversation archivedCount = getItem(position);
+            ((ConversationFooterViewHolder) holder).bindView(mFactory.getContext(),
+                archivedCount != null && archivedCount.getMessageCount() > 0 ?
+                    archivedCount.getMessageCount() : null);
+        }
     }
 
     @Override
-    protected void onContentChanged() {
-        Cursor c = getCursor();
-        if (c != null && !c.isClosed() && mOnContentChangedListener != null) {
-            mOnContentChangedListener.onContentChanged(this);
+    public void onViewRecycled(@NonNull RecyclerView.ViewHolder holder) {
+        if (holder instanceof ConversationViewHolder) {
+            ((ConversationViewHolder) holder).unbindView();
         }
     }
 
-    /** Search for an item and return its position. */
-    public int getItemPosition(String peer) {
-        Cursor cursor = getCursor();
-        if (cursor != null) {
-            cursor.moveToPosition(-1);
-            while (cursor.moveToNext()) {
-                if (peer.equals(Conversation.getPeer(cursor)))
-                    return cursor.getPosition();
-            }
-        }
-        return -1;
+    public interface OnItemClickListener {
+        void onItemClick(ConversationListItem item, int position);
+
+        void onStartMultiselect();
+
+        void onItemSelected(ConversationListItem item, int position);
+    }
+
+    public interface OnFooterClickListener {
+        void onFooterClick();
     }
 
 }

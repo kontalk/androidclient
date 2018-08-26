@@ -1238,7 +1238,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     break;
 
                 case ACTION_BLOCKLIST:
-                    doConnect = handleBlocklist();
+                    doConnect = handleBlocklist(intent);
                     break;
 
                 case ACTION_VERSION:
@@ -1763,9 +1763,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_BLOCKLIST)
-    private boolean handleBlocklist() {
+    private boolean handleBlocklist(Intent intent) {
         if (isConnected())
-            requestBlocklist();
+            requestBlocklist(intent.getStringExtra(EXTRA_PACKET_ID));
         return false;
     }
 
@@ -2624,12 +2624,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         sendPacket(p);
     }
 
-    private void requestBlocklist() {
+    private void requestBlocklist(String id) {
         Stanza p = BlockingCommand.blocklist();
-        String packetId = p.getStanzaId();
+        if (id != null)
+            p.setStanzaId(id);
 
         // listen for response (TODO cache the listener, it shouldn't change)
-        StanzaFilter idFilter = new StanzaIdFilter(packetId);
+        StanzaFilter idFilter = new StanzaIdFilter(p.getStanzaId());
         mConnection.addAsyncStanzaListener(new StanzaListener() {
             public void processStanza(Stanza packet) {
                 // we don't need this listener anymore
@@ -2639,6 +2640,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     BlockingCommand blocklist = (BlockingCommand) packet;
 
                     Intent i = new Intent(ACTION_BLOCKLIST);
+                    i.putExtra(EXTRA_PACKET_ID, blocklist.getStanzaId());
 
                     List<String> _list = blocklist.getItems();
                     if (_list != null) {

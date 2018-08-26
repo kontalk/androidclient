@@ -568,7 +568,6 @@ Cuando están deshabilitadas, el comportamiento de la conexión de Kontalk puede
 
     <string name="delete_threads_groups_disclaimer">Para que se elimine el historial de chat de grupo la casilla de verificación de arriba debe estar seleccionada.</string>
 
-    <string name="create_group_disclaimer">Recuerde que, para poder chatear, los miembros del grupo deben conocerse entre sí.</string>
     <string name="check_dont_show_again">No mostrar de nuevo</string>
 
     <string name="pref_debug_log">Habilitar el registro de errores</string>

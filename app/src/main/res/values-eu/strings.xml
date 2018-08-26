@@ -619,7 +619,6 @@ Desgaitu enkriptatzea zure kontaktuak gako pertsonalik ez badu bakarrik.</string
 </plurals>
 
 <string name="delete_threads_groups_disclaimer">Talde txatak txat historiatik ezabatuko dira, goiko kontrol-laukiak hautatuta ez badago behintzat.</string>
-    <string name="create_group_disclaimer">Mesedez gogoratu taldekide guztiek elkar ezagutu behar dutela txateatu ahal izateko.</string>
     <string name="location_message">Kokaleku mezua</string>
     <string name="position_screen_title">Posizioa</string>
     <string name="pref_maps_google_label">Google Maps</string>

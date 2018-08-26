@@ -612,7 +612,6 @@
     <string name="delete_threads_leave_any_groups">Also leave any groups</string>
 
     <string name="delete_threads_groups_disclaimer">Group chats will only have their chat history deleted unless the checkbox above is selected.</string>
-    <string name="create_group_disclaimer">Please remember that every member in the group must know each other in order to chat.</string>
     <string name="check_dont_show_again">Do not show again</string>
 
     <string name="pref_foreground_service">Enable foreground service</string>

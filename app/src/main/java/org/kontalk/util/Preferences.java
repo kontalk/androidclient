@@ -285,16 +285,6 @@ public final class Preferences {
         return getBooleanOnce("pref_contacts_visited");
     }
 
-    public static boolean getGroupChatCreateDisclaimer() {
-        return getBoolean("pref_create_group_disclaimer", true);
-    }
-
-    public static void setGroupChatCreateDisclaimer() {
-        sPreferences.edit()
-            .putBoolean("pref_create_group_disclaimer", false)
-            .apply();
-    }
-
     public static long getLastSyncTimestamp() {
         return getLong("pref_last_sync", -1);
     }

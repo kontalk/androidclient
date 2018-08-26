@@ -576,7 +576,6 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
 
     <string name="check_dont_show_again">Znovu nezobrazovat</string>
 
-    <string name="create_group_disclaimer">Pamatujte prosím na to, že všichni členové skupiny se musí znát navzájem, aby spolu mohli konverzovat.</string>
     <string name="delete_threads_groups_disclaimer">Historie skupinové konverzace bude smazána pouze pokud fajfka výše není zatržená.</string>
     <string name="pref_debug_log">Zapnout ladicí log</string>
     <string name="pref_send_debug_log">Odeslat ladicí log</string>

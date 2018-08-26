@@ -18,14 +18,15 @@
 
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-             xmlns:tools="http://schemas.android.com/tools"
-             android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <ListView android:id="@android:id/list"
+    <android.support.v7.widget.RecyclerView
+        android:id="@android:id/list"
         style="?android:attr/listViewStyle"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:drawSelectorOnTop="false"
         android:scrollbarStyle="insideOverlay"
         android:cacheColorHint="@android:color/transparent"
@@ -33,9 +34,7 @@
         android:divider="@null"
         android:dividerHeight="0dp"
         android:clipToPadding="false"
-        android:fadingEdgeLength="8dp">
-        <!-- Preview: listitem=@layout/conversation_list_item -->
-    </ListView>
+        android:fadingEdgeLength="8dp"/>
 
     <TextView android:id="@android:id/empty"
         android:layout_width="wrap_content"
@@ -44,6 +43,7 @@
         android:padding="10dip"
         android:maxLines="20"
         android:text="@string/text_conversations_empty"
+        android:visibility="gone"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <com.github.clans.fab.FloatingActionMenu

@@ -39,6 +39,7 @@ import android.database.sqlite.SQLiteDatabaseLockedException;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
+import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
@@ -658,7 +659,14 @@ public class MessagesProvider extends ContentProvider {
         String limit = uri.getQueryParameter("limit");
 
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor c = qb.query(db, projection, selection, selectionArgs, null, null, sortOrder, limit);
+        Cursor c;
+        if (projection != null && projection.length == 1 && projection[0].equals(BaseColumns._COUNT)) {
+            c = db.query(qb.getTables(), new String[] { "COUNT(*) AS " + BaseColumns._COUNT },
+                selection, selectionArgs, null, null, sortOrder, limit);
+        }
+        else {
+            c = qb.query(db, projection, selection, selectionArgs, null, null, sortOrder, limit);
+        }
 
         c.setNotificationUri(getContext().getContentResolver(), uri);
         return c;

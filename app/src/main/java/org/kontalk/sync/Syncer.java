@@ -94,7 +94,10 @@ public class Syncer {
     public static final String RAW_COLUMN_USERID = RawContacts.SYNC3;
 
     /** Random packet id used for requesting public keys. */
-    static final String IQ_PACKET_ID = StringUtils.randomString(10);
+    static final String IQ_KEYS_PACKET_ID = StringUtils.randomString(10);
+
+    /** Random packet id used for requesting the blocklist. */
+    static final String IQ_BLOCKLIST_PACKET_ID = StringUtils.randomString(10);
 
     private volatile boolean mCanceled;
     private final Context mContext;
@@ -227,7 +230,7 @@ public class Syncer {
             else if (MessageCenterService.ACTION_PUBLICKEY.equals(action)) {
                 if (response != null) {
                     String requestId = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                    if (IQ_PACKET_ID.equals(requestId)) {
+                    if (IQ_KEYS_PACKET_ID.equals(requestId)) {
                         String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
                         // see if bare JID is present in roster response
                         String compare = XmppStringUtils.parseBareJid(jid);
@@ -250,28 +253,31 @@ public class Syncer {
             }
 
             else if (MessageCenterService.ACTION_BLOCKLIST.equals(action)) {
-                blocklistReceived = true;
+                String requestId = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
+                if (IQ_BLOCKLIST_PACKET_ID.equals(requestId)) {
+                    blocklistReceived = true;
 
-                String[] list = intent.getStringArrayExtra(MessageCenterService.EXTRA_BLOCKLIST);
-                if (list != null) {
+                    String[] list = intent.getStringArrayExtra(MessageCenterService.EXTRA_BLOCKLIST);
+                    if (list != null) {
 
-                    for (String jid : list) {
-                        // see if bare JID is present in roster response
-                        String compare = XmppStringUtils.parseBareJid(jid);
-                        for (PresenceItem item : response) {
-                            if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(compare)) {
-                                item.blocked = true;
+                        for (String jid : list) {
+                            // see if bare JID is present in roster response
+                            String compare = XmppStringUtils.parseBareJid(jid);
+                            for (PresenceItem item : response) {
+                                if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(compare)) {
+                                    item.blocked = true;
 
-                                break;
+                                    break;
+                                }
                             }
                         }
+
                     }
 
+                    // done with presence data and blocklist
+                    if (pubkeyCount >= presenceCount && notMatched.size() == 0)
+                        finish();
                 }
-
-                // done with presence data and blocklist
-                if (pubkeyCount >= presenceCount && notMatched.size() == 0)
-                    finish();
             }
 
             // last activity (for user existance verification)
@@ -702,13 +708,14 @@ public class Syncer {
     void requestPublicKeys() {
         Intent i = new Intent(mContext, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_PUBLICKEY);
-        i.putExtra(MessageCenterService.EXTRA_PACKET_ID, IQ_PACKET_ID);
+        i.putExtra(MessageCenterService.EXTRA_PACKET_ID, IQ_KEYS_PACKET_ID);
         mContext.startService(i);
     }
 
     void requestBlocklist() {
         Intent i = new Intent(mContext, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_BLOCKLIST);
+        i.putExtra(MessageCenterService.EXTRA_PACKET_ID, IQ_BLOCKLIST_PACKET_ID);
         mContext.startService(i);
     }
 

@@ -29,6 +29,7 @@ import android.content.Context;
 import android.location.Location;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -191,7 +192,8 @@ public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.ViewHolder
         PlacesRestClient.getPlacesByLocation(mContext, location.getLatitude(), location.getLongitude(),
             25, new Callback() {
                 @Override
-                public void onFailure(Call call, IOException e) {
+                public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                    Log.e(TAG, "Error getting places:" + e);
                     mSearching = false;
                     mList.clear();
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -200,23 +202,26 @@ public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.ViewHolder
                             notifyDataSetChanged();
                         }
                     });
-                    Log.e(TAG, e.getLocalizedMessage());
                 }
 
                 @Override
-                public void onResponse(Call call, Response response) throws IOException {
+                public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                     mSearching = false;
+                    mList.clear();
                     if (response.body() != null) {
                         Gson gson = new Gson();
                         SearchResponse searchResponse = gson.fromJson(response.body().string(), SearchResponse.class);
-                        mList = searchResponse.getResponse().getVenues();
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                notifyDataSetChanged();
-                            }
-                        });
+                        List<VenuesItem> list = searchResponse.getResponse().getVenues();
+                        if (list != null) {
+                            mList.addAll(list);
+                        }
                     }
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            notifyDataSetChanged();
+                        }
+                    });
                 }
             });
     }
