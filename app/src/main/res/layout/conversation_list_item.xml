@@ -23,6 +23,7 @@
     android:layout_height="wrap_content"
     android:background="@drawable/list_item_background"
     android:minHeight="@dimen/avatar_list_item_height"
+    android:stateListAnimator="@anim/raise"
     android:paddingRight="?attr/listPreferredItemPaddingRight"
     android:paddingEnd="?attr/listPreferredItemPaddingRight">
     <!-- android:background="@drawable/conversation_item_background_unread" -->

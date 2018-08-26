@@ -12,9 +12,7 @@ android:
     - tools
     - build-tools-26.0.2
     - build-tools-27.0.1
-    # temporarly introduced to fix Cyanogenmod bug
-    # https://issuetracker.google.com/issues/64434571#comment35
-    - build-tools-27.0.3
+    - build-tools-28.0.2
     - android-28
     - extra-android-m2repository
     - extra-google-m2repository
