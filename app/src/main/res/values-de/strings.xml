@@ -570,7 +570,6 @@ Wenn Push-Benachrichtigungen deaktiviert sind, kann das Kontalk-Verbindungsverha
 
     <string name="delete_threads_groups_disclaimer">Bei Gruppenchats wird nur der Verlauf gelöscht, es sei denn das Kontrollkästchen oben ist markiert.</string>
 
-    <string name="create_group_disclaimer">Bitte beachten: Die Mitglieder der Gruppe müssen einander bekannt sein um zu chatten.</string>
     <string name="check_dont_show_again">Nicht noch einmal zeigen</string>
 
     <string name="pref_debug_log">Debug-Protokollierung aktivieren</string>
