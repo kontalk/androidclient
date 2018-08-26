@@ -189,8 +189,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         return syncResult.databaseError || syncResult.stats.numIoExceptions > 0;
     }
 
-    public static String getIQPacketId() {
-        return Syncer.IQ_PACKET_ID;
+    public static String getIQKeysPacketId() {
+        return Syncer.IQ_KEYS_PACKET_ID;
     }
 
 }
