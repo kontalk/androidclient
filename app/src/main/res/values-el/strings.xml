@@ -573,7 +573,6 @@
     <string name="menu_disable_encryption">Απενεργοποίηση</string>
 
     <string name="delete_threads_groups_disclaimer">Το ιστορικό στις ομαδικές συνομιλίες θα διαγράφεται εκτός αν έχετε επιλέξει το αντίθετο πιο πάνω.</string>
-    <string name="create_group_disclaimer">Παρακαλώ να έχετε υπόψη ότι κάθε μέλος της ομάδας πρέπει να γνωρίζει τα υπόλοιπα για να μπορούν να συνομιλήσουν.</string>
     <string name="check_dont_show_again">Να μην εμφανιστεί ξανά</string>
 
     <string name="pref_debug_log">Ενεργοποίηση καταγραφής εντοπισμού σφαλμάτων</string>

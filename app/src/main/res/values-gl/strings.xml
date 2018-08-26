@@ -588,7 +588,6 @@ Desactivar a cifraxe só se o contacto non ten unha chave persoal.</string>
     <string name="menu_disable_encryption">Desactivar</string>
 
     <string name="delete_threads_groups_disclaimer">As conversas en grupo serán eliminadas do historial, a non ser que o seleccione na caixa de arriba.</string>
-    <string name="create_group_disclaimer">Por favor, lembre que cada membro do grupo deberá coñecerse uns aos outros, a fin de falar.</string>
     <string name="check_dont_show_again">Non mostrar de novo</string>
 
     <string name="pref_debug_log">Activar o rexistro de depuración</string>
