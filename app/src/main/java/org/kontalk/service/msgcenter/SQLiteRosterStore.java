@@ -210,6 +210,8 @@ public class SQLiteRosterStore extends SQLiteOpenHelper implements RosterStore {
 
     @Override
     public String getRosterVersion() {
+        // this will ensure a correct roster version string
+        getWritableDatabase();
         return Preferences.getRosterVersion();
     }
 

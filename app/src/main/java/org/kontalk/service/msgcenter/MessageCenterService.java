@@ -782,8 +782,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // create the roster store
         mRosterStore = new SQLiteRosterStore(this);
-        // this will trigger create/upgrade
-        mRosterStore.getWritableDatabase();
 
         // waiting receipt list
         // also used for keeping the device on while waiting for message delivery
