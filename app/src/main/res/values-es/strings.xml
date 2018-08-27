@@ -706,4 +706,34 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
 
     <string name="err_location_denied">Necesitamos acceso a su ubicación si desea compartirla.</string>
 
-    </resources>
+    <string name="pref_server_messages">Recibir mensajes del servidor</string>
+    <string name="pref_title_server_messages">Permitir mensajes desde los administradores del servidor. Si deshabilitas esto puedes perderte noticias importanes</string>
+
+    <string name="menu_import_messages">Importar mensajes</string>
+
+    <string name="err_validation_phone_state_denied">Si permites a Kontalk gestionar las llamadas telefónicas, puede detectar automáticamente tu número de teléfono. 
+\nKontalk no utilizará ese permiso para nada más.</string>
+
+    <string name="contact_name_server">Tu servidor</string>
+
+    <string name="notify_incoming_message_channel_name">Mensajes</string>
+    <string name="notify_incoming_message_channel_description">Mensajes entrantes</string>
+
+    <string name="notify_media_download_channel_name">Descargas</string>
+    <string name="notify_media_download_channel_description">Descargas multimedia</string>
+
+    <string name="notify_media_upload_channel_name">Subidas</string>
+    <string name="notify_media_upload_channel_description">Subidas multimedia</string>
+
+    <string name="notify_message_center_channel_name">Centro de Mensajes</string>
+    <string name="notify_message_center_channel_description">Requerido para mantener el servicio de Kontalk encendido</string>
+
+    <string name="notify_other_channel_name">Otro</string>
+    <string name="notify_other_channel_description">Otras notificaciones</string>
+
+    <plurals name="group_people_online">
+	<item quantity="one">1 en línea</item>
+	<item quantity="other">%d en línea</item>
+</plurals>
+
+</resources>

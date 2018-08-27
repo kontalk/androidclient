@@ -689,8 +689,8 @@ Desactivar a cifraxe só se o contacto non ten unha chave persoal.</string>
     <string name="btn_reply_cancel_description">Cancelar a resposta</string>
     <string name="reply_message_deleted">Mensaxe eliminada.</string>
 
-    <string name="err_validation_contacts_denied">Kontalk necesita acceso aos contactos para funcionar correctamente. ¿Como pode saber con quen podes chatear?
-\nPreguntaráselle de novo unha vez que se rexistrou.</string>
+    <string name="err_validation_contacts_denied">Kontalk necesita acceso aos contactos para funcionar correctamente. ¿Como pode saber con quen podes chatear? 
+\nPode cancelar agora, pero se lle pedirá de novo una vez que se rexistrou.</string>
     <string name="err_contacts_denied">Kontalk necesita acceso aos contactos para funcionar correctamente. ¿Como pode saber con quen podes chatear?
 \nPode permitir o acceso aos contactos desde a configuración de Android.</string>
     <string name="warn_contacts_denied">Negácheslle o acceso aos contactos. Aquí non poderás ver cambios nos contactos.</string>
@@ -710,4 +710,42 @@ Desactivar a cifraxe só se o contacto non ten unha chave persoal.</string>
     <string name="seen_group_typing_label_more">%d a xente está escribindo…</string>
     <string name="msg_request_doze_failed_all">Non se atopan os axustes de optimización da batería. o que o levaba a axustes do sistema.</string>
 
-    </resources>
+    <string name="archive_thread">Arquivar a conversa</string>
+    <string name="pref_server_messages">Recibir mensaxes do servidor</string>
+    <string name="pref_title_server_messages">Permitir mensaxes dos administradores do servidor. É posible que se perda noticias importantes si desactiva esta opción</string>
+
+    <string name="menu_import_messages">Importar mensaxes</string>
+
+    <string name="err_camera_scanner_denied">Necesitamos acceso a súa cámara para poder escanear o código de barras desde o outro dispositivo.</string>
+    <string name="err_camera_picture_denied">Necesitamos acceso a súa cámara para facer fotos.</string>
+
+    <string name="err_audio_or_storage_denied">Necesitamos acceso ao micrófono para gravar a súa voz e acceso a almacenamiento externo para gardar as súas grabacións.</string>
+
+    <string name="err_location_denied">Necesitamos acceso ao seu ubicación si quere compartila.</string>
+
+    <string name="err_validation_phone_state_denied">Se permite que Kontalk administre as chamadas telefónicas, pode detectar automáticamente o seu número de teléfono.
+\nKontalk non usará o permiso outorgado para nada máis.</string>
+
+    <string name="contact_name_server">O seu servidor</string>
+
+    <string name="notify_incoming_message_channel_name">Menxases</string>
+    <string name="notify_incoming_message_channel_description">Menxases entrantes</string>
+
+    <string name="notify_media_download_channel_name">Descargas</string>
+    <string name="notify_media_download_channel_description">Descargas multimédia</string>
+
+    <string name="notify_media_upload_channel_name">Subidas</string>
+    <string name="notify_media_upload_channel_description">Subidas multimedia</string>
+
+    <string name="notify_message_center_channel_name">Centro de mensaxes</string>
+    <string name="notify_message_center_channel_description">Requirido para manter activo o servizo de Kontalk</string>
+
+    <string name="notify_other_channel_name">Outro</string>
+    <string name="notify_other_channel_description">Outras notificacións</string>
+
+    <plurals name="group_people_online">
+	<item quantity="one">1 en línea</item>
+	<item quantity="other">%d en línea</item>
+</plurals>
+
+</resources>

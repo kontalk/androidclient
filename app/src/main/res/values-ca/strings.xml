@@ -705,4 +705,34 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
 
     <string name="err_location_denied">Necessitem accés a la vostra ubicació si voleu compartir-la.</string>
 
-    </resources>
+    <string name="pref_server_messages">Rebre missatges del servidor</string>
+    <string name="pref_title_server_messages">Permetre missatges dels administradors del servidor. És possible que es perdi notícies importants si desactiva aquesta opció</string>
+
+    <string name="menu_import_messages">Importar missatges</string>
+
+    <string name="err_validation_phone_state_denied">Si permet que Kontalk administri les trucades telefòniques, pot detectar automàticament el seu número de telèfon.
+\nKontalk no usarà el permís atorgat per res més.</string>
+
+    <string name="contact_name_server">El seu servidor</string>
+
+    <string name="notify_incoming_message_channel_name">Missatges</string>
+    <string name="notify_incoming_message_channel_description">Missatges entrants</string>
+
+    <string name="notify_media_download_channel_name">Descàrregues</string>
+    <string name="notify_media_download_channel_description">Descàrregues multimèdia</string>
+
+    <string name="notify_media_upload_channel_name">Pujades</string>
+    <string name="notify_media_upload_channel_description">Pujades multimèdia</string>
+
+    <string name="notify_message_center_channel_name">Centre de missatges</string>
+    <string name="notify_message_center_channel_description">Requerit per mantenir actiu el servei de Kontalk</string>
+
+    <string name="notify_other_channel_name">Un altre</string>
+    <string name="notify_other_channel_description">Altres notificacions</string>
+
+    <plurals name="group_people_online">
+	<item quantity="one">1 en línia</item>
+	<item quantity="other">%d en línia</item>
+</plurals>
+
+</resources>
