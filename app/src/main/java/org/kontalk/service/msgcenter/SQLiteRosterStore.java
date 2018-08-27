@@ -293,7 +293,9 @@ public class SQLiteRosterStore extends SQLiteOpenHelper implements RosterStore {
     }
 
     public static void purge(Context context) {
-        new SQLiteRosterStore(context).resetStore();
+        SQLiteRosterStore store = new SQLiteRosterStore(context);
+        store.resetStore();
+        store.close();
     }
 
 }
