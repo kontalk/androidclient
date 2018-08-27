@@ -48,17 +48,24 @@
                 android:hint="@string/hint_validation_name"
                 android:inputType="textPersonName" />
 
-            <Spinner android:id="@+id/phone_cc"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:spinnerMode="dialog"/>
+            <LinearLayout
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_height="match_parent"
+                android:layout_width="match_parent">
 
-            <EditText
-                android:id="@+id/phone_number"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/hint_validation_number"
-                android:inputType="phone" />
+                <Spinner
+                    android:id="@+id/phone_cc"
+                    android:layout_width="wrap_content"
+                    android:layout_height="fill_parent"
+                    android:spinnerMode="dialog"/>
+
+                <EditText
+                    android:id="@+id/phone_number"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/hint_validation_number"
+                    android:inputType="phone" />
+            </LinearLayout>
 
             <Button
                 android:id="@+id/button_validate"
