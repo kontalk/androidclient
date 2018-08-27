@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -34,6 +35,7 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDiskIOException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -46,6 +48,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Conversation;
@@ -53,6 +56,7 @@ import org.kontalk.provider.KontalkGroupCommands;
 import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.Syncer;
 import org.kontalk.ui.prefs.HelpPreference;
@@ -302,26 +306,45 @@ public class ConversationsActivity extends MainActivity
                 @Override
                 public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                     String title = !TextUtils.isEmpty(input) ? input.toString() : null;
-                    Context ctx = ConversationsActivity.this;
-
                     String[] users = usersList.toArray(new String[usersList.size()]);
-                    long groupThreadId = Conversation.initGroupChat(ctx,
-                        groupJid, title, users, "");
 
-                    // store create group command to outbox
-                    // NOTE: group chats can currently only be created with chat encryption enabled
-                    boolean encrypted = Preferences.getEncryptionEnabled(ctx);
-                    String msgId = MessageCenterService.messageId();
-                    Uri cmdMsg = KontalkGroupCommands.createGroup(ctx,
-                        groupThreadId, groupJid, users, msgId, encrypted);
-                    // TODO check for null
+                    try {
+                        Uri cmdMsg;
+                        try {
+                            // WARNING blocking call
+                            // TODO a status dialog should probably be used here
+                            cmdMsg = Kontalk.get().getMessagesController()
+                                .createGroup(users, groupJid, title).get();
+                        }
+                        catch (ExecutionException e) {
+                            // unwrap exception
+                            throw e.getCause();
+                        }
 
-                    // send create group command now
-                    MessageCenterService.createGroup(ConversationsActivity.this, groupJid, title,
-                        users, encrypted, ContentUris.parseId(cmdMsg), msgId);
-
-                    // load the new conversation
-                    openConversation(Threads.getUri(groupJid), true);
+                        if (cmdMsg != null) {
+                            // load the new conversation
+                            openConversation(Threads.getUri(groupJid), true);
+                        }
+                    }
+                    catch (SQLiteDiskIOException e) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(ConversationsActivity.this, R.string.error_store_outbox,
+                                    Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                    catch (Throwable e) {
+                        ReportingManager.logException(e);
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                Toast.makeText(ConversationsActivity.this,
+                                    R.string.err_store_message_failed,
+                                    Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
                 }
             })
             .inputRange(0, MyMessages.Groups.GROUP_SUBJECT_MAX_LENGTH)

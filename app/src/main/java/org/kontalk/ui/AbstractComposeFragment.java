@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
 import com.afollestad.materialdialogs.DialogAction;
@@ -823,8 +824,15 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
             try {
                 final Conversation conv = mConversation;
-                Uri newMsg = Kontalk.get().getMessagesController()
-                    .sendTextMessage(conv, mText, mInReplyTo);
+                Uri newMsg;
+                try {
+                    newMsg = Kontalk.get().getMessagesController()
+                        .sendTextMessage(conv, mText, mInReplyTo).get();
+                }
+                catch (ExecutionException e) {
+                    // unwrap exception
+                    throw e.getCause();
+                }
 
                 // update thread id from the inserted message
                 if (threadId <= 0) {
@@ -838,6 +846,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                 }
             }
             catch (SQLiteDiskIOException e) {
+                Log.d(TAG, "error storing message", e);
                 context.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -846,7 +855,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                     }
                 });
             }
-            catch (Exception e) {
+            catch (Throwable e) {
+                Log.d(TAG, "error storing message", e);
                 ReportingManager.logException(e);
                 context.runOnUiThread(new Runnable() {
                     public void run() {
@@ -1392,7 +1402,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     }
 
     private void retryMessage(CompositeMessage msg) {
-        MessageCenterService.retryMessage(getContext(), msg.getDatabaseId(), mConversation.isEncryptionEnabled());
+        Kontalk.get().getMessagesController()
+            .retryMessage(msg.getDatabaseId(), mConversation.isEncryptionEnabled());
     }
 
     void scrollToPosition(int position) {
@@ -1459,7 +1470,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
             //if (txt != null)
             i = ComposeMessage.sendTextMessage(txt.getContent());
-        } else if (msg.getComponent(LocationComponent.class) != null) {
+        }
+        else if (msg.getComponent(LocationComponent.class) != null) {
             LocationComponent location = msg.getComponent(LocationComponent.class);
             i = new Intent(android.content.Intent.ACTION_VIEW,
                 Uri.parse("geo:" + location.getLatitude() + ","

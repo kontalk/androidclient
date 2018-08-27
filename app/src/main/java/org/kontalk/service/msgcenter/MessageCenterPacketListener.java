@@ -97,6 +97,12 @@ abstract class MessageCenterPacketListener implements StanzaListener {
             instance.queueTask(task);
     }
 
+    protected void broadcast(String action) {
+        MessageCenterService instance = mInstance.get();
+        if (instance != null && instance.isStarted())
+            instance.broadcast(action);
+    }
+
     protected void sendBroadcast(Intent intent) {
         MessageCenterService instance = mInstance.get();
         if (instance != null && instance.isStarted())
@@ -142,31 +148,6 @@ abstract class MessageCenterPacketListener implements StanzaListener {
         MessageCenterService instance = mInstance.get();
         if (instance != null)
             instance.addUploadService(service, priority);
-    }
-
-    protected void resendPendingMessages(final boolean retrying, final boolean forcePending) {
-        final MessageCenterService instance = mInstance.get();
-        if (instance != null) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    instance.resendPendingMessages(retrying, forcePending);
-                }
-            });
-        }
-    }
-
-    protected void resendPending(final boolean retrying, final boolean forcePending, final String to) {
-        final MessageCenterService instance = mInstance.get();
-        if (instance != null) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    instance.resendPendingMessages(retrying, forcePending, to);
-                    instance.resendPendingReceipts();
-                }
-            });
-        }
     }
 
     protected boolean isPushNotificationsEnabled() {

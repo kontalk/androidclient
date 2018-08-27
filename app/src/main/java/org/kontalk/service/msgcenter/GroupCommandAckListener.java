@@ -81,7 +81,7 @@ public class GroupCommandAckListener extends MessageCenterPacketListener {
             case CREATE:
                 // resend pending stuff -- this will continue the delivery of
                 // group messages that were waiting for this group command
-                resendPending(false, false, null);
+                broadcast(MessageCenterService.ACTION_GROUP_CREATED);
                 break;
             case PART:
                 if (mCommandMessage != null) {
