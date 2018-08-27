@@ -521,7 +521,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
 
             msg.setStatus(needAck ? Messages.STATUS_INCOMING : Messages.STATUS_CONFIRMED);
 
-            Uri msgUri = incoming(msg);
+            Uri msgUri = Kontalk.get().getMessagesController().incoming(msg);
 
             if (needAck) {
                 // send ack :)

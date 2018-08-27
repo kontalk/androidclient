@@ -31,14 +31,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.Uri;
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
-import org.kontalk.Kontalk;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
-import org.kontalk.message.CompositeMessage;
 import org.kontalk.service.msgcenter.MessageCenterService.IdleConnectionHandler;
 import org.kontalk.util.WakefulHashSet;
 
@@ -64,14 +62,9 @@ abstract class MessageCenterPacketListener implements StanzaListener {
         return mInstance.get();
     }
 
+    @Nullable
     protected Context getContext() {
         return mInstance.get();
-    }
-
-    /** @deprecated Use {@link Kontalk#get()}. */
-    @Deprecated
-    protected Kontalk getApplication() {
-        return Kontalk.get();
     }
 
     protected KontalkConnection getConnection() {
@@ -185,12 +178,6 @@ abstract class MessageCenterPacketListener implements StanzaListener {
     protected WakefulHashSet<Long> getWaitingReceiptList() {
         MessageCenterService instance = mInstance.get();
         return (instance != null) ? instance.mWaitingReceipt : null;
-    }
-
-    protected Uri incoming(CompositeMessage msg) {
-        Context context = getContext();
-        return (context != null) ? Kontalk
-            .get().getMessagesController().incoming(msg) : null;
     }
 
     protected IdleConnectionHandler getIdleHandler() {
