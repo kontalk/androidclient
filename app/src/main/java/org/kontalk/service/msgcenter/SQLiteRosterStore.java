@@ -30,7 +30,6 @@ import org.jxmpp.jid.Jid;
 import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.stringprep.XmppStringprepException;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -69,14 +68,11 @@ public class SQLiteRosterStore extends SQLiteOpenHelper implements RosterStore {
         SCHEMA_ROSTER,
     };
 
-    private final Context mContext;
-
     private SQLiteStatement mInsertStatement;
     private final Object mInsertLock = new Object();
 
     public SQLiteRosterStore(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        mContext = context;
     }
 
     @Override
@@ -240,21 +236,18 @@ public class SQLiteRosterStore extends SQLiteOpenHelper implements RosterStore {
     public void resetStore() {
         SQLiteDatabase db = getWritableDatabase();
 
-        beginTransaction(db);
-        boolean success = false;
+        db.beginTransactionNonExclusive();
 
         try {
             db.execSQL("DELETE FROM " + TABLE_ROSTER);
 
-            success = setTransactionSuccessful(db);
-            if (success) {
-                setRosterVersion("");
-            }
+            db.setTransactionSuccessful();
+            setRosterVersion("");
         }
         catch (SQLiteException ignored) {
         }
         finally {
-            endTransaction(db, success);
+            db.endTransaction();
         }
     }
 
@@ -262,8 +255,7 @@ public class SQLiteRosterStore extends SQLiteOpenHelper implements RosterStore {
     public boolean resetEntries(Collection<RosterPacket.Item> items, String version) {
         SQLiteDatabase db = getWritableDatabase();
 
-        beginTransaction(db);
-        boolean success = false;
+        db.beginTransactionNonExclusive();
 
         try {
             db.execSQL("DELETE FROM " + TABLE_ROSTER);
@@ -271,16 +263,14 @@ public class SQLiteRosterStore extends SQLiteOpenHelper implements RosterStore {
                 addEntry(db, item);
             }
 
-            success = setTransactionSuccessful(db);
-            if (success) {
-                setRosterVersion(version);
-            }
+            db.setTransactionSuccessful();
+            setRosterVersion(version);
         }
         catch (SQLiteException e) {
             return false;
         }
         finally {
-            endTransaction(db, success);
+            db.endTransaction();
         }
 
         return false;
@@ -304,30 +294,6 @@ public class SQLiteRosterStore extends SQLiteOpenHelper implements RosterStore {
 
     public static void purge(Context context) {
         new SQLiteRosterStore(context).resetStore();
-    }
-
-    /* Transactions compatibility layer */
-
-    @TargetApi(android.os.Build.VERSION_CODES.HONEYCOMB)
-    private void beginTransaction(SQLiteDatabase db) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
-            db.beginTransactionNonExclusive();
-        else
-            // this is because API < 11 doesn't have beginTransactionNonExclusive()
-            db.execSQL("BEGIN IMMEDIATE");
-    }
-
-    private boolean setTransactionSuccessful(SQLiteDatabase db) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
-            db.setTransactionSuccessful();
-        return true;
-    }
-
-    private void endTransaction(SQLiteDatabase db, boolean success) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
-            db.endTransaction();
-        else
-            db.execSQL(success ? "COMMIT" : "ROLLBACK");
     }
 
 }
