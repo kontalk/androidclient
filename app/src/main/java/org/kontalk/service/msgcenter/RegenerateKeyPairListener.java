@@ -24,6 +24,7 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 
 import org.jivesoftware.smack.packet.Stanza;
+import org.kontalk.Kontalk;
 import org.kontalk.util.XMPPUtils;
 import org.spongycastle.openpgp.PGPException;
 
@@ -53,7 +54,7 @@ class RegenerateKeyPairListener extends RegisterKeyPairListener {
     public RegenerateKeyPairListener(MessageCenterService instance, String passphrase) {
         super(instance, passphrase);
         if (passphrase == null)
-            mPassphrase = getApplication().getCachedPassphrase();
+            mPassphrase = Kontalk.get().getCachedPassphrase();
     }
 
     public void run() throws CertificateException, SignatureException,
@@ -78,11 +79,13 @@ class RegenerateKeyPairListener extends RegisterKeyPairListener {
     }
 
     private void generateKeyPair() {
-        Context ctx = getApplication();
-        Intent i = new Intent(ctx, KeyPairGeneratorService.class);
-        i.setAction(KeyPairGeneratorService.ACTION_GENERATE);
-        i.putExtra(KeyPairGeneratorService.EXTRA_FOREGROUND, true);
-        ctx.startService(i);
+        Context ctx = getContext();
+        if (ctx != null) {
+            Intent i = new Intent(ctx, KeyPairGeneratorService.class);
+            i.setAction(KeyPairGeneratorService.ACTION_GENERATE);
+            i.putExtra(KeyPairGeneratorService.EXTRA_FOREGROUND, true);
+            ctx.startService(i);
+        }
     }
 
     private void setupKeyPairReceiver() {
@@ -105,7 +108,7 @@ class RegenerateKeyPairListener extends RegisterKeyPairListener {
                         String userId = XMPPUtils.createLocalpart(acc.name);
                         mKeyRing = key.storeNetwork(userId, getServer().getNetwork(), name,
                             // TODO should we ask passphrase to the user?
-                            getApplication().getCachedPassphrase());
+                            Kontalk.get().getCachedPassphrase());
 
                         // listen for connection events
                         setupConnectedReceiver();
@@ -142,9 +145,12 @@ class RegenerateKeyPairListener extends RegisterKeyPairListener {
         sendBroadcast(new Intent(ACTION_REGENERATE_KEYPAIR));
         runOnUiThread(new Runnable() {
             public void run() {
-                Toast.makeText(getApplication(),
-                    R.string.msg_gen_keypair_complete,
-                    Toast.LENGTH_LONG).show();
+                Context context = getContext();
+                if (context != null) {
+                    Toast.makeText(context.getApplicationContext(),
+                        R.string.msg_gen_keypair_complete,
+                        Toast.LENGTH_LONG).show();
+                }
             }
         });
     }
