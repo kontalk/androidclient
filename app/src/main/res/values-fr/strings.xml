@@ -379,7 +379,7 @@
     <string name="title_fallback">Des problèmes ?</string>
     <string name="msg_fallback">Nous allons essayer une autre façon de vérifier votre numéro de téléphone.</string>
     <string name="title_confirm_cancel_registration">Annuler l\'enregistrement ?</string>
-    <string name="confirm_cancel_registration">"Si vous retourner en arrière vous devrez recommencer l\'enregistremnet de zéro. Si vous avez besoin de passer à une autre appli,  il suffit d\'utiliser le bouton d\'accueil de l\'appareil."</string>
+    <string name="confirm_cancel_registration">"Si vous retourner en arrière vous devrez recommencer l\'enregistrement de zéro. Si vous avez besoin de passer à une autre appli,  il suffit d\'utiliser le bouton Accueil de l\'appareil."</string>
     <string name="confirm_will_delete_messages">Les messages sélectionnés seront supprimés.</string>
     <string name="pref_balloon_label_hangout">Hangout</string>
     <string name="title_block_user_warning">Bloquer cet utilisateur, vraiment ?</string>
@@ -435,4 +435,9 @@
     </plurals>
 
 <string name="menu_create_group">Créer un groupe</string>
-    </resources>
+    <plurals name="group_people_online">
+	<item quantity="one">1 en ligne</item>
+	<item quantity="other">%d en ligne</item>
+</plurals>
+
+</resources>
