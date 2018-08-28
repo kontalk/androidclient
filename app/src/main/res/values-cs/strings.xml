@@ -731,4 +731,22 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="err_validation_phone_state_denied">Pokud Kontalku přidělíte právo spravovat hovory, může automaticky detekovat vaše telefonní číslo.
 \nKontalk nepoužije toto právo kničemu jinému.</string>
 
+    <string name="pref_server_messages">Přijímat zprávy serveru</string>
+    <string name="pref_title_server_messages">Povolit zprávy od administrátorů serveru. Pokud vypnete, můžete přijít o důležité novinky</string>
+
+    <string name="notify_incoming_message_channel_name">Zprávy</string>
+    <string name="notify_incoming_message_channel_description">Příchozí zprávy</string>
+
+    <string name="notify_media_download_channel_name">Stahování</string>
+    <string name="notify_media_download_channel_description">Stahování médií</string>
+
+    <string name="notify_media_upload_channel_name">Nahrávání</string>
+    <string name="notify_media_upload_channel_description">Nahrávání médií</string>
+
+    <string name="notify_message_center_channel_name">Centrum Zpráv</string>
+    <string name="notify_message_center_channel_description">Je nutné pro běh služby Kontalk</string>
+
+    <string name="notify_other_channel_name">Ostatní</string>
+    <string name="notify_other_channel_description">Ostatní notifikace</string>
+
     </resources>
