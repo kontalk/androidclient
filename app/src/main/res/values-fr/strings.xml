@@ -56,8 +56,8 @@
   <string name="confirm_will_delete_all">Toutes les conversations seront supprimées.</string>
   <string name="sending_message">Envoi du message…</string>
   <string name="message_text_copied">Texte copié.</string>
-  <string name="call">Appeller</string>
-  <string name="view_contact">Voir le contact</string>
+  <string name="call">Appeler</string>
+  <string name="view_contact">Afficher le contact</string>
   <string name="view_conversation">Voir la conversation</string>
   <string name="delete_thread">Supprimer la conversation</string>
   <string name="confirm_delete_thread">Supprimer la conversation</string>
@@ -440,4 +440,7 @@
 	<item quantity="other">%d en ligne</item>
 </plurals>
 
-</resources>
+<string name="reply">Répondre</string>
+    <string name="menu_sticky">Favoris</string>
+    <string name="delete_thread_messages">Supprimer l\'historique de la conversation</string>
+    </resources>
