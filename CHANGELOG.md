@@ -1,17 +1,26 @@
 # Changelog
 
+## [Next]
+### Changed
+- Massive refactoring of conversations list (#1206)
+- Defer message center activities to the background (#1210)
+
+### Fixed
+- Fix crash during contacts sync (#1207)
+- Fix crash in places search (#1208)
+
 ## [4.2.0-beta3] - 2018-08-21
 ### Fixed
 - Fix push notifications not working
 
 ## [4.2.0-beta2] - 2018-08-21
-### Fixed
-- Fix messages stuck in sending state
-- Fix push notifications not working
-
 ### Changed
 - Notification channels (aka notification categoris)
 - Opt-out of server administrator messages (#1132)
+
+### Fixed
+- Fix messages stuck in sending state
+- Fix push notifications not working
 
 ## [4.2.0-beta1] - 2018-08-06
 ### Changed
@@ -507,6 +516,7 @@
 - Fix draft saving on incoming message (#448)
 - Fix crash during sync (#454)
 
+[Next]: https://github.com/kontalk/androidclient/compare/v4.2.0-beta3...HEAD
 [4.2.0-beta3]: https://github.com/kontalk/androidclient/compare/v4.2.0-beta2...v4.2.0-beta3
 [4.2.0-beta2]: https://github.com/kontalk/androidclient/compare/v4.2.0-beta1...v4.2.0-beta2
 [4.2.0-beta1]: https://github.com/kontalk/androidclient/compare/v4.1.6...v4.2.0-beta1
