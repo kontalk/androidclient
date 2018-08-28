@@ -25,6 +25,7 @@ import org.jxmpp.jid.BareJid;
 
 import android.content.Intent;
 
+import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.PublicKeyPublish;
@@ -71,7 +72,7 @@ class PublicKeyListener extends MessageCenterPacketListener implements Exception
             if (selfJid) {
                 byte[] bridgeCertData;
                 try {
-                    PersonalKey key = getApplication().getPersonalKey();
+                    PersonalKey key = Kontalk.get().getPersonalKey();
 
                     bridgeCertData = X509Bridge.createCertificate(_publicKey,
                         key.getAuthKeyPair().getPrivateKey()).getEncoded();
@@ -86,7 +87,7 @@ class PublicKeyListener extends MessageCenterPacketListener implements Exception
                     Authenticator.setDefaultPersonalKey(getContext(),
                         _publicKey, null, bridgeCertData, null);
                     // invalidate cached personal key
-                    getApplication().invalidatePersonalKey();
+                    Kontalk.get().invalidatePersonalKey();
 
                     Log.v(MessageCenterService.TAG, "personal key updated.");
                 }

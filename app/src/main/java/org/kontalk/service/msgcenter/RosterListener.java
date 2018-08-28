@@ -48,11 +48,9 @@ public class RosterListener implements RosterLoadedListener, org.jivesoftware.sm
     private static final String TAG = RosterListener.class.getSimpleName();
 
     private WeakReference<MessageCenterService> mService;
-    private WeakReference<PresenceListener> mPresenceListener;
 
-    RosterListener(MessageCenterService service, PresenceListener presenceListener) {
+    RosterListener(MessageCenterService service) {
         mService = new WeakReference<>(service);
-        mPresenceListener = new WeakReference<>(presenceListener);
     }
 
     @Override
@@ -66,12 +64,6 @@ public class RosterListener implements RosterLoadedListener, org.jivesoftware.sm
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    // send pending subscription replies
-                    service.sendPendingSubscriptionReplies();
-                    // resend failed and pending messages
-                    service.resendPendingMessages(false, false);
-                    // resend failed and pending received receipts
-                    service.resendPendingReceipts();
                     // roster has been loaded
                     service.broadcast(MessageCenterService.ACTION_ROSTER_LOADED);
                 }
@@ -100,8 +92,7 @@ public class RosterListener implements RosterLoadedListener, org.jivesoftware.sm
     @Override
     public void entriesUpdated(Collection<Jid> addresses) {
         final MessageCenterService service = mService.get();
-        final PresenceListener presenceListener = mPresenceListener.get();
-        if (service == null || presenceListener == null)
+        if (service == null)
             return;
 
         // we got an updated roster entry
@@ -109,7 +100,7 @@ public class RosterListener implements RosterLoadedListener, org.jivesoftware.sm
         for (Jid jid : addresses) {
             RosterEntry e = service.getRosterEntry(jid.asBareJid());
             if (e != null && e.canSeeHisPresence()) {
-                userSubscribed(service, presenceListener, jid);
+                userSubscribed(service, jid);
             }
         }
     }
@@ -123,7 +114,7 @@ public class RosterListener implements RosterLoadedListener, org.jivesoftware.sm
     public void presenceChanged(Presence presence) {
     }
 
-    private void userSubscribed(MessageCenterService service, PresenceListener presenceListener, Jid jid) {
+    private void userSubscribed(MessageCenterService service, Jid jid) {
         String from = jid.asBareJid().toString();
 
         // invalidate cached contact
@@ -136,8 +127,7 @@ public class RosterListener implements RosterLoadedListener, org.jivesoftware.sm
 
         service.sendBroadcast(i);
 
-        // send any pending messages now
-        presenceListener.resendPending(false, true, from);
+        // MessagesController will send any pending messages
     }
 
 }

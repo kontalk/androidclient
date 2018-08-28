@@ -618,7 +618,7 @@ public class GroupInfoFragment extends ListFragment
 
     void trustKey(String jid, String fingerprint, int trustLevel) {
         Kontalk.get().getMessagesController()
-            .setTrustLevelAndRetryMessages(getContext(), jid, fingerprint, trustLevel);
+            .setTrustLevelAndRetryMessages(jid, fingerprint, trustLevel);
         Contact.invalidate(jid);
         reload();
     }
@@ -768,7 +768,8 @@ public class GroupInfoFragment extends ListFragment
                         Contact.invalidate(c.getJID());
                     }
                 }
-                MessageCenterService.retryMessagesTo(mContext, mGroupJid);
+                Kontalk.get().getMessagesController()
+                    .retryMessagesTo(mGroupJid);
             }
         }
 

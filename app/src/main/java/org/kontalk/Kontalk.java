@@ -189,6 +189,9 @@ public class Kontalk extends Application {
         // init notification system
         MessagingNotification.init(this);
 
+        // init the messages controller
+        initMessagesController();
+
         // init emoji manager
         // FIXME this is taking a very long time
         EmojiManager.install(new EmojiOneProvider());
@@ -288,10 +291,12 @@ public class Kontalk extends Application {
         return mKeyPassphrase;
     }
 
+    private void initMessagesController() {
+        mMessagesController = new MessagesController(this);
+    }
+
     /** Returns the messages controller singleton instance. */
     public MessagesController getMessagesController() {
-        if (mMessagesController == null)
-            mMessagesController = new MessagesController(this);
         return mMessagesController;
     }
 

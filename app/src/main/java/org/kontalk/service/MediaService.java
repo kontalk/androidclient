@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.ImageComponent;
@@ -45,6 +46,11 @@ public class MediaService extends IntentService {
     private static final String TAG = MessageCenterService.TAG;
 
     private static final String ACTION_PREPARE_MESSAGE = "org.kontalk.action.PREPARE_MESSAGE";
+
+    /**
+     * Broadcasted when a media message is ready for sending.
+     */
+    public static final String ACTION_MEDIA_READY = "org.kontalk.action.MEDIA_READY";
 
     public MediaService() {
         super(MediaService.class.getSimpleName());
@@ -101,7 +107,9 @@ public class MediaService extends IntentService {
                 previewFile != null ? previewFile.toString() : null,
                 uri, length);
 
-            MessageCenterService.sendMedia(this, databaseId);
+            Intent i = new Intent(ACTION_MEDIA_READY);
+            i.putExtra("org.kontalk.message.msgId", databaseId);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(i);
         }
         catch (Exception e) {
             MessageUpdater.forMessage(this, databaseId)
