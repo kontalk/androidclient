@@ -1,11 +1,11 @@
 Registration provider kindly offered by https://JMP.Chat
 Help us improve and fix bugs by reporting them on GitHub or discussing them on our forum!
 
-* NEW: Copy multiple messages to clipboard
-* Badge indicators for OEMs supporting it
+* NEW: massive refactoring of conversations list
 * Migrate to Firebase Cloud Messaging
 * Upgrade to Smack 4.3
 * Support for notification categories
 * Accepted invitation is no longer required to chat
 * Fix some annoying public key issues
+* Improve overall performance
 * Fix several other bugs
