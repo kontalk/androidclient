@@ -53,6 +53,7 @@ import android.webkit.MimeTypeMap;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
+import org.kontalk.reporting.ReportingManager;
 
 
 /**
@@ -192,17 +193,25 @@ public abstract class MediaStorage {
             new String[] { MediaStore.Images.ImageColumns.ORIENTATION }, null, null, null);
 
         if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                int orientation = cursor.getInt(0);
+            try {
+                if (cursor.moveToFirst()) {
+                    int orientation = cursor.getInt(0);
 
-                if (orientation != 0) {
-                    Matrix m = new Matrix();
-                    m.postRotate(orientation);
+                    if (orientation != 0) {
+                        Matrix m = new Matrix();
+                        m.postRotate(orientation);
 
-                    return m;
+                        return m;
+                    }
                 }
             }
-            cursor.close();
+            catch (Exception e) {
+                ReportingManager.logException(e);
+                // we'll try the next method
+            }
+            finally {
+                cursor.close();
+            }
         }
 
         // method 2: write media contents to a temporary file and run ExifInterface

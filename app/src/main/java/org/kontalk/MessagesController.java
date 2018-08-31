@@ -106,6 +106,10 @@ public class MessagesController {
     private final Context mContext;
     private final MessageQueueThread mWorker;
 
+    /** True if the message center reported being connected. Only used for a few checks */
+    private boolean mConnected;
+
+    /** True if the message center reported upload services were found. */
     private boolean mUploadServiceFound;
 
     MessagesController(Context context) {
@@ -588,11 +592,15 @@ public class MessagesController {
 
     @AnyThread
     void connected() {
-        mUploadServiceFound = false;
+        if (!mConnected) {
+            mConnected = true;
+            mUploadServiceFound = false;
+        }
     }
 
     @AnyThread
     void disconnected() {
+        mConnected = false;
         mUploadServiceFound = false;
     }
 
