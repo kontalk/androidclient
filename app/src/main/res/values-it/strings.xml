@@ -737,4 +737,11 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
     <string name="notify_other_channel_name">Altro</string>
     <string name="notify_other_channel_description">Altre notifiche</string>
 
+    <string name="menu_ctx_archive_threads">Archivia</string>
+    <string name="menu_ctx_unarchive_threads">Ripristina</string>
+    <string name="menu_ctx_delete_threads">Elimina</string>
+    <string name="text_archived_conversations_empty">Per archiviare delle chat, selezionale dalla schermata principale e usa il pulsante <b>Archivia</b> in alto.</string>
+    <string name="title_archived_threads">Chat archiviate</string>
+    <string name="footer_archived_threads">Chat archiviate (%d)</string>
+
     </resources>
