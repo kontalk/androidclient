@@ -745,4 +745,8 @@
     <string name="menu_ctx_archive_threads">Добавить в архив</string>
     <string name="menu_ctx_unarchive_threads">Извлечь из архива</string>
     <string name="menu_ctx_delete_threads">Удалить</string>
+    <string name="text_archived_conversations_empty">Чтобы добавить разговоры в архив, отметьте их на главном экране и нажмите кнопку <b>добавить в архив</b> на панели инструментов.</string>
+    <string name="title_archived_threads">Сохранённые разговоры</string>
+    <string name="footer_archived_threads">Сохранённые разговоры (%d)</string>
+
     </resources>
