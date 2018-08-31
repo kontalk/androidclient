@@ -572,7 +572,7 @@ Cando están desactivadas, o comportamento de conexión Kontalk se pode axustar 
 	<item quantity="other">Deixar tamén o grupo</item>
 </plurals>
 
-<string name="menu_sticky">Favorito</string>
+<string name="menu_ctx_sticky">Favorito</string>
     <string name="menu_start_group">Iniciar un grupo</string>
     <string name="button_private_chat">Conversa privada</string>
     <string name="group_command_owner_parted">O propietario (%s) deixou o grupo. Ninguén pode engadir ou eliminar membros.</string>
@@ -689,7 +689,7 @@ Desactivar a cifraxe só se o contacto non ten unha chave persoal.</string>
     <string name="btn_reply_cancel_description">Cancelar a resposta</string>
     <string name="reply_message_deleted">Mensaxe eliminada.</string>
 
-    <string name="err_validation_contacts_denied">Kontalk necesita acceso aos contactos para funcionar correctamente. ¿Como pode saber con quen podes chatear? 
+    <string name="err_validation_contacts_denied">Kontalk necesita acceso aos contactos para funcionar correctamente. ¿Como pode saber con quen podes chatear?
 \nPode cancelar agora, pero se lle pedirá de novo una vez que se rexistrou.</string>
     <string name="err_contacts_denied">Kontalk necesita acceso aos contactos para funcionar correctamente. ¿Como pode saber con quen podes chatear?
 \nPode permitir o acceso aos contactos desde a configuración de Android.</string>

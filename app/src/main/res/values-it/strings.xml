@@ -550,7 +550,7 @@ Se disattivate, il comportamento delle connessioni di Kontalk può essere config
     <string name="menu_group_info">Info gruppo</string>
     <string name="button_private_chat">Chat privata</string>
     <string name="group_info_owner_member">Proprietario</string>
-    <string name="menu_sticky">Preferita</string>
+    <string name="menu_ctx_sticky">Preferita</string>
     <string name="menu_start_group">Chat di gruppo</string>
     <string name="group_command_owner_parted">Il proprietario (%s) ha lasciato il gruppo. Nessuno può aggiungere o rimuovere membri.</string>
 

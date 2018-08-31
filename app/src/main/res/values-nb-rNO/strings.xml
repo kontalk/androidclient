@@ -66,7 +66,7 @@
     <string name="view_contact">Vis kontakt</string>
     <string name="view_conversation">Vis sludreøkt</string>
     <string name="delete_thread">Slett sludreøkt</string>
-    <string name="menu_sticky">Favoritt</string>
+    <string name="menu_ctx_sticky">Favoritt</string>
     <string name="delete_thread_messages">Slett sludreøkthistorikk</string>
     <string name="confirm_delete_thread">Slett sludreøkt</string>
     <string name="confirm_will_delete_thread">Hele sludreøkta vil bli slettet.</string>

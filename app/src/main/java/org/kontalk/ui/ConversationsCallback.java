@@ -16,27 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.data;
+package org.kontalk.ui;
 
-import android.arch.paging.DataSource;
-import android.content.Context;
-import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.v7.view.ActionMode;
+
+import org.kontalk.data.Conversation;
 
 
-public class ConversationsDataSourceFactory extends DataSource.Factory<Integer, Conversation> {
+/**
+ * Callback interface for conversations list fragments.
+ * Mainly used to provide a common parent interface to {@link ConversationsFragment}.
+ * @author Daniele Ricci
+ */
+public interface ConversationsCallback {
 
-    private final Context mContext;
-    private final boolean mArchived;
-    private final Handler mHandler;
+    void openConversation(Conversation conv);
 
-    public ConversationsDataSourceFactory(Context context, boolean archived) {
-        mContext = context.getApplicationContext();
-        mArchived = archived;
-        mHandler = new Handler();
-    }
+    ActionMode startSupportActionMode(@NonNull ActionMode.Callback callback);
 
-    @Override
-    public DataSource<Integer, Conversation> create() {
-        return new ConversationsDataSource(mContext, mArchived, mHandler);
-    }
+    void onDatabaseChanged();
+
 }

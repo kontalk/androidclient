@@ -566,7 +566,7 @@
 	<item quantity="other"/>
 </plurals>
 
-<string name="menu_sticky">Омиљено</string>
+<string name="menu_ctx_sticky">Омиљено</string>
     <string name="delete_threads_leave_any_groups">Такође напусти групе</string>
 
     <string name="menu_encryption">Шифровање</string>

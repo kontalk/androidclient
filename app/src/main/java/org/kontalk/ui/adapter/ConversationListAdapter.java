@@ -63,14 +63,20 @@ public class ConversationListAdapter extends PagedListAdapter<Conversation, Recy
 
     private final LayoutInflater mFactory;
     private final MultiSelector mMultiSelector;
-    private final OnItemClickListener mItemListener;
-    private final OnFooterClickListener mFooterListener;
+    private OnItemClickListener mItemListener;
+    private OnFooterClickListener mFooterListener;
 
-    public ConversationListAdapter(Context context, MultiSelector multiSelector, OnItemClickListener itemListener, OnFooterClickListener footerListener) {
+    public ConversationListAdapter(Context context, MultiSelector multiSelector) {
         super(sDiffCallback);
         mFactory = LayoutInflater.from(context);
         mMultiSelector = multiSelector;
+    }
+
+    public void setItemListener(OnItemClickListener itemListener) {
         mItemListener = itemListener;
+    }
+
+    public void setFooterListener(OnFooterClickListener footerListener) {
         mFooterListener = footerListener;
     }
 

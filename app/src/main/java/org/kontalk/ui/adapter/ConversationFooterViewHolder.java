@@ -23,6 +23,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
 
+import org.kontalk.R;
+
 
 class ConversationFooterViewHolder extends RecyclerView.ViewHolder implements
         View.OnClickListener {
@@ -39,8 +41,8 @@ class ConversationFooterViewHolder extends RecyclerView.ViewHolder implements
 
     void bindView(Context context, Integer archivedCount) {
         if (archivedCount != null && archivedCount > 0) {
-            // TODO i18n
-            ((TextView) itemView).setText("Archived chats (" + archivedCount + ")");
+            ((TextView) itemView).setText(context
+                .getString(R.string.footer_archived_threads, archivedCount));
         }
         else {
             itemView.setVisibility(View.INVISIBLE);

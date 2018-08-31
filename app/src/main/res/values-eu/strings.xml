@@ -73,7 +73,7 @@
     <string name="view_contact">Ikusi kontaktuak</string>
     <string name="view_conversation">Ikusi txata</string>
     <string name="delete_thread">Ezabatu txata</string>
-    <string name="menu_sticky">Gogokoak</string>
+    <string name="menu_ctx_sticky">Gogokoak</string>
     <string name="delete_thread_messages">Ezabatu txataren historia</string>
     <string name="confirm_delete_thread">Ezabatu txata</string>
     <string name="confirm_will_delete_thread">Txat osoa ezabatuko da.</string>

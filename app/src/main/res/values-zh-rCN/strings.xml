@@ -567,7 +567,7 @@
     <string name="pref_reporting">发送匿名的使用统计</string>
     <string name="pref_title_reporting">包含崩溃报告</string>
 
-    <string name="menu_sticky">收藏</string>
+    <string name="menu_ctx_sticky">收藏</string>
     <string name="menu_start_group">开始群组会话</string>
     <string name="group_command_owner_parted">群主 (%s) 离开了群组。没有人能够添加或者踢掉成员。</string>
     <string name="group_info_owner_member">群主</string>

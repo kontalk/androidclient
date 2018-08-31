@@ -545,7 +545,7 @@ Quan estan desactivades, el comportament de connexió de Kontalk es pot ajustar 
 
     <string name="menu_group_info">Informació del grup</string>
     <string name="button_private_chat">Xat privat</string>
-    <string name="menu_sticky">Favorit</string>
+    <string name="menu_ctx_sticky">Favorit</string>
     <string name="menu_start_group">Inici del grup</string>
     <string name="group_info_owner_member">Propietari</string>
     <string name="group_command_owner_parted">El propietari (%s) ha deixat el grup. Ningú pot afegir o eliminar membres.</string>

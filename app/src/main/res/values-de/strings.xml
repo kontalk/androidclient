@@ -550,7 +550,7 @@ Wenn Push-Benachrichtigungen deaktiviert sind, kann das Kontalk-Verbindungsverha
     <string name="menu_group_info">Gruppeninfo</string>
     <string name="button_private_chat">Privater Chat</string>
     <string name="group_info_owner_member">Admin</string>
-    <string name="menu_sticky">Favorit</string>
+    <string name="menu_ctx_sticky">Favorit</string>
     <string name="menu_start_group">Neue Gruppe</string>
     <string name="group_command_owner_parted">Der Admin (%s) hat die Gruppe verlassen. Niemand kann Mitglieder zur Gruppe hinzufügen oder entfernen.</string>
 

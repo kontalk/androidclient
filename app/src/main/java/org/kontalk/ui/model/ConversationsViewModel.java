@@ -34,13 +34,13 @@ public class ConversationsViewModel extends ViewModel {
     private LiveData<PagedList<Conversation>> mData;
 
     @UiThread
-    public void load(Context context) {
+    public void load(Context context, boolean archived) {
         PagedList.Config config = new PagedList.Config.Builder()
             .setPageSize(100)
             .setEnablePlaceholders(false)
             .build();
         mData = new LivePagedListBuilder<>(
-            new ConversationsDataSourceFactory(context.getApplicationContext()),
+            new ConversationsDataSourceFactory(context.getApplicationContext(), archived),
             config)
             .build();
     }

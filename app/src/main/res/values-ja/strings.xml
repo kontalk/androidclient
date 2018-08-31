@@ -535,7 +535,7 @@ http://kontalk.org/</string>
 	<item quantity="other">グループも退出する</item>
 </plurals>
 
-<string name="menu_sticky">お気に入り</string>
+<string name="menu_ctx_sticky">お気に入り</string>
     <string name="menu_start_group">グループを開始</string>
     <string name="group_command_owner_parted">所有者 (%s) がグループから退出しました。 誰もメンバーを追加または削除することはできません。</string>
     <string name="group_info_owner_member">所有者</string>

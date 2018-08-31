@@ -547,7 +547,7 @@ Cuando están deshabilitadas, el comportamiento de la conexión de Kontalk puede
     <string name="code_validation_intro_callerid">Toque el botón de abajo y haga una llamada perdida a ese número de teléfono. Tenga en cuenta que <b>la llamada debe hacerse desde el número de teléfono que se está registrando</b>. La llamada es gratuita si cuelga en cuanto escuche el primer timbre. Será suficiente para nosotros.</string>
     <string name="menu_group_info">Información del grupo</string>
     <string name="button_private_chat">Chat privado</string>
-    <string name="menu_sticky">Favorito</string>
+    <string name="menu_ctx_sticky">Favorito</string>
     <string name="menu_start_group">Iniciar grupo</string>
     <string name="group_info_owner_member">Propietario</string>
     <string name="group_command_owner_parted">El propietario (%s) ha dejado el grupo. Nadie puede agregar o quitar miembros.</string>
@@ -711,7 +711,7 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
 
     <string name="menu_import_messages">Importar mensajes</string>
 
-    <string name="err_validation_phone_state_denied">Si permites a Kontalk gestionar las llamadas telefónicas, puede detectar automáticamente tu número de teléfono. 
+    <string name="err_validation_phone_state_denied">Si permites a Kontalk gestionar las llamadas telefónicas, puede detectar automáticamente tu número de teléfono.
 \nKontalk no utilizará ese permiso para nada más.</string>
 
     <string name="contact_name_server">Tu servidor</string>

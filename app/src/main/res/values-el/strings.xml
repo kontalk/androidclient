@@ -558,7 +558,7 @@
 	<item quantity="other">Επίσης έξοδος από ομάδες</item>
 </plurals>
 
-<string name="menu_sticky">Αγαπημένο</string>
+<string name="menu_ctx_sticky">Αγαπημένο</string>
     <string name="menu_start_group">Δημιουργία ομάδας</string>
     <string name="group_command_owner_parted">Ο ιδιοκτήτης (%s) έφυγε από την ομάδα. Κανένας δε μπορεί να αφαιρέσει ή να προσθέσει μέλη.</string>
     <string name="group_info_owner_member">Ιδιοκτήτης</string>

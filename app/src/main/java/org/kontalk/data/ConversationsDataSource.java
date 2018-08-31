@@ -35,7 +35,6 @@ import org.kontalk.provider.MyMessages;
 
 /**
  * Data source for conversations (threads table)
- * TODO some way of altering the archived flag
  */
 public class ConversationsDataSource extends PositionalDataSource<Conversation> {
 
@@ -45,9 +44,11 @@ public class ConversationsDataSource extends PositionalDataSource<Conversation> 
 
     private final Context mContext;
     private final ContentResolver mContentResolver;
+    private final boolean mArchived;
 
-    public ConversationsDataSource(Context context, Handler handler) {
+    public ConversationsDataSource(Context context, boolean archived, Handler handler) {
         mContext = context.getApplicationContext();
+        mArchived = archived;
         mContentResolver = mContext.getContentResolver();
         mContentResolver.registerContentObserver(MyMessages.Threads.CONTENT_URI,
             true, new ChangeObserver(handler));
@@ -140,7 +141,7 @@ public class ConversationsDataSource extends PositionalDataSource<Conversation> 
      * Return the rows from startPos to startPos + loadCount
      */
     private List<Conversation> loadRange(int startPosition, int loadCount) {
-        return getConversations(false, loadCount, startPosition);
+        return getConversations(mArchived, loadCount, startPosition);
     }
 
     class ChangeObserver extends ContentObserver {

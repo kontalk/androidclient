@@ -155,6 +155,15 @@
                 android:value="org.kontalk.ui.SearchActivity" />
         </activity>
 
+        <activity android:name=".ui.ArchivedConversationsActivity"
+            android:label="@string/title_archived_threads"
+            android:parentActivityName=".ui.ConversationsActivity"
+            tools:targetApi="jelly_bean">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.kontalk.ui.ConversationsActivity" />
+        </activity>
+
         <activity android:name=".ui.SearchActivity"
               android:parentActivityName=".ui.ConversationsActivity"
               tools:targetApi="jelly_bean">

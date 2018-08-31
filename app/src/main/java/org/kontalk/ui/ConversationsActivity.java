@@ -74,7 +74,7 @@ import org.kontalk.util.XMPPUtils;
  * @author Daniele Ricci
  */
 public class ConversationsActivity extends MainActivity
-        implements ComposeMessageParent {
+        implements ComposeMessageParent, ConversationsCallback {
     public static final String TAG = ConversationsActivity.class.getSimpleName();
 
     /** An intent extra for storing an ACTION_SEND intent from {@link ComposeMessage}. */
@@ -89,6 +89,7 @@ public class ConversationsActivity extends MainActivity
     private MenuItem mOfflineMenu;
 
     private static final int REQUEST_CONTACT_PICKER = 7720;
+    private static final int REQUEST_ARCHIVED_THREAD = 7721;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -268,6 +269,17 @@ public class ConversationsActivity extends MainActivity
                 }
             }
         }
+        else if (requestCode == REQUEST_ARCHIVED_THREAD) {
+            if (resultCode == Activity.RESULT_OK) {
+                Uri uri = data.getData();
+                if (uri != null) {
+                    // we'll have the thread id in the uri
+                    long threadId = ContentUris.parseId(uri);
+                    if (threadId >= 0)
+                        openConversation(threadId);
+                }
+            }
+        }
         else {
             super.onActivityResult(requestCode, resultCode, data);
         }
@@ -400,6 +412,7 @@ public class ConversationsActivity extends MainActivity
         openConversation(threadUri, false);
     }
 
+    @Override
     public void openConversation(Conversation conv) {
         if (isDualPane()) {
             // get the old fragment
@@ -579,7 +592,8 @@ public class ConversationsActivity extends MainActivity
 
     /** Updates various UI elements after a database change. */
     @UiThread
-    void onDatabaseChanged() {
+    @Override
+    public void onDatabaseChanged() {
         boolean visible = mFragment.hasListItems();
         if (mSearchMenu != null) {
             mSearchMenu.setEnabled(visible).setVisible(visible);
@@ -647,4 +661,7 @@ public class ConversationsActivity extends MainActivity
         HelpPreference.openHelp(this);
     }
 
+    public void startArchivedConversations() {
+        ArchivedConversationsActivity.start(this, REQUEST_ARCHIVED_THREAD);
+    }
 }

@@ -441,6 +441,6 @@
 </plurals>
 
 <string name="reply">Répondre</string>
-    <string name="menu_sticky">Favoris</string>
+    <string name="menu_ctx_sticky">Favoris</string>
     <string name="delete_thread_messages">Supprimer l\'historique de la conversation</string>
     </resources>

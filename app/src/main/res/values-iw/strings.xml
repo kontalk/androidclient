@@ -71,7 +71,7 @@
     <string name="view_contact">צפה באיש קשר</string>
     <string name="view_conversation">צפה בשיחה</string>
     <string name="delete_thread">מחק שיחה</string>
-    <string name="menu_sticky">מועדף</string>
+    <string name="menu_ctx_sticky">מועדף</string>
     <string name="delete_thread_messages">מחק היסטורית שיחה</string>
     <string name="confirm_delete_thread">מחק שיחה</string>
     <string name="confirm_will_delete_thread">השיחה כולה תימחק.</string>

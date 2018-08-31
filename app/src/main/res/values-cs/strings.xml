@@ -554,7 +554,7 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="menu_group_info">Info o skupině</string>
     <string name="button_private_chat">Soukromá konverzace</string>
     <string name="group_info_owner_member">Vlastník</string>
-    <string name="menu_sticky">Oblíbený</string>
+    <string name="menu_ctx_sticky">Oblíbený</string>
     <string name="menu_start_group">Založit skupinu</string>
     <string name="group_command_owner_parted">Vlastník skupiny (%s) tuto skupinu opustil. Nikdo nemůže přidat nebo odebrat členy.</string>
 

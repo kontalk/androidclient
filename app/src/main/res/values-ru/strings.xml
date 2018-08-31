@@ -524,7 +524,7 @@
 
 <string name="code_validation_intro_callerid">Нажмите на кнопку и перезвоните на этот номер. Пожалуйста, обратите внимание: <b>позвонить можно только с номера, который вы регистрируете</b>. Звонок бесплатный. Повесьте трубку как только услышите первый гудок, нам этого достаточно.</string>
     <string name="code_validation_intro2_callerid">После завершения звонка вернитесь сюда и нажмите на кнопку подтверждения.</string>
-    <string name="menu_sticky">Избранное</string>
+    <string name="menu_ctx_sticky">Избранное</string>
     <string name="delete_thread_messages">Удалить историю чата</string>
     <string name="pref_push_notifications_disabled">Отключено</string>
     <string name="pref_push_notifications_title_default">Пуш уведомления - технология, поддерживаемая сервером для экономии батареи. Она не влияет на доставку сообщений в реальном времени.

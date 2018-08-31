@@ -557,7 +557,7 @@ Se desabilitada, você pode fazer ajustes finos no funcionamento da conexão do 
     <string name="pref_push_notifications_disabled">Desabilitado</string>
     <string name="code_validation_intro_callerid">Toque no botão abaixo e ligue para esse número, desligando assim que ouvir o sinal de chamada. Repare que <b>a chamada tem que ser feita a partir do telefone que você está registrando</b>. Você não pagará nada por isso, desde que encerre a chamada assim que ouvir o primeiro sinal. Isso é o suficiente para nós.</string>
     <string name="code_validation_intro2_callerid">Após encerrar a chamada, volte aqui e toque o botão de verificação abaixo.</string>
-    <string name="menu_sticky">Favorito</string>
+    <string name="menu_ctx_sticky">Favorito</string>
     <string name="err_authentication_failed_callerid">A verificação não foi bem sucedida. Tente ligar para o número novamente e esperar um pouco mais.</string>
     <string name="button_validation_fallback_callerid">Tente outra forma</string>
     <string name="menu_start_group">Iniciar o grupo</string>

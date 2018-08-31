@@ -76,8 +76,10 @@
     <string name="view_contact">View contact</string>
     <string name="view_conversation">View chat</string>
     <string name="delete_thread">Delete chat</string>
-    <string name="archive_thread">Archive chat</string>
-    <string name="menu_sticky">Favorite</string>
+    <string name="menu_ctx_archive_threads">Archive</string>
+    <string name="menu_ctx_unarchive_threads">Unarchive</string>
+    <string name="menu_ctx_delete_threads">Delete</string>
+    <string name="menu_ctx_sticky">Favorite</string>
     <string name="delete_thread_messages">Delete chat history</string>
     <string name="confirm_delete_thread">Delete chat</string>
     <string name="confirm_will_delete_thread">The entire chat will be deleted.</string>
@@ -218,6 +220,7 @@
     <string name="text_invite_message">Hey! Check out Kontalk, a free messaging app! http://kontalk.org/</string>
     <string name="text_contacts_empty">New users will be automatically added to this list.\n\nUse <b>Menu</b> > <b>Invite users</b> to send an invitation message to someone.</string>
     <string name="text_conversations_empty">To start writing messages use the <b>new message</b> button below.</string>
+    <string name="text_archived_conversations_empty">To archive chats, select them from the main screen and use the <b>archive</b> button in the toolbar.</string>
     <string name="notify_ticker_external_storage">External storage not available</string>
     <string name="notify_text_external_storage">Unable to write to external storage.</string>
     <string name="title_user_not_found">User not found</string>
@@ -658,6 +661,9 @@
 
     <string name="btn_reply_cancel_description">Cancel reply</string>
     <string name="reply_message_deleted">Message was deleted.</string>
+
+    <string name="title_archived_threads">Archived chats</string>
+    <string name="footer_archived_threads">Archived chats (%d)</string>
 
     <!-- contact name, group subject -->
     <string name="notification_group_title">%1$s @ %2$s</string>

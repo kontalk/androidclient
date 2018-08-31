@@ -550,7 +550,7 @@ Indien uitgeschakeld kan het netwerkgedrag van Kontalk in netwerkinstellingen in
     <string name="menu_group_info">Groepsinfo</string>
     <string name="button_private_chat">Privégesprek</string>
     <string name="group_info_owner_member">Eigenaar</string>
-    <string name="menu_sticky">Favoriet</string>
+    <string name="menu_ctx_sticky">Favoriet</string>
     <string name="menu_start_group">Start groepsgesprek</string>
     <string name="group_command_owner_parted">De eigenaar (%s) heeft de groep verlaten. Niemand kan leden toevoegen of verwijderen.</string>
 

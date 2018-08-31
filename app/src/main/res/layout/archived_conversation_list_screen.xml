@@ -16,12 +16,8 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-
-    <!-- actions -->
-    <item android:id="@+id/menu_archive" android:title="@string/menu_ctx_archive_threads" android:icon="@drawable/ic_menu_archive" app:showAsAction="always"/>
-    <item android:id="@+id/menu_delete" android:title="@string/menu_ctx_delete_threads" android:icon="@drawable/ic_menu_delete" app:showAsAction="always"/>
-    <item android:id="@+id/menu_sticky" android:title="@string/menu_ctx_sticky" android:icon="@drawable/ic_menu_favorite" app:showAsAction="ifRoom"/>
-
-</menu>
+<fragment xmlns:android="http://schemas.android.com/apk/res/android"
+    android:name="org.kontalk.ui.ArchivedConversationsFragment"
+    android:id="@+id/fragment_conversation_list"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" />
