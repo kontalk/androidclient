@@ -2,7 +2,7 @@ Kontalk official Android client
 ===============================
 
 [![Build Status](https://travis-ci.org/kontalk/androidclient.svg?branch=master)](https://travis-ci.org/kontalk/androidclient)
-[![Translation status](http://translate.kontalk.org/widgets/kontalk-androidclient/-/svg-badge.svg)](https://translate.kontalk.org/engage/kontalk-androidclient/?utm_source=widget)
+[![Translation status](https://translate.kontalk.org/widgets/kontalk-androidclient/-/svg-badge.svg)](https://translate.kontalk.org/engage/kontalk-androidclient/?utm_source=widget)
 
 This is the official Android client for the Kontalk messaging system. It always implements the latest protocol.
 
