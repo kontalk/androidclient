@@ -56,8 +56,8 @@ public class ConversationsDataSource extends PositionalDataSource<Conversation> 
 
     @Override
     public void loadInitial(@NonNull LoadInitialParams params, @NonNull LoadInitialCallback<Conversation> callback) {
-        final int totalCount = countItems(false);
-        final int archivedCount = countItems(true);
+        final int totalCount = countItems(mArchived);
+        final int archivedCount = !mArchived ? countItems(true) : 0;
         if (totalCount == 0) {
             // archived count only
             if (archivedCount > 0) {
