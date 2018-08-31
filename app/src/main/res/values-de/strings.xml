@@ -741,4 +741,11 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="notify_other_channel_name">Andere</string>
     <string name="notify_other_channel_description">Andere Benachrichtigungen</string>
 
+    <string name="menu_ctx_archive_threads">Archiv</string>
+    <string name="menu_ctx_unarchive_threads">Aktivieren</string>
+    <string name="menu_ctx_delete_threads">Löschen</string>
+    <string name="text_archived_conversations_empty">Wählen Sie zu archivierende Chats im Hauptbildschirm aus und tippen den <b>Archiv</b> Button in der Toolbar.</string>
+    <string name="title_archived_threads">Archivierte Chats</string>
+    <string name="footer_archived_threads">Archivierte Chats (%d)</string>
+
     </resources>
