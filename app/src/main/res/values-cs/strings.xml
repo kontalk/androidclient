@@ -749,4 +749,11 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="notify_other_channel_name">Ostatní</string>
     <string name="notify_other_channel_description">Ostatní notifikace</string>
 
+    <string name="menu_ctx_archive_threads">Archivovat</string>
+    <string name="menu_ctx_unarchive_threads">Odarchivovat</string>
+    <string name="menu_ctx_delete_threads">Smazat</string>
+    <string name="text_archived_conversations_empty">Abyste archivovali konverzace, vyberte je na hlavní obrazovce a použijte tlačítko <b>archivovat</b> v nástrojovém panelu.</string>
+    <string name="title_archived_threads">Archivované konverzace</string>
+    <string name="footer_archived_threads">Archivované konverzace (%d)</string>
+
     </resources>
