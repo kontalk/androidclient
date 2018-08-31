@@ -742,4 +742,7 @@
     <string name="notify_other_channel_name">Другое</string>
     <string name="notify_other_channel_description">Другие уведомления</string>
 
+    <string name="menu_ctx_archive_threads">Добавить в архив</string>
+    <string name="menu_ctx_unarchive_threads">Извлечь из архива</string>
+    <string name="menu_ctx_delete_threads">Удалить</string>
     </resources>
