@@ -676,4 +676,22 @@
 
     <string name="import_device_message">Отворите Контак на другом уређају, идите на мени &gt; Поставке &gt; Одржавање &gt; Пријави уређај. Тајни кôд и његов бар-кôд ће бити приказани.</string>
 
+    <string name="open_conversation">Поглед</string>
+    <string name="menu_ctx_archive_threads">Архива</string>
+    <string name="menu_ctx_unarchive_threads">Деархивирај</string>
+    <string name="menu_ctx_delete_threads">Избриши</string>
+    <string name="seen_offline_label">Искључен</string>
+    <string name="seen_group_typing_label_one">%с пише…</string>
+    <string name="err_location_permission">Приступ локацији је одбијен.</string>
+    <string name="pref_server_messages">Прими серверске поруке</string>
+    <string name="pref_title_server_messages">Дозволи поруке од администратора сервера. Можда ћете пропустити важне вести ако ово онемогућите.</string>
+
+    <string name="err_audio_record_permission">Приступ микрофону је одбијен.</string>
+    <string name="err_audio_record_writing_permission">Пристум спољном складишту је одбијен.</string>
+    <string name="menu_import_messages">Увези поруке</string>
+
+    <string name="register_device_nonetwork">Мрежа није доступна. Покушајте касније.</string>
+    <string name="btn_reply_cancel_description">Откажи одговор</string>
+    <string name="reply_message_deleted">Порука је избрисана.</string>
+
     </resources>
