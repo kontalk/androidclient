@@ -736,4 +736,11 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
 	<item quantity="other">%d en línea</item>
 </plurals>
 
-</resources>
+<string name="menu_ctx_archive_threads">Archivar</string>
+    <string name="menu_ctx_unarchive_threads">No archivar</string>
+    <string name="menu_ctx_delete_threads">Borrar</string>
+    <string name="text_archived_conversations_empty">Para archivar chats, selecciónelos en la pantalla principal y utilice el botón <b> 1archive</b> 2 de la barra de herramientas.</string>
+    <string name="title_archived_threads">Chats archivados</string>
+    <string name="footer_archived_threads">Chats archivados (%d)</string>
+
+    </resources>
