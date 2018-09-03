@@ -29,7 +29,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -332,7 +331,7 @@ public abstract class SendPositionAbstractFragment extends Fragment
                     return true;
                 }
             });
-            SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+            SearchView searchView = (SearchView) searchItem.getActionView();
             searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                 @Override
                 public boolean onQueryTextSubmit(String query) {
