@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.support.v4.net.ConnectivityManagerCompat;
 
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
@@ -72,7 +73,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
         else if (ConnectivityManager.CONNECTIVITY_ACTION.equals(action)) {
             // TODO handle FAILOVER_CONNECTION
 
-            final NetworkInfo info = cm.getActiveNetworkInfo();
+            final NetworkInfo info = ConnectivityManagerCompat.getNetworkInfoFromBroadcast(cm, intent);
             if (info != null) {
                 Log.w(TAG, "network state changed!");
 
