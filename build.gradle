@@ -32,7 +32,7 @@ allprojects {
         versionCode = 403
         versionName = '4.2.0-beta4-next'
         minSdkVersion = 15
-        targetSdkVersion = 23
+        targetSdkVersion = 25
         compileSdkVersion = 28
         smackVersion = project(':client-common-java').smackVersion
         spongyCastleVersion = '1.58.0.0'
