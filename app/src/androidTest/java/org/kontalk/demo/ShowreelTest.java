@@ -63,13 +63,13 @@ public class ShowreelTest extends TestServerTest {
     private static final int NUM_MESSAGES = 50;
 
     private static final int[] TEST_IN_STATUS = {
-        MyMessages.Messages.STATUS_INCOMING,
+        //MyMessages.Messages.STATUS_INCOMING,
         MyMessages.Messages.STATUS_CONFIRMED,
     };
 
     private static final int[] TEST_OUT_STATUS = {
-        MyMessages.Messages.STATUS_SENDING,
-        MyMessages.Messages.STATUS_SENT,
+        //MyMessages.Messages.STATUS_SENDING,
+        //MyMessages.Messages.STATUS_SENT,
         MyMessages.Messages.STATUS_RECEIVED,
     };
 
@@ -213,6 +213,11 @@ public class ShowreelTest extends TestServerTest {
             .getContentResolver().update(MyUsers.Users.CONTENT_URI, registered, null, null);
     }
 
+    private void deleteAllThreads() {
+        InstrumentationRegistry.getTargetContext()
+            .getContentResolver().delete(MyMessages.Threads.Conversations.CONTENT_URI, null, null);
+    }
+
     private long randomPastTime() {
         return System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7);
     }
@@ -258,6 +263,7 @@ public class ShowreelTest extends TestServerTest {
     @Test
     public void fillData() {
         markAllUsersRegistered();
+        deleteAllThreads();
 
         Cursor users = InstrumentationRegistry.getTargetContext()
             .getContentResolver().query(MyUsers.Users.CONTENT_URI,

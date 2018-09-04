@@ -735,4 +735,11 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
 	<item quantity="other">%d en línia</item>
 </plurals>
 
-</resources>
+<string name="menu_ctx_archive_threads">Arxivar</string>
+    <string name="menu_ctx_unarchive_threads">No arxivar</string>
+    <string name="menu_ctx_delete_threads">Esborrar</string>
+    <string name="text_archived_conversations_empty">Per arxivar xats, seleccioni\'ls en la pantalla principal i utilitzi el botó <b> 1arxivi</b> 2 de la barra d\'eines.</string>
+    <string name="title_archived_threads">Xats arxivats</string>
+    <string name="footer_archived_threads">Xats arxivats (%d)</string>
+
+    </resources>

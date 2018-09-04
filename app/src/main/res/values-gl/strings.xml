@@ -748,4 +748,11 @@ Desactivar a cifraxe só se o contacto non ten unha chave persoal.</string>
 	<item quantity="other">%d en línea</item>
 </plurals>
 
-</resources>
+<string name="menu_ctx_archive_threads">Arquivar</string>
+    <string name="menu_ctx_unarchive_threads">Non arquivar</string>
+    <string name="menu_ctx_delete_threads">Borrar</string>
+    <string name="text_archived_conversations_empty">Para arquivar chats, seleccióneos na pantalla principal e utilice o botón <b> 1arquive</b> 2 da barra de ferramentas.</string>
+    <string name="title_archived_threads">Conversas arquivadas</string>
+    <string name="footer_archived_threads">Conversas arquivadas (%d)</string>
+
+    </resources>
