@@ -159,7 +159,7 @@
   <string name="title_invalid_number">Неисправан број</string>
   <string name="err_store_message_failed">Не могу да складиштим поруку у излазне.</string>
   <string name="msg_invalid_number">Унесите исправан број телефона.</string>
-  <string name="msg_invalid_cc">Унесите исправан кôд земље.</string>
+  <string name="msg_invalid_cc">Изаберите земљу.</string>
   <string name="title_invalid_code">Неисправан кôд</string>
   <string name="msg_invalid_code">Унесите исправан кôд.</string>
   <string name="title_no_name">Ваше име</string>
