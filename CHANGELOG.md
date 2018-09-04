@@ -2,8 +2,12 @@
 
 ## [Next]
 ### Changed
+- Archived chats screen (#941)
 
 ### Fixed
+- Fix out of memory issue with emojis (#1185)
+- Fix crash on resuming location screen (#1199)
+- Do not fix GPS on resume (#1202)
 - Fix media messages not being sent (#1214)
 
 ## [4.2.0-beta4] - 2018-08-28
