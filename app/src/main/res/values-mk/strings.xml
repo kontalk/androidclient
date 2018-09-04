@@ -196,4 +196,6 @@
     <string name="msg_invalid_code">Внесете валиден код.</string>
     <string name="title_nonetwork">Нема интернет врска</string>
     <string name="title_fallback">Имате проблеми?</string>
+    <string name="msg_fallback">Ќе пробаме друг начин за да го потврдите вашиот телефонски број.</string>
+    <string name="title_no_name">Вашето име</string>
     </resources>
