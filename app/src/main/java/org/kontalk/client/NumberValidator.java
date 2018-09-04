@@ -51,6 +51,8 @@ import org.jivesoftware.smackx.iqregister.packet.Registration;
 import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
+
+import org.kontalk.BuildConfig;
 import org.kontalk.util.XMPPUtils;
 import org.spongycastle.openpgp.PGPException;
 
@@ -886,8 +888,12 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 myRegionCode = util.getRegionCodeForCountryCode(lastResortCc);
                 parsedNum = util.parse(number, myRegionCode);
             }
-            else
+            else {
+                if (BuildConfig.DEBUG) {
+                    return number.startsWith("+") ? number : ("+1" + number);
+                }
                 throw e;
+            }
         }
 
         handleSpecialCases(parsedNum);

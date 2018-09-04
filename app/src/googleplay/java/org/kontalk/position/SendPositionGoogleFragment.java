@@ -50,6 +50,7 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 import org.kontalk.Log;
 import org.kontalk.R;
+import org.kontalk.util.Permissions;
 import org.kontalk.util.ViewUtils;
 
 
@@ -63,6 +64,8 @@ public class SendPositionGoogleFragment extends SendPositionAbstractFragment imp
 
     private final static String TAG = SendPositionGoogleFragment.class.getSimpleName();
 
+    private static final String STATE_LOCATION_REQUESTED = SendPositionGoogleFragment.class.getSimpleName() + ".locationRequested";
+
     private static final int REQUEST_LOCATION = 1;
 
     private GoogleApiClient mGoogleApiClient;
@@ -70,6 +73,7 @@ public class SendPositionGoogleFragment extends SendPositionAbstractFragment imp
     private AnimatorSet mAnimatorSet;
 
     private LocationRequest mLocationRequest;
+    private boolean mRequested;
     /** This will be non-null if we were unable to obtain a location. */
     private Status mLastStatus;
 
@@ -80,13 +84,14 @@ public class SendPositionGoogleFragment extends SendPositionAbstractFragment imp
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (mGoogleApiClient == null) {
-            mGoogleApiClient = new GoogleApiClient.Builder(getContext())
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-        }
+        mGoogleApiClient = new GoogleApiClient.Builder(getContext())
+            .addConnectionCallbacks(this)
+            .addOnConnectionFailedListener(this)
+            .addApi(LocationServices.API)
+            .build();
+
+        if (savedInstanceState != null)
+            mRequested = savedInstanceState.getBoolean(STATE_LOCATION_REQUESTED, false);
     }
 
     @Override
@@ -184,19 +189,34 @@ public class SendPositionGoogleFragment extends SendPositionAbstractFragment imp
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        mGoogleApiClient.connect();
+    }
+
+    @Override
     public void onStop() {
         super.onStop();
 
-        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+        if (mGoogleApiClient.isConnected()) {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
             mGoogleApiClient.disconnect();
         }
     }
 
     @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(STATE_LOCATION_REQUESTED, mRequested);
+    }
+
+    @Override
     protected void requestLocation() {
         // we have permission to begin!
-        mGoogleApiClient.connect();
+        if (mGoogleApiClient.isConnected()) {
+            // simulate connection event since the previous one was ignored
+            onConnected(null);
+        }
     }
 
     protected void startLocationUpdates() {
@@ -229,6 +249,7 @@ public class SendPositionGoogleFragment extends SendPositionAbstractFragment imp
             LatLng latLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
             mMyLocation.setLatitude(lastLocation.getLatitude());
             mMyLocation.setLongitude(lastLocation.getLongitude());
+            mMyLocation.setTime(lastLocation.getTime());
             if (mMap != null)
                 mMap.animateCamera(CameraUpdateFactory.getInstance().newLatLngZoom(latLng, 12));
         }
@@ -251,7 +272,9 @@ public class SendPositionGoogleFragment extends SendPositionAbstractFragment imp
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        requestLocation(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        // check permissions here, eventually we'll be called again after being allowed
+        if (Permissions.canAccessLocation(getContext()) && !mRequested)
+            requestLocation(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
     private void requestLocation(int accuracy) {
@@ -267,6 +290,7 @@ public class SendPositionGoogleFragment extends SendPositionAbstractFragment imp
         PendingResult<LocationSettingsResult> pendingResult = LocationServices
             .SettingsApi.checkLocationSettings(mGoogleApiClient, builder.build());
         pendingResult.setResultCallback(this);
+        mRequested = true;
     }
 
     @Override

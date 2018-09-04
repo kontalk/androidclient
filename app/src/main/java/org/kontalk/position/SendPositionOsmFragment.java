@@ -249,6 +249,7 @@ public class SendPositionOsmFragment extends SendPositionAbstractFragment implem
                 LatLng latLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
                 mMyLocation.setLatitude(lastLocation.getLatitude());
                 mMyLocation.setLongitude(lastLocation.getLongitude());
+                mMyLocation.setTime(lastLocation.getTime());
                 if (mMap != null)
                     mMap.animateCamera(CameraUpdateFactory.getInstance().newLatLngZoom(latLng, 16));
             }

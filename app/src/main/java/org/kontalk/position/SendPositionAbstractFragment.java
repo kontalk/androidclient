@@ -29,7 +29,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -69,6 +68,9 @@ import pub.devrel.easypermissions.EasyPermissions;
  */
 public abstract class SendPositionAbstractFragment extends Fragment
         implements OnMapReadyCallback {
+
+    private static final String STATE_MYLOCATION = SendPositionAbstractFragment.class
+        .getSimpleName() + "myLocation";
 
     FrameLayout mMapViewClip;
     private MapContainerView mMapView;
@@ -144,7 +146,10 @@ public abstract class SendPositionAbstractFragment extends Fragment
 
         mUserLocation = new Location("network");
 
-        mMyLocation = new Location("network");
+        if (savedInstanceState != null)
+            mMyLocation = savedInstanceState.getParcelable(STATE_MYLOCATION);
+        else
+            mMyLocation = new Location("network");
 
         mMapView.getMapAsync(this);
 
@@ -210,7 +215,7 @@ public abstract class SendPositionAbstractFragment extends Fragment
 
             mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
-                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                     super.onScrolled(recyclerView, dx, dy);
                     if (mAdapter.getItemCount() == 0) {
                         return;
@@ -277,7 +282,10 @@ public abstract class SendPositionAbstractFragment extends Fragment
                 prepareLayout(true);
         }
 
-        askPermissions();
+        // my location will be saved in state, so gps fix time will be zero
+        if (mMyLocation.getTime() <= 0) {
+            askPermissions();
+        }
     }
 
     @Override
@@ -293,9 +301,10 @@ public abstract class SendPositionAbstractFragment extends Fragment
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         mMapView.onSaveInstanceState(outState);
+        outState.putParcelable(STATE_MYLOCATION, mMyLocation);
     }
 
     @Override
@@ -322,7 +331,7 @@ public abstract class SendPositionAbstractFragment extends Fragment
                     return true;
                 }
             });
-            SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+            SearchView searchView = (SearchView) searchItem.getActionView();
             searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                 @Override
                 public boolean onQueryTextSubmit(String query) {
