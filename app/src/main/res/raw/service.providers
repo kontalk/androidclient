@@ -272,4 +272,163 @@
         <className>org.kontalk.client.Account$Provider</className>
     </extensionProvider>
 
+    <!-- XEP-0060 pubsub -->
+    <iqProvider>
+        <elementName>pubsub</elementName>
+        <namespace>http://jabber.org/protocol/pubsub</namespace>
+        <className>org.jivesoftware.smackx.pubsub.provider.PubSubProvider</className>
+    </iqProvider>
+
+    <extensionProvider>
+        <elementName>create</elementName>
+        <namespace>http://jabber.org/protocol/pubsub</namespace>
+        <className>org.jivesoftware.smackx.pubsub.provider.SimpleNodeProvider</className>
+    </extensionProvider>
+
+    <extensionProvider>
+        <elementName>items</elementName>
+        <namespace>http://jabber.org/protocol/pubsub</namespace>
+        <className>org.jivesoftware.smackx.pubsub.provider.ItemsProvider</className>
+    </extensionProvider>
+
+    <extensionProvider>
+        <elementName>item</elementName>
+        <namespace>http://jabber.org/protocol/pubsub</namespace>
+        <className>org.jivesoftware.smackx.pubsub.provider.ItemProvider</className>
+    </extensionProvider>
+
+    <extensionProvider>
+        <elementName>subscriptions</elementName>
+        <namespace>http://jabber.org/protocol/pubsub</namespace>
+        <className>org.jivesoftware.smackx.pubsub.provider.SubscriptionsProvider</className>
+    </extensionProvider>
+
+    <extensionProvider>
+        <elementName>subscription</elementName>
+        <namespace>http://jabber.org/protocol/pubsub</namespace>
+        <className>org.jivesoftware.smackx.pubsub.provider.SubscriptionProvider</className>
+    </extensionProvider>
+
+    <extensionProvider>
+        <elementName>affiliations</elementName>
+        <namespace>http://jabber.org/protocol/pubsub</namespace>
+        <className>org.jivesoftware.smackx.pubsub.provider.AffiliationsProvider</className>
+    </extensionProvider>
+
+    <extensionProvider>
+        <elementName>affiliation</elementName>
+        <namespace>http://jabber.org/protocol/pubsub</namespace>
+        <className>org.jivesoftware.smackx.pubsub.provider.AffiliationProvider</className>
+    </extensionProvider>
+
+    <extensionProvider>
+        <elementName>options</elementName>
+        <namespace>http://jabber.org/protocol/pubsub</namespace>
+        <className>org.jivesoftware.smackx.pubsub.provider.FormNodeProvider</className>
+    </extensionProvider>
+
+    <!-- XEP-0060 pubsub#owner -->
+
+    <extensionProvider>
+        <elementName>affiliation</elementName>
+        <namespace>http://jabber.org/protocol/pubsub#owner</namespace>
+        <className>org.jivesoftware.smackx.pubsub.provider.AffiliationProvider</className>
+    </extensionProvider>
+
+    <iqProvider>
+        <elementName>pubsub</elementName>
+        <namespace>http://jabber.org/protocol/pubsub#owner</namespace>
+        <className>org.jivesoftware.smackx.pubsub.provider.PubSubProvider</className>
+    </iqProvider>
+
+    <extensionProvider>
+        <elementName>configure</elementName>
+        <namespace>http://jabber.org/protocol/pubsub#owner</namespace>
+        <className>org.jivesoftware.smackx.pubsub.provider.FormNodeProvider</className>
+    </extensionProvider>
+
+    <extensionProvider>
+        <elementName>default</elementName>
+        <namespace>http://jabber.org/protocol/pubsub#owner</namespace>
+        <className>org.jivesoftware.smackx.pubsub.provider.FormNodeProvider</className>
+    </extensionProvider>
+
+    <extensionProvider>
+        <elementName>subscriptions</elementName>
+        <namespace>http://jabber.org/protocol/pubsub#owner</namespace>
+        <className>org.jivesoftware.smackx.pubsub.provider.SubscriptionsProvider</className>
+    </extensionProvider>
+
+    <extensionProvider>
+        <elementName>subscription</elementName>
+        <namespace>http://jabber.org/protocol/pubsub#owner</namespace>
+        <className>org.jivesoftware.smackx.pubsub.provider.SubscriptionProvider</className>
+    </extensionProvider>
+
+    <!-- XEP-0060 pubsub#event -->
+    <extensionProvider>
+        <elementName>event</elementName>
+        <namespace>http://jabber.org/protocol/pubsub#event</namespace>
+        <className>org.jivesoftware.smackx.pubsub.provider.EventProvider</className>
+    </extensionProvider>
+
+    <extensionProvider>
+        <elementName>configuration</elementName>
+        <namespace>http://jabber.org/protocol/pubsub#event</namespace>
+        <className>org.jivesoftware.smackx.pubsub.provider.ConfigEventProvider</className>
+    </extensionProvider>
+
+    <extensionProvider>
+        <elementName>delete</elementName>
+        <namespace>http://jabber.org/protocol/pubsub#event</namespace>
+        <className>org.jivesoftware.smackx.pubsub.provider.SimpleNodeProvider</className>
+    </extensionProvider>
+
+    <extensionProvider>
+        <elementName>options</elementName>
+        <namespace>http://jabber.org/protocol/pubsub#event</namespace>
+        <className>org.jivesoftware.smackx.pubsub.provider.FormNodeProvider</className>
+    </extensionProvider>
+
+    <extensionProvider>
+        <elementName>items</elementName>
+        <namespace>http://jabber.org/protocol/pubsub#event</namespace>
+        <className>org.jivesoftware.smackx.pubsub.provider.ItemsProvider</className>
+    </extensionProvider>
+
+    <extensionProvider>
+        <elementName>item</elementName>
+        <namespace>http://jabber.org/protocol/pubsub#event</namespace>
+        <className>org.jivesoftware.smackx.pubsub.provider.ItemProvider</className>
+    </extensionProvider>
+
+    <extensionProvider>
+        <elementName>retract</elementName>
+        <namespace>http://jabber.org/protocol/pubsub#event</namespace>
+        <className>org.jivesoftware.smackx.pubsub.provider.RetractEventProvider</className>
+    </extensionProvider>
+
+    <extensionProvider>
+        <elementName>purge</elementName>
+        <namespace>http://jabber.org/protocol/pubsub#event</namespace>
+        <className>org.jivesoftware.smackx.pubsub.provider.SimpleNodeProvider</className>
+    </extensionProvider>
+
+    <!-- XEP-0384: OMEMO Encryption -->
+    <extensionProvider>
+        <elementName>encrypted</elementName>
+        <namespace>eu.siacs.conversations.axolotl</namespace>
+        <className>org.jivesoftware.smackx.omemo.provider.OmemoVAxolotlProvider</className>
+    </extensionProvider>
+    <extensionProvider>
+        <elementName>list</elementName>
+        <namespace>eu.siacs.conversations.axolotl</namespace>
+        <className>org.jivesoftware.smackx.omemo.provider.OmemoDeviceListVAxolotlProvider</className>
+    </extensionProvider>
+    <extensionProvider>
+        <elementName>bundle</elementName>
+        <namespace>eu.siacs.conversations.axolotl</namespace>
+        <className>org.jivesoftware.smackx.omemo.provider.OmemoBundleVAxolotlProvider</className>
+    </extensionProvider>
+
 </smackProviders>

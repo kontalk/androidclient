@@ -78,6 +78,9 @@ public abstract class Coder {
     /** Basic encryption (e.g. PGP). */
     public static final int SECURITY_BASIC = SECURITY_BASIC_ENCRYPTED | SECURITY_BASIC_SIGNED;
 
+    /** Advanced encryption (e.g. OTR). */
+    public static final int SECURITY_ADVANCED = SECURITY_ADVANCED_ENCRYPTED | SECURITY_ADVANCED_SIGNED;
+
     /** How much time to consider a message timestamp drifted (and thus compromised). */
     public static final long TIMEDIFF_THRESHOLD = TimeUnit.DAYS.toMillis(1);
 

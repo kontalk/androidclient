@@ -67,6 +67,7 @@ import org.jivesoftware.smackx.forward.packet.Forwarded;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
 import org.jivesoftware.smackx.iqversion.VersionManager;
 import org.jivesoftware.smackx.iqversion.packet.Version;
+import org.jivesoftware.smackx.omemo.OmemoManager;
 import org.jivesoftware.smackx.ping.PingFailedListener;
 import org.jivesoftware.smackx.ping.PingManager;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
@@ -455,6 +456,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private WakeLock mPingLock;
     LocalBroadcastManager mLocalBroadcastManager;
     private AlarmManager mAlarmManager;
+    private OmemoManager mOmemoManager;
 
     private LastActivityListener mLastActivityListener;
     private PingFailedListener mPingFailedListener;
@@ -1019,10 +1021,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             disconnectThread.start();
             disconnectThread.joinTimeout(500);
 
+            if (mOmemoManager != null) {
+                mOmemoManager.shutdown();
+            }
+
             // clear the connection only if we are quitting
             if (!restarting) {
                 // clear the roster store since we are about to close it
                 getRoster().setRosterStore(null);
+                mOmemoManager = null;
                 mConnection = null;
             }
         }
@@ -1930,6 +1937,30 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
             }
         });
+
+        boolean supported;
+        try {
+            supported = OmemoManager.serverSupportsOmemo(mConnection,
+                mConnection.getXMPPServiceDomain());
+        }
+        catch (Exception e) {
+            supported = false;
+            Log.w(TAG, "unable to determine server support for OMEMO", e);
+            ReportingManager.logException(e);
+        }
+
+        if (supported) {
+            // we logged in so we can now initialize OMEMO
+            mOmemoManager = OmemoManager.getInstanceFor(connection);
+            try {
+                mOmemoManager.initialize();
+            }
+            catch (Exception e) {
+                Log.w(TAG, "unable to initialize OMEMO engine", e);
+                ReportingManager.logException(e);
+                mOmemoManager = null;
+            }
+        }
 
         // re-acquire the wakelock for a limited time to allow for messages to come
         mWakeLock.acquire(WAIT_FOR_MESSAGES_DELAY);

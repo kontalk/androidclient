@@ -29,6 +29,10 @@ import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.forward.packet.Forwarded;
+import org.jivesoftware.smackx.omemo.OmemoManager;
+import org.jivesoftware.smackx.omemo.element.OmemoElement;
+import org.jivesoftware.smackx.omemo.internal.ClearTextMessage;
+import org.jivesoftware.smackx.omemo.util.OmemoConstants;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 import org.jxmpp.jid.Jid;
@@ -300,8 +304,9 @@ class MessageListener extends WakefulMessageCenterPacketListener {
             boolean needAck = m.hasExtension(DeliveryReceiptRequest.ELEMENT, DeliveryReceipt.NAMESPACE);
 
             ExtensionElement _encrypted = m.getExtension(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE);
+            ExtensionElement _oMemoEncrypted = m.getExtension(OmemoElement.ENCRYPTED, OmemoConstants.OMEMO_NAMESPACE_V_AXOLOTL);
 
-            if (_encrypted != null && _encrypted instanceof E2EEncryption) {
+            if (_encrypted instanceof E2EEncryption) {
                 E2EEncryption mEnc = (E2EEncryption) _encrypted;
                 byte[] encryptedData = mEnc.getData();
 
@@ -337,6 +342,37 @@ class MessageListener extends WakefulMessageCenterPacketListener {
                         msg.addComponent(new RawComponent(encryptedData, true, msg.getSecurityFlags()));
                     }
 
+                }
+            }
+
+            else if (_oMemoEncrypted instanceof OmemoElement) {
+                OmemoElement mEnc = (OmemoElement) _oMemoEncrypted;
+                if (mEnc.isMessageElement()) {
+                    try {
+                        ClearTextMessage decrypted = OmemoManager.getInstanceFor(getConnection())
+                            .decrypt(m.getFrom().asBareJid(), m);
+                        if (decrypted == null) {
+                            Log.d(TAG, "could not decrypt OMEMO message, silently discarding");
+                            return;
+                        }
+
+                        // encrypted message
+                        msg.setEncrypted(true);
+                        msg.setSecurityFlags(Coder.SECURITY_ADVANCED);
+
+                        m.removeExtension(mEnc);
+                        m.setBody(decrypted.getBody());
+                    }
+                    catch (Exception e) {
+                        Log.w(TAG, "error decrypting OMEMO message", e);
+
+                        // raw component for encrypted data
+                        // reuse security flags
+                        msg.clearComponents();
+                        // TODO what data to keep here?
+                        msg.addComponent(new RawComponent(null, true, msg.getSecurityFlags()));
+
+                    }
                 }
             }
 
@@ -386,7 +422,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
 
                 // bits-of-binary for preview
                 ExtensionElement _preview = m.getExtension(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE);
-                if (_preview != null && _preview instanceof BitsOfBinary) {
+                if (_preview instanceof BitsOfBinary) {
                     BitsOfBinary preview = (BitsOfBinary) _preview;
                     String previewMime = preview.getType();
                     if (previewMime == null)
@@ -465,14 +501,14 @@ class MessageListener extends WakefulMessageCenterPacketListener {
             }
 
             ExtensionElement _location = m.getExtension(UserLocation.ELEMENT_NAME, UserLocation.NAMESPACE);
-            if (_location != null && _location instanceof UserLocation) {
+            if (_location instanceof UserLocation) {
                 UserLocation location = (UserLocation) _location;
                 msg.addComponent(new LocationComponent(location.getLatitude(),
                     location.getLongitude(), location.getText(), location.getStreet()));
             }
 
             ExtensionElement _fwd = m.getExtension(Forwarded.ELEMENT, Forwarded.NAMESPACE);
-            if (_fwd != null && _fwd instanceof Forwarded) {
+            if (_fwd instanceof Forwarded) {
                 // we actually use only the stanza id for looking up the referenced message in our database.
                 // The forwarded stanza was included for compatibility with other XMPP clients.
                 // Although technically it's a waste of space, and the replied message will

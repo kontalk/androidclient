@@ -33,7 +33,6 @@ import org.spongycastle.openpgp.PGPException;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.OnAccountsUpdateListener;
-import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -41,6 +40,7 @@ import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
+import android.support.multidex.MultiDexApplication;
 
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGP;
@@ -67,7 +67,7 @@ import org.kontalk.util.Preferences;
  * The Application.
  * @author Daniele Ricci
  */
-public class Kontalk extends Application {
+public class Kontalk extends MultiDexApplication {
     public static final String TAG = Kontalk.class.getSimpleName();
 
     /**

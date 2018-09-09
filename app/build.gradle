@@ -41,6 +41,7 @@ android {
         versionName project.versionName
         targetSdkVersion project.targetSdkVersion
         minSdkVersion project.minSdkVersion
+        multiDexEnabled true
         resConfigs "en", "de", "fr", "it", "es", "ca", "cs", "el", "fa", "gl", "ja", "nl", "pt", "pt-rBR", "ru", "sr", "zh-rCN", "ar", "hi", "tr", "nb-rNO"
         resValue "string", "application_id", applicationId
         resValue "string", "account_type", applicationId + '.account'
@@ -126,6 +127,7 @@ dependencies {
         exclude group: 'net.sf.kxml'
     }
 
+    implementation 'com.android.support:multidex:1.0.3'
     implementation "com.android.support:appcompat-v7:$appcompatVersion"
     implementation "com.android.support:design:$appcompatVersion"
     implementation "com.android.support:gridlayout-v7:$appcompatVersion"
@@ -156,6 +158,9 @@ dependencies {
     implementation "org.igniterealtime.smack:smack-tcp:$smackVersion"
     implementation "org.igniterealtime.smack:smack-experimental:$smackVersion"
     implementation "org.igniterealtime.smack:smack-android:$smackVersion"
+    implementation fileTree(dir: 'libs', include: "smack-omemo-${smackVersion}.jar")
+    implementation fileTree(dir: 'libs', include: "smack-omemo-signal-${smackVersion}.jar")
+    implementation 'org.whispersystems:signal-protocol-java:2.4.0'
     implementation 'com.github.machinarius:preferencefragment:0.1.1'
     implementation 'com.afollestad.material-dialogs:core:0.9.6.0'
     implementation 'com.afollestad.material-dialogs:commons:0.9.6.0'
