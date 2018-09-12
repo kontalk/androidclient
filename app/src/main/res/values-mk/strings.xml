@@ -198,4 +198,541 @@
     <string name="title_fallback">Имате проблеми?</string>
     <string name="msg_fallback">Ќе пробаме друг начин за да го потврдите вашиот телефонски број.</string>
     <string name="title_no_name">Вашето име</string>
-    </resources>
+    <string name="download_service">Услуга за преземањa</string>
+    <string name="menu_compose">Напиши</string>
+    <string name="menu_ctx_unarchive_threads">Деархивирај</string>
+    <string name="menu_ctx_delete_threads">Избриши</string>
+    <string name="msg_no_name">Внесете име.</string>
+    <string name="menu_refresh">Освежи</string>
+    <string name="menu_invite">Покани ги корисниците</string>
+    <string name="title_error">Грешка</string>
+    <string name="person_me">Јас</string>
+    <string name="msg_do_refresh">Користете Мени &gt; Освежи за да ја ажурирате листата на контакти.</string>
+    <string name="msg_sync_progress">Ја освежувам листата на контакти…</string>
+    <string name="err_sync_failed">Не може да се освежи листата на контакти. Пробајте повторно подоцна.</string>
+    <string name="err_sync_nonetwork">Мрежата не е достапна. Пробајте повторно подоцна.</string>
+    <string name="text_invite_message">Еј! Погледнете ја Kontalk бесплатна и слободна апликација за разговори! http://kontalk.org/</string>
+    <string name="text_contacts_empty">Новите корисници автоматски ќе бидат додадени на оваа листа.
+\n
+\nКористи <b>Мени</b>&gt;<b>Покани корисници</b> да испратите покана до некого.</string>
+    <string name="text_conversations_empty">За да започнете да пишувате пораки‚ користете <b>нова порака</b> копчето подолу.</string>
+    <string name="text_archived_conversations_empty">За да архивирате разговори, на главниот екран одберете и користете <b>архива</b> копчето во алати.</string>
+    <string name="notify_ticker_external_storage">Надворешната меморија не е достапна</string>
+    <string name="notify_text_external_storage">Не можам да запишувам во надворешната меморија.</string>
+    <string name="title_user_not_found">Корисникот не е пронајден</string>
+    <string name="message_user_not_found">Се чини дека контакт не е регистриран на Kontalk. Може да се обидете да го контактирате корисникот или да му испратите порака за покана.</string>
+    <string name="yes_user_not_found">Во секој случај контактирајте го корисникот</string>
+    <string name="no_user_not_found">Испрати покана</string>
+    <string name="pref_appearance_settings">Изглед</string>
+    <string name="pref_font_size">Големина на букви</string>
+    <string name="menu_status">Статус</string>
+    <string name="menu_attachment">Прикачи</string>
+    <string name="menu_smileys">Смешковци</string>
+    <string name="menu_invite_group">Додади корисници</string>
+    <string name="menu_start_group">Започни група</string>
+    <string name="menu_group_info">Информации за групата</string>
+    <string name="menu_set_group_subject">Постави групен предмет</string>
+    <string name="menu_leave_group">Напушти ја групата</string>
+    <string name="menu_block_user">Блокирај</string>
+    <string name="menu_unblock_user">Деблокирај</string>
+    <string name="menu_encryption">Шифрирање</string>
+    <string name="vcard_message">Порака со в-карта</string>
+    <string name="open_file">Отвори датотека</string>
+    <string name="open_audio">Пушти аудио датотека</string>
+    <string name="msg_msgcenter_restarted">Центарот за пораки е рестартиран.</string>
+    <string name="downloading_attachment">Преземање прилог…</string>
+    <string name="decrypting_attachment">Дешифрирање на прилогот…</string>
+    <string name="attachment_download">Преземање прилог</string>
+    <string name="attachment_upload">Поставување прилог</string>
+    <string name="seen_moment_ago_label">пред малку</string>
+    <string name="seen_online_label">активен</string>
+    <string name="seen_typing_label">пишува…</string>
+    <string name="seen_group_typing_label_one">%с пишува…</string>
+    <string name="seen_group_typing_label_two">%1$s и %2$s пишуваат…</string>
+    <string name="seen_group_typing_label_more">%d луѓе пишуваат…</string>
+    <string name="invitation_sent_label">поканата е испратена</string>
+    <string name="pref_custom_background">Сопствена позадина</string>
+    <string name="pref_background_uri">Позадина</string>
+    <string name="pref_title_background_uri">Постави сопствена позадина за разговори</string>
+    <string name="pref_title_custom_background">Изберете позадина користејќи ја опцијата подолу</string>
+    <string name="err_custom_background">Настана грешка при поставување на позадината. Пробајте друга слика.</string>
+    <string name="err_attachment_corrupted">Не може да се преземе прилогот. Пораката може да е оштетена.</string>
+    <string name="serverlist_updating">Ажурирање на сервер листа…</string>
+    <string name="serverlist_update_error">Не може да се преземе сервер листата. Обидете се подоцна.</string>
+    <string name="serverlist_update_nodata">Не е пронајдена достапна сервер листа.</string>
+    <string name="serverlist_update_nonetwork">Мрежата не е достапна. Обидете се подоцна.</string>
+    <string name="pref_emoji_converter">Конвертирај смешковци во емотикони</string>
+    <string name="pref_title_emoji_converter">Автоматско конвертирање некои текстуални смешковци во емотикони</string>
+
+    <string name="pref_vibrate_label_always">Секогаш</string>
+    <string name="pref_vibrate_label_silent">Само кога е стишен</string>
+    <string name="pref_vibrate_label_never">Никогаш</string>
+    <string name="pref_fontsize_label_small">Мали</string>
+    <string name="pref_fontsize_label_medium">Средни</string>
+    <string name="pref_fontsize_label_large">Големи</string>
+    <string name="pref_balloon_label_hangout">Hangout</string>
+    <string name="pref_balloon_label_silence">Тивко</string>
+    <string name="pref_balloon_label_classic">Класична</string>
+    <string name="pref_balloon_label_classic_old">Класична (стара)</string>
+    <string name="pref_balloon_label_iphone">iPhone</string>
+    <string name="pref_text_enter_label_default">Стандардно</string>
+    <string name="pref_text_enter_label_newline">Нов ред</string>
+    <string name="pref_text_enter_label_newline_send">Испрати</string>
+    <string name="pref_image_resize_label_original">Оригинална</string>
+    <string name="pref_image_resize_label_small">Мала (0.4MP)</string>
+    <string name="pref_image_resize_label_medium">Средна (1.0MP)</string>
+    <string name="pref_image_resize_label_large">Голема (2.0MP)</string>
+    <string name="pref_idle_time_label_never">Никогаш</string>
+    <string name="pref_idle_time_label_5m">5 минути</string>
+    <string name="pref_idle_time_label_15m">15 минути</string>
+    <string name="pref_idle_time_label_30m">30 минути</string>
+    <string name="pref_idle_time_label_1h">1 час</string>
+    <string name="pref_wakeup_time_label_5m">5 минути</string>
+    <string name="pref_wakeup_time_label_15m">15 минути</string>
+    <string name="pref_wakeup_time_label_30m">30 минути</string>
+    <string name="pref_wakeup_time_label_1h">1 час</string>
+    <string name="pref_wakeup_time_label_3h">3 часа</string>
+    <string name="pref_maps_google_label">Google мапи</string>
+    <string name="pref_maps_osm_label">OpenStreet Мапи</string>
+
+    <string name="pref_change_passphrase">Променете лозинка за личен клуч</string>
+    <string name="pref_export_keypair">Извези личен клуч</string>
+    <string name="msg_import_keypair">Kontalk ќе ги увезе вашите клучеви од %s во надворешната меморија. Осигурајте се дека оваа датотека постои и дека е валидна архива со извезени клучеви.</string>
+    <string name="msg_import_keypair_complete">Увозот на личен клуч е завршен.</string>
+    <string name="err_import_keypair_failed">Увозот на личен клуч не успеа.</string>
+    <string name="err_import_keypair_uid_mismatch">Увезениот клуч не се совпаѓа со телефонскиот број што го внесовте.</string>
+    <string name="err_import_keypair_read">Не може да се прочита личниот клуч од надворешната меморија.</string>
+    <string name="title_passphrase">Лозинка</string>
+    <string name="title_passphrase_request">Лозинка за личен клуч</string>
+    <string name="err_invalid_passphrase">Погрешна лозинка. Рестартирајте ја апликацијата за да пробате друга.</string>
+
+    <string name="msg_status_sending">Испраќање</string>
+    <string name="msg_status_sent">Испратено</string>
+    <string name="msg_status_notaccepted">Одбиено</string>
+    <string name="msg_status_notdelivered">Не е испорачано</string>
+    <string name="msg_status_delivered">Испорачано</string>
+    <string name="msg_status_encrypted">Шифрирано</string>
+
+    <string name="pref_balloons">Разговор балон тема</string>
+    <string name="pref_balloons_groups">Групен разговор балон тема</string>
+
+    <string name="attachment_camera">Камера</string>
+    <string name="attachment_picture">Галерија</string>
+    <string name="attachment_contact">Контакт</string>
+    <string name="attachment_audio">Звук</string>
+    <string name="attachment_video">Видео</string>
+    <string name="attachment_file">Датотека</string>
+    <string name="attachment_vcard">Контакт</string>
+    <string name="attachment_location">Локација</string>
+
+    <string name="notification_location">ви испрати локација</string>
+    <string name="location_no_result">Нема резултати</string>
+    <string name="places_nearby">Места во близина</string>
+    <string name="send_selected_location">Испрати избрана локација</string>
+    <string name="send_location">Испратете ја вашата моментална локација</string>
+    <string name="accurate_to">Прецизно до %1$s метри</string>
+    <string name="meters_away">%d м далеку</string>
+    <string name="kilometers_away">%.2f км далеку</string>
+    <string name="loading">Вчитување…</string>
+    <string name="your_position">Вие</string>
+    <string name="err_googlemaps_fallback_osm">Google мапи не се достапни‚ враќање на OpenStreet мапи.</string>
+    <string name="err_location_no_providers">Нема достапни провајдери за лоцирање. Моментална локација нема да биде достапна.</string>
+    <string name="err_location_access_unknown_error">Не може да се активира активирање на услуги за локација.</string>
+    <string name="err_location_permission">Пристапот до локацијата е одбиен.</string>
+    <string name="msg_location_disabled">Потребен ни е пристап до локацијата. Изберете Во ред за да отидете до поставките и да го овозможите.</string>
+
+    <string name="menu_open_map">Отвори во мапи</string>
+    <string name="menu_map">Мапа</string>
+    <string name="menu_satellite">Сателит</string>
+
+    <string name="msg_not_implemented">Сеуште не е имплементирано.</string>
+
+    <string name="chooser_send_picture">Испрати слика</string>
+    <string name="chooser_error_no_camera">Надворешната меморија не е достапна. Фотографирањето со камерата нема да биде овозможено.</string>
+    <string name="chooser_error_no_camera_app">Нема достапна апликација за камера.</string>
+    <string name="chooser_error_no_gallery_app">Нема достапна апликација за галерија.</string>
+    <string name="chooser_error_no_app">Не е достапна соодветна апликација за да се отвори датотеката.</string>
+
+    <string name="chooser_error_no_dialer">Не е достапна апликација за повикување или овој уред не поддржува повици.</string>
+    <string name="chooser_error_no_browser">Нема достапен прелистувач за да се отвори врската.</string>
+    <string name="chooser_select_link">Изберете дејство</string>
+
+    <string name="status_activity_title">Статус порака</string>
+    <string name="hint_status_entry">Напишете ја вашата статус порака тука</string>
+    <string name="header_recent_status">Претходно користени статус пораки</string>
+
+    <string name="pref_other">Друго</string>
+    <string name="pref_help">Помош</string>
+    <string name="pref_donate">Донирај</string>
+    <string name="pref_about">За апликацијата</string>
+
+    <string name="title_about">За апликацијата</string>
+    <string name="title_donation">Донирај</string>
+    <string name="title_credits">Учествуваа</string>
+
+    <string name="about_version">%1$s (%2$d)</string>
+
+    <string name="social_twitter">Twitter</string>
+    <string name="social_googleplus">Google Plus</string>
+    <string name="social_facebook">Facebook</string>
+    <string name="social_identica">Identi.ca</string>
+
+    <string name="donate_text">Kontalk има потреба од средства за да продолжи со работат. Размислете за донација, дури и мала.</string>
+    <string name="title_bitcoin_dialog">Bitcoin</string>
+    <string name="text_bitcoin_dialog">Bitcoin адреса:
+\n%s</string>
+    <string name="donate_wallet">Google Play</string>
+    <string name="donate_paypal">PayPal</string>
+    <string name="donate_bitcoin">Bitcoin</string>
+    <string name="donate_flattr">Flattr</string>
+
+    <string name="msg_generating_keypair">Генерирање на личен клуч во позадина.</string>
+    <string name="msg_gen_keypair_complete">Генерирањето на нов личен клуч е завршено.</string>
+    <string name="notify_gen_keypair_ticker">Генерирање на личен клуч…</string>
+    <string name="notify_gen_keypair_title">Генерирање на личен клуч</string>
+    <string name="notify_gen_keypair_text">Може да продолжите нормално да работите.</string>
+
+    <string name="msg_xmpp_upgrading">Надградба…</string>
+    <string name="title_no_personal_key">Нема личен клуч</string>
+    <string name="msg_no_personal_key">Личниот клуч моментално не е достапен (веројатно само што ја ажуриравте апликацијата). Вие нема да можете да се пријавите на Kontalk освен ако не генерирате личен клуч. Внесете го вашето име со затворање и повторно отворете го Kontalk.</string>
+    <string name="msg_keypair_exported">Личен клуч и сертификат за најавување извезени во надворешната меморија.</string>
+    <string name="err_keypair_export_write">Не може да се напише личниот клуч на надворешната меморија.</string>
+    <string name="err_keypair_export_other">Не може да се извезе личниот клуч.</string>
+
+    <string name="security_status_good">добро</string>
+    <string name="security_status_bad">лошо</string>
+
+    <string name="security_error_invalid_signature">" (невалиден потпис)"</string>
+    <string name="security_error_invalid_sender">" (невалиден испраќач)"</string>
+    <string name="security_error_invalid_recipient">" (невалиден примач)"</string>
+    <string name="security_error_invalid_timestamp">" (невалидна временска ознака)"</string>
+    <string name="security_error_invalid_data">" (неважечки податоци)"</string>
+    <string name="security_error_decrypt_failed">" (не успешо дешифрирање)"</string>
+    <string name="security_error_integrity_check">" (проверка на интегритет)"</string>
+    <string name="security_error_public_key_unavail">" (јавниот клуч недостапен)"</string>
+
+    <string name="invite_notification">ве поканува да разговарате</string>
+    <string name="title_invitation">Покана за разговор</string>
+    <string name="text_invitation1">Барање од:</string>
+    <string name="text_invitation2">Отпечаток:</string>
+    <string name="button_accept">Прифати</string>
+    <string name="button_refuse">Одбиј</string>
+    <string name="button_block">Блокирај</string>
+    <string name="button_ignore">Игнорирај</string>
+    <string name="button_identity">Идентитет</string>
+    <string name="button_private_chat">Приватен разговор</string>
+    <string name="text_invitation_info">(покана за разговор)</string>
+    <string name="title_identity">Идентитет</string>
+    <string name="title_identity_self">Идентитет (ова сте вие!)</string>
+
+    <string name="msg_connecting_iab">Поврзување со Google Play…</string>
+    <string name="msg_iab_thankyou">Ви благодарам!</string>
+    <string name="msg_iab_thankyou_warning">Настана некоја грешка но донацијата помина во ред. Ви благодариме!</string>
+
+    <string name="iab_error_setup">Грешка при подесувањата за наплата (%d)</string>
+    <string name="iab_error_query">Не успеа да се побара инвентар за наплата (%d)</string>
+
+    <string name="copy_clipboard">Копирај во клипборд</string>
+    <string name="bitcoin_clipboard_copied">Биткоин адресата е копирана клипборд.</string>
+
+    <string name="warn_no_personal_key">Не може да се вчита личниот клуч. Оневозможете шифрирање во поставки за да испратите порака во секој случај.</string>
+    <string name="warn_no_public_key">Не може да се најде јавен клуч за овој корисник. Обидете се да ја освежите вашата листа со контакти или да го исклучите шифрирањето во поставки за да испратите порака во секој случај.</string>
+    <string name="warn_encryption_failed">Не може да се шифрира пораката. Оневозможете шифрирање ово поставки за да испратите порака во секој случај.</string>
+    <string name="warn_not_subscribed">Не може да се испрати порака. Корисникот сеуште не ја прифатил вашата покана.</string>
+
+    <string name="pref_sync_sim_contacts">Синхронизирајте од SIM контакти</string>
+    <string name="pref_title_sync_sim_contacts">Вклучете контакти од SIM картичка при проверка на регистрирани корисници</string>
+
+    <string name="pref_sync_invisible_contacts">Вклучете невидливи контакти</string>
+    <string name="pref_title_sync_invisible_contacts">Вклучете контакти кои не се прикажани во апликацијата Kontalk. Овозможи ако користите DAVDroid</string>
+
+    <string name="pref_server_messages">Добивате пораки од серверот</string>
+    <string name="pref_title_server_messages">Дозволи пораки од администраторите на серверот. Може да пропуштите важни вести ако го оневозможите ова.</string>
+
+    <string name="pref_accept_any_certificate">Прифатете го секој SSL сертификат</string>
+
+    <string name="pref_delete_account">Избришете го вашиот налог</string>
+    <string name="msg_delete_account">Бришењето на вашиот налог исто така ќе ги избрише сите ваши пораки. Вашиот налог на серверот ќе се избрише автоматски по неколку недели.</string>
+    <string name="msg_delete_account_progress">Бришење на вашиот налог…</string>
+
+    <string name="msg_user_blocked">Корисникот е блокиран.</string>
+    <string name="msg_user_unblocked">Корисникот е деблокиран.</string>
+    <string name="title_block_user_warning">Навистина сакате да го блокирате овој корисник?</string>
+    <string name="msg_block_user_warning">Ќе го блокирате овој корисник. Ако го сторите тоа‚ овој корисник нема да може да ви испраќа пораки додека не го деблокирате. Овој корисник нема да може да го види вашиот статус или време на последното присуство‚ исто така‚ ни вие неговото. Нема да можете да испратите било каква порака до корисникот.</string>
+    <string name="title_unblock_user_warning">Навистина сакате да го деблокирате овој корисник?</string>
+    <string name="msg_unblock_user_warning">Ќе го деблокирате овој корисник. Деблокирањето ќе ви овозможи да испрати пораки до вас‚ да го види вашиот статус и време на последното присуство.</string>
+
+    <string name="title_disable_encryption">Оневозможете шифрирање за овој разговор?</string>
+    <string name="msg_disable_encryption">Сите нови пораки испратени во овој разговор НЕМА да бидат шифрирани.
+\nОневозможете шифрирање само ако вашиот контакт нема личен клуч.</string>
+    <string name="menu_disable_encryption">Оневозможи</string>
+
+    <string name="notification_text_more">Допрете тука за да дознаете повеќе</string>
+
+    <string name="title_auth_error">Грешка при автентикација</string>
+    <string name="msg_auth_error">Автентикација со Kontalk серверот не успеа последниот пат кога се обидовме да се поврземе. Тоа може да биде привремена непристапност или, најверојатно, серверот го одбива вашиот личен клуч. Препорачуваме да го избришете вашиот Kontalk налог од поставките на Android системот и повторно да се регистрирате (сепак ќе ги изгубите сите пораки од Kontalk).</string>
+
+    <string name="notification_ticker_service_running">Kontalk работи во позадина</string>
+    <string name="notification_text_service_running">Допрете за да отворите</string>
+
+    <string name="warn_invite_no_app">Нема достапни апликации за да ги поканите корисниците.</string>
+
+    <string name="pref_text_enter">Enter копче</string>
+    <string name="pref_title_text_enter">Изберете однесување на копчето Enter при притискање</string>
+
+    <string name="title_password1">Лозинка:</string>
+    <string name="title_password2">Потврдете ја лозинката:</string>
+
+    <string name="err_password_too_short">Лозинката мора да биде најмалку %d карактери.</string>
+    <string name="err_passwords_mismatch">Лозинките не се совпаѓаат!</string>
+    <string name="err_password_invalid">Погрешна лозинка.</string>
+
+    <string name="hint_record">Допрете го микрофонот за да започнете со снимање.</string>
+    <string name="hint_ptt">Допрете и држете го микрофонот за снимање.</string>
+    <string name="err_change_passphrase">Не може да се промени лозинката за личен клуч.</string>
+    <string name="err_file_not_found">Датотеката не е пронајдена.</string>
+    <string name="err_audio_record">Грешка при започнување на снимање звук.</string>
+    <string name="err_audio_record_permission">Пристапот до микрофон е одбиен.</string>
+    <string name="err_audio_record_writing_permission">Пристапот до надворешната меморија е одбиен.</string>
+    <string name="err_audio_record_writing">Грешка при пишување на надворешна меморија.</string>
+    <string name="err_audio_record_noaudio">Не е снимен звук.</string>
+    <string name="err_playing_audio">Грешка при репродукција на звук.</string>
+    <string name="err_playing_sdcard">Грешка при читање на надворешната меморија.</string>
+    <string name="slide_to_cancel">ПОВЛЕЧЕТЕ ЗА ОТКАЖУВАЊЕ</string>
+
+    <string name="pref_media_settings">Медиа</string>
+    <string name="pref_image_resize">Измени големина на слики</string>
+    <string name="pref_media_autodownload_threshold">Ограничување за автоматско преземање</string>
+    <string name="pref_title_media_autodownload_threshold">Датотеките помали од оваа големина секогаш ќе бидат преземени автоматски</string>
+    <string name="pref_msg_media_autodownload_threshold">Внесете вредност во KB. Поставете го на 0 за никогаш да не преземате автоматски.</string>
+
+    <string name="pref_media_autodownload">Автоматско преземање</string>
+    <string name="pref_media_autodownload_label_never">Никогаш</string>
+    <string name="pref_media_autodownload_label_wifi">Само на Wi-Fi</string>
+    <string name="pref_media_autodownload_label_always">Секогаш</string>
+
+    <string name="pref_location_settings">Локација</string>
+    <string name="pref_maps_service">Давател на услуги</string>
+
+    <string name="pref_on">Вклучи</string>
+    <string name="pref_off">Исклучи</string>
+
+    <string name="err_server_invalid_format">Невалиден формат на адреса.</string>
+
+    <string name="err_no_contacts_app">Не е пронајдена апликација за контакти.</string>
+    <string name="err_no_contact">Контактот не е пронајден.</string>
+
+    <string name="warning_button_details">ДЕТАЛИ</string>
+    <string name="warning_older_version">Вашиот пријател користи постара верзија на Kontalk. Некои функции можеби нема да функционираат правилно.</string>
+    <string name="warning_public_key_changed">Личниот клуч е променет</string>
+    <string name="title_public_key_changed_warning">Личниот клуч е променет</string>
+    <string name="msg_public_key_changed_warning">Проверете дали корисникот го реинсталирал Kontalk или го регенерирал клучот намерно, инаку комуникацијата би можела да биде компромитирана!</string>
+    <string name="warning_public_key_unknown">Личен клуч сеуште не е потврден</string>
+    <string name="title_public_key_unknown_warning">Потврди личен клуч</string>
+    <string name="msg_public_key_unknown_warning">Проверете дали отпечаток од прст на корисникот се совпаѓа со оној прикажан во дијалогот <b>идентитет</b> инаку комуникацијата би можела да биде компромитирана!</string>
+    <string name="warning_public_key_group_unverified">Идентитетот на некои членови на групата не е потврден.</string>
+
+    <string name="warning_user_blocked">Го блокиравте овој корисник.</string>
+
+    <string name="about_credits_devteam"><b>Kontalk е изработен од:</b></string>
+    <string name="about_credits_gfx"><b>Графика/Икони</b></string>
+    <string name="about_credits_contrib"><b>Соработници</b></string>
+    <string name="about_credits_translators"><b>Преведувачи</b></string>
+
+    <string name="pref_show_blocked_users">Прикажи блокирани корисници</string>
+    <string name="button_load_next_page">Вчитај повеќе пораки</string>
+
+    <string name="group_untitled">Група без име</string>
+    <string name="title_group_subject">Предмет на групата</string>
+    <string name="group_command_create">Група создадена:</string>
+    <string name="group_command_self_parted">Ја напуштивте групата.</string>
+    <string name="group_command_user_parted">%s ја напушти групата.</string>
+    <string name="group_command_owner_parted">Сопственикот (%s) ја напушти групата. Никој не може да додаде или отстрани членови.</string>
+    <string name="group_command_subject">Предмет на групата променет на: %s</string>
+    <string name="group_command_users_added">Додадени корисници:</string>
+    <string name="group_command_users_removed">Отстранети корисници:</string>
+
+    <string name="group_command_text_create">Група создадена</string>
+    <string name="group_command_text_subject">Предмет на групата променет</string>
+    <string name="group_command_text_part">Некој ја напуштил оваа група</string>
+    <string name="group_command_text_part_self">Ја напуштивте групата</string>
+    <string name="group_command_text_part_kicked">Отстранети сте од оваа група</string>
+    <string name="group_command_text_add_remove">Некој е додаден или отстранет</string>
+
+    <string name="groupinfo_activity_title">Информации за групата</string>
+
+    <string name="group_info_set_title">Промена на предметот</string>
+    <string name="group_info_leave">Напушти ја групата</string>
+    <string name="group_info_members">Членови на групата</string>
+    <string name="group_info_ignore_all">Игнорирај сè</string>
+    <string name="group_info_owner_member">Сопственик</string>
+    <string name="confirm_will_leave_group">Нема да можете да влезете во оваа група повторно откако ќе ја напуштите.</string>
+    <string name="leave_group_delete_messages">Исто така избришете историја на разговор</string>
+    <string name="group_info_menu_remove">Отстрани</string>
+    <string name="group_info_menu_add_again">Додај повторно</string>
+
+    <string name="title_ignore_all_identities">Игнорирај ги сите идентитети?</string>
+    <string name="msg_ignore_all_identities">Сите непроверени идентитети ќе бидат игнорирани.</string>
+    <string name="learn_more">Дознај повеќе</string>
+
+    <string name="text_group_command_fallback">Ова е порака за групен разговор. Вие користите стара верзија на Kontalk или вашиот клиент не го поддржува протоколот за групен разговор. Надградете на најнова верзија!</string>
+
+    <string name="title_huawei_protected_apps">Huawei Заштитени Апликации</string>
+    <string name="msg_huawei_protected_apps">Kontalk мора да биде овозможен во Заштитените Апликации за да функционира правилно.</string>
+    <string name="btn_huawei_protected_apps">Заштитени Апликации</string>
+    <string name="title_doze_mode">Оптимизација на батеријата</string>
+    <string name="msg_doze_mode">За да работи правилно, Kontalk треба да се исклучи од оптимизација на батеријата. Нема да користи многу енергија.</string>
+    <string name="btn_request_doze_mode_whitelist">Барање дозвола</string>
+    <string name="msg_request_doze_failed_manual">Означете го Kontalk “без оптимизација„ на следниот екран.</string>
+    <string name="msg_request_doze_failed_all">Couldn\'t find battery optimization settings, bringing you to system settings.</string>
+
+    <string name="status_label">"Статус: "</string>
+    <string name="trust_unknown">Не е потврден</string>
+    <string name="trust_ignored">Игнориран</string>
+    <string name="trust_verified">Потврден</string>
+    <string name="status_notsubscribed">Не е дозволен/Блокиран</string>
+
+    <string name="action_compose">Нов разговор</string>
+    <string name="action_compose_group">Нова група</string>
+
+    <string name="pref_reporting">Испрати анонимни статистички податоци за користење</string>
+    <string name="pref_title_reporting">Вклучувајќи извештаи за падови</string>
+
+    <string name="delete_threads_leave_any_groups">Исто така, напушти ги сите групи</string>
+
+    <string name="delete_threads_groups_disclaimer">Историјата на групните разговори ќе биде избришана само ако е вклучена опцијата погоре.</string>
+    <string name="check_dont_show_again">Не прикажувај повторно</string>
+
+    <string name="pref_foreground_service">Овозможи услуга во преден план</string>
+    <string name="pref_title_foreground_service">Активирајте ја оваа опција ако сакате Kontalk да бидe активен во позадина кога ресурсите се на ниско ниво. Се прикажува постојано известување</string>
+
+    <string name="menu_import_messages">Увези пораки</string>
+
+    <string name="pref_debug_log">Овозможи дневник за отстранување грешки</string>
+    <string name="pref_send_debug_log">Испрати дневник за отстранување грешки</string>
+
+    <string name="registration_poweredby">Поддржано од</string>
+
+    <string name="audio_duration_max">%1$s / %2$s</string>
+
+    <string name="pref_register_device">Регистрирајте уред</string>
+    <string name="register_device_title">Регистрирајте уред</string>
+    <string name="register_device_instructions">Вчитајте го бар-кодот подолу или внесете ги следните податоци рачно од другиот уред.</string>
+    <string name="register_device_request_error">Грешка при регистрација на уредот.</string>
+    <string name="register_device_requesting">Барање за регистрација…</string>
+    <string name="register_device_nonetwork">Мрежата не е достапна. Пробајте повторно подоцна.</string>
+    <string name="register_device_offline">Offline mode is enabled.</string>
+
+    <string name="import_device_title">Увези го налогот</string>
+    <string name="import_device_instructions">Внесете ги бараните податоци подолу како што се прикажани на другиот уред.</string>
+    <string name="import_device_hint_account">Телефонски број</string>
+    <string name="import_device_hint_server">Име на серверот</string>
+    <string name="import_device_hint_token">Таен код</string>
+    <string name="err_import_device_fill_all">Пополнете ги сите полиња.</string>
+    <string name="import_device_requesting">Барање за налог…</string>
+    <string name="import_device_invalid_barcode">Не се пронајдени валидни податоци во бар-кодот.</string>
+    <string name="import_device_scan_screen_title">Скенирај таен код</string>
+    <string name="import_device_btn_scan">Скенирај бар-код</string>
+    <string name="import_device_btn_input">Внеси рачно</string>
+    <string name="import_device_message">Отворете го Kontalk на другиот уред, одберете мени &gt; Поставки &gt; Одржување &gt; Регистрирајте уред. Ќе бидат прикажани неговиот таен код и бар-код.</string>
+
+    <string name="btn_device_overwrite">Го изгубив мојот стар налог или уред</string>
+    <string name="btn_device_import">Пренос на налог</string>
+
+    <string name="contactinfo_activity_title">Информации за контактот</string>
+    <string name="contactinfo_last_seen">последно виден %s</string>
+    <string name="contactinfo_phone_number">Телефонски број</string>
+    <string name="contactinfo_fingerprint">Отпечаток од прст</string>
+    <string name="contactinfo_userid">ИД на корисникот</string>
+
+    <string name="btn_reply_cancel_description">Откажи одговор</string>
+    <string name="reply_message_deleted">Пораката е избришана.</string>
+
+    <string name="title_archived_threads">Архивирани разговори</string>
+    <string name="footer_archived_threads">Архивирани разговори (%d)</string>
+
+    <string name="notification_group_title">%1$s @ %2$s</string>
+
+    <string name="err_validation_contacts_denied">Kontalk треба да има пристап до контакти за да функционира правилно. Инаку како би можеле да ги знаете луѓето со кои можете да разговарате??
+\nМоже да се откажете сега, но ќе бидете прашани повторно откако ќе се регистрирате.</string>
+    <string name="err_contacts_denied">Kontalk треба да има пристап до контакти за да функционира правилно. Инаку како би можеле да ги знаете луѓето со кои можете да разговарате??
+\nМожете да дозволите пристап до контакти од поставките на Android.</string>
+    <string name="warn_contacts_denied">Одбивте пристап до контактите. Нема да можете да ги видите промените на контактите овде.</string>
+    <string name="err_camera_scanner_denied">Потребен е пристап до камера за скенирање на бар-кодот од другиот уред.</string>
+    <string name="err_camera_picture_denied">Потребен е пристап до камера за фотографирање.</string>
+
+    <string name="err_audio_or_storage_denied">Потребен е пристап до микрофонот за снимање на гласовни пораки и пристап до надворешната меморија за да ги зачувате снимките.</string>
+
+    <string name="err_storage_denied">Kontalk needs access to local storage to store media.
+\nYou can allow access to storage from Android settings.</string>
+
+    <string name="err_location_denied">Потребен е пристап до вашата локација, ако сакате да ја споделите.</string>
+
+    <string name="err_validation_phone_state_denied">If you allow Kontalk to manage phone calls, it can automatically detect your phone number.
+\nKontalk won\'t use the granted permission for anything else.</string>
+
+    <string name="permission_messages_label">Пристап до Kontalk пораките</string>
+    <string name="permission_messages_description">Can read from and write to the Kontalk messages database</string>
+    <string name="permission_users_label">Пристап до информации за корисниците на Kontalk</string>
+    <string name="permission_users_description">Can read from and write to the Kontalk users database and keyring</string>
+
+    <string name="pref_enable_outgoing_sound">Вклучи звук за појдовни пораки</string>
+
+    <string name="contact_name_server">Вашиот сервер</string>
+
+    <string name="notify_incoming_message_channel_name">Пораки</string>
+    <string name="notify_incoming_message_channel_description">Дојдовни пораки</string>
+
+    <string name="notify_media_download_channel_name">Преземања</string>
+    <string name="notify_media_download_channel_description">Media downloads</string>
+
+    <string name="notify_media_upload_channel_name">Поставени</string>
+    <string name="notify_media_upload_channel_description">Media uploads</string>
+
+    <string name="notify_message_center_channel_name">Центар за пораки</string>
+    <string name="notify_message_center_channel_description">Потребно е услугата Kontalk да се задржи активна</string>
+
+    <string name="notify_other_channel_name">Друго</string>
+    <string name="notify_other_channel_description">Други известувања</string>
+
+    <plurals name="confirm_will_delete_threads">
+	<item quantity="one">Избраниот разговор ќе биде избришан.</item>
+	<item quantity="other">Избраните разговори ќе бидат избришани.</item>
+</plurals>
+
+    <plurals name="delete_threads_leave_groups">
+	<item quantity="one">Исто така напушти ја групата</item>
+	<item quantity="other">Исто така напушти ѓи групите</item>
+</plurals>
+
+    <plurals name="unread_messages">
+	<item quantity="one">1 непрочитана порака</item>
+	<item quantity="other">%d непрочитани пораки</item>
+</plurals>
+
+    <plurals name="unread_messages_group">
+	<item quantity="one">%1$d пораки @ %2$s</item>
+	<item quantity="other"></item>
+</plurals>
+
+    <plurals name="notification_more">
+	<item quantity="one">+1 повеќе</item>
+	<item quantity="other">+%d повеќе</item>
+</plurals>
+
+    <plurals name="context_selected">
+	<item quantity="one">1 избрана</item>
+	<item quantity="other">%d избрани</item>
+</plurals>
+
+    <plurals name="group_people">
+	<item quantity="one">1 лице</item>
+	<item quantity="other">%d лица</item>
+</plurals>
+
+    <plurals name="group_people_online">
+	<item quantity="one">1 online</item>
+	<item quantity="other">%d online</item>
+</plurals>
+
+</resources>
