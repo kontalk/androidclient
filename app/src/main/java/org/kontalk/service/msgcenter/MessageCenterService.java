@@ -1011,9 +1011,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             AndroidAdaptiveServerPingManager
                 .getInstanceFor(mConnection, this)
                 .setEnabled(false);
-            PingManager.getInstanceFor(mConnection)
-                .unregisterPingFailedListener(mPingFailedListener);
-            mPingFailedListener = null;
+
+            // synchronize with listener creation in connected()
+            synchronized (mConnection) {
+                PingManager.getInstanceFor(mConnection)
+                    .unregisterPingFailedListener(mPingFailedListener);
+                mPingFailedListener = null;
+            }
+
             // this is because of NetworkOnMainThreadException
             DisconnectThread disconnectThread = new DisconnectThread(mConnection);
             disconnectThread.start();
@@ -1858,19 +1863,24 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         AndroidAdaptiveServerPingManager
             .getInstanceFor(connection, this)
             .setEnabled(true);
-        mPingFailedListener = new PingFailedListener() {
-            @Override
-            public void pingFailed() {
-                if (isStarted() && mConnection == connection) {
-                    Log.v(TAG, "ping failed, restarting message center");
-                    // restart message center
-                    restart(getApplicationContext());
-                }
+
+        synchronized (connection) {
+            if (mPingFailedListener == null) {
+                mPingFailedListener = new PingFailedListener() {
+                    @Override
+                    public void pingFailed() {
+                        if (isStarted() && mConnection == connection) {
+                            Log.v(TAG, "ping failed, restarting message center");
+                            // restart message center
+                            restart(getApplicationContext());
+                        }
+                    }
+                };
+                PingManager pingManager = PingManager.getInstanceFor(connection);
+                pingManager.registerPingFailedListener(mPingFailedListener);
+                pingManager.setPingInterval(0);
             }
-        };
-        PingManager pingManager = PingManager.getInstanceFor(connection);
-        pingManager.registerPingFailedListener(mPingFailedListener);
-        pingManager.setPingInterval(0);
+        }
     }
 
     @Override
