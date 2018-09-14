@@ -187,7 +187,7 @@ public class MessagesProvider extends ContentProvider {
             "request_status INTEGER NOT NULL DEFAULT 0," +
             "sticky INTEGER NOT NULL DEFAULT 0," +
             "encryption INTEGER NOT NULL DEFAULT 1," +
-            "archived NOT NULL DEFAULT 0" +
+            "archived INTEGER NOT NULL DEFAULT 0" +
             ")";
 
         /** This table will contain the latest message from each conversation. */
@@ -430,7 +430,7 @@ public class MessagesProvider extends ContentProvider {
         };
 
         private static final String[] SCHEMA_UPGRADE_V17 = {
-            "ALTER TABLE threads ADD COLUMN archived NOT NULL DEFAULT 0",
+            "ALTER TABLE threads ADD COLUMN archived INTEGER NOT NULL DEFAULT 0",
         };
 
         /** If true, fail all operations. */
