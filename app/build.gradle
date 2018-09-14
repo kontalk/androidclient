@@ -147,6 +147,8 @@ dependencies {
     implementation ("com.madgag.spongycastle:bcpg-jdk15on:$spongyCastleVersion") {
         exclude group: 'junit'
     }
+    implementation 'android.arch.persistence:db:1.1.1'
+    implementation 'io.requery:sqlite-android:3.24.0'
     implementation 'info.guardianproject.netcipher:netcipher:1.2.1'
     implementation 'com.googlecode.libphonenumber:libphonenumber:8.9.7'
     implementation 'com.google.zxing:core:3.3.1'
