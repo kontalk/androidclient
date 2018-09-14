@@ -18,7 +18,7 @@
 
 package org.kontalk.provider;
 
-import android.database.sqlite.SQLiteQueryBuilder;
+import io.requery.android.database.sqlite.SQLiteQueryBuilder;
 
 
 /**
