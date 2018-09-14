@@ -190,7 +190,7 @@ dependencies {
 
     googleplayImplementation "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
     googleplayImplementation "com.google.firebase:firebase-core:16.0.3"
-    googleplayImplementation "com.google.firebase:firebase-messaging:17.3.0"
+    googleplayImplementation "com.google.firebase:firebase-messaging:17.3.1"
     googleplayImplementation('com.crashlytics.sdk.android:crashlytics:2.9.5@aar') {
         transitive = true
     }
