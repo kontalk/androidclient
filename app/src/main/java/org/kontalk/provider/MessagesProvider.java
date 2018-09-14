@@ -109,7 +109,7 @@ public class MessagesProvider extends ContentProvider {
     @VisibleForTesting
     static class DatabaseHelper extends SQLiteOpenHelper {
         @VisibleForTesting
-        static final int DATABASE_VERSION = 18;
+        static final int DATABASE_VERSION = 19;
         @VisibleForTesting
         static final String DATABASE_NAME = "messages.db";
 
@@ -234,7 +234,9 @@ public class MessagesProvider extends ContentProvider {
         /** This table will contain every text message to speed-up full text searches. */
         private static final String SCHEMA_FULLTEXT =
             "CREATE VIRTUAL TABLE " + TABLE_FULLTEXT + " USING fts3 (" +
+            "msg_id INTEGER PRIMARY KEY," +
             "thread_id INTEGER NOT NULL, " +
+            "timestamp INTEGER NOT NULL," +
             "content TEXT" +
             ")";
 
@@ -433,6 +435,21 @@ public class MessagesProvider extends ContentProvider {
             "ALTER TABLE threads ADD COLUMN archived INTEGER NOT NULL DEFAULT 0",
         };
 
+        private static final String[] SCHEMA_UPGRADE_V18 = {
+            "CREATE VIRTUAL TABLE fulltext_timestamp USING fts3 (" +
+                "msg_id INTEGER PRIMARY KEY," +
+                "thread_id INTEGER NOT NULL," +
+                "timestamp INTEGER NOT NULL," +
+                "content TEXT)",
+            "INSERT INTO fulltext_timestamp" +
+                " SELECT _id, thread_id, timestamp, CAST(body_content AS TEXT)" +
+                "  FROM messages" +
+                " WHERE body_mime = 'text/plain' AND" +
+                " encrypted = 0",
+            "DROP TABLE fulltext",
+            "ALTER TABLE fulltext_timestamp RENAME TO fulltext",
+        };
+
         /** If true, fail all operations. */
         private boolean mLocked;
 
@@ -510,6 +527,11 @@ public class MessagesProvider extends ContentProvider {
                     // fall through
                 case 17:
                     for (String sql : SCHEMA_UPGRADE_V17) {
+                        db.execSQL(sql);
+                    }
+                    // fall through
+                case 18:
+                    for (String sql : SCHEMA_UPGRADE_V18) {
                         db.execSQL(sql);
                     }
                     // fall through
@@ -1738,7 +1760,9 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Groups.MEMBERSHIP, Groups.MEMBERSHIP);
 
         fulltextProjectionMap = new HashMap<>();
+        fulltextProjectionMap.put(Fulltext._ID, Fulltext._ID);
         fulltextProjectionMap.put(Fulltext.THREAD_ID, Fulltext.THREAD_ID);
+        fulltextProjectionMap.put(Fulltext.TIMESTAMP, Fulltext.TIMESTAMP);
         fulltextProjectionMap.put(Fulltext.CONTENT, Fulltext.CONTENT);
 
         groupsProjectionMap = new HashMap<>();
