@@ -1,5 +1,14 @@
 # Changelog
 
+## [Next]
+### Changed
+- Group chat indicator in chat list (#818)
+- Allow more control over search query
+- Introduce more recent and performant SQLite library
+
+### Fixed
+- Sort search results in inverted timestamp order (#1223)
+
 ## [4.2.0] - 2018-09-04
 ### Changed
 - Archived chats screen (#941)
@@ -526,6 +535,7 @@
 - Fix draft saving on incoming message (#448)
 - Fix crash during sync (#454)
 
+[Next]: https://github.com/kontalk/androidclient/compare/v4.2.0...HEAD
 [4.2.0]: https://github.com/kontalk/androidclient/compare/v4.2.0-beta4...v4.2.0
 [4.2.0-beta4]: https://github.com/kontalk/androidclient/compare/v4.2.0-beta3...v4.2.0-beta4
 [4.2.0-beta3]: https://github.com/kontalk/androidclient/compare/v4.2.0-beta2...v4.2.0-beta3
