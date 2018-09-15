@@ -172,8 +172,12 @@ public abstract class MediaStorage {
     /** Writes a thumbnail of a media to a {@link File}. */
     public static void cacheThumbnail(Context context, Uri media, File destination, boolean forNetwork) throws IOException {
         FileOutputStream fout = new FileOutputStream(destination);
-        cacheThumbnail(context, media, fout, forNetwork);
-        fout.close();
+        try {
+            cacheThumbnail(context, media, fout, forNetwork);
+        }
+        finally {
+            fout.close();
+        }
     }
 
     private static void cacheThumbnail(Context context, Uri media, FileOutputStream fout, boolean forNetwork) throws IOException {

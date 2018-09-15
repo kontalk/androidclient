@@ -84,9 +84,12 @@ public final class MyMessages {
             public static final Uri CONTENT_URI = Uri.parse("content://"
                     + MessagesProvider.AUTHORITY + "/fulltext");
 
-            public static final String _ID = "rowid";
+            public static final String _ID = "msg_id";
             public static final String THREAD_ID = "thread_id";
+            public static final String TIMESTAMP = "timestamp";
             public static final String CONTENT = "content";
+
+            public static final String DEFAULT_SORT_ORDER = "timestamp DESC";
         }
 
         private static final String ITEM_TYPE = BuildConfig.APPLICATION_ID + ".message";

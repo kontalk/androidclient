@@ -37,10 +37,6 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteConstraintException;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteQueryBuilder;
-import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.BaseColumns;
@@ -49,6 +45,12 @@ import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.RawContacts;
 import android.support.annotation.NonNull;
 import android.support.annotation.VisibleForTesting;
+
+import io.requery.android.database.sqlite.SQLiteDatabase;
+import io.requery.android.database.sqlite.SQLiteDatabaseConfiguration;
+import io.requery.android.database.sqlite.SQLiteOpenHelper;
+import io.requery.android.database.sqlite.SQLiteQueryBuilder;
+import io.requery.android.database.sqlite.SQLiteStatement;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
@@ -234,7 +236,9 @@ public class UsersProvider extends ContentProvider {
         @Override
         public void onOpen(SQLiteDatabase db) {
             String path = mContext.getDatabasePath(DATABASE_NAME).getPath();
-            dbReader = SQLiteDatabase.openDatabase(path, null, 0);
+            SQLiteDatabaseConfiguration configuration =
+                createConfiguration(path, SQLiteDatabase.OPEN_READONLY);
+            dbReader = SQLiteDatabase.openDatabase(configuration, null, null);
         }
 
         public boolean isNew() {

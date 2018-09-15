@@ -624,6 +624,9 @@
 
     <string name="pref_debug_log">Enable debug log</string>
     <string name="pref_send_debug_log">Send debug log</string>
+    <string name="pref_copy_database">Copy database</string>
+    <string name="msg_copy_database_success">Database copied to: %s</string>
+    <string name="msg_copy_database_failed">Database copy failed: %s</string>
 
     <string name="registration_poweredby">Powered by</string>
 
