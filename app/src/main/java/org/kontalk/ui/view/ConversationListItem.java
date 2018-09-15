@@ -21,6 +21,7 @@ package org.kontalk.ui.view;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.TextViewCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -107,6 +108,10 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
             if (TextUtils.isEmpty(recipient))
                 recipient = context.getString(R.string.group_untitled);
 
+            // enable group chat marker
+            TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(mFromView,
+                R.drawable.ic_indicator_group, 0, 0, 0);
+
             loadAvatar(null);
         }
         else {
@@ -124,6 +129,10 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
                     recipient = context.getString(R.string.peer_unknown);
                 }
             }
+
+            // disable group chat marker
+            TextViewCompat.setCompoundDrawablesRelative(mFromView,
+                null, null, null, null);
 
             loadAvatar(contact);
         }
