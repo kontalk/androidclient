@@ -420,9 +420,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private static final int FAST_PING_TIMEOUT = 5000;
 
     /**
-     * Minimal interval between connection tests (5 mins).
+     * Minimal interval between connection tests (2 mins).
      */
-    private static final int MIN_TEST_INTERVAL = 5 * 60 * 1000;
+    private static final int MIN_TEST_INTERVAL = 2 * 60 * 1000;
 
     /** How long to retain the wakelock to wait for incoming messages. */
     private static final int WAIT_FOR_MESSAGES_DELAY = 5000;
@@ -1942,6 +1942,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         });
 
         // re-acquire the wakelock for a limited time to allow for messages to come
+        // it will then be released automatically
         mWakeLock.acquire(WAIT_FOR_MESSAGES_DELAY);
     }
 

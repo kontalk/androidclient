@@ -96,7 +96,7 @@ import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
 class MessageListener extends WakefulMessageCenterPacketListener {
 
     public MessageListener(MessageCenterService instance) {
-        super(instance, "-RECV");
+        super(instance, "RECV");
     }
 
     private boolean processGroupMessage(KontalkGroupManager.KontalkGroup group, Stanza packet, CompositeMessage msg, Intent chatStateBroadcast) {
