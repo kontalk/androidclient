@@ -1157,7 +1157,9 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
         if (attachment != null) {
             Intent i = new Intent(Intent.ACTION_VIEW);
-            i.setDataAndType(attachment.getLocalUri(), attachment.getMime());
+            Uri uri = MediaStorage.getWorldReadableUri(getContext(),
+                attachment.getLocalUri(), i, true);
+            i.setDataAndType(uri, attachment.getMime());
             try {
                 startActivity(i);
             }
@@ -1456,19 +1458,17 @@ public abstract class AbstractComposeFragment extends ListFragment implements
      */
     protected abstract String getDecodedName(CompositeMessage msg);
 
+    // TODO abstract those intent creators
     private void shareMessage(CompositeMessage msg) {
         Intent i = null;
         AttachmentComponent attachment = msg.getComponent(AttachmentComponent.class);
 
         if (attachment != null) {
-            i = ComposeMessage.sendMediaMessage(attachment.getLocalUri(),
-                attachment.getMime());
+            i = ComposeMessage.sendMediaMessage(getContext(),
+                attachment.getLocalUri(), attachment.getMime());
         }
-
         else if (msg.getComponent(TextComponent.class) != null) {
             TextComponent txt = msg.getComponent(TextComponent.class);
-
-            //if (txt != null)
             i = ComposeMessage.sendTextMessage(txt.getContent());
         }
         else if (msg.getComponent(LocationComponent.class) != null) {
@@ -1479,11 +1479,13 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                     + location.getLatitude() + "," + location.getLongitude()));
         }
 
-        if (i != null)
+        if (i != null) {
             startActivity(i);
-        else
+        }
+        else {
             // TODO ehm...
             Log.w(TAG, "error sharing message");
+        }
     }
 
     protected void loadConversationMetadata(Uri uri) {

@@ -45,6 +45,7 @@ import org.kontalk.data.Conversation;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
+import org.kontalk.util.MediaStorage;
 import org.kontalk.util.SystemUtils;
 import org.kontalk.util.XMPPUtils;
 
@@ -467,10 +468,11 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
         return i;
     }
 
-    public static Intent sendMediaMessage(Uri uri, String mime) {
+    public static Intent sendMediaMessage(Context context, Uri uri, String mime) {
         Intent i = SystemUtils.externalIntent(Intent.ACTION_SEND);
         i.setType(mime);
-        i.putExtra(Intent.EXTRA_STREAM, uri);
+        i.putExtra(Intent.EXTRA_STREAM, MediaStorage
+            .getWorldReadableUri(context, uri, i, false));
         return i;
     }
 
