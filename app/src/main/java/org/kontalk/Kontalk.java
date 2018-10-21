@@ -36,11 +36,15 @@ import android.accounts.OnAccountsUpdateListener;
 import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.os.Build;
 import android.os.Handler;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
+import android.support.annotation.RequiresApi;
 
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGP;
@@ -192,6 +196,11 @@ public class Kontalk extends Application {
         // init the messages controller
         initMessagesController();
 
+        // register network state receiver manually
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            registerNetworkStateReceiver();
+        }
+
         // init emoji manager
         // FIXME this is taking a very long time
         EmojiManager.install(new EmojiOneProvider());
@@ -293,6 +302,12 @@ public class Kontalk extends Application {
 
     private void initMessagesController() {
         mMessagesController = new MessagesController(this);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private void registerNetworkStateReceiver() {
+        registerReceiver(new NetworkStateReceiver(),
+            new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
 
     /** Returns the messages controller singleton instance. */
