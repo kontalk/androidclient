@@ -53,9 +53,11 @@ abstract class MessageCenterPacketListener implements StanzaListener {
     protected static final String TAG = MessageCenterService.TAG;
 
     private WeakReference<MessageCenterService> mInstance;
+    private WeakReference<KontalkConnection> mConnection;
 
     MessageCenterPacketListener(MessageCenterService instance) {
         mInstance = new WeakReference<>(instance);
+        mConnection = new WeakReference<>(instance.mConnection);
     }
 
     protected MessageCenterService getInstance() {
@@ -68,8 +70,7 @@ abstract class MessageCenterPacketListener implements StanzaListener {
     }
 
     protected KontalkConnection getConnection() {
-        MessageCenterService instance = mInstance.get();
-        return (instance != null) ? instance.mConnection : null;
+        return mConnection.get();
     }
 
     protected EndpointServer getServer() {

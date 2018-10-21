@@ -420,9 +420,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private static final int FAST_PING_TIMEOUT = 5000;
 
     /**
-     * Minimal interval between connection tests (5 mins).
+     * Minimal interval between connection tests (2 mins).
      */
-    private static final int MIN_TEST_INTERVAL = 5 * 60 * 1000;
+    private static final int MIN_TEST_INTERVAL = 2 * 60 * 1000;
 
     /** How long to retain the wakelock to wait for incoming messages. */
     private static final int WAIT_FOR_MESSAGES_DELAY = 5000;
@@ -1403,7 +1403,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private boolean handleMessage(Intent intent) {
         if (isConnected())
             sendMessage(intent.getExtras());
-        return false;
+        return intent.getBooleanExtra("org.kontalk.forceConnect", false);
     }
 
     @CommandHandler(name = ACTION_ROSTER)
@@ -1942,6 +1942,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         });
 
         // re-acquire the wakelock for a limited time to allow for messages to come
+        // it will then be released automatically
         mWakeLock.acquire(WAIT_FOR_MESSAGES_DELAY);
     }
 
@@ -2950,7 +2951,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /**
      * Sends a text message.
      */
-    public static void sendTextMessage(final Context context, String to, String text, boolean encrypt, long msgId, String packetId, long inReplyTo) {
+    public static void sendTextMessage(final Context context, String to, String text, boolean encrypt, long msgId, String packetId, long inReplyTo, boolean forceConnect) {
         Intent i = getBaseIntent(context);
         i.setAction(ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
@@ -2961,6 +2962,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
         i.putExtra("org.kontalk.message.inReplyTo", inReplyTo);
+        i.putExtra("org.kontalk.forceConnect", forceConnect);
         context.startService(i);
     }
 

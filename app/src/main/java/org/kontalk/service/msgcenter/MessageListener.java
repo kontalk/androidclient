@@ -96,7 +96,7 @@ import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
 class MessageListener extends WakefulMessageCenterPacketListener {
 
     public MessageListener(MessageCenterService instance) {
-        super(instance, "-RECV");
+        super(instance, "RECV");
     }
 
     private boolean processGroupMessage(KontalkGroupManager.KontalkGroup group, Stanza packet, CompositeMessage msg, Intent chatStateBroadcast) {
@@ -205,8 +205,8 @@ class MessageListener extends WakefulMessageCenterPacketListener {
             // report it because it's a big deal
             ReportingManager.logException(e);
             return null;
-
         }
+
         if (group != null && group.checkRequest(m) && canHandleGroupCommand(m)) {
             GroupExtension ext = GroupExtension.from(m);
             String groupJid = ext.getJID();
@@ -224,7 +224,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
     private Intent processChatState(Message m) {
         // check if there is a composing notification
         ExtensionElement _chatstate = m.getExtension("http://jabber.org/protocol/chatstates");
-        if (_chatstate != null) {
+        if (_chatstate instanceof ChatStateExtension) {
             ChatStateExtension chatstate = (ChatStateExtension) _chatstate;
 
             Jid from = m.getFrom();
@@ -301,7 +301,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
 
             ExtensionElement _encrypted = m.getExtension(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE);
 
-            if (_encrypted != null && _encrypted instanceof E2EEncryption) {
+            if (_encrypted instanceof E2EEncryption) {
                 E2EEncryption mEnc = (E2EEncryption) _encrypted;
                 byte[] encryptedData = mEnc.getData();
 
@@ -386,7 +386,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
 
                 // bits-of-binary for preview
                 ExtensionElement _preview = m.getExtension(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE);
-                if (_preview != null && _preview instanceof BitsOfBinary) {
+                if (_preview instanceof BitsOfBinary) {
                     BitsOfBinary preview = (BitsOfBinary) _preview;
                     String previewMime = preview.getType();
                     if (previewMime == null)
@@ -465,14 +465,14 @@ class MessageListener extends WakefulMessageCenterPacketListener {
             }
 
             ExtensionElement _location = m.getExtension(UserLocation.ELEMENT_NAME, UserLocation.NAMESPACE);
-            if (_location != null && _location instanceof UserLocation) {
+            if (_location instanceof UserLocation) {
                 UserLocation location = (UserLocation) _location;
                 msg.addComponent(new LocationComponent(location.getLatitude(),
                     location.getLongitude(), location.getText(), location.getStreet()));
             }
 
             ExtensionElement _fwd = m.getExtension(Forwarded.ELEMENT, Forwarded.NAMESPACE);
-            if (_fwd != null && _fwd instanceof Forwarded) {
+            if (_fwd instanceof Forwarded) {
                 // we actually use only the stanza id for looking up the referenced message in our database.
                 // The forwarded stanza was included for compatibility with other XMPP clients.
                 // Although technically it's a waste of space, and the replied message will
@@ -499,8 +499,8 @@ class MessageListener extends WakefulMessageCenterPacketListener {
                 // report it because it's a big deal
                 ReportingManager.logException(e);
                 return;
-
             }
+
             if (group != null && !processGroupMessage(group, m, msg, chatStateBroadcast)) {
                 // invalid group command
                 Log.w(TAG, "invalid or unauthorized group command");
