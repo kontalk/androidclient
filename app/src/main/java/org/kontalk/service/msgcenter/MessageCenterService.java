@@ -1403,7 +1403,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private boolean handleMessage(Intent intent) {
         if (isConnected())
             sendMessage(intent.getExtras());
-        return false;
+        return intent.getBooleanExtra("org.kontalk.forceConnect", false);
     }
 
     @CommandHandler(name = ACTION_ROSTER)
@@ -2951,7 +2951,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /**
      * Sends a text message.
      */
-    public static void sendTextMessage(final Context context, String to, String text, boolean encrypt, long msgId, String packetId, long inReplyTo) {
+    public static void sendTextMessage(final Context context, String to, String text, boolean encrypt, long msgId, String packetId, long inReplyTo, boolean forceConnect) {
         Intent i = getBaseIntent(context);
         i.setAction(ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
@@ -2962,6 +2962,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
         i.putExtra("org.kontalk.message.inReplyTo", inReplyTo);
+        i.putExtra("org.kontalk.forceConnect", forceConnect);
         context.startService(i);
     }
 

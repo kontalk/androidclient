@@ -77,7 +77,7 @@ public class NotificationActionReceiver extends BroadcastReceiver {
                 CharSequence text = result.getCharSequence(KEY_TEXT_REPLY);
                 if (text != null) {
                     Kontalk.get().getMessagesController()
-                        .sendTextMessage(conv, text.toString(), 0);
+                        .sendTextMessage(conv, text.toString(), 0, true);
                 }
                 else {
                     // it shouldn't happen, but you know, Android...
