@@ -205,8 +205,8 @@ class MessageListener extends WakefulMessageCenterPacketListener {
             // report it because it's a big deal
             ReportingManager.logException(e);
             return null;
-
         }
+
         if (group != null && group.checkRequest(m) && canHandleGroupCommand(m)) {
             GroupExtension ext = GroupExtension.from(m);
             String groupJid = ext.getJID();
@@ -499,8 +499,8 @@ class MessageListener extends WakefulMessageCenterPacketListener {
                 // report it because it's a big deal
                 ReportingManager.logException(e);
                 return;
-
             }
+
             if (group != null && !processGroupMessage(group, m, msg, chatStateBroadcast)) {
                 // invalid group command
                 Log.w(TAG, "invalid or unauthorized group command");
