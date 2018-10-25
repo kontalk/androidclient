@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 
 import org.kontalk.message.CompositeMessage;
@@ -128,7 +129,7 @@ public class MediaService extends IntentService {
         i.putExtra("org.kontalk.message.media", media);
         i.putExtra(CompositeMessage.MSG_COMPRESS, compress);
         i.setData(uri);
-        context.startService(i);
+        ContextCompat.startForegroundService(context, i);
     }
 
 }

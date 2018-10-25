@@ -477,4 +477,12 @@ public final class SystemUtils {
         return lock;
     }
 
+    public static boolean isIgnoringBatteryOptimizations(Context context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+            return true;
+
+        PowerManager pwm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        return pwm.isIgnoringBatteryOptimizations(context.getPackageName());
+    }
+
 }
