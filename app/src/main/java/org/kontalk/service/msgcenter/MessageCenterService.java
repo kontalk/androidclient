@@ -773,7 +773,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     @Override
     public void onCreate() {
-        if (!isOfflineMode(this) || mustSetForeground()) {
+        if (!isOfflineMode(this) || mustSetForeground(this)) {
             // immediately setup the foreground notification if requested
             setForeground();
         }
@@ -2735,13 +2735,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * If running on Android Oreo or later, we must become a foreground service.
      * @return true if we run on Android Oreo or later or the user decided to battery optimize us
      */
-    private boolean mustSetForeground() {
+    public static boolean mustSetForeground(Context context) {
         return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O ||
-            !SystemUtils.isIgnoringBatteryOptimizations(this);
+            !SystemUtils.isIgnoringBatteryOptimizations(context);
     }
 
     private void setForeground() {
-        boolean enable = mustSetForeground() || Preferences.getForegroundServiceEnabled(this);
+        boolean enable = mustSetForeground(this) || Preferences.getForegroundServiceEnabled(this);
         if (enable) {
             startForeground(NOTIFICATION_ID_FOREGROUND,
                 MessagingNotification.buildForegroundNotification(this));

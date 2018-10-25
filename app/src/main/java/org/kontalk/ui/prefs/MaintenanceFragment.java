@@ -36,6 +36,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
@@ -270,6 +271,14 @@ public class MaintenanceFragment extends RootPreferenceFragment {
                 return true;
             }
         });
+
+        // explain the user that the foreground service is mandatory
+        if (MessageCenterService.mustSetForeground(getContext())) {
+            final CheckBoxPreference foregroundService = (CheckBoxPreference) findPreference("pref_foreground_service");
+            foregroundService.setEnabled(false);
+            foregroundService.setChecked(true);
+            foregroundService.setSummary(R.string.pref_title_foreground_service_mandatory);
+        }
     }
 
     @Override
