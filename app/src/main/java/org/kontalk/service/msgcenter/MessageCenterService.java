@@ -376,6 +376,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_VERSION_NAME = "org.kontalk.version.name";
     public static final String EXTRA_VERSION_NUMBER = "org.kontalk.version.number";
 
+    // used with org.kontalk.action.TEST
+    public static final String EXTRA_TEST_CHECK_NETWORK = "org.kontalk.test.check_network";
+
     // used for org.kontalk.presence.privacy.action extra
     /**
      * Accept subscription.
@@ -476,6 +479,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * My username (account name).
      */
     String mMyUsername;
+
+    /** The current network identifier. */
+    private String mCurrentNetwork;
 
     /**
      * Supported upload services.
@@ -1155,7 +1161,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     break;
 
                 case ACTION_TEST:
-                    doConnect = handleTest(canConnect);
+                    doConnect = handleTest(canConnect, intent);
                     break;
 
                 case ACTION_PING:
@@ -1340,8 +1346,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_TEST)
-    private boolean handleTest(boolean canConnect) {
+    private boolean handleTest(boolean canConnect, Intent intent) {
         if (isConnected()) {
+            boolean checkNetwork = intent.getBooleanExtra(EXTRA_TEST_CHECK_NETWORK, false);
+            if (checkNetwork) {
+                if (mCurrentNetwork == null || !mCurrentNetwork.equals(SystemUtils.getCurrentNetworkName(this))) {
+                    // network type changed - restart immediately
+                    quit(true);
+                    return canConnect;
+                }
+            }
+
             if (canTest()) {
                 mLastTest = SystemClock.elapsedRealtime();
                 mIdleHandler.test();
@@ -1864,6 +1879,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         AndroidAdaptiveServerPingManager
             .getInstanceFor(connection, this)
             .setEnabled(true);
+
+        // save the network we connected through
+        mCurrentNetwork = SystemUtils.getCurrentNetworkName(this);
 
         synchronized (connection) {
             if (mPingFailedListener == null) {
@@ -2874,10 +2892,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         ContextCompat.startForegroundService(context, i);
     }
 
-    public static void test(Context context) {
+    public static void test(Context context, boolean checkNetwork) {
         Log.d(TAG, "testing message center connection");
         Intent i = getBaseIntent(context);
         i.setAction(ACTION_TEST);
+        i.putExtra(EXTRA_TEST_CHECK_NETWORK, checkNetwork);
         ContextCompat.startForegroundService(context, i);
     }
 
