@@ -20,12 +20,12 @@ package org.kontalk.service;
 
 import java.io.File;
 
-import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
+import android.support.annotation.NonNull;
+import android.support.v4.app.JobIntentService;
 import android.support.v4.content.LocalBroadcastManager;
 
 import org.kontalk.message.CompositeMessage;
@@ -43,8 +43,10 @@ import org.kontalk.util.Preferences;
  * images, videos and the like.
  * @author Daniele Ricci
  */
-public class MediaService extends IntentService {
+public class MediaService extends JobIntentService {
     private static final String TAG = MessageCenterService.TAG;
+
+    private static final int JOB_ID = 1000;
 
     private static final String ACTION_PREPARE_MESSAGE = "org.kontalk.action.PREPARE_MESSAGE";
 
@@ -53,16 +55,8 @@ public class MediaService extends IntentService {
      */
     public static final String ACTION_MEDIA_READY = "org.kontalk.action.MEDIA_READY";
 
-    public MediaService() {
-        super(MediaService.class.getSimpleName());
-    }
-
     @Override
-    protected void onHandleIntent(Intent intent) {
-        // crappy firmware - as per docs, intent can't be null in this case
-        if (intent == null)
-            return;
-
+    protected void onHandleWork(@NonNull Intent intent) {
         String action = intent.getAction();
 
         if (ACTION_PREPARE_MESSAGE.equals(action)) {
@@ -129,7 +123,7 @@ public class MediaService extends IntentService {
         i.putExtra("org.kontalk.message.media", media);
         i.putExtra(CompositeMessage.MSG_COMPRESS, compress);
         i.setData(uri);
-        ContextCompat.startForegroundService(context, i);
+        enqueueWork(context, MediaService.class, JOB_ID, i);
     }
 
 }
