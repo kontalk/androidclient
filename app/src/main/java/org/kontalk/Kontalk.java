@@ -42,7 +42,6 @@ import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Handler;
-import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.annotation.RequiresApi;
 
@@ -157,11 +156,6 @@ public class Kontalk extends Application {
     public void onCreate() {
         super.onCreate();
         sInstance = this;
-
-        if (BuildConfig.DEBUG) {
-            StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectAll().build());
-            StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().build());
-        }
 
         // init preferences
         // This must be done before registering the reporting manager
