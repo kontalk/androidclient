@@ -779,7 +779,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     @Override
     public void onCreate() {
-        if (!isOfflineMode(this) || mustSetForeground(this)) {
+        if (!isOfflineMode(this) || shouldStartInForeground(this)) {
             // immediately setup the foreground notification if requested
             setForeground();
         }
@@ -2750,17 +2750,21 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     /**
-     * If running on Android Oreo or later, we must become a foreground service.
-     * @return true if we run on Android Oreo or later or the user decided to battery optimize us
+     * If the user ignored our request to not be optimized, we must become a foreground service.
+     * @return true if the user decided to battery optimize us
      */
     public static boolean mustSetForeground(Context context) {
-        return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O ||
-            !SystemUtils.isIgnoringBatteryOptimizations(context);
+        return !SystemUtils.isIgnoringBatteryOptimizations(context);
+    }
+
+    /** Return true if the service should be started in foreground. */
+    public static boolean shouldStartInForeground(Context context) {
+        return mustSetForeground(context) ||
+            Preferences.getForegroundServiceEnabled(context);
     }
 
     private void setForeground() {
-        boolean enable = mustSetForeground(this) || Preferences.getForegroundServiceEnabled(this);
-        if (enable) {
+        if (shouldStartInForeground(this)) {
             startForeground(NOTIFICATION_ID_FOREGROUND,
                 MessagingNotification.buildForegroundNotification(this));
         }
@@ -2862,6 +2866,21 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return getBaseIntent(context);
     }
 
+    /** @deprecated Must go away ASAP. */
+    @Deprecated
+    public static void startService(Context context, Intent intent) {
+        startForegroundIfNeeded(context, intent);
+    }
+
+    private static void startForegroundIfNeeded(Context context, Intent intent) {
+        if (shouldStartInForeground(context)) {
+            ContextCompat.startForegroundService(context, intent);
+        }
+        else {
+            context.startService(intent);
+        }
+    }
+
     public static void start(Context context) {
         // check for offline mode
         if (isOfflineMode(context)) {
@@ -2874,7 +2893,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             Log.d(TAG, "starting message center");
             final Intent intent = getStartIntent(context);
 
-            ContextCompat.startForegroundService(context, intent);
+            startForegroundIfNeeded(context, intent);
         }
         else
             Log.d(TAG, "network not available or background data disabled - abort service start");
@@ -2889,7 +2908,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Log.d(TAG, "restarting message center");
         Intent i = getBaseIntent(context);
         i.setAction(ACTION_RESTART);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void test(Context context, boolean checkNetwork) {
@@ -2897,14 +2916,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Intent i = getBaseIntent(context);
         i.setAction(ACTION_TEST);
         i.putExtra(EXTRA_TEST_CHECK_NETWORK, checkNetwork);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void ping(Context context) {
         Log.d(TAG, "ping message center connection");
         Intent i = getBaseIntent(context);
         i.setAction(ACTION_PING);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     /**
@@ -2920,7 +2939,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Intent i = getBaseIntent(context);
         i.setAction(ACTION_HOLD);
         i.putExtra("org.kontalk.activate", activate);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     /**
@@ -2933,7 +2952,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         Intent i = getBaseIntent(context);
         i.setAction(ACTION_RELEASE);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     /**
@@ -2944,7 +2963,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Intent i = getBaseIntent(context);
         i.setAction(ACTION_PRESENCE);
         i.putExtra(EXTRA_STATUS, Preferences.getStatusMessage());
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     /** Sends a previously prepared message. */
@@ -2952,7 +2971,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Intent i = MessageCenterService.getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtras(data);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     /**
@@ -2964,7 +2983,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra(EXTRA_CHAT_STATE, state.name());
         i.putExtra("org.kontalk.message.standalone", true);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void sendGroupChatState(final Context context, String groupJid, String[] to, ChatState state) {
@@ -2975,7 +2994,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.standalone", true);
         i.putExtra("org.kontalk.message.group.jid", groupJid);
         i.putExtra("org.kontalk.message.to", to);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     /**
@@ -2993,7 +3012,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
         i.putExtra("org.kontalk.message.inReplyTo", inReplyTo);
         i.putExtra("org.kontalk.forceConnect", forceConnect);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void sendGroupTextMessage(final Context context, String groupJid, String[] to,
@@ -3009,7 +3028,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
         i.putExtra("org.kontalk.message.inReplyTo", inReplyTo);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void createGroup(final Context context, String groupJid,
@@ -3025,7 +3044,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void leaveGroup(final Context context, String groupJid,
@@ -3040,7 +3059,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void addGroupMembers(final Context context, String groupJid,
@@ -3057,7 +3076,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void removeGroupMembers(final Context context, String groupJid,
@@ -3074,7 +3093,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void setGroupSubject(final Context context, String groupJid,
@@ -3090,7 +3109,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     /**
@@ -3113,7 +3132,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.compress", compress);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void sendGroupBinaryMessage(final Context context, String groupJid, String[] to,
@@ -3132,7 +3151,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.compress", compress);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     /**
@@ -3157,7 +3176,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     /**
@@ -3183,7 +3202,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void sendGroupUploadedMedia(final Context context, String groupJid, String[] to,
@@ -3203,7 +3222,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.fetch.url", fetchUrl);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void sendUploadedMedia(final Context context, String to,
@@ -3222,7 +3241,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.fetch.url", fetchUrl);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static String messageId() {
@@ -3237,14 +3256,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.setAction(MessageCenterService.ACTION_SUBSCRIBED);
         i.putExtra(EXTRA_TO, to);
         i.putExtra(EXTRA_PRIVACY, action);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void regenerateKeyPair(final Context context, String passphrase) {
         Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_REGENERATE_KEYPAIR);
         i.putExtra(EXTRA_PASSPHRASE, passphrase);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void importKeyPair(final Context context, Uri keypack, String passphrase) {
@@ -3252,33 +3271,33 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.setAction(MessageCenterService.ACTION_IMPORT_KEYPAIR);
         i.putExtra(EXTRA_KEYPACK, keypack);
         i.putExtra(EXTRA_PASSPHRASE, passphrase);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void uploadPrivateKey(final Context context, String exportPassphrase) {
         Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_UPLOAD_PRIVATEKEY);
         i.putExtra(EXTRA_EXPORT_PASSPHRASE, exportPassphrase);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void requestConnectionStatus(final Context context) {
         Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_CONNECTED);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void requestRosterStatus(final Context context) {
         Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_ROSTER_LOADED);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void requestRosterEntryStatus(final Context context, String to) {
         Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_ROSTER_STATUS);
         i.putExtra(MessageCenterService.EXTRA_TO, to);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void requestPresence(final Context context, String to) {
@@ -3286,7 +3305,23 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.setAction(MessageCenterService.ACTION_PRESENCE);
         i.putExtra(MessageCenterService.EXTRA_TO, to);
         i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.probe.name());
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
+    }
+
+    @Deprecated
+    public static void requestPresenceSubscription(final Context context, String to) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_PRESENCE);
+        i.putExtra(MessageCenterService.EXTRA_TO, to);
+        i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribed.name());
+        startForegroundIfNeeded(context, i);
+
+        // request subscription
+        i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_PRESENCE);
+        i.putExtra(MessageCenterService.EXTRA_TO, to);
+        i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribe.name());
+        startForegroundIfNeeded(context, i);
     }
 
     public static void requestLastActivity(final Context context, String to, String id) {
@@ -3294,7 +3329,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.setAction(MessageCenterService.ACTION_LAST_ACTIVITY);
         i.putExtra(EXTRA_TO, to);
         i.putExtra(EXTRA_PACKET_ID, id);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void requestVersionInfo(final Context context, String to, String id) {
@@ -3302,14 +3337,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.setAction(MessageCenterService.ACTION_VERSION);
         i.putExtra(EXTRA_TO, to);
         i.putExtra(EXTRA_PACKET_ID, id);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void requestVCard(final Context context, String to) {
         Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_VCARD);
         i.putExtra(EXTRA_TO, to);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void requestPublicKey(final Context context, String to) {
@@ -3321,19 +3356,19 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.setAction(MessageCenterService.ACTION_PUBLICKEY);
         i.putExtra(EXTRA_TO, to);
         i.putExtra(EXTRA_PACKET_ID, id);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void requestServerList(final Context context) {
         Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_SERVERLIST);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public static void updateForegroundStatus(final Context context) {
         Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_FOREGROUND);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     /**
@@ -3342,7 +3377,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static void enablePushNotifications(Context context) {
         Intent i = getBaseIntent(context);
         i.setAction(ACTION_PUSH_START);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     /**
@@ -3351,7 +3386,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static void disablePushNotifications(Context context) {
         Intent i = getBaseIntent(context);
         i.setAction(ACTION_PUSH_STOP);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     /**
@@ -3361,7 +3396,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Intent i = getBaseIntent(context);
         i.setAction(ACTION_PUSH_REGISTERED);
         i.putExtra(PUSH_REGISTRATION_ID, registrationId);
-        ContextCompat.startForegroundService(context, i);
+        startForegroundIfNeeded(context, i);
     }
 
     public void setPushNotifications(boolean enabled) {

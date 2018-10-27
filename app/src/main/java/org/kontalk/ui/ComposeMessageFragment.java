@@ -47,7 +47,6 @@ import android.database.sqlite.SQLiteDiskIOException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -523,21 +522,9 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         if (type == null) {
             // no roster entry found, request subscription
 
-            // pre-approve our presence
+            // pre-approve our presence and request subscription
             // TODO we should use MessageCenterClient
-            Intent i = new Intent(context, MessageCenterService.class);
-            i.setAction(MessageCenterService.ACTION_PRESENCE);
-            i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
-            i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribed.name());
-            ContextCompat.startForegroundService(context, i);
-
-            // request subscription
-            // TODO we should use MessageCenterClient
-            i = new Intent(context, MessageCenterService.class);
-            i.setAction(MessageCenterService.ACTION_PRESENCE);
-            i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
-            i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribe.name());
-            ContextCompat.startForegroundService(context, i);
+            MessageCenterService.requestPresenceSubscription(context, mUserJID);
 
             setStatusText(context.getString(R.string.invitation_sent_label));
         }

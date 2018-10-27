@@ -276,7 +276,6 @@ public class MaintenanceFragment extends RootPreferenceFragment {
         if (MessageCenterService.mustSetForeground(getContext())) {
             final CheckBoxPreference foregroundService = (CheckBoxPreference) findPreference("pref_foreground_service");
             foregroundService.setEnabled(false);
-            foregroundService.setChecked(true);
             foregroundService.setSummary(R.string.pref_title_foreground_service_mandatory);
         }
     }

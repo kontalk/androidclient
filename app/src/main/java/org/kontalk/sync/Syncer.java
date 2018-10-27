@@ -52,7 +52,6 @@ import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.RawContacts;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 
@@ -352,7 +351,7 @@ public class Syncer {
             i.setAction(MessageCenterService.ACTION_PRESENCE);
             i.putExtra(MessageCenterService.EXTRA_TO, jid);
             i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.unsubscribe.name());
-            ContextCompat.startForegroundService(context, i);
+            MessageCenterService.startService(context, i);
         }
 
         private int getRosterParts(List<String> jidList) {
@@ -697,7 +696,7 @@ public class Syncer {
         i.setAction(MessageCenterService.ACTION_ROSTER_MATCH);
         i.putExtra(MessageCenterService.EXTRA_PACKET_ID, id);
         i.putExtra(MessageCenterService.EXTRA_JIDLIST, list.toArray(new String[list.size()]));
-        ContextCompat.startForegroundService(mContext, i);
+        MessageCenterService.startService(mContext, i);
     }
 
     /** @deprecated We should use {@link org.kontalk.service.msgcenter.MessageCenterClient}. */
@@ -707,7 +706,7 @@ public class Syncer {
         i.setAction(MessageCenterService.ACTION_PRESENCE);
         i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.probe.toString());
         i.putExtra(MessageCenterService.EXTRA_PACKET_ID, id);
-        ContextCompat.startForegroundService(mContext, i);
+        MessageCenterService.startService(mContext, i);
     }
 
     /** @deprecated We should use {@link org.kontalk.service.msgcenter.MessageCenterClient}. */
@@ -716,7 +715,7 @@ public class Syncer {
         Intent i = new Intent(mContext, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_PUBLICKEY);
         i.putExtra(MessageCenterService.EXTRA_PACKET_ID, IQ_KEYS_PACKET_ID);
-        ContextCompat.startForegroundService(mContext, i);
+        MessageCenterService.startService(mContext, i);
     }
 
     /** @deprecated We should use {@link org.kontalk.service.msgcenter.MessageCenterClient}. */
@@ -725,7 +724,7 @@ public class Syncer {
         Intent i = new Intent(mContext, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_BLOCKLIST);
         i.putExtra(MessageCenterService.EXTRA_PACKET_ID, IQ_BLOCKLIST_PACKET_ID);
-        ContextCompat.startForegroundService(mContext, i);
+        MessageCenterService.startService(mContext, i);
     }
 
     private String getDisplayName(ContentProviderClient client, String lookupKey, String defaultValue) {
