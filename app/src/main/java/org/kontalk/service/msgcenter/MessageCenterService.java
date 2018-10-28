@@ -779,11 +779,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     @Override
     public void onCreate() {
-        if (!isOfflineMode(this) || shouldStartInForeground(this)) {
-            // immediately setup the foreground notification if requested
-            setForeground();
-        }
-
         // configure XMPP client
         configure();
 
@@ -1238,9 +1233,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             if (canConnect && doConnect)
                 createConnection();
 
-            // no reason to exist
-            if (!canConnect && !doConnect && !isConnected() && !isConnecting())
+            if (!canConnect && !doConnect && !isConnected() && !isConnecting()) {
+                // no reason to exist
                 stopSelf();
+            }
+            else {
+                // immediately setup (or disable) the foreground notification if requested
+                setForeground();
+            }
 
             mFirstStart = false;
         }
@@ -2749,12 +2749,23 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             mUploadServices.get(0) : null;
     }
 
+    /** Dangerous check for push notifications availability. */
+    private static boolean isPushNotificationsAvailable(Context context) {
+        if (!Preferences.getPushNotificationsEnabled(context))
+            return false;
+
+        IPushService psm = PushServiceManager.getInstance(context);
+        return (psm != null &&
+            (psm.isServiceAvailable() || psm.isRegisteredOnServer() || psm.isRegistered()));
+    }
+
     /**
      * If the user ignored our request to not be optimized, we must become a foreground service.
-     * @return true if the user decided to battery optimize us
+     * @return true if the user decided to battery optimize us and with no hope of push notifications
      */
     public static boolean mustSetForeground(Context context) {
-        return !SystemUtils.isIgnoringBatteryOptimizations(context);
+        return !SystemUtils.isIgnoringBatteryOptimizations(context) &&
+            !isPushNotificationsAvailable(context);
     }
 
     /** Return true if the service should be started in foreground. */
