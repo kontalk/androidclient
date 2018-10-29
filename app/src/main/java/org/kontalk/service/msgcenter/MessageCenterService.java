@@ -132,6 +132,7 @@ import org.kontalk.message.LocationComponent;
 import org.kontalk.message.ReferencedMessage;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.Keyring;
+import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.provider.MessagesProviderClient.MessageUpdater;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
@@ -337,6 +338,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_TYPE = "org.kontalk.packet.type";
     public static final String EXTRA_ERROR_CONDITION = "org.kontalk.packet.error.condition";
     public static final String EXTRA_ERROR_EXCEPTION = "org.kontalk.packet.error.exception";
+    public static final String EXTRA_FOREGROUND = "org.kontalk.foreground";
 
     // use with org.kontalk.action.PRESENCE/SUBSCRIBED
     public static final String EXTRA_FROM = "org.kontalk.stanza.from";
@@ -961,6 +963,34 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             mPingLock.release();
             mPingLock = null;
         }
+
+        // currently in online mode
+        // take care of specific situations for rescheduling us
+        if (!isOfflineMode(this)) {
+            // shutting down due to missing network connection
+            // schedule a reconnection for next time we'll have network
+            // (only on systems on which we do not receive network state changes
+            //  and if we don't have push notifications)
+            if (!SystemUtils.isReceivingNetworkStateChanges() &&
+                    !isPushNotificationsAvailable(this) &&
+                    !SystemUtils.isNetworkConnectionAvailable(this)) {
+                Log.i(TAG, "network absent and no way of resuming, scheduling job for next time");
+                scheduleStartJob();
+            }
+
+            // if we have pending messages, it means the OS is killing us
+            // schedule a reconnection for next time we'll have network
+            else if (mustSetForeground(this) && hasPendingWork()) {
+                // TODO remember to check with hasPendingWork if we need to foreground
+                Log.i(TAG, "we have pending work, scheduling foreground job for next time");
+                scheduleStartJob();
+            }
+        }
+    }
+
+    private boolean hasPendingWork() {
+        return MessagesProviderClient.getPendingMessagesCount(this) > 0 ||
+            Preferences.getLastPushNotification() > 0;
     }
 
     public boolean isStarted() {
@@ -1239,7 +1269,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
             else {
                 // immediately setup (or disable) the foreground notification if requested
-                setForeground();
+                setForeground(intent.getBooleanExtra(EXTRA_FOREGROUND, false));
             }
 
             mFirstStart = false;
@@ -1759,7 +1789,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     @CommandHandler(name = ACTION_FOREGROUND)
     private boolean handleForeground() {
-        setForeground();
+        setForeground(true);
         return false;
     }
 
@@ -2774,8 +2804,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             Preferences.getForegroundServiceEnabled(context);
     }
 
-    private void setForeground() {
-        if (shouldStartInForeground(this)) {
+    private void setForeground(boolean enable) {
+        if (enable) {
             startForeground(NOTIFICATION_ID_FOREGROUND,
                 MessagingNotification.buildForegroundNotification(this));
         }
@@ -2885,6 +2915,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private static void startForegroundIfNeeded(Context context, Intent intent) {
         if (shouldStartInForeground(context)) {
+            intent.putExtra(EXTRA_FOREGROUND, true);
             ContextCompat.startForegroundService(context, intent);
         }
         else {
@@ -2906,8 +2937,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             startForegroundIfNeeded(context, intent);
         }
-        else
+        else {
             Log.d(TAG, "network not available or background data disabled - abort service start");
+        }
     }
 
     public static void stop(Context context) {
@@ -3505,6 +3537,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     public static String getPushSenderId() {
         return sPushSenderId;
+    }
+
+    private void scheduleStartJob() {
+        if (SystemUtils.supportsJobScheduler())
+            StartMessageCenterJob.schedule(this);
+        // in theory, lack of the job scheduler means old behavior
+        // so we don't need this because the NetworkStateReceiver will work
     }
 
     void setWakeupAlarm() {

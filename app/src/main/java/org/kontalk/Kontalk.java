@@ -64,6 +64,7 @@ import org.kontalk.ui.ComposeMessage;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.SearchActivity;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.SystemUtils;
 
 
 /**
@@ -191,7 +192,7 @@ public class Kontalk extends Application {
         initMessagesController();
 
         // register network state receiver manually
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+        if (!SystemUtils.isReceivingNetworkStateChanges()) {
             registerNetworkStateReceiver();
         }
 

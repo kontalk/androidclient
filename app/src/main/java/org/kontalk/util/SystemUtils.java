@@ -485,4 +485,13 @@ public final class SystemUtils {
         return pwm.isIgnoringBatteryOptimizations(context.getPackageName());
     }
 
+    public static boolean supportsJobScheduler() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
+    }
+
+    /** Return true if the platform can and will broadcast network state change *implicit* intents. */
+    public static boolean isReceivingNetworkStateChanges() {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.N;
+    }
+
 }

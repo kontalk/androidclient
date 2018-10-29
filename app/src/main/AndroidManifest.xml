@@ -109,6 +109,8 @@
             </intent-filter>
         </service>
         <service android:name=".service.MessagesImporterService"/>
+        <service android:name=".service.msgcenter.StartMessageCenterJob"
+            android:permission="android.permission.BIND_JOB_SERVICE"/>
 
         <!-- Content providers -->
         <provider android:name=".provider.MessagesProvider"
