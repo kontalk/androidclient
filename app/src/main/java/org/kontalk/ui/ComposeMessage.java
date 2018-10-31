@@ -34,6 +34,7 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.StyleSpan;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.kontalk.Kontalk;
@@ -47,6 +48,7 @@ import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.SystemUtils;
+import org.kontalk.util.ViewUtils;
 import org.kontalk.util.XMPPUtils;
 
 
@@ -95,6 +97,9 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
      */
     private boolean mResumed;
 
+    /** Toolbar title TextView. Used for applying our emojis. */
+    private TextView mTitleView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -128,6 +133,14 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
                     onTitleClick();
             }
         });
+
+        try {
+            // hack to extract the title text view
+            mTitleView = (TextView) toolbar.getChildAt(0);
+        }
+        catch (Exception e) {
+            Log.v(TAG, "unable to retrieve toolbar view. Custom emojis will not be applied to activity title.");
+        }
     }
 
     @Override
@@ -171,8 +184,16 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     @Override
     public void setTitle(CharSequence title, CharSequence subtitle) {
         ActionBar bar = getSupportActionBar();
-        if (title != null)
-            bar.setTitle(title);
+        if (title != null) {
+            final CharSequence titleStr;
+            if (mTitleView != null) {
+                titleStr = ViewUtils.injectEmojis(mTitleView, title);
+            }
+            else {
+                titleStr = title;
+            }
+            bar.setTitle(titleStr);
+        }
         if (subtitle != null)
             bar.setSubtitle(subtitle);
     }

@@ -32,7 +32,7 @@
         android:id="@+id/avatar"
         style="@style/AvatarListItemStyle"/>
 
-    <TextView
+    <com.vanniktech.emoji.EmojiTextView
         android:id="@+id/from"
         style="@style/AvatarListItemTextStyle"
         android:layout_width="wrap_content"

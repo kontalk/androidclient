@@ -20,8 +20,9 @@ package org.kontalk.ui.view;
 
 import java.util.regex.Pattern;
 
+import com.vanniktech.emoji.EmojiTextView;
+
 import android.content.Context;
-import android.support.v7.widget.AppCompatTextView;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
@@ -35,7 +36,7 @@ import org.kontalk.message.GroupCommandComponent;
  * Message component for {@link GroupCommandComponent}.
  * @author Daniele Ricci
  */
-public class GroupContentView extends AppCompatTextView
+public class GroupContentView extends EmojiTextView
     implements MessageContentView<GroupCommandComponent> {
 
     private GroupCommandComponent mComponent;
@@ -46,10 +47,6 @@ public class GroupContentView extends AppCompatTextView
 
     public GroupContentView(Context context, AttributeSet attrs) {
         super(context, attrs);
-    }
-
-    public GroupContentView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
     }
 
     @Override
