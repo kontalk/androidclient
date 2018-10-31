@@ -770,6 +770,16 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         tryHideAttachmentView(true);
     }
 
+    @Override
+    public boolean canOpenEmoji() {
+        if (SystemUtils.supportsMultiWindow() && getActivity().isInMultiWindowMode()) {
+            Toast.makeText(getContext(), R.string.err_emoji_disabled_in_multiwindow,
+                Toast.LENGTH_LONG).show();
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Sends out the text message in the composing entry.
      */

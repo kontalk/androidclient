@@ -56,4 +56,7 @@ public interface ComposerListener {
     /** The text entry has gained focus. */
     void onTextEntryFocus();
 
+    /** Return false if for whatever reason the emoji panel can't be opened. */
+    boolean canOpenEmoji();
+
 }
