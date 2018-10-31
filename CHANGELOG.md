@@ -9,6 +9,7 @@
 - Force use of foreground service only when absolutely necessary
 - Support for multi-window (#1101)
 - Improve registration screen (#1209)
+- Allow replying to own messages
 
 ### Fixed
 - Sort search results in inverted timestamp order (#1223)

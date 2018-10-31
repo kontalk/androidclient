@@ -466,8 +466,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                     if (text != null && !TextUtils.isEmpty(text.getContent()))
                         copyTextMenu.setVisible(true);
 
-                    // incoming text message: enable reply
-                    if (msg.isIncoming() && text != null) {
+                    // text message: enable reply
+                    if (text != null) {
                         replyMenu.setVisible(true);
                     }
 
@@ -1406,10 +1406,17 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     private void replyMessage(CompositeMessage msg) {
         TextComponent textComponent = msg.getComponent(TextComponent.class);
         if (textComponent != null) {
-            String sender = msg.getSender();
-            Contact contact = Contact.findByUserId(getContext(), sender);
+            String displayName;
+            if (msg.getDirection() == Messages.DIRECTION_IN) {
+                String sender = msg.getSender();
+                Contact contact = Contact.findByUserId(getContext(), sender);
+                displayName = contact.getDisplayName();
+            }
+            else {
+                displayName = Authenticator.getDefaultDisplayName(getContext());
+            }
 
-            mReplyBar.show(msg.getDatabaseId(), contact.getDisplayName(), textComponent.getContent());
+            mReplyBar.show(msg.getDatabaseId(), displayName, textComponent.getContent());
         }
     }
 
