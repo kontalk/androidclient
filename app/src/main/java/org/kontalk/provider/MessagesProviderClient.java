@@ -685,4 +685,15 @@ public class MessagesProviderClient {
             values, null, null);
     }
 
+    public static int getPendingMessagesCount(Context context) {
+        Cursor c = context.getContentResolver().query(
+            Messages.CONTENT_URI, new String[] { Messages._COUNT },
+            Messages.STATUS + " IN (" + Messages.STATUS_SENDING + ", " +
+                Messages.STATUS_QUEUED + ")", null, null);
+        if (c != null && c.moveToFirst()) {
+            return c.getInt(0);
+        }
+        return 0;
+    }
+
 }

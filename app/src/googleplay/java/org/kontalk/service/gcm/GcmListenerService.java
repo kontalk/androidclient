@@ -50,7 +50,7 @@ public class GcmListenerService extends FirebaseMessagingService {
                 System.currentTimeMillis());
 
             // test message center connection
-            MessageCenterService.test(getApplicationContext());
+            MessageCenterService.test(getApplicationContext(), false);
         }
     }
 

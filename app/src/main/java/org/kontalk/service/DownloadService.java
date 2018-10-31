@@ -45,6 +45,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
@@ -423,14 +424,14 @@ public class DownloadService extends IntentService implements DownloadListener {
         i.putExtra(CompositeMessage.MSG_ENCRYPTED, encrypted);
         i.putExtra(EXTRA_NOTIFY, notify);
         i.setData(Uri.parse(url));
-        context.startService(i);
+        ContextCompat.startForegroundService(context, i);
     }
 
     public static void abort(Context context, Uri uri) {
         Intent i = new Intent(context, DownloadService.class);
         i.setAction(DownloadService.ACTION_DOWNLOAD_ABORT);
         i.setData(uri);
-        context.startService(i);
+        ContextCompat.startForegroundService(context, i);
     }
 
 }
