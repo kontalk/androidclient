@@ -222,7 +222,7 @@ public final class MessageUtils {
             }
 
             // seconds ago relative to our time
-            return MessageUtils.formatRelativeTimeSpan(context, stamp);
+            return formatRelativeTimeSpan(context, stamp);
         }
         else {
             // it's improbable, but whatever...
@@ -328,7 +328,7 @@ public final class MessageUtils {
     }
 
     public static void showMessageDetails(Context context, CompositeMessage msg, String decodedPeer, String decodedName) {
-        CharSequence messageDetails = MessageUtils.getMessageDetails(
+        CharSequence messageDetails = getMessageDetails(
             context, msg, decodedPeer, decodedName);
         new MaterialDialog.Builder(context)
             .title(R.string.title_message_details)
@@ -551,7 +551,7 @@ public final class MessageUtils {
             String label, long time, boolean fullFormat) {
         try {
             details.append(label);
-            details.append(MessageUtils.formatTimeStampString(context, time, fullFormat));
+            details.append(formatTimeStampString(context, time, fullFormat));
         }
         catch (IOException e) {
             // ignored
