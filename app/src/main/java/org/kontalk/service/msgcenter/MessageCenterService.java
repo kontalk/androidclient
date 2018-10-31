@@ -970,9 +970,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // shutting down due to missing network connection
             // schedule a reconnection for next time we'll have network
             // (only on systems on which we do not receive network state changes
-            //  and if we don't have push notifications)
+            //  and if we don't have push notifications or pending work)
             if (!SystemUtils.isReceivingNetworkStateChanges() &&
-                    !isPushNotificationsAvailable(this) &&
+                    (!isPushNotificationsAvailable(this) || hasPendingWork()) &&
                     !SystemUtils.isNetworkConnectionAvailable(this)) {
                 Log.i(TAG, "network absent and no way of resuming, scheduling job for next time");
                 scheduleStartJob();
@@ -980,11 +980,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             // if we have pending messages, it means the OS is killing us
             // schedule a reconnection for next time we'll have network
+            /* TODO needs more analysis
             else if (mustSetForeground(this) && hasPendingWork()) {
                 // TODO remember to check with hasPendingWork if we need to foreground
                 Log.i(TAG, "we have pending work, scheduling foreground job for next time");
                 scheduleStartJob();
             }
+            */
         }
     }
 
