@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <layer-list android:opacity="transparent" android:paddingLeft="20dp">
+            <item>
+                <bitmap
+                    android:gravity="center_vertical|left"
+                    android:src="@drawable/ic_arrow_drop_down_circle_grey_16dp" />
+             </item>
+        </layer-list>
+    </item>
+</selector>
