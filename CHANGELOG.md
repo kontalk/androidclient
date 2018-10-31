@@ -18,6 +18,7 @@
 - Fix message center not waking up when replying from notification
 - Fix messages skipped until next app opening
 - Fix message center not shutting down when inactive
+- Fix invisible incoming replied messages (#1224)
 
 ## [4.2.0] - 2018-09-04
 ### Changed
