@@ -245,7 +245,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
         // populate country codes
         final CountryCodesAdapter ccList = new CountryCodesAdapter(this,
-                R.layout.simple_list_item_1,
+                R.layout.countrycode_spinner_item,
                 android.R.layout.simple_spinner_dropdown_item);
         PhoneNumberUtil util = PhoneNumberUtil.getInstance();
         Set<String> ccSet = getSupportedRegions(util);
