@@ -2750,9 +2750,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 sendPacket(m);
             }
 
-            // no ack request, release message center immediately
-            if (!ackRequest)
-                mIdleHandler.release();
+            // the real sendMessage has its own hold/release pair
+            mIdleHandler.release();
         }
     }
 
