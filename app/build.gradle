@@ -126,6 +126,7 @@ dependencies {
         exclude group: 'net.sf.kxml'
     }
 
+    // support libraries
     implementation "com.android.support:appcompat-v7:$appcompatVersion"
     implementation "com.android.support:design:$appcompatVersion"
     implementation "com.android.support:gridlayout-v7:$appcompatVersion"
@@ -137,6 +138,16 @@ dependencies {
     implementation "com.android.support:animated-vector-drawable:$appcompatVersion"
     implementation "com.android.support:support-v13:$appcompatVersion"
 
+    // network/protocol libraries
+    implementation "org.igniterealtime.smack:smack-tcp:$smackVersion"
+    implementation "org.igniterealtime.smack:smack-experimental:$smackVersion"
+    implementation "org.igniterealtime.smack:smack-android:$smackVersion"
+    implementation 'info.guardianproject.netcipher:netcipher:1.2.1'
+    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
+    implementation 'com.segment.backo:backo:1.0.0'
+    implementation 'com.google.code.gson:gson:2.8.5'
+
+    // encryption libraries
     implementation "com.madgag.spongycastle:core:$spongyCastleVersion"
     implementation ("com.madgag.spongycastle:prov:$spongyCastleVersion") {
         exclude group: 'junit'
@@ -147,17 +158,13 @@ dependencies {
     implementation ("com.madgag.spongycastle:bcpg-jdk15on:$spongyCastleVersion") {
         exclude group: 'junit'
     }
+
+    // storage/persistence libraries
     implementation 'android.arch.persistence:db:1.1.1'
     implementation 'io.requery:sqlite-android:3.24.0'
-    implementation 'info.guardianproject.netcipher:netcipher:1.2.1'
-    implementation 'com.googlecode.libphonenumber:libphonenumber:8.9.7'
-    implementation 'com.google.zxing:core:3.3.1'
-    implementation 'me.dm7.barcodescanner:zxing:1.9.8'
-    implementation 'com.segment.backo:backo:1.0.0'
+
+    // UI libraries
     implementation 'pub.devrel:easypermissions:1.2.0'
-    implementation "org.igniterealtime.smack:smack-tcp:$smackVersion"
-    implementation "org.igniterealtime.smack:smack-experimental:$smackVersion"
-    implementation "org.igniterealtime.smack:smack-android:$smackVersion"
     implementation 'com.github.machinarius:preferencefragment:0.1.1'
     implementation 'com.afollestad.material-dialogs:core:0.9.6.0'
     implementation 'com.afollestad.material-dialogs:commons:0.9.6.0'
@@ -165,9 +172,7 @@ dependencies {
     implementation 'com.nispok:snackbar:2.11.0'
     // TODO Glide 4 required API level 14 at the time. It needs porting now
     implementation 'com.github.bumptech.glide:glide:3.8.0'
-    implementation 'com.github.instacart.truetime-android:library:3.3'
     implementation 'com.github.daniele-athome:FloatingActionButton:2e5bbbf155'
-    implementation 'de.hdodenhof:circleimageview:2.1.0'
     implementation 'com.github.vlivanov:ListViewVariants:f606578467'
     // branch sprite-strips-soft-refs-lru-cache
     implementation 'com.github.akwizgran.Emoji:emoji-one:e364918e26'
@@ -179,24 +184,30 @@ dependencies {
     implementation "android.arch.lifecycle:runtime:1.1.1"
     implementation "android.arch.lifecycle:extensions:1.1.1"
     implementation 'android.arch.paging:runtime:1.0.1'
+    implementation 'de.hdodenhof:circleimageview:2.1.0'
 
-    implementation 'com.google.code.gson:gson:2.8.5'
-    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
+    // other libraries
+    implementation 'com.googlecode.libphonenumber:libphonenumber:8.9.7'
+    implementation 'com.google.zxing:core:3.3.1'
+    implementation 'me.dm7.barcodescanner:zxing:1.9.8'
+    implementation 'com.github.instacart.truetime-android:library:3.3'
 
+    // maps libraries
     implementation "com.github.kontalk.AnyMaps:anymaps-base:$anyMapsVersion"
     implementation "com.github.kontalk.AnyMaps:anymaps-osm:$anyMapsVersion"
-
     googleplayImplementation "com.github.kontalk.AnyMaps:anymaps-google:$anyMapsVersion"
+
+    // Google Play Services
+    googleplayImplementation "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
     googleplayImplementation "com.google.android.gms:play-services-maps:$googlePlayServicesVersion"
     googleplayImplementation "com.google.android.gms:play-services-location:$googlePlayServicesVersion"
-
-    googleplayImplementation "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
     googleplayImplementation "com.google.firebase:firebase-core:16.0.4"
     googleplayImplementation "com.google.firebase:firebase-messaging:17.3.4"
     googleplayImplementation('com.crashlytics.sdk.android:crashlytics:2.9.5@aar') {
         transitive = true
     }
 
+    // test dependencies
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.google.android:android-test:4.1.1.4'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
