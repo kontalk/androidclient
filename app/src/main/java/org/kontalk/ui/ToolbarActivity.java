@@ -19,6 +19,8 @@
 package org.kontalk.ui;
 
 import android.content.Intent;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.NavUtils;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.AppCompatActivity;
@@ -105,6 +107,17 @@ public abstract class ToolbarActivity extends AppCompatActivity {
     @Override
     public ActionMode startActionMode(final ActionMode.Callback callback) {
         final ActionMode mode = super.startActionMode(callback);
+        if (mode != null) {
+            mode.invalidate();
+        }
+        return mode;
+    }
+
+    /** Workarounding Android bug https://issuetracker.google.com/issues/37032031 */
+    @Nullable
+    @Override
+    public android.support.v7.view.ActionMode startSupportActionMode(@NonNull android.support.v7.view.ActionMode.Callback callback) {
+        final android.support.v7.view.ActionMode mode = super.startSupportActionMode(callback);
         if (mode != null) {
             mode.invalidate();
         }
