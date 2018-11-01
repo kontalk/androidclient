@@ -477,4 +477,25 @@ public final class SystemUtils {
         return lock;
     }
 
+    public static boolean isIgnoringBatteryOptimizations(Context context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+            return true;
+
+        PowerManager pwm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        return pwm.isIgnoringBatteryOptimizations(context.getPackageName());
+    }
+
+    public static boolean supportsJobScheduler() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
+    }
+
+    public static boolean supportsMultiWindow() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
+    }
+
+    /** Return true if the platform can and will broadcast network state change *implicit* intents. */
+    public static boolean isReceivingNetworkStateChanges() {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.N;
+    }
+
 }

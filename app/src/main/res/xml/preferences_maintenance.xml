@@ -51,5 +51,9 @@
         android:title="@string/pref_send_debug_log"
         android:dependency="pref_debug_log"
         android:layout="@layout/md_preference_custom"/>
+    <org.kontalk.ui.prefs.CopyDatabasePreference android:key="pref_copy_database"
+        android:title="@string/pref_copy_database"
+        android:summary="Copy the messages database to the external storage. Mainly for debug purposes."
+        android:layout="@layout/md_preference_custom"/>
 
 </PreferenceScreen>

@@ -73,8 +73,12 @@ public class NetworkStateReceiver extends BroadcastReceiver {
             // TODO handle FAILOVER_CONNECTION
 
             final NetworkInfo info = cm.getActiveNetworkInfo();
-            if (info != null) {
-                Log.w(TAG, "network state changed!");
+            if (info == null) {
+                Log.d(TAG, "no network available!");
+                serviceAction = ACTION_STOP;
+            }
+            else if (info.isConnected()) {
+                Log.d(TAG, "connected to network!");
 
                 if (info.getType() == ConnectivityManager.TYPE_MOBILE &&
                         !shouldReconnect(context)) {
@@ -82,24 +86,10 @@ public class NetworkStateReceiver extends BroadcastReceiver {
                     return;
                 }
 
-                switch (info.getState()) {
-                    case CONNECTED:
-                        // test connection or reconnect
-                        serviceAction = ACTION_TEST;
-                        // notify ping manager that connection type has changed
-                        AndroidAdaptiveServerPingManager.onConnected();
-                        break;
-                    case SUSPENDED:
-                        Log.v(TAG, "suspending network traffic");
-                        break;
-                    default:
-                        serviceAction = ACTION_STOP;
-                        break;
-                }
-            }
-            else {
-                // no network info available
-                serviceAction = ACTION_STOP;
+                // test connection or reconnect
+                serviceAction = ACTION_TEST;
+                // notify ping manager that connection type has changed
+                AndroidAdaptiveServerPingManager.onConnected();
             }
         }
 
@@ -114,7 +104,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
                 break;
             case ACTION_TEST:
                 // connection test
-                MessageCenterService.test(context);
+                MessageCenterService.test(context, true);
                 break;
         }
     }
@@ -122,7 +112,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
     private boolean shouldReconnect(Context context) {
         // check if some activity is holding to the message center
         // or there is a pending push notification
-        if (Kontalk.get().hasReference() || Preferences.getLastPushNotification() < 0)
+        if (Kontalk.get().hasReference() || Preferences.getLastPushNotification() > 0)
             return true;
 
         long lastConnect = Preferences.getLastConnection();

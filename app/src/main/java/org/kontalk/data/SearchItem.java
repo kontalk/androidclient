@@ -91,8 +91,8 @@ public class SearchItem {
         try {
             // TODO enhanced queries?
             return context.getContentResolver().query(Fulltext.CONTENT_URI
-                    .buildUpon().appendQueryParameter("pattern", query + "*").build(),
-                SEARCH_PROJECTION, null, null, null);
+                    .buildUpon().appendQueryParameter("pattern", query).build(),
+                SEARCH_PROJECTION, null, null, Fulltext.DEFAULT_SORT_ORDER);
         }
         catch (SQLiteException e) {
             ReportingManager.logException(e);

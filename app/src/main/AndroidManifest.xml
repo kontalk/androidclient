@@ -100,7 +100,8 @@
             android:label="@string/download_service"/>
         <service android:name=".service.UploadService"/>
         <service android:name=".service.KeyPairGeneratorService"/>
-        <service android:name=".service.MediaService"/>
+        <service android:name=".service.MediaService"
+            android:permission="android.permission.BIND_JOB_SERVICE"/>
         <service android:name=".service.DirectShareTargetService"
             android:permission="android.permission.BIND_CHOOSER_TARGET_SERVICE">
             <intent-filter>
@@ -108,6 +109,8 @@
             </intent-filter>
         </service>
         <service android:name=".service.MessagesImporterService"/>
+        <service android:name=".service.msgcenter.StartMessageCenterJob"
+            android:permission="android.permission.BIND_JOB_SERVICE"/>
 
         <!-- Content providers -->
         <provider android:name=".provider.MessagesProvider"
@@ -121,6 +124,16 @@
             android:readPermission="android.permission.BIND_CHOOSER_TARGET_SERVICE"
             android:writePermission="${applicationId}.permission.USERS"
             android:authorities="${applicationId}.users"/>
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
         <!-- Broadcast receivers -->
         <receiver android:name=".service.SystemBootStartup"

@@ -1,5 +1,25 @@
 # Changelog
 
+## [Next]
+### Changed
+- Group chat indicator in chat list (#818)
+- Allow more control over search query
+- Introduce more recent and performant SQLite library
+- Support for Android Oreo 8.0 (#1215, #1228)
+- Force use of foreground service only when absolutely necessary
+- Support for multi-window (#1101)
+- Improve registration screen (#1209)
+- Allow replying to own messages
+
+### Fixed
+- Sort search results in inverted timestamp order (#1223)
+- Faster reconnection on faulty networks
+- Fix rare crash during PTT recording
+- Fix message center not waking up when replying from notification
+- Fix messages skipped until next app opening
+- Fix message center not shutting down when inactive
+- Fix invisible incoming replied messages (#1224)
+
 ## [4.2.0] - 2018-09-04
 ### Changed
 - Archived chats screen (#941)
@@ -526,6 +546,7 @@
 - Fix draft saving on incoming message (#448)
 - Fix crash during sync (#454)
 
+[Next]: https://github.com/kontalk/androidclient/compare/v4.2.0...HEAD
 [4.2.0]: https://github.com/kontalk/androidclient/compare/v4.2.0-beta4...v4.2.0
 [4.2.0-beta4]: https://github.com/kontalk/androidclient/compare/v4.2.0-beta3...v4.2.0-beta4
 [4.2.0-beta3]: https://github.com/kontalk/androidclient/compare/v4.2.0-beta2...v4.2.0-beta3

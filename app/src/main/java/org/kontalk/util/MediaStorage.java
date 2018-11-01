@@ -48,8 +48,10 @@ import android.provider.MediaStore;
 import android.support.annotation.RawRes;
 import android.support.media.ExifInterface;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.FileProvider;
 import android.webkit.MimeTypeMap;
 
+import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
@@ -62,6 +64,8 @@ import org.kontalk.reporting.ReportingManager;
  */
 public abstract class MediaStorage {
     private static final String TAG = Kontalk.TAG;
+
+    public static final String FILE_AUTHORITY = BuildConfig.APPLICATION_ID + ".fileprovider";
 
     public static final String UNKNOWN_FILENAME = "unknown_file.bin";
 
@@ -110,6 +114,34 @@ public abstract class MediaStorage {
 
     public static File getInternalMediaFile(Context context, String filename) {
         return new File(context.getCacheDir(), filename);
+    }
+
+    private static boolean isFileUriAllowed() {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.N;
+    }
+
+    /**
+     * Returns a world-readable Uri if the given Uri is file-based.
+     * @param context any context, used for {@link FileProvider#getUriForFile}
+     * @param uri Uri to be converted
+     * @param intent if not null, appropriate flags will be added
+     * @param opening true if the Uri will be used for opening (ACTION_VIEW).
+     *                In that case, if file-based Uris are allowed on the device,
+     *                the original Uri will be returned.
+     * @return the converted Uri, or the original one if not needed to be converted
+     */
+    public static Uri getWorldReadableUri(Context context, Uri uri, Intent intent, boolean opening) {
+        if (isFileUriAllowed() && opening)
+            return uri;
+
+        if ("file".equals(uri.getScheme())) {
+            uri = FileProvider.getUriForFile(context, MediaStorage.FILE_AUTHORITY,
+                new File(uri.getPath()));
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            }
+        }
+        return uri;
     }
 
     /** Writes a media to the internal cache. */
@@ -172,8 +204,12 @@ public abstract class MediaStorage {
     /** Writes a thumbnail of a media to a {@link File}. */
     public static void cacheThumbnail(Context context, Uri media, File destination, boolean forNetwork) throws IOException {
         FileOutputStream fout = new FileOutputStream(destination);
-        cacheThumbnail(context, media, fout, forNetwork);
-        fout.close();
+        try {
+            cacheThumbnail(context, media, fout, forNetwork);
+        }
+        finally {
+            fout.close();
+        }
     }
 
     private static void cacheThumbnail(Context context, Uri media, FileOutputStream fout, boolean forNetwork) throws IOException {

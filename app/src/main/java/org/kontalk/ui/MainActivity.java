@@ -32,7 +32,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.PowerManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
@@ -128,8 +127,7 @@ public abstract class MainActivity extends ToolbarActivity {
 
         boolean skipMessage = Preferences.isSkipDozeMode();
         if (!skipMessage) {
-            PowerManager pwm = (PowerManager) getSystemService(POWER_SERVICE);
-            if (!pwm.isIgnoringBatteryOptimizations(getPackageName())) {
+            if (!SystemUtils.isIgnoringBatteryOptimizations(this)) {
                 new MaterialDialog.Builder(this)
                     .title(R.string.title_doze_mode)
                     .content(R.string.msg_doze_mode)

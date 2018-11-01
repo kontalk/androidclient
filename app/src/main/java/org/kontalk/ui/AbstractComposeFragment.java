@@ -466,8 +466,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                     if (text != null && !TextUtils.isEmpty(text.getContent()))
                         copyTextMenu.setVisible(true);
 
-                    // incoming text message: enable reply
-                    if (msg.isIncoming() && text != null) {
+                    // text message: enable reply
+                    if (text != null) {
                         replyMenu.setVisible(true);
                     }
 
@@ -768,6 +768,16 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     @Override
     public void onTextEntryFocus() {
         tryHideAttachmentView(true);
+    }
+
+    @Override
+    public boolean canOpenEmoji() {
+        if (SystemUtils.supportsMultiWindow() && getActivity().isInMultiWindowMode()) {
+            Toast.makeText(getContext(), R.string.err_emoji_disabled_in_multiwindow,
+                Toast.LENGTH_LONG).show();
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -1157,7 +1167,9 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
         if (attachment != null) {
             Intent i = new Intent(Intent.ACTION_VIEW);
-            i.setDataAndType(attachment.getLocalUri(), attachment.getMime());
+            Uri uri = MediaStorage.getWorldReadableUri(getContext(),
+                attachment.getLocalUri(), i, true);
+            i.setDataAndType(uri, attachment.getMime());
             try {
                 startActivity(i);
             }
@@ -1394,10 +1406,17 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     private void replyMessage(CompositeMessage msg) {
         TextComponent textComponent = msg.getComponent(TextComponent.class);
         if (textComponent != null) {
-            String sender = msg.getSender();
-            Contact contact = Contact.findByUserId(getContext(), sender);
+            String displayName;
+            if (msg.getDirection() == Messages.DIRECTION_IN) {
+                String sender = msg.getSender();
+                Contact contact = Contact.findByUserId(getContext(), sender);
+                displayName = contact.getDisplayName();
+            }
+            else {
+                displayName = Authenticator.getDefaultDisplayName(getContext());
+            }
 
-            mReplyBar.show(msg.getDatabaseId(), contact.getDisplayName(), textComponent.getContent());
+            mReplyBar.show(msg.getDatabaseId(), displayName, textComponent.getContent());
         }
     }
 
@@ -1456,19 +1475,17 @@ public abstract class AbstractComposeFragment extends ListFragment implements
      */
     protected abstract String getDecodedName(CompositeMessage msg);
 
+    // TODO abstract those intent creators
     private void shareMessage(CompositeMessage msg) {
         Intent i = null;
         AttachmentComponent attachment = msg.getComponent(AttachmentComponent.class);
 
         if (attachment != null) {
-            i = ComposeMessage.sendMediaMessage(attachment.getLocalUri(),
-                attachment.getMime());
+            i = ComposeMessage.sendMediaMessage(getContext(),
+                attachment.getLocalUri(), attachment.getMime());
         }
-
         else if (msg.getComponent(TextComponent.class) != null) {
             TextComponent txt = msg.getComponent(TextComponent.class);
-
-            //if (txt != null)
             i = ComposeMessage.sendTextMessage(txt.getContent());
         }
         else if (msg.getComponent(LocationComponent.class) != null) {
@@ -1479,11 +1496,13 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                     + location.getLatitude() + "," + location.getLongitude()));
         }
 
-        if (i != null)
+        if (i != null) {
             startActivity(i);
-        else
+        }
+        else {
             // TODO ehm...
             Log.w(TAG, "error sharing message");
+        }
     }
 
     protected void loadConversationMetadata(Uri uri) {

@@ -522,19 +522,9 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         if (type == null) {
             // no roster entry found, request subscription
 
-            // pre-approve our presence
-            Intent i = new Intent(context, MessageCenterService.class);
-            i.setAction(MessageCenterService.ACTION_PRESENCE);
-            i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
-            i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribed.name());
-            context.startService(i);
-
-            // request subscription
-            i = new Intent(context, MessageCenterService.class);
-            i.setAction(MessageCenterService.ACTION_PRESENCE);
-            i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
-            i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribe.name());
-            context.startService(i);
+            // pre-approve our presence and request subscription
+            // TODO we should use MessageCenterClient
+            MessageCenterService.requestPresenceSubscription(context, mUserJID);
 
             setStatusText(context.getString(R.string.invitation_sent_label));
         }

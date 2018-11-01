@@ -149,6 +149,8 @@ dependencies {
     implementation ("com.madgag.spongycastle:bcpg-jdk15on:$spongyCastleVersion") {
         exclude group: 'junit'
     }
+    implementation 'android.arch.persistence:db:1.1.1'
+    implementation 'io.requery:sqlite-android:3.24.0'
     implementation 'info.guardianproject.netcipher:netcipher:1.2.1'
     implementation 'com.googlecode.libphonenumber:libphonenumber:8.9.7'
     implementation 'com.google.zxing:core:3.3.1'
@@ -166,7 +168,7 @@ dependencies {
     implementation 'com.afollestad.material-dialogs:commons:0.9.6.0'
     implementation 'com.github.castorflex.smoothprogressbar:library:1.1.0'
     implementation 'com.nispok:snackbar:2.11.0'
-    // Glide 4 requires API level 14
+    // TODO Glide 4 required API level 14 at the time. It needs porting now
     implementation 'com.github.bumptech.glide:glide:3.8.0'
     implementation 'com.github.instacart.truetime-android:library:3.3'
     implementation 'com.github.daniele-athome:FloatingActionButton:2e5bbbf155'
@@ -194,8 +196,8 @@ dependencies {
     googleplayImplementation "com.google.android.gms:play-services-location:$googlePlayServicesVersion"
 
     googleplayImplementation "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
-    googleplayImplementation "com.google.firebase:firebase-core:16.0.3"
-    googleplayImplementation "com.google.firebase:firebase-messaging:17.3.0"
+    googleplayImplementation "com.google.firebase:firebase-core:16.0.4"
+    googleplayImplementation "com.google.firebase:firebase-messaging:17.3.4"
     googleplayImplementation('com.crashlytics.sdk.android:crashlytics:2.9.5@aar') {
         transitive = true
     }

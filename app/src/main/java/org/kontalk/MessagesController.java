@@ -121,6 +121,11 @@ public class MessagesController {
     }
 
     public Future<Uri> sendTextMessage(final Conversation conv, final String text, final long inReplyTo) {
+        return sendTextMessage(conv, text, inReplyTo, false);
+    }
+
+    /** For use by direct reply. Wakes up the message center if necessary if you set <code>wakeService</code> to true. */
+    public Future<Uri> sendTextMessage(final Conversation conv, final String text, final long inReplyTo, final boolean wakeService) {
         FutureTask<Uri> result = new FutureTask<>(new Callable<Uri>() {
             @Override
             public Uri call() throws Exception {
@@ -141,7 +146,7 @@ public class MessagesController {
                     }
                     else {
                         MessageCenterService.sendTextMessage(mContext, userId, text,
-                            encrypted, ContentUris.parseId(newMsg), msgId, inReplyTo);
+                            encrypted, ContentUris.parseId(newMsg), msgId, inReplyTo, wakeService);
                     }
 
                     return newMsg;

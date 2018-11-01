@@ -32,18 +32,20 @@
         android:id="@+id/avatar"
         style="@style/AvatarListItemStyle"/>
 
-    <TextView android:id="@+id/from"
+    <com.vanniktech.emoji.EmojiTextView
+        android:id="@+id/from"
         style="@style/AvatarListItemTextStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:singleLine="true"
         android:layout_alignParentTop="true"
-        android:layout_toRightOf="@id/avatar"
+        android:layout_alignWithParentIfMissing="true"
         android:layout_toEndOf="@id/avatar"
         android:layout_toLeftOf="@+id/date"
+        android:layout_toRightOf="@id/avatar"
         android:layout_toStartOf="@+id/date"
-        android:layout_alignWithParentIfMissing="true"
-        android:ellipsize="marquee" />
+        android:drawablePadding="2dp"
+        android:ellipsize="marquee"
+        android:singleLine="true"/>
         <!-- android:src="@drawable/ic_list_alert_sms_failed" -->
 
     <com.vanniktech.emoji.EmojiTextView

@@ -26,14 +26,18 @@ import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.vanniktech.emoji.EmojiManager;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Point;
+import android.text.SpannableStringBuilder;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 
 /**
@@ -103,6 +107,15 @@ public class ViewUtils {
             }
         }
         return bmp;
+    }
+
+    public static CharSequence injectEmojis(TextView view, CharSequence text) {
+        final SpannableStringBuilder emojiSpannable = new SpannableStringBuilder(text);
+        final Paint.FontMetrics fontMetrics = view.getPaint().getFontMetrics();
+        final float defaultEmojiSize = fontMetrics.descent - fontMetrics.ascent;
+        EmojiManager.getInstance().replaceWithImages(view.getContext(),
+            emojiSpannable, defaultEmojiSize, defaultEmojiSize);
+        return emojiSpannable;
     }
 
 }
