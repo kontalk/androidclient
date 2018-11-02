@@ -378,7 +378,7 @@ public class ContactInfoFragment extends Fragment
 
         // do not request presence for domain JIDs
         if (!XMPPUtils.isDomainJID(mContact.getJID())) {
-            MessageCenterService.bus().post(new PresenceRequest(mContact.getJID()));
+            mServiceBus.post(new PresenceRequest(mContact.getJID()));
         }
     }
 

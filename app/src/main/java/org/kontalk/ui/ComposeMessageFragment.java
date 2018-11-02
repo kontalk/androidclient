@@ -858,11 +858,11 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         if (threadId == 0) {
             // no thread means no peer observer will be invoked
             // we need to manually trigger this
-            ConnectedEvent connectedEvent = MessageCenterService.bus().getStickyEvent(ConnectedEvent.class);
+            ConnectedEvent connectedEvent = mServiceBus.getStickyEvent(ConnectedEvent.class);
             if (connectedEvent != null) {
                 onConnected(connectedEvent);
             }
-            RosterLoadedEvent rosterLoadedEvent = MessageCenterService.bus().getStickyEvent(RosterLoadedEvent.class);
+            RosterLoadedEvent rosterLoadedEvent = mServiceBus.getStickyEvent(RosterLoadedEvent.class);
             if (rosterLoadedEvent != null) {
                 onRosterLoaded(rosterLoadedEvent);
             }
