@@ -36,6 +36,8 @@ import java.util.concurrent.Executors;
 import java.util.zip.ZipInputStream;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.jivesoftware.smack.ExceptionCallback;
 import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.SmackException;
@@ -148,6 +150,10 @@ import org.kontalk.service.XMPPConnectionHelper;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.service.msgcenter.event.ConnectedEvent;
 import org.kontalk.service.msgcenter.event.DisconnectedEvent;
+import org.kontalk.service.msgcenter.event.NoPresenceEvent;
+import org.kontalk.service.msgcenter.event.PresenceEvent;
+import org.kontalk.service.msgcenter.event.PresenceRequest;
+import org.kontalk.service.msgcenter.event.UserOnlineEvent;
 import org.kontalk.service.msgcenter.group.AddRemoveMembersCommand;
 import org.kontalk.service.msgcenter.group.CreateGroupCommand;
 import org.kontalk.service.msgcenter.group.GroupCommand;
@@ -230,11 +236,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Broadcasted when we are connected and authenticated to the server.
      * Send this intent to receive the same as a broadcast if connected.
      */
+    @Deprecated
     public static final String ACTION_CONNECTED = "org.kontalk.action.CONNECTED";
 
     /**
      * Broadcasted when we are disconnected from the server.
      */
+    @Deprecated
     public static final String ACTION_DISCONNECTED = "org.kontalk.action.DISCONNECTED";
 
     /**
@@ -248,6 +256,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Send this intent to broadcast presence.
      * Send this intent with type="probe" to request a presence in the roster.
      */
+    @Deprecated
     public static final String ACTION_PRESENCE = "org.kontalk.action.PRESENCE";
 
     /**
@@ -789,6 +798,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // configure XMPP client
         configure();
 
+        BUS.register(this);
+
         // create the roster store
         mRosterStore = new SQLiteRosterStore(this);
 
@@ -947,12 +958,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     @Override
     public void onDestroy() {
         Log.d(TAG, "destroying message center");
+
+        BUS.unregister(this);
+
         quit(false);
+
         // deactivate ping manager
         AndroidAdaptiveServerPingManager.onDestroy();
+
         // destroy roster store
         mRosterStore.onDestroy();
         mRosterStore = null;
+
         // unregister screen off listener for manual inactivation
         unregisterInactivity();
 
@@ -1537,7 +1554,31 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return false;
     }
 
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handlePresence(PresenceRequest request) {
+        if (isConnected()) {
+            final Roster roster = getRoster();
+
+            if (request.jid == null) {
+                for (RosterEntry entry : roster.getEntries()) {
+                    BUS.post(replyPresenceRequest(roster, entry,
+                        request.jid.asBareJid(), request.id));
+                }
+
+                // broadcast our own presence
+                BUS.post(replyMyPresenceRequest(request.id));
+            }
+            else {
+                final BareJid jid = request.jid.asBareJid();
+                final RosterEntry entry = roster.getEntry(jid);
+                BUS.post(replyPresenceRequest(roster, entry,
+                    request.jid.asBareJid(), request.id));
+            }
+        }
+    }
+
     @CommandHandler(name = ACTION_PRESENCE)
+    @Deprecated
     private boolean handlePresence(Intent intent) {
         if (isConnected()) {
             final String id = intent.getStringExtra(EXTRA_PACKET_ID);
@@ -2199,6 +2240,33 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // to keep track of request-reply
         i.putExtra(EXTRA_PACKET_ID, id);
         lbm.sendBroadcast(i);
+    }
+
+    private PresenceEvent replyPresenceRequest(Roster roster, RosterEntry entry, BareJid jid, String id) {
+        PresenceEvent event;
+
+        // asking our own presence
+        if (Authenticator.isSelfJID(this, jid)) {
+            return replyMyPresenceRequest(id);
+        }
+
+        // entry present and not pending subscription
+        else if (isRosterEntrySubscribed(entry)) {
+            // roster entry found, send presence probe
+            Presence presence = roster.getPresence(jid);
+            event = PresenceListener.createEvent(this, presence, entry, id);
+        }
+        else {
+            // null type indicates no roster entry found or not authorized
+            event = new NoPresenceEvent(jid, id);
+        }
+
+        return event;
+    }
+
+    private PresenceEvent replyMyPresenceRequest(String id) {
+        return new UserOnlineEvent(mConnection.getUser(), null, 0,
+            null, null, null, true, true, getMyFingerprint(), id);
     }
 
     /**
@@ -3342,6 +3410,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         startForegroundIfNeeded(context, i);
     }
 
+    /** @deprecated Use {@link PresenceRequest} */
+    @Deprecated
     public static void requestPresence(final Context context, String to) {
         Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_PRESENCE);

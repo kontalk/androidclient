@@ -47,6 +47,9 @@ import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.provider.UsersProvider;
+import org.kontalk.service.msgcenter.event.PresenceEvent;
+import org.kontalk.service.msgcenter.event.UserOfflineEvent;
+import org.kontalk.service.msgcenter.event.UserOnlineEvent;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.util.Preferences;
 
@@ -291,6 +294,57 @@ class PresenceListener extends MessageCenterPacketListener implements SubscribeL
         }
 
         return i;
+    }
+
+    public static PresenceEvent createEvent(Context ctx, Presence p, RosterEntry entry, String id) {
+        String jid = p.getFrom().asBareJid().toString();
+
+        Date delayTime;
+        DelayInformation delay = p.getExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE);
+        if (delay != null) {
+            delayTime = delay.getStamp();
+        }
+        else {
+            // try last seen from database
+            long timestamp = UsersProvider.getLastSeen(ctx, jid);
+            if (timestamp < 0)
+                timestamp = System.currentTimeMillis();
+            delayTime = new Date(timestamp);
+        }
+
+        // public key fingerprint
+        String fingerprint = PublicKeyPresence.getFingerprint(p);
+        if (fingerprint == null) {
+            // try untrusted fingerprint from database
+            fingerprint = Keyring.getFingerprint(ctx, jid, MyUsers.Keys.TRUST_UNKNOWN);
+        }
+
+        // subscription information
+        String rosterName = null;
+        boolean subscribedFrom = false;
+        boolean subscribedTo = false;
+        if (entry != null) {
+            rosterName = entry.getName();
+
+            RosterPacket.ItemType subscriptionType = entry.getType();
+            subscribedFrom = subscriptionType == RosterPacket.ItemType.both ||
+                subscriptionType == RosterPacket.ItemType.from;
+            subscribedTo = subscriptionType == RosterPacket.ItemType.both ||
+                subscriptionType == RosterPacket.ItemType.to;
+        }
+
+        if (p.getType() == Presence.Type.available) {
+            return new UserOnlineEvent(p.getFrom(), p.getMode(), p.getPriority(),
+                p.getStatus(), delayTime, rosterName, subscribedFrom, subscribedTo, fingerprint, id);
+        }
+        else if (p.getType() == Presence.Type.unavailable) {
+            return new UserOfflineEvent(p.getFrom(), p.getMode(), p.getPriority(),
+                p.getStatus(), delayTime, rosterName, subscribedFrom, subscribedTo, fingerprint, id);
+        }
+        else {
+            // TODO other presence types
+            throw new UnsupportedOperationException("Not implemented: " + p.getType());
+        }
     }
 
     @SuppressWarnings("WeakerAccess")

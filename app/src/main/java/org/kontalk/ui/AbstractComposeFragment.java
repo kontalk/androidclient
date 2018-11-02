@@ -123,6 +123,8 @@ import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.event.ConnectedEvent;
 import org.kontalk.service.msgcenter.event.DisconnectedEvent;
 import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
+import org.kontalk.service.msgcenter.event.UserOfflineEvent;
+import org.kontalk.service.msgcenter.event.UserOnlineEvent;
 import org.kontalk.ui.adapter.MessageListAdapter;
 import org.kontalk.ui.view.AttachmentRevealFrameLayout;
 import org.kontalk.ui.view.AudioContentView;
@@ -247,7 +249,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
     private int mCheckedItemCount;
 
-    private EventBus mServiceBus = MessageCenterService.bus();
+    protected EventBus mServiceBus = MessageCenterService.bus();
 
     /**
      * Returns a new fragment instance from a picked contact.
@@ -1884,8 +1886,27 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     /**
      * Called when a presence is received.
      */
-    protected abstract void onPresence(String jid, Presence.Type type,
-        boolean removed, Presence.Mode mode, String fingerprint);
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onUserOnline(UserOnlineEvent event) {
+        // check that origin matches the current chat
+        if (!isUserId(event.jid.toString())) {
+            // not for us
+            return;
+        }
+
+        mAvailableResources.add(event.jid.toString());
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onUserOffline(UserOfflineEvent event) {
+        // check that origin matches the current chat
+        if (!isUserId(event.jid.toString())) {
+            // not for us
+            return;
+        }
+
+        mAvailableResources.remove(event.jid.toString());
+    }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN_ORDERED)
     public void onConnected(ConnectedEvent event) {
@@ -1954,23 +1975,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             String status, Date delay,
             String rosterName, boolean subscribedFrom, boolean subscribedTo,
             String fingerprint) {
-
-            // since this listener is used also for global presence (for groups),
-            // check that the origin is among group members
-            if (mConversation.isGroupChat() && !isUserId(from.toString())) {
-                // not for us
-                return;
-            }
-
-            boolean removed = false;
-            if (type == Presence.Type.available) {
-                mAvailableResources.add(from.toString());
-            }
-            else if (type == Presence.Type.unavailable) {
-                removed = mAvailableResources.remove(from.toString());
-            }
-
-            AbstractComposeFragment.this.onPresence(from.toString(), type, removed, mode, fingerprint);
         }
     }
 
@@ -1994,9 +1998,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                 // It may be inelegant, but this way we don't have to change our
                 // subscription when group members change
                 msgc.addGlobalPresenceListener(mPresenceReceiver);
-            }
-            else {
-                msgc.addPresenceListener(mPresenceReceiver, getUserId());
             }
 
             // connection and roster load status will be provided via event bus

@@ -28,9 +28,9 @@ import java.util.Set;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
-import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
+import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
@@ -64,7 +64,11 @@ import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyUsers;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.event.PresenceEvent;
+import org.kontalk.service.msgcenter.event.PresenceRequest;
 import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
+import org.kontalk.service.msgcenter.event.UserOfflineEvent;
+import org.kontalk.service.msgcenter.event.UserOnlineEvent;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.XMPPUtils;
 
@@ -259,7 +263,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
             String[] users = mConversation.getGroupPeers();
             if (users != null) {
                 for (String user : users) {
-                    MessageCenterService.requestPresence(context, user);
+                    mServiceBus.post(new PresenceRequest(JidCreate.bareFromOrThrowUnchecked(user)));
                 }
             }
         }
@@ -411,14 +415,13 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         }
     }
 
-    @Override
-    protected void onPresence(String jid, Presence.Type type, boolean removed, Presence.Mode mode, String fingerprint) {
+    private void onUserStatusChanged(PresenceEvent event) {
         Context context = getContext();
         if (context == null)
             return;
 
         if (Log.isDebug()) {
-            Log.d(TAG, "group member presence from " + jid + " (type=" + type + ", fingerprint=" + fingerprint + ")");
+            Log.d(TAG, "group member presence from " + event.jid + " (type=" + event.type + ", fingerprint=" + event.fingerprint + ")");
         }
 
         updateStatusText();
@@ -427,7 +430,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         if (!Preferences.getEncryptionEnabled(context))
             return;
 
-        String bareJid = XmppStringUtils.parseBareJid(jid);
+        String bareJid = event.jid.asBareJid().toString();
 
         Contact contact = Contact.findByUserId(context, bareJid);
         // if this is null, we are accepting the key for the first time
@@ -437,30 +440,54 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         boolean unknownKey = (trustedPublicKey == null && contact.getFingerprint() != null);
         boolean changedKey = false;
         // check if fingerprint changed (only if we have roster presence)
-        if (type != null && trustedPublicKey != null && fingerprint != null) {
+        if (event.type != null && trustedPublicKey != null && event.fingerprint != null) {
             String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(trustedPublicKey));
-            if (!fingerprint.equalsIgnoreCase(oldFingerprint)) {
+            if (!event.fingerprint.equalsIgnoreCase(oldFingerprint)) {
                 // fingerprint has changed since last time
                 changedKey = true;
             }
         }
         // user has no key (or we have no roster presence) or it couldn't be found: request it
-        else if ((trustedPublicKey == null && fingerprint == null) || type == null) {
-            if (mKeyRequestIds.containsKey(jid)) {
+        else if ((trustedPublicKey == null && event.fingerprint == null) || event.type == null) {
+            if (mKeyRequestIds.containsKey(event.jid.toString())) {
                 // avoid request loop
-                mKeyRequestIds.remove(jid);
+                mKeyRequestIds.remove(event.jid.toString());
             }
             else {
                 // autotrust the key we are about to request
                 // but set the trust level to ignored because we didn't really verify it
-                Keyring.setAutoTrustLevel(context, jid, MyUsers.Keys.TRUST_IGNORED);
-                requestPublicKey(jid);
+                Keyring.setAutoTrustLevel(context, event.jid.toString(), MyUsers.Keys.TRUST_IGNORED);
+                requestPublicKey(event.jid.toString());
             }
         }
 
-        if (Keyring.isAdvancedMode(context, jid) && (changedKey || unknownKey)) {
+        if (Keyring.isAdvancedMode(context, event.jid.toString()) && (changedKey || unknownKey)) {
             showKeyWarning();
         }
+    }
+
+    @Override
+    public void onUserOnline(UserOnlineEvent event) {
+        // check that origin matches the current chat
+        if (!isUserId(event.jid.toString())) {
+            // not for us
+            return;
+        }
+
+        super.onUserOnline(event);
+        onUserStatusChanged(event);
+    }
+
+    @Override
+    public void onUserOffline(UserOfflineEvent event) {
+        // check that origin matches the current chat
+        if (!isUserId(event.jid.toString())) {
+            // not for us
+            return;
+        }
+
+        super.onUserOffline(event);
+        onUserStatusChanged(event);
     }
 
     @Override

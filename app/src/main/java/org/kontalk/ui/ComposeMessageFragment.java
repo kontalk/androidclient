@@ -29,6 +29,7 @@ import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
+import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
@@ -77,7 +78,11 @@ import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.event.ConnectedEvent;
+import org.kontalk.service.msgcenter.event.PresenceEvent;
+import org.kontalk.service.msgcenter.event.PresenceRequest;
 import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
+import org.kontalk.service.msgcenter.event.UserOfflineEvent;
+import org.kontalk.service.msgcenter.event.UserOnlineEvent;
 import org.kontalk.sync.Syncer;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Permissions;
@@ -467,8 +472,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         setStatusText(mCurrentStatus != null ? mCurrentStatus : "");
     }
 
-    @Override
-    protected void onPresence(String jid, Presence.Type type, boolean removed, Presence.Mode mode, String fingerprint) {
+    private void onUserStatusChanged(PresenceEvent event) {
         final Context context = getContext();
         if (context == null)
             return;
@@ -485,15 +489,15 @@ public class ComposeMessageFragment extends AbstractComposeFragment
             boolean unknownKey = (trustedPublicKey == null && contact.getFingerprint() != null);
             boolean changedKey = false;
             // check if fingerprint changed (only if we have roster presence)
-            if (type != null && trustedPublicKey != null && fingerprint != null) {
+            if (event.type != null && trustedPublicKey != null && event.fingerprint != null) {
                 String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(trustedPublicKey));
-                if (!fingerprint.equalsIgnoreCase(oldFingerprint)) {
+                if (!event.fingerprint.equalsIgnoreCase(oldFingerprint)) {
                     // fingerprint has changed since last time
                     changedKey = true;
                 }
             }
             // user has no key (or we have no roster presence) or it couldn't be found: request it
-            else if ((trustedPublicKey == null && fingerprint == null) || type == null) {
+            else if ((trustedPublicKey == null && event.fingerprint == null) || event.type == null) {
                 if (mKeyRequestId != null) {
                     // avoid request loop
                     mKeyRequestId = null;
@@ -501,103 +505,122 @@ public class ComposeMessageFragment extends AbstractComposeFragment
                 else {
                     // autotrust the key we are about to request
                     // but set the trust level to ignored because we didn't really verify it
-                    Keyring.setAutoTrustLevel(context, jid, MyUsers.Keys.TRUST_IGNORED);
-                    requestPublicKey(jid);
+                    Keyring.setAutoTrustLevel(context, event.jid.toString(), MyUsers.Keys.TRUST_IGNORED);
+                    requestPublicKey(event.jid.toString());
                 }
             }
 
             // key checks are to be done in advanced mode only
-            if (Keyring.isAdvancedMode(context, jid)) {
+            if (Keyring.isAdvancedMode(context, event.jid.toString())) {
                 if (changedKey) {
                     // warn user that public key is changed
-                    showKeyChangedWarning(fingerprint);
+                    showKeyChangedWarning(event.fingerprint);
                 }
                 else if (unknownKey) {
                     // warn user that public key is unknown
-                    showKeyUnknownWarning(fingerprint);
+                    showKeyUnknownWarning(event.fingerprint);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onUserOnline(UserOnlineEvent event) {
+        super.onUserOnline(event);
+
+        final Context context = getContext();
+        if (context == null)
+            return;
+
+        onUserStatusChanged(event);
+
+        CharSequence statusText;
+
+        mIsTyping = mIsTyping || Contact.isTyping(event.jid.toString());
+        if (mIsTyping) {
+            setStatusText(context.getString(R.string.seen_typing_label));
+        }
+
+        /*
+         * FIXME using mode this way has several flaws.
+         * 1. it doesn't take multiple resources into account
+         * 2. it doesn't account for away status duration (we don't have this information at all)
+         */
+        boolean isAway = (event.mode == Presence.Mode.away);
+        if (isAway) {
+            statusText = context.getString(R.string.seen_away_label);
+        }
+        else {
+            statusText = context.getString(R.string.seen_online_label);
+        }
+
+        String version = Contact.getVersion(event.jid.toString());
+        // do not request version info if already requested before
+        if (!isAway && version == null && mVersionRequestId == null) {
+            requestVersion(event.jid.toString());
+        }
+
+        // a new resource just connected, send typing information again
+        // (only if we already sent it in this session)
+        // FIXME this will always broadcast the message to all resources
+        if (mComposer.isComposeSent() && mComposer.isSendEnabled() &&
+            Preferences.getSendTyping(context)) {
+            sendTyping();
+        }
+
+        setCurrentStatusText(statusText);
+    }
+
+    @Override
+    public void onUserOffline(UserOfflineEvent event) {
+        final Context context = getContext();
+        if (context == null)
+            return;
+
+        if (!isUserId(event.jid.toString())) {
+            // not for us
+            return;
+        }
+
+        int resourceCount = mAvailableResources.size();
+
+        super.onUserOffline(event);
+
+        boolean removed = resourceCount != mAvailableResources.size();
+
+        onUserStatusChanged(event);
+
+        CharSequence statusText = null;
+
+        /*
+         * All available resources have gone. Mark
+         * the user as offline immediately and use the
+         * timestamp provided with the stanza (if any).
+         */
+        if (mAvailableResources.size() == 0) {
+            // an offline user can't be typing
+            mIsTyping = false;
+
+            if (removed) {
+                // resource was removed now, mark as just offline
+                statusText = context.getText(R.string.seen_moment_ago_label);
+            }
+            else {
+                // resource is offline, request last activity
+                Contact contact = getContact();
+                if (contact != null && contact.getLastSeen() > 0) {
+                    setLastSeenTimestamp(context, contact.getLastSeen());
+                }
+                else if (mLastActivityRequestId == null) {
+                    mLastActivityRequestId = StringUtils.randomString(6);
+                    MessageCenterService.requestLastActivity(context,
+                        event.jid.asBareJid().toString(), mLastActivityRequestId);
                 }
             }
         }
 
-        if (type == null) {
-            // no roster entry found, request subscription
-
-            // pre-approve our presence and request subscription
-            // TODO we should use MessageCenterClient
-            MessageCenterService.requestPresenceSubscription(context, mUserJID);
-
-            setStatusText(context.getString(R.string.invitation_sent_label));
-        }
-
-        // (un)available presence
-        else if (type == Presence.Type.available || type == Presence.Type.unavailable) {
-
-            CharSequence statusText = null;
-
-            if (type == Presence.Type.available) {
-                mIsTyping = mIsTyping || Contact.isTyping(jid);
-                if (mIsTyping) {
-                    setStatusText(context.getString(R.string.seen_typing_label));
-                }
-
-                /*
-                 * FIXME using mode this way has several flaws.
-                 * 1. it doesn't take multiple resources into account
-                 * 2. it doesn't account for away status duration (we don't have this information at all)
-                 */
-                boolean isAway = (mode == Presence.Mode.away);
-                if (isAway) {
-                    statusText = context.getString(R.string.seen_away_label);
-                }
-                else {
-                    statusText = context.getString(R.string.seen_online_label);
-                }
-
-                String version = Contact.getVersion(jid);
-                // do not request version info if already requested before
-                if (!isAway && version == null && mVersionRequestId == null) {
-                    requestVersion(jid);
-                }
-
-                // a new resource just connected, send typing information again
-                // (only if we already sent it in this session)
-                // FIXME this will always broadcast the message to all resources
-                if (mComposer.isComposeSent() && mComposer.isSendEnabled() &&
-                        Preferences.getSendTyping(context)) {
-                    sendTyping();
-                }
-            }
-            else if (type == Presence.Type.unavailable) {
-                /*
-                 * All available resources have gone. Mark
-                 * the user as offline immediately and use the
-                 * timestamp provided with the stanza (if any).
-                 */
-                if (mAvailableResources.size() == 0) {
-                    // an offline user can't be typing
-                    mIsTyping = false;
-
-                    if (removed) {
-                        // resource was removed now, mark as just offline
-                        statusText = context.getText(R.string.seen_moment_ago_label);
-                    }
-                    else {
-                        // resource is offline, request last activity
-                        if (contact != null && contact.getLastSeen() > 0) {
-                            setLastSeenTimestamp(context, contact.getLastSeen());
-                        }
-                        else if (mLastActivityRequestId == null) {
-                            mLastActivityRequestId = StringUtils.randomString(6);
-                            MessageCenterService.requestLastActivity(context,
-                                XmppStringUtils.parseBareJid(jid), mLastActivityRequestId);
-                        }
-                    }
-                }
-            }
-
-            if (statusText != null) {
-                setCurrentStatusText(statusText);
-            }
+        if (statusText != null) {
+            setCurrentStatusText(statusText);
         }
     }
 
@@ -616,7 +639,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
                 // and the UI reacting to a pending request status (i.e. "pending_in")
                 if (mConversation.getRequestStatus() != Threads.REQUEST_WAITING) {
                     // request last presence
-                    MessageCenterService.requestPresence(context, mUserJID);
+                    mServiceBus.post(new PresenceRequest(JidCreate.bareFromOrThrowUnchecked(mUserJID)));
                 }
             }
         }
