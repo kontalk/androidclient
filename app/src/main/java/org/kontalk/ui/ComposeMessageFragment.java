@@ -526,11 +526,17 @@ public class ComposeMessageFragment extends AbstractComposeFragment
 
     @Override
     public void onUserOnline(UserOnlineEvent event) {
-        super.onUserOnline(event);
-
         final Context context = getContext();
         if (context == null)
             return;
+
+        // check that origin matches the current chat
+        if (!isUserId(event.jid.toString())) {
+            // not for us
+            return;
+        }
+
+        super.onUserOnline(event);
 
         onUserStatusChanged(event);
 

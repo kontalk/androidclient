@@ -353,6 +353,11 @@ public class ContactInfoFragment extends Fragment
         if (context == null)
             return;
 
+        if (!mContact.getJID().equals(event.jid.asBareJid().toString())) {
+            // not for us
+            return;
+        }
+
         // no roster entry found, awaiting subscription or not subscribed
         mInfoBanner.setSummary(context.getString(R.string.invitation_sent_label));
     }
