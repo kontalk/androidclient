@@ -240,12 +240,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_CONNECTED = "org.kontalk.action.CONNECTED";
 
     /**
-     * Broadcasted when we are disconnected from the server.
-     */
-    @Deprecated
-    public static final String ACTION_DISCONNECTED = "org.kontalk.action.DISCONNECTED";
-
-    /**
      * Send this intent to request roster status of any user.
      * Broadcasted back in reply to requests.
      */
@@ -1099,7 +1093,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // stop any key pair regeneration service
         endKeyPairRegeneration();
 
-        broadcast(ACTION_DISCONNECTED);
         BUS.removeAllStickyEvents();
         BUS.post(new DisconnectedEvent());
 

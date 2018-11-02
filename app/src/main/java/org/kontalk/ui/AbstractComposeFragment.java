@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -40,9 +39,7 @@ import com.nispok.snackbar.listeners.ActionClickListener;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.chatstates.ChatState;
-import org.jxmpp.jid.Jid;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -117,8 +114,6 @@ import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.DownloadService;
-import org.kontalk.service.msgcenter.MessageCenterClient;
-import org.kontalk.service.msgcenter.MessageCenterClient.PresenceListener;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.event.ConnectedEvent;
 import org.kontalk.service.msgcenter.event.DisconnectedEvent;
@@ -1942,8 +1937,9 @@ public abstract class AbstractComposeFragment extends ListFragment implements
      */
     protected abstract boolean isUserId(String jid);
 
+    /** @deprecated Use the event bus. */
     @Deprecated
-    class PresenceReceiver extends BroadcastReceiver implements PresenceListener {
+    class PresenceReceiver extends BroadcastReceiver {
         public void onReceive(Context context, Intent intent) {
             // activity is terminating
             if (getContext() == null)
@@ -1968,14 +1964,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                 }
             }
         }
-
-        @Override
-        public void onPresence(Jid from,
-            Presence.Type type, Presence.Mode mode, int priority,
-            String status, Date delay,
-            String rosterName, boolean subscribedFrom, boolean subscribedTo,
-            String fingerprint) {
-        }
     }
 
     /** @deprecated Replace with event subscribers. */
@@ -1990,16 +1978,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
             mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
 
-            Context ctx = getContext();
-            MessageCenterClient msgc = MessageCenterClient.getInstance(ctx);
-
-            if (mConversation.isGroupChat()) {
-                // we will filter out unwanted presences.
-                // It may be inelegant, but this way we don't have to change our
-                // subscription when group members change
-                msgc.addGlobalPresenceListener(mPresenceReceiver);
-            }
-
             // connection and roster load status will be provided via event bus
         }
     }
@@ -2009,9 +1987,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     private void unsubscribePresence() {
         if (mPresenceReceiver != null) {
             mLocalBroadcastManager.unregisterReceiver(mPresenceReceiver);
-            MessageCenterClient.getInstance(getContext())
-                .removePresenceListener(mPresenceReceiver, getUserId())
-                .removeGlobalPresenceListener(mPresenceReceiver);
             mPresenceReceiver = null;
         }
     }
