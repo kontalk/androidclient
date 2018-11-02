@@ -37,6 +37,9 @@ import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.enums.SnackbarType;
 import com.nispok.snackbar.listeners.ActionClickListener;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jxmpp.jid.Jid;
@@ -115,9 +118,11 @@ import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.msgcenter.MessageCenterClient;
-import org.kontalk.service.msgcenter.MessageCenterClient.ConnectionLifecycleListener;
 import org.kontalk.service.msgcenter.MessageCenterClient.PresenceListener;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.event.ConnectedEvent;
+import org.kontalk.service.msgcenter.event.DisconnectedEvent;
+import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
 import org.kontalk.ui.adapter.MessageListAdapter;
 import org.kontalk.ui.view.AttachmentRevealFrameLayout;
 import org.kontalk.ui.view.AudioContentView;
@@ -241,6 +246,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     protected CharSequence mCurrentStatus;
 
     private int mCheckedItemCount;
+
+    private EventBus mServiceBus = MessageCenterService.bus();
 
     /**
      * Returns a new fragment instance from a picked contact.
@@ -1860,8 +1867,18 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
         // subscribe to presence notifications
         subscribePresence();
+        // register to events now
+        if (!mServiceBus.isRegistered(this))
+            mServiceBus.register(this);
 
         updateUI();
+    }
+
+    protected void resetConnectionStatus() {
+        // reset compose sent flag
+        mComposer.resetCompose();
+        // reset available resources list
+        mAvailableResources.clear();
     }
 
     /**
@@ -1870,14 +1887,24 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     protected abstract void onPresence(String jid, Presence.Type type,
         boolean removed, Presence.Mode mode, String fingerprint);
 
-    protected abstract void onConnected();
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN_ORDERED)
+    public void onConnected(ConnectedEvent event) {
+        resetConnectionStatus();
+        mConnected = true;
+    }
 
-    protected abstract void onDisconnected();
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onDisconnected(DisconnectedEvent event) {
+        resetConnectionStatus();
+        mConnected = false;
+    }
 
     /**
      * Called when the roster has been loaded (ACTION_ROSTER).
      */
-    protected abstract void onRosterLoaded();
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN_ORDERED)
+    public void onRosterLoaded(RosterLoadedEvent event) {
+    }
 
     /**
      * Called when the contact starts typing.
@@ -1894,9 +1921,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
      */
     protected abstract boolean isUserId(String jid);
 
-    class PresenceReceiver extends BroadcastReceiver implements
-            ConnectionLifecycleListener,
-            PresenceListener {
+    @Deprecated
+    class PresenceReceiver extends BroadcastReceiver implements PresenceListener {
         public void onReceive(Context context, Intent intent) {
             // activity is terminating
             if (getContext() == null)
@@ -1920,28 +1946,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                     }
                 }
             }
-        }
-
-        @Override
-        public void onConnected() {
-            // reset compose sent flag
-            mComposer.resetCompose();
-            // reset available resources list
-            mAvailableResources.clear();
-
-            mConnected = true;
-            AbstractComposeFragment.this.onConnected();
-        }
-
-        @Override
-        public void onDisconnected() {
-            mConnected = false;
-            AbstractComposeFragment.this.onDisconnected();
-        }
-
-        @Override
-        public void onRosterLoaded() {
-            AbstractComposeFragment.this.onRosterLoaded();
         }
 
         @Override
@@ -1970,6 +1974,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         }
     }
 
+    /** @deprecated Replace with event subscribers. */
+    @Deprecated
     private void subscribePresence() {
         if (mPresenceReceiver == null) {
             mPresenceReceiver = new PresenceReceiver();
@@ -1982,7 +1988,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
             Context ctx = getContext();
             MessageCenterClient msgc = MessageCenterClient.getInstance(ctx);
-            msgc.addConnectionLifecycleListener(mPresenceReceiver);
 
             if (mConversation.isGroupChat()) {
                 // we will filter out unwanted presences.
@@ -1994,19 +1999,16 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                 msgc.addPresenceListener(mPresenceReceiver, getUserId());
             }
 
-            // request connection and roster load status
-            if (ctx != null) {
-                MessageCenterService.requestConnectionStatus(ctx);
-                MessageCenterService.requestRosterStatus(ctx);
-            }
+            // connection and roster load status will be provided via event bus
         }
     }
 
+    /** @deprecated Replace with event subscribers. */
+    @Deprecated
     private void unsubscribePresence() {
         if (mPresenceReceiver != null) {
             mLocalBroadcastManager.unregisterReceiver(mPresenceReceiver);
             MessageCenterClient.getInstance(getContext())
-                .removeConnectionLifecycleListener(mPresenceReceiver)
                 .removePresenceListener(mPresenceReceiver, getUserId())
                 .removeGlobalPresenceListener(mPresenceReceiver);
             mPresenceReceiver = null;
@@ -2197,6 +2199,9 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
         // unsubcribe presence notifications
         unsubscribePresence();
+
+        // not interested in any more events
+        mServiceBus.unregister(this);
 
         // notify composer bar
         mComposer.onPause();

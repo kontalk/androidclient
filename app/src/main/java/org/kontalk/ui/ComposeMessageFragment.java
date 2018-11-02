@@ -76,6 +76,8 @@ import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.event.ConnectedEvent;
+import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
 import org.kontalk.sync.Syncer;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Permissions;
@@ -156,6 +158,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         super.onPause();
         if (mLocalBroadcastManager != null && mBroadcastReceiver != null) {
             mLocalBroadcastManager.unregisterReceiver(mBroadcastReceiver);
+            mBroadcastReceiver = null;
         }
     }
 
@@ -437,7 +440,8 @@ public class ComposeMessageFragment extends AbstractComposeFragment
     }
 
     @Override
-    protected void onConnected() {
+    protected void resetConnectionStatus() {
+        super.resetConnectionStatus();
         // reset any pending request
         mLastActivityRequestId = null;
         mVersionRequestId = null;
@@ -445,12 +449,8 @@ public class ComposeMessageFragment extends AbstractComposeFragment
     }
 
     @Override
-    protected void onDisconnected() {
-        onConnected();
-    }
-
-    @Override
-    protected void onRosterLoaded() {
+    public void onRosterLoaded(RosterLoadedEvent event) {
+        super.onRosterLoaded(event);
         // probe presence
         requestPresence();
     }
@@ -835,8 +835,14 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         if (threadId == 0) {
             // no thread means no peer observer will be invoked
             // we need to manually trigger this
-            MessageCenterService.requestConnectionStatus(ctx);
-            MessageCenterService.requestRosterStatus(ctx);
+            ConnectedEvent connectedEvent = MessageCenterService.bus().getStickyEvent(ConnectedEvent.class);
+            if (connectedEvent != null) {
+                onConnected(connectedEvent);
+            }
+            RosterLoadedEvent rosterLoadedEvent = MessageCenterService.bus().getStickyEvent(RosterLoadedEvent.class);
+            if (rosterLoadedEvent != null) {
+                onRosterLoaded(rosterLoadedEvent);
+            }
         }
     }
 

@@ -21,6 +21,7 @@ package org.kontalk.service.msgcenter;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 
+import org.greenrobot.eventbus.EventBus;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.roster.RosterEntry;
@@ -34,6 +35,7 @@ import org.kontalk.Log;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MyUsers;
+import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_SUBSCRIBED;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
@@ -48,6 +50,8 @@ public class RosterListener implements RosterLoadedListener, org.jivesoftware.sm
     private static final String TAG = RosterListener.class.getSimpleName();
 
     private WeakReference<MessageCenterService> mService;
+
+    EventBus mServiceBus;
 
     RosterListener(MessageCenterService service) {
         mService = new WeakReference<>(service);
@@ -65,7 +69,7 @@ public class RosterListener implements RosterLoadedListener, org.jivesoftware.sm
                 @Override
                 public void run() {
                     // roster has been loaded
-                    service.broadcast(MessageCenterService.ACTION_ROSTER_LOADED);
+                    MessageCenterService.bus().postSticky(new RosterLoadedEvent());
                 }
             });
         }

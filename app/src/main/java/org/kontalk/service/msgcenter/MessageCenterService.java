@@ -35,6 +35,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.zip.ZipInputStream;
 
+import org.greenrobot.eventbus.EventBus;
 import org.jivesoftware.smack.ExceptionCallback;
 import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.SmackException;
@@ -106,6 +107,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.widget.Toast;
 
+import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
@@ -144,6 +146,8 @@ import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.UploadService;
 import org.kontalk.service.XMPPConnectionHelper;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
+import org.kontalk.service.msgcenter.event.ConnectedEvent;
+import org.kontalk.service.msgcenter.event.DisconnectedEvent;
 import org.kontalk.service.msgcenter.group.AddRemoveMembersCommand;
 import org.kontalk.service.msgcenter.group.CreateGroupCommand;
 import org.kontalk.service.msgcenter.group.GroupCommand;
@@ -153,6 +157,7 @@ import org.kontalk.service.msgcenter.group.KontalkGroupController;
 import org.kontalk.service.msgcenter.group.PartCommand;
 import org.kontalk.service.msgcenter.group.SetSubjectCommand;
 import org.kontalk.ui.MessagingNotification;
+import org.kontalk.util.EventBusIndex;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
@@ -172,7 +177,14 @@ import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_FOREGROUND;
 public class MessageCenterService extends Service implements ConnectionHelperListener {
     public static final String TAG = MessageCenterService.class.getSimpleName();
 
+    private static final EventBus BUS;
+
     static {
+        BUS = EventBus.builder()
+            // TODO .logger(...)
+            .addIndex(new EventBusIndex())
+            .throwSubscriberException(BuildConfig.DEBUG)
+            .build();
         SmackConfiguration.DEBUG = Log.isDebug();
         // we need our own debugger factory because of our internal logging system
         SmackConfiguration.setDefaultSmackDebuggerFactory(new SmackDebuggerFactory() {
@@ -224,13 +236,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Broadcasted when we are disconnected from the server.
      */
     public static final String ACTION_DISCONNECTED = "org.kontalk.action.DISCONNECTED";
-
-    /**
-     * Broadcasted when the roster has been loaded.
-     * Send this intent to receive the same as a broadcast if the roster has
-     * already been loaded.
-     */
-    public static final String ACTION_ROSTER_LOADED = "org.kontalk.action.ROSTER_LOADED";
 
     /**
      * Send this intent to request roster status of any user.
@@ -1078,6 +1083,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         endKeyPairRegeneration();
 
         broadcast(ACTION_DISCONNECTED);
+        BUS.removeAllStickyEvents();
+        BUS.post(new DisconnectedEvent());
 
         if (!restarting) {
             // release the wakelock if not restarting
@@ -1205,10 +1212,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 case ACTION_ROSTER_MATCH:
                     doConnect = handleRosterMatch(intent);
-                    break;
-
-                case ACTION_ROSTER_LOADED:
-                    doConnect = handleRosterLoaded();
                     break;
 
                 case ACTION_ROSTER_STATUS:
@@ -1494,13 +1497,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             RosterMatchListener listener = new RosterMatchListener(this, iq);
             sendIqWithReply(iq, true, listener, listener);
         }
-        return false;
-    }
-
-    @CommandHandler(name = ACTION_ROSTER_LOADED)
-    private boolean handleRosterLoaded() {
-        if (isConnected() && isRosterLoaded())
-            broadcast(ACTION_ROSTER_LOADED);
         return false;
     }
 
@@ -1962,6 +1958,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         mHelper = null;
 
         broadcast(ACTION_CONNECTED);
+        BUS.removeStickyEvent(ConnectedEvent.class);
+        BUS.postSticky(new ConnectedEvent());
 
         // we can now release any pending push notification
         Preferences.setLastPushNotification(-1);
@@ -2900,6 +2898,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return Preferences.getOfflineMode();
     }
 
+    public static EventBus bus() {
+        return BUS;
+    }
+
     private static Intent getBaseIntent(Context context) {
         return new Intent(context, MessageCenterService.class);
     }
@@ -3325,15 +3327,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         startForegroundIfNeeded(context, i);
     }
 
+    /** @deprecated Use {@link ConnectedEvent} */
+    @Deprecated
     public static void requestConnectionStatus(final Context context) {
         Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_CONNECTED);
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void requestRosterStatus(final Context context) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_ROSTER_LOADED);
         startForegroundIfNeeded(context, i);
     }
 

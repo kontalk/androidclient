@@ -64,6 +64,7 @@ import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyUsers;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.XMPPUtils;
 
@@ -463,19 +464,15 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     }
 
     @Override
-    protected void onConnected() {
+    protected void resetConnectionStatus() {
+        super.resetConnectionStatus();
         mTypingUsers.clear();
         updateStatusText();
         mKeyRequestIds.clear();
     }
 
     @Override
-    protected void onDisconnected() {
-        onConnected();
-    }
-
-    @Override
-    protected void onRosterLoaded() {
+    public void onRosterLoaded(RosterLoadedEvent event) {
         requestPresence();
     }
 

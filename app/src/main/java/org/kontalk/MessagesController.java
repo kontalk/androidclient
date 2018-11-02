@@ -24,6 +24,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
+import org.greenrobot.eventbus.Subscribe;
+
 import android.content.BroadcastReceiver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -37,7 +39,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.support.annotation.AnyThread;
 import android.support.annotation.WorkerThread;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
@@ -64,6 +65,9 @@ import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.MediaService;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.event.ConnectedEvent;
+import org.kontalk.service.msgcenter.event.DisconnectedEvent;
+import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
 import org.kontalk.service.msgcenter.group.KontalkGroupController;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.util.MediaStorage;
@@ -118,6 +122,8 @@ public class MessagesController {
 
         mWorker = new MessageQueueThread();
         mWorker.start();
+
+        MessageCenterService.bus().register(this);
     }
 
     public Future<Uri> sendTextMessage(final Conversation conv, final String text, final long inReplyTo) {
@@ -496,9 +502,6 @@ public class MessagesController {
 
         MessageCenterListener(Context context) {
             IntentFilter filter = new IntentFilter();
-            filter.addAction(MessageCenterService.ACTION_CONNECTED);
-            filter.addAction(MessageCenterService.ACTION_DISCONNECTED);
-            filter.addAction(MessageCenterService.ACTION_ROSTER_LOADED);
             filter.addAction(MessageCenterService.ACTION_SUBSCRIBED);
             filter.addAction(MessageCenterService.ACTION_UPLOAD_SERVICE_FOUND);
             filter.addAction(MessageCenterService.ACTION_GROUP_CREATED);
@@ -511,26 +514,6 @@ public class MessagesController {
         public void onReceive(Context context, final Intent intent) {
             String action = intent.getAction();
             switch (action != null ? action : "") {
-                case MessageCenterService.ACTION_CONNECTED: {
-                    connected();
-                    break;
-                }
-
-                case MessageCenterService.ACTION_DISCONNECTED: {
-                    disconnected();
-                    break;
-                }
-
-                case MessageCenterService.ACTION_ROSTER_LOADED: {
-                    mWorker.postAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            readyForMessages();
-                        }
-                    });
-                    break;
-                }
-
                 case MessageCenterService.ACTION_SUBSCRIBED: {
                     final String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
                     mWorker.postAction(new Runnable() {
@@ -595,18 +578,28 @@ public class MessagesController {
         }
     }
 
-    @AnyThread
-    void connected() {
+    @Subscribe
+    public void onConnected(ConnectedEvent event) {
         if (!mConnected) {
             mConnected = true;
             mUploadServiceFound = false;
         }
     }
 
-    @AnyThread
-    void disconnected() {
+    @Subscribe
+    public void onDisconnected(DisconnectedEvent event) {
         mConnected = false;
         mUploadServiceFound = false;
+    }
+
+    @Subscribe
+    public void onRosterLoaded(RosterLoadedEvent event) {
+        mWorker.postAction(new Runnable() {
+            @Override
+            public void run() {
+                readyForMessages();
+            }
+        });
     }
 
     @WorkerThread

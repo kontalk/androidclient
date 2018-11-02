@@ -42,10 +42,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import org.kontalk.Log;
 import org.kontalk.reporting.ReportingManager;
 
-import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_CONNECTED;
-import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_DISCONNECTED;
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_PRESENCE;
-import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_ROSTER_LOADED;
 
 
 /**
@@ -54,14 +51,15 @@ import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_ROSTER_L
  * listener pattern. It also takes care of a few things so users of the
  * message center don't have to deal with all the intent extras and everything.
  * @author Daniele Ricci
+ * @deprecated Use {@link org.greenrobot.eventbus.EventBus}
  */
 @SuppressWarnings("UnusedReturnValue")
+@Deprecated
 public class MessageCenterClient {
     public static final String TAG = MessageCenterService.class.getSimpleName();
 
     private static MessageCenterClient sInstance;
 
-    private List<ConnectionLifecycleListener> mConnectionListeners;
     private List<PresenceListener> mPresenceListeners;
     private Map<String, List<PresenceListener>> mPresenceListenersMap;
 
@@ -75,15 +73,6 @@ public class MessageCenterClient {
                 return;
 
             switch (action) {
-                case ACTION_CONNECTED:
-                    notifyConnected();
-                    break;
-                case ACTION_DISCONNECTED:
-                    notifyDisconnected();
-                    break;
-                case ACTION_ROSTER_LOADED:
-                    notifyRosterLoaded();
-                    break;
                 case ACTION_PRESENCE:
                     notifyPresence(intent.getExtras());
             }
@@ -98,7 +87,6 @@ public class MessageCenterClient {
 
     private MessageCenterClient(Context context) {
         mBroadcasts = LocalBroadcastManager.getInstance(context);
-        mConnectionListeners = new LinkedList<>();
         mPresenceListeners = new LinkedList<>();
         mPresenceListenersMap = new HashMap<>();
     }
@@ -107,9 +95,6 @@ public class MessageCenterClient {
         if (!mRegistered) {
             IntentFilter filter = new IntentFilter();
             filter.addAction(ACTION_PRESENCE);
-            filter.addAction(ACTION_CONNECTED);
-            filter.addAction(ACTION_DISCONNECTED);
-            filter.addAction(ACTION_ROSTER_LOADED);
 
             mBroadcasts.registerReceiver(mReceiver, filter);
             mRegistered = true;
@@ -132,30 +117,8 @@ public class MessageCenterClient {
     }
 
     private boolean hasListeners() {
-        return mConnectionListeners.size() > 0 ||
-            mPresenceListeners.size() > 0 ||
+        return mPresenceListeners.size() > 0 ||
             mPresenceListenersMap.size() > 0;
-    }
-
-    @MainThread
-    void notifyConnected() {
-        for (ConnectionLifecycleListener l : mConnectionListeners) {
-            l.onConnected();
-        }
-    }
-
-    @MainThread
-    void notifyDisconnected() {
-        for (ConnectionLifecycleListener l : mConnectionListeners) {
-            l.onDisconnected();
-        }
-    }
-
-    @MainThread
-    void notifyRosterLoaded() {
-        for (ConnectionLifecycleListener l : mConnectionListeners) {
-            l.onRosterLoaded();
-        }
     }
 
     @MainThread
@@ -218,18 +181,6 @@ public class MessageCenterClient {
         }
     }
 
-    public MessageCenterClient addConnectionLifecycleListener(@NonNull ConnectionLifecycleListener l) {
-        mConnectionListeners.add(l);
-        registerEvents();
-        return this;
-    }
-
-    public MessageCenterClient removeConnectionLifecycleListener(@NonNull ConnectionLifecycleListener l) {
-        mConnectionListeners.remove(l);
-        maybeUnregisterEvents();
-        return this;
-    }
-
     public MessageCenterClient addGlobalPresenceListener(@NonNull PresenceListener l) {
         mPresenceListeners.add(l);
         registerEvents();
@@ -265,15 +216,6 @@ public class MessageCenterClient {
     }
 
     // TODO request[...] via generic one-off listeners, linked with stanza ID
-
-    /** Listener for connection-related events. */
-    public interface ConnectionLifecycleListener {
-        void onConnected();
-
-        void onDisconnected();
-
-        void onRosterLoaded();
-    }
 
     public interface PresenceListener {
         void onPresence(Jid from,

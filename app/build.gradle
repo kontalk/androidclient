@@ -47,6 +47,12 @@ android {
         buildConfigField "String", "ACCOUNT_TYPE", '"' + applicationId + '.account"'
         vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [ eventBusIndex : 'org.kontalk.util.EventBusIndex' ]
+            }
+        }
     }
 
     compileOptions {
@@ -191,6 +197,8 @@ dependencies {
     implementation 'com.google.zxing:core:3.3.1'
     implementation 'me.dm7.barcodescanner:zxing:1.9.8'
     implementation 'com.github.instacart.truetime-android:library:3.3'
+    implementation 'org.greenrobot:eventbus:3.1.1'
+    annotationProcessor 'org.greenrobot:eventbus-annotation-processor:3.1.1'
 
     // maps libraries
     implementation "com.github.kontalk.AnyMaps:anymaps-base:$anyMapsVersion"

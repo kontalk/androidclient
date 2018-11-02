@@ -22,6 +22,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
@@ -52,6 +55,8 @@ import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.event.ConnectedEvent;
+import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
 import org.kontalk.ui.view.ContactInfoBanner;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Permissions;
@@ -82,6 +87,8 @@ public class ContactInfoFragment extends Fragment
     Set<String> mAvailableResources = new HashSet<>();
 
     String mLastActivityRequestId;
+
+    private EventBus mServiceBus = MessageCenterService.bus();
 
     // created on demand
     private BroadcastReceiver mReceiver;
@@ -178,6 +185,7 @@ public class ContactInfoFragment extends Fragment
         }
 
         registerEvents(context);
+        mServiceBus.register(this);
         /*
         if (mReceiver == null) {
             // listen to roster entry status requests
@@ -199,6 +207,8 @@ public class ContactInfoFragment extends Fragment
         */
     }
 
+    /** @deprecated Replace with event subscribers. */
+    @Deprecated
     private void registerEvents(Context context) {
         if (mReceiver == null) {
             mReceiver = new BroadcastReceiver() {
@@ -206,18 +216,6 @@ public class ContactInfoFragment extends Fragment
                 public void onReceive(Context context, Intent intent) {
                     String action = intent.getAction();
 
-                    if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
-                        // reset available resources list
-                        mAvailableResources.clear();
-                        // reset any pending request
-                        mLastActivityRequestId = null;
-                    }
-
-                    else if (MessageCenterService.ACTION_ROSTER_LOADED.equals(action)) {
-                        requestPresence(context);
-                    }
-
-                    else {
                         String from = XmppStringUtils.parseBareJid(intent
                             .getStringExtra(MessageCenterService.EXTRA_FROM));
                         if (!mContact.getJID().equals(from)) {
@@ -269,13 +267,10 @@ public class ContactInfoFragment extends Fragment
                         // TODO handle subscribed
                         // TODO handle roster status
                         // TODO handle version
-                    }
                 }
             };
 
             IntentFilter filter = new IntentFilter();
-            filter.addAction(MessageCenterService.ACTION_CONNECTED);
-            filter.addAction(MessageCenterService.ACTION_ROSTER_LOADED);
             filter.addAction(MessageCenterService.ACTION_PRESENCE);
             filter.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
             // TODO filter.addAction(MessageCenterService.ACTION_VERSION);
@@ -285,9 +280,19 @@ public class ContactInfoFragment extends Fragment
             // TODO filter.addAction(MessageCenterService.ACTION_ROSTER_STATUS);
             mLocalBroadcastManager.registerReceiver(mReceiver, filter);
         }
+    }
 
-        MessageCenterService.requestConnectionStatus(context);
-        MessageCenterService.requestRosterStatus(context);
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN_ORDERED)
+    public void onConnected(ConnectedEvent event) {
+        // reset available resources list
+        mAvailableResources.clear();
+        // reset any pending request
+        mLastActivityRequestId = null;
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN_ORDERED)
+    public void onRosterLoaded(RosterLoadedEvent event) {
+        requestPresence();
     }
 
     protected void onPresence(String jid, Presence.Type type, boolean removed, Presence.Mode mode, String fingerprint) {
@@ -361,7 +366,11 @@ public class ContactInfoFragment extends Fragment
         return context.getString(R.string.contactinfo_last_seen, text);
     }
 
-    void requestPresence(Context context) {
+    private void requestPresence() {
+        final Context context = getContext();
+        if (context == null)
+            return;
+
         // do not request presence for domain JIDs
         if (!XMPPUtils.isDomainJID(mContact.getJID()))
             MessageCenterService.requestPresence(context, mContact.getJID());
