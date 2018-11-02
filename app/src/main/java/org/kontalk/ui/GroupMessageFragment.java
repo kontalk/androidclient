@@ -64,6 +64,7 @@ import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyUsers;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.event.NoPresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceRequest;
 import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
@@ -488,6 +489,11 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
         super.onUserOffline(event);
         onUserStatusChanged(event);
+    }
+
+    @Override
+    public void onNoUserPresence(NoPresenceEvent event) {
+        // nothing to do
     }
 
     @Override

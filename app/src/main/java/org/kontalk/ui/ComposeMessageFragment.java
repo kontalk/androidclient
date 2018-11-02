@@ -78,6 +78,7 @@ import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.event.ConnectedEvent;
+import org.kontalk.service.msgcenter.event.NoPresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceRequest;
 import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
@@ -628,6 +629,27 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         if (statusText != null) {
             setCurrentStatusText(statusText);
         }
+    }
+
+    @Override
+    public void onNoUserPresence(NoPresenceEvent event) {
+        final Context context = getContext();
+        if (context == null)
+            return;
+
+        // check that origin matches the current chat
+        if (!isUserId(event.jid.toString())) {
+            // not for us
+            return;
+        }
+
+        // no roster entry found, request subscription
+
+        // pre-approve our presence and request subscription
+        // TODO we should use MessageCenterClient
+        MessageCenterService.requestPresenceSubscription(context, getUserId());
+
+        setStatusText(context.getString(R.string.invitation_sent_label));
     }
 
     /** Sends a subscription request for the current peer. */

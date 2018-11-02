@@ -117,6 +117,7 @@ import org.kontalk.service.DownloadService;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.event.ConnectedEvent;
 import org.kontalk.service.msgcenter.event.DisconnectedEvent;
+import org.kontalk.service.msgcenter.event.NoPresenceEvent;
 import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
 import org.kontalk.service.msgcenter.event.UserOfflineEvent;
 import org.kontalk.service.msgcenter.event.UserOnlineEvent;
@@ -1902,6 +1903,9 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
         mAvailableResources.remove(event.jid.toString());
     }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public abstract void onNoUserPresence(NoPresenceEvent event);
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN_ORDERED)
     public void onConnected(ConnectedEvent event) {
