@@ -190,7 +190,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     public static String getIQKeysPacketId() {
-        return Syncer.IQ_KEYS_PACKET_ID;
+        return SyncProcedure.IQ_KEYS_PACKET_ID;
     }
 
 }
