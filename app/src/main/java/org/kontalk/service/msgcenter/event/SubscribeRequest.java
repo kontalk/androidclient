@@ -23,24 +23,14 @@ import org.jxmpp.jid.impl.JidCreate;
 
 
 /**
- * Presence request event.
+ * Subscribe to a user request event.
  * @author Daniele Ricci
  */
-public class PresenceRequest extends RequestEvent {
+public class SubscribeRequest {
 
     public final Jid jid;
 
-    public PresenceRequest(Jid jid) {
-        this(null, jid);
-    }
-
-    public PresenceRequest(String jid) {
-        this(null, JidCreate.fromOrThrowUnchecked(jid));
-    }
-
-    /** Use null jid to request presence for the whole roster. */
-    public PresenceRequest(String id, Jid jid) {
-        super(id);
+    public SubscribeRequest(Jid jid) {
         this.jid = jid;
     }
 

@@ -143,7 +143,7 @@ public class Kontalk extends Application {
                     }
                     // hide presence flag / encrypt user data flag
                     else if ("pref_hide_presence".equals(key) || "pref_encrypt_userdata".equals(key)) {
-                        MessageCenterService.updateStatus(Kontalk.this);
+                        MessageCenterService.updateStatus(Preferences.getStatusMessage());
                     }
                     // changing remove prefix
                     else if ("pref_remove_prefix".equals(key)) {

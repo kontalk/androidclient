@@ -18,30 +18,18 @@
 
 package org.kontalk.service.msgcenter.event;
 
-import org.jxmpp.jid.Jid;
-import org.jxmpp.jid.impl.JidCreate;
-
 
 /**
- * Presence request event.
+ * Base event for responses.
+ * Includes an ID to keep track of request-response pairs.
  * @author Daniele Ricci
  */
-public class PresenceRequest extends RequestEvent {
+public abstract class ResponseEvent {
 
-    public final Jid jid;
+    public final String id;
 
-    public PresenceRequest(Jid jid) {
-        this(null, jid);
-    }
-
-    public PresenceRequest(String jid) {
-        this(null, JidCreate.fromOrThrowUnchecked(jid));
-    }
-
-    /** Use null jid to request presence for the whole roster. */
-    public PresenceRequest(String id, Jid jid) {
-        super(id);
-        this.jid = jid;
+    protected ResponseEvent(String id) {
+        this.id = id;
     }
 
 }

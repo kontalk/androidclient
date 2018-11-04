@@ -28,7 +28,7 @@ import org.jxmpp.jid.Jid;
  * Presence event.
  * @author Daniele Ricci
  */
-public class PresenceEvent extends ReplyEvent {
+public class PresenceEvent extends ResponseEvent {
 
     public final Jid jid;
 

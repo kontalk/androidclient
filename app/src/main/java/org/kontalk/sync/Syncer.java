@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.greenrobot.eventbus.EventBus;
-import org.jivesoftware.smack.packet.Presence;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
 
@@ -207,9 +206,8 @@ public class Syncer {
                 .getInstance(mContext);
 
             // register presence broadcast receiver
-            SyncProcedure receiver = new SyncProcedure(jidList, this);
+            SyncProcedure receiver = new SyncProcedure(mContext, jidList, this);
             IntentFilter f = new IntentFilter();
-            f.addAction(MessageCenterService.ACTION_PRESENCE);
             f.addAction(MessageCenterService.ACTION_ROSTER_MATCH);
             f.addAction(MessageCenterService.ACTION_PUBLICKEY);
             f.addAction(MessageCenterService.ACTION_BLOCKLIST);
@@ -416,16 +414,6 @@ public class Syncer {
         i.setAction(MessageCenterService.ACTION_ROSTER_MATCH);
         i.putExtra(MessageCenterService.EXTRA_PACKET_ID, id);
         i.putExtra(MessageCenterService.EXTRA_JIDLIST, list.toArray(new String[list.size()]));
-        MessageCenterService.startService(mContext, i);
-    }
-
-    /** @deprecated Use the event bus. */
-    @Deprecated
-    void requestPresenceData(String id) {
-        Intent i = new Intent(mContext, MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_PRESENCE);
-        i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.probe.toString());
-        i.putExtra(MessageCenterService.EXTRA_PACKET_ID, id);
         MessageCenterService.startService(mContext, i);
     }
 

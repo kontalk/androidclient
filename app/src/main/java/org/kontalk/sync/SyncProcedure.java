@@ -24,12 +24,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.StanzaError;
 import org.jivesoftware.smack.util.StringUtils;
+import org.jxmpp.jid.BareJid;
+import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.util.XmppStringUtils;
 
 import android.content.BroadcastReceiver;
@@ -38,6 +41,9 @@ import android.content.Intent;
 
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.event.ConnectedEvent;
+import org.kontalk.service.msgcenter.event.PresenceEvent;
+import org.kontalk.service.msgcenter.event.PresenceRequest;
+import org.kontalk.service.msgcenter.event.UnsubscribeRequest;
 
 
 /**
@@ -57,20 +63,24 @@ public class SyncProcedure extends BroadcastReceiver {
     /** Max number of items in a roster match request. */
     private static final int MAX_ROSTER_MATCH_SIZE = 500;
 
-    private List<PresenceItem> response;
-    private final WeakReference<Syncer> notifyTo;
+    private final Context mContext;
 
-    private final List<String> jidList;
-    private int rosterParts = -1;
-    private String[] iq;
-    private String presenceId;
+    private List<PresenceItem> mResponse;
+    private final WeakReference<Syncer> mNotifyTo;
 
-    private int presenceCount;
-    private int pubkeyCount;
-    private int rosterCount;
+    private final List<String> mJidList;
+    private int mRosterParts = -1;
+    private String[] mIqIds;
+    private String mPresenceId;
+
+    private int mPresenceCount;
+    private int mPubkeyCount;
+    private int mRosterCount;
     /** Packet id list for not matched contacts (in roster but not matched on server). */
-    private Set<String> notMatched = new HashSet<>();
-    private boolean blocklistReceived;
+    private Set<String> mNotMatched = new HashSet<>();
+    private boolean mNlocklistReceived;
+
+    private EventBus mServiceBus = MessageCenterService.bus();
 
     public final static class PresenceItem {
         public String from;
@@ -86,26 +96,54 @@ public class SyncProcedure extends BroadcastReceiver {
         public boolean discarded;
     }
 
-    public SyncProcedure(List<String> jidList, Syncer notifyTo) {
-        this.notifyTo = new WeakReference<>(notifyTo);
-        this.jidList = jidList;
+    public SyncProcedure(Context context, List<String> jidList, Syncer notifyTo) {
+        mContext = context;
+        mNotifyTo = new WeakReference<>(notifyTo);
+        mJidList = jidList;
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
     public void onConnected(ConnectedEvent event) {
-        Syncer w = notifyTo.get();
+        Syncer w = mNotifyTo.get();
         if (w != null) {
             // request a roster match
-            rosterParts = getRosterParts(jidList);
-            iq = new String[rosterParts];
-            for (int i = 0; i < rosterParts; i++) {
+            mRosterParts = getRosterParts(mJidList);
+            mIqIds = new String[mRosterParts];
+            for (int i = 0; i < mRosterParts; i++) {
                 int end = (i+1)*MAX_ROSTER_MATCH_SIZE;
-                if (end >= jidList.size())
-                    end = jidList.size();
-                List<String> slice = jidList.subList(i*MAX_ROSTER_MATCH_SIZE, end);
+                if (end >= mJidList.size())
+                    end = mJidList.size();
+                List<String> slice = mJidList.subList(i*MAX_ROSTER_MATCH_SIZE, end);
 
-                iq[i] = StringUtils.randomString(6);
-                w.requestRosterMatch(iq[i], slice);
+                mIqIds[i] = StringUtils.randomString(6);
+                w.requestRosterMatch(mIqIds[i], slice);
+            }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void onPresence(PresenceEvent event) {
+        // consider only presences received *after* roster response
+        if (mResponse != null && mPresenceId != null) {
+            if (event.type != null && mPresenceId.equals(event.id)) {
+                // update presence item data
+                BareJid bareJid = event.jid.asBareJid();
+                PresenceItem item = getPresenceItem(bareJid.toString());
+                item.status = event.status;
+                item.timestamp = event.delay != null ? event.delay.getTime() : -1;
+                item.rosterName = event.rosterName;
+                if (!item.presence) {
+                    item.presence = true;
+                    // increment presence count
+                    mPresenceCount++;
+                    // check user existance (only if subscription is "both")
+                    if (!item.matched && event.subscribedFrom && event.subscribedTo) {
+                        // verify actual user existance through last activity
+                        String lastActivityId = StringUtils.randomString(6);
+                        MessageCenterService.requestLastActivity(mContext, item.from, lastActivityId);
+                        mNotMatched.add(lastActivityId);
+                    }
+                }
             }
         }
     }
@@ -114,74 +152,42 @@ public class SyncProcedure extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
 
-        if (MessageCenterService.ACTION_PRESENCE.equals(action)) {
-
-            // consider only presences received *after* roster response
-            if (response != null && presenceId != null) {
-
-                String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
-                String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                if (type != null && presenceId.equals(id)) {
-                    // update presence item data
-                    String bareJid = XmppStringUtils.parseBareJid(jid);
-                    PresenceItem item = getPresenceItem(bareJid);
-                    item.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
-                    item.timestamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
-                    item.rosterName = intent.getStringExtra(MessageCenterService.EXTRA_ROSTER_NAME);
-                    if (!item.presence) {
-                        item.presence = true;
-                        // increment presence count
-                        presenceCount++;
-                        // check user existance (only if subscription is "both")
-                        if (!item.matched && intent.getBooleanExtra(MessageCenterService.EXTRA_SUBSCRIBED_FROM, false) &&
-                            intent.getBooleanExtra(MessageCenterService.EXTRA_SUBSCRIBED_TO, false)) {
-                            // verify actual user existance through last activity
-                            String lastActivityId = StringUtils.randomString(6);
-                            MessageCenterService.requestLastActivity(context, item.from, lastActivityId);
-                            notMatched.add(lastActivityId);
-                        }
-                    }
-                }
-            }
-        }
-
         // roster match result received
-        else if (MessageCenterService.ACTION_ROSTER_MATCH.equals(action)) {
+        if (MessageCenterService.ACTION_ROSTER_MATCH.equals(action)) {
             String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-            for (String iqId : iq) {
+            for (String iqId : mIqIds) {
                 if (iqId.equals(id)) {
                     // decrease roster parts counter
-                    rosterParts--;
+                    mRosterParts--;
 
                     String[] list = intent.getStringArrayExtra(MessageCenterService.EXTRA_JIDLIST);
                     if (list != null) {
-                        rosterCount += list.length;
-                        if (response == null) {
+                        mRosterCount += list.length;
+                        if (mResponse == null) {
                             // prepare list to be filled in with presence data
-                            response = new ArrayList<>(rosterCount);
+                            mResponse = new ArrayList<>(mRosterCount);
                         }
                         for (String jid : list) {
                             PresenceItem p = new PresenceItem();
                             p.from = jid;
                             p.matched = true;
-                            response.add(p);
+                            mResponse.add(p);
                         }
                     }
 
-                    if (rosterParts <= 0) {
+                    if (mRosterParts <= 0) {
                         // all roster parts received
 
-                        if (rosterCount == 0 && blocklistReceived) {
+                        if (mRosterCount == 0 && mNlocklistReceived) {
                             // no roster elements
                             finish();
                         }
                         else {
-                            Syncer w = notifyTo.get();
+                            Syncer w = mNotifyTo.get();
                             if (w != null) {
                                 // request presence data for the whole roster
-                                presenceId = StringUtils.randomString(6);
-                                w.requestPresenceData(presenceId);
+                                mPresenceId = StringUtils.randomString(6);
+                                requestPresenceData(mPresenceId);
                                 // request public keys for the whole roster
                                 w.requestPublicKeys();
                                 // request block list
@@ -197,24 +203,24 @@ public class SyncProcedure extends BroadcastReceiver {
         }
 
         else if (MessageCenterService.ACTION_PUBLICKEY.equals(action)) {
-            if (response != null) {
+            if (mResponse != null) {
                 String requestId = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
                 if (IQ_KEYS_PACKET_ID.equals(requestId)) {
                     String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
                     // see if bare JID is present in roster response
                     String compare = XmppStringUtils.parseBareJid(jid);
-                    for (PresenceItem item : response) {
+                    for (PresenceItem item : mResponse) {
                         if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(compare)) {
                             item.publicKey = intent.getByteArrayExtra(MessageCenterService.EXTRA_PUBLIC_KEY);
 
                             // increment vcard count
-                            pubkeyCount++;
+                            mPubkeyCount++;
                             break;
                         }
                     }
 
                     // done with presence data and blocklist
-                    if (pubkeyCount == presenceCount && blocklistReceived && notMatched.size() == 0)
+                    if (mPubkeyCount == mPresenceCount && mNlocklistReceived && mNotMatched.size() == 0)
                         finish();
                 }
             }
@@ -224,7 +230,7 @@ public class SyncProcedure extends BroadcastReceiver {
         else if (MessageCenterService.ACTION_BLOCKLIST.equals(action)) {
             String requestId = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
             if (IQ_BLOCKLIST_PACKET_ID.equals(requestId)) {
-                blocklistReceived = true;
+                mNlocklistReceived = true;
 
                 String[] list = intent.getStringArrayExtra(MessageCenterService.EXTRA_BLOCKLIST);
                 if (list != null) {
@@ -232,7 +238,7 @@ public class SyncProcedure extends BroadcastReceiver {
                     for (String jid : list) {
                         // see if bare JID is present in roster response
                         String compare = XmppStringUtils.parseBareJid(jid);
-                        for (PresenceItem item : response) {
+                        for (PresenceItem item : mResponse) {
                             if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(compare)) {
                                 item.blocked = true;
 
@@ -244,7 +250,7 @@ public class SyncProcedure extends BroadcastReceiver {
                 }
 
                 // done with presence data and blocklist
-                if (pubkeyCount >= presenceCount && notMatched.size() == 0)
+                if (mPubkeyCount >= mPresenceCount && mNotMatched.size() == 0)
                     finish();
             }
         }
@@ -252,8 +258,8 @@ public class SyncProcedure extends BroadcastReceiver {
         // last activity (for user existance verification)
         else if (MessageCenterService.ACTION_LAST_ACTIVITY.equals(action)) {
             String requestId = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-            if (notMatched.contains(requestId)) {
-                notMatched.remove(requestId);
+            if (mNotMatched.contains(requestId)) {
+                mNotMatched.remove(requestId);
 
                 String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
                 // consider only item-not-found (404) errors
@@ -265,9 +271,9 @@ public class SyncProcedure extends BroadcastReceiver {
                     // discard entry
                     discardPresenceItem(jid);
                     // unsubscribe!
-                    unsubscribe(context, jid);
+                    unsubscribe(jid);
 
-                    if (pubkeyCount >= presenceCount && blocklistReceived && notMatched.size() == 0)
+                    if (mPubkeyCount >= mPresenceCount && mNlocklistReceived && mNotMatched.size() == 0)
                         finish();
                 }
             }
@@ -275,7 +281,7 @@ public class SyncProcedure extends BroadcastReceiver {
     }
 
     private void discardPresenceItem(String jid) {
-        for (PresenceItem item : response) {
+        for (PresenceItem item : mResponse) {
             if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(jid)) {
                 item.discarded = true;
                 return;
@@ -284,7 +290,7 @@ public class SyncProcedure extends BroadcastReceiver {
     }
 
     private PresenceItem getPresenceItem(String jid) {
-        for (PresenceItem item : response) {
+        for (PresenceItem item : mResponse) {
             if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(jid))
                 return item;
         }
@@ -292,16 +298,16 @@ public class SyncProcedure extends BroadcastReceiver {
         // add item if not found
         PresenceItem item = new PresenceItem();
         item.from = jid;
-        response.add(item);
+        mResponse.add(item);
         return item;
     }
 
-    private void unsubscribe(Context context, String jid) {
-        Intent i = new Intent(context, MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_PRESENCE);
-        i.putExtra(MessageCenterService.EXTRA_TO, jid);
-        i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.unsubscribe.name());
-        MessageCenterService.startService(context, i);
+    private void requestPresenceData(String id) {
+        mServiceBus.post(new PresenceRequest(id, null));
+    }
+
+    private void unsubscribe(String jid) {
+        mServiceBus.post(new UnsubscribeRequest(JidCreate.fromOrThrowUnchecked(jid)));
     }
 
     private int getRosterParts(List<String> jidList) {
@@ -309,11 +315,11 @@ public class SyncProcedure extends BroadcastReceiver {
     }
 
     public List<PresenceItem> getResponse() {
-        return (rosterCount >= 0) ? response : null;
+        return (mRosterCount >= 0) ? mResponse : null;
     }
 
     private void finish() {
-        Syncer w = notifyTo.get();
+        Syncer w = mNotifyTo.get();
         if (w != null) {
             synchronized (w) {
                 w.notifyAll();

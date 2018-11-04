@@ -20,15 +20,15 @@ package org.kontalk.service.msgcenter.event;
 
 
 /**
- * Base event for replies. Includes an ID to keep track of request-reply pairs.
+ * Update my status request event.
  * @author Daniele Ricci
  */
-public abstract class ReplyEvent {
+public class UpdateStatusRequest {
 
-    public final String id;
+    public final String status;
 
-    public ReplyEvent(String id) {
-        this.id = id;
+    public UpdateStatusRequest(String status) {
+        this.status = status;
     }
 
 }

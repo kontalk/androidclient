@@ -103,6 +103,7 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.Process;
 import android.os.SystemClock;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ServiceCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -153,6 +154,9 @@ import org.kontalk.service.msgcenter.event.DisconnectedEvent;
 import org.kontalk.service.msgcenter.event.NoPresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceRequest;
+import org.kontalk.service.msgcenter.event.SubscribeRequest;
+import org.kontalk.service.msgcenter.event.UnsubscribeRequest;
+import org.kontalk.service.msgcenter.event.UpdateStatusRequest;
 import org.kontalk.service.msgcenter.event.UserOnlineEvent;
 import org.kontalk.service.msgcenter.group.AddRemoveMembersCommand;
 import org.kontalk.service.msgcenter.group.CreateGroupCommand;
@@ -190,6 +194,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // TODO .logger(...)
             .addIndex(new EventBusIndex())
             .throwSubscriberException(BuildConfig.DEBUG)
+            .logNoSubscriberMessages(BuildConfig.DEBUG)
             .build();
         SmackConfiguration.DEBUG = Log.isDebug();
         // we need our own debugger factory because of our internal logging system
@@ -244,14 +249,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Broadcasted back in reply to requests.
      */
     public static final String ACTION_ROSTER_STATUS = "org.kontalk.action.ROSTER_STATUS";
-
-    /**
-     * Broadcasted when a presence stanza is received.
-     * Send this intent to broadcast presence.
-     * Send this intent with type="probe" to request a presence in the roster.
-     */
-    @Deprecated
-    public static final String ACTION_PRESENCE = "org.kontalk.action.PRESENCE";
 
     /**
      * Broadcasted when a last activity iq is received.
@@ -1228,10 +1225,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     doConnect = handleRosterStatus(intent);
                     break;
 
-                case ACTION_PRESENCE:
-                    doConnect = handlePresence(intent);
-                    break;
-
                 case ACTION_LAST_ACTIVITY:
                     doConnect = handleLastActivity(intent);
                     break;
@@ -1555,7 +1548,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             if (request.jid == null) {
                 for (RosterEntry entry : roster.getEntries()) {
                     BUS.post(replyPresenceRequest(roster, entry,
-                        request.jid.asBareJid(), request.id));
+                        entry.getJid(), request.id));
                 }
 
                 // broadcast our own presence
@@ -1564,70 +1557,29 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             else {
                 final BareJid jid = request.jid.asBareJid();
                 final RosterEntry entry = roster.getEntry(jid);
-                BUS.post(replyPresenceRequest(roster, entry,
-                    request.jid.asBareJid(), request.id));
+                BUS.post(replyPresenceRequest(roster, entry, jid, request.id));
             }
         }
     }
 
-    @CommandHandler(name = ACTION_PRESENCE)
-    @Deprecated
-    private boolean handlePresence(Intent intent) {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleSubscribe(SubscribeRequest request) {
         if (isConnected()) {
-            final String id = intent.getStringExtra(EXTRA_PACKET_ID);
-            String type = intent.getStringExtra(EXTRA_TYPE);
-            final String to = intent.getStringExtra(EXTRA_TO);
-
-            if ("probe".equals(type)) {
-                final Roster roster = getRoster();
-
-                if (to == null) {
-                    for (RosterEntry entry : roster.getEntries()) {
-                        broadcastPresence(roster, entry, id);
-                    }
-
-                    // broadcast our own presence
-                    broadcastMyPresence(id);
-                }
-                else {
-                    final BareJid jid;
-                    try {
-                        jid = JidCreate.bareFrom(to);
-                        final RosterEntry entry = roster.getEntry(jid);
-                        queueTask(new Runnable() {
-                            @Override
-                            public void run() {
-                                broadcastPresence(roster, entry, jid, id);
-                            }
-                        });
-                    }
-                    catch (XmppStringprepException e) {
-                        Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
-                        // report it because it's a big deal
-                        ReportingManager.logException(e);
-                    }
-                }
-            }
-            else {
-                // FIXME isn't this somewhat the same as createPresence?
-                String show = intent.getStringExtra(EXTRA_SHOW);
-                Presence p = new Presence(type != null ? Presence.Type.valueOf(type) : Presence.Type.available);
-                p.setStanzaId(id);
-                if (to != null)
-                    p.setTo(to);
-                if (intent.hasExtra(EXTRA_PRIORITY))
-                    p.setPriority(intent.getIntExtra(EXTRA_PRIORITY, 0));
-                String status = intent.getStringExtra(EXTRA_STATUS);
-                if (!TextUtils.isEmpty(status))
-                    p.setStatus(status);
-                if (show != null)
-                    p.setMode(Presence.Mode.valueOf(show));
-
-                sendPacket(p);
-            }
+            sendPacket(new Presence(request.jid, Presence.Type.subscribe));
         }
+    }
 
-        return false;
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleUnsubscribe(UnsubscribeRequest request) {
+        if (isConnected()) {
+            sendPacket(new Presence(request.jid, Presence.Type.unsubscribe));
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleUpdateStatus(UpdateStatusRequest request) {
+        sendPacket(new Presence(Presence.Type.available,
+            request.status, 0, null));
     }
 
     @CommandHandler(name = ACTION_LAST_ACTIVITY)
@@ -2200,42 +2152,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             !entry.isSubscriptionPending());
     }
 
-    private void broadcastPresence(Roster roster, RosterEntry entry, String id) {
-        broadcastPresence(roster, entry, entry.getJid(), id);
-    }
-
-    private void broadcastPresence(Roster roster, RosterEntry entry, BareJid jid, String id) {
-        // this method might be called async
-        final LocalBroadcastManager lbm = mLocalBroadcastManager;
-        if (lbm == null)
-            return;
-
-        Intent i;
-
-        // asking our own presence
-        if (Authenticator.isSelfJID(this, jid)) {
-            broadcastMyPresence(id);
-            return;
-        }
-
-        // entry present and not pending subscription
-        else if (isRosterEntrySubscribed(entry)) {
-            // roster entry found, send presence probe
-            Presence presence = roster.getPresence(jid);
-            i = PresenceListener.createIntent(this, presence, entry);
-        }
-        else {
-            // null type indicates no roster entry found or not authorized
-            i = new Intent(ACTION_PRESENCE);
-            i.putExtra(EXTRA_FROM, jid.toString());
-        }
-
-        // to keep track of request-reply
-        i.putExtra(EXTRA_PACKET_ID, id);
-        lbm.sendBroadcast(i);
-    }
-
-    private PresenceEvent replyPresenceRequest(Roster roster, RosterEntry entry, BareJid jid, String id) {
+    private PresenceEvent replyPresenceRequest(Roster roster, @Nullable RosterEntry entry, BareJid jid, String id) {
         PresenceEvent event;
 
         // asking our own presence
@@ -2260,23 +2177,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private PresenceEvent replyMyPresenceRequest(String id) {
         return new UserOnlineEvent(mConnection.getUser(), null, 0,
             null, null, null, true, true, getMyFingerprint(), id);
-    }
-
-    /**
-     * A special method to broadcast our own presence.
-     */
-    private void broadcastMyPresence(String id) {
-        Presence presence = createPresence(null);
-        presence.setFrom(mConnection.getUser());
-
-        Intent i = PresenceListener.createIntent(this, presence, null);
-        i.putExtra(EXTRA_FINGERPRINT, getMyFingerprint());
-        i.putExtra(EXTRA_SUBSCRIBED_FROM, true);
-        i.putExtra(EXTRA_SUBSCRIBED_TO, true);
-
-        // to keep track of request-reply
-        i.putExtra(EXTRA_PACKET_ID, id);
-        mLocalBroadcastManager.sendBroadcast(i);
     }
 
     private String getMyFingerprint() {
@@ -3065,12 +2965,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /**
      * Broadcasts our presence to the server.
      */
-    public static void updateStatus(final Context context) {
-        // FIXME this is what sendPresence already does
-        Intent i = getBaseIntent(context);
-        i.setAction(ACTION_PRESENCE);
-        i.putExtra(EXTRA_STATUS, Preferences.getStatusMessage());
-        startForegroundIfNeeded(context, i);
+    public static void updateStatus(String status) {
+        BUS.post(new UpdateStatusRequest(status));
     }
 
     /** Sends a previously prepared message. */
@@ -3400,32 +3296,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_ROSTER_STATUS);
         i.putExtra(MessageCenterService.EXTRA_TO, to);
-        startForegroundIfNeeded(context, i);
-    }
-
-    /** @deprecated Use {@link PresenceRequest} */
-    @Deprecated
-    public static void requestPresence(final Context context, String to) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_PRESENCE);
-        i.putExtra(MessageCenterService.EXTRA_TO, to);
-        i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.probe.name());
-        startForegroundIfNeeded(context, i);
-    }
-
-    @Deprecated
-    public static void requestPresenceSubscription(final Context context, String to) {
-        Intent i = new Intent(context, MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_PRESENCE);
-        i.putExtra(MessageCenterService.EXTRA_TO, to);
-        i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribed.name());
-        startForegroundIfNeeded(context, i);
-
-        // request subscription
-        i = new Intent(context, MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_PRESENCE);
-        i.putExtra(MessageCenterService.EXTRA_TO, to);
-        i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribe.name());
         startForegroundIfNeeded(context, i);
     }
 

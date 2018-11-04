@@ -29,6 +29,7 @@ import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
+import org.jxmpp.jid.Jid;
 import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
@@ -79,9 +80,11 @@ import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.event.ConnectedEvent;
 import org.kontalk.service.msgcenter.event.NoPresenceEvent;
+import org.kontalk.service.msgcenter.event.PreapproveSubscriptionRequest;
 import org.kontalk.service.msgcenter.event.PresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceRequest;
 import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
+import org.kontalk.service.msgcenter.event.SubscribeRequest;
 import org.kontalk.service.msgcenter.event.UserOfflineEvent;
 import org.kontalk.service.msgcenter.event.UserOnlineEvent;
 import org.kontalk.sync.Syncer;
@@ -646,8 +649,8 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         // no roster entry found, request subscription
 
         // pre-approve our presence and request subscription
-        // TODO we should use MessageCenterClient
-        MessageCenterService.requestPresenceSubscription(context, getUserId());
+        mServiceBus.post(new PreapproveSubscriptionRequest(event.jid));
+        mServiceBus.post(new SubscribeRequest(event.jid));
 
         setStatusText(context.getString(R.string.invitation_sent_label));
     }

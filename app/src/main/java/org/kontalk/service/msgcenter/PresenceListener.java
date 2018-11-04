@@ -26,7 +26,6 @@ import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.roster.RosterEntry;
 import org.jivesoftware.smack.roster.SubscribeListener;
 import org.jivesoftware.smack.roster.packet.RosterPacket;
-import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.delay.packet.DelayInformation;
 import org.jxmpp.jid.Jid;
 import org.spongycastle.openpgp.PGPPublicKey;
@@ -35,7 +34,6 @@ import org.spongycastle.openpgp.PGPPublicKeyRing;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 
 import org.kontalk.Log;
 import org.kontalk.client.PublicKeyPresence;
@@ -52,20 +50,6 @@ import org.kontalk.service.msgcenter.event.UserOfflineEvent;
 import org.kontalk.service.msgcenter.event.UserOnlineEvent;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.util.Preferences;
-
-import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_PRESENCE;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FINGERPRINT;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PRIORITY;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_ROSTER_NAME;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_SHOW;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_STAMP;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_STATUS;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_SUBSCRIBED_FROM;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_SUBSCRIBED_TO;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TYPE;
 
 
 /**
@@ -239,61 +223,10 @@ class PresenceListener extends MessageCenterPacketListener implements SubscribeL
                         MessageCenterService.requestPublicKey(getContext(), jid);
                 }
 
-                Intent i = createIntent(getContext(), p, getRosterEntry(p.getFrom()));
-                sendBroadcast(i);
+                MessageCenterService.bus()
+                    .post(createEvent(getContext(), p, getRosterEntry(p.getFrom()), null));
             }
         });
-    }
-
-    public static Intent createIntent(Context ctx, Presence p, RosterEntry entry) {
-        Intent i = new Intent(ACTION_PRESENCE);
-        Presence.Type type = p.getType();
-        i.putExtra(EXTRA_TYPE, type != null ? type.name() : Presence.Type.available.name());
-        i.putExtra(EXTRA_PACKET_ID, p.getStanzaId());
-
-        i.putExtra(EXTRA_FROM, StringUtils.maybeToString(p.getFrom().toString()));
-        i.putExtra(EXTRA_TO, StringUtils.maybeToString(p.getTo()));
-        i.putExtra(EXTRA_STATUS, p.getStatus());
-        Presence.Mode mode = p.getMode();
-        i.putExtra(EXTRA_SHOW, mode != null ? mode.name() : Presence.Mode.available.name());
-        i.putExtra(EXTRA_PRIORITY, p.getPriority());
-
-        String jid = p.getFrom().asBareJid().toString();
-
-        long timestamp;
-        DelayInformation delay = p.getExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE);
-        if (delay != null) {
-            timestamp = delay.getStamp().getTime();
-        }
-        else {
-            // try last seen from database
-            timestamp = UsersProvider.getLastSeen(ctx, jid);
-            if (timestamp < 0)
-                timestamp = System.currentTimeMillis();
-        }
-
-        i.putExtra(EXTRA_STAMP, timestamp);
-
-        // public key fingerprint
-        String fingerprint = PublicKeyPresence.getFingerprint(p);
-        if (fingerprint == null) {
-            // try untrusted fingerprint from database
-            fingerprint = Keyring.getFingerprint(ctx, jid, MyUsers.Keys.TRUST_UNKNOWN);
-        }
-        i.putExtra(EXTRA_FINGERPRINT, fingerprint);
-
-        // subscription information
-        if (entry != null) {
-            i.putExtra(EXTRA_ROSTER_NAME, entry.getName());
-
-            RosterPacket.ItemType subscriptionType = entry.getType();
-            i.putExtra(EXTRA_SUBSCRIBED_FROM, subscriptionType == RosterPacket.ItemType.both ||
-                subscriptionType == RosterPacket.ItemType.from);
-            i.putExtra(EXTRA_SUBSCRIBED_TO, subscriptionType == RosterPacket.ItemType.both ||
-                subscriptionType == RosterPacket.ItemType.to);
-        }
-
-        return i;
     }
 
     public static PresenceEvent createEvent(Context ctx, Presence p, RosterEntry entry, String id) {
