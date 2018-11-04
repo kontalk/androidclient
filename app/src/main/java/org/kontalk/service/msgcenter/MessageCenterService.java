@@ -127,7 +127,6 @@ import org.kontalk.client.RosterMatch;
 import org.kontalk.client.ServerlistCommand;
 import org.kontalk.client.SmackInitializer;
 import org.kontalk.client.UserLocation;
-import org.kontalk.client.VCard4;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
@@ -282,12 +281,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Send this intent to accept a presence subscription.
      */
     public static final String ACTION_SUBSCRIBED = "org.kontalk.action.SUBSCRIBED";
-
-    /**
-     * Broadcasted when receiving a vCard.
-     * Send this intent to update your own vCard.
-     */
-    public static final String ACTION_VCARD = "org.kontalk.action.VCARD";
 
     /**
      * Broadcasted when receiving a public key.
@@ -1229,10 +1222,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     doConnect = handleLastActivity(intent);
                     break;
 
-                case ACTION_VCARD:
-                    doConnect = handleVCard(intent);
-                    break;
-
                 case ACTION_PUBLICKEY:
                     doConnect = handlePublicKey(intent);
                     break;
@@ -1591,26 +1580,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             p.setTo(intent.getStringExtra(EXTRA_TO));
 
             sendIqWithReply(p, true, mLastActivityListener, mLastActivityListener);
-        }
-        return false;
-    }
-
-    @CommandHandler(name = ACTION_VCARD)
-    private boolean handleVCard(Intent intent) {
-        if (isConnected()) {
-            VCard4 p = new VCard4();
-            String to = intent.getStringExtra(EXTRA_TO);
-            try {
-                p.setTo(JidCreate.from(to));
-            }
-            catch (XmppStringprepException e) {
-                Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
-                // report it because it's a big deal
-                ReportingManager.logException(e);
-                return false;
-            }
-
-            sendPacket(p);
         }
         return false;
     }
@@ -3312,13 +3281,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.setAction(MessageCenterService.ACTION_VERSION);
         i.putExtra(EXTRA_TO, to);
         i.putExtra(EXTRA_PACKET_ID, id);
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void requestVCard(final Context context, String to) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_VCARD);
-        i.putExtra(EXTRA_TO, to);
         startForegroundIfNeeded(context, i);
     }
 
