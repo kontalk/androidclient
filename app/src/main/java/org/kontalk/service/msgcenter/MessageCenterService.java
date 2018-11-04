@@ -227,11 +227,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_PING = "org.kontalk.action.PING";
 
     /**
-     * Request the roster.
-     */
-    public static final String ACTION_ROSTER = "org.kontalk.action.ROSTER";
-
-    /**
      * Request roster match.
      */
     public static final String ACTION_ROSTER_MATCH = "org.kontalk.action.ROSTER_MATCH";
@@ -1206,10 +1201,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     doConnect = handleMessage(intent);
                     break;
 
-                case ACTION_ROSTER:
-                    doConnect = handleRoster(intent);
-                    break;
-
                 case ACTION_ROSTER_MATCH:
                     doConnect = handleRosterMatch(intent);
                     break;
@@ -1447,19 +1438,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (isConnected())
             sendMessage(intent.getExtras());
         return intent.getBooleanExtra("org.kontalk.forceConnect", false);
-    }
-
-    @CommandHandler(name = ACTION_ROSTER)
-    private boolean handleRoster(Intent intent) {
-        if (isConnected()) {
-            Stanza iq = new RosterPacket();
-            String id = intent.getStringExtra(EXTRA_PACKET_ID);
-            iq.setStanzaId(id);
-            // iq default type is get
-
-            sendPacket(iq);
-        }
-        return false;
     }
 
     @CommandHandler(name = ACTION_ROSTER_MATCH)
