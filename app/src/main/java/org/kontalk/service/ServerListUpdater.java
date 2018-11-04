@@ -30,6 +30,10 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -42,6 +46,7 @@ import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.event.ConnectedEvent;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
@@ -65,6 +70,8 @@ public class ServerListUpdater extends BroadcastReceiver {
     private final Context mContext;
     private final LocalBroadcastManager mLocalBroadcastManager;
     private UpdaterListener mListener;
+
+    private EventBus mServiceBus = MessageCenterService.bus();
 
     public ServerListUpdater(Context context) {
         mContext = context;
@@ -109,11 +116,10 @@ public class ServerListUpdater extends BroadcastReceiver {
 
         // register for and request connection status
         IntentFilter f = new IntentFilter();
-        f.addAction(MessageCenterService.ACTION_CONNECTED);
         f.addAction(MessageCenterService.ACTION_SERVERLIST);
         mLocalBroadcastManager.registerReceiver(this, f);
+        mServiceBus.register(this);
 
-        MessageCenterService.requestConnectionStatus(mContext);
         MessageCenterService.start(mContext);
     }
 
@@ -123,18 +129,20 @@ public class ServerListUpdater extends BroadcastReceiver {
 
     private void unregisterReceiver() {
         mLocalBroadcastManager.unregisterReceiver(this);
+        mServiceBus.unregister(this);
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
+    public void onConnected(ConnectedEvent event) {
+        // request serverlist
+        MessageCenterService.requestServerList(mContext);
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
 
-        if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
-            // request serverlist
-            MessageCenterService.requestServerList(mContext);
-        }
-
-        else if (MessageCenterService.ACTION_SERVERLIST.equals(action)) {
+        if (MessageCenterService.ACTION_SERVERLIST.equals(action)) {
             // we don't need this any more
             unregisterReceiver();
 
