@@ -231,13 +231,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_PING = "org.kontalk.action.PING";
 
     /**
-     * Broadcasted when we are connected and authenticated to the server.
-     * Send this intent to receive the same as a broadcast if connected.
-     */
-    @Deprecated
-    public static final String ACTION_CONNECTED = "org.kontalk.action.CONNECTED";
-
-    /**
      * Broadcasted when a last activity iq is received.
      * Send this intent to request a last activity.
      */
@@ -1182,10 +1175,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     doConnect = handleUploadPrivateKey(intent);
                     break;
 
-                case ACTION_CONNECTED:
-                    doConnect = handleConnected();
-                    break;
-
                 case ACTION_RESTART:
                     doConnect = handleRestart();
                     break;
@@ -1341,13 +1330,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             beginUploadPrivateKey(exportPassprase);
         }
         return true;
-    }
-
-    @CommandHandler(name = ACTION_CONNECTED)
-    private boolean handleConnected() {
-        if (isConnected())
-            broadcast(ACTION_CONNECTED);
-        return false;
     }
 
     @CommandHandler(name = ACTION_RESTART)
@@ -1860,7 +1842,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // helper is not needed any more
         mHelper = null;
 
-        broadcast(ACTION_CONNECTED);
         BUS.removeStickyEvent(ConnectedEvent.class);
         BUS.postSticky(new ConnectedEvent());
 
@@ -3198,14 +3179,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_UPLOAD_PRIVATEKEY);
         i.putExtra(EXTRA_EXPORT_PASSPHRASE, exportPassphrase);
-        startForegroundIfNeeded(context, i);
-    }
-
-    /** @deprecated Use {@link ConnectedEvent} */
-    @Deprecated
-    public static void requestConnectionStatus(final Context context) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_CONNECTED);
         startForegroundIfNeeded(context, i);
     }
 

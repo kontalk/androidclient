@@ -24,6 +24,9 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.util.List;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.jivesoftware.smack.filter.StanzaFilter;
 import org.jivesoftware.smack.filter.StanzaIdFilter;
 import org.jivesoftware.smack.packet.IQ;
@@ -35,10 +38,6 @@ import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPPublicKey;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.text.TextUtils;
 import android.util.Base64;
 
@@ -49,18 +48,18 @@ import org.kontalk.client.SmackInitializer;
 import org.kontalk.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.X509Bridge;
-
-import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_CONNECTED;
+import org.kontalk.service.msgcenter.event.ConnectedEvent;
 
 
 /** Abstract listener and manager for a key pair registration cycle. */
 abstract class RegisterKeyPairListener extends MessageCenterPacketListener {
-    private BroadcastReceiver mConnReceiver;
     protected PGPKeyPairRing mKeyRing;
     protected PGPPublicKey mRevoked;
 
     /** This is the passphrase that will be used for the new key. */
     protected String mPassphrase;
+
+    private EventBus mServiceBus = MessageCenterService.bus();
 
     public RegisterKeyPairListener(MessageCenterService instance, String passphrase) {
         super(instance);
@@ -79,14 +78,11 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener {
             PGPException, IOException, NoSuchProviderException {
         revokeCurrentKey();
         configure();
-        setupConnectedReceiver();
+        registerConnectionEvents();
     }
 
     public void abort() {
-        if (mConnReceiver != null) {
-            unregisterReceiver(mConnReceiver);
-            mConnReceiver = null;
-        }
+        mServiceBus.unregister(this);
         unconfigure();
     }
 
@@ -135,36 +131,33 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener {
         return null;
     }
 
-    protected void setupConnectedReceiver() {
-        if (mConnReceiver == null) {
-            mConnReceiver = new BroadcastReceiver() {
-                public void onReceive(Context context, Intent intent) {
-                    // unregister the broadcast receiver
-                    unregisterReceiver(mConnReceiver);
-                    mConnReceiver = null;
-
-                    // prepare public key packet
-                    Stanza iq = prepareKeyPacket();
-
-                    if (iq != null) {
-
-                        // setup packet filter for response
-                        StanzaFilter filter = new StanzaIdFilter(iq.getStanzaId());
-                        getConnection().addAsyncStanzaListener(RegisterKeyPairListener.this, filter);
-
-                        // send the key out
-                        sendPacket(iq);
-
-                        // now wait for a response
-                    }
-
-                    // TODO else?
-                }
-            };
-
-            IntentFilter filter = new IntentFilter(ACTION_CONNECTED);
-            registerReceiver(mConnReceiver, filter);
+    protected void registerConnectionEvents() {
+        if (!mServiceBus.isRegistered(this)) {
+            mServiceBus.register(this);
         }
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
+    public void onConnected(ConnectedEvent event) {
+        // unregister the broadcast receiver
+        mServiceBus.unregister(this);
+
+        // prepare public key packet
+        Stanza iq = prepareKeyPacket();
+
+        if (iq != null) {
+
+            // setup packet filter for response
+            StanzaFilter filter = new StanzaIdFilter(iq.getStanzaId());
+            getConnection().addAsyncStanzaListener(RegisterKeyPairListener.this, filter);
+
+            // send the key out
+            sendPacket(iq);
+
+            // now wait for a response
+        }
+
+        // TODO else?
     }
 
     /** We do this here so if something goes wrong the old key is still valid. */
