@@ -39,6 +39,8 @@ import android.content.Context;
 import android.content.Intent;
 
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.event.BlocklistEvent;
+import org.kontalk.service.msgcenter.event.BlocklistRequest;
 import org.kontalk.service.msgcenter.event.ConnectedEvent;
 import org.kontalk.service.msgcenter.event.PresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceRequest;
@@ -188,7 +190,7 @@ public class SyncProcedure extends BroadcastReceiver {
                             // request public keys for the whole roster
                             w.requestPublicKeys();
                             // request block list
-                            w.requestBlocklist();
+                            requestBlocklist(IQ_BLOCKLIST_PACKET_ID);
                         }
                     }
                 }
@@ -196,6 +198,30 @@ public class SyncProcedure extends BroadcastReceiver {
                 // no need to continue
                 break;
             }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void onBlocklist(BlocklistEvent event) {
+        if (IQ_BLOCKLIST_PACKET_ID.equals(event.id)) {
+            mNlocklistReceived = true;
+
+            if (event.jids != null) {
+                for (Jid jid : event.jids) {
+                    // see if bare JID is present in roster response
+                    BareJid compare = jid.asBareJid();
+                    for (PresenceItem item : mResponse) {
+                        if (item.from.equals(compare)) {
+                            item.blocked = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // done with presence data and blocklist
+            if (mPubkeyCount >= mPresenceCount && mNotMatched.size() == 0)
+                finish();
         }
     }
 
@@ -226,34 +252,6 @@ public class SyncProcedure extends BroadcastReceiver {
                 }
             }
 
-        }
-
-        else if (MessageCenterService.ACTION_BLOCKLIST.equals(action)) {
-            String requestId = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-            if (IQ_BLOCKLIST_PACKET_ID.equals(requestId)) {
-                mNlocklistReceived = true;
-
-                String[] list = intent.getStringArrayExtra(MessageCenterService.EXTRA_BLOCKLIST);
-                if (list != null) {
-
-                    for (String jid : list) {
-                        // see if bare JID is present in roster response
-                        BareJid compare = JidCreate.bareFromOrThrowUnchecked(jid);
-                        for (PresenceItem item : mResponse) {
-                            if (item.from.equals(compare)) {
-                                item.blocked = true;
-
-                                break;
-                            }
-                        }
-                    }
-
-                }
-
-                // done with presence data and blocklist
-                if (mPubkeyCount >= mPresenceCount && mNotMatched.size() == 0)
-                    finish();
-            }
         }
 
         // last activity (for user existance verification)
@@ -305,6 +303,10 @@ public class SyncProcedure extends BroadcastReceiver {
 
     private void requestPresenceData(String id) {
         mServiceBus.post(new PresenceRequest(id, null));
+    }
+
+    private void requestBlocklist(String id) {
+        mServiceBus.post(new BlocklistRequest(id));
     }
 
     private void unsubscribe(String jid) {

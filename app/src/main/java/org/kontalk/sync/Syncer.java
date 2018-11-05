@@ -209,7 +209,6 @@ public class Syncer {
             SyncProcedure receiver = new SyncProcedure(mContext, jidList, this);
             IntentFilter f = new IntentFilter();
             f.addAction(MessageCenterService.ACTION_PUBLICKEY);
-            f.addAction(MessageCenterService.ACTION_BLOCKLIST);
             f.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
             lbm.registerReceiver(receiver, f);
 
@@ -412,15 +411,6 @@ public class Syncer {
         Intent i = new Intent(mContext, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_PUBLICKEY);
         i.putExtra(MessageCenterService.EXTRA_PACKET_ID, SyncProcedure.IQ_KEYS_PACKET_ID);
-        MessageCenterService.startService(mContext, i);
-    }
-
-    /** @deprecated Use the event bus. */
-    @Deprecated
-    void requestBlocklist() {
-        Intent i = new Intent(mContext, MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_BLOCKLIST);
-        i.putExtra(MessageCenterService.EXTRA_PACKET_ID, SyncProcedure.IQ_BLOCKLIST_PACKET_ID);
         MessageCenterService.startService(mContext, i);
     }
 

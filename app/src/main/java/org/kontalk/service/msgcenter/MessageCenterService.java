@@ -149,6 +149,8 @@ import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.UploadService;
 import org.kontalk.service.XMPPConnectionHelper;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
+import org.kontalk.service.msgcenter.event.BlocklistEvent;
+import org.kontalk.service.msgcenter.event.BlocklistRequest;
 import org.kontalk.service.msgcenter.event.ConnectedEvent;
 import org.kontalk.service.msgcenter.event.DisconnectedEvent;
 import org.kontalk.service.msgcenter.event.NoPresenceEvent;
@@ -176,6 +178,7 @@ import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 import org.kontalk.util.WakefulHashSet;
+import org.kontalk.util.XMPPUtils;
 
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_FOREGROUND;
 
@@ -274,12 +277,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Send this intent to request the server list.
      */
     public static final String ACTION_SERVERLIST = "org.kontalk.action.SERVERLIST";
-
-    /**
-     * Broadcasted when the blocklist is received.
-     * Send this intent to request the blocklist.
-     */
-    public static final String ACTION_BLOCKLIST = "org.kontalk.action.BLOCKLIST";
 
     /**
      * Broadcasted when a block request has ben accepted by the server.
@@ -1207,10 +1204,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     doConnect = handleSubscribed(intent);
                     break;
 
-                case ACTION_BLOCKLIST:
-                    doConnect = handleBlocklist(intent);
-                    break;
-
                 case ACTION_VERSION:
                     doConnect = handleVersion(intent);
                     break;
@@ -1646,11 +1639,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return false;
     }
 
-    @CommandHandler(name = ACTION_BLOCKLIST)
-    private boolean handleBlocklist(Intent intent) {
-        if (isConnected())
-            requestBlocklist(intent.getStringExtra(EXTRA_PACKET_ID));
-        return false;
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleBlocklist(BlocklistRequest request) {
+        if (isConnected()) {
+            requestBlocklist(request.id);
+        }
     }
 
     @CommandHandler(name = ACTION_VERSION)
@@ -2164,38 +2157,26 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         sendPacket(p);
     }
 
-    private void requestBlocklist(String id) {
-        Stanza p = BlockingCommand.blocklist();
+    private void requestBlocklist(final String id) {
+        IQ p = BlockingCommand.blocklist();
         if (id != null)
             p.setStanzaId(id);
 
-        // listen for response (TODO cache the listener, it shouldn't change)
-        StanzaFilter idFilter = new StanzaIdFilter(p.getStanzaId());
-        mConnection.addAsyncStanzaListener(new StanzaListener() {
-            public void processStanza(Stanza packet) {
-                // we don't need this listener anymore
-                mConnection.removeAsyncStanzaListener(this);
-
+        sendIqWithReply(p, true, new StanzaListener() {
+            @Override
+            public void processStanza(Stanza packet) throws NotConnectedException, InterruptedException, SmackException.NotLoggedInException {
                 if (packet instanceof BlockingCommand) {
                     BlockingCommand blocklist = (BlockingCommand) packet;
-
-                    Intent i = new Intent(ACTION_BLOCKLIST);
-                    i.putExtra(EXTRA_PACKET_ID, blocklist.getStanzaId());
-
-                    List<String> _list = blocklist.getItems();
-                    if (_list != null) {
-                        String[] list = new String[_list.size()];
-                        i.putExtra(EXTRA_BLOCKLIST, _list.toArray(list));
-                    }
-
-                    Log.v(TAG, "broadcasting blocklist: " + i);
-                    mLocalBroadcastManager.sendBroadcast(i);
+                    BUS.post(new BlocklistEvent(XMPPUtils
+                        .parseJids(blocklist.getItems()), blocklist.getStanzaId()));
                 }
-
             }
-        }, idFilter);
-
-        sendPacket(p);
+        }, new ExceptionCallback() {
+            @Override
+            public void processException(Exception exception) {
+                BUS.post(new BlocklistEvent(exception, id));
+            }
+        });
     }
 
     private void sendMessage(Bundle data) {

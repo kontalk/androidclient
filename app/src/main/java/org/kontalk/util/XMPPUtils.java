@@ -19,6 +19,7 @@
 package org.kontalk.util;
 
 import java.io.StringReader;
+import java.util.Collection;
 import java.util.Date;
 
 import org.jivesoftware.smack.packet.ExtensionElement;
@@ -28,6 +29,8 @@ import org.jivesoftware.smack.packet.StanzaError;
 import org.jivesoftware.smack.util.PacketParserUtils;
 import org.jivesoftware.smack.util.SHA1;
 import org.jivesoftware.smackx.delay.packet.DelayInformation;
+import org.jxmpp.jid.Jid;
+import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.util.XmppStringUtils;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -140,6 +143,15 @@ public class XMPPUtils {
     public static boolean isDomainJID(String jid) {
         return XmppStringUtils.parseDomain(jid)
             .equalsIgnoreCase(jid);
+    }
+
+    public static Jid[] parseJids(Collection<String> jids) {
+        Jid[] list = new Jid[jids.size()];
+        int i = 0;
+        for (String jid : jids) {
+            list[i++] = JidCreate.fromOrThrowUnchecked(jid);
+        }
+        return list;
     }
 
     /**
