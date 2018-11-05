@@ -18,24 +18,25 @@
 
 package org.kontalk.service.msgcenter.event;
 
+import org.jxmpp.jid.Jid;
+
 
 /**
- * Base event for responses.
- * Includes an ID to keep track of request-response pairs.
+ * Roster match event, in reply to {@link RosterMatchRequest}
  * @author Daniele Ricci
  */
-public abstract class ResponseEvent {
+public class RosterMatchEvent extends ResponseEvent {
 
-    public final String id;
-    public final Exception error;
+    public final Jid[] jids;
 
-    protected ResponseEvent(String id) {
-        this(id, null);
+    public RosterMatchEvent(Jid[] jids, String id) {
+        super(id);
+        this.jids = jids;
     }
 
-    protected ResponseEvent(String id, Exception error) {
-        this.id = id;
-        this.error = error;
+    public RosterMatchEvent(Exception error, String id) {
+        super(id, error);
+        this.jids = null;
     }
 
 }

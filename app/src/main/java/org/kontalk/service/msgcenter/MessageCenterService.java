@@ -59,6 +59,7 @@ import org.jivesoftware.smack.roster.packet.RosterPacket;
 import org.jivesoftware.smack.sm.StreamManagementException;
 import org.jivesoftware.smack.util.Async;
 import org.jivesoftware.smack.util.StringUtils;
+import org.jivesoftware.smack.util.SuccessCallback;
 import org.jivesoftware.smackx.caps.packet.CapsExtension;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
@@ -153,6 +154,7 @@ import org.kontalk.service.msgcenter.event.DisconnectedEvent;
 import org.kontalk.service.msgcenter.event.NoPresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceRequest;
+import org.kontalk.service.msgcenter.event.RosterMatchRequest;
 import org.kontalk.service.msgcenter.event.RosterStatusEvent;
 import org.kontalk.service.msgcenter.event.RosterStatusRequest;
 import org.kontalk.service.msgcenter.event.SubscribeRequest;
@@ -227,11 +229,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_PUSH_REGISTERED = "org.kontalk.push.REGISTERED";
     public static final String ACTION_IDLE = "org.kontalk.action.IDLE";
     public static final String ACTION_PING = "org.kontalk.action.PING";
-
-    /**
-     * Request roster match.
-     */
-    public static final String ACTION_ROSTER_MATCH = "org.kontalk.action.ROSTER_MATCH";
 
     /**
      * Broadcasted when we are connected and authenticated to the server.
@@ -332,19 +329,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     // use with org.kontalk.action.PRESENCE/SUBSCRIBED
     public static final String EXTRA_FROM = "org.kontalk.stanza.from";
     public static final String EXTRA_TO = "org.kontalk.stanza.to";
-    public static final String EXTRA_STATUS = "org.kontalk.presence.status";
-    public static final String EXTRA_SHOW = "org.kontalk.presence.show";
-    public static final String EXTRA_PRIORITY = "org.kontalk.presence.priority";
     public static final String EXTRA_PRIVACY = "org.kontalk.presence.privacy";
-    public static final String EXTRA_FINGERPRINT = "org.kontalk.presence.fingerprint";
-    public static final String EXTRA_SUBSCRIBED_FROM = "org.kontalk.presence.subscribed.from";
-    public static final String EXTRA_SUBSCRIBED_TO = "org.kontalk.presence.subscribed.to";
-    public static final String EXTRA_STAMP = "org.kontalk.packet.delay";
     public static final String EXTRA_GROUP_JID = "org.kontalk.stanza.groupJid";
 
     // use with org.kontalk.action.ROSTER(_MATCH)
     public static final String EXTRA_JIDLIST = "org.kontalk.roster.JIDList";
-    public static final String EXTRA_ROSTER_NAME = "org.kontalk.roster.name";
 
     // use with org.kontalk.action.LAST_ACTIVITY
     public static final String EXTRA_SECONDS = "org.kontalk.last.seconds";
@@ -890,26 +879,42 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return false;
     }
 
-    void sendIqWithReply(IQ packet, boolean bumpIdle, StanzaListener callback, ExceptionCallback errorCallback) {
+    void sendIqWithReply(IQ packet, boolean bumpIdle, final StanzaListener callback, final ExceptionCallback errorCallback) {
         // reset idler if requested
         if (bumpIdle && mIdleHandler != null)
             mIdleHandler.reset();
 
         final XMPPConnection conn = mConnection;
         if (conn != null) {
-            try {
-                conn.sendIqWithResponseCallback(packet, callback, errorCallback);
-            }
-            catch (NotConnectedException e) {
-                Log.v(TAG, "not connected. Dropping packet " + packet);
-                if (errorCallback != null)
-                    errorCallback.processException(e);
-            }
-            catch (InterruptedException e) {
-                Log.v(TAG, "interrupted. Dropping packet " + packet);
-                if (errorCallback != null)
-                    errorCallback.processException(e);
-            }
+            conn.sendIqRequestAsync(packet).onSuccess(new SuccessCallback<IQ>() {
+                @Override
+                public void onSuccess(IQ result) {
+                    try {
+                        callback.processStanza(result);
+                    }
+                    catch (NotConnectedException e) {
+                        Log.v(TAG, "not connected. Dropping result packet " + result);
+                        if (errorCallback != null)
+                            errorCallback.processException(e);
+                    }
+                    catch (InterruptedException e) {
+                        Log.v(TAG, "interrupted. Dropping result packet " + result);
+                        if (errorCallback != null)
+                            errorCallback.processException(e);
+                    }
+                    catch (SmackException.NotLoggedInException e) {
+                        Log.v(TAG, "not logged in. Dropping result packet " + result);
+                        if (errorCallback != null)
+                            errorCallback.processException(e);
+                    }
+                }
+            })
+            .onError(new org.jivesoftware.smack.util.ExceptionCallback<Exception>() {
+                @Override
+                public void processException(Exception exception) {
+                    errorCallback.processException(exception);
+                }
+            });
         }
     }
 
@@ -1197,10 +1202,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     doConnect = handleMessage(intent);
                     break;
 
-                case ACTION_ROSTER_MATCH:
-                    doConnect = handleRosterMatch(intent);
-                    break;
-
                 case ACTION_LAST_ACTIVITY:
                     doConnect = handleLastActivity(intent);
                     break;
@@ -1432,13 +1433,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return intent.getBooleanExtra("org.kontalk.forceConnect", false);
     }
 
-    @CommandHandler(name = ACTION_ROSTER_MATCH)
-    private boolean handleRosterMatch(Intent intent) {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleRosterMatch(RosterMatchRequest request) {
         if (isConnected()) {
             RosterMatch iq = new RosterMatch();
-            String[] list = intent.getStringArrayExtra(EXTRA_JIDLIST);
 
-            for (String item : list) {
+            for (String item : request.userIds) {
                 iq.addItem(item);
             }
 
@@ -1452,14 +1452,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 throw new RuntimeException(e);
             }
 
-            String id = intent.getStringExtra(EXTRA_PACKET_ID);
-            iq.setStanzaId(id);
+            iq.setStanzaId(request.id);
             // iq default type is get
 
-            RosterMatchListener listener = new RosterMatchListener(this, iq);
+            RosterMatchListener listener = new RosterMatchListener(iq);
             sendIqWithReply(iq, true, listener, listener);
         }
-        return false;
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)

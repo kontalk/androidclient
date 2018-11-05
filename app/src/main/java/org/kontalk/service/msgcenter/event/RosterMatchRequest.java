@@ -20,22 +20,20 @@ package org.kontalk.service.msgcenter.event;
 
 
 /**
- * Base event for responses.
- * Includes an ID to keep track of request-response pairs.
+ * Roster match request event.
  * @author Daniele Ricci
  */
-public abstract class ResponseEvent {
+public class RosterMatchRequest extends RequestEvent {
 
-    public final String id;
-    public final Exception error;
+    public final String[] userIds;
 
-    protected ResponseEvent(String id) {
-        this(id, null);
+    public RosterMatchRequest(String[] userIds) {
+        this(null, userIds);
     }
 
-    protected ResponseEvent(String id, Exception error) {
-        this.id = id;
-        this.error = error;
+    public RosterMatchRequest(String id, String[] userIds) {
+        super(id);
+        this.userIds = userIds;
     }
 
 }

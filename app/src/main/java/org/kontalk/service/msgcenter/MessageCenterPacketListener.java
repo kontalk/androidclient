@@ -98,12 +98,16 @@ abstract class MessageCenterPacketListener implements StanzaListener {
             instance.queueTask(task);
     }
 
+    /** @deprecated Use service bus. */
+    @Deprecated
     protected void broadcast(String action) {
         MessageCenterService instance = mInstance.get();
         if (instance != null && instance.isStarted())
             instance.broadcast(action);
     }
 
+    /** @deprecated Use service bus. */
+    @Deprecated
     protected void sendBroadcast(Intent intent) {
         MessageCenterService instance = mInstance.get();
         if (instance != null && instance.isStarted())

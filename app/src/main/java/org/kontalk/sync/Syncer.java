@@ -208,7 +208,6 @@ public class Syncer {
             // register presence broadcast receiver
             SyncProcedure receiver = new SyncProcedure(mContext, jidList, this);
             IntentFilter f = new IntentFilter();
-            f.addAction(MessageCenterService.ACTION_ROSTER_MATCH);
             f.addAction(MessageCenterService.ACTION_PUBLICKEY);
             f.addAction(MessageCenterService.ACTION_BLOCKLIST);
             f.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
@@ -267,7 +266,7 @@ public class Syncer {
                         continue;
 
                     final RawPhoneNumberEntry data = lookupNumbers
-                        .get(XmppStringUtils.parseLocalpart(entry.from));
+                        .get(entry.from.getLocalpartOrThrow().toString());
                     if (data != null && data.lookupKey != null) {
                         // add contact
                         addContact(account,
@@ -299,11 +298,11 @@ public class Syncer {
                                 int trustLevel = Authenticator.isSelfJID(mContext, entry.from) ?
                                     MyUsers.Keys.TRUST_VERIFIED : -1;
                                 // update keys table immediately
-                                Keyring.setKey(mContext, entry.from, entry.publicKey, trustLevel);
+                                Keyring.setKey(mContext, entry.from.toString(), entry.publicKey, trustLevel);
 
                                 // no data from system contacts, use name from public key
                                 if (data == null) {
-                                    PGPUserID uid = PGP.parseUserId(pubKey, XmppStringUtils.parseDomain(entry.from));
+                                    PGPUserID uid = PGP.parseUserId(pubKey, entry.from.getDomain().toString());
                                     if (uid != null) {
                                         registeredValues.put(Users.DISPLAY_NAME, uid.getName());
                                     }
@@ -323,7 +322,7 @@ public class Syncer {
                         // blocked status
                         registeredValues.put(Users.BLOCKED, entry.blocked);
                         // user JID as reported by the server
-                        registeredValues.put(Users.JID, entry.from);
+                        registeredValues.put(Users.JID, entry.from.toString());
 
                         /*
                          * Since UsersProvider.resync inserted the user row
@@ -335,9 +334,9 @@ public class Syncer {
                         String origJid;
                         if (data != null)
                             origJid = XMPPUtils.createLocalJID(mContext,
-                                XmppStringUtils.parseLocalpart(entry.from));
+                                XmppStringUtils.parseLocalpart(entry.from.toString()));
                         else
-                            origJid = entry.from;
+                            origJid = entry.from.toString();
                         usersProvider.update(Users.CONTENT_URI_OFFLINE, registeredValues,
                             Users.JID + " = ?", new String[] { origJid });
 
@@ -405,16 +404,6 @@ public class Syncer {
             Log.e(TAG, "error committing users database - aborting sync", e);
             syncResult.databaseError = true;
         }
-    }
-
-    /** @deprecated Use the event bus. */
-    @Deprecated
-    void requestRosterMatch(String id, List<String> list) {
-        Intent i = new Intent(mContext, MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_ROSTER_MATCH);
-        i.putExtra(MessageCenterService.EXTRA_PACKET_ID, id);
-        i.putExtra(MessageCenterService.EXTRA_JIDLIST, list.toArray(new String[list.size()]));
-        MessageCenterService.startService(mContext, i);
     }
 
     /** @deprecated Use the event bus. */
