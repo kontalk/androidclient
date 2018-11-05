@@ -16,26 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.service.msgcenter;
+package org.kontalk.service.msgcenter.event;
 
-import org.jivesoftware.smack.StanzaListener;
-import org.jivesoftware.smack.packet.Stanza;
-import org.jivesoftware.smackx.iqversion.packet.Version;
-
-import org.kontalk.service.msgcenter.event.VersionEvent;
+import org.jxmpp.jid.Jid;
 
 
 /**
- * Packet listener for version information stanzas.
+ * Version event, in reply to {@link VersionRequest}
  * @author Daniele Ricci
  */
-class VersionListener implements StanzaListener {
+public class VersionEvent extends ResponseEvent {
 
-    @Override
-    public void processStanza(Stanza packet) {
-        Version p = (Version) packet;
-        MessageCenterService.bus()
-            .post(new VersionEvent(p.getFrom(), p.getName(), p.getVersion(), p.getStanzaId()));
+    public final Jid jid;
+
+    public final String name;
+    public final String version;
+
+    public VersionEvent(Jid jid, String name, String version,
+            String id) {
+        super(id);
+        this.jid = jid;
+        this.name = name;
+        this.version = version;
     }
 
 }

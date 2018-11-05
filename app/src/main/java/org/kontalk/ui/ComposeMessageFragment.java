@@ -25,10 +25,13 @@ import java.util.Set;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
+import org.jxmpp.jid.Jid;
 import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
@@ -86,6 +89,8 @@ import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
 import org.kontalk.service.msgcenter.event.SubscribeRequest;
 import org.kontalk.service.msgcenter.event.UserOfflineEvent;
 import org.kontalk.service.msgcenter.event.UserOnlineEvent;
+import org.kontalk.service.msgcenter.event.VersionEvent;
+import org.kontalk.service.msgcenter.event.VersionRequest;
 import org.kontalk.sync.Syncer;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Permissions;
@@ -566,7 +571,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         String version = Contact.getVersion(event.jid.toString());
         // do not request version info if already requested before
         if (!isAway && version == null && mVersionRequestId == null) {
-            requestVersion(event.jid.toString());
+            requestVersion(event.jid);
         }
 
         // a new resource just connected, send typing information again
@@ -721,24 +726,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment
                         }
                     }
 
-                    else if (MessageCenterService.ACTION_VERSION.equals(action)) {
-                        // compare version and show warning if needed
-                        String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                        if (id != null && id.equals(mVersionRequestId)) {
-                            mVersionRequestId = null;
-                            String name = intent.getStringExtra(MessageCenterService.EXTRA_VERSION_NAME);
-                            if (name != null && name.equalsIgnoreCase(context.getString(R.string.app_name))) {
-                                String version = intent.getStringExtra(MessageCenterService.EXTRA_VERSION_NUMBER);
-                                if (version != null) {
-                                    // cache the version
-                                    String fullFrom = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                                    Contact.setVersion(fullFrom, version);
-                                    setVersionInfo(context, version);
-                                }
-                            }
-                        }
-                    }
-
                     else if (MessageCenterService.ACTION_PUBLICKEY.equals(action)) {
                         String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
                         if (id != null && id.equals(mKeyRequestId)) {
@@ -786,7 +773,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment
             // listen for some stuff we need
             IntentFilter filter = new IntentFilter();
             filter.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
-            filter.addAction(MessageCenterService.ACTION_VERSION);
             filter.addAction(MessageCenterService.ACTION_PUBLICKEY);
             filter.addAction(MessageCenterService.ACTION_BLOCKED);
             filter.addAction(MessageCenterService.ACTION_UNBLOCKED);
@@ -1130,11 +1116,30 @@ public class ComposeMessageFragment extends AbstractComposeFragment
             setStatusText(statusText);
     }
 
-    private void requestVersion(String jid) {
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onVersion(VersionEvent event) {
+        Context context = getContext();
+        if (context == null)
+            return;
+
+        // compare version and show warning if needed
+        if (event.id != null && event.id.equals(mVersionRequestId)) {
+            mVersionRequestId = null;
+            if (event.name != null && event.name.equalsIgnoreCase(context.getString(R.string.app_name))) {
+                if (event.version != null) {
+                    // cache the version
+                    Contact.setVersion(event.jid.toString(), event.version);
+                    setVersionInfo(context, event.version);
+                }
+            }
+        }
+    }
+
+    private void requestVersion(Jid jid) {
         Context context = getActivity();
         if (context != null) {
             mVersionRequestId = StringUtils.randomString(6);
-            MessageCenterService.requestVersionInfo(context, jid, mVersionRequestId);
+            mServiceBus.post(new VersionRequest(mVersionRequestId, jid));
         }
     }
 

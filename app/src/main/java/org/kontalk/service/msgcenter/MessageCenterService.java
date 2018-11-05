@@ -163,6 +163,7 @@ import org.kontalk.service.msgcenter.event.SubscribeRequest;
 import org.kontalk.service.msgcenter.event.UnsubscribeRequest;
 import org.kontalk.service.msgcenter.event.UpdateStatusRequest;
 import org.kontalk.service.msgcenter.event.UserOnlineEvent;
+import org.kontalk.service.msgcenter.event.VersionRequest;
 import org.kontalk.service.msgcenter.group.AddRemoveMembersCommand;
 import org.kontalk.service.msgcenter.group.CreateGroupCommand;
 import org.kontalk.service.msgcenter.group.GroupCommand;
@@ -289,12 +290,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_UNBLOCKED = "org.kontalk.action.UNBLOCKED";
 
     /**
-     * Broadcasted when receiving version information.
-     * Send this intent to request version information to an entity.
-     */
-    public static final String ACTION_VERSION = "org.kontalk.action.VERSION";
-
-    /**
      * Send this intent to update the foreground service status of the message center.
      */
     public static final String ACTION_FOREGROUND = "org.kontalk.action.FOREGROUND";
@@ -331,9 +326,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     // use with org.kontalk.action.VCARD
     public static final String EXTRA_PUBLIC_KEY = "org.kontalk.vcard.publicKey";
 
-    // used with org.kontalk.action.BLOCKLIST
-    public static final String EXTRA_BLOCKLIST = "org.kontalk.blocklist";
-
     // used with org.kontalk.action.IMPORT_KEYPAIR
     public static final String EXTRA_KEYPACK = "org.kontalk.keypack";
     public static final String EXTRA_PASSPHRASE = "org.kontalk.passphrase";
@@ -341,10 +333,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     // use with org.kontalk.action.UPLOAD_PRIVATEKEY
     public static final String EXTRA_EXPORT_PASSPHRASE = "org.kontalk.export_passphrase";
     public static final String EXTRA_TOKEN = "org.kontalk.token";
-
-    // used with org.kontalk.action.VERSION
-    public static final String EXTRA_VERSION_NAME = "org.kontalk.version.name";
-    public static final String EXTRA_VERSION_NUMBER = "org.kontalk.version.number";
 
     // used with org.kontalk.action.TEST
     public static final String EXTRA_TEST_CHECK_NETWORK = "org.kontalk.test.check_network";
@@ -1204,10 +1192,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     doConnect = handleSubscribed(intent);
                     break;
 
-                case ACTION_VERSION:
-                    doConnect = handleVersion(intent);
-                    break;
-
                 case ACTION_FOREGROUND:
                     doConnect = handleForeground();
                     break;
@@ -1646,21 +1630,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
-    @CommandHandler(name = ACTION_VERSION)
-    private boolean handleVersion(Intent intent) {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleVersion(VersionRequest request) {
         if (isConnected()) {
-            try {
-                Version version = new Version(JidCreate.from(intent.getStringExtra(EXTRA_TO)));
-                version.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
-                sendPacket(version);
-            }
-            catch (XmppStringprepException e) {
-                Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
-                // report it because it's a big deal
-                ReportingManager.logException(e);
-            }
+            Version version = new Version(request.jid);
+            version.setStanzaId(request.id);
+            sendPacket(version);
         }
-        return false;
     }
 
     @CommandHandler(name = ACTION_FOREGROUND)
@@ -1776,7 +1752,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         mLastActivityListener = new LastActivityListener(this);
 
         filter = new StanzaTypeFilter(Version.class);
-        connection.addAsyncStanzaListener(new VersionListener(this), filter);
+        connection.addAsyncStanzaListener(new VersionListener(), filter);
     }
 
     @Override
@@ -3166,14 +3142,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static void requestLastActivity(final Context context, String to, String id) {
         Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_LAST_ACTIVITY);
-        i.putExtra(EXTRA_TO, to);
-        i.putExtra(EXTRA_PACKET_ID, id);
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void requestVersionInfo(final Context context, String to, String id) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_VERSION);
         i.putExtra(EXTRA_TO, to);
         i.putExtra(EXTRA_PACKET_ID, id);
         startForegroundIfNeeded(context, i);
