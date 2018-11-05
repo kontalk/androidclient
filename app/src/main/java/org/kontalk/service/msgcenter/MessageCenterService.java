@@ -153,6 +153,8 @@ import org.kontalk.service.msgcenter.event.DisconnectedEvent;
 import org.kontalk.service.msgcenter.event.NoPresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceRequest;
+import org.kontalk.service.msgcenter.event.RosterStatusEvent;
+import org.kontalk.service.msgcenter.event.RosterStatusRequest;
 import org.kontalk.service.msgcenter.event.SubscribeRequest;
 import org.kontalk.service.msgcenter.event.UnsubscribeRequest;
 import org.kontalk.service.msgcenter.event.UpdateStatusRequest;
@@ -237,12 +239,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     @Deprecated
     public static final String ACTION_CONNECTED = "org.kontalk.action.CONNECTED";
-
-    /**
-     * Send this intent to request roster status of any user.
-     * Broadcasted back in reply to requests.
-     */
-    public static final String ACTION_ROSTER_STATUS = "org.kontalk.action.ROSTER_STATUS";
 
     /**
      * Broadcasted when a last activity iq is received.
@@ -1205,10 +1201,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     doConnect = handleRosterMatch(intent);
                     break;
 
-                case ACTION_ROSTER_STATUS:
-                    doConnect = handleRosterStatus(intent);
-                    break;
-
                 case ACTION_LAST_ACTIVITY:
                     doConnect = handleLastActivity(intent);
                     break;
@@ -1470,41 +1462,21 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return false;
     }
 
-    @CommandHandler(name = ACTION_ROSTER_STATUS)
-    private boolean handleRosterStatus(Intent intent) {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleRosterStatus(RosterStatusRequest request) {
         if (mRosterStore != null) {
-            final String to = intent.getStringExtra(EXTRA_TO);
-
-            RosterPacket.Item entry;
-            try {
-                entry = mRosterStore.getEntry(JidCreate.from(to));
-            }
-            catch (XmppStringprepException e) {
-                Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
-                // report it because it's a big deal
-                ReportingManager.logException(e);
-                return false;
-            }
+            RosterPacket.Item entry = mRosterStore.getEntry(request.jid);
             if (entry != null) {
-                final String id = intent.getStringExtra(EXTRA_PACKET_ID);
-
-                Intent i = new Intent(ACTION_ROSTER_STATUS);
-                i.putExtra(EXTRA_FROM, to);
-                i.putExtra(EXTRA_ROSTER_NAME, entry.getName());
-
                 RosterPacket.ItemType subscriptionType = entry.getItemType();
-                i.putExtra(EXTRA_SUBSCRIBED_FROM, subscriptionType == RosterPacket.ItemType.both ||
-                    subscriptionType == RosterPacket.ItemType.from);
-                i.putExtra(EXTRA_SUBSCRIBED_TO, subscriptionType == RosterPacket.ItemType.both ||
-                    subscriptionType == RosterPacket.ItemType.to);
+                boolean subscribedFrom = subscriptionType == RosterPacket.ItemType.both ||
+                    subscriptionType == RosterPacket.ItemType.from;
+                boolean subscribedTo = subscriptionType == RosterPacket.ItemType.both ||
+                    subscriptionType == RosterPacket.ItemType.to;
 
-                // to keep track of request-reply
-                i.putExtra(EXTRA_PACKET_ID, id);
-
-                mLocalBroadcastManager.sendBroadcast(i);
+                BUS.post(new RosterStatusEvent(entry.getJid(), entry.getName(),
+                    subscribedFrom, subscribedTo, request.id));
             }
         }
-        return false;
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
@@ -3236,13 +3208,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static void requestConnectionStatus(final Context context) {
         Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_CONNECTED);
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void requestRosterEntryStatus(final Context context, String to) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_ROSTER_STATUS);
-        i.putExtra(MessageCenterService.EXTRA_TO, to);
         startForegroundIfNeeded(context, i);
     }
 
