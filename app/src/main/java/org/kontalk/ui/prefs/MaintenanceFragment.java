@@ -43,6 +43,9 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.text.InputType;
 import android.widget.Toast;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.jivesoftware.smack.util.SHA1;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
@@ -52,6 +55,7 @@ import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyPack;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.event.ConnectedEvent;
 import org.kontalk.ui.LockedDialog;
 import org.kontalk.ui.PasswordInputDialog;
 import org.kontalk.ui.RegisterDeviceActivity;
@@ -75,6 +79,8 @@ public class MaintenanceFragment extends RootPreferenceFragment {
     BroadcastReceiver mUploadPrivateKeyReceiver;
     MaterialDialog mUploadPrivateKeyProgress;
     LocalBroadcastManager mLocalBroadcastManager;
+
+    private EventBus mServiceBus = MessageCenterService.bus();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -291,6 +297,7 @@ public class MaintenanceFragment extends RootPreferenceFragment {
     @Override
     public void onStop() {
         super.onStop();
+        mServiceBus.unregister(this);
         if (mLocalBroadcastManager != null && mUploadPrivateKeyReceiver != null) {
             mLocalBroadcastManager.unregisterReceiver(mUploadPrivateKeyReceiver);
             mUploadPrivateKeyReceiver = null;
@@ -411,17 +418,15 @@ public class MaintenanceFragment extends RootPreferenceFragment {
             return;
         }
 
+        mPassphrase = passphrase;
+
         // listen for broadcast to receive the token to display to the user
         mUploadPrivateKeyReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context invalid, Intent intent) {
                 String action = intent.getAction();
 
-                if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
-                    MessageCenterService.uploadPrivateKey(context.getApplicationContext(), passphrase);
-                }
-
-                else if (MessageCenterService.ACTION_UPLOAD_PRIVATEKEY.equals(action)) {
+                if (MessageCenterService.ACTION_UPLOAD_PRIVATEKEY.equals(action)) {
                     mLocalBroadcastManager.unregisterReceiver(this);
 
                     if (mUploadPrivateKeyProgress != null) {
@@ -444,12 +449,12 @@ public class MaintenanceFragment extends RootPreferenceFragment {
         };
 
         IntentFilter filter = new IntentFilter();
-        filter.addAction(MessageCenterService.ACTION_CONNECTED);
         filter.addAction(MessageCenterService.ACTION_UPLOAD_PRIVATEKEY);
         if (mLocalBroadcastManager == null)
             mLocalBroadcastManager = LocalBroadcastManager.getInstance(context.getApplicationContext());
 
         mLocalBroadcastManager.registerReceiver(mUploadPrivateKeyReceiver, filter);
+        mServiceBus.register(this);
 
         mUploadPrivateKeyProgress = new MaterialDialog.Builder(context)
             .progress(true, 0)
@@ -459,6 +464,7 @@ public class MaintenanceFragment extends RootPreferenceFragment {
                 public void onCancel(DialogInterface dialogInterface) {
                     if (mLocalBroadcastManager != null && mUploadPrivateKeyReceiver != null)
                         mLocalBroadcastManager.unregisterReceiver(mUploadPrivateKeyReceiver);
+                    mServiceBus.unregister(MaintenanceFragment.this);
                     mLocalBroadcastManager = null;
                     mUploadPrivateKeyReceiver = null;
                     mUploadPrivateKeyProgress = null;
@@ -466,8 +472,15 @@ public class MaintenanceFragment extends RootPreferenceFragment {
             })
             .show();
 
-        MessageCenterService.requestConnectionStatus(context.getApplicationContext());
         MessageCenterService.start(context.getApplicationContext());
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
+    public void onConnected(ConnectedEvent event) {
+        Context context = getContext();
+        if (context != null) {
+            MessageCenterService.uploadPrivateKey(context, mPassphrase);
+        }
     }
 
     public void exportPersonalKey(Context ctx, OutputStream out) {
