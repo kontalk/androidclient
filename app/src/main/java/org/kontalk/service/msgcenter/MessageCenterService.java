@@ -44,6 +44,7 @@ import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.debugger.AbstractDebugger;
 import org.jivesoftware.smack.debugger.SmackDebugger;
 import org.jivesoftware.smack.debugger.SmackDebuggerFactory;
@@ -53,6 +54,7 @@ import org.jivesoftware.smack.filter.StanzaTypeFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smack.packet.StanzaError;
 import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.roster.RosterEntry;
 import org.jivesoftware.smack.roster.packet.RosterPacket;
@@ -159,6 +161,8 @@ import org.kontalk.service.msgcenter.event.PresenceRequest;
 import org.kontalk.service.msgcenter.event.RosterMatchRequest;
 import org.kontalk.service.msgcenter.event.RosterStatusEvent;
 import org.kontalk.service.msgcenter.event.RosterStatusRequest;
+import org.kontalk.service.msgcenter.event.ServerListEvent;
+import org.kontalk.service.msgcenter.event.ServerListRequest;
 import org.kontalk.service.msgcenter.event.SubscribeRequest;
 import org.kontalk.service.msgcenter.event.UnsubscribeRequest;
 import org.kontalk.service.msgcenter.event.UpdateStatusRequest;
@@ -272,12 +276,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Send this intent to request a public key.
      */
     public static final String ACTION_PUBLICKEY = "org.kontalk.action.PUBLICKEY";
-
-    /**
-     * Broadcasted when receiving the server list.
-     * Send this intent to request the server list.
-     */
-    public static final String ACTION_SERVERLIST = "org.kontalk.action.SERVERLIST";
 
     /**
      * Broadcasted when a block request has ben accepted by the server.
@@ -1184,10 +1182,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     doConnect = handlePublicKey(intent);
                     break;
 
-                case ACTION_SERVERLIST:
-                    doConnect = handleServerList();
-                    break;
-
                 case ACTION_SUBSCRIBED:
                     doConnect = handleSubscribed(intent);
                     break;
@@ -1576,8 +1570,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return false;
     }
 
-    @CommandHandler(name = ACTION_SERVERLIST)
-    private boolean handleServerList() {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleServerList(ServerListRequest request) {
         if (isConnected()) {
             ServerlistCommand p = new ServerlistCommand();
             try {
@@ -1587,30 +1581,30 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
                 // report it because it's a big deal
                 ReportingManager.logException(e);
-                return false;
+                return;
             }
 
             StanzaFilter filter = new StanzaIdFilter(p.getStanzaId());
             // TODO cache the listener (it shouldn't change)
             mConnection.addAsyncStanzaListener(new StanzaListener() {
                 public void processStanza(Stanza packet) throws NotConnectedException {
-                    Intent i = new Intent(ACTION_SERVERLIST);
-                    List<String> _items = ((ServerlistCommand.ServerlistCommandData) packet)
-                        .getItems();
-                    if (_items != null && _items.size() != 0 && packet.getError() == null) {
-                        String[] items = new String[_items.size()];
-                        _items.toArray(items);
-
-                        i.putExtra(EXTRA_FROM, packet.getFrom().toString());
-                        i.putExtra(EXTRA_JIDLIST, items);
+                    if (packet.getError() == null) {
+                        List<String> servers = ((ServerlistCommand.ServerlistCommandData) packet)
+                            .getItems();
+                        if (servers != null) {
+                            BUS.post(new ServerListEvent(servers
+                                .toArray(new String[0]), packet.getStanzaId()));
+                        }
+                        else {
+                            BUS.post(new ServerListEvent(new XMPPException.XMPPErrorException(packet, StanzaError
+                                .getBuilder(StanzaError.Condition.internal_server_error).build()), packet.getStanzaId()));
+                        }
                     }
-                    mLocalBroadcastManager.sendBroadcast(i);
                 }
             }, filter);
 
             sendPacket(p);
         }
-        return false;
     }
 
     @CommandHandler(name = ACTION_SUBSCRIBED)
@@ -3156,12 +3150,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.setAction(MessageCenterService.ACTION_PUBLICKEY);
         i.putExtra(EXTRA_TO, to);
         i.putExtra(EXTRA_PACKET_ID, id);
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void requestServerList(final Context context) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_SERVERLIST);
         startForegroundIfNeeded(context, i);
     }
 

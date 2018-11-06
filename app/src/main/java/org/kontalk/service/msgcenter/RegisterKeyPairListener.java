@@ -52,7 +52,7 @@ import org.kontalk.service.msgcenter.event.ConnectedEvent;
 
 
 /** Abstract listener and manager for a key pair registration cycle. */
-abstract class RegisterKeyPairListener extends MessageCenterPacketListener {
+public abstract class RegisterKeyPairListener extends MessageCenterPacketListener {
     protected PGPKeyPairRing mKeyRing;
     protected PGPPublicKey mRevoked;
 
