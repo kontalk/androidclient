@@ -189,7 +189,9 @@ public class ContactInfoFragment extends Fragment
         }
 
         registerEvents(context);
-        mServiceBus.register(this);
+        if (!mServiceBus.isRegistered(this)) {
+            mServiceBus.register(this);
+        }
         /*
         if (mReceiver == null) {
             // listen to roster entry status requests
@@ -508,6 +510,12 @@ public class ContactInfoFragment extends Fragment
     public void onResume() {
         super.onResume();
         reload();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mServiceBus.unregister(this);
     }
 
     @Override

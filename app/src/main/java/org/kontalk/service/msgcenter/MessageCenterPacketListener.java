@@ -49,7 +49,7 @@ import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
  * Packet listener for the Message Center.
  * @author Daniele Ricci
  */
-abstract class MessageCenterPacketListener implements StanzaListener {
+public abstract class MessageCenterPacketListener implements StanzaListener {
     protected static final String TAG = MessageCenterService.TAG;
 
     private WeakReference<MessageCenterService> mInstance;
