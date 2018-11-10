@@ -25,7 +25,6 @@ import java.util.Set;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jxmpp.util.XmppStringUtils;
@@ -56,6 +55,8 @@ import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.event.ConnectedEvent;
+import org.kontalk.service.msgcenter.event.LastActivityEvent;
+import org.kontalk.service.msgcenter.event.LastActivityRequest;
 import org.kontalk.service.msgcenter.event.NoPresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceRequest;
 import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
@@ -229,24 +230,6 @@ public class ContactInfoFragment extends Fragment
                             return;
                         }
 
-                        if (MessageCenterService.ACTION_LAST_ACTIVITY.equals(action)) {
-                            String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                            if (id != null && id.equals(mLastActivityRequestId)) {
-                                mLastActivityRequestId = null;
-                                // ignore last activity if we had an available presence in the meantime
-                                if (mAvailableResources.size() == 0) {
-                                    String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
-                                    if (type == null || !type.equalsIgnoreCase(IQ.Type.error.toString())) {
-                                        long seconds = intent.getLongExtra(MessageCenterService.EXTRA_SECONDS, -1);
-                                        setLastSeenSeconds(context, seconds);
-                                    }
-                                    else {
-                                        mInfoBanner.setSummary(context.getString(R.string.seen_offline_label));
-                                    }
-                                }
-                            }
-                        }
-
                         // TODO handle blocked
                         // TODO handle unblocked
                         // TODO handle subscribed
@@ -256,7 +239,6 @@ public class ContactInfoFragment extends Fragment
             };
 
             IntentFilter filter = new IntentFilter();
-            filter.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
             // TODO filter.addAction(MessageCenterService.ACTION_VERSION);
             // TODO filter.addAction(MessageCenterService.ACTION_BLOCKED);
             // TODO filter.addAction(MessageCenterService.ACTION_UNBLOCKED);
@@ -338,8 +320,7 @@ public class ContactInfoFragment extends Fragment
                 }
                 else if (mLastActivityRequestId == null) {
                     mLastActivityRequestId = StringUtils.randomString(6);
-                    MessageCenterService.requestLastActivity(context,
-                        event.jid.asBareJid().toString(), mLastActivityRequestId);
+                    mServiceBus.post(new LastActivityRequest(mLastActivityRequestId, event.jid.asBareJid()));
                 }
             }
         }
@@ -362,6 +343,26 @@ public class ContactInfoFragment extends Fragment
 
         // no roster entry found, awaiting subscription or not subscribed
         mInfoBanner.setSummary(context.getString(R.string.invitation_sent_label));
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onLastActivity(LastActivityEvent event) {
+        final Context context = getContext();
+        if (context == null)
+            return;
+
+        if (event.id != null && event.id.equals(mLastActivityRequestId)) {
+            mLastActivityRequestId = null;
+            // ignore last activity if we had an available presence in the meantime
+            if (mAvailableResources.size() == 0) {
+                if (event.error == null && event.idleTime >= 0) {
+                    setLastSeenSeconds(context, event.idleTime);
+                }
+                else {
+                    mInfoBanner.setSummary(context.getString(R.string.seen_offline_label));
+                }
+            }
+        }
     }
 
     private void setLastSeenTimestamp(Context context, long stamp) {

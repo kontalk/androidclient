@@ -27,7 +27,6 @@ import java.util.Set;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.StanzaError;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jxmpp.jid.BareJid;
@@ -42,6 +41,8 @@ import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.event.BlocklistEvent;
 import org.kontalk.service.msgcenter.event.BlocklistRequest;
 import org.kontalk.service.msgcenter.event.ConnectedEvent;
+import org.kontalk.service.msgcenter.event.LastActivityEvent;
+import org.kontalk.service.msgcenter.event.LastActivityRequest;
 import org.kontalk.service.msgcenter.event.PresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceRequest;
 import org.kontalk.service.msgcenter.event.RosterMatchEvent;
@@ -144,7 +145,7 @@ public class SyncProcedure extends BroadcastReceiver {
                     if (!item.matched && event.subscribedFrom && event.subscribedTo) {
                         // verify actual user existance through last activity
                         String lastActivityId = StringUtils.randomString(6);
-                        MessageCenterService.requestLastActivity(mContext, item.from.toString(), lastActivityId);
+                        requestLastActivity(item.from, lastActivityId);
                         mNotMatched.add(lastActivityId);
                     }
                 }
@@ -225,6 +226,26 @@ public class SyncProcedure extends BroadcastReceiver {
         }
     }
 
+    /** Last activity (for user existance verification). */
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void onLastActivity(LastActivityEvent event) {
+        if (mNotMatched.contains(event.id)) {
+            mNotMatched.remove(event.id);
+
+            // consider only item-not-found (404) errors
+            if (event.getStanzaErrorCondition() == StanzaError.Condition.item_not_found) {
+                // user does not exist!
+                // discard entry
+                discardPresenceItem(event.jid.asBareJid());
+                // unsubscribe!
+                unsubscribe(event.jid.asBareJid());
+
+                if (mPubkeyCount >= mPresenceCount && mNlocklistReceived && mNotMatched.size() == 0)
+                    finish();
+            }
+        }
+    }
+
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
@@ -253,33 +274,9 @@ public class SyncProcedure extends BroadcastReceiver {
             }
 
         }
-
-        // last activity (for user existance verification)
-        else if (MessageCenterService.ACTION_LAST_ACTIVITY.equals(action)) {
-            String requestId = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-            if (mNotMatched.contains(requestId)) {
-                mNotMatched.remove(requestId);
-
-                String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
-                // consider only item-not-found (404) errors
-                if (type != null && type.equalsIgnoreCase(IQ.Type.error.toString()) &&
-                        StanzaError.Condition.item_not_found.toString().equals(intent
-                            .getStringExtra(MessageCenterService.EXTRA_ERROR_CONDITION))) {
-                    // user does not exist!
-                    String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                    // discard entry
-                    discardPresenceItem(jid);
-                    // unsubscribe!
-                    unsubscribe(jid);
-
-                    if (mPubkeyCount >= mPresenceCount && mNlocklistReceived && mNotMatched.size() == 0)
-                        finish();
-                }
-            }
-        }
     }
 
-    private void discardPresenceItem(String jid) {
+    private void discardPresenceItem(BareJid jid) {
         for (PresenceItem item : mResponse) {
             if (item.from.equals(jid)) {
                 item.discarded = true;
@@ -305,12 +302,16 @@ public class SyncProcedure extends BroadcastReceiver {
         mServiceBus.post(new PresenceRequest(id, null));
     }
 
+    private void requestLastActivity(BareJid jid, String id) {
+        mServiceBus.post(new LastActivityRequest(id, jid));
+    }
+
     private void requestBlocklist(String id) {
         mServiceBus.post(new BlocklistRequest(id));
     }
 
-    private void unsubscribe(String jid) {
-        mServiceBus.post(new UnsubscribeRequest(JidCreate.fromOrThrowUnchecked(jid)));
+    private void unsubscribe(BareJid jid) {
+        mServiceBus.post(new UnsubscribeRequest(jid));
     }
 
     private int getRosterParts(List<String> jidList) {

@@ -18,36 +18,20 @@
 
 package org.kontalk.service.msgcenter.event;
 
+import org.jxmpp.jid.Jid;
 
-import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.packet.StanzaError;
 
 /**
- * Base event for responses.
- * Includes an ID to keep track of request-response pairs.
+ * Last activity request event.
  * @author Daniele Ricci
  */
-public abstract class ResponseEvent {
+public class LastActivityRequest extends RequestEvent {
 
-    public final String id;
-    public final Exception error;
+    public final Jid jid;
 
-    protected ResponseEvent(String id) {
-        this(id, null);
-    }
-
-    protected ResponseEvent(String id, Exception error) {
-        this.id = id;
-        this.error = error;
-    }
-
-    public StanzaError.Condition getStanzaErrorCondition() {
-        if (error instanceof XMPPException.XMPPErrorException &&
-            ((XMPPException.XMPPErrorException) error).getStanzaError() != null) {
-            return ((XMPPException.XMPPErrorException) error).getStanzaError()
-                .getCondition();
-        }
-        return null;
+    public LastActivityRequest(String id, Jid jid) {
+        super(id);
+        this.jid = jid;
     }
 
 }

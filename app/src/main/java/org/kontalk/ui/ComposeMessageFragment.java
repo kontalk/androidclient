@@ -27,7 +27,6 @@ import com.afollestad.materialdialogs.MaterialDialog;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
@@ -81,6 +80,8 @@ import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.event.ConnectedEvent;
+import org.kontalk.service.msgcenter.event.LastActivityEvent;
+import org.kontalk.service.msgcenter.event.LastActivityRequest;
 import org.kontalk.service.msgcenter.event.NoPresenceEvent;
 import org.kontalk.service.msgcenter.event.PreapproveSubscriptionRequest;
 import org.kontalk.service.msgcenter.event.PresenceEvent;
@@ -627,8 +628,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
                 }
                 else if (mLastActivityRequestId == null) {
                     mLastActivityRequestId = StringUtils.randomString(6);
-                    MessageCenterService.requestLastActivity(context,
-                        event.jid.asBareJid().toString(), mLastActivityRequestId);
+                    mServiceBus.post(new LastActivityRequest(mLastActivityRequestId, event.jid.asBareJid()));
                 }
             }
         }
@@ -708,25 +708,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
 
                     String action = intent.getAction();
 
-                    if (MessageCenterService.ACTION_LAST_ACTIVITY.equals(action)) {
-                        String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                        if (id != null && id.equals(mLastActivityRequestId)) {
-                            mLastActivityRequestId = null;
-                            // ignore last activity if we had an available presence in the meantime
-                            if (mAvailableResources.size() == 0) {
-                                String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
-                                if (type == null || !type.equalsIgnoreCase(IQ.Type.error.toString())) {
-                                    long seconds = intent.getLongExtra(MessageCenterService.EXTRA_SECONDS, -1);
-                                    setLastSeenSeconds(context, seconds);
-                                }
-                                else {
-                                    setCurrentStatusText(context.getString(R.string.seen_offline_label));
-                                }
-                            }
-                        }
-                    }
-
-                    else if (MessageCenterService.ACTION_PUBLICKEY.equals(action)) {
+                    if (MessageCenterService.ACTION_PUBLICKEY.equals(action)) {
                         String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
                         if (id != null && id.equals(mKeyRequestId)) {
                             // reload contact
@@ -772,7 +754,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment
 
             // listen for some stuff we need
             IntentFilter filter = new IntentFilter();
-            filter.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
             filter.addAction(MessageCenterService.ACTION_PUBLICKEY);
             filter.addAction(MessageCenterService.ACTION_BLOCKED);
             filter.addAction(MessageCenterService.ACTION_UNBLOCKED);
@@ -1114,6 +1095,26 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         mCurrentStatus = statusText;
         if (!mIsTyping)
             setStatusText(statusText);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onLastActivity(LastActivityEvent event) {
+        final Context context = getContext();
+        if (context == null)
+            return;
+
+        if (event.id != null && event.id.equals(mLastActivityRequestId)) {
+            mLastActivityRequestId = null;
+            // ignore last activity if we had an available presence in the meantime
+            if (mAvailableResources.size() == 0) {
+                if (event.error == null && event.idleTime >= 0) {
+                    setLastSeenSeconds(context, event.idleTime);
+                }
+                else {
+                    setCurrentStatusText(context.getString(R.string.seen_offline_label));
+                }
+            }
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)

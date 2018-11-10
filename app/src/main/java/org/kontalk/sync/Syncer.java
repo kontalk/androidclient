@@ -209,7 +209,6 @@ public class Syncer {
             SyncProcedure receiver = new SyncProcedure(mContext, jidList, this);
             IntentFilter f = new IntentFilter();
             f.addAction(MessageCenterService.ACTION_PUBLICKEY);
-            f.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
             lbm.registerReceiver(receiver, f);
 
             // request current connection status

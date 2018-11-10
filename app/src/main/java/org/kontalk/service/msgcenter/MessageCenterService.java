@@ -155,6 +155,7 @@ import org.kontalk.service.msgcenter.event.BlocklistEvent;
 import org.kontalk.service.msgcenter.event.BlocklistRequest;
 import org.kontalk.service.msgcenter.event.ConnectedEvent;
 import org.kontalk.service.msgcenter.event.DisconnectedEvent;
+import org.kontalk.service.msgcenter.event.LastActivityRequest;
 import org.kontalk.service.msgcenter.event.NoPresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceRequest;
@@ -237,12 +238,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_PUSH_REGISTERED = "org.kontalk.push.REGISTERED";
     public static final String ACTION_IDLE = "org.kontalk.action.IDLE";
     public static final String ACTION_PING = "org.kontalk.action.PING";
-
-    /**
-     * Broadcasted when a last activity iq is received.
-     * Send this intent to request a last activity.
-     */
-    public static final String ACTION_LAST_ACTIVITY = "org.kontalk.action.LAST_ACTIVITY";
 
     /**
      * Commence key pair regeneration.
@@ -1174,10 +1169,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     doConnect = handleMessage(intent);
                     break;
 
-                case ACTION_LAST_ACTIVITY:
-                    doConnect = handleLastActivity(intent);
-                    break;
-
                 case ACTION_PUBLICKEY:
                     doConnect = handlePublicKey(intent);
                     break;
@@ -1468,21 +1459,19 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     public void handleUpdateStatus(UpdateStatusRequest request) {
-        sendPacket(new Presence(Presence.Type.available,
-            request.status, 0, null));
+        if (isConnected()) {
+            sendPacket(new Presence(Presence.Type.available,
+                request.status, 0, null));
+        }
     }
 
-    @CommandHandler(name = ACTION_LAST_ACTIVITY)
-    private boolean handleLastActivity(Intent intent) {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleLastActivity(LastActivityRequest request) {
         if (isConnected()) {
-            LastActivity p = new LastActivity();
-
-            p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
-            p.setTo(intent.getStringExtra(EXTRA_TO));
-
+            LastActivity p = new LastActivity(request.jid);
+            p.setStanzaId(request.id);
             sendIqWithReply(p, true, mLastActivityListener, mLastActivityListener);
         }
-        return false;
     }
 
     @CommandHandler(name = ACTION_PUBLICKEY)
@@ -1743,7 +1732,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         connection.addSyncStanzaListener(new MessageListener(this), filter);
 
         // this is used as a reply callback
-        mLastActivityListener = new LastActivityListener(this);
+        mLastActivityListener = new LastActivityListener();
 
         filter = new StanzaTypeFilter(Version.class);
         connection.addAsyncStanzaListener(new VersionListener(), filter);
@@ -3130,14 +3119,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_UPLOAD_PRIVATEKEY);
         i.putExtra(EXTRA_EXPORT_PASSPHRASE, exportPassphrase);
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void requestLastActivity(final Context context, String to, String id) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_LAST_ACTIVITY);
-        i.putExtra(EXTRA_TO, to);
-        i.putExtra(EXTRA_PACKET_ID, id);
         startForegroundIfNeeded(context, i);
     }
 
