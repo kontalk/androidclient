@@ -46,6 +46,7 @@ import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.event.PresenceEvent;
+import org.kontalk.service.msgcenter.event.PublicKeyRequest;
 import org.kontalk.service.msgcenter.event.UserOfflineEvent;
 import org.kontalk.service.msgcenter.event.UserOnlineEvent;
 import org.kontalk.ui.MessagingNotification;
@@ -219,8 +220,10 @@ class PresenceListener extends MessageCenterPacketListener implements SubscribeL
                         requestKey = true;
                     }
 
-                    if (requestKey)
-                        MessageCenterService.requestPublicKey(getContext(), jid);
+                    if (requestKey) {
+                        MessageCenterService.bus()
+                            .post(new PublicKeyRequest(p.getFrom().asBareJid()));
+                    }
                 }
 
                 MessageCenterService.bus()

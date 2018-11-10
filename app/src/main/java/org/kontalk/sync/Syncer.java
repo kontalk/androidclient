@@ -34,8 +34,6 @@ import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SyncResult;
 import android.database.Cursor;
 import android.net.Uri;
@@ -45,7 +43,6 @@ import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.RawContacts;
-import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 
 import org.kontalk.Log;
@@ -91,11 +88,11 @@ public class Syncer {
 
     private final EventBus mServiceBus = MessageCenterService.bus();
 
-    public Syncer(Context context) {
+    Syncer(Context context) {
         mContext = context;
     }
 
-    public void onSyncCanceled() {
+    void onSyncCanceled() {
         mCanceled = true;
     }
 
@@ -122,7 +119,7 @@ public class Syncer {
      * is received, it deletes all the raw contacts created by us and then
      * recreates only the ones the server has found a match for.
      */
-    public void performSync(Context context, Account account, String authority,
+    void performSync(Context context, Account account, String authority,
         ContentProviderClient provider, ContentProviderClient usersProvider,
         SyncResult syncResult)
             throws OperationCanceledException {
@@ -202,16 +199,9 @@ public class Syncer {
         }
 
         else {
-            final LocalBroadcastManager lbm = LocalBroadcastManager
-                .getInstance(mContext);
-
-            // register presence broadcast receiver
-            SyncProcedure receiver = new SyncProcedure(mContext, jidList, this);
-            IntentFilter f = new IntentFilter();
-            f.addAction(MessageCenterService.ACTION_PUBLICKEY);
-            lbm.registerReceiver(receiver, f);
-
-            // request current connection status
+            // register to events
+            // registering will request current connection status and proceed
+            SyncProcedure receiver = new SyncProcedure(jidList, this);
             mServiceBus.register(receiver);
 
             // wait for the service to complete its job
@@ -226,7 +216,6 @@ public class Syncer {
                 }
             }
 
-            lbm.unregisterReceiver(receiver);
             mServiceBus.unregister(receiver);
 
             // last chance to quit
@@ -404,15 +393,6 @@ public class Syncer {
         }
     }
 
-    /** @deprecated Use the event bus. */
-    @Deprecated
-    void requestPublicKeys() {
-        Intent i = new Intent(mContext, MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_PUBLICKEY);
-        i.putExtra(MessageCenterService.EXTRA_PACKET_ID, SyncProcedure.IQ_KEYS_PACKET_ID);
-        MessageCenterService.startService(mContext, i);
-    }
-
     private String getDisplayName(ContentProviderClient client, String lookupKey, String defaultValue) {
         String displayName = null;
         Cursor nameQuery = null;
@@ -433,7 +413,8 @@ public class Syncer {
             try {
                 nameQuery.close();
             }
-            catch (Exception ignored) {}
+            catch (Exception ignored) {
+            }
         }
 
         return (displayName != null) ? displayName : defaultValue;

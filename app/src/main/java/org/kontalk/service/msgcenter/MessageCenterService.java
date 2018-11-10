@@ -159,6 +159,7 @@ import org.kontalk.service.msgcenter.event.LastActivityRequest;
 import org.kontalk.service.msgcenter.event.NoPresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceRequest;
+import org.kontalk.service.msgcenter.event.PublicKeyRequest;
 import org.kontalk.service.msgcenter.event.RosterMatchRequest;
 import org.kontalk.service.msgcenter.event.RosterStatusEvent;
 import org.kontalk.service.msgcenter.event.RosterStatusRequest;
@@ -267,12 +268,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_SUBSCRIBED = "org.kontalk.action.SUBSCRIBED";
 
     /**
-     * Broadcasted when receiving a public key.
-     * Send this intent to request a public key.
-     */
-    public static final String ACTION_PUBLICKEY = "org.kontalk.action.PUBLICKEY";
-
-    /**
      * Broadcasted when a block request has ben accepted by the server.
      */
     public static final String ACTION_BLOCKED = "org.kontalk.action.BLOCKED";
@@ -309,12 +304,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_TO = "org.kontalk.stanza.to";
     public static final String EXTRA_PRIVACY = "org.kontalk.presence.privacy";
     public static final String EXTRA_GROUP_JID = "org.kontalk.stanza.groupJid";
-
-    // use with org.kontalk.action.ROSTER(_MATCH)
-    public static final String EXTRA_JIDLIST = "org.kontalk.roster.JIDList";
-
-    // use with org.kontalk.action.LAST_ACTIVITY
-    public static final String EXTRA_SECONDS = "org.kontalk.last.seconds";
 
     // use with org.kontalk.action.VCARD
     public static final String EXTRA_PUBLIC_KEY = "org.kontalk.vcard.publicKey";
@@ -1169,10 +1158,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     doConnect = handleMessage(intent);
                     break;
 
-                case ACTION_PUBLICKEY:
-                    doConnect = handlePublicKey(intent);
-                    break;
-
                 case ACTION_SUBSCRIBED:
                     doConnect = handleSubscribed(intent);
                     break;
@@ -1474,23 +1459,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
-    @CommandHandler(name = ACTION_PUBLICKEY)
-    private boolean handlePublicKey(Intent intent) {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handlePublicKey(PublicKeyRequest request) {
         if (isConnected()) {
-            String to = intent.getStringExtra(EXTRA_TO);
-            if (to != null) {
+            if (request.jid != null) {
                 // request public key for a specific user
                 PublicKeyPublish p = new PublicKeyPublish();
-                p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
-                try {
-                    p.setTo(JidCreate.from(to));
-                }
-                catch (XmppStringprepException e) {
-                    Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
-                    // report it because it's a big deal
-                    ReportingManager.logException(e);
-                    return false;
-                }
+                p.setTo(request.jid);
+                p.setStanzaId(request.id);
 
                 PublicKeyListener listener = new PublicKeyListener(this, p);
                 sendIqWithReply(p, true, listener, listener);
@@ -1499,7 +1475,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 // request public keys for the whole roster
                 Collection<RosterEntry> buddies = getRoster().getEntries();
                 for (RosterEntry buddy : buddies) {
-                    String stanzaId = intent.getStringExtra(EXTRA_PACKET_ID);
 
                     final PublicKeyPublish p = new PublicKeyPublish();
                     p.setTo(buddy.getJid());
@@ -1508,6 +1483,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     ExceptionCallback exListener;
                     final PublicKeyListener listener = new PublicKeyListener(this, p);
 
+                    String stanzaId = request.id;
                     if (stanzaId != null) {
                         // add a prefix to the ID
                         // this was done to properly create request/response pairs
@@ -1550,13 +1526,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 // request our own public key (odd eh?)
                 PublicKeyPublish p = new PublicKeyPublish();
-                p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
+                p.setStanzaId(request.id);
                 p.setTo(mConnection.getUser().asBareJid());
                 PublicKeyListener listener = new PublicKeyListener(this, p);
                 sendIqWithReply(p, true, listener, listener);
             }
         }
-        return false;
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
@@ -3119,18 +3094,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_UPLOAD_PRIVATEKEY);
         i.putExtra(EXTRA_EXPORT_PASSPHRASE, exportPassphrase);
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void requestPublicKey(final Context context, String to) {
-        requestPublicKey(context, to, StringUtils.randomString(6));
-    }
-
-    public static void requestPublicKey(final Context context, String to, String id) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_PUBLICKEY);
-        i.putExtra(EXTRA_TO, to);
-        i.putExtra(EXTRA_PACKET_ID, id);
         startForegroundIfNeeded(context, i);
     }
 

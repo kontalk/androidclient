@@ -86,6 +86,8 @@ import org.kontalk.service.msgcenter.event.NoPresenceEvent;
 import org.kontalk.service.msgcenter.event.PreapproveSubscriptionRequest;
 import org.kontalk.service.msgcenter.event.PresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceRequest;
+import org.kontalk.service.msgcenter.event.PublicKeyEvent;
+import org.kontalk.service.msgcenter.event.PublicKeyRequest;
 import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
 import org.kontalk.service.msgcenter.event.SubscribeRequest;
 import org.kontalk.service.msgcenter.event.UserOfflineEvent;
@@ -515,7 +517,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
                     // autotrust the key we are about to request
                     // but set the trust level to ignored because we didn't really verify it
                     Keyring.setAutoTrustLevel(context, event.jid.toString(), MyUsers.Keys.TRUST_IGNORED);
-                    requestPublicKey(event.jid.toString());
+                    requestPublicKey(event.jid);
                 }
             }
 
@@ -708,17 +710,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
 
                     String action = intent.getAction();
 
-                    if (MessageCenterService.ACTION_PUBLICKEY.equals(action)) {
-                        String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                        if (id != null && id.equals(mKeyRequestId)) {
-                            // reload contact
-                            invalidateContact();
-                            // request presence again
-                            requestPresence();
-                        }
-                    }
-
-                    else if (MessageCenterService.ACTION_BLOCKED.equals(intent.getAction())) {
+                    if (MessageCenterService.ACTION_BLOCKED.equals(intent.getAction())) {
                         // reload contact
                         reloadContact();
                         // this will update block/unblock menu items
@@ -754,7 +746,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment
 
             // listen for some stuff we need
             IntentFilter filter = new IntentFilter();
-            filter.addAction(MessageCenterService.ACTION_PUBLICKEY);
             filter.addAction(MessageCenterService.ACTION_BLOCKED);
             filter.addAction(MessageCenterService.ACTION_UNBLOCKED);
             filter.addAction(MessageCenterService.ACTION_SUBSCRIBED);
@@ -1098,6 +1089,16 @@ public class ComposeMessageFragment extends AbstractComposeFragment
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onPublicKey(PublicKeyEvent event) {
+        if (event.id != null && event.id.equals(mKeyRequestId)) {
+            // reload contact
+            invalidateContact();
+            // request presence again
+            requestPresence();
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
     public void onLastActivity(LastActivityEvent event) {
         final Context context = getContext();
         if (context == null)
@@ -1144,11 +1145,11 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         }
     }
 
-    private void requestPublicKey(String jid) {
+    private void requestPublicKey(Jid jid) {
         Context context = getActivity();
         if (context != null) {
             mKeyRequestId = StringUtils.randomString(6);
-            MessageCenterService.requestPublicKey(context, jid, mKeyRequestId);
+            mServiceBus.post(new PublicKeyRequest(mKeyRequestId, jid));
         }
     }
 

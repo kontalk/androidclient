@@ -28,17 +28,17 @@ import java.util.Set;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
+import org.jxmpp.jid.Jid;
 import org.jxmpp.jid.impl.JidCreate;
-import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.sqlite.SQLiteDiskIOException;
 import android.net.Uri;
 import android.os.Bundle;
@@ -67,6 +67,8 @@ import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.event.NoPresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceRequest;
+import org.kontalk.service.msgcenter.event.PublicKeyEvent;
+import org.kontalk.service.msgcenter.event.PublicKeyRequest;
 import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
 import org.kontalk.service.msgcenter.event.UserOfflineEvent;
 import org.kontalk.service.msgcenter.event.UserOnlineEvent;
@@ -96,8 +98,6 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     private MenuItem mSetGroupSubjectMenu;
     private MenuItem mGroupInfoMenu;
     private MenuItem mLeaveGroupMenu;
-
-    private BroadcastReceiver mBroadcastReceiver;
 
     @Override
     protected void updateUI() {
@@ -165,14 +165,6 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         }
 
         return false;
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (mLocalBroadcastManager != null && mBroadcastReceiver != null) {
-            mLocalBroadcastManager.unregisterReceiver(mBroadcastReceiver);
-        }
     }
 
     @Override
@@ -259,8 +251,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     }
 
     private void requestPresence() {
-        Context context;
-        if (mConversation != null && (context = getContext()) != null) {
+        if (mConversation != null) {
             String[] users = mConversation.getGroupPeers();
             if (users != null) {
                 for (String user : users) {
@@ -337,33 +328,6 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
         super.onConversationCreated();
 
-        // setup broadcast receiver
-        if (mBroadcastReceiver == null) {
-            mBroadcastReceiver = new BroadcastReceiver() {
-                public void onReceive(Context context, Intent intent) {
-                    String jid = XmppStringUtils.parseBareJid(intent
-                        .getStringExtra(MessageCenterService.EXTRA_FROM));
-
-                    String action = intent.getAction();
-
-                    if (MessageCenterService.ACTION_PUBLICKEY.equals(action)) {
-                        String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                        if (id != null && id.equals(mKeyRequestIds.get(jid))) {
-                            // invalidate contact
-                            Contact.invalidate(jid);
-                            // request presence again
-                            requestPresence();
-                        }
-                    }
-                }
-            };
-
-            // listen for some stuff we need
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(MessageCenterService.ACTION_PUBLICKEY);
-            mLocalBroadcastManager.registerReceiver(mBroadcastReceiver, filter);
-        }
-
         boolean sendEnabled;
         int membership = mConversation.getGroupMembership();
         switch (membership) {
@@ -407,12 +371,22 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         }
     }
 
-    private void requestPublicKey(String jid) {
+    private void requestPublicKey(Jid jid) {
         Context context = getActivity();
         if (context != null) {
             String requestId = StringUtils.randomString(6);
-            mKeyRequestIds.put(jid, requestId);
-            MessageCenterService.requestPublicKey(context, jid, requestId);
+            mKeyRequestIds.put(jid.asBareJid().toString(), requestId);
+            mServiceBus.post(new PublicKeyRequest(requestId, jid));
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onPublicKey(PublicKeyEvent event) {
+        if (event.id != null && event.id.equals(mKeyRequestIds.get(event.jid.asBareJid().toString()))) {
+            // invalidate contact
+            Contact.invalidate(event.jid.asBareJid().toString());
+            // request presence again
+            requestPresence();
         }
     }
 
@@ -458,7 +432,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
                 // autotrust the key we are about to request
                 // but set the trust level to ignored because we didn't really verify it
                 Keyring.setAutoTrustLevel(context, event.jid.toString(), MyUsers.Keys.TRUST_IGNORED);
-                requestPublicKey(event.jid.toString());
+                requestPublicKey(event.jid);
             }
         }
 

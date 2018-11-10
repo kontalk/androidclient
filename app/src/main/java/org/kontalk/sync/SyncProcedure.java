@@ -31,11 +31,6 @@ import org.jivesoftware.smack.packet.StanzaError;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jxmpp.jid.BareJid;
 import org.jxmpp.jid.Jid;
-import org.jxmpp.jid.impl.JidCreate;
-
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
 
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.event.BlocklistEvent;
@@ -45,6 +40,8 @@ import org.kontalk.service.msgcenter.event.LastActivityEvent;
 import org.kontalk.service.msgcenter.event.LastActivityRequest;
 import org.kontalk.service.msgcenter.event.PresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceRequest;
+import org.kontalk.service.msgcenter.event.PublicKeyEvent;
+import org.kontalk.service.msgcenter.event.PublicKeyRequest;
 import org.kontalk.service.msgcenter.event.RosterMatchEvent;
 import org.kontalk.service.msgcenter.event.RosterMatchRequest;
 import org.kontalk.service.msgcenter.event.UnsubscribeRequest;
@@ -54,7 +51,7 @@ import org.kontalk.service.msgcenter.event.UnsubscribeRequest;
  * The sync procedure.
  * @author Daniele Ricci
  */
-public class SyncProcedure extends BroadcastReceiver {
+public class SyncProcedure {
     // using SyncAdapter tag
     private static final String TAG = SyncAdapter.TAG;
 
@@ -62,12 +59,10 @@ public class SyncProcedure extends BroadcastReceiver {
     static final String IQ_KEYS_PACKET_ID = StringUtils.randomString(10);
 
     /** Random packet id used for requesting the blocklist. */
-    static final String IQ_BLOCKLIST_PACKET_ID = StringUtils.randomString(10);
+    private static final String IQ_BLOCKLIST_PACKET_ID = StringUtils.randomString(10);
 
     /** Max number of items in a roster match request. */
     private static final int MAX_ROSTER_MATCH_SIZE = 500;
-
-    private final Context mContext;
 
     private List<PresenceItem> mResponse;
     private final WeakReference<Syncer> mNotifyTo;
@@ -100,8 +95,7 @@ public class SyncProcedure extends BroadcastReceiver {
         public boolean discarded;
     }
 
-    public SyncProcedure(Context context, List<String> jidList, Syncer notifyTo) {
-        mContext = context;
+    SyncProcedure(List<String> jidList, Syncer notifyTo) {
         mNotifyTo = new WeakReference<>(notifyTo);
         mJidList = jidList;
     }
@@ -189,7 +183,7 @@ public class SyncProcedure extends BroadcastReceiver {
                             mPresenceId = StringUtils.randomString(6);
                             requestPresenceData(mPresenceId);
                             // request public keys for the whole roster
-                            w.requestPublicKeys();
+                            requestPublicKeys(IQ_KEYS_PACKET_ID);
                             // request block list
                             requestBlocklist(IQ_BLOCKLIST_PACKET_ID);
                         }
@@ -246,33 +240,26 @@ public class SyncProcedure extends BroadcastReceiver {
         }
     }
 
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        String action = intent.getAction();
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void onPublicKey(PublicKeyEvent event) {
+        if (mResponse != null) {
+            if (IQ_KEYS_PACKET_ID.equals(event.id)) {
+                // see if bare JID is present in roster response
+                BareJid compare = event.jid.asBareJid();
+                for (PresenceItem item : mResponse) {
+                    if (item.from.equals(compare)) {
+                        item.publicKey = event.publicKey;
 
-        if (MessageCenterService.ACTION_PUBLICKEY.equals(action)) {
-            if (mResponse != null) {
-                String requestId = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                if (IQ_KEYS_PACKET_ID.equals(requestId)) {
-                    String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                    // see if bare JID is present in roster response
-                    BareJid compare = JidCreate.bareFromOrThrowUnchecked(jid);
-                    for (PresenceItem item : mResponse) {
-                        if (item.from.equals(compare)) {
-                            item.publicKey = intent.getByteArrayExtra(MessageCenterService.EXTRA_PUBLIC_KEY);
-
-                            // increment vcard count
-                            mPubkeyCount++;
-                            break;
-                        }
+                        // increment vcard count
+                        mPubkeyCount++;
+                        break;
                     }
-
-                    // done with presence data and blocklist
-                    if (mPubkeyCount == mPresenceCount && mNlocklistReceived && mNotMatched.size() == 0)
-                        finish();
                 }
-            }
 
+                // done with presence data and blocklist
+                if (mPubkeyCount == mPresenceCount && mNlocklistReceived && mNotMatched.size() == 0)
+                    finish();
+            }
         }
     }
 
@@ -305,6 +292,11 @@ public class SyncProcedure extends BroadcastReceiver {
     private void requestLastActivity(BareJid jid, String id) {
         mServiceBus.post(new LastActivityRequest(id, jid));
     }
+
+    private void requestPublicKeys(String id) {
+        mServiceBus.post(new PublicKeyRequest(id, null));
+    }
+
 
     private void requestBlocklist(String id) {
         mServiceBus.post(new BlocklistRequest(id));
