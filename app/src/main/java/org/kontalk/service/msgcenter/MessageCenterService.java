@@ -296,7 +296,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_PACKET_ID = "org.kontalk.packet.id";
     public static final String EXTRA_TYPE = "org.kontalk.packet.type";
     public static final String EXTRA_ERROR_CONDITION = "org.kontalk.packet.error.condition";
-    public static final String EXTRA_ERROR_EXCEPTION = "org.kontalk.packet.error.exception";
     public static final String EXTRA_FOREGROUND = "org.kontalk.foreground";
 
     // use with org.kontalk.action.PRESENCE/SUBSCRIBED
@@ -304,9 +303,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_TO = "org.kontalk.stanza.to";
     public static final String EXTRA_PRIVACY = "org.kontalk.presence.privacy";
     public static final String EXTRA_GROUP_JID = "org.kontalk.stanza.groupJid";
-
-    // use with org.kontalk.action.VCARD
-    public static final String EXTRA_PUBLIC_KEY = "org.kontalk.vcard.publicKey";
 
     // used with org.kontalk.action.IMPORT_KEYPAIR
     public static final String EXTRA_KEYPACK = "org.kontalk.keypack";
