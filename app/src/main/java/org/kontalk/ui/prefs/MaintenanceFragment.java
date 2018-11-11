@@ -25,28 +25,26 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.folderselector.FolderChooserDialog;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+import org.jivesoftware.smack.util.SHA1;
+
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.support.annotation.NonNull;
-import android.support.v4.content.LocalBroadcastManager;
 import android.text.InputType;
 import android.widget.Toast;
 
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-import org.jivesoftware.smack.util.SHA1;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
@@ -56,6 +54,8 @@ import org.kontalk.crypto.PersonalKeyPack;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.event.ConnectedEvent;
+import org.kontalk.service.msgcenter.event.PrivateKeyUploadedEvent;
+import org.kontalk.service.msgcenter.event.UploadPrivateKeyRequest;
 import org.kontalk.ui.LockedDialog;
 import org.kontalk.ui.PasswordInputDialog;
 import org.kontalk.ui.RegisterDeviceActivity;
@@ -76,9 +76,7 @@ public class MaintenanceFragment extends RootPreferenceFragment {
     String mPassphrase;
 
     // created on demand
-    BroadcastReceiver mUploadPrivateKeyReceiver;
     MaterialDialog mUploadPrivateKeyProgress;
-    LocalBroadcastManager mLocalBroadcastManager;
 
     private EventBus mServiceBus = MessageCenterService.bus();
 
@@ -298,11 +296,6 @@ public class MaintenanceFragment extends RootPreferenceFragment {
     public void onStop() {
         super.onStop();
         mServiceBus.unregister(this);
-        if (mLocalBroadcastManager != null && mUploadPrivateKeyReceiver != null) {
-            mLocalBroadcastManager.unregisterReceiver(mUploadPrivateKeyReceiver);
-            mUploadPrivateKeyReceiver = null;
-            mLocalBroadcastManager = null;
-        }
     }
 
     interface OnPassphraseChangedListener {
@@ -420,40 +413,7 @@ public class MaintenanceFragment extends RootPreferenceFragment {
 
         mPassphrase = passphrase;
 
-        // listen for broadcast to receive the token to display to the user
-        mUploadPrivateKeyReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context invalid, Intent intent) {
-                String action = intent.getAction();
-
-                if (MessageCenterService.ACTION_UPLOAD_PRIVATEKEY.equals(action)) {
-                    mLocalBroadcastManager.unregisterReceiver(this);
-
-                    if (mUploadPrivateKeyProgress != null) {
-                        mUploadPrivateKeyProgress.dismiss();
-                        mUploadPrivateKeyProgress = null;
-                    }
-
-                    String token = intent.getStringExtra(MessageCenterService.EXTRA_TOKEN);
-                    String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                    String error = intent.getStringExtra(MessageCenterService.EXTRA_ERROR_CONDITION);
-
-                    if (token == null || error != null) {
-                        Toast.makeText(context, R.string.register_device_request_error, Toast.LENGTH_LONG).show();
-                    }
-                    else {
-                        RegisterDeviceActivity.start(context, token, from);
-                    }
-                }
-            }
-        };
-
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(MessageCenterService.ACTION_UPLOAD_PRIVATEKEY);
-        if (mLocalBroadcastManager == null)
-            mLocalBroadcastManager = LocalBroadcastManager.getInstance(context.getApplicationContext());
-
-        mLocalBroadcastManager.registerReceiver(mUploadPrivateKeyReceiver, filter);
+        // listen for events to receive the token to display to the user
         mServiceBus.register(this);
 
         mUploadPrivateKeyProgress = new MaterialDialog.Builder(context)
@@ -462,11 +422,7 @@ public class MaintenanceFragment extends RootPreferenceFragment {
             .cancelListener(new DialogInterface.OnCancelListener() {
                 @Override
                 public void onCancel(DialogInterface dialogInterface) {
-                    if (mLocalBroadcastManager != null && mUploadPrivateKeyReceiver != null)
-                        mLocalBroadcastManager.unregisterReceiver(mUploadPrivateKeyReceiver);
                     mServiceBus.unregister(MaintenanceFragment.this);
-                    mLocalBroadcastManager = null;
-                    mUploadPrivateKeyReceiver = null;
                     mUploadPrivateKeyProgress = null;
                 }
             })
@@ -479,7 +435,28 @@ public class MaintenanceFragment extends RootPreferenceFragment {
     public void onConnected(ConnectedEvent event) {
         Context context = getContext();
         if (context != null) {
-            MessageCenterService.uploadPrivateKey(context, mPassphrase);
+            mServiceBus.post(new UploadPrivateKeyRequest(mPassphrase));
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onPrivateKeyUploaded(PrivateKeyUploadedEvent event) {
+        mServiceBus.unregister(this);
+
+        final Context context = getContext();
+        if (context == null)
+            return;
+
+        if (mUploadPrivateKeyProgress != null) {
+            mUploadPrivateKeyProgress.dismiss();
+            mUploadPrivateKeyProgress = null;
+        }
+
+        if (event.token == null) {
+            Toast.makeText(context, R.string.register_device_request_error, Toast.LENGTH_LONG).show();
+        }
+        else {
+            RegisterDeviceActivity.start(context, event.token, event.server);
         }
     }
 

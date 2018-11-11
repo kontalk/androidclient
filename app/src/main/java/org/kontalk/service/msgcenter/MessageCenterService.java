@@ -169,6 +169,7 @@ import org.kontalk.service.msgcenter.event.SetUserPrivacyRequest;
 import org.kontalk.service.msgcenter.event.SubscribeRequest;
 import org.kontalk.service.msgcenter.event.UnsubscribeRequest;
 import org.kontalk.service.msgcenter.event.UpdateStatusRequest;
+import org.kontalk.service.msgcenter.event.UploadPrivateKeyRequest;
 import org.kontalk.service.msgcenter.event.UploadServiceFoundEvent;
 import org.kontalk.service.msgcenter.event.UserBlockedEvent;
 import org.kontalk.service.msgcenter.event.UserOnlineEvent;
@@ -260,19 +261,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_IMPORT_KEYPAIR = "org.kontalk.action.IMPORT_KEYPAIR";
 
     /**
-     * Broadcasted when private key was uploaded to server.
-     * Send this intent to upload your private key.
-     */
-    public static final String ACTION_UPLOAD_PRIVATEKEY = "org.kontalk.action.UPLOAD_PRIVATEKEY";
-
-    /**
      * Send this intent to update the foreground service status of the message center.
      */
     public static final String ACTION_FOREGROUND = "org.kontalk.action.FOREGROUND";
 
     // common parameters
-    public static final String EXTRA_PACKET_ID = "org.kontalk.packet.id";
-    public static final String EXTRA_ERROR_CONDITION = "org.kontalk.packet.error.condition";
     public static final String EXTRA_FOREGROUND = "org.kontalk.foreground";
 
     // use with org.kontalk.action.PRESENCE/SUBSCRIBED
@@ -284,30 +277,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_KEYPACK = "org.kontalk.keypack";
     public static final String EXTRA_PASSPHRASE = "org.kontalk.passphrase";
 
-    // use with org.kontalk.action.UPLOAD_PRIVATEKEY
-    public static final String EXTRA_EXPORT_PASSPHRASE = "org.kontalk.export_passphrase";
-    public static final String EXTRA_TOKEN = "org.kontalk.token";
-
     // used with org.kontalk.action.TEST
     public static final String EXTRA_TEST_CHECK_NETWORK = "org.kontalk.test.check_network";
-
-    // used for org.kontalk.presence.privacy.action extra
-    /**
-     * Accept subscription.
-     */
-    public static final int PRIVACY_ACCEPT = 0;
-    /**
-     * Block user.
-     */
-    public static final int PRIVACY_BLOCK = 1;
-    /**
-     * Unblock user.
-     */
-    public static final int PRIVACY_UNBLOCK = 2;
-    /**
-     * Reject subscription and block.
-     */
-    public static final int PRIVACY_REJECT = 3;
 
     public static final String EXTRA_CHAT_STATE = "org.kontalk.message.chatState";
 
@@ -1111,10 +1082,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     doConnect = handleImportKeyPair(intent);
                     break;
 
-                case ACTION_UPLOAD_PRIVATEKEY:
-                    doConnect = handleUploadPrivateKey(intent);
-                    break;
-
                 case ACTION_RESTART:
                     doConnect = handleRestart();
                     break;
@@ -1239,13 +1206,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return false;
     }
 
-    @CommandHandler(name = ACTION_UPLOAD_PRIVATEKEY)
-    private boolean handleUploadPrivateKey(Intent intent) {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleUploadPrivateKey(UploadPrivateKeyRequest request) {
         if (isConnected()) {
-            String exportPassprase = intent.getStringExtra(EXTRA_EXPORT_PASSPHRASE);
-            beginUploadPrivateKey(exportPassprase);
+            beginUploadPrivateKey(request.passphrase);
         }
-        return true;
     }
 
     @CommandHandler(name = ACTION_RESTART)
@@ -3032,13 +2997,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.setAction(MessageCenterService.ACTION_IMPORT_KEYPAIR);
         i.putExtra(EXTRA_KEYPACK, keypack);
         i.putExtra(EXTRA_PASSPHRASE, passphrase);
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void uploadPrivateKey(final Context context, String exportPassphrase) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_UPLOAD_PRIVATEKEY);
-        i.putExtra(EXTRA_EXPORT_PASSPHRASE, exportPassphrase);
         startForegroundIfNeeded(context, i);
     }
 

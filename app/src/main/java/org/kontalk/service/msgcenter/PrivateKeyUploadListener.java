@@ -29,14 +29,12 @@ import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 
-import android.content.Intent;
 import android.util.Base64;
 
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.SmackInitializer;
+import org.kontalk.service.msgcenter.event.PrivateKeyUploadedEvent;
 import org.kontalk.util.Preferences;
-
-import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_UPLOAD_PRIVATEKEY;
 
 
 /**
@@ -103,23 +101,25 @@ public class PrivateKeyUploadListener extends MessageCenterPacketListener {
         finish(token, from != null ? from.toString() : conn.getXMPPServiceDomain().toString());
     }
 
-    private void finish(String token, String from) {
-        finish(token, from, null);
+    private void finish(String token, String server) {
+        finish(token, server, null);
     }
 
     private void finish(StanzaError.Condition errorCondition) {
         finish(null, null, errorCondition);
     }
 
-    private void finish(String token, String from, StanzaError.Condition errorCondition) {
-        Intent i = new Intent(ACTION_UPLOAD_PRIVATEKEY);
+    private void finish(String token, String server, StanzaError.Condition errorCondition) {
+        PrivateKeyUploadedEvent event;
         if (token != null) {
-            i.putExtra(MessageCenterService.EXTRA_TOKEN, token);
-            i.putExtra(MessageCenterService.EXTRA_FROM, from);
+            event = new PrivateKeyUploadedEvent(token, server);
         }
-        if (errorCondition != null)
-            i.putExtra(MessageCenterService.EXTRA_ERROR_CONDITION, errorCondition.toString());
-        sendBroadcast(i);
+        else {
+            event = new PrivateKeyUploadedEvent(errorCondition != null ?
+                errorCondition : StanzaError.Condition.internal_server_error);
+        }
+
+        MessageCenterService.bus().post(event);
 
         unconfigure();
     }
