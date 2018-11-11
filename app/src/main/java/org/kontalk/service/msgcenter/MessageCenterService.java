@@ -169,6 +169,7 @@ import org.kontalk.service.msgcenter.event.SetUserPrivacyRequest;
 import org.kontalk.service.msgcenter.event.SubscribeRequest;
 import org.kontalk.service.msgcenter.event.UnsubscribeRequest;
 import org.kontalk.service.msgcenter.event.UpdateStatusRequest;
+import org.kontalk.service.msgcenter.event.UploadServiceFoundEvent;
 import org.kontalk.service.msgcenter.event.UserBlockedEvent;
 import org.kontalk.service.msgcenter.event.UserOnlineEvent;
 import org.kontalk.service.msgcenter.event.UserUnblockedEvent;
@@ -269,11 +270,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     public static final String ACTION_FOREGROUND = "org.kontalk.action.FOREGROUND";
 
-    /**
-     * Broadcasted when an upload service has been discovered.
-     */
-    public static final String ACTION_UPLOAD_SERVICE_FOUND = "org.kontalk.action.UPLOAD_SERVICE_FOUND";
-
     // common parameters
     public static final String EXTRA_PACKET_ID = "org.kontalk.packet.id";
     public static final String EXTRA_ERROR_CONDITION = "org.kontalk.packet.error.condition";
@@ -282,7 +278,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     // use with org.kontalk.action.PRESENCE/SUBSCRIBED
     public static final String EXTRA_FROM = "org.kontalk.stanza.from";
     public static final String EXTRA_TO = "org.kontalk.stanza.to";
-    public static final String EXTRA_PRIVACY = "org.kontalk.presence.privacy";
     public static final String EXTRA_GROUP_JID = "org.kontalk.stanza.groupJid";
 
     // used with org.kontalk.action.IMPORT_KEYPAIR
@@ -2496,13 +2491,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     void addUploadService(IUploadService service) {
         ensureUploadServices();
         mUploadServices.add(service);
-        broadcast(ACTION_UPLOAD_SERVICE_FOUND);
+        BUS.post(new UploadServiceFoundEvent());
     }
 
     void addUploadService(IUploadService service, int priority) {
         ensureUploadServices();
         mUploadServices.add(priority, service);
-        broadcast(ACTION_UPLOAD_SERVICE_FOUND);
+        BUS.post(new UploadServiceFoundEvent());
     }
 
     /**

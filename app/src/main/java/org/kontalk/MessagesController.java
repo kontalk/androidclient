@@ -73,6 +73,7 @@ import org.kontalk.service.msgcenter.event.DisconnectedEvent;
 import org.kontalk.service.msgcenter.event.GroupCreatedEvent;
 import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
 import org.kontalk.service.msgcenter.event.SetUserPrivacyRequest;
+import org.kontalk.service.msgcenter.event.UploadServiceFoundEvent;
 import org.kontalk.service.msgcenter.event.UserSubscribedEvent;
 import org.kontalk.service.msgcenter.group.KontalkGroupController;
 import org.kontalk.ui.MessagingNotification;
@@ -508,7 +509,6 @@ public class MessagesController {
 
         MessageCenterListener(Context context) {
             IntentFilter filter = new IntentFilter();
-            filter.addAction(MessageCenterService.ACTION_UPLOAD_SERVICE_FOUND);
             filter.addAction(MediaService.ACTION_MEDIA_READY);
             LocalBroadcastManager.getInstance(context)
                 .registerReceiver(this, filter);
@@ -518,16 +518,6 @@ public class MessagesController {
         public void onReceive(Context context, final Intent intent) {
             String action = intent.getAction();
             switch (action != null ? action : "") {
-                case MessageCenterService.ACTION_UPLOAD_SERVICE_FOUND: {
-                    mWorker.postAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            uploadServiceFound();
-                        }
-                    });
-                    break;
-                }
-
                 case MediaService.ACTION_MEDIA_READY: {
                     final long messageId = intent.getLongExtra("org.kontalk.message.msgId", 0);
                     mWorker.postAction(new Runnable() {
@@ -602,6 +592,16 @@ public class MessagesController {
             @Override
             public void run() {
                 subscribed(jid);
+            }
+        });
+    }
+
+    @Subscribe
+    public void onUploadServiceFound(UploadServiceFoundEvent event) {
+        mWorker.postAction(new Runnable() {
+            @Override
+            public void run() {
+                uploadServiceFound();
             }
         });
     }
