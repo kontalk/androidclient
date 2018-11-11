@@ -287,11 +287,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     public static final String ACTION_UPLOAD_SERVICE_FOUND = "org.kontalk.action.UPLOAD_SERVICE_FOUND";
 
-    /**
-     * Broadcasted when group creation has been confirmed by the server.
-     */
-    public static final String ACTION_GROUP_CREATED = "org.kontalk.action.GROUP_CREATED";
-
     // common parameters
     public static final String EXTRA_PACKET_ID = "org.kontalk.packet.id";
     public static final String EXTRA_TYPE = "org.kontalk.packet.type";

@@ -29,6 +29,7 @@ import org.kontalk.client.GroupExtension;
 import org.kontalk.client.KontalkGroupManager;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.service.msgcenter.event.GroupCreatedEvent;
 
 
 /**
@@ -81,7 +82,8 @@ public class GroupCommandAckListener extends MessageCenterPacketListener {
             case CREATE:
                 // resend pending stuff -- this will continue the delivery of
                 // group messages that were waiting for this group command
-                broadcast(MessageCenterService.ACTION_GROUP_CREATED);
+                MessageCenterService.bus()
+                    .post(new GroupCreatedEvent());
                 break;
             case PART:
                 if (mCommandMessage != null) {

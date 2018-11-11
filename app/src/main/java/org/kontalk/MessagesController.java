@@ -67,6 +67,7 @@ import org.kontalk.service.MediaService;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.event.ConnectedEvent;
 import org.kontalk.service.msgcenter.event.DisconnectedEvent;
+import org.kontalk.service.msgcenter.event.GroupCreatedEvent;
 import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
 import org.kontalk.service.msgcenter.group.KontalkGroupController;
 import org.kontalk.ui.MessagingNotification;
@@ -504,7 +505,6 @@ public class MessagesController {
             IntentFilter filter = new IntentFilter();
             filter.addAction(MessageCenterService.ACTION_SUBSCRIBED);
             filter.addAction(MessageCenterService.ACTION_UPLOAD_SERVICE_FOUND);
-            filter.addAction(MessageCenterService.ACTION_GROUP_CREATED);
             filter.addAction(MediaService.ACTION_MEDIA_READY);
             LocalBroadcastManager.getInstance(context)
                 .registerReceiver(this, filter);
@@ -530,16 +530,6 @@ public class MessagesController {
                         @Override
                         public void run() {
                             uploadServiceFound();
-                        }
-                    });
-                    break;
-                }
-
-                case MessageCenterService.ACTION_GROUP_CREATED: {
-                    mWorker.postAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            groupCreated();
                         }
                     });
                     break;
@@ -598,6 +588,16 @@ public class MessagesController {
             @Override
             public void run() {
                 readyForMessages();
+            }
+        });
+    }
+
+    @Subscribe
+    public void onGroupCreated(GroupCreatedEvent event) {
+        mWorker.postAction(new Runnable() {
+            @Override
+            public void run() {
+                groupCreated();
             }
         });
     }
