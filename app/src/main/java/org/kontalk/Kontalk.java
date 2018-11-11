@@ -118,7 +118,7 @@ public class Kontalk extends Application {
                 }
                 // foreground service
                 else if ("pref_foreground_service".equals(key)) {
-                    MessageCenterService.updateForegroundStatus(Kontalk.this);
+                    MessageCenterService.start(Kontalk.this);
                 }
                 // reporting opt-in
                 else if ("pref_reporting".equals(key)) {

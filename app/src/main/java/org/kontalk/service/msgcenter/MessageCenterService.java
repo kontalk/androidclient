@@ -260,11 +260,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     public static final String ACTION_IMPORT_KEYPAIR = "org.kontalk.action.IMPORT_KEYPAIR";
 
-    /**
-     * Send this intent to update the foreground service status of the message center.
-     */
-    public static final String ACTION_FOREGROUND = "org.kontalk.action.FOREGROUND";
-
     // common parameters
     public static final String EXTRA_FOREGROUND = "org.kontalk.foreground";
 
@@ -1098,10 +1093,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     doConnect = handleMessage(intent);
                     break;
 
-                case ACTION_FOREGROUND:
-                    doConnect = handleForeground();
-                    break;
-
                 default:
                     // no command means normal service start, connect if not connected
                     doConnect = true;
@@ -1526,12 +1517,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             version.setStanzaId(request.id);
             sendPacket(version);
         }
-    }
-
-    @CommandHandler(name = ACTION_FOREGROUND)
-    private boolean handleForeground() {
-        setForeground(true);
-        return false;
     }
 
     /**
@@ -2997,12 +2982,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.setAction(MessageCenterService.ACTION_IMPORT_KEYPAIR);
         i.putExtra(EXTRA_KEYPACK, keypack);
         i.putExtra(EXTRA_PASSPHRASE, passphrase);
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void updateForegroundStatus(final Context context) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_FOREGROUND);
         startForegroundIfNeeded(context, i);
     }
 
