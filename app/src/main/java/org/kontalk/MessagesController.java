@@ -25,6 +25,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.jxmpp.jid.BareJid;
+import org.jxmpp.jid.impl.JidCreate;
 
 import android.content.BroadcastReceiver;
 import android.content.ContentUris;
@@ -65,10 +67,13 @@ import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.MediaService;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.PrivacyCommand;
 import org.kontalk.service.msgcenter.event.ConnectedEvent;
 import org.kontalk.service.msgcenter.event.DisconnectedEvent;
 import org.kontalk.service.msgcenter.event.GroupCreatedEvent;
 import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
+import org.kontalk.service.msgcenter.event.SetUserPrivacyRequest;
+import org.kontalk.service.msgcenter.event.UserSubscribedEvent;
 import org.kontalk.service.msgcenter.group.KontalkGroupController;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.util.MediaStorage;
@@ -503,7 +508,6 @@ public class MessagesController {
 
         MessageCenterListener(Context context) {
             IntentFilter filter = new IntentFilter();
-            filter.addAction(MessageCenterService.ACTION_SUBSCRIBED);
             filter.addAction(MessageCenterService.ACTION_UPLOAD_SERVICE_FOUND);
             filter.addAction(MediaService.ACTION_MEDIA_READY);
             LocalBroadcastManager.getInstance(context)
@@ -514,17 +518,6 @@ public class MessagesController {
         public void onReceive(Context context, final Intent intent) {
             String action = intent.getAction();
             switch (action != null ? action : "") {
-                case MessageCenterService.ACTION_SUBSCRIBED: {
-                    final String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                    mWorker.postAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            subscribed(from);
-                        }
-                    });
-                    break;
-                }
-
                 case MessageCenterService.ACTION_UPLOAD_SERVICE_FOUND: {
                     mWorker.postAction(new Runnable() {
                         @Override
@@ -602,6 +595,17 @@ public class MessagesController {
         });
     }
 
+    @Subscribe
+    public void onUserSubscribed(UserSubscribedEvent event) {
+        final String jid = event.jid.asBareJid().toString();
+        mWorker.postAction(new Runnable() {
+            @Override
+            public void run() {
+                subscribed(jid);
+            }
+        });
+    }
+
     @WorkerThread
     void readyForMessages() {
         // send pending subscription replies
@@ -647,19 +651,19 @@ public class MessagesController {
             String to = c.getString(0);
             int reqStatus = c.getInt(1);
 
-            int action;
+            PrivacyCommand action;
 
             switch (reqStatus) {
                 case MyMessages.Threads.REQUEST_REPLY_PENDING_ACCEPT:
-                    action = MessageCenterService.PRIVACY_ACCEPT;
+                    action = PrivacyCommand.ACCEPT;
                     break;
 
                 case MyMessages.Threads.REQUEST_REPLY_PENDING_BLOCK:
-                    action = MessageCenterService.PRIVACY_BLOCK;
+                    action = PrivacyCommand.BLOCK;
                     break;
 
                 case MyMessages.Threads.REQUEST_REPLY_PENDING_UNBLOCK:
-                    action = MessageCenterService.PRIVACY_UNBLOCK;
+                    action = PrivacyCommand.UNBLOCK;
                     break;
 
                 default:
@@ -667,7 +671,9 @@ public class MessagesController {
                     continue;
             }
 
-            MessageCenterService.replySubscription(mContext, to, action);
+            BareJid jid = JidCreate.bareFromOrThrowUnchecked(to);
+            MessageCenterService.bus()
+                .post(new SetUserPrivacyRequest(jid, action));
         }
 
         c.close();

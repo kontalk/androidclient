@@ -30,6 +30,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
+import org.jxmpp.jid.BareJid;
 import org.jxmpp.jid.Jid;
 import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.util.XmppStringUtils;
@@ -38,12 +39,10 @@ import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDiskIOException;
@@ -79,6 +78,7 @@ import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.PrivacyCommand;
 import org.kontalk.service.msgcenter.event.ConnectedEvent;
 import org.kontalk.service.msgcenter.event.LastActivityEvent;
 import org.kontalk.service.msgcenter.event.LastActivityRequest;
@@ -89,9 +89,13 @@ import org.kontalk.service.msgcenter.event.PresenceRequest;
 import org.kontalk.service.msgcenter.event.PublicKeyEvent;
 import org.kontalk.service.msgcenter.event.PublicKeyRequest;
 import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
+import org.kontalk.service.msgcenter.event.SetUserPrivacyRequest;
 import org.kontalk.service.msgcenter.event.SubscribeRequest;
+import org.kontalk.service.msgcenter.event.UserBlockedEvent;
 import org.kontalk.service.msgcenter.event.UserOfflineEvent;
 import org.kontalk.service.msgcenter.event.UserOnlineEvent;
+import org.kontalk.service.msgcenter.event.UserSubscribedEvent;
+import org.kontalk.service.msgcenter.event.UserUnblockedEvent;
 import org.kontalk.service.msgcenter.event.VersionEvent;
 import org.kontalk.service.msgcenter.event.VersionRequest;
 import org.kontalk.sync.Syncer;
@@ -100,11 +104,6 @@ import org.kontalk.util.Permissions;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 import org.kontalk.util.XMPPUtils;
-
-import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_ACCEPT;
-import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_BLOCK;
-import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_REJECT;
-import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK;
 
 
 /**
@@ -131,8 +130,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment
     String mKeyRequestId;
 
     private boolean mIsTyping;
-
-    private BroadcastReceiver mBroadcastReceiver;
 
     @Override
     protected void onInflateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -167,15 +164,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         }
 
         return false;
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (mLocalBroadcastManager != null && mBroadcastReceiver != null) {
-            mLocalBroadcastManager.unregisterReceiver(mBroadcastReceiver);
-            mBroadcastReceiver = null;
-        }
     }
 
     private void callContact() {
@@ -269,7 +257,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
             .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                    setPrivacy(dialog.getContext(), PRIVACY_BLOCK);
+                    setPrivacy(dialog.getContext(), PrivacyCommand.BLOCK);
                 }
             })
             .show();
@@ -285,7 +273,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
             .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                    setPrivacy(dialog.getContext(), PRIVACY_UNBLOCK);
+                    setPrivacy(dialog.getContext(), PrivacyCommand.UNBLOCK);
                 }
             })
             .show();
@@ -697,61 +685,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment
     protected void onConversationCreated() {
         super.onConversationCreated();
 
-        // setup broadcast receiver
-        if (mBroadcastReceiver == null) {
-            mBroadcastReceiver = new BroadcastReceiver() {
-                public void onReceive(Context context, Intent intent) {
-                    String from = XmppStringUtils.parseBareJid(intent
-                        .getStringExtra(MessageCenterService.EXTRA_FROM));
-                    if (!mUserJID.equals(from)) {
-                        // not for us
-                        return;
-                    }
-
-                    String action = intent.getAction();
-
-                    if (MessageCenterService.ACTION_BLOCKED.equals(intent.getAction())) {
-                        // reload contact
-                        reloadContact();
-                        // this will update block/unblock menu items
-                        updateUI();
-                        Toast.makeText(context,
-                            R.string.msg_user_blocked,
-                            Toast.LENGTH_LONG).show();
-                    }
-
-                    else if (MessageCenterService.ACTION_UNBLOCKED.equals(intent.getAction())) {
-                        // reload contact
-                        reloadContact();
-                        // this will update block/unblock menu items
-                        updateUI();
-                        // hide any block warning
-                        // a new warning will be issued for the key if needed
-                        hideWarning();
-                        // request presence subscription when unblocking
-                        requestPresence();
-                        Toast.makeText(context,
-                            R.string.msg_user_unblocked,
-                            Toast.LENGTH_LONG).show();
-                    }
-
-                    else if (MessageCenterService.ACTION_SUBSCRIBED.equals(intent.getAction())) {
-                        // reload contact
-                        invalidateContact();
-                        // request presence
-                        requestPresence();
-                    }
-                }
-            };
-
-            // listen for some stuff we need
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(MessageCenterService.ACTION_BLOCKED);
-            filter.addAction(MessageCenterService.ACTION_UNBLOCKED);
-            filter.addAction(MessageCenterService.ACTION_SUBSCRIBED);
-            mLocalBroadcastManager.registerReceiver(mBroadcastReceiver, filter);
-        }
-
         // setup invitation bar
         boolean visible = (mConversation.getRequestStatus() == Threads.REQUEST_WAITING);
 
@@ -765,11 +698,11 @@ public class ComposeMessageFragment extends AbstractComposeFragment
                     public void onClick(View v) {
                         mInvitationBar.setVisibility(View.GONE);
 
-                        int action;
+                        PrivacyCommand action;
                         if (v.getId() == R.id.button_accept)
-                            action = PRIVACY_ACCEPT;
+                            action = PrivacyCommand.ACCEPT;
                         else
-                            action = PRIVACY_REJECT;
+                            action = PrivacyCommand.REJECT;
 
                         setPrivacy(v.getContext(), action);
                     }
@@ -796,20 +729,20 @@ public class ComposeMessageFragment extends AbstractComposeFragment
             mInvitationBar.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
-    void setPrivacy(@NonNull Context ctx, int action) {
+    void setPrivacy(@NonNull Context ctx, PrivacyCommand action) {
         int status;
 
         switch (action) {
-            case PRIVACY_ACCEPT:
+            case ACCEPT:
                 status = Threads.REQUEST_REPLY_PENDING_ACCEPT;
                 break;
 
-            case PRIVACY_BLOCK:
-            case PRIVACY_REJECT:
+            case BLOCK:
+            case REJECT:
                 status = Threads.REQUEST_REPLY_PENDING_BLOCK;
                 break;
 
-            case PRIVACY_UNBLOCK:
+            case UNBLOCK:
                 status = Threads.REQUEST_REPLY_PENDING_UNBLOCK;
                 break;
 
@@ -824,7 +757,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         UsersProvider.setRequestStatus(ctx, mUserJID, status);
 
         // accept invitation
-        if (action == PRIVACY_ACCEPT) {
+        if (action == PrivacyCommand.ACCEPT) {
             // trust the key
             String fingerprint = getContact().getFingerprint();
             Kontalk.get().getMessagesController()
@@ -834,8 +767,12 @@ public class ComposeMessageFragment extends AbstractComposeFragment
 
         // reload contact
         invalidateContact();
+
         // send command to message center
-        MessageCenterService.replySubscription(ctx, mUserJID, action);
+        BareJid jid = JidCreate.bareFromOrThrowUnchecked(mUserJID);
+        MessageCenterService.bus()
+            .post(new SetUserPrivacyRequest(jid, action));
+
         // reload manually
         mConversation = Conversation.loadFromUserId(ctx, mUserJID);
         if (mConversation == null) {
@@ -993,7 +930,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
                                 break;
                             case NEGATIVE:
                                 // block user immediately
-                                setPrivacy(dialog.getContext(), PRIVACY_BLOCK);
+                                setPrivacy(dialog.getContext(), PrivacyCommand.BLOCK);
                                 break;
                         }
                     }
@@ -1044,7 +981,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
                                         // hide warning bar
                                         hideWarning();
                                         // block user immediately
-                                        setPrivacy(dialog.getContext(), PRIVACY_BLOCK);
+                                        setPrivacy(dialog.getContext(), PrivacyCommand.BLOCK);
                                         break;
                                 }
                             }
@@ -1135,6 +1072,64 @@ public class ComposeMessageFragment extends AbstractComposeFragment
                 }
             }
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onUserSubscribed(UserSubscribedEvent event) {
+        if (!isUserId(event.jid.toString())) {
+            // not for us
+            return;
+        }
+
+        // reload contact
+        invalidateContact();
+        // request presence
+        requestPresence();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onUserBlocked(UserBlockedEvent event) {
+        final Context context = getContext();
+        if (context == null)
+            return;
+
+        if (!isUserId(event.jid.toString())) {
+            // not for us
+            return;
+        }
+
+        // reload contact
+        reloadContact();
+        // this will update block/unblock menu items
+        updateUI();
+        Toast.makeText(context,
+            R.string.msg_user_blocked,
+            Toast.LENGTH_LONG).show();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onUserUnblocked(UserUnblockedEvent event) {
+        final Context context = getContext();
+        if (context == null)
+            return;
+
+        if (!isUserId(event.jid.toString())) {
+            // not for us
+            return;
+        }
+
+        // reload contact
+        reloadContact();
+        // this will update block/unblock menu items
+        updateUI();
+        // hide any block warning
+        // a new warning will be issued for the key if needed
+        hideWarning();
+        // request presence subscription when unblocking
+        requestPresence();
+        Toast.makeText(context,
+            R.string.msg_user_unblocked,
+            Toast.LENGTH_LONG).show();
     }
 
     private void requestVersion(Jid jid) {

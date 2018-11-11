@@ -165,10 +165,13 @@ import org.kontalk.service.msgcenter.event.RosterStatusEvent;
 import org.kontalk.service.msgcenter.event.RosterStatusRequest;
 import org.kontalk.service.msgcenter.event.ServerListEvent;
 import org.kontalk.service.msgcenter.event.ServerListRequest;
+import org.kontalk.service.msgcenter.event.SetUserPrivacyRequest;
 import org.kontalk.service.msgcenter.event.SubscribeRequest;
 import org.kontalk.service.msgcenter.event.UnsubscribeRequest;
 import org.kontalk.service.msgcenter.event.UpdateStatusRequest;
+import org.kontalk.service.msgcenter.event.UserBlockedEvent;
 import org.kontalk.service.msgcenter.event.UserOnlineEvent;
+import org.kontalk.service.msgcenter.event.UserUnblockedEvent;
 import org.kontalk.service.msgcenter.event.VersionRequest;
 import org.kontalk.service.msgcenter.group.AddRemoveMembersCommand;
 import org.kontalk.service.msgcenter.group.CreateGroupCommand;
@@ -262,22 +265,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_UPLOAD_PRIVATEKEY = "org.kontalk.action.UPLOAD_PRIVATEKEY";
 
     /**
-     * Broadcasted when a presence subscription has been accepted.
-     * Send this intent to accept a presence subscription.
-     */
-    public static final String ACTION_SUBSCRIBED = "org.kontalk.action.SUBSCRIBED";
-
-    /**
-     * Broadcasted when a block request has ben accepted by the server.
-     */
-    public static final String ACTION_BLOCKED = "org.kontalk.action.BLOCKED";
-
-    /**
-     * Broadcasted when an unblock request has ben accepted by the server.
-     */
-    public static final String ACTION_UNBLOCKED = "org.kontalk.action.UNBLOCKED";
-
-    /**
      * Send this intent to update the foreground service status of the message center.
      */
     public static final String ACTION_FOREGROUND = "org.kontalk.action.FOREGROUND";
@@ -289,7 +276,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     // common parameters
     public static final String EXTRA_PACKET_ID = "org.kontalk.packet.id";
-    public static final String EXTRA_TYPE = "org.kontalk.packet.type";
     public static final String EXTRA_ERROR_CONDITION = "org.kontalk.packet.error.condition";
     public static final String EXTRA_FOREGROUND = "org.kontalk.foreground";
 
@@ -830,7 +816,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return false;
     }
 
-    void sendIqWithReply(IQ packet, boolean bumpIdle, final StanzaListener callback, final ExceptionCallback errorCallback) {
+    void sendIqWithReply(IQ packet, boolean bumpIdle, final StanzaListener callback, @Nullable final ExceptionCallback errorCallback) {
         // reset idler if requested
         if (bumpIdle && mIdleHandler != null)
             mIdleHandler.reset();
@@ -863,7 +849,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             .onError(new org.jivesoftware.smack.util.ExceptionCallback<Exception>() {
                 @Override
                 public void processException(Exception exception) {
-                    errorCallback.processException(exception);
+                    if (errorCallback != null)
+                        errorCallback.processException(exception);
                 }
             });
         }
@@ -1147,10 +1134,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 case ACTION_MESSAGE:
                     doConnect = handleMessage(intent);
-                    break;
-
-                case ACTION_SUBSCRIBED:
-                    doConnect = handleSubscribed(intent);
                     break;
 
                 case ACTION_FOREGROUND:
@@ -1562,14 +1545,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
-    @CommandHandler(name = ACTION_SUBSCRIBED)
-    private boolean handleSubscribed(Intent intent) {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleSetUserPrivacy(SetUserPrivacyRequest request) {
         if (isConnected()) {
-            sendSubscriptionReply(intent.getStringExtra(EXTRA_TO),
-                intent.getStringExtra(EXTRA_PACKET_ID),
-                intent.getIntExtra(EXTRA_PRIVACY, PRIVACY_ACCEPT));
+            setUserPrivacy(request.jid, request.command);
         }
-        return false;
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
@@ -2007,22 +1987,27 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
-    private void sendSubscriptionReply(String to, String packetId, int action) {
-
-        if (action == PRIVACY_ACCEPT) {
-            // standard response: subscribed
-            Presence p = new Presence(Presence.Type.subscribed);
-            p.setStanzaId(packetId);
-            p.setTo(to);
-            sendPacket(p);
-
-            // send a subscription request anyway
-            p = new Presence(Presence.Type.subscribe);
-            p.setTo(to);
-            sendPacket(p);
-        }
-        else if (action == PRIVACY_BLOCK || action == PRIVACY_UNBLOCK || action == PRIVACY_REJECT) {
-            sendPrivacyListCommand(to, action);
+    private void setUserPrivacy(BareJid to, PrivacyCommand command) {
+        switch (command) {
+            case ACCEPT: {
+                // standard response: subscribed
+                sendPacket(new Presence(to, Presence.Type.subscribed));
+                // send a subscription request anyway
+                sendPacket(new Presence(to, Presence.Type.subscribe));
+                break;
+            }
+            case REJECT: {
+                Presence unsub = new Presence(Presence.Type.unsubscribe);
+                unsub.setTo(to);
+                sendPacket(unsub);
+                // will also block
+            }
+            case BLOCK:
+                blockUser(to);
+                break;
+            case UNBLOCK:
+                unblockUser(to);
+                break;
         }
 
         // clear the request status
@@ -2030,56 +2015,41 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         values.put(Threads.REQUEST_STATUS, Threads.REQUEST_NONE);
 
         getContentResolver().update(Requests.CONTENT_URI,
-                values, Threads.PEER + "=?", new String[]{to});
+            values, Threads.PEER + "=?", new String[]{to.toString()});
     }
 
-    private void sendPrivacyListCommand(final String to, final int action) {
-        IQ p;
+    private void blockUser(final BareJid jid) {
+        sendIqWithReply(BlockingCommand.block(jid.toString()), true, new StanzaListener() {
+                @Override
+                public void processStanza(Stanza packet) throws NotConnectedException, InterruptedException, SmackException.NotLoggedInException {
+                    if (packet instanceof IQ && ((IQ) packet).getType() == IQ.Type.result) {
+                        UsersProvider.setBlockStatus(MessageCenterService.this, jid.toString(), true);
 
-        if (action == PRIVACY_BLOCK || action == PRIVACY_REJECT) {
-            // blocking command: block
-            p = BlockingCommand.block(to);
-        }
-        else if (action == PRIVACY_UNBLOCK) {
-            // blocking command: block
-            p = BlockingCommand.unblock(to);
-        }
-        else {
-            // unsupported action
-            throw new IllegalArgumentException("unsupported action: " + action);
-        }
+                        // invalidate cached contact
+                        Contact.invalidate(jid.toString());
 
-        if (action == PRIVACY_REJECT) {
-            // send unsubscribed too
-            Presence unsub = new Presence(Presence.Type.unsubscribe);
-            unsub.setTo(to);
-            sendPacket(unsub);
-        }
+                        // post result
+                        BUS.post(new UserBlockedEvent(jid));
+                    }
+                }
+            }, null);
+    }
 
-        // setup packet filter for response
-        StanzaFilter filter = new StanzaIdFilter(p.getStanzaId());
-        StanzaListener listener = new StanzaListener() {
-            public void processStanza(Stanza packet) {
-
+    private void unblockUser(final BareJid jid) {
+        sendIqWithReply(BlockingCommand.unblock(jid.toString()), true, new StanzaListener() {
+            @Override
+            public void processStanza(Stanza packet) throws NotConnectedException, InterruptedException, SmackException.NotLoggedInException {
                 if (packet instanceof IQ && ((IQ) packet).getType() == IQ.Type.result) {
-                    UsersProvider.setBlockStatus(MessageCenterService.this,
-                        to, action == PRIVACY_BLOCK || action == PRIVACY_REJECT);
+                    UsersProvider.setBlockStatus(MessageCenterService.this, jid.toString(), false);
 
                     // invalidate cached contact
-                    Contact.invalidate(to);
+                    Contact.invalidate(jid.toString());
 
-                    // broadcast result
-                    broadcast((action == PRIVACY_BLOCK || action == PRIVACY_REJECT) ?
-                            ACTION_BLOCKED : ACTION_UNBLOCKED,
-                        EXTRA_FROM, to);
+                    // post result
+                    BUS.post(new UserUnblockedEvent(jid));
                 }
-
             }
-        };
-        mConnection.addAsyncStanzaListener(listener, filter);
-
-        // send IQ
-        sendPacket(p);
+        }, null);
     }
 
     private void requestBlocklist(final String id) {
@@ -3053,17 +3023,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     public static String messageId() {
         return StringUtils.randomString(30);
-    }
-
-    /**
-     * Replies to a presence subscription request.
-     */
-    public static void replySubscription(final Context context, String to, int action) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_SUBSCRIBED);
-        i.putExtra(EXTRA_TO, to);
-        i.putExtra(EXTRA_PRIVACY, action);
-        startForegroundIfNeeded(context, i);
     }
 
     public static void regenerateKeyPair(final Context context, String passphrase) {
