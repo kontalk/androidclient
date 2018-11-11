@@ -253,11 +253,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * key, it will be installed in the default account.
      * Broadcasted when key pair regeneration has completed.
      */
+    @Deprecated
     public static final String ACTION_REGENERATE_KEYPAIR = "org.kontalk.action.REGEN_KEYPAIR";
 
     /**
      * Commence key pair import.
      */
+    @Deprecated
     public static final String ACTION_IMPORT_KEYPAIR = "org.kontalk.action.IMPORT_KEYPAIR";
 
     // common parameters
@@ -1182,12 +1184,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_REGENERATE_KEYPAIR)
+    @Deprecated
     private boolean handleRegenerateKeyPair(Intent intent) {
         beginKeyPairRegeneration(intent.getStringExtra(EXTRA_PASSPHRASE));
         return true;
     }
 
     @CommandHandler(name = ACTION_IMPORT_KEYPAIR)
+    @Deprecated
     private boolean handleImportKeyPair(Intent intent) {
         // zip file with keys
         Uri file = intent.getParcelableExtra(EXTRA_KEYPACK);
@@ -2970,6 +2974,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return StringUtils.randomString(30);
     }
 
+    @Deprecated
     public static void regenerateKeyPair(final Context context, String passphrase) {
         Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_REGENERATE_KEYPAIR);
@@ -2977,6 +2982,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         startForegroundIfNeeded(context, i);
     }
 
+    @Deprecated
     public static void importKeyPair(final Context context, Uri keypack, String passphrase) {
         Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_IMPORT_KEYPAIR);

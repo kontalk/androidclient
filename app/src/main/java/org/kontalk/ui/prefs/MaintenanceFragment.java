@@ -156,6 +156,7 @@ public class MaintenanceFragment extends RootPreferenceFragment {
                                         Toast.makeText(ctx, R.string.msg_generating_keypair,
                                             Toast.LENGTH_LONG).show();
 
+                                        // FIXME should wait for ConnectedEvent
                                         MessageCenterService.regenerateKeyPair(ctx.getApplicationContext(), passphrase);
                                     }
                                 };
@@ -431,6 +432,7 @@ public class MaintenanceFragment extends RootPreferenceFragment {
         MessageCenterService.start(context.getApplicationContext());
     }
 
+    // FIXME ConnectedEvent will also be used by key pair regeneration
     @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
     public void onConnected(ConnectedEvent event) {
         Context context = getContext();
