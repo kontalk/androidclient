@@ -46,6 +46,7 @@ import org.jivesoftware.smack.util.SHA1;
 import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.data.Contact;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.util.Permissions;
@@ -117,6 +118,8 @@ public abstract class MainActivity extends ToolbarActivity {
 
     @AfterPermissionGranted(Permissions.RC_CONTACTS)
     void contactsGranted() {
+        // let us register the content observer for contacts if necessary
+        Contact.init(this);
         // we finally have contacts, trigger a sync
         SyncAdapter.requestSync(MainActivity.this, true);
     }
