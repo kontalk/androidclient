@@ -154,6 +154,15 @@ public class XMPPUtils {
         return list;
     }
 
+    public static Jid[] parseJids(String[] jids) {
+        Jid[] list = new Jid[jids.length];
+        int i = 0;
+        for (String jid : jids) {
+            list[i++] = JidCreate.fromOrThrowUnchecked(jid);
+        }
+        return list;
+    }
+
     /**
      * Returns a color for the given JID calculated with the rules of XEP-0392
      * @see <a href="https://xmpp.org/extensions/xep-0392.html">XEP-0392</a>

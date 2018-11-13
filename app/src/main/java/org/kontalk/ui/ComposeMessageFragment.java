@@ -49,6 +49,7 @@ import android.database.sqlite.SQLiteDiskIOException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -89,6 +90,8 @@ import org.kontalk.service.msgcenter.event.PresenceRequest;
 import org.kontalk.service.msgcenter.event.PublicKeyEvent;
 import org.kontalk.service.msgcenter.event.PublicKeyRequest;
 import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
+import org.kontalk.service.msgcenter.event.SendChatStateRequest;
+import org.kontalk.service.msgcenter.event.SendMessageRequest;
 import org.kontalk.service.msgcenter.event.SetUserPrivacyRequest;
 import org.kontalk.service.msgcenter.event.SubscribeRequest;
 import org.kontalk.service.msgcenter.event.UserBlockedEvent;
@@ -410,7 +413,10 @@ public class ComposeMessageFragment extends AbstractComposeFragment
     @Override
     public boolean sendTyping() {
         if (mAvailableResources.size() > 0) {
-            MessageCenterService.sendChatState(getContext(), mUserJID, ChatState.composing);
+            mServiceBus.post(new SendChatStateRequest.Builder(null)
+                .setChatState(ChatState.composing)
+                .setTo(JidCreate.fromOrThrowUnchecked(mUserJID))
+                .build());
             return true;
         }
         return false;
@@ -419,7 +425,10 @@ public class ComposeMessageFragment extends AbstractComposeFragment
     @Override
     public boolean sendInactive() {
         if (mAvailableResources.size() > 0) {
-            MessageCenterService.sendChatState(getActivity(), mUserJID, ChatState.inactive);
+            mServiceBus.post(new SendChatStateRequest.Builder(null)
+                .setChatState(ChatState.inactive)
+                .setTo(JidCreate.fromOrThrowUnchecked(mUserJID))
+                .build());
             return true;
         }
         return false;
@@ -460,13 +469,13 @@ public class ComposeMessageFragment extends AbstractComposeFragment
     }
 
     @Override
-    protected void onStartTyping(String jid, String groupJid) {
+    protected void onStartTyping(String jid, @Nullable String groupJid) {
         mIsTyping = true;
         setStatusText(getString(R.string.seen_typing_label));
     }
 
     @Override
-    protected void onStopTyping(String jid, String groupJid) {
+    protected void onStopTyping(String jid, @Nullable String groupJid) {
         mIsTyping = false;
         setStatusText(mCurrentStatus != null ? mCurrentStatus : "");
     }
@@ -852,9 +861,8 @@ public class ComposeMessageFragment extends AbstractComposeFragment
                     // TODO check for null
 
                     // send create group command now
-                    MessageCenterService.createGroup(getContext(), groupJid,
-                        title, users, encrypted,
-                        ContentUris.parseId(cmdMsg), msgId);
+                    MessageCenterService.bus()
+                        .post(new SendMessageRequest(ContentUris.parseId(cmdMsg)));
 
                     // open the new conversation
                     ((ComposeMessageParent) getActivity()).loadConversation(groupThreadId, true);

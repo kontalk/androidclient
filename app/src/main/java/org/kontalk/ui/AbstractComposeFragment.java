@@ -45,12 +45,10 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.AsyncQueryHandler;
-import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
@@ -70,7 +68,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.text.ClipboardManager;
 import android.text.TextUtils;
 import android.util.SparseBooleanArray;
@@ -115,6 +112,7 @@ import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.event.ChatStateEvent;
 import org.kontalk.service.msgcenter.event.ConnectedEvent;
 import org.kontalk.service.msgcenter.event.DisconnectedEvent;
 import org.kontalk.service.msgcenter.event.NoPresenceEvent;
@@ -237,9 +235,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     private PeerObserver mPeerObserver;
     private File mCurrentPhoto;
 
-    protected LocalBroadcastManager mLocalBroadcastManager;
-    private PresenceReceiver mPresenceReceiver;
-
     private boolean mOfflineModeWarned;
     protected CharSequence mCurrentStatus;
 
@@ -328,18 +323,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         }
 
         processArguments(savedInstanceState);
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        mLocalBroadcastManager = LocalBroadcastManager.getInstance(context);
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mLocalBroadcastManager = null;
     }
 
     @Override
@@ -1863,8 +1846,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             registerPeerObserver();
         }
 
-        // subscribe to presence notifications
-        subscribePresence();
         // register to events now
         if (!mServiceBus.isRegistered(this))
             mServiceBus.register(this);
@@ -1929,69 +1910,31 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     /**
      * Called when the contact starts typing.
      */
-    protected abstract void onStartTyping(String jid, String groupJid);
+    protected abstract void onStartTyping(String jid, @Nullable String groupJid);
 
     /**
      * Called when the contact stops typing.
      */
-    protected abstract void onStopTyping(String jid, String groupJid);
+    protected abstract void onStopTyping(String jid, @Nullable String groupJid);
 
     /**
      * Should return true if the contact is a user ID in the current context.
      */
     protected abstract boolean isUserId(String jid);
 
-    /** @deprecated Use the event bus. */
-    @Deprecated
-    class PresenceReceiver extends BroadcastReceiver {
-        public void onReceive(Context context, Intent intent) {
-            // activity is terminating
-            if (getContext() == null)
-                return;
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onChateState(ChatStateEvent event) {
+        // we are receiving a composing notification from our peer
+        String from = event.from.toString();
+        if (isUserId(from)) {
+            String groupJid = event.group != null ? event.group.toString() : null;
 
-            String action = intent.getAction();
-
-            if (MessageCenterService.ACTION_MESSAGE.equals(action)) {
-                String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                String chatState = intent.getStringExtra("org.kontalk.message.chatState");
-
-                // we are receiving a composing notification from our peer
-                if (from != null && isUserId(from)) {
-                    String groupJid = intent.getStringExtra(MessageCenterService.EXTRA_GROUP_JID);
-
-                    if (chatState != null && ChatState.composing.toString().equals(chatState)) {
-                        onStartTyping(from, groupJid);
-                    }
-                    else {
-                        onStopTyping(from, groupJid);
-                    }
-                }
+            if (event.chatState == ChatState.composing) {
+                onStartTyping(event.from.toString(), groupJid);
             }
-        }
-    }
-
-    /** @deprecated Replace with event subscribers. */
-    @Deprecated
-    private void subscribePresence() {
-        if (mPresenceReceiver == null) {
-            mPresenceReceiver = new PresenceReceiver();
-
-            // listen for user presence, connection and incoming messages
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(MessageCenterService.ACTION_MESSAGE);
-
-            mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
-
-            // connection and roster load status will be provided via event bus
-        }
-    }
-
-    /** @deprecated Replace with event subscribers. */
-    @Deprecated
-    private void unsubscribePresence() {
-        if (mPresenceReceiver != null) {
-            mLocalBroadcastManager.unregisterReceiver(mPresenceReceiver);
-            mPresenceReceiver = null;
+            else {
+                onStopTyping(from, groupJid);
+            }
         }
     }
 
@@ -2176,9 +2119,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     @Override
     public void onPause() {
         super.onPause();
-
-        // unsubcribe presence notifications
-        unsubscribePresence();
 
         // not interested in any more events
         mServiceBus.unregister(this);

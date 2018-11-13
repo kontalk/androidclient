@@ -43,6 +43,7 @@ import android.database.sqlite.SQLiteDiskIOException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -63,13 +64,13 @@ import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyUsers;
-import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.event.NoPresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceRequest;
 import org.kontalk.service.msgcenter.event.PublicKeyEvent;
 import org.kontalk.service.msgcenter.event.PublicKeyRequest;
 import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
+import org.kontalk.service.msgcenter.event.SendChatStateRequest;
 import org.kontalk.service.msgcenter.event.UserOfflineEvent;
 import org.kontalk.service.msgcenter.event.UserOnlineEvent;
 import org.kontalk.util.Preferences;
@@ -484,7 +485,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     }
 
     @Override
-    protected void onStartTyping(String jid, String groupJid) {
+    protected void onStartTyping(String jid, @Nullable String groupJid) {
         if (mGroupJID.equals(groupJid)) {
             mTypingUsers.add(jid);
             updateStatusText();
@@ -492,7 +493,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     }
 
     @Override
-    protected void onStopTyping(String jid, String groupJid) {
+    protected void onStopTyping(String jid, @Nullable String groupJid) {
         if (mGroupJID.equals(groupJid)) {
             mTypingUsers.remove(jid);
             updateStatusText();
@@ -521,8 +522,11 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     @Override
     public boolean sendTyping() {
         if (mAvailableResources.size() > 0) {
-            MessageCenterService.sendGroupChatState(getContext(), mGroupJID,
-                mConversation.getGroupPeers(), ChatState.composing);
+            mServiceBus.post(new SendChatStateRequest.Builder(null)
+                .setChatState(ChatState.composing)
+                .setTo(JidCreate.fromOrThrowUnchecked(mGroupJID))
+                .setGroup(true)
+                .build());
             return true;
         }
         return false;
@@ -531,8 +535,11 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     @Override
     public boolean sendInactive() {
         if (mAvailableResources.size() > 0) {
-            MessageCenterService.sendGroupChatState(getContext(), mGroupJID,
-                mConversation.getGroupPeers(), ChatState.inactive);
+            mServiceBus.post(new SendChatStateRequest.Builder(null)
+                .setChatState(ChatState.inactive)
+                .setTo(JidCreate.fromOrThrowUnchecked(mGroupJID))
+                .setGroup(true)
+                .build());
             return true;
         }
         return false;

@@ -38,7 +38,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDiskIOException;
 import android.net.Uri;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.WorkerThread;
@@ -72,7 +71,10 @@ import org.kontalk.service.msgcenter.event.ConnectedEvent;
 import org.kontalk.service.msgcenter.event.DisconnectedEvent;
 import org.kontalk.service.msgcenter.event.GroupCreatedEvent;
 import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
+import org.kontalk.service.msgcenter.event.SendDeliveryReceiptRequest;
+import org.kontalk.service.msgcenter.event.SendMessageRequest;
 import org.kontalk.service.msgcenter.event.SetUserPrivacyRequest;
+import org.kontalk.service.msgcenter.event.UploadAttachmentRequest;
 import org.kontalk.service.msgcenter.event.UploadServiceFoundEvent;
 import org.kontalk.service.msgcenter.event.UserSubscribedEvent;
 import org.kontalk.service.msgcenter.group.KontalkGroupController;
@@ -93,25 +95,11 @@ public class MessagesController {
     private static final String[] RESEND_PROJECTION = new String[] {
         MyMessages.Messages._ID,
         MyMessages.Messages.THREAD_ID,
-        MyMessages.Messages.MESSAGE_ID,
         MyMessages.Messages.PEER,
-        MyMessages.Messages.BODY_CONTENT,
         MyMessages.Messages.BODY_MIME,
-        MyMessages.Messages.SECURITY_FLAGS,
-        MyMessages.Messages.ATTACHMENT_MIME,
         MyMessages.Messages.ATTACHMENT_LOCAL_URI,
         MyMessages.Messages.ATTACHMENT_FETCH_URL,
-        MyMessages.Messages.ATTACHMENT_PREVIEW_PATH,
-        MyMessages.Messages.ATTACHMENT_LENGTH,
-        MyMessages.Messages.ATTACHMENT_COMPRESS,
-        // TODO Messages.ATTACHMENT_SECURITY_FLAGS,
         MyMessages.Groups.GROUP_JID,
-        MyMessages.Groups.SUBJECT,
-        MyMessages.Messages.GEO_LATITUDE,
-        MyMessages.Messages.GEO_LONGITUDE,
-        MyMessages.Messages.GEO_TEXT,
-        MyMessages.Messages.GEO_STREET,
-        MyMessages.Messages.IN_REPLY_TO,
     };
 
     private final Context mContext;
@@ -151,16 +139,13 @@ public class MessagesController {
                 Uri newMsg = MessagesProviderClient.newOutgoingMessage(mContext,
                     msgId, userId, text, encrypted, inReplyTo);
                 if (newMsg != null) {
+                    // wake the message center if necessary
+                    if (wakeService)
+                        MessageCenterService.start(mContext);
+
                     // send message!
-                    if (conv.isGroupChat()) {
-                        MessageCenterService.sendGroupTextMessage(mContext,
-                            conv.getGroupJid(), conv.getGroupPeers(),
-                            text, encrypted, ContentUris.parseId(newMsg), msgId, inReplyTo);
-                    }
-                    else {
-                        MessageCenterService.sendTextMessage(mContext, userId, text,
-                            encrypted, ContentUris.parseId(newMsg), msgId, inReplyTo, wakeService);
-                    }
+                    MessageCenterService.bus()
+                        .post(new SendMessageRequest(ContentUris.parseId(newMsg)));
 
                     return newMsg;
                 }
@@ -186,16 +171,8 @@ public class MessagesController {
                 msgId, userId, text, lat, lon, geoText, geoStreet, encrypted);
         if (newMsg != null) {
             // send message!
-            if (conv.isGroupChat()) {
-                MessageCenterService.sendGroupLocationMessage(mContext,
-                        conv.getGroupJid(), conv.getGroupPeers(),
-                        text, lat, lon, geoText, geoStreet, encrypted, ContentUris.parseId(newMsg), msgId);
-            }
-            else {
-                MessageCenterService.sendLocationMessage(mContext, userId, text, lat, lon,
-                        geoText, geoStreet, encrypted, ContentUris.parseId(newMsg), msgId);
-            }
-
+            MessageCenterService.bus()
+                .post(new SendMessageRequest(ContentUris.parseId(newMsg)));
             return newMsg;
         }
         else {
@@ -280,9 +257,8 @@ public class MessagesController {
 
                 if (cmdMsg != null) {
                     // send create group command now
-                    MessageCenterService.createGroup(mContext, groupJid, title,
-                        users, encrypted, ContentUris.parseId(cmdMsg), msgId);
-
+                    MessageCenterService.bus()
+                        .post(new SendMessageRequest(ContentUris.parseId(cmdMsg)));
                     return cmdMsg;
                 }
                 else {
@@ -321,14 +297,14 @@ public class MessagesController {
             if (Authenticator.isSelfJID(mContext, member)) {
                 // ...but mark our membership
                 MessagesProviderClient.setGroupMembership(mContext,
-                        group.getContent().getJID(), MyMessages.Groups.MEMBERSHIP_MEMBER);
+                        group.getContent().getJid().toString(), MyMessages.Groups.MEMBERSHIP_MEMBER);
                 continue;
             }
 
             // add member to group
             membersValues.put(MyMessages.Groups.PEER, member);
             mContext.getContentResolver().insert(MyMessages.Groups
-                    .getMembersUri(group.getContent().getJID()), membersValues);
+                    .getMembersUri(group.getContent().getJid()), membersValues);
         }
     }
 
@@ -374,7 +350,7 @@ public class MessagesController {
 
         GroupComponent groupInfo = msg.getComponent(GroupComponent.class);
         if (groupInfo != null) {
-            values.put(MyMessages.Groups.GROUP_JID, groupInfo.getContent().getJid());
+            values.put(MyMessages.Groups.GROUP_JID, groupInfo.getContent().getJid().toString());
             values.put(MyMessages.Groups.GROUP_TYPE, KontalkGroupController.GROUP_TYPE);
 
             String groupSubject = groupInfo.getContent().getSubject();
@@ -411,20 +387,20 @@ public class MessagesController {
                 }
 
                 // add owner as member (since the owner is adding us)
-                membersValues.put(MyMessages.Groups.PEER, group.getContent().getOwner());
+                membersValues.put(MyMessages.Groups.PEER, group.getContent().getOwner().toString());
                 mContext.getContentResolver().insert(MyMessages.Groups
-                        .getMembersUri(group.getContent().getJID()), membersValues);
+                        .getMembersUri(group.getContent().getJid()), membersValues);
             }
 
             if (removed != null) {
                 // remove members from group
-                MessagesProviderClient.removeGroupMembers(mContext, group.getContent().getJID(),
+                MessagesProviderClient.removeGroupMembers(mContext, group.getContent().getJid().toString(),
                         removed, false);
                 // set our membership to parted if we were removed from the group
                 for (String removedJid : removed) {
                     if (Authenticator.isSelfJID(mContext, removedJid)) {
                         MessagesProviderClient.setGroupMembership(mContext,
-                                group.getContent().getJID(), MyMessages.Groups.MEMBERSHIP_KICKED);
+                                group.getContent().getJid().toString(), MyMessages.Groups.MEMBERSHIP_KICKED);
                         break;
                     }
                 }
@@ -435,14 +411,14 @@ public class MessagesController {
                 ContentValues groupValues = new ContentValues();
                 groupValues.put(MyMessages.Groups.SUBJECT, group.getContent().getSubject());
                 mContext.getContentResolver().update(MyMessages.Groups
-                        .getUri(group.getContent().getJID()), groupValues, null, null);
+                        .getUri(group.getContent().getJid()), groupValues, null, null);
             }
 
             // a user is leaving the group
             else if (group.isPartCommand()) {
                 String partMember = group.getFrom();
                 // remove member from group
-                mContext.getContentResolver().delete(MyMessages.Groups.getMembersUri(group.getContent().getJID())
+                mContext.getContentResolver().delete(MyMessages.Groups.getMembersUri(group.getContent().getJid())
                                 .buildUpon().appendEncodedPath(partMember).build(),
                         null, null);
             }
@@ -467,7 +443,7 @@ public class MessagesController {
 
         // fire notification only if message was actually inserted to database
         // and the conversation is not open already
-        String paused = groupInfo != null ? groupInfo.getContent().getJid() : sender;
+        String paused = groupInfo != null ? groupInfo.getContent().getJid().toString() : sender;
         if (notify && msgUri != null) {
             if (!MessagingNotification.isPaused(paused)) {
                 // update notifications (delayed)
@@ -768,10 +744,11 @@ public class MessagesController {
         c.close();
     }
 
+    /** A somewhat smart send message procedure. Consumes all rows in cursor. */
     private void sendMessages(Cursor c, boolean retrying) {
         // this set will cache thread IDs within this cursor with
         // pending group commands (i.e. just processed group commands)
-        // This will be looked up when sending consecutive message in the group
+        // This will be looked up when sending consecutive messages in the group
         // and stop them
         Set<Long> pendingGroupCommandThreads = new HashSet<>();
 
@@ -779,23 +756,11 @@ public class MessagesController {
             // TODO constants for column indexes
             long id = c.getLong(0);
             long threadId = c.getLong(1);
-            String msgId = c.getString(2);
-            String peer = c.getString(3);
-            byte[] textContent = c.getBlob(4);
-            String bodyMime = c.getString(5);
-            int securityFlags = c.getInt(6);
-            String attMime = c.getString(7);
-            String attFileUri = c.getString(8);
-            String attFetchUrl = c.getString(9);
-            String attPreviewPath = c.getString(10);
-            long attLength = c.getLong(11);
-            int compress = c.getInt(12);
-            // TODO int attSecurityFlags = c.getInt(13);
-
-            String groupJid = c.getString(13); // 14
-            String groupSubject = c.getString(14); // 15
-
-            long inReplyToId = c.getLong(19); // 20
+            String peer = c.getString(2);
+            String bodyMime = c.getString(3);
+            String attFileUri = c.getString(4);
+            String attFetchUrl = c.getString(5);
+            String groupJid = c.getString(6);
 
             if (pendingGroupCommandThreads.contains(threadId)) {
                 Log.v(TAG, "group message for pending group command - delaying");
@@ -815,7 +780,6 @@ public class MessagesController {
                 }
             }
 
-            String[] groupMembers = null;
             if (groupJid != null) {
                 /*
                  * Huge potential issue here. Selecting all members, regardless of pending flags,
@@ -824,7 +788,7 @@ public class MessagesController {
                  * However, selecting members with zero flags will make a remove command to be sent
                  * only to existing members and not to the ones being removed.
                  */
-                groupMembers = MessagesProviderClient.getGroupMembers(mContext, groupJid, -1);
+                String[] groupMembers = MessagesProviderClient.getGroupMembers(mContext, groupJid, -1);
                 if (groupMembers.length == 0) {
                     // no group member left - skip message
                     // this might be a pending message that was queued before we realized there were no members left
@@ -840,128 +804,34 @@ public class MessagesController {
                 continue;
             }
 
-            Bundle b = new Bundle();
-            // mark as retrying
-            b.putBoolean("org.kontalk.message.retrying", true);
-
-            b.putLong("org.kontalk.message.msgId", id);
-            b.putString("org.kontalk.message.packetId", msgId);
-
-            if (groupJid != null) {
-                b.putString("org.kontalk.message.group.jid", groupJid);
-                // will be replaced by the group command (if any)
-                b.putStringArray("org.kontalk.message.to", groupMembers);
-            }
-            else {
-                b.putString("org.kontalk.message.to", peer);
-            }
-
-            // TODO shouldn't we pass security flags directly here??
-            b.putBoolean("org.kontalk.message.encrypt", securityFlags != Coder.SECURITY_CLEARTEXT);
-
-            if (isGroupCommand) {
-                int cmd = 0;
-                byte[] _command = c.getBlob(4);
-                String command = new String(_command);
-
-                String[] createMembers;
-                String[] addMembers;
-                String[] removeMembers = null;
-                String subject;
-                if ((createMembers = GroupCommandComponent.getCreateCommandMembers(command)) != null) {
-                    cmd = MessageCenterService.GROUP_COMMAND_CREATE;
-                    b.putStringArray("org.kontalk.message.to", createMembers);
-                    b.putString("org.kontalk.message.group.subject", groupSubject);
-                }
-                else if (command.equals(GroupCommandComponent.COMMAND_PART)) {
-                    cmd = MessageCenterService.GROUP_COMMAND_PART;
-                }
-                else if ((addMembers = GroupCommandComponent.getAddCommandMembers(command)) != null ||
-                    (removeMembers = GroupCommandComponent.getRemoveCommandMembers(command)) != null) {
-                    cmd = MessageCenterService.GROUP_COMMAND_MEMBERS;
-                    b.putStringArray("org.kontalk.message.group.add", addMembers);
-                    b.putStringArray("org.kontalk.message.group.remove", removeMembers);
-                    b.putString("org.kontalk.message.group.subject", groupSubject);
-                }
-                else if ((subject = GroupCommandComponent.getSubjectCommand(command)) != null) {
-                    cmd = MessageCenterService.GROUP_COMMAND_SUBJECT;
-                    b.putString("org.kontalk.message.group.subject", subject);
-                }
-
-                b.putInt("org.kontalk.message.group.command", cmd);
-            }
-            else if (textContent != null) {
-                b.putString("org.kontalk.message.body", MessageUtils.toString(textContent));
-            }
-
-            // message has already been uploaded - just send media
-            if (attFetchUrl != null) {
-                b.putString("org.kontalk.message.mime", attMime);
-                b.putString("org.kontalk.message.fetch.url", attFetchUrl);
-                b.putString("org.kontalk.message.preview.uri", attFileUri);
-                b.putString("org.kontalk.message.preview.path", attPreviewPath);
-            }
-            // check if the message contains some large file to be sent
-            else if (attFileUri != null) {
-                b.putString("org.kontalk.message.mime", attMime);
-                b.putString("org.kontalk.message.media.uri", attFileUri);
-                b.putString("org.kontalk.message.preview.path", attPreviewPath);
-                b.putLong("org.kontalk.message.length", attLength);
-                b.putInt("org.kontalk.message.compress", compress);
-            }
-
-            if (!c.isNull(15)) {
-                double lat = c.getDouble(15);
-                double lon = c.getDouble(16);
-                b.putDouble("org.kontalk.message.geo_lat", lat);
-                b.putDouble("org.kontalk.message.geo_lon", lon);
-
-                if (!c.isNull(17)) {
-                    String geoText = c.getString(17);
-                    b.putString("org.kontalk.message.geo_text", geoText);
-                }
-
-                if (!c.isNull(18)) {
-                    String geoStreet = c.getString(18);
-                    b.putString("org.kontalk.message.geo_street", geoStreet);
-                }
-            }
-
-            if (inReplyToId > 0) {
-                b.putLong("org.kontalk.message.inReplyTo", inReplyToId);
-            }
-
             Log.v(TAG, "resending pending message " + id);
 
-            MessageCenterService.sendMessage(mContext, b);
+            Object event;
+            // non-uploaded media messages must follow another path
+            if (attFileUri != null && attFetchUrl == null) {
+                event = new UploadAttachmentRequest(id);
+            }
+            else {
+                event = new SendMessageRequest(id);
+            }
+
+            MessageCenterService.bus().post(event);
         }
     }
 
     private void resendPendingReceipts() {
         Cursor c = mContext.getContentResolver().query(MyMessages.Messages.CONTENT_URI,
-            new String[]{
-                MyMessages.Messages._ID,
-                MyMessages.Messages.MESSAGE_ID,
-                MyMessages.Messages.PEER,
-            },
+            new String[]{ MyMessages.Messages._ID },
             MyMessages.Messages.DIRECTION + " = " + MyMessages.Messages.DIRECTION_IN + " AND " +
                 MyMessages.Messages.STATUS + " = " + MyMessages.Messages.STATUS_INCOMING,
             null, MyMessages.Messages._ID);
 
         while (c.moveToNext()) {
             long id = c.getLong(0);
-            String msgId = c.getString(1);
-            String peer = c.getString(2);
-
-            Bundle b = new Bundle();
-
-            b.putLong("org.kontalk.message.msgId", id);
-            b.putString("org.kontalk.message.packetId", msgId);
-            b.putString("org.kontalk.message.to", peer);
-            b.putString("org.kontalk.message.ack", msgId);
 
             Log.v(TAG, "resending pending receipt for message " + id);
-            MessageCenterService.sendMessage(mContext, b);
+            MessageCenterService.bus()
+                .post(new SendDeliveryReceiptRequest(id));
         }
 
         c.close();

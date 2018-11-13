@@ -248,14 +248,14 @@ public final class MyMessages {
         public static final Uri CONTENT_URI = Uri.parse("content://"
             + MessagesProvider.AUTHORITY + "/groups");
 
-        public static Uri getUri(String jid) {
+        public static Uri getUri(CharSequence jid) {
             return Uri.parse("content://"
-                + MessagesProvider.AUTHORITY + "/groups/" + Uri.encode(jid));
+                + MessagesProvider.AUTHORITY + "/groups/" + Uri.encode(jid.toString()));
         }
 
-        public static Uri getMembersUri(String jid) {
+        public static Uri getMembersUri(CharSequence jid) {
             return Uri.parse("content://"
-                + MessagesProvider.AUTHORITY + "/groups/" + Uri.encode(jid) + "/members");
+                + MessagesProvider.AUTHORITY + "/groups/" + Uri.encode(jid.toString()) + "/members");
         }
 
         public static final String GROUP_JID = "group_jid";

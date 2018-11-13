@@ -75,7 +75,7 @@ public class HTPPFileUploadConnection implements UploadConnection {
     }
 
     @Override
-    public String upload(Uri uri, long length, String mime, boolean encrypt, String[] to, ProgressListener listener) throws IOException {
+    public String upload(Uri uri, long length, String mime, ProgressListener listener) throws IOException {
         InputStream inMessage = null;
         try {
             inMessage = mContext.getContentResolver().openInputStream(uri);

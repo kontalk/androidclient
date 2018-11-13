@@ -16,32 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.service.msgcenter.group;
+package org.kontalk.service.msgcenter.event;
 
+import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jxmpp.jid.Jid;
 
 
-public abstract class KontalkGroupCommand implements GroupCommand {
+/**
+ * Chat state event.
+ * @author Daniele Ricci
+ */
+public class ChatStateEvent {
 
-    private Jid mGroupJid;
-    private Jid[] mMembers;
+    public final Jid from;
+    public final Jid group;
 
-    public void setMembers(Jid[] members) {
-        mMembers = members;
-    }
+    public final ChatState chatState;
 
-    public Jid[] getMembers() {
-        return mMembers;
-    }
-
-    @Override
-    public void setGroupJid(Jid groupJid) {
-        mGroupJid = groupJid;
-    }
-
-    @Override
-    public Jid getGroupJid() {
-        return mGroupJid;
+    public ChatStateEvent(Jid from, Jid group, ChatState chatState) {
+        this.from = from;
+        this.group = group;
+        this.chatState = chatState;
     }
 
 }

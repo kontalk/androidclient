@@ -16,32 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.service.msgcenter.group;
-
-import org.jxmpp.jid.Jid;
+package org.kontalk.service.msgcenter.event;
 
 
-public abstract class KontalkGroupCommand implements GroupCommand {
+/**
+ * For requesting the message center to upload an attachment from the outbox.
+ * @author Daniele Ricci
+ */
+public class UploadAttachmentRequest {
 
-    private Jid mGroupJid;
-    private Jid[] mMembers;
+    public final long databaseId;
 
-    public void setMembers(Jid[] members) {
-        mMembers = members;
-    }
-
-    public Jid[] getMembers() {
-        return mMembers;
-    }
-
-    @Override
-    public void setGroupJid(Jid groupJid) {
-        mGroupJid = groupJid;
-    }
-
-    @Override
-    public Jid getGroupJid() {
-        return mGroupJid;
+    public UploadAttachmentRequest(long databaseId) {
+        this.databaseId = databaseId;
     }
 
 }

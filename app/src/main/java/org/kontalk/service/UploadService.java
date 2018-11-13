@@ -41,6 +41,7 @@ import org.kontalk.R;
 import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.event.SendMessageRequest;
 import org.kontalk.ui.ConversationsActivity;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.ProgressNotificationBuilder;
@@ -68,22 +69,12 @@ public class UploadService extends IntentService implements ProgressListener {
 
     /** Message database ID. Use with ACTION_UPLOAD. */
     public static final String EXTRA_DATABASE_ID = "org.kontalk.upload.DATABASE_ID";
-    /** Message ID. Use with ACTION_UPLOAD. */
-    public static final String EXTRA_MESSAGE_ID = "org.kontalk.upload.MESSAGE_ID";
     /** URL to post to. Use with ACTION_UPLOAD. */
     public static final String EXTRA_POST_URL = "org.kontalk.upload.POST_URL";
     /** URL to fetch from. Use with ACTION_UPLOAD. */
     public static final String EXTRA_GET_URL = "org.kontalk.upload.GET_URL";
-    /** User(s) to send to. */
-    public static final String EXTRA_USER = "org.kontalk.upload.USER";
-    /** Group JID. */
-    public static final String EXTRA_GROUP = "org.kontalk.upload.GROUP";
     /** Media MIME type. */
     public static final String EXTRA_MIME = "org.kontalk.upload.MIME";
-    /** Preview file path. */
-    public static final String EXTRA_PREVIEW_PATH = "org.kontalk.upload.PREVIEW_PATH";
-    /** Encryption flag. */
-    public static final String EXTRA_ENCRYPT = "org.kontalk.upload.ENCRYPT";
     /** Delete local file after sending attempt. */
     public static final String EXTRA_DELETE_ORIGINAL = "org.kontalk.upload.DELETE_ORIGINAL";
     // Intent data is the local file Uri
@@ -145,28 +136,12 @@ public class UploadService extends IntentService implements ProgressListener {
         String filename = file.toString();
         // message database id
         long databaseId = intent.getLongExtra(EXTRA_DATABASE_ID, 0);
-        // message id
-        String msgId = intent.getStringExtra(EXTRA_MESSAGE_ID);
         // url to post to
         String url = intent.getStringExtra(EXTRA_POST_URL);
         // url to fetch from (will be requested to the connection if null)
         String fetchUrl = intent.getStringExtra(EXTRA_GET_URL);
-        // group JID
-        String groupJid = intent.getStringExtra(EXTRA_GROUP);
-        // user(s) to send message to
-        String[] to;
-        if (groupJid != null) {
-            to = intent.getStringArrayExtra(EXTRA_USER);
-        }
-        else {
-            to = new String[] { intent.getStringExtra(EXTRA_USER) };
-        }
         // media mime type
         String mime = intent.getStringExtra(EXTRA_MIME);
-        // preview file path
-        String previewPath = intent.getStringExtra(EXTRA_PREVIEW_PATH);
-        // encryption flag
-        boolean encrypt = intent.getBooleanExtra(EXTRA_ENCRYPT, false);
         // delete original
         boolean deleteOriginal = intent.getBooleanExtra(EXTRA_DELETE_ORIGINAL, false);
 
@@ -190,7 +165,7 @@ public class UploadService extends IntentService implements ProgressListener {
             queue.put(filename, mMessageId);
 
             // upload content
-            String mediaUrl = mConn.upload(file, length, mime, encrypt, to, this);
+            String mediaUrl = mConn.upload(file, length, mime, this);
             if (mediaUrl == null)
                 mediaUrl = fetchUrl;
             Log.d(TAG, "uploaded with media URL: " + mediaUrl);
@@ -199,14 +174,8 @@ public class UploadService extends IntentService implements ProgressListener {
             MessagesProviderClient.uploaded(this, databaseId, mediaUrl);
 
             // send message with fetch url to server
-            if (groupJid != null) {
-                MessageCenterService.sendGroupUploadedMedia(this, groupJid, to,
-                    mime, file, length, previewPath, mediaUrl, encrypt, databaseId, msgId);
-            }
-            else {
-                MessageCenterService.sendUploadedMedia(this, to[0], mime, file, length,
-                    previewPath, mediaUrl, encrypt, databaseId, msgId);
-            }
+            MessageCenterService.bus()
+                .post(new SendMessageRequest(databaseId));
 
             // end operations
             completed();

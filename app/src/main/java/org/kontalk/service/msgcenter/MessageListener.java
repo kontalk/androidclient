@@ -32,12 +32,14 @@ import org.jivesoftware.smackx.forward.packet.Forwarded;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 import org.jxmpp.jid.Jid;
+import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.stringprep.XmppStringprepException;
 
 import android.content.ContentUris;
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
@@ -75,6 +77,7 @@ import org.kontalk.provider.MessagesProviderClient.MessageUpdater;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.reporting.ReportingManager;
+import org.kontalk.service.msgcenter.event.ChatStateEvent;
 import org.kontalk.service.msgcenter.group.KontalkGroupController;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
@@ -82,11 +85,6 @@ import org.kontalk.util.Preferences;
 import org.kontalk.util.XMPPUtils;
 
 import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_TIMESTAMP;
-import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_MESSAGE;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_CHAT_STATE;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_GROUP_JID;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
 
 
 /**
@@ -99,11 +97,23 @@ class MessageListener extends WakefulMessageCenterPacketListener {
         super(instance, "RECV");
     }
 
-    private boolean processGroupMessage(KontalkGroupManager.KontalkGroup group, Stanza packet, CompositeMessage msg, Intent chatStateBroadcast) {
+    private static final class GroupMessageProcessingResult {
+        public final boolean accept;
+        public final ChatStateEvent chatStateEvent;
+
+        GroupMessageProcessingResult(boolean accept, ChatStateEvent chatStateEvent) {
+            this.accept = accept;
+            this.chatStateEvent = chatStateEvent;
+        }
+    }
+
+    @NonNull
+    private GroupMessageProcessingResult processGroupMessage(KontalkGroupManager.KontalkGroup group,
+            Stanza packet, CompositeMessage msg, @Nullable ChatStateEvent chatStateEvent) {
 
         if (group.checkRequest(packet) && canHandleGroupCommand(packet)) {
             GroupExtension ext = GroupExtension.from(packet);
-            String groupJid = ext.getJID();
+            Jid groupJid = JidCreate.fromOrThrowUnchecked(ext.getJid());
             String subject = ext.getSubject();
 
             // group information
@@ -112,24 +122,24 @@ class MessageListener extends WakefulMessageCenterPacketListener {
             msg.addComponent(new GroupComponent(groupInfo));
 
             // group typing information
-            if (chatStateBroadcast != null) {
-                chatStateBroadcast.putExtra(EXTRA_GROUP_JID, groupJid);
+            if (chatStateEvent != null) {
+                chatStateEvent = new ChatStateEvent(chatStateEvent.from,
+                    groupJid, chatStateEvent.chatState);
             }
 
             if (ext.getType() == GroupExtension.Type.CREATE ||
                     ext.getType() == GroupExtension.Type.PART ||
                     ext.getType() == GroupExtension.Type.SET) {
                 GroupCommandComponent groupCmd = new GroupCommandComponent(ext,
-                    packet.getFrom().asBareJid().toString(),
-                    Authenticator.getSelfJID(getContext()));
+                    packet.getFrom().asBareJid().toString());
                 msg.addComponent(groupCmd);
             }
 
-            return true;
+            return new GroupMessageProcessingResult(true, chatStateEvent);
         }
 
         // invalid or unauthorized request
-        return false;
+        return new GroupMessageProcessingResult(false, chatStateEvent);
     }
 
     /** Returns true if we can handle this group command (e.g. if we have it in our database). */
@@ -142,7 +152,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
             // check that the sender has valid membership
             (isValidMember(ext, packet.getFrom()) &&
             // all other commands require the group to be present in our database
-            MessagesProviderClient.isGroupExisting(getContext(), ext.getJID()));
+            MessagesProviderClient.isGroupExisting(getContext(), ext.getJid().toString()));
     }
 
     /** Returns true if the given group command is the owner adding me to the group. */
@@ -151,7 +161,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
             String myself = Authenticator.getSelfJID(getContext());
             for (GroupExtension.Member m : ext.getMembers()) {
                 if (m.operation == GroupExtension.Member.Operation.ADD &&
-                        m.jid.equalsIgnoreCase(myself))
+                        m.jid.equals(myself))
                     return true;
             }
         }
@@ -160,7 +170,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
 
     private boolean isValidMember(GroupExtension ext, Jid from) {
         return MessagesProviderClient.isGroupMember(getContext(),
-            ext.getJID(), from.asBareJid().toString());
+            ext.getJid().toString(), from.asBareJid().toString());
     }
 
     @Override
@@ -170,16 +180,16 @@ class MessageListener extends WakefulMessageCenterPacketListener {
         if (m.getType() == org.jivesoftware.smack.packet.Message.Type.chat) {
             // a preliminary object is created here
             // other info will be filled in by processChatMessage
-            Intent chatStateBroadcast = processChatState(m);
+            ChatStateEvent chatStateEvent = processChatState(m);
 
             // non-active chat states are not to be processed as messages
-            if (chatStateBroadcast == null || ChatState.active.name().equals(chatStateBroadcast.getStringExtra(EXTRA_CHAT_STATE))) {
-                processChatMessage(m, chatStateBroadcast);
+            if (chatStateEvent == null || chatStateEvent.chatState == ChatState.active) {
+                chatStateEvent = processChatMessage(m, chatStateEvent);
             }
 
-            if (chatStateBroadcast != null) {
-                // we can send the chat state broadcast now
-                sendBroadcast(chatStateBroadcast);
+            if (chatStateEvent != null) {
+                // we can send the chat state event now
+                MessageCenterService.bus().post(chatStateEvent);
             }
         }
 
@@ -193,7 +203,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
      * Retrieve the group JID from a message. Must not be encrypted.
      * Used mainly for chat states.
      */
-    private String getGroupJid(Message m) {
+    private Jid getGroupJid(Message m) {
         // group chat
         KontalkGroupManager.KontalkGroup group;
         try {
@@ -209,7 +219,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
 
         if (group != null && group.checkRequest(m) && canHandleGroupCommand(m)) {
             GroupExtension ext = GroupExtension.from(m);
-            String groupJid = ext.getJID();
+            Jid groupJid = JidCreate.fromOrThrowUnchecked(ext.getJid());
             String subject = ext.getSubject();
 
             // group information
@@ -221,35 +231,25 @@ class MessageListener extends WakefulMessageCenterPacketListener {
         return null;
     }
 
-    private Intent processChatState(Message m) {
+    private ChatStateEvent processChatState(Message m) {
         // check if there is a composing notification
         ExtensionElement _chatstate = m.getExtension("http://jabber.org/protocol/chatstates");
         if (_chatstate instanceof ChatStateExtension) {
             ChatStateExtension chatstate = (ChatStateExtension) _chatstate;
-
-            Jid from = m.getFrom();
-            Intent i = new Intent(ACTION_MESSAGE);
-            i.putExtra(EXTRA_CHAT_STATE, chatstate.getElementName());
-            i.putExtra(EXTRA_FROM, from.toString());
-            i.putExtra(EXTRA_TO, m.getTo().toString());
-
-            String groupJid = getGroupJid(m);
-            if (groupJid != null) {
-                i.putExtra(EXTRA_GROUP_JID, groupJid);
-            }
-
-            return i;
+            Jid groupJid = getGroupJid(m);
+            return new ChatStateEvent(m.getFrom(), groupJid, chatstate.getChatState());
         }
-
         return null;
     }
 
     /**
      * Process an incoming message packet.
      * @param m the message
-     * @param chatStateBroadcast a chat state broadcast that will be filled with missing information (e.g. group info in encrypted message)
+     * @param chatStateEvent a chat state event that will be returned with missing information (e.g. group info in encrypted message)
+     * @return a chat state event to be posted, or null
      */
-    private void processChatMessage(Message m, Intent chatStateBroadcast) throws SmackException.NotConnectedException {
+    private ChatStateEvent processChatMessage(Message m, @Nullable ChatStateEvent chatStateEvent)
+            throws SmackException.NotConnectedException {
         // delayed deliver extension is the first the be processed
         // because it's used also in delivery receipts
         Date stamp = XMPPUtils.getStanzaDelay(m);
@@ -281,7 +281,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
             if (!Preferences.isServerMessagesEnabled(getContext()) &&
                 from.asBareJid().toString().equalsIgnoreCase(getServer().getNetwork())) {
                 Log.w(TAG, "user opted out of server messages, message will be ignored");
-                return;
+                return null;
             }
 
             String body = m.getBody();
@@ -498,25 +498,30 @@ class MessageListener extends WakefulMessageCenterPacketListener {
                 Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
                 // report it because it's a big deal
                 ReportingManager.logException(e);
-                return;
+                return null;
             }
 
-            if (group != null && !processGroupMessage(group, m, msg, chatStateBroadcast)) {
-                // invalid group command
-                Log.w(TAG, "invalid or unauthorized group command");
-                return;
+            if (group != null) {
+                GroupMessageProcessingResult result = processGroupMessage(group, m, msg, chatStateEvent);
+                if (!result.accept) {
+                    // invalid group command
+                    Log.w(TAG, "invalid or unauthorized group command");
+                    return null;
+                }
+                else {
+                    chatStateEvent = result.chatStateEvent;
+                }
             }
 
             if (msg.getComponents().size() == 0) {
                 Log.w(TAG, "message has no content, discarding");
-                return;
+                return null;
             }
 
             // 1-to-1 message with a chat state
             // set contact as typing if necessary
-            if (!msg.hasComponent(GroupComponent.class) && chatStateBroadcast != null) {
-                Contact.setTyping(from.toString(),
-                    ChatState.composing.name().equals(chatStateBroadcast.getStringExtra(EXTRA_CHAT_STATE)));
+            if (!msg.hasComponent(GroupComponent.class) && chatStateEvent != null) {
+                Contact.setTyping(from.toString(), chatStateEvent.chatState == ChatState.composing);
             }
 
             msg.setStatus(needAck ? Messages.STATUS_INCOMING : Messages.STATUS_CONFIRMED);
@@ -528,6 +533,8 @@ class MessageListener extends WakefulMessageCenterPacketListener {
                 sendReceipt(msgUri, msgId, from);
             }
         }
+
+        return chatStateEvent;
     }
 
     private void processErrorMessage(Message m) {

@@ -16,32 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.service.msgcenter.group;
-
-import org.jxmpp.jid.Jid;
+package org.kontalk.service.msgcenter.event;
 
 
-public abstract class KontalkGroupCommand implements GroupCommand {
+/**
+ * For requesting the message center to send a delivery receipt.
+ * @author Daniele Ricci
+ */
+public class SendDeliveryReceiptRequest extends SendMessageRequest {
 
-    private Jid mGroupJid;
-    private Jid[] mMembers;
-
-    public void setMembers(Jid[] members) {
-        mMembers = members;
-    }
-
-    public Jid[] getMembers() {
-        return mMembers;
-    }
-
-    @Override
-    public void setGroupJid(Jid groupJid) {
-        mGroupJid = groupJid;
-    }
-
-    @Override
-    public Jid getGroupJid() {
-        return mGroupJid;
+    public SendDeliveryReceiptRequest(long databaseId) {
+        super(databaseId);
     }
 
 }

@@ -329,6 +329,15 @@ public final class SystemUtils {
         return false;
     }
 
+    /** Mainly for converting arrays of Jids to arrays of String :) */
+    public static <T> String[] toString(final T[] array) {
+        String[] out = new String[array.length];
+        for (int i = 0; i < array.length; i++) {
+            out[i] = array[i] != null ? array[i].toString() : null;
+        }
+        return out;
+    }
+
     /** Instead of importing the whole commons-io :) */
     public static long copy(final InputStream input, final OutputStream output) throws IOException {
         byte[] buffer = new byte[4096];

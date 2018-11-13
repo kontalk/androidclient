@@ -21,6 +21,8 @@ package org.kontalk.provider;
 import java.io.File;
 import java.util.Random;
 
+import org.jxmpp.jid.impl.JidCreate;
+
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -32,6 +34,7 @@ import android.net.Uri;
 
 import org.kontalk.Log;
 import org.kontalk.crypto.Coder;
+import org.kontalk.data.GroupInfo;
 import org.kontalk.message.LocationComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages.Groups;
@@ -595,6 +598,28 @@ public class MessagesProviderClient {
         boolean exist = c.moveToFirst();
         c.close();
         return exist;
+    }
+
+    public static GroupInfo getGroupInfo(Context context, String groupJid) {
+        Cursor c = context.getContentResolver()
+            .query(Groups.getUri(groupJid),
+                new String[] {
+                    Groups.SUBJECT,
+                    Groups.GROUP_TYPE,
+                    Groups.MEMBERSHIP
+                },
+                null, null, null);
+
+        try {
+            if (c.moveToNext()) {
+                return new GroupInfo(JidCreate.fromOrThrowUnchecked(groupJid),
+                    c.getString(0), c.getString(1), c.getInt(2));
+            }
+            return null;
+        }
+        finally {
+            c.close();
+        }
     }
 
     public static String[] getGroupMembers(Context context, String groupJid, int flags) {
