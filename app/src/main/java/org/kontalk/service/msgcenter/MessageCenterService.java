@@ -1309,8 +1309,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             long fileLength;
 
             try {
-                // encrypt the file if necessary (FIXME isEncrypted doesn't work for outgoing messages!!!)
-                if (message.isEncrypted()) {
+                // encrypt the file if necessary
+                if (message.getSecurityFlags() != Coder.SECURITY_CLEARTEXT) {
                     InputStream in = null;
                     try {
                         in = getContentResolver().openInputStream(preMediaUri);
@@ -1365,7 +1365,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // media message - start upload service
             final String mime = attachment.getMime();
             final long databaseId = request.databaseId;
-            final boolean encrypt = message.isEncrypted();
+            final boolean encrypt = message.getSecurityFlags() != Coder.SECURITY_CLEARTEXT;
             uploadService.getPostUrl(filename, fileLength, mime, new IUploadService.UrlCallback() {
                 @Override
                 public void callback(String putUrl, String getUrl) {
@@ -2394,7 +2394,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
             }
 
-            if (message.isEncrypted()) {
+            if (message.getSecurityFlags() != Coder.SECURITY_CLEARTEXT) {
                 byte[] toMessage = null;
                 try {
                     Coder coder = Keyring.getEncryptCoder(this, mServer, key, SystemUtils.toString(toGroup));
