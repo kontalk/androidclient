@@ -271,11 +271,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     // common parameters
     public static final String EXTRA_FOREGROUND = "org.kontalk.foreground";
 
-    // use with org.kontalk.action.PRESENCE/SUBSCRIBED
-    public static final String EXTRA_FROM = "org.kontalk.stanza.from";
-    public static final String EXTRA_TO = "org.kontalk.stanza.to";
-    public static final String EXTRA_GROUP_JID = "org.kontalk.stanza.groupJid";
-
     // used with org.kontalk.action.IMPORT_KEYPAIR
     public static final String EXTRA_KEYPACK = "org.kontalk.keypack";
     public static final String EXTRA_PASSPHRASE = "org.kontalk.passphrase";
@@ -283,16 +278,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     // used with org.kontalk.action.TEST
     public static final String EXTRA_TEST_CHECK_NETWORK = "org.kontalk.test.check_network";
 
-    public static final String EXTRA_CHAT_STATE = "org.kontalk.message.chatState";
-
     // other
     public static final String PUSH_REGISTRATION_ID = "org.kontalk.PUSH_REGISTRATION_ID";
     private static final String DEFAULT_PUSH_PROVIDER = "gcm";
-
-    public static final int GROUP_COMMAND_CREATE = 1;
-    public static final int GROUP_COMMAND_SUBJECT = 2;
-    public static final int GROUP_COMMAND_PART = 3;
-    public static final int GROUP_COMMAND_MEMBERS = 4;
 
     /**
      * Minimal wakeup time.

@@ -27,19 +27,14 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
-import org.jxmpp.util.XmppStringUtils;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -94,10 +89,6 @@ public class ContactInfoFragment extends Fragment
     String mLastActivityRequestId;
 
     private EventBus mServiceBus = MessageCenterService.bus();
-
-    // created on demand
-    private BroadcastReceiver mReceiver;
-    private LocalBroadcastManager mLocalBroadcastManager;
 
     public static ContactInfoFragment newInstance(String userId) {
         ContactInfoFragment f = new ContactInfoFragment();
@@ -189,7 +180,6 @@ public class ContactInfoFragment extends Fragment
             mTrustStatus.setVisibility(View.GONE);
         }
 
-        registerEvents(context);
         if (!mServiceBus.isRegistered(this)) {
             mServiceBus.register(this);
         }
@@ -214,39 +204,11 @@ public class ContactInfoFragment extends Fragment
         */
     }
 
-    /** @deprecated Replace with event subscribers. */
-    @Deprecated
-    private void registerEvents(Context context) {
-        if (mReceiver == null) {
-            mReceiver = new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context context, Intent intent) {
-                    String action = intent.getAction();
-
-                        String from = XmppStringUtils.parseBareJid(intent
-                            .getStringExtra(MessageCenterService.EXTRA_FROM));
-                        if (!mContact.getJID().equals(from)) {
-                            // not for us
-                            return;
-                        }
-
-                        // TODO handle blocked
-                        // TODO handle unblocked
-                        // TODO handle subscribed
-                        // TODO handle roster status
-                        // TODO handle version
-                }
-            };
-
-            IntentFilter filter = new IntentFilter();
-            // TODO filter.addAction(MessageCenterService.ACTION_VERSION);
-            // TODO filter.addAction(MessageCenterService.ACTION_BLOCKED);
-            // TODO filter.addAction(MessageCenterService.ACTION_UNBLOCKED);
-            // TODO filter.addAction(MessageCenterService.ACTION_SUBSCRIBED);
-            // TODO filter.addAction(MessageCenterService.ACTION_ROSTER_STATUS);
-            mLocalBroadcastManager.registerReceiver(mReceiver, filter);
-        }
-    }
+    // TODO version event
+    // TODO blocked event
+    // TODO unblocked event
+    // TODO subscribed event
+    // TODO roster status event
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN_ORDERED)
     public void onConnected(ConnectedEvent event) {
@@ -520,21 +482,11 @@ public class ContactInfoFragment extends Fragment
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-        if (mLocalBroadcastManager != null && mReceiver != null) {
-            mLocalBroadcastManager.unregisterReceiver(mReceiver);
-        }
-        mReceiver = null;
-    }
-
-    @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         if (!(context instanceof ContactInfoParent))
             throw new IllegalArgumentException("parent activity must implement " +
                 ContactInfoParent.class.getSimpleName());
-        mLocalBroadcastManager = LocalBroadcastManager.getInstance(context);
     }
 
     @Override
