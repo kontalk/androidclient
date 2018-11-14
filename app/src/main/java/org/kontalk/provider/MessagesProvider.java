@@ -609,7 +609,7 @@ public class MessagesProvider extends ContentProvider {
             case THREADS_PEER:
                 qb.setTables(TABLE_THREADS_GROUPS);
                 qb.setProjectionMap(threadsProjectionMap);
-                qb.appendWhere(Threads.PEER + "=" + DatabaseUtils.sqlEscapeString(uri.getPathSegments().get(1)));
+                qb.appendWhere(Threads.PEER + "=" + DatabaseUtils.sqlEscapeString(uri.getPathSegments().get(1)) + " COLLATE NOCASE");
                 break;
 
             case CONVERSATIONS_ID:
@@ -650,7 +650,7 @@ public class MessagesProvider extends ContentProvider {
                 qb.setTables(TABLE_GROUPS);
                 qb.setProjectionMap(groupsProjectionMap
                 );
-                qb.appendWhere(Groups.GROUP_JID + "=?");
+                qb.appendWhere(Groups.GROUP_JID + "=? COLLATE NOCASE");
                 if (selectionArgs != null) {
                     // conditions appended here will get added before the caller-supplied selection
                     selectionArgs = SystemUtils.concatenate(new String[] { uri.getLastPathSegment() },
@@ -664,7 +664,7 @@ public class MessagesProvider extends ContentProvider {
             case GROUPS_MEMBERS:
                 qb.setTables(TABLE_GROUP_MEMBERS);
                 qb.setProjectionMap(groupsMembersProjectionMap);
-                qb.appendWhere(Groups.GROUP_JID + "=?");
+                qb.appendWhere(Groups.GROUP_JID + "=? COLLATE NOCASE");
                 if (selectionArgs != null) {
                     // conditions appended here will get added before the caller-supplied selection
                     selectionArgs = SystemUtils.concatenate(new String[] { uri.getPathSegments().get(1) },
@@ -865,7 +865,7 @@ public class MessagesProvider extends ContentProvider {
         Cursor c = null;
         try {
             c = db.query(TABLE_THREADS, new String[] { Threads.REQUEST_STATUS },
-                Threads.PEER + "=?", new String[] { peer }, null, null, null);
+                Threads.PEER + "=? COLLATE NOCASE", new String[] { peer }, null, null, null);
             return c.moveToFirst() && c.getInt(0) == Threads.REQUEST_WAITING;
         }
         catch (Exception e) {
@@ -1018,10 +1018,11 @@ public class MessagesProvider extends ContentProvider {
                 values.remove(Threads.DIRECTION);
             }
 
-            db.update(TABLE_THREADS, values, "peer = ?", new String[] { peer });
+            values.remove(Threads.PEER);
+            db.update(TABLE_THREADS, values, "peer = ? COLLATE NOCASE", new String[] { peer });
             // the client did not pass the thread id, query for it manually
             if (threadId < 0) {
-                Cursor c = db.query(TABLE_THREADS, new String[] { Threads._ID }, "peer = ?", new String[] { peer }, null, null, null);
+                Cursor c = db.query(TABLE_THREADS, new String[] { Threads._ID }, "peer = ? COLLATE NOCASE", new String[] { peer }, null, null, null);
                 if (c.moveToFirst())
                     threadId = c.getLong(0);
                 c.close();
@@ -1098,7 +1099,7 @@ public class MessagesProvider extends ContentProvider {
             case GROUPS_ID: {
                 table = TABLE_GROUPS;
                 String groupId = uri.getLastPathSegment();
-                where = Groups.GROUP_JID + " = ?";
+                where = Groups.GROUP_JID + " = ? COLLATE NOCASE";
                 args = new String[] { groupId };
                 if (selection != null) {
                     where += " AND (" + selection + ")";
@@ -1111,7 +1112,7 @@ public class MessagesProvider extends ContentProvider {
             case GROUPS_MEMBERS: {
                 String groupId = uri.getPathSegments().get(1);
                 table = TABLE_GROUP_MEMBERS;
-                where = Groups.GROUP_JID + " = ?";
+                where = Groups.GROUP_JID + " = ? COLLATE NOCASE";
                 args = new String[] { groupId };
                 if (selection != null) {
                     where += " AND (" + selection + ")";
@@ -1123,7 +1124,7 @@ public class MessagesProvider extends ContentProvider {
 
             case GROUPS_MEMBERS_ID: {
                 table = TABLE_GROUP_MEMBERS;
-                where = Groups.GROUP_JID + " = ? AND " + Groups.PEER + " = ?";
+                where = Groups.GROUP_JID + " = ? COLLATE NOCASE AND " + Groups.PEER + " = ? COLLATE NOCASE";
                 args = new String[] { uri.getPathSegments().get(1), uri.getLastPathSegment() };
                 if (selection != null) {
                     where += " AND (" + selection + ")";
@@ -1364,7 +1365,7 @@ public class MessagesProvider extends ContentProvider {
 
             case THREADS_PEER:
                 table = TABLE_THREADS;
-                where = "peer = ?";
+                where = "peer = ? COLLATE NOCASE";
                 args = new String[] { uri.getLastPathSegment() };
                 if (selection != null) {
                     where += " AND (" + selection + ")";
@@ -1375,7 +1376,7 @@ public class MessagesProvider extends ContentProvider {
 
             case GROUPS_ID:
                 table = TABLE_GROUPS;
-                where = Groups.GROUP_JID + "=?";
+                where = Groups.GROUP_JID + "=? COLLATE NOCASE";
                 args = new String[] { uri.getLastPathSegment() };
                 if (selection != null) {
                     where += " AND (" + selection + ")";
@@ -1386,7 +1387,7 @@ public class MessagesProvider extends ContentProvider {
 
             case GROUPS_MEMBERS_ID:
                 table = TABLE_GROUP_MEMBERS;
-                where = Groups.GROUP_JID + " = ? AND " + Groups.PEER + " = ?";
+                where = Groups.GROUP_JID + " = ? COLLATE NOCASE AND " + Groups.PEER + " = ? COLLATE NOCASE";
                 args = new String[] { uri.getPathSegments().get(1), uri.getLastPathSegment() };
                 if (selection != null) {
                     where += " AND (" + selection + ")";

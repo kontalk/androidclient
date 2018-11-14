@@ -209,7 +209,7 @@ public class MessagesProviderClient {
         long threadId = 0;
         Cursor cp = context.getContentResolver().query(MyMessages.Messages.CONTENT_URI,
             new String[] { MyMessages.Messages.THREAD_ID }, MyMessages.Messages.PEER
-                + " = ?", new String[] { peer }, null);
+                + " = ? COLLATE NOCASE", new String[] { peer }, null);
         if (cp != null) {
             if (cp.moveToFirst())
                 threadId = cp.getLong(0);
@@ -271,7 +271,7 @@ public class MessagesProviderClient {
         values.put(Messages.UNREAD, Boolean.FALSE);
         values.put(Messages.NEW, Boolean.FALSE);
         return c.update(Messages.CONTENT_URI, values,
-            Messages.PEER + " = ? AND " +
+            Messages.PEER + " = ? COLLATE NOCASE AND " +
                 Messages.UNREAD + " <> 0 AND " +
                 Messages.DIRECTION + " = " + Messages.DIRECTION_IN,
             new String[] { peer });
@@ -461,7 +461,7 @@ public class MessagesProviderClient {
     public static int retryMessagesTo(Context context, String to) {
         Cursor c = context.getContentResolver().query(Messages.CONTENT_URI,
                 new String[] { Messages._ID },
-                Messages.PEER + "=? AND " + Messages.STATUS + "=" + Messages.STATUS_PENDING,
+                Messages.PEER + "=? COLLATE NOCASE AND " + Messages.STATUS + "=" + Messages.STATUS_PENDING,
                 new String[] { to },
                 Messages._ID);
 
@@ -662,7 +662,7 @@ public class MessagesProviderClient {
         Cursor c = null;
         try {
             c = context.getContentResolver().query(Groups.getMembersUri(groupJid),
-                new String[] { Groups.PENDING },  Groups.PEER + "=?", new String[] { jid }, null);
+                new String[] { Groups.PENDING },  Groups.PEER + "=? COLLATE NOCASE", new String[] { jid }, null);
             return c.moveToNext() && c.getInt(0) == 0;
         }
         finally {

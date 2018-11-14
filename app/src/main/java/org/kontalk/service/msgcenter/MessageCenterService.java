@@ -2275,27 +2275,30 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         GroupCommand groupCommand = null;
         if (groupController != null) {
             GroupCommandComponent groupCmdComponent = message.getComponent(GroupCommandComponent.class);
-            if (groupCmdComponent.isCreateCommand()) {
-                groupCommand = groupController.createGroup();
-                ((CreateGroupCommand) groupCommand).setSubject(groupInfo.getSubject());
+            if (groupCmdComponent != null) {
+                if (groupCmdComponent.isCreateCommand()) {
+                    groupCommand = groupController.createGroup();
+                    ((CreateGroupCommand) groupCommand).setSubject(groupInfo.getSubject());
+                }
+                else if (groupCmdComponent.isSetSubjectCommand()) {
+                    groupCommand = groupController.setSubject();
+                    ((SetSubjectCommand) groupCommand).setSubject(groupInfo.getSubject());
+                }
+                else if (groupCmdComponent.isAddOrRemoveCommand()) {
+                    groupCommand = groupController.addRemoveMembers();
+                    ((AddRemoveMembersCommand) groupCommand).setSubject(groupInfo.getSubject());
+                    ((AddRemoveMembersCommand) groupCommand)
+                        .setAddedMembers(XMPPUtils.parseJids(groupCmdComponent.getAddedMembers()));
+                    ((AddRemoveMembersCommand) groupCommand)
+                        .setRemovedMembers(XMPPUtils.parseJids(groupCmdComponent.getRemovedMembers()));
+                }
+                else if (groupCmdComponent.isPartCommand()) {
+                    groupCommand = groupController.part();
+                    ((PartCommand) groupCommand).setDatabaseId(msgId);
+                }
             }
-            else if (groupCmdComponent.isSetSubjectCommand()) {
-                groupCommand = groupController.setSubject();
-                ((SetSubjectCommand) groupCommand).setSubject(groupInfo.getSubject());
-            }
-            else if (groupCmdComponent.isAddOrRemoveCommand()) {
-                groupCommand = groupController.addRemoveMembers();
-                ((AddRemoveMembersCommand) groupCommand).setSubject(groupInfo.getSubject());
-                ((AddRemoveMembersCommand) groupCommand)
-                    .setAddedMembers(XMPPUtils.parseJids(groupCmdComponent.getAddedMembers()));
-                ((AddRemoveMembersCommand) groupCommand)
-                    .setRemovedMembers(XMPPUtils.parseJids(groupCmdComponent.getRemovedMembers()));
-            }
-            else if (groupCmdComponent.isPartCommand()) {
-                groupCommand = groupController.part();
-                ((PartCommand) groupCommand).setDatabaseId(msgId);
-            }
-            else {
+
+            if (groupCommand == null) {
                 groupCommand = groupController.info();
             }
 

@@ -352,7 +352,8 @@ public class CompositeMessage {
             String groupSubject = c.getString(COLUMN_GROUP_SUBJECT);
             String groupType = c.getString(COLUMN_GROUP_TYPE);
             int groupMembership = c.getInt(COLUMN_GROUP_MEMBERSHIP);
-            Jid groupJid = null;
+            Jid groupJid = groupJidStr != null ?
+                JidCreate.fromOrThrowUnchecked(groupJidStr) : null;
 
             if (body != null) {
                 // remove trailing zero
@@ -376,7 +377,11 @@ public class CompositeMessage {
 
                 // group command
                 else if (GroupCommandComponent.supportsMimeType(mime)) {
-                    groupJid = JidCreate.fromOrThrowUnchecked(groupJidStr);
+                    if (groupJid == null) {
+                        // impossible
+                        throw new IllegalStateException("Trying to parse a group command without a group!?");
+                    }
+
                     String groupId = groupJid.getLocalpartOrNull().toString();
                     Jid groupOwner = JidCreate.fromOrThrowUnchecked(groupJid.getDomain());
                     GroupExtension ext = null;
@@ -456,11 +461,8 @@ public class CompositeMessage {
 
                 // TODO other type of attachments
 
-                if (att != null) {
-                    att.populateFromCursor(mContext, c);
-                    addComponent(att);
-                }
-
+                att.populateFromCursor(mContext, c);
+                addComponent(att);
             }
 
             // in reply to
