@@ -10,6 +10,8 @@
 - Support for multi-window (#1101)
 - Improve registration screen (#1209)
 - Allow replying to own messages
+- Use same emoji type acroll all screens (#1229)
+- Use an event bus for communicating with the message center (#1236)
 
 ### Fixed
 - Sort search results in inverted timestamp order (#1223)
