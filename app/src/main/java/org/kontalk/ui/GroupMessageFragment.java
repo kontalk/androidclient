@@ -28,21 +28,22 @@ import java.util.Set;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
-import org.jivesoftware.smack.packet.Presence;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
-import org.jxmpp.util.XmppStringUtils;
+import org.jxmpp.jid.Jid;
+import org.jxmpp.jid.impl.JidCreate;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.sqlite.SQLiteDiskIOException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -63,7 +64,15 @@ import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyUsers;
-import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.event.NoPresenceEvent;
+import org.kontalk.service.msgcenter.event.PresenceEvent;
+import org.kontalk.service.msgcenter.event.PresenceRequest;
+import org.kontalk.service.msgcenter.event.PublicKeyEvent;
+import org.kontalk.service.msgcenter.event.PublicKeyRequest;
+import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
+import org.kontalk.service.msgcenter.event.SendChatStateRequest;
+import org.kontalk.service.msgcenter.event.UserOfflineEvent;
+import org.kontalk.service.msgcenter.event.UserOnlineEvent;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.XMPPUtils;
 
@@ -90,8 +99,6 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     private MenuItem mSetGroupSubjectMenu;
     private MenuItem mGroupInfoMenu;
     private MenuItem mLeaveGroupMenu;
-
-    private BroadcastReceiver mBroadcastReceiver;
 
     @Override
     protected void updateUI() {
@@ -159,14 +166,6 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         }
 
         return false;
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (mLocalBroadcastManager != null && mBroadcastReceiver != null) {
-            mLocalBroadcastManager.unregisterReceiver(mBroadcastReceiver);
-        }
     }
 
     @Override
@@ -253,12 +252,11 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     }
 
     private void requestPresence() {
-        Context context;
-        if (mConversation != null && (context = getContext()) != null) {
+        if (mConversation != null) {
             String[] users = mConversation.getGroupPeers();
             if (users != null) {
                 for (String user : users) {
-                    MessageCenterService.requestPresence(context, user);
+                    mServiceBus.post(new PresenceRequest(JidCreate.bareFromOrThrowUnchecked(user)));
                 }
             }
         }
@@ -331,33 +329,6 @@ public class GroupMessageFragment extends AbstractComposeFragment {
 
         super.onConversationCreated();
 
-        // setup broadcast receiver
-        if (mBroadcastReceiver == null) {
-            mBroadcastReceiver = new BroadcastReceiver() {
-                public void onReceive(Context context, Intent intent) {
-                    String jid = XmppStringUtils.parseBareJid(intent
-                        .getStringExtra(MessageCenterService.EXTRA_FROM));
-
-                    String action = intent.getAction();
-
-                    if (MessageCenterService.ACTION_PUBLICKEY.equals(action)) {
-                        String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                        if (id != null && id.equals(mKeyRequestIds.get(jid))) {
-                            // invalidate contact
-                            Contact.invalidate(jid);
-                            // request presence again
-                            requestPresence();
-                        }
-                    }
-                }
-            };
-
-            // listen for some stuff we need
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(MessageCenterService.ACTION_PUBLICKEY);
-            mLocalBroadcastManager.registerReceiver(mBroadcastReceiver, filter);
-        }
-
         boolean sendEnabled;
         int membership = mConversation.getGroupMembership();
         switch (membership) {
@@ -401,23 +372,32 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         }
     }
 
-    private void requestPublicKey(String jid) {
+    private void requestPublicKey(Jid jid) {
         Context context = getActivity();
         if (context != null) {
             String requestId = StringUtils.randomString(6);
-            mKeyRequestIds.put(jid, requestId);
-            MessageCenterService.requestPublicKey(context, jid, requestId);
+            mKeyRequestIds.put(jid.asBareJid().toString(), requestId);
+            mServiceBus.post(new PublicKeyRequest(requestId, jid));
         }
     }
 
-    @Override
-    protected void onPresence(String jid, Presence.Type type, boolean removed, Presence.Mode mode, String fingerprint) {
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onPublicKey(PublicKeyEvent event) {
+        if (event.id != null && event.id.equals(mKeyRequestIds.get(event.jid.asBareJid().toString()))) {
+            // invalidate contact
+            Contact.invalidate(event.jid.asBareJid().toString());
+            // request presence again
+            requestPresence();
+        }
+    }
+
+    private void onUserStatusChanged(PresenceEvent event) {
         Context context = getContext();
         if (context == null)
             return;
 
         if (Log.isDebug()) {
-            Log.d(TAG, "group member presence from " + jid + " (type=" + type + ", fingerprint=" + fingerprint + ")");
+            Log.d(TAG, "group member presence from " + event.jid + " (type=" + event.type + ", fingerprint=" + event.fingerprint + ")");
         }
 
         updateStatusText();
@@ -426,7 +406,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         if (!Preferences.getEncryptionEnabled(context))
             return;
 
-        String bareJid = XmppStringUtils.parseBareJid(jid);
+        String bareJid = event.jid.asBareJid().toString();
 
         Contact contact = Contact.findByUserId(context, bareJid);
         // if this is null, we are accepting the key for the first time
@@ -436,51 +416,76 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         boolean unknownKey = (trustedPublicKey == null && contact.getFingerprint() != null);
         boolean changedKey = false;
         // check if fingerprint changed (only if we have roster presence)
-        if (type != null && trustedPublicKey != null && fingerprint != null) {
+        if (event.type != null && trustedPublicKey != null && event.fingerprint != null) {
             String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(trustedPublicKey));
-            if (!fingerprint.equalsIgnoreCase(oldFingerprint)) {
+            if (!event.fingerprint.equalsIgnoreCase(oldFingerprint)) {
                 // fingerprint has changed since last time
                 changedKey = true;
             }
         }
         // user has no key (or we have no roster presence) or it couldn't be found: request it
-        else if ((trustedPublicKey == null && fingerprint == null) || type == null) {
-            if (mKeyRequestIds.containsKey(jid)) {
+        else if ((trustedPublicKey == null && event.fingerprint == null) || event.type == null) {
+            if (mKeyRequestIds.containsKey(event.jid.toString())) {
                 // avoid request loop
-                mKeyRequestIds.remove(jid);
+                mKeyRequestIds.remove(event.jid.toString());
             }
             else {
                 // autotrust the key we are about to request
                 // but set the trust level to ignored because we didn't really verify it
-                Keyring.setAutoTrustLevel(context, jid, MyUsers.Keys.TRUST_IGNORED);
-                requestPublicKey(jid);
+                Keyring.setAutoTrustLevel(context, event.jid.toString(), MyUsers.Keys.TRUST_IGNORED);
+                requestPublicKey(event.jid);
             }
         }
 
-        if (Keyring.isAdvancedMode(context, jid) && (changedKey || unknownKey)) {
+        if (Keyring.isAdvancedMode(context, event.jid.toString()) && (changedKey || unknownKey)) {
             showKeyWarning();
         }
     }
 
     @Override
-    protected void onConnected() {
+    public void onUserOnline(UserOnlineEvent event) {
+        // check that origin matches the current chat
+        if (!isUserId(event.jid.toString())) {
+            // not for us
+            return;
+        }
+
+        super.onUserOnline(event);
+        onUserStatusChanged(event);
+    }
+
+    @Override
+    public void onUserOffline(UserOfflineEvent event) {
+        // check that origin matches the current chat
+        if (!isUserId(event.jid.toString())) {
+            // not for us
+            return;
+        }
+
+        super.onUserOffline(event);
+        onUserStatusChanged(event);
+    }
+
+    @Override
+    public void onNoUserPresence(NoPresenceEvent event) {
+        // nothing to do
+    }
+
+    @Override
+    protected void resetConnectionStatus() {
+        super.resetConnectionStatus();
         mTypingUsers.clear();
         updateStatusText();
         mKeyRequestIds.clear();
     }
 
     @Override
-    protected void onDisconnected() {
-        onConnected();
-    }
-
-    @Override
-    protected void onRosterLoaded() {
+    public void onRosterLoaded(RosterLoadedEvent event) {
         requestPresence();
     }
 
     @Override
-    protected void onStartTyping(String jid, String groupJid) {
+    protected void onStartTyping(String jid, @Nullable String groupJid) {
         if (mGroupJID.equals(groupJid)) {
             mTypingUsers.add(jid);
             updateStatusText();
@@ -488,7 +493,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     }
 
     @Override
-    protected void onStopTyping(String jid, String groupJid) {
+    protected void onStopTyping(String jid, @Nullable String groupJid) {
         if (mGroupJID.equals(groupJid)) {
             mTypingUsers.remove(jid);
             updateStatusText();
@@ -517,8 +522,11 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     @Override
     public boolean sendTyping() {
         if (mAvailableResources.size() > 0) {
-            MessageCenterService.sendGroupChatState(getContext(), mGroupJID,
-                mConversation.getGroupPeers(), ChatState.composing);
+            mServiceBus.post(new SendChatStateRequest.Builder(null)
+                .setChatState(ChatState.composing)
+                .setTo(JidCreate.fromOrThrowUnchecked(mGroupJID))
+                .setGroup(true)
+                .build());
             return true;
         }
         return false;
@@ -527,8 +535,11 @@ public class GroupMessageFragment extends AbstractComposeFragment {
     @Override
     public boolean sendInactive() {
         if (mAvailableResources.size() > 0) {
-            MessageCenterService.sendGroupChatState(getContext(), mGroupJID,
-                mConversation.getGroupPeers(), ChatState.inactive);
+            mServiceBus.post(new SendChatStateRequest.Builder(null)
+                .setChatState(ChatState.inactive)
+                .setTo(JidCreate.fromOrThrowUnchecked(mGroupJID))
+                .setGroup(true)
+                .build());
             return true;
         }
         return false;

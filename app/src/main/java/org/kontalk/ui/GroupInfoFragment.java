@@ -27,22 +27,22 @@ import java.util.List;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ListFragment;
-import android.support.v4.content.LocalBroadcastManager;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -75,6 +75,8 @@ import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyUsers;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.event.RosterStatusEvent;
+import org.kontalk.service.msgcenter.event.RosterStatusRequest;
 import org.kontalk.ui.view.ContactsListItem;
 import org.kontalk.util.SystemUtils;
 
@@ -102,9 +104,7 @@ public class GroupInfoFragment extends ListFragment
 
     private int mCheckedItemCount;
 
-    // created on demand
-    private BroadcastReceiver mRosterReceiver;
-    private LocalBroadcastManager mLocalBroadcastManager;
+    private EventBus mServiceBus = MessageCenterService.bus();
 
     public static GroupInfoFragment newInstance(long threadId) {
         GroupInfoFragment f = new GroupInfoFragment();
@@ -135,21 +135,8 @@ public class GroupInfoFragment extends ListFragment
         mSetSubject.setEnabled(isOwner && isMember);
         mLeave.setEnabled(isMember);
 
-        if (mRosterReceiver == null) {
-            // listen to roster entry status requests
-            mRosterReceiver = new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context context, Intent intent) {
-                    String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                    boolean isSubscribed = intent
-                        .getBooleanExtra(MessageCenterService.EXTRA_SUBSCRIBED_FROM, false) &&
-                        intent.getBooleanExtra(MessageCenterService.EXTRA_SUBSCRIBED_TO, false);
-                    mMembersAdapter.setSubscribed(jid, isSubscribed);
-                }
-            };
-
-            IntentFilter filter = new IntentFilter(MessageCenterService.ACTION_ROSTER_STATUS);
-            mLocalBroadcastManager.registerReceiver(mRosterReceiver, filter);
+        if (!mServiceBus.isRegistered(this)) {
+            mServiceBus.register(this);
         }
 
         // load members
@@ -165,8 +152,8 @@ public class GroupInfoFragment extends ListFragment
             mMembersAdapter.add(c, owner, isSelfJid ? true : null);
             if (!isSelfJid) {
                 // request roster entry status
-                // FIXME use MessageCenterClient, which will reply by reading directly from the roster store if offline mode is enabled
-                MessageCenterService.requestRosterEntryStatus(getContext(), jid);
+                // FIXME if the message center is down this won't work (e.g. offline mode)
+                mServiceBus.post(new RosterStatusRequest(jid));
             }
         }
 
@@ -179,6 +166,12 @@ public class GroupInfoFragment extends ListFragment
         // FIXME roster status is not available while offline
 
         updateUI();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onRosterStatus(RosterStatusEvent event) {
+        boolean isSubscribed = event.subscribedFrom && event.subscribedTo;
+        mMembersAdapter.setSubscribed(event.jid.toString(), isSubscribed);
     }
 
     private void updateUI() {
@@ -653,21 +646,9 @@ public class GroupInfoFragment extends ListFragment
     }
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (!(context instanceof GroupInfoParent))
-            throw new IllegalArgumentException("parent activity must implement " +
-                GroupInfoParent.class.getSimpleName());
-        mLocalBroadcastManager = LocalBroadcastManager.getInstance(context);
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        if (mLocalBroadcastManager != null && mRosterReceiver != null) {
-            mLocalBroadcastManager.unregisterReceiver(mRosterReceiver);
-        }
-        mRosterReceiver = null;
+    public void onStop() {
+        super.onStop();
+        mServiceBus.unregister(this);
     }
 
     private static final class GroupMembersAdapter extends BaseAdapter {

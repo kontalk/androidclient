@@ -115,10 +115,10 @@ public class RegisterDeviceActivity extends ToolbarActivity {
         }
     }
 
-    public static void start(@NonNull Context context, @NonNull String token, @NonNull String from) {
+    public static void start(@NonNull Context context, @NonNull String token, @NonNull String server) {
         Intent i = new Intent(context, RegisterDeviceActivity.class);
         i.putExtra("token", token);
-        i.putExtra("from", from);
+        i.putExtra("from", server);
         context.startActivity(i);
     }
 

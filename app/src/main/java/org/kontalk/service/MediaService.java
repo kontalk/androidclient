@@ -53,6 +53,7 @@ public class MediaService extends JobIntentService {
     /**
      * Broadcasted when a media message is ready for sending.
      */
+    @Deprecated
     public static final String ACTION_MEDIA_READY = "org.kontalk.action.MEDIA_READY";
 
     @Override
@@ -102,6 +103,7 @@ public class MediaService extends JobIntentService {
                 previewFile != null ? previewFile.toString() : null,
                 uri, length);
 
+            // TODO send message to message center bus
             Intent i = new Intent(ACTION_MEDIA_READY);
             i.putExtra("org.kontalk.message.msgId", databaseId);
             LocalBroadcastManager.getInstance(this).sendBroadcast(i);

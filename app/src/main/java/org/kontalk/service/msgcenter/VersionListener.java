@@ -18,42 +18,24 @@
 
 package org.kontalk.service.msgcenter;
 
+import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.iqversion.packet.Version;
 
-import android.content.Intent;
-
-import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_VERSION;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_VERSION_NAME;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_VERSION_NUMBER;
+import org.kontalk.service.msgcenter.event.VersionEvent;
 
 
 /**
  * Packet listener for version information stanzas.
  * @author Daniele Ricci
  */
-class VersionListener extends MessageCenterPacketListener {
-
-    public VersionListener(MessageCenterService instance) {
-        super(instance);
-    }
+class VersionListener implements StanzaListener {
 
     @Override
     public void processStanza(Stanza packet) {
         Version p = (Version) packet;
-        Intent i = new Intent(ACTION_VERSION);
-        i.putExtra(EXTRA_PACKET_ID, p.getStanzaId());
-
-        i.putExtra(EXTRA_FROM, p.getFrom().toString());
-        i.putExtra(EXTRA_TO, p.getTo().toString());
-
-        i.putExtra(EXTRA_VERSION_NAME, p.getName());
-        i.putExtra(EXTRA_VERSION_NUMBER, p.getVersion());
-
-        sendBroadcast(i);
+        MessageCenterService.bus()
+            .post(new VersionEvent(p.getFrom(), p.getName(), p.getVersion(), p.getStanzaId()));
     }
 
 }

@@ -35,12 +35,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.zip.ZipInputStream;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.jivesoftware.smack.ExceptionCallback;
 import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.debugger.AbstractDebugger;
 import org.jivesoftware.smack.debugger.SmackDebugger;
 import org.jivesoftware.smack.debugger.SmackDebuggerFactory;
@@ -50,12 +54,14 @@ import org.jivesoftware.smack.filter.StanzaTypeFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smack.packet.StanzaError;
 import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.roster.RosterEntry;
 import org.jivesoftware.smack.roster.packet.RosterPacket;
 import org.jivesoftware.smack.sm.StreamManagementException;
 import org.jivesoftware.smack.util.Async;
 import org.jivesoftware.smack.util.StringUtils;
+import org.jivesoftware.smack.util.SuccessCallback;
 import org.jivesoftware.smackx.caps.packet.CapsExtension;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
@@ -89,7 +95,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -100,12 +105,14 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.Process;
 import android.os.SystemClock;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ServiceCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.widget.Toast;
 
+import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
@@ -122,12 +129,16 @@ import org.kontalk.client.RosterMatch;
 import org.kontalk.client.ServerlistCommand;
 import org.kontalk.client.SmackInitializer;
 import org.kontalk.client.UserLocation;
-import org.kontalk.client.VCard4;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
+import org.kontalk.data.Conversation;
+import org.kontalk.data.GroupInfo;
+import org.kontalk.message.AttachmentComponent;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.GroupCommandComponent;
+import org.kontalk.message.GroupComponent;
+import org.kontalk.message.InReplyToComponent;
 import org.kontalk.message.LocationComponent;
 import org.kontalk.message.ReferencedMessage;
 import org.kontalk.message.TextComponent;
@@ -144,20 +155,49 @@ import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.UploadService;
 import org.kontalk.service.XMPPConnectionHelper;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
+import org.kontalk.service.msgcenter.event.BlocklistEvent;
+import org.kontalk.service.msgcenter.event.BlocklistRequest;
+import org.kontalk.service.msgcenter.event.ConnectedEvent;
+import org.kontalk.service.msgcenter.event.DisconnectedEvent;
+import org.kontalk.service.msgcenter.event.LastActivityRequest;
+import org.kontalk.service.msgcenter.event.NoPresenceEvent;
+import org.kontalk.service.msgcenter.event.PresenceEvent;
+import org.kontalk.service.msgcenter.event.PresenceRequest;
+import org.kontalk.service.msgcenter.event.PublicKeyRequest;
+import org.kontalk.service.msgcenter.event.RosterMatchRequest;
+import org.kontalk.service.msgcenter.event.RosterStatusEvent;
+import org.kontalk.service.msgcenter.event.RosterStatusRequest;
+import org.kontalk.service.msgcenter.event.SendChatStateRequest;
+import org.kontalk.service.msgcenter.event.SendDeliveryReceiptRequest;
+import org.kontalk.service.msgcenter.event.SendMessageRequest;
+import org.kontalk.service.msgcenter.event.ServerListEvent;
+import org.kontalk.service.msgcenter.event.ServerListRequest;
+import org.kontalk.service.msgcenter.event.SetUserPrivacyRequest;
+import org.kontalk.service.msgcenter.event.SubscribeRequest;
+import org.kontalk.service.msgcenter.event.UnsubscribeRequest;
+import org.kontalk.service.msgcenter.event.UpdateStatusRequest;
+import org.kontalk.service.msgcenter.event.UploadAttachmentRequest;
+import org.kontalk.service.msgcenter.event.UploadPrivateKeyRequest;
+import org.kontalk.service.msgcenter.event.UploadServiceFoundEvent;
+import org.kontalk.service.msgcenter.event.UserBlockedEvent;
+import org.kontalk.service.msgcenter.event.UserOnlineEvent;
+import org.kontalk.service.msgcenter.event.UserUnblockedEvent;
+import org.kontalk.service.msgcenter.event.VersionRequest;
 import org.kontalk.service.msgcenter.group.AddRemoveMembersCommand;
 import org.kontalk.service.msgcenter.group.CreateGroupCommand;
 import org.kontalk.service.msgcenter.group.GroupCommand;
 import org.kontalk.service.msgcenter.group.GroupController;
 import org.kontalk.service.msgcenter.group.GroupControllerFactory;
-import org.kontalk.service.msgcenter.group.KontalkGroupController;
 import org.kontalk.service.msgcenter.group.PartCommand;
 import org.kontalk.service.msgcenter.group.SetSubjectCommand;
 import org.kontalk.ui.MessagingNotification;
+import org.kontalk.util.EventBusIndex;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 import org.kontalk.util.WakefulHashSet;
+import org.kontalk.util.XMPPUtils;
 
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_FOREGROUND;
 
@@ -172,7 +212,15 @@ import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_FOREGROUND;
 public class MessageCenterService extends Service implements ConnectionHelperListener {
     public static final String TAG = MessageCenterService.class.getSimpleName();
 
+    private static final EventBus BUS;
+
     static {
+        BUS = EventBus.builder()
+            // TODO .logger(...)
+            .addIndex(new EventBusIndex())
+            .throwSubscriberException(BuildConfig.DEBUG)
+            .logNoSubscriberMessages(BuildConfig.DEBUG)
+            .build();
         SmackConfiguration.DEBUG = Log.isDebug();
         // we need our own debugger factory because of our internal logging system
         SmackConfiguration.setDefaultSmackDebuggerFactory(new SmackDebuggerFactory() {
@@ -197,59 +245,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_RELEASE = "org.kontalk.action.RELEASE";
     public static final String ACTION_RESTART = "org.kontalk.action.RESTART";
     public static final String ACTION_TEST = "org.kontalk.action.TEST";
-    public static final String ACTION_MESSAGE = "org.kontalk.action.MESSAGE";
     public static final String ACTION_PUSH_START = "org.kontalk.push.START";
     public static final String ACTION_PUSH_STOP = "org.kontalk.push.STOP";
     public static final String ACTION_PUSH_REGISTERED = "org.kontalk.push.REGISTERED";
     public static final String ACTION_IDLE = "org.kontalk.action.IDLE";
     public static final String ACTION_PING = "org.kontalk.action.PING";
-
-    /**
-     * Request the roster.
-     */
-    public static final String ACTION_ROSTER = "org.kontalk.action.ROSTER";
-
-    /**
-     * Request roster match.
-     */
-    public static final String ACTION_ROSTER_MATCH = "org.kontalk.action.ROSTER_MATCH";
-
-    /**
-     * Broadcasted when we are connected and authenticated to the server.
-     * Send this intent to receive the same as a broadcast if connected.
-     */
-    public static final String ACTION_CONNECTED = "org.kontalk.action.CONNECTED";
-
-    /**
-     * Broadcasted when we are disconnected from the server.
-     */
-    public static final String ACTION_DISCONNECTED = "org.kontalk.action.DISCONNECTED";
-
-    /**
-     * Broadcasted when the roster has been loaded.
-     * Send this intent to receive the same as a broadcast if the roster has
-     * already been loaded.
-     */
-    public static final String ACTION_ROSTER_LOADED = "org.kontalk.action.ROSTER_LOADED";
-
-    /**
-     * Send this intent to request roster status of any user.
-     * Broadcasted back in reply to requests.
-     */
-    public static final String ACTION_ROSTER_STATUS = "org.kontalk.action.ROSTER_STATUS";
-
-    /**
-     * Broadcasted when a presence stanza is received.
-     * Send this intent to broadcast presence.
-     * Send this intent with type="probe" to request a presence in the roster.
-     */
-    public static final String ACTION_PRESENCE = "org.kontalk.action.PRESENCE";
-
-    /**
-     * Broadcasted when a last activity iq is received.
-     * Send this intent to request a last activity.
-     */
-    public static final String ACTION_LAST_ACTIVITY = "org.kontalk.action.LAST_ACTIVITY";
 
     /**
      * Commence key pair regeneration.
@@ -259,156 +259,28 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * key, it will be installed in the default account.
      * Broadcasted when key pair regeneration has completed.
      */
+    @Deprecated
     public static final String ACTION_REGENERATE_KEYPAIR = "org.kontalk.action.REGEN_KEYPAIR";
 
     /**
      * Commence key pair import.
      */
+    @Deprecated
     public static final String ACTION_IMPORT_KEYPAIR = "org.kontalk.action.IMPORT_KEYPAIR";
 
-    /**
-     * Broadcasted when private key was uploaded to server.
-     * Send this intent to upload your private key.
-     */
-    public static final String ACTION_UPLOAD_PRIVATEKEY = "org.kontalk.action.UPLOAD_PRIVATEKEY";
-
-    /**
-     * Broadcasted when a presence subscription has been accepted.
-     * Send this intent to accept a presence subscription.
-     */
-    public static final String ACTION_SUBSCRIBED = "org.kontalk.action.SUBSCRIBED";
-
-    /**
-     * Broadcasted when receiving a vCard.
-     * Send this intent to update your own vCard.
-     */
-    public static final String ACTION_VCARD = "org.kontalk.action.VCARD";
-
-    /**
-     * Broadcasted when receiving a public key.
-     * Send this intent to request a public key.
-     */
-    public static final String ACTION_PUBLICKEY = "org.kontalk.action.PUBLICKEY";
-
-    /**
-     * Broadcasted when receiving the server list.
-     * Send this intent to request the server list.
-     */
-    public static final String ACTION_SERVERLIST = "org.kontalk.action.SERVERLIST";
-
-    /**
-     * Broadcasted when the blocklist is received.
-     * Send this intent to request the blocklist.
-     */
-    public static final String ACTION_BLOCKLIST = "org.kontalk.action.BLOCKLIST";
-
-    /**
-     * Broadcasted when a block request has ben accepted by the server.
-     */
-    public static final String ACTION_BLOCKED = "org.kontalk.action.BLOCKED";
-
-    /**
-     * Broadcasted when an unblock request has ben accepted by the server.
-     */
-    public static final String ACTION_UNBLOCKED = "org.kontalk.action.UNBLOCKED";
-
-    /**
-     * Broadcasted when receiving version information.
-     * Send this intent to request version information to an entity.
-     */
-    public static final String ACTION_VERSION = "org.kontalk.action.VERSION";
-
-    /**
-     * Send this intent to update the foreground service status of the message center.
-     */
-    public static final String ACTION_FOREGROUND = "org.kontalk.action.FOREGROUND";
-
-    /**
-     * Broadcasted when an upload service has been discovered.
-     */
-    public static final String ACTION_UPLOAD_SERVICE_FOUND = "org.kontalk.action.UPLOAD_SERVICE_FOUND";
-
-    /**
-     * Broadcasted when group creation has been confirmed by the server.
-     */
-    public static final String ACTION_GROUP_CREATED = "org.kontalk.action.GROUP_CREATED";
-
     // common parameters
-    public static final String EXTRA_PACKET_ID = "org.kontalk.packet.id";
-    public static final String EXTRA_TYPE = "org.kontalk.packet.type";
-    public static final String EXTRA_ERROR_CONDITION = "org.kontalk.packet.error.condition";
-    public static final String EXTRA_ERROR_EXCEPTION = "org.kontalk.packet.error.exception";
     public static final String EXTRA_FOREGROUND = "org.kontalk.foreground";
-
-    // use with org.kontalk.action.PRESENCE/SUBSCRIBED
-    public static final String EXTRA_FROM = "org.kontalk.stanza.from";
-    public static final String EXTRA_TO = "org.kontalk.stanza.to";
-    public static final String EXTRA_STATUS = "org.kontalk.presence.status";
-    public static final String EXTRA_SHOW = "org.kontalk.presence.show";
-    public static final String EXTRA_PRIORITY = "org.kontalk.presence.priority";
-    public static final String EXTRA_PRIVACY = "org.kontalk.presence.privacy";
-    public static final String EXTRA_FINGERPRINT = "org.kontalk.presence.fingerprint";
-    public static final String EXTRA_SUBSCRIBED_FROM = "org.kontalk.presence.subscribed.from";
-    public static final String EXTRA_SUBSCRIBED_TO = "org.kontalk.presence.subscribed.to";
-    public static final String EXTRA_STAMP = "org.kontalk.packet.delay";
-    public static final String EXTRA_GROUP_JID = "org.kontalk.stanza.groupJid";
-
-    // use with org.kontalk.action.ROSTER(_MATCH)
-    public static final String EXTRA_JIDLIST = "org.kontalk.roster.JIDList";
-    public static final String EXTRA_ROSTER_NAME = "org.kontalk.roster.name";
-
-    // use with org.kontalk.action.LAST_ACTIVITY
-    public static final String EXTRA_SECONDS = "org.kontalk.last.seconds";
-
-    // use with org.kontalk.action.VCARD
-    public static final String EXTRA_PUBLIC_KEY = "org.kontalk.vcard.publicKey";
-
-    // used with org.kontalk.action.BLOCKLIST
-    public static final String EXTRA_BLOCKLIST = "org.kontalk.blocklist";
 
     // used with org.kontalk.action.IMPORT_KEYPAIR
     public static final String EXTRA_KEYPACK = "org.kontalk.keypack";
     public static final String EXTRA_PASSPHRASE = "org.kontalk.passphrase";
 
-    // use with org.kontalk.action.UPLOAD_PRIVATEKEY
-    public static final String EXTRA_EXPORT_PASSPHRASE = "org.kontalk.export_passphrase";
-    public static final String EXTRA_TOKEN = "org.kontalk.token";
-
-    // used with org.kontalk.action.VERSION
-    public static final String EXTRA_VERSION_NAME = "org.kontalk.version.name";
-    public static final String EXTRA_VERSION_NUMBER = "org.kontalk.version.number";
-
     // used with org.kontalk.action.TEST
     public static final String EXTRA_TEST_CHECK_NETWORK = "org.kontalk.test.check_network";
-
-    // used for org.kontalk.presence.privacy.action extra
-    /**
-     * Accept subscription.
-     */
-    public static final int PRIVACY_ACCEPT = 0;
-    /**
-     * Block user.
-     */
-    public static final int PRIVACY_BLOCK = 1;
-    /**
-     * Unblock user.
-     */
-    public static final int PRIVACY_UNBLOCK = 2;
-    /**
-     * Reject subscription and block.
-     */
-    public static final int PRIVACY_REJECT = 3;
-
-    public static final String EXTRA_CHAT_STATE = "org.kontalk.message.chatState";
 
     // other
     public static final String PUSH_REGISTRATION_ID = "org.kontalk.PUSH_REGISTRATION_ID";
     private static final String DEFAULT_PUSH_PROVIDER = "gcm";
-
-    public static final int GROUP_COMMAND_CREATE = 1;
-    public static final int GROUP_COMMAND_SUBJECT = 2;
-    public static final int GROUP_COMMAND_PART = 3;
-    public static final int GROUP_COMMAND_MEMBERS = 4;
 
     /**
      * Minimal wakeup time.
@@ -784,6 +656,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // configure XMPP client
         configure();
 
+        BUS.register(this);
+
         // create the roster store
         mRosterStore = new SQLiteRosterStore(this);
 
@@ -899,26 +773,43 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return false;
     }
 
-    void sendIqWithReply(IQ packet, boolean bumpIdle, StanzaListener callback, ExceptionCallback errorCallback) {
+    void sendIqWithReply(IQ packet, boolean bumpIdle, final StanzaListener callback, @Nullable final ExceptionCallback errorCallback) {
         // reset idler if requested
         if (bumpIdle && mIdleHandler != null)
             mIdleHandler.reset();
 
         final XMPPConnection conn = mConnection;
         if (conn != null) {
-            try {
-                conn.sendIqWithResponseCallback(packet, callback, errorCallback);
-            }
-            catch (NotConnectedException e) {
-                Log.v(TAG, "not connected. Dropping packet " + packet);
-                if (errorCallback != null)
-                    errorCallback.processException(e);
-            }
-            catch (InterruptedException e) {
-                Log.v(TAG, "interrupted. Dropping packet " + packet);
-                if (errorCallback != null)
-                    errorCallback.processException(e);
-            }
+            conn.sendIqRequestAsync(packet).onSuccess(new SuccessCallback<IQ>() {
+                @Override
+                public void onSuccess(IQ result) {
+                    try {
+                        callback.processStanza(result);
+                    }
+                    catch (NotConnectedException e) {
+                        Log.v(TAG, "not connected. Dropping result packet " + result);
+                        if (errorCallback != null)
+                            errorCallback.processException(e);
+                    }
+                    catch (InterruptedException e) {
+                        Log.v(TAG, "interrupted. Dropping result packet " + result);
+                        if (errorCallback != null)
+                            errorCallback.processException(e);
+                    }
+                    catch (SmackException.NotLoggedInException e) {
+                        Log.v(TAG, "not logged in. Dropping result packet " + result);
+                        if (errorCallback != null)
+                            errorCallback.processException(e);
+                    }
+                }
+            })
+            .onError(new org.jivesoftware.smack.util.ExceptionCallback<Exception>() {
+                @Override
+                public void processException(Exception exception) {
+                    if (errorCallback != null)
+                        errorCallback.processException(exception);
+                }
+            });
         }
     }
 
@@ -942,12 +833,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     @Override
     public void onDestroy() {
         Log.d(TAG, "destroying message center");
+
+        BUS.unregister(this);
+
         quit(false);
+
         // deactivate ping manager
         AndroidAdaptiveServerPingManager.onDestroy();
+
         // destroy roster store
         mRosterStore.onDestroy();
         mRosterStore = null;
+
         // unregister screen off listener for manual inactivation
         unregisterInactivity();
 
@@ -1077,7 +974,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // stop any key pair regeneration service
         endKeyPairRegeneration();
 
-        broadcast(ACTION_DISCONNECTED);
+        BUS.removeAllStickyEvents();
+        BUS.post(new DisconnectedEvent());
 
         if (!restarting) {
             // release the wakelock if not restarting
@@ -1175,14 +1073,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     doConnect = handleImportKeyPair(intent);
                     break;
 
-                case ACTION_UPLOAD_PRIVATEKEY:
-                    doConnect = handleUploadPrivateKey(intent);
-                    break;
-
-                case ACTION_CONNECTED:
-                    doConnect = handleConnected();
-                    break;
-
                 case ACTION_RESTART:
                     doConnect = handleRestart();
                     break;
@@ -1193,62 +1083,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 case ACTION_PING:
                     doConnect = handlePing(canConnect);
-                    break;
-
-                case ACTION_MESSAGE:
-                    doConnect = handleMessage(intent);
-                    break;
-
-                case ACTION_ROSTER:
-                    doConnect = handleRoster(intent);
-                    break;
-
-                case ACTION_ROSTER_MATCH:
-                    doConnect = handleRosterMatch(intent);
-                    break;
-
-                case ACTION_ROSTER_LOADED:
-                    doConnect = handleRosterLoaded();
-                    break;
-
-                case ACTION_ROSTER_STATUS:
-                    doConnect = handleRosterStatus(intent);
-                    break;
-
-                case ACTION_PRESENCE:
-                    doConnect = handlePresence(intent);
-                    break;
-
-                case ACTION_LAST_ACTIVITY:
-                    doConnect = handleLastActivity(intent);
-                    break;
-
-                case ACTION_VCARD:
-                    doConnect = handleVCard(intent);
-                    break;
-
-                case ACTION_PUBLICKEY:
-                    doConnect = handlePublicKey(intent);
-                    break;
-
-                case ACTION_SERVERLIST:
-                    doConnect = handleServerList();
-                    break;
-
-                case ACTION_SUBSCRIBED:
-                    doConnect = handleSubscribed(intent);
-                    break;
-
-                case ACTION_BLOCKLIST:
-                    doConnect = handleBlocklist(intent);
-                    break;
-
-                case ACTION_VERSION:
-                    doConnect = handleVersion(intent);
-                    break;
-
-                case ACTION_FOREGROUND:
-                    doConnect = handleForeground();
                     break;
 
                 default:
@@ -1340,12 +1174,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @CommandHandler(name = ACTION_REGENERATE_KEYPAIR)
+    @Deprecated
     private boolean handleRegenerateKeyPair(Intent intent) {
         beginKeyPairRegeneration(intent.getStringExtra(EXTRA_PASSPHRASE));
         return true;
     }
 
     @CommandHandler(name = ACTION_IMPORT_KEYPAIR)
+    @Deprecated
     private boolean handleImportKeyPair(Intent intent) {
         // zip file with keys
         Uri file = intent.getParcelableExtra(EXTRA_KEYPACK);
@@ -1355,20 +1191,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return false;
     }
 
-    @CommandHandler(name = ACTION_UPLOAD_PRIVATEKEY)
-    private boolean handleUploadPrivateKey(Intent intent) {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleUploadPrivateKey(UploadPrivateKeyRequest request) {
         if (isConnected()) {
-            String exportPassprase = intent.getStringExtra(EXTRA_EXPORT_PASSPHRASE);
-            beginUploadPrivateKey(exportPassprase);
+            beginUploadPrivateKey(request.passphrase);
         }
-        return true;
-    }
-
-    @CommandHandler(name = ACTION_CONNECTED)
-    private boolean handleConnected() {
-        if (isConnected())
-            broadcast(ACTION_CONNECTED);
-        return false;
     }
 
     @CommandHandler(name = ACTION_RESTART)
@@ -1447,33 +1274,131 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
-    @CommandHandler(name = ACTION_MESSAGE)
-    private boolean handleMessage(Intent intent) {
-        if (isConnected())
-            sendMessage(intent.getExtras());
-        return intent.getBooleanExtra("org.kontalk.forceConnect", false);
-    }
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleUploadAttachment(UploadAttachmentRequest request) {
+        // take the first available upload service :)
+        IUploadService uploadService = getUploadService();
+        if (uploadService != null) {
+            CompositeMessage message = CompositeMessage.loadMessage(this, request.databaseId);
+            if (message == null) {
+                Log.w(TAG, "message not found: " + request.databaseId);
+                return;
+            }
 
-    @CommandHandler(name = ACTION_ROSTER)
-    private boolean handleRoster(Intent intent) {
-        if (isConnected()) {
-            Stanza iq = new RosterPacket();
-            String id = intent.getStringExtra(EXTRA_PACKET_ID);
-            iq.setStanzaId(id);
-            // iq default type is get
+            AttachmentComponent attachment = message.getComponent(AttachmentComponent.class);
+            if (attachment == null) {
+                // this is actually a bug
+                ReportingManager.logException(new IllegalArgumentException("no attachments in message!"));
+                Log.w(TAG, "no attachments in message " + request.databaseId);
+                return;
+            }
 
-            sendPacket(iq);
+            Uri preMediaUri = attachment.getLocalUri();
+            long fileLength;
+
+            try {
+                // encrypt the file if necessary
+                if (message.getSecurityFlags() != Coder.SECURITY_CLEARTEXT) {
+                    InputStream in = null;
+                    try {
+                        in = getContentResolver().openInputStream(preMediaUri);
+
+                        // retrieve conversation for encrypting
+                        Conversation conv = Conversation
+                            .loadFromUserId(this, message.getRecipient());
+                        if (conv == null) {
+                            // this is actually a bug
+                            ReportingManager.logException(new IllegalArgumentException("no conversation for message!"));
+                            Log.w(TAG, "unable to load conversation for encrypting message " + request.databaseId);
+                            return;
+                        }
+
+                        String[] encryptTo;
+                        if (conv.isGroupChat()) {
+                            encryptTo = conv.getGroupPeers();
+                        }
+                        else {
+                            encryptTo = new String[] { message.getRecipient() };
+                        }
+
+                        File encrypted = MessageUtils.encryptFile(this, in,
+                            SystemUtils.toString(encryptTo));
+                        fileLength = encrypted.length();
+                        preMediaUri = Uri.fromFile(encrypted);
+                    }
+                    finally {
+                        SystemUtils.closeStream(in);
+                    }
+                }
+                else {
+                    fileLength = MediaStorage.getLength(this, preMediaUri);
+                }
+            }
+            catch (Exception e) {
+                Log.w(TAG, "error preprocessing media: " + preMediaUri, e);
+                // simulate upload error
+                UploadService.errorNotification(this,
+                    getString(R.string.notify_ticker_upload_error),
+                    getString(R.string.notify_text_upload_error));
+                return;
+            }
+
+            final Uri mediaUri = preMediaUri;
+
+            // build a filename
+            String filename = CompositeMessage.getFilename(attachment.getMime(), new Date());
+            if (filename == null)
+                filename = MediaStorage.UNKNOWN_FILENAME;
+
+            // media message - start upload service
+            final String mime = attachment.getMime();
+            final long databaseId = request.databaseId;
+            final boolean encrypt = message.getSecurityFlags() != Coder.SECURITY_CLEARTEXT;
+            uploadService.getPostUrl(filename, fileLength, mime, new IUploadService.UrlCallback() {
+                @Override
+                public void callback(String putUrl, String getUrl) {
+                    // start upload intent service
+                    // TODO move to UploadService.start static method
+                    Intent i = new Intent(MessageCenterService.this, UploadService.class);
+                    i.setData(mediaUri);
+                    i.setAction(UploadService.ACTION_UPLOAD);
+                    i.putExtra(UploadService.EXTRA_POST_URL, putUrl);
+                    i.putExtra(UploadService.EXTRA_GET_URL, getUrl);
+                    i.putExtra(UploadService.EXTRA_DATABASE_ID, databaseId);
+                    i.putExtra(UploadService.EXTRA_MIME, mime);
+                    // delete original (actually it's the encrypted temp file) if we already encrypted it
+                    i.putExtra(UploadService.EXTRA_DELETE_ORIGINAL, encrypt);
+                    ContextCompat.startForegroundService(MessageCenterService.this, i);
+                }
+            });
+
         }
-        return false;
+        else {
+            // TODO warn user about this problem
+            Log.w(TAG, "no upload service - this shouldn't happen!");
+        }
     }
 
-    @CommandHandler(name = ACTION_ROSTER_MATCH)
-    private boolean handleRosterMatch(Intent intent) {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleSendMessage(SendMessageRequest request) {
+        if (isConnected()) {
+            sendMessage(request);
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleSendChatState(SendChatStateRequest request) {
+        if (isConnected()) {
+            sendChatState(request);
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleRosterMatch(RosterMatchRequest request) {
         if (isConnected()) {
             RosterMatch iq = new RosterMatch();
-            String[] list = intent.getStringArrayExtra(EXTRA_JIDLIST);
 
-            for (String item : list) {
+            for (String item : request.userIds) {
                 iq.addItem(item);
             }
 
@@ -1487,169 +1412,92 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 throw new RuntimeException(e);
             }
 
-            String id = intent.getStringExtra(EXTRA_PACKET_ID);
-            iq.setStanzaId(id);
+            iq.setStanzaId(request.id);
             // iq default type is get
 
-            RosterMatchListener listener = new RosterMatchListener(this, iq);
+            RosterMatchListener listener = new RosterMatchListener(iq);
             sendIqWithReply(iq, true, listener, listener);
         }
-        return false;
     }
 
-    @CommandHandler(name = ACTION_ROSTER_LOADED)
-    private boolean handleRosterLoaded() {
-        if (isConnected() && isRosterLoaded())
-            broadcast(ACTION_ROSTER_LOADED);
-        return false;
-    }
-
-    @CommandHandler(name = ACTION_ROSTER_STATUS)
-    private boolean handleRosterStatus(Intent intent) {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleRosterStatus(RosterStatusRequest request) {
         if (mRosterStore != null) {
-            final String to = intent.getStringExtra(EXTRA_TO);
-
-            RosterPacket.Item entry;
-            try {
-                entry = mRosterStore.getEntry(JidCreate.from(to));
-            }
-            catch (XmppStringprepException e) {
-                Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
-                // report it because it's a big deal
-                ReportingManager.logException(e);
-                return false;
-            }
+            RosterPacket.Item entry = mRosterStore.getEntry(request.jid);
             if (entry != null) {
-                final String id = intent.getStringExtra(EXTRA_PACKET_ID);
-
-                Intent i = new Intent(ACTION_ROSTER_STATUS);
-                i.putExtra(EXTRA_FROM, to);
-                i.putExtra(EXTRA_ROSTER_NAME, entry.getName());
-
                 RosterPacket.ItemType subscriptionType = entry.getItemType();
-                i.putExtra(EXTRA_SUBSCRIBED_FROM, subscriptionType == RosterPacket.ItemType.both ||
-                    subscriptionType == RosterPacket.ItemType.from);
-                i.putExtra(EXTRA_SUBSCRIBED_TO, subscriptionType == RosterPacket.ItemType.both ||
-                    subscriptionType == RosterPacket.ItemType.to);
+                boolean subscribedFrom = subscriptionType == RosterPacket.ItemType.both ||
+                    subscriptionType == RosterPacket.ItemType.from;
+                boolean subscribedTo = subscriptionType == RosterPacket.ItemType.both ||
+                    subscriptionType == RosterPacket.ItemType.to;
 
-                // to keep track of request-reply
-                i.putExtra(EXTRA_PACKET_ID, id);
-
-                mLocalBroadcastManager.sendBroadcast(i);
+                BUS.post(new RosterStatusEvent(entry.getJid(), entry.getName(),
+                    subscribedFrom, subscribedTo, request.id));
             }
         }
-        return false;
     }
 
-    @CommandHandler(name = ACTION_PRESENCE)
-    private boolean handlePresence(Intent intent) {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handlePresence(PresenceRequest request) {
         if (isConnected()) {
-            final String id = intent.getStringExtra(EXTRA_PACKET_ID);
-            String type = intent.getStringExtra(EXTRA_TYPE);
-            final String to = intent.getStringExtra(EXTRA_TO);
+            final Roster roster = getRoster();
 
-            if ("probe".equals(type)) {
-                final Roster roster = getRoster();
-
-                if (to == null) {
-                    for (RosterEntry entry : roster.getEntries()) {
-                        broadcastPresence(roster, entry, id);
-                    }
-
-                    // broadcast our own presence
-                    broadcastMyPresence(id);
+            if (request.jid == null) {
+                for (RosterEntry entry : roster.getEntries()) {
+                    BUS.post(replyPresenceRequest(roster, entry,
+                        entry.getJid(), request.id));
                 }
-                else {
-                    final BareJid jid;
-                    try {
-                        jid = JidCreate.bareFrom(to);
-                        final RosterEntry entry = roster.getEntry(jid);
-                        queueTask(new Runnable() {
-                            @Override
-                            public void run() {
-                                broadcastPresence(roster, entry, jid, id);
-                            }
-                        });
-                    }
-                    catch (XmppStringprepException e) {
-                        Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
-                        // report it because it's a big deal
-                        ReportingManager.logException(e);
-                    }
-                }
+
+                // broadcast our own presence
+                BUS.post(replyMyPresenceRequest(request.id));
             }
             else {
-                // FIXME isn't this somewhat the same as createPresence?
-                String show = intent.getStringExtra(EXTRA_SHOW);
-                Presence p = new Presence(type != null ? Presence.Type.valueOf(type) : Presence.Type.available);
-                p.setStanzaId(id);
-                if (to != null)
-                    p.setTo(to);
-                if (intent.hasExtra(EXTRA_PRIORITY))
-                    p.setPriority(intent.getIntExtra(EXTRA_PRIORITY, 0));
-                String status = intent.getStringExtra(EXTRA_STATUS);
-                if (!TextUtils.isEmpty(status))
-                    p.setStatus(status);
-                if (show != null)
-                    p.setMode(Presence.Mode.valueOf(show));
-
-                sendPacket(p);
+                final BareJid jid = request.jid.asBareJid();
+                final RosterEntry entry = roster.getEntry(jid);
+                BUS.post(replyPresenceRequest(roster, entry, jid, request.id));
             }
         }
-
-        return false;
     }
 
-    @CommandHandler(name = ACTION_LAST_ACTIVITY)
-    private boolean handleLastActivity(Intent intent) {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleSubscribe(SubscribeRequest request) {
         if (isConnected()) {
-            LastActivity p = new LastActivity();
+            sendPacket(new Presence(request.jid, Presence.Type.subscribe));
+        }
+    }
 
-            p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
-            p.setTo(intent.getStringExtra(EXTRA_TO));
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleUnsubscribe(UnsubscribeRequest request) {
+        if (isConnected()) {
+            sendPacket(new Presence(request.jid, Presence.Type.unsubscribe));
+        }
+    }
 
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleUpdateStatus(UpdateStatusRequest request) {
+        if (isConnected()) {
+            sendPacket(new Presence(Presence.Type.available,
+                request.status, 0, null));
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleLastActivity(LastActivityRequest request) {
+        if (isConnected()) {
+            LastActivity p = new LastActivity(request.jid);
+            p.setStanzaId(request.id);
             sendIqWithReply(p, true, mLastActivityListener, mLastActivityListener);
         }
-        return false;
     }
 
-    @CommandHandler(name = ACTION_VCARD)
-    private boolean handleVCard(Intent intent) {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handlePublicKey(PublicKeyRequest request) {
         if (isConnected()) {
-            VCard4 p = new VCard4();
-            String to = intent.getStringExtra(EXTRA_TO);
-            try {
-                p.setTo(JidCreate.from(to));
-            }
-            catch (XmppStringprepException e) {
-                Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
-                // report it because it's a big deal
-                ReportingManager.logException(e);
-                return false;
-            }
-
-            sendPacket(p);
-        }
-        return false;
-    }
-
-    @CommandHandler(name = ACTION_PUBLICKEY)
-    private boolean handlePublicKey(Intent intent) {
-        if (isConnected()) {
-            String to = intent.getStringExtra(EXTRA_TO);
-            if (to != null) {
+            if (request.jid != null) {
                 // request public key for a specific user
                 PublicKeyPublish p = new PublicKeyPublish();
-                p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
-                try {
-                    p.setTo(JidCreate.from(to));
-                }
-                catch (XmppStringprepException e) {
-                    Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
-                    // report it because it's a big deal
-                    ReportingManager.logException(e);
-                    return false;
-                }
+                p.setTo(request.jid);
+                p.setStanzaId(request.id);
 
                 PublicKeyListener listener = new PublicKeyListener(this, p);
                 sendIqWithReply(p, true, listener, listener);
@@ -1658,7 +1506,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 // request public keys for the whole roster
                 Collection<RosterEntry> buddies = getRoster().getEntries();
                 for (RosterEntry buddy : buddies) {
-                    String stanzaId = intent.getStringExtra(EXTRA_PACKET_ID);
 
                     final PublicKeyPublish p = new PublicKeyPublish();
                     p.setTo(buddy.getJid());
@@ -1667,6 +1514,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     ExceptionCallback exListener;
                     final PublicKeyListener listener = new PublicKeyListener(this, p);
 
+                    String stanzaId = request.id;
                     if (stanzaId != null) {
                         // add a prefix to the ID
                         // this was done to properly create request/response pairs
@@ -1709,17 +1557,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 // request our own public key (odd eh?)
                 PublicKeyPublish p = new PublicKeyPublish();
-                p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
+                p.setStanzaId(request.id);
                 p.setTo(mConnection.getUser().asBareJid());
                 PublicKeyListener listener = new PublicKeyListener(this, p);
                 sendIqWithReply(p, true, listener, listener);
             }
         }
-        return false;
     }
 
-    @CommandHandler(name = ACTION_SERVERLIST)
-    private boolean handleServerList() {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleServerList(ServerListRequest request) {
         if (isConnected()) {
             ServerlistCommand p = new ServerlistCommand();
             try {
@@ -1729,70 +1576,53 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
                 // report it because it's a big deal
                 ReportingManager.logException(e);
-                return false;
+                return;
             }
 
             StanzaFilter filter = new StanzaIdFilter(p.getStanzaId());
             // TODO cache the listener (it shouldn't change)
             mConnection.addAsyncStanzaListener(new StanzaListener() {
                 public void processStanza(Stanza packet) throws NotConnectedException {
-                    Intent i = new Intent(ACTION_SERVERLIST);
-                    List<String> _items = ((ServerlistCommand.ServerlistCommandData) packet)
-                        .getItems();
-                    if (_items != null && _items.size() != 0 && packet.getError() == null) {
-                        String[] items = new String[_items.size()];
-                        _items.toArray(items);
-
-                        i.putExtra(EXTRA_FROM, packet.getFrom().toString());
-                        i.putExtra(EXTRA_JIDLIST, items);
+                    if (packet.getError() == null) {
+                        List<String> servers = ((ServerlistCommand.ServerlistCommandData) packet)
+                            .getItems();
+                        if (servers != null) {
+                            BUS.post(new ServerListEvent(servers
+                                .toArray(new String[0]), packet.getStanzaId()));
+                        }
+                        else {
+                            BUS.post(new ServerListEvent(new XMPPException.XMPPErrorException(packet, StanzaError
+                                .getBuilder(StanzaError.Condition.internal_server_error).build()), packet.getStanzaId()));
+                        }
                     }
-                    mLocalBroadcastManager.sendBroadcast(i);
                 }
             }, filter);
 
             sendPacket(p);
         }
-        return false;
     }
 
-    @CommandHandler(name = ACTION_SUBSCRIBED)
-    private boolean handleSubscribed(Intent intent) {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleSetUserPrivacy(SetUserPrivacyRequest request) {
         if (isConnected()) {
-            sendSubscriptionReply(intent.getStringExtra(EXTRA_TO),
-                intent.getStringExtra(EXTRA_PACKET_ID),
-                intent.getIntExtra(EXTRA_PRIVACY, PRIVACY_ACCEPT));
+            setUserPrivacy(request.jid, request.command);
         }
-        return false;
     }
 
-    @CommandHandler(name = ACTION_BLOCKLIST)
-    private boolean handleBlocklist(Intent intent) {
-        if (isConnected())
-            requestBlocklist(intent.getStringExtra(EXTRA_PACKET_ID));
-        return false;
-    }
-
-    @CommandHandler(name = ACTION_VERSION)
-    private boolean handleVersion(Intent intent) {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleBlocklist(BlocklistRequest request) {
         if (isConnected()) {
-            try {
-                Version version = new Version(JidCreate.from(intent.getStringExtra(EXTRA_TO)));
-                version.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
-                sendPacket(version);
-            }
-            catch (XmppStringprepException e) {
-                Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
-                // report it because it's a big deal
-                ReportingManager.logException(e);
-            }
+            requestBlocklist(request.id);
         }
-        return false;
     }
 
-    @CommandHandler(name = ACTION_FOREGROUND)
-    private boolean handleForeground() {
-        setForeground(true);
-        return false;
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void handleVersion(VersionRequest request) {
+        if (isConnected()) {
+            Version version = new Version(request.jid);
+            version.setStanzaId(request.id);
+            sendPacket(version);
+        }
     }
 
     /**
@@ -1899,10 +1729,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         connection.addSyncStanzaListener(new MessageListener(this), filter);
 
         // this is used as a reply callback
-        mLastActivityListener = new LastActivityListener(this);
+        mLastActivityListener = new LastActivityListener();
 
         filter = new StanzaTypeFilter(Version.class);
-        connection.addAsyncStanzaListener(new VersionListener(this), filter);
+        connection.addAsyncStanzaListener(new VersionListener(), filter);
     }
 
     @Override
@@ -1961,7 +1791,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // helper is not needed any more
         mHelper = null;
 
-        broadcast(ACTION_CONNECTED);
+        BUS.removeStickyEvent(ConnectedEvent.class);
+        BUS.postSticky(new ConnectedEvent());
 
         // we can now release any pending push notification
         Preferences.setLastPushNotification(-1);
@@ -2168,56 +1999,31 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             !entry.isSubscriptionPending());
     }
 
-    private void broadcastPresence(Roster roster, RosterEntry entry, String id) {
-        broadcastPresence(roster, entry, entry.getJid(), id);
-    }
-
-    private void broadcastPresence(Roster roster, RosterEntry entry, BareJid jid, String id) {
-        // this method might be called async
-        final LocalBroadcastManager lbm = mLocalBroadcastManager;
-        if (lbm == null)
-            return;
-
-        Intent i;
+    private PresenceEvent replyPresenceRequest(Roster roster, @Nullable RosterEntry entry, BareJid jid, String id) {
+        PresenceEvent event;
 
         // asking our own presence
         if (Authenticator.isSelfJID(this, jid)) {
-            broadcastMyPresence(id);
-            return;
+            return replyMyPresenceRequest(id);
         }
 
         // entry present and not pending subscription
         else if (isRosterEntrySubscribed(entry)) {
             // roster entry found, send presence probe
             Presence presence = roster.getPresence(jid);
-            i = PresenceListener.createIntent(this, presence, entry);
+            event = PresenceListener.createEvent(this, presence, entry, id);
         }
         else {
             // null type indicates no roster entry found or not authorized
-            i = new Intent(ACTION_PRESENCE);
-            i.putExtra(EXTRA_FROM, jid.toString());
+            event = new NoPresenceEvent(jid, id);
         }
 
-        // to keep track of request-reply
-        i.putExtra(EXTRA_PACKET_ID, id);
-        lbm.sendBroadcast(i);
+        return event;
     }
 
-    /**
-     * A special method to broadcast our own presence.
-     */
-    private void broadcastMyPresence(String id) {
-        Presence presence = createPresence(null);
-        presence.setFrom(mConnection.getUser());
-
-        Intent i = PresenceListener.createIntent(this, presence, null);
-        i.putExtra(EXTRA_FINGERPRINT, getMyFingerprint());
-        i.putExtra(EXTRA_SUBSCRIBED_FROM, true);
-        i.putExtra(EXTRA_SUBSCRIBED_TO, true);
-
-        // to keep track of request-reply
-        i.putExtra(EXTRA_PACKET_ID, id);
-        mLocalBroadcastManager.sendBroadcast(i);
+    private PresenceEvent replyMyPresenceRequest(String id) {
+        return new UserOnlineEvent(mConnection.getUser(), null, 0,
+            null, null, null, true, true, getMyFingerprint(), id);
     }
 
     private String getMyFingerprint() {
@@ -2232,22 +2038,27 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
-    private void sendSubscriptionReply(String to, String packetId, int action) {
-
-        if (action == PRIVACY_ACCEPT) {
-            // standard response: subscribed
-            Presence p = new Presence(Presence.Type.subscribed);
-            p.setStanzaId(packetId);
-            p.setTo(to);
-            sendPacket(p);
-
-            // send a subscription request anyway
-            p = new Presence(Presence.Type.subscribe);
-            p.setTo(to);
-            sendPacket(p);
-        }
-        else if (action == PRIVACY_BLOCK || action == PRIVACY_UNBLOCK || action == PRIVACY_REJECT) {
-            sendPrivacyListCommand(to, action);
+    private void setUserPrivacy(BareJid to, PrivacyCommand command) {
+        switch (command) {
+            case ACCEPT: {
+                // standard response: subscribed
+                sendPacket(new Presence(to, Presence.Type.subscribed));
+                // send a subscription request anyway
+                sendPacket(new Presence(to, Presence.Type.subscribe));
+                break;
+            }
+            case REJECT: {
+                Presence unsub = new Presence(Presence.Type.unsubscribe);
+                unsub.setTo(to);
+                sendPacket(unsub);
+                // will also block
+            }
+            case BLOCK:
+                blockUser(to);
+                break;
+            case UNBLOCK:
+                unblockUser(to);
+                break;
         }
 
         // clear the request status
@@ -2255,92 +2066,416 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         values.put(Threads.REQUEST_STATUS, Threads.REQUEST_NONE);
 
         getContentResolver().update(Requests.CONTENT_URI,
-                values, Threads.PEER + "=?", new String[]{to});
+            values, Threads.PEER + "=?", new String[]{to.toString()});
     }
 
-    private void sendPrivacyListCommand(final String to, final int action) {
-        IQ p;
+    private void blockUser(final BareJid jid) {
+        sendIqWithReply(BlockingCommand.block(jid.toString()), true, new StanzaListener() {
+                @Override
+                public void processStanza(Stanza packet) throws NotConnectedException, InterruptedException, SmackException.NotLoggedInException {
+                    if (packet instanceof IQ && ((IQ) packet).getType() == IQ.Type.result) {
+                        UsersProvider.setBlockStatus(MessageCenterService.this, jid.toString(), true);
 
-        if (action == PRIVACY_BLOCK || action == PRIVACY_REJECT) {
-            // blocking command: block
-            p = BlockingCommand.block(to);
-        }
-        else if (action == PRIVACY_UNBLOCK) {
-            // blocking command: block
-            p = BlockingCommand.unblock(to);
-        }
-        else {
-            // unsupported action
-            throw new IllegalArgumentException("unsupported action: " + action);
-        }
+                        // invalidate cached contact
+                        Contact.invalidate(jid.toString());
 
-        if (action == PRIVACY_REJECT) {
-            // send unsubscribed too
-            Presence unsub = new Presence(Presence.Type.unsubscribe);
-            unsub.setTo(to);
-            sendPacket(unsub);
-        }
+                        // post result
+                        BUS.post(new UserBlockedEvent(jid));
+                    }
+                }
+            }, null);
+    }
 
-        // setup packet filter for response
-        StanzaFilter filter = new StanzaIdFilter(p.getStanzaId());
-        StanzaListener listener = new StanzaListener() {
-            public void processStanza(Stanza packet) {
-
+    private void unblockUser(final BareJid jid) {
+        sendIqWithReply(BlockingCommand.unblock(jid.toString()), true, new StanzaListener() {
+            @Override
+            public void processStanza(Stanza packet) throws NotConnectedException, InterruptedException, SmackException.NotLoggedInException {
                 if (packet instanceof IQ && ((IQ) packet).getType() == IQ.Type.result) {
-                    UsersProvider.setBlockStatus(MessageCenterService.this,
-                        to, action == PRIVACY_BLOCK || action == PRIVACY_REJECT);
+                    UsersProvider.setBlockStatus(MessageCenterService.this, jid.toString(), false);
 
                     // invalidate cached contact
-                    Contact.invalidate(to);
+                    Contact.invalidate(jid.toString());
 
-                    // broadcast result
-                    broadcast((action == PRIVACY_BLOCK || action == PRIVACY_REJECT) ?
-                            ACTION_BLOCKED : ACTION_UNBLOCKED,
-                        EXTRA_FROM, to);
+                    // post result
+                    BUS.post(new UserUnblockedEvent(jid));
                 }
-
             }
-        };
-        mConnection.addAsyncStanzaListener(listener, filter);
-
-        // send IQ
-        sendPacket(p);
+        }, null);
     }
 
-    private void requestBlocklist(String id) {
-        Stanza p = BlockingCommand.blocklist();
+    private void requestBlocklist(final String id) {
+        IQ p = BlockingCommand.blocklist();
         if (id != null)
             p.setStanzaId(id);
 
-        // listen for response (TODO cache the listener, it shouldn't change)
-        StanzaFilter idFilter = new StanzaIdFilter(p.getStanzaId());
-        mConnection.addAsyncStanzaListener(new StanzaListener() {
-            public void processStanza(Stanza packet) {
-                // we don't need this listener anymore
-                mConnection.removeAsyncStanzaListener(this);
-
+        sendIqWithReply(p, true, new StanzaListener() {
+            @Override
+            public void processStanza(Stanza packet) throws NotConnectedException, InterruptedException, SmackException.NotLoggedInException {
                 if (packet instanceof BlockingCommand) {
                     BlockingCommand blocklist = (BlockingCommand) packet;
-
-                    Intent i = new Intent(ACTION_BLOCKLIST);
-                    i.putExtra(EXTRA_PACKET_ID, blocklist.getStanzaId());
-
-                    List<String> _list = blocklist.getItems();
-                    if (_list != null) {
-                        String[] list = new String[_list.size()];
-                        i.putExtra(EXTRA_BLOCKLIST, _list.toArray(list));
-                    }
-
-                    Log.v(TAG, "broadcasting blocklist: " + i);
-                    mLocalBroadcastManager.sendBroadcast(i);
+                    List<String> blocked = blocklist.getItems();
+                    BUS.post(new BlocklistEvent(blocked != null ? XMPPUtils
+                        .parseJids(blocked) : new Jid[0], blocklist.getStanzaId()));
                 }
-
             }
-        }, idFilter);
-
-        sendPacket(p);
+        }, new ExceptionCallback() {
+            @Override
+            public void processException(Exception exception) {
+                BUS.post(new BlocklistEvent(exception, id));
+            }
+        });
     }
 
+    private void sendChatState(SendChatStateRequest request) {
+        Stanza packet;
+
+        if (request.group) {
+            GroupInfo groupInfo = MessagesProviderClient.getGroupInfo(this, request.to.toString());
+            if (groupInfo == null) {
+                Log.w(TAG, "group not found: " + request.to);
+                return;
+            }
+
+            Jid[] toGroup = XMPPUtils.parseJids(MessagesProviderClient
+                .getGroupMembers(this, request.to.toString(), 0));
+
+            GroupController groupController = GroupControllerFactory
+                .createController(groupInfo.getType(), mConnection, this);
+
+            // check if we can send messages even with some members with no subscriptipn
+            if (!groupController.canSendWithNoSubscription()) {
+                for (Jid jid : toGroup) {
+                    if (!isAuthorized(jid.asBareJid())) {
+                        Log.i(TAG, "not subscribed to " + jid + ", not sending group message");
+                        return;
+                    }
+                }
+            }
+
+            GroupCommand groupCommand = groupController.info();
+            // FIXME careful to this, might need abstraction
+            groupCommand.setMembers(toGroup);
+            groupCommand.setGroupJid(groupInfo.getJid());
+
+            packet = groupController.beforeEncryption(groupCommand, null);
+
+            // TODO encryption
+
+            // post-process for group delivery
+            packet = groupController.afterEncryption(groupCommand, packet, packet);
+        }
+        else {
+            // message stanza
+            packet = new org.jivesoftware.smack.packet.Message(request.to,
+                org.jivesoftware.smack.packet.Message.Type.chat);
+        }
+
+        packet.setStanzaId(request.id);
+        packet.addExtension(new ChatStateExtension(request.chatState));
+
+        sendPacket(packet);
+    }
+
+    private void sendMessage(SendMessageRequest request) {
+        if (!isRosterLoaded()) {
+            Log.d(TAG, "roster not loaded yet, not sending message");
+            return;
+        }
+
+        CompositeMessage message = CompositeMessage.loadMessage(this, request.databaseId);
+        if (message == null) {
+            Log.w(TAG, "message not found: " + request.databaseId);
+            return;
+        }
+
+        Conversation conv = Conversation.loadFromUserId(this, message.getRecipient());
+        if (conv == null) {
+            // this is actually a bug
+            ReportingManager.logException(new IllegalArgumentException("no conversation for message!"));
+            Log.w(TAG, "unable to load conversation for encrypting message " + request.databaseId);
+            return;
+        }
+
+        Jid to;
+        // used for verifying isPaused()
+        Jid convJid;
+        Jid[] toGroup;
+        GroupController groupController = null;
+        GroupInfo groupInfo = null;
+
+        final GroupComponent group = message.getComponent(GroupComponent.class);
+        if (group != null) {
+            groupInfo = group.getContent();
+
+            toGroup = XMPPUtils.parseJids(conv.getGroupPeers());
+            convJid = groupInfo.getJid();
+
+            groupController = GroupControllerFactory
+                .createController(groupInfo.getType(), mConnection, this);
+            // the to field will be filled by the group controller
+            to = null;
+
+            // check if we can send messages even with some members with no subscriptipn
+            if (!groupController.canSendWithNoSubscription()) {
+                for (Jid jid : toGroup) {
+                    if (!isAuthorized(jid.asBareJid())) {
+                        Log.i(TAG, "not subscribed to " + jid + ", not sending group message");
+                        return;
+                    }
+                }
+            }
+        }
+        else {
+            to = JidCreate.fromOrThrowUnchecked(message.getRecipient());
+            toGroup = new Jid[]{to};
+            convJid = to;
+        }
+
+        PersonalKey key;
+        try {
+            key = Kontalk.get().getPersonalKey();
+        }
+        catch (Exception pgpe) {
+            Log.w(TAG, "no personal key available - not allowed to send messages");
+            // warn user: message will not be sent
+            if (MessagingNotification.isPaused(convJid)) {
+                Toast.makeText(this, R.string.warn_no_personal_key,
+                    Toast.LENGTH_LONG).show();
+            }
+            return;
+        }
+
+        // check if message is already pending
+        final long msgId = request.databaseId;
+        if (mWaitingReceipt.contains(msgId)) {
+            Log.v(TAG, "message already queued and waiting - dropping");
+            return;
+        }
+
+        final String id = message.getId();
+
+        // hold on to message center while we send the message
+        mIdleHandler.hold(false);
+
+        Stanza m, originalStanza;
+
+        // pre-process message for group delivery
+        GroupCommand groupCommand = null;
+        if (groupController != null) {
+            GroupCommandComponent groupCmdComponent = message.getComponent(GroupCommandComponent.class);
+            if (groupCmdComponent != null) {
+                if (groupCmdComponent.isCreateCommand()) {
+                    groupCommand = groupController.createGroup();
+                    ((CreateGroupCommand) groupCommand).setSubject(groupInfo.getSubject());
+                }
+                else if (groupCmdComponent.isSetSubjectCommand()) {
+                    groupCommand = groupController.setSubject();
+                    ((SetSubjectCommand) groupCommand).setSubject(groupInfo.getSubject());
+                }
+                else if (groupCmdComponent.isAddOrRemoveCommand()) {
+                    groupCommand = groupController.addRemoveMembers();
+                    ((AddRemoveMembersCommand) groupCommand).setSubject(groupInfo.getSubject());
+                    ((AddRemoveMembersCommand) groupCommand)
+                        .setAddedMembers(XMPPUtils.parseJids(groupCmdComponent.getAddedMembers()));
+                    ((AddRemoveMembersCommand) groupCommand)
+                        .setRemovedMembers(XMPPUtils.parseJids(groupCmdComponent.getRemovedMembers()));
+                }
+                else if (groupCmdComponent.isPartCommand()) {
+                    groupCommand = groupController.part();
+                    ((PartCommand) groupCommand).setDatabaseId(msgId);
+                }
+            }
+
+            if (groupCommand == null) {
+                groupCommand = groupController.info();
+            }
+
+            // FIXME careful to this, might need abstraction
+            groupCommand.setMembers(toGroup);
+            groupCommand.setGroupJid(groupInfo.getJid());
+
+            m = groupController.beforeEncryption(groupCommand, null);
+        }
+        else {
+            // message stanza
+            m = new org.jivesoftware.smack.packet.Message();
+        }
+
+        originalStanza = m;
+
+        // if the group manager doesn't return a <message/> (e.g. MUC)
+        boolean isMessage = (m instanceof org.jivesoftware.smack.packet.Message);
+
+        if (to != null)
+            m.setTo(to);
+
+        // set message id
+        m.setStanzaId(id);
+
+        // request ack if we are sending a message to a non-group chat
+        // TODO this will change when we'll support group chat ack
+        boolean ackRequest = isMessage && groupController == null;
+
+        if (isMessage) {
+            org.jivesoftware.smack.packet.Message msg = (org.jivesoftware.smack.packet.Message) m;
+            msg.setType(org.jivesoftware.smack.packet.Message.Type.chat);
+
+            if (!(request instanceof SendDeliveryReceiptRequest)) {
+                TextComponent body = message.getComponent(TextComponent.class);
+                if (body != null)
+                    msg.setBody(body.getContent());
+
+                // generate preview if needed
+                AttachmentComponent attachment = message.getComponent(AttachmentComponent.class);
+                if (attachment != null) {
+                    if (attachment.getLocalUri() != null && attachment.getPreviewFile() != null) {
+                        if (!attachment.getPreviewFile().isFile()) {
+                            try {
+                                MediaStorage.cacheThumbnail(this, attachment.getLocalUri(),
+                                    attachment.getPreviewFile(), true);
+                            }
+                            catch (Exception e) {
+                                Log.w(TAG, "unable to generate preview for media", e);
+                            }
+                        }
+
+                        msg.addExtension(new BitsOfBinary(MediaStorage.THUMBNAIL_MIME_NETWORK,
+                            attachment.getPreviewFile()));
+                    }
+
+                    // add download url if present
+                    if (attachment.getFetchUrl() != null) {
+                        // in this case we will need the length too
+                        msg.addExtension(new OutOfBandData(attachment.getFetchUrl(),
+                            attachment.getMime(), attachment.getLength(), attachment.isEncrypted()));
+                    }
+                }
+
+                // add location data if present
+                LocationComponent location = message.getComponent(LocationComponent.class);
+                if (location != null) {
+                    double lat = location.getLatitude();
+                    double lon = location.getLongitude();
+                    UserLocation userLocation = new UserLocation(lat, lon,
+                        location.getText(), location.getStreet());
+                    m.addExtension(userLocation);
+                }
+
+                // add referenced message if any
+                InReplyToComponent inReplyTo = message.getComponent(InReplyToComponent.class);
+                if (inReplyTo != null) {
+                    ReferencedMessage referencedMsg = inReplyTo.getContent();
+                    if (referencedMsg != null) {
+                        DelayInformation fwdDelay = new DelayInformation(new Date(referencedMsg.getTimestamp()));
+
+                        try {
+                            org.jivesoftware.smack.packet.Message fwdMessage =
+                                new org.jivesoftware.smack.packet.Message(referencedMsg.getPeer(),
+                                    referencedMsg.getTextContent());
+                            fwdMessage.setStanzaId(referencedMsg.getMessageId());
+
+                            m.addExtension(new Forwarded(fwdDelay, fwdMessage));
+                        }
+                        catch (XmppStringprepException e) {
+                            Log.w(TAG, "unable to parse referenced message JID: " + referencedMsg.getPeer(), e);
+                            // this is serious, report it
+                            ReportingManager.logException(e);
+                        }
+                    }
+                }
+            }
+
+            if (message.getSecurityFlags() != Coder.SECURITY_CLEARTEXT) {
+                byte[] toMessage = null;
+                try {
+                    Coder coder = Keyring.getEncryptCoder(this, mServer, key, SystemUtils.toString(toGroup));
+                    if (coder != null) {
+
+                        // no extensions, create a simple text version to save space
+                        if (msg.getExtensions().size() == 0) {
+                            toMessage = coder.encryptText(msg.getBody());
+                        }
+
+                        // some extension, encrypt whole stanza just to be sure
+                        else {
+                            toMessage = coder.encryptStanza(msg.toXML(null));
+                        }
+
+                        org.jivesoftware.smack.packet.Message encMsg =
+                            new org.jivesoftware.smack.packet.Message(msg.getTo(), msg.getType());
+
+                        encMsg.setBody(getString(R.string.text_encrypted));
+                        encMsg.setStanzaId(m.getStanzaId());
+                        encMsg.addExtension(new E2EEncryption(toMessage));
+
+                        // save the unencrypted stanza for later
+                        originalStanza = msg;
+                        m = encMsg;
+                    }
+                }
+
+                // FIXME there is some very ugly code here
+                // FIXME notify just once per session (store in Kontalk instance?)
+
+                catch (IllegalArgumentException noPublicKey) {
+                    // warn user: message will be not sent
+                    if (MessagingNotification.isPaused(convJid)) {
+                        Toast.makeText(this, R.string.warn_no_public_key,
+                            Toast.LENGTH_LONG).show();
+                    }
+                }
+                catch (GeneralSecurityException e) {
+                    // warn user: message will not be sent
+                    if (MessagingNotification.isPaused(convJid)) {
+                        Toast.makeText(this, R.string.warn_encryption_failed,
+                            Toast.LENGTH_LONG).show();
+                    }
+                }
+
+                if (toMessage == null) {
+                    // message was not encrypted for some reason, mark it pending user review
+                    MessageUpdater.forMessage(this, msgId)
+                        .setStatus(Messages.STATUS_PENDING)
+                        .commit();
+
+                    mIdleHandler.release();
+                    return;
+                }
+            }
+        }
+
+        // post-process for group delivery
+        if (groupController != null) {
+            m = groupController.afterEncryption(groupCommand, m, originalStanza);
+        }
+
+        if (isMessage) {
+            // received receipt
+            if (request instanceof SendDeliveryReceiptRequest) {
+                m.addExtension(new DeliveryReceipt(message.getId()));
+            }
+            else {
+                // add active chat state if this is a message
+                m.addExtension(new ChatStateExtension(ChatState.active));
+
+                // add receipt if necessary
+                if (ackRequest)
+                    DeliveryReceiptRequest.addTo((org.jivesoftware.smack.packet.Message) m);
+            }
+
+            sendMessage((org.jivesoftware.smack.packet.Message) m, msgId);
+        }
+        else {
+            // no wake lock management in this case
+            sendPacket(m);
+        }
+
+        // the real sendMessage has its own hold/release pair
+        mIdleHandler.release();
+    }
+
+    /*
+    @Deprecated
     private void sendMessage(Bundle data) {
         if (!isRosterLoaded()) {
             Log.d(TAG, "roster not loaded yet, not sending message");
@@ -2754,6 +2889,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             mIdleHandler.release();
         }
     }
+    */
 
     private void ensureUploadServices() {
         if (mUploadServices == null)
@@ -2763,13 +2899,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     void addUploadService(IUploadService service) {
         ensureUploadServices();
         mUploadServices.add(service);
-        broadcast(ACTION_UPLOAD_SERVICE_FOUND);
+        BUS.post(new UploadServiceFoundEvent());
     }
 
     void addUploadService(IUploadService service, int priority) {
         ensureUploadServices();
         mUploadServices.add(priority, service);
-        broadcast(ACTION_UPLOAD_SERVICE_FOUND);
+        BUS.post(new UploadServiceFoundEvent());
     }
 
     /**
@@ -2900,6 +3036,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return Preferences.getOfflineMode();
     }
 
+    public static EventBus bus() {
+        return BUS;
+    }
+
     private static Intent getBaseIntent(Context context) {
         return new Intent(context, MessageCenterService.class);
     }
@@ -3002,307 +3142,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /**
      * Broadcasts our presence to the server.
      */
-    public static void updateStatus(final Context context) {
-        // FIXME this is what sendPresence already does
-        Intent i = getBaseIntent(context);
-        i.setAction(ACTION_PRESENCE);
-        i.putExtra(EXTRA_STATUS, Preferences.getStatusMessage());
-        startForegroundIfNeeded(context, i);
-    }
-
-    /** Sends a previously prepared message. */
-    public static void sendMessage(final Context context, Bundle data) {
-        Intent i = MessageCenterService.getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_MESSAGE);
-        i.putExtras(data);
-        startForegroundIfNeeded(context, i);
-    }
-
-    /**
-     * Sends a chat state message.
-     */
-    public static void sendChatState(final Context context, String to, ChatState state) {
-        Intent i = getBaseIntent(context);
-        i.setAction(ACTION_MESSAGE);
-        i.putExtra("org.kontalk.message.to", to);
-        i.putExtra(EXTRA_CHAT_STATE, state.name());
-        i.putExtra("org.kontalk.message.standalone", true);
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void sendGroupChatState(final Context context, String groupJid, String[] to, ChatState state) {
-        Intent i = getBaseIntent(context);
-        i.setAction(ACTION_MESSAGE);
-        i.putExtra("org.kontalk.message.to", to);
-        i.putExtra(EXTRA_CHAT_STATE, state.name());
-        i.putExtra("org.kontalk.message.standalone", true);
-        i.putExtra("org.kontalk.message.group.jid", groupJid);
-        i.putExtra("org.kontalk.message.to", to);
-        startForegroundIfNeeded(context, i);
-    }
-
-    /**
-     * Sends a text message.
-     */
-    public static void sendTextMessage(final Context context, String to, String text, boolean encrypt, long msgId, String packetId, long inReplyTo, boolean forceConnect) {
-        Intent i = getBaseIntent(context);
-        i.setAction(ACTION_MESSAGE);
-        i.putExtra("org.kontalk.message.msgId", msgId);
-        i.putExtra("org.kontalk.message.packetId", packetId);
-        i.putExtra("org.kontalk.message.mime", TextComponent.MIME_TYPE);
-        i.putExtra("org.kontalk.message.to", to);
-        i.putExtra("org.kontalk.message.body", text);
-        i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        i.putExtra("org.kontalk.message.inReplyTo", inReplyTo);
-        i.putExtra("org.kontalk.forceConnect", forceConnect);
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void sendGroupTextMessage(final Context context, String groupJid, String[] to,
-        String text, boolean encrypt, long msgId, String packetId, long inReplyTo) {
-        Intent i = getBaseIntent(context);
-        i.setAction(ACTION_MESSAGE);
-        i.putExtra("org.kontalk.message.msgId", msgId);
-        i.putExtra("org.kontalk.message.packetId", packetId);
-        i.putExtra("org.kontalk.message.mime", TextComponent.MIME_TYPE);
-        i.putExtra("org.kontalk.message.group.jid", groupJid);
-        i.putExtra("org.kontalk.message.to", to);
-        i.putExtra("org.kontalk.message.body", text);
-        i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        i.putExtra("org.kontalk.message.inReplyTo", inReplyTo);
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void createGroup(final Context context, String groupJid,
-        String groupSubject, String[] to, boolean encrypt, long msgId, String packetId) {
-        Intent i = getBaseIntent(context);
-        i.setAction(ACTION_MESSAGE);
-        i.putExtra("org.kontalk.message.msgId", msgId);
-        i.putExtra("org.kontalk.message.packetId", packetId);
-        i.putExtra("org.kontalk.message.mime", GroupCommandComponent.MIME_TYPE);
-        i.putExtra("org.kontalk.message.group.jid", groupJid);
-        i.putExtra("org.kontalk.message.group.subject", groupSubject);
-        i.putExtra("org.kontalk.message.group.command", GROUP_COMMAND_CREATE);
-        i.putExtra("org.kontalk.message.to", to);
-        i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void leaveGroup(final Context context, String groupJid,
-        String[] to, boolean encrypt, long msgId, String packetId) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_MESSAGE);
-        i.putExtra("org.kontalk.message.msgId", msgId);
-        i.putExtra("org.kontalk.message.packetId", packetId);
-        i.putExtra("org.kontalk.message.mime", GroupCommandComponent.MIME_TYPE);
-        i.putExtra("org.kontalk.message.group.jid", groupJid);
-        i.putExtra("org.kontalk.message.group.command", GROUP_COMMAND_PART);
-        i.putExtra("org.kontalk.message.to", to);
-        i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void addGroupMembers(final Context context, String groupJid,
-        String groupSubject, String[] to, String[] members, boolean encrypt, long msgId, String packetId) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_MESSAGE);
-        i.putExtra("org.kontalk.message.msgId", msgId);
-        i.putExtra("org.kontalk.message.packetId", packetId);
-        i.putExtra("org.kontalk.message.mime", GroupCommandComponent.MIME_TYPE);
-        i.putExtra("org.kontalk.message.group.jid", groupJid);
-        i.putExtra("org.kontalk.message.group.subject", groupSubject);
-        i.putExtra("org.kontalk.message.group.command", GROUP_COMMAND_MEMBERS);
-        i.putExtra("org.kontalk.message.group.add", members);
-        i.putExtra("org.kontalk.message.to", to);
-        i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void removeGroupMembers(final Context context, String groupJid,
-        String groupSubject, String[] to, String[] members, boolean encrypt, long msgId, String packetId) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_MESSAGE);
-        i.putExtra("org.kontalk.message.msgId", msgId);
-        i.putExtra("org.kontalk.message.packetId", packetId);
-        i.putExtra("org.kontalk.message.mime", GroupCommandComponent.MIME_TYPE);
-        i.putExtra("org.kontalk.message.group.jid", groupJid);
-        i.putExtra("org.kontalk.message.group.subject", groupSubject);
-        i.putExtra("org.kontalk.message.group.command", GROUP_COMMAND_MEMBERS);
-        i.putExtra("org.kontalk.message.group.remove", members);
-        i.putExtra("org.kontalk.message.to", to);
-        i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void setGroupSubject(final Context context, String groupJid,
-        String groupSubject, String[] to, boolean encrypt, long msgId, String packetId) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_MESSAGE);
-        i.putExtra("org.kontalk.message.msgId", msgId);
-        i.putExtra("org.kontalk.message.packetId", packetId);
-        i.putExtra("org.kontalk.message.mime", GroupCommandComponent.MIME_TYPE);
-        i.putExtra("org.kontalk.message.group.jid", groupJid);
-        i.putExtra("org.kontalk.message.group.subject", groupSubject);
-        i.putExtra("org.kontalk.message.group.command", GROUP_COMMAND_SUBJECT);
-        i.putExtra("org.kontalk.message.to", to);
-        i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        startForegroundIfNeeded(context, i);
-    }
-
-    /**
-     * Sends a binary message.
-     */
-    public static void sendBinaryMessage(final Context context,
-        String to,
-        String mime, Uri localUri, long length, String previewPath,
-        boolean encrypt, int compress,
-        long msgId, String packetId) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_MESSAGE);
-        i.putExtra("org.kontalk.message.msgId", msgId);
-        i.putExtra("org.kontalk.message.packetId", packetId);
-        i.putExtra("org.kontalk.message.mime", mime);
-        i.putExtra("org.kontalk.message.to", to);
-        i.putExtra("org.kontalk.message.media.uri", localUri.toString());
-        i.putExtra("org.kontalk.message.length", length);
-        i.putExtra("org.kontalk.message.preview.path", previewPath);
-        i.putExtra("org.kontalk.message.compress", compress);
-        i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void sendGroupBinaryMessage(final Context context, String groupJid, String[] to,
-        String mime, Uri localUri, long length, String previewPath,
-        boolean encrypt, int compress, long msgId, String packetId) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_MESSAGE);
-        i.putExtra("org.kontalk.message.msgId", msgId);
-        i.putExtra("org.kontalk.message.packetId", packetId);
-        i.putExtra("org.kontalk.message.mime", mime);
-        i.putExtra("org.kontalk.message.group.jid", groupJid);
-        i.putExtra("org.kontalk.message.to", to);
-        i.putExtra("org.kontalk.message.media.uri", localUri.toString());
-        i.putExtra("org.kontalk.message.length", length);
-        i.putExtra("org.kontalk.message.preview.path", previewPath);
-        i.putExtra("org.kontalk.message.compress", compress);
-        i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        startForegroundIfNeeded(context, i);
-    }
-
-    /**
-     * Sends  a location message
-     */
-    public static void sendLocationMessage(final Context context, String to, String text,
-        double lat, double lon, String geoText, String geoStreet, boolean encrypt, long msgId, String packetId) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_MESSAGE);
-        i.putExtra("org.kontalk.message.msgId", msgId);
-        i.putExtra("org.kontalk.message.packetId", packetId);
-        i.putExtra("org.kontalk.message.mime", LocationComponent.MIME_TYPE);
-        i.putExtra("org.kontalk.message.to", to);
-        i.putExtra("org.kontalk.message.body", text);
-        i.putExtra("org.kontalk.message.geo_lat", lat);
-        i.putExtra("org.kontalk.message.geo_lon", lon);
-
-        if (geoText != null)
-            i.putExtra("org.kontalk.message.geo_text", geoText);
-        if (geoStreet != null)
-            i.putExtra("org.kontalk.message.geo_street", geoStreet);
-
-        i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        startForegroundIfNeeded(context, i);
-    }
-
-    /**
-     * Sends group location message
-     */
-    public static void sendGroupLocationMessage(final Context context, String groupJid, String[] to,
-        String text, double lat, double lon, String geoText, String geoStreet, boolean encrypt, long msgId, String packetId) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_MESSAGE);
-        i.putExtra("org.kontalk.message.msgId", msgId);
-        i.putExtra("org.kontalk.message.packetId", packetId);
-        i.putExtra("org.kontalk.message.mime", LocationComponent.MIME_TYPE);
-        i.putExtra("org.kontalk.message.group.jid", groupJid);
-        i.putExtra("org.kontalk.message.to", to);
-        i.putExtra("org.kontalk.message.body", text);
-        i.putExtra("org.kontalk.message.geo_lat", lat);
-        i.putExtra("org.kontalk.message.geo_lon", lon);
-
-        if (geoText != null)
-            i.putExtra("org.kontalk.message.geo_text", geoText);
-        if (geoStreet != null)
-            i.putExtra("org.kontalk.message.geo_street", geoStreet);
-
-        i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void sendGroupUploadedMedia(final Context context, String groupJid, String[] to,
-        String mime, Uri localUri, long length, String previewPath, String fetchUrl,
-        boolean encrypt, long msgId, String packetId) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_MESSAGE);
-        i.putExtra("org.kontalk.message.msgId", msgId);
-        i.putExtra("org.kontalk.message.packetId", packetId);
-        i.putExtra("org.kontalk.message.mime", mime);
-        i.putExtra("org.kontalk.message.group.jid", groupJid);
-        i.putExtra("org.kontalk.message.to", to);
-        i.putExtra("org.kontalk.message.preview.uri", localUri.toString());
-        i.putExtra("org.kontalk.message.length", length);
-        i.putExtra("org.kontalk.message.preview.path", previewPath);
-        i.putExtra("org.kontalk.message.body", fetchUrl);
-        i.putExtra("org.kontalk.message.fetch.url", fetchUrl);
-        i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void sendUploadedMedia(final Context context, String to,
-        String mime, Uri localUri, long length, String previewPath, String fetchUrl,
-        boolean encrypt, long msgId, String packetId) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_MESSAGE);
-        i.putExtra("org.kontalk.message.msgId", msgId);
-        i.putExtra("org.kontalk.message.packetId", packetId);
-        i.putExtra("org.kontalk.message.mime", mime);
-        i.putExtra("org.kontalk.message.to", to);
-        i.putExtra("org.kontalk.message.preview.uri", localUri.toString());
-        i.putExtra("org.kontalk.message.length", length);
-        i.putExtra("org.kontalk.message.preview.path", previewPath);
-        i.putExtra("org.kontalk.message.body", fetchUrl);
-        i.putExtra("org.kontalk.message.fetch.url", fetchUrl);
-        i.putExtra("org.kontalk.message.encrypt", encrypt);
-        i.putExtra(EXTRA_CHAT_STATE, ChatState.active.name());
-        startForegroundIfNeeded(context, i);
+    public static void updateStatus(String status) {
+        BUS.post(new UpdateStatusRequest(status));
     }
 
     public static String messageId() {
         return StringUtils.randomString(30);
     }
 
-    /**
-     * Replies to a presence subscription request.
-     */
-    public static void replySubscription(final Context context, String to, int action) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_SUBSCRIBED);
-        i.putExtra(EXTRA_TO, to);
-        i.putExtra(EXTRA_PRIVACY, action);
-        startForegroundIfNeeded(context, i);
-    }
-
+    @Deprecated
     public static void regenerateKeyPair(final Context context, String passphrase) {
         Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_REGENERATE_KEYPAIR);
@@ -3310,108 +3158,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         startForegroundIfNeeded(context, i);
     }
 
+    @Deprecated
     public static void importKeyPair(final Context context, Uri keypack, String passphrase) {
         Intent i = getBaseIntent(context);
         i.setAction(MessageCenterService.ACTION_IMPORT_KEYPAIR);
         i.putExtra(EXTRA_KEYPACK, keypack);
         i.putExtra(EXTRA_PASSPHRASE, passphrase);
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void uploadPrivateKey(final Context context, String exportPassphrase) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_UPLOAD_PRIVATEKEY);
-        i.putExtra(EXTRA_EXPORT_PASSPHRASE, exportPassphrase);
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void requestConnectionStatus(final Context context) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_CONNECTED);
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void requestRosterStatus(final Context context) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_ROSTER_LOADED);
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void requestRosterEntryStatus(final Context context, String to) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_ROSTER_STATUS);
-        i.putExtra(MessageCenterService.EXTRA_TO, to);
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void requestPresence(final Context context, String to) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_PRESENCE);
-        i.putExtra(MessageCenterService.EXTRA_TO, to);
-        i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.probe.name());
-        startForegroundIfNeeded(context, i);
-    }
-
-    @Deprecated
-    public static void requestPresenceSubscription(final Context context, String to) {
-        Intent i = new Intent(context, MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_PRESENCE);
-        i.putExtra(MessageCenterService.EXTRA_TO, to);
-        i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribed.name());
-        startForegroundIfNeeded(context, i);
-
-        // request subscription
-        i = new Intent(context, MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_PRESENCE);
-        i.putExtra(MessageCenterService.EXTRA_TO, to);
-        i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribe.name());
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void requestLastActivity(final Context context, String to, String id) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_LAST_ACTIVITY);
-        i.putExtra(EXTRA_TO, to);
-        i.putExtra(EXTRA_PACKET_ID, id);
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void requestVersionInfo(final Context context, String to, String id) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_VERSION);
-        i.putExtra(EXTRA_TO, to);
-        i.putExtra(EXTRA_PACKET_ID, id);
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void requestVCard(final Context context, String to) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_VCARD);
-        i.putExtra(EXTRA_TO, to);
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void requestPublicKey(final Context context, String to) {
-        requestPublicKey(context, to, StringUtils.randomString(6));
-    }
-
-    public static void requestPublicKey(final Context context, String to, String id) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_PUBLICKEY);
-        i.putExtra(EXTRA_TO, to);
-        i.putExtra(EXTRA_PACKET_ID, id);
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void requestServerList(final Context context) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_SERVERLIST);
-        startForegroundIfNeeded(context, i);
-    }
-
-    public static void updateForegroundStatus(final Context context) {
-        Intent i = getBaseIntent(context);
-        i.setAction(MessageCenterService.ACTION_FOREGROUND);
         startForegroundIfNeeded(context, i);
     }
 

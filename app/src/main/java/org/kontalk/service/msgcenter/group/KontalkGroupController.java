@@ -25,6 +25,8 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.sm.StreamManagementException;
+import org.jxmpp.jid.Jid;
+import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.stringprep.XmppStringprepException;
 
 import android.net.Uri;
@@ -62,7 +64,7 @@ public class KontalkGroupController implements GroupController<Message> {
 
     @Override
     public Message beforeEncryption(GroupCommand command, Stanza packet) {
-        String groupJid = command.getGroupJid();
+        Jid groupJid = command.getGroupJid();
         KontalkGroupManager.KontalkGroup group;
         try {
             group = KontalkGroupManager.getInstanceFor(mConnection)
@@ -88,17 +90,17 @@ public class KontalkGroupController implements GroupController<Message> {
         }
         else if (command instanceof AddRemoveMembersCommand) {
             KontalkAddRemoveMembersCommand addRemove = (KontalkAddRemoveMembersCommand) command;
-            String[] added = addRemove.getAddedMembers();
-            String[] members = addRemove.getMembers();
-            Set<String> filteredMembers = new HashSet<>();
-            for (String member : members) {
+            Jid[] added = addRemove.getAddedMembers();
+            Jid[] members = addRemove.getMembers();
+            Set<Jid> filteredMembers = new HashSet<>();
+            for (Jid member : members) {
                 // do not include added users in members list
                 if (added == null || !SystemUtils.contains(added, member)) {
                     filteredMembers.add(member);
                 }
             }
             group.addRemoveMembers(addRemove.getSubject(),
-                filteredMembers.toArray(new String[filteredMembers.size()]),
+                filteredMembers.toArray(new Jid[0]),
                 addRemove.getAddedMembers(), addRemove.getRemovedMembers(), packet);
         }
         else if (command instanceof PartCommand) {
@@ -124,7 +126,7 @@ public class KontalkGroupController implements GroupController<Message> {
         if (!(command instanceof KontalkGroupCommand))
             throw new IllegalArgumentException("invalid command");
 
-        String groupJid = command.getGroupJid();
+        Jid groupJid = command.getGroupJid();
         KontalkGroupManager.KontalkGroup group;
         try {
             group = KontalkGroupManager.getInstanceFor(mConnection)
@@ -172,8 +174,9 @@ public class KontalkGroupController implements GroupController<Message> {
         }
 
         try {
-            KontalkGroupCommand cmd = (KontalkGroupCommand) command;
-            group.addRouteExtension(cmd.getMembers(), packet);
+            // destination is multicast service
+            // TODO this should be discovered first
+            packet.setTo(JidCreate.from("multicast", mConnection.getXMPPServiceDomain(), ""));
         }
         catch (XmppStringprepException e) {
             Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
@@ -181,6 +184,9 @@ public class KontalkGroupController implements GroupController<Message> {
             ReportingManager.logException(e);
             return null;
         }
+
+        KontalkGroupCommand cmd = (KontalkGroupCommand) command;
+        group.addRouteExtension(cmd.getMembers(), packet);
         return (Message) packet;
     }
 

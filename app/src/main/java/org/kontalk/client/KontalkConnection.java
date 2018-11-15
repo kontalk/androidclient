@@ -291,7 +291,7 @@ public class KontalkConnection extends XMPPTCPConnection {
 
     /**
      * A custom ack predicate that allows ack after a message with a delivery
-     * receipt, a receipt request or a body, or after 5 stanzas.
+     * receipt, a receipt request, an out-of-band extension or a body, or after 5 stanzas.
      */
     private static final class AckPredicate extends ForMatchingPredicateOrAfterXStanzas {
 
@@ -304,7 +304,8 @@ public class KontalkConnection extends XMPPTCPConnection {
                     return (packet instanceof Message &&
                         (((Message) packet).getBody() != null ||
                           DeliveryReceipt.from((Message) packet) != null ||
-                           DeliveryReceiptRequest.from(packet) != null));
+                           DeliveryReceiptRequest.from(packet) != null ||
+                            packet.hasExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE)));
                 }
             }, 5);
         }

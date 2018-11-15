@@ -27,4 +27,5 @@
     <item android:icon="@drawable/ic_menu_delete" android:title="@string/delete_thread_messages" android:id="@+id/delete_thread"/>
     <item android:icon="@drawable/ic_menu_exit" android:title="@string/menu_leave_group" android:id="@+id/leave_group"/>
     <item android:icon="@drawable/ic_menu_invite" android:title="@string/menu_invite_group" android:id="@+id/invite_group"/>
+    <item android:icon="@drawable/ic_menu_unlock" android:title="@string/menu_encryption" android:id="@+id/toggle_encryption" android:checkable="true"/>
 </menu>

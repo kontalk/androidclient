@@ -62,6 +62,7 @@ import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MyUsers.Keys;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.Permissions;
 import org.kontalk.util.Preferences;
 
 
@@ -249,16 +250,29 @@ public class Contact {
 
     // keys is the full JID because typing is not a global but a device state
     private static final Map<String, ContactState> sStates = new HashMap<>();
+    private static boolean sInitialized;
+    private static Handler sHandler;
+
+    public static void init(Context context) {
+        if (sHandler == null)
+            throw new IllegalStateException("Call init(Context, Handler) first!");
+
+        if (!sInitialized && Permissions.canReadContacts(context)) {
+            context.getContentResolver().registerContentObserver(Contacts.CONTENT_URI, false,
+                new ContentObserver(sHandler) {
+                    @Override
+                    public void onChange(boolean selfChange) {
+                        invalidate();
+                    }
+                }
+            );
+            sInitialized = true;
+        }
+    }
 
     public static void init(Context context, Handler handler) {
-        context.getContentResolver().registerContentObserver(Contacts.CONTENT_URI, false,
-            new ContentObserver(handler) {
-                @Override
-                public void onChange(boolean selfChange) {
-                    invalidate();
-                }
-            }
-        );
+        sHandler = handler;
+        init(context);
     }
 
     private static ContactState getContactState(String jid) {

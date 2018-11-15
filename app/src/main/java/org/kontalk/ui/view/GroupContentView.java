@@ -71,12 +71,12 @@ public class GroupContentView extends EmojiTextView
         // member left group
         else if (component.isPartCommand()) {
             // sending to the group JID, this is our own part command
-            if (component.getContent().getJID().equalsIgnoreCase(component.getFrom())) {
+            if (component.getContent().getJid().equals(component.getFrom())) {
                 text = getResources().getString(R.string.group_command_self_parted);
             }
             else {
                 Contact c = Contact.findByUserId(getContext(), component.getFrom());
-                boolean isOwner = component.getFrom().equalsIgnoreCase(mComponent.getContent().getOwner());
+                boolean isOwner = mComponent.getContent().getOwner().equals(component.getFrom());
                 text = getResources().getString(isOwner ?
                     R.string.group_command_owner_parted : R.string.group_command_user_parted,
                     c.getDisplayName());

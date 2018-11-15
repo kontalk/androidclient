@@ -31,9 +31,9 @@ import org.kontalk.service.ProgressListener;
  */
 public interface UploadConnection {
 
-    public void abort();
+    void abort();
 
-    public String upload(Uri uri, long length, String mime, boolean encrypt, String[] to, ProgressListener listener)
+    String upload(Uri uri, long length, String mime, ProgressListener listener)
         throws IOException;
 
 }

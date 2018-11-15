@@ -25,28 +25,31 @@ import java.util.Set;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
-import org.jivesoftware.smack.packet.IQ;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
+import org.jxmpp.jid.BareJid;
+import org.jxmpp.jid.Jid;
+import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDiskIOException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -76,17 +79,34 @@ import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.PrivacyCommand;
+import org.kontalk.service.msgcenter.event.ConnectedEvent;
+import org.kontalk.service.msgcenter.event.LastActivityEvent;
+import org.kontalk.service.msgcenter.event.LastActivityRequest;
+import org.kontalk.service.msgcenter.event.NoPresenceEvent;
+import org.kontalk.service.msgcenter.event.PreapproveSubscriptionRequest;
+import org.kontalk.service.msgcenter.event.PresenceEvent;
+import org.kontalk.service.msgcenter.event.PresenceRequest;
+import org.kontalk.service.msgcenter.event.PublicKeyEvent;
+import org.kontalk.service.msgcenter.event.PublicKeyRequest;
+import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
+import org.kontalk.service.msgcenter.event.SendChatStateRequest;
+import org.kontalk.service.msgcenter.event.SendMessageRequest;
+import org.kontalk.service.msgcenter.event.SetUserPrivacyRequest;
+import org.kontalk.service.msgcenter.event.SubscribeRequest;
+import org.kontalk.service.msgcenter.event.UserBlockedEvent;
+import org.kontalk.service.msgcenter.event.UserOfflineEvent;
+import org.kontalk.service.msgcenter.event.UserOnlineEvent;
+import org.kontalk.service.msgcenter.event.UserSubscribedEvent;
+import org.kontalk.service.msgcenter.event.UserUnblockedEvent;
+import org.kontalk.service.msgcenter.event.VersionEvent;
+import org.kontalk.service.msgcenter.event.VersionRequest;
 import org.kontalk.sync.Syncer;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Permissions;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 import org.kontalk.util.XMPPUtils;
-
-import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_ACCEPT;
-import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_BLOCK;
-import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_REJECT;
-import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK;
 
 
 /**
@@ -113,8 +133,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment
     String mKeyRequestId;
 
     private boolean mIsTyping;
-
-    private BroadcastReceiver mBroadcastReceiver;
 
     @Override
     protected void onInflateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -149,14 +167,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         }
 
         return false;
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (mLocalBroadcastManager != null && mBroadcastReceiver != null) {
-            mLocalBroadcastManager.unregisterReceiver(mBroadcastReceiver);
-        }
     }
 
     private void callContact() {
@@ -250,7 +260,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
             .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                    setPrivacy(dialog.getContext(), PRIVACY_BLOCK);
+                    setPrivacy(dialog.getContext(), PrivacyCommand.BLOCK);
                 }
             })
             .show();
@@ -266,7 +276,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
             .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                    setPrivacy(dialog.getContext(), PRIVACY_UNBLOCK);
+                    setPrivacy(dialog.getContext(), PrivacyCommand.UNBLOCK);
                 }
             })
             .show();
@@ -403,7 +413,10 @@ public class ComposeMessageFragment extends AbstractComposeFragment
     @Override
     public boolean sendTyping() {
         if (mAvailableResources.size() > 0) {
-            MessageCenterService.sendChatState(getContext(), mUserJID, ChatState.composing);
+            mServiceBus.post(new SendChatStateRequest.Builder(null)
+                .setChatState(ChatState.composing)
+                .setTo(JidCreate.fromOrThrowUnchecked(mUserJID))
+                .build());
             return true;
         }
         return false;
@@ -412,7 +425,10 @@ public class ComposeMessageFragment extends AbstractComposeFragment
     @Override
     public boolean sendInactive() {
         if (mAvailableResources.size() > 0) {
-            MessageCenterService.sendChatState(getActivity(), mUserJID, ChatState.inactive);
+            mServiceBus.post(new SendChatStateRequest.Builder(null)
+                .setChatState(ChatState.inactive)
+                .setTo(JidCreate.fromOrThrowUnchecked(mUserJID))
+                .build());
             return true;
         }
         return false;
@@ -437,7 +453,8 @@ public class ComposeMessageFragment extends AbstractComposeFragment
     }
 
     @Override
-    protected void onConnected() {
+    protected void resetConnectionStatus() {
+        super.resetConnectionStatus();
         // reset any pending request
         mLastActivityRequestId = null;
         mVersionRequestId = null;
@@ -445,30 +462,25 @@ public class ComposeMessageFragment extends AbstractComposeFragment
     }
 
     @Override
-    protected void onDisconnected() {
-        onConnected();
-    }
-
-    @Override
-    protected void onRosterLoaded() {
+    public void onRosterLoaded(RosterLoadedEvent event) {
+        super.onRosterLoaded(event);
         // probe presence
         requestPresence();
     }
 
     @Override
-    protected void onStartTyping(String jid, String groupJid) {
+    protected void onStartTyping(String jid, @Nullable String groupJid) {
         mIsTyping = true;
         setStatusText(getString(R.string.seen_typing_label));
     }
 
     @Override
-    protected void onStopTyping(String jid, String groupJid) {
+    protected void onStopTyping(String jid, @Nullable String groupJid) {
         mIsTyping = false;
         setStatusText(mCurrentStatus != null ? mCurrentStatus : "");
     }
 
-    @Override
-    protected void onPresence(String jid, Presence.Type type, boolean removed, Presence.Mode mode, String fingerprint) {
+    private void onUserStatusChanged(PresenceEvent event) {
         final Context context = getContext();
         if (context == null)
             return;
@@ -485,15 +497,15 @@ public class ComposeMessageFragment extends AbstractComposeFragment
             boolean unknownKey = (trustedPublicKey == null && contact.getFingerprint() != null);
             boolean changedKey = false;
             // check if fingerprint changed (only if we have roster presence)
-            if (type != null && trustedPublicKey != null && fingerprint != null) {
+            if (event.type != null && trustedPublicKey != null && event.fingerprint != null) {
                 String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(trustedPublicKey));
-                if (!fingerprint.equalsIgnoreCase(oldFingerprint)) {
+                if (!event.fingerprint.equalsIgnoreCase(oldFingerprint)) {
                     // fingerprint has changed since last time
                     changedKey = true;
                 }
             }
             // user has no key (or we have no roster presence) or it couldn't be found: request it
-            else if ((trustedPublicKey == null && fingerprint == null) || type == null) {
+            else if ((trustedPublicKey == null && event.fingerprint == null) || event.type == null) {
                 if (mKeyRequestId != null) {
                     // avoid request loop
                     mKeyRequestId = null;
@@ -501,104 +513,149 @@ public class ComposeMessageFragment extends AbstractComposeFragment
                 else {
                     // autotrust the key we are about to request
                     // but set the trust level to ignored because we didn't really verify it
-                    Keyring.setAutoTrustLevel(context, jid, MyUsers.Keys.TRUST_IGNORED);
-                    requestPublicKey(jid);
+                    Keyring.setAutoTrustLevel(context, event.jid.toString(), MyUsers.Keys.TRUST_IGNORED);
+                    requestPublicKey(event.jid);
                 }
             }
 
             // key checks are to be done in advanced mode only
-            if (Keyring.isAdvancedMode(context, jid)) {
+            if (Keyring.isAdvancedMode(context, event.jid.toString())) {
                 if (changedKey) {
                     // warn user that public key is changed
-                    showKeyChangedWarning(fingerprint);
+                    showKeyChangedWarning(event.fingerprint);
                 }
                 else if (unknownKey) {
                     // warn user that public key is unknown
-                    showKeyUnknownWarning(fingerprint);
+                    showKeyUnknownWarning(event.fingerprint);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onUserOnline(UserOnlineEvent event) {
+        final Context context = getContext();
+        if (context == null)
+            return;
+
+        // check that origin matches the current chat
+        if (!isUserId(event.jid.toString())) {
+            // not for us
+            return;
+        }
+
+        super.onUserOnline(event);
+
+        onUserStatusChanged(event);
+
+        CharSequence statusText;
+
+        mIsTyping = mIsTyping || Contact.isTyping(event.jid.toString());
+        if (mIsTyping) {
+            setStatusText(context.getString(R.string.seen_typing_label));
+        }
+
+        /*
+         * FIXME using mode this way has several flaws.
+         * 1. it doesn't take multiple resources into account
+         * 2. it doesn't account for away status duration (we don't have this information at all)
+         */
+        boolean isAway = (event.mode == Presence.Mode.away);
+        if (isAway) {
+            statusText = context.getString(R.string.seen_away_label);
+        }
+        else {
+            statusText = context.getString(R.string.seen_online_label);
+        }
+
+        String version = Contact.getVersion(event.jid.toString());
+        // do not request version info if already requested before
+        if (!isAway && version == null && mVersionRequestId == null) {
+            requestVersion(event.jid);
+        }
+
+        // a new resource just connected, send typing information again
+        // (only if we already sent it in this session)
+        // FIXME this will always broadcast the message to all resources
+        if (mComposer.isComposeSent() && mComposer.isSendEnabled() &&
+            Preferences.getSendTyping(context)) {
+            sendTyping();
+        }
+
+        setCurrentStatusText(statusText);
+    }
+
+    @Override
+    public void onUserOffline(UserOfflineEvent event) {
+        final Context context = getContext();
+        if (context == null)
+            return;
+
+        if (!isUserId(event.jid.toString())) {
+            // not for us
+            return;
+        }
+
+        int resourceCount = mAvailableResources.size();
+
+        super.onUserOffline(event);
+
+        boolean removed = resourceCount != mAvailableResources.size();
+
+        onUserStatusChanged(event);
+
+        CharSequence statusText = null;
+
+        /*
+         * All available resources have gone. Mark
+         * the user as offline immediately and use the
+         * timestamp provided with the stanza (if any).
+         */
+        if (mAvailableResources.size() == 0) {
+            // an offline user can't be typing
+            mIsTyping = false;
+
+            if (removed) {
+                // resource was removed now, mark as just offline
+                statusText = context.getText(R.string.seen_moment_ago_label);
+            }
+            else {
+                // resource is offline, request last activity
+                Contact contact = getContact();
+                if (contact != null && contact.getLastSeen() > 0) {
+                    setLastSeenTimestamp(context, contact.getLastSeen());
+                }
+                else if (mLastActivityRequestId == null) {
+                    mLastActivityRequestId = StringUtils.randomString(6);
+                    mServiceBus.post(new LastActivityRequest(mLastActivityRequestId, event.jid.asBareJid()));
                 }
             }
         }
 
-        if (type == null) {
-            // no roster entry found, request subscription
+        if (statusText != null) {
+            setCurrentStatusText(statusText);
+        }
+    }
 
-            // pre-approve our presence and request subscription
-            // TODO we should use MessageCenterClient
-            MessageCenterService.requestPresenceSubscription(context, mUserJID);
+    @Override
+    public void onNoUserPresence(NoPresenceEvent event) {
+        final Context context = getContext();
+        if (context == null)
+            return;
 
-            setStatusText(context.getString(R.string.invitation_sent_label));
+        // check that origin matches the current chat
+        if (!isUserId(event.jid.toString())) {
+            // not for us
+            return;
         }
 
-        // (un)available presence
-        else if (type == Presence.Type.available || type == Presence.Type.unavailable) {
+        // no roster entry found, request subscription
 
-            CharSequence statusText = null;
+        // pre-approve our presence and request subscription
+        mServiceBus.post(new PreapproveSubscriptionRequest(event.jid));
+        mServiceBus.post(new SubscribeRequest(event.jid));
 
-            if (type == Presence.Type.available) {
-                mIsTyping = mIsTyping || Contact.isTyping(jid);
-                if (mIsTyping) {
-                    setStatusText(context.getString(R.string.seen_typing_label));
-                }
-
-                /*
-                 * FIXME using mode this way has several flaws.
-                 * 1. it doesn't take multiple resources into account
-                 * 2. it doesn't account for away status duration (we don't have this information at all)
-                 */
-                boolean isAway = (mode == Presence.Mode.away);
-                if (isAway) {
-                    statusText = context.getString(R.string.seen_away_label);
-                }
-                else {
-                    statusText = context.getString(R.string.seen_online_label);
-                }
-
-                String version = Contact.getVersion(jid);
-                // do not request version info if already requested before
-                if (!isAway && version == null && mVersionRequestId == null) {
-                    requestVersion(jid);
-                }
-
-                // a new resource just connected, send typing information again
-                // (only if we already sent it in this session)
-                // FIXME this will always broadcast the message to all resources
-                if (mComposer.isComposeSent() && mComposer.isSendEnabled() &&
-                        Preferences.getSendTyping(context)) {
-                    sendTyping();
-                }
-            }
-            else if (type == Presence.Type.unavailable) {
-                /*
-                 * All available resources have gone. Mark
-                 * the user as offline immediately and use the
-                 * timestamp provided with the stanza (if any).
-                 */
-                if (mAvailableResources.size() == 0) {
-                    // an offline user can't be typing
-                    mIsTyping = false;
-
-                    if (removed) {
-                        // resource was removed now, mark as just offline
-                        statusText = context.getText(R.string.seen_moment_ago_label);
-                    }
-                    else {
-                        // resource is offline, request last activity
-                        if (contact != null && contact.getLastSeen() > 0) {
-                            setLastSeenTimestamp(context, contact.getLastSeen());
-                        }
-                        else if (mLastActivityRequestId == null) {
-                            mLastActivityRequestId = StringUtils.randomString(6);
-                            MessageCenterService.requestLastActivity(context,
-                                XmppStringUtils.parseBareJid(jid), mLastActivityRequestId);
-                        }
-                    }
-                }
-            }
-
-            if (statusText != null) {
-                setCurrentStatusText(statusText);
-            }
-        }
+        setStatusText(context.getString(R.string.invitation_sent_label));
     }
 
     /** Sends a subscription request for the current peer. */
@@ -616,7 +673,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
                 // and the UI reacting to a pending request status (i.e. "pending_in")
                 if (mConversation.getRequestStatus() != Threads.REQUEST_WAITING) {
                     // request last presence
-                    MessageCenterService.requestPresence(context, mUserJID);
+                    mServiceBus.post(new PresenceRequest(JidCreate.bareFromOrThrowUnchecked(mUserJID)));
                 }
             }
         }
@@ -637,110 +694,6 @@ public class ComposeMessageFragment extends AbstractComposeFragment
     protected void onConversationCreated() {
         super.onConversationCreated();
 
-        // setup broadcast receiver
-        if (mBroadcastReceiver == null) {
-            mBroadcastReceiver = new BroadcastReceiver() {
-                public void onReceive(Context context, Intent intent) {
-                    String from = XmppStringUtils.parseBareJid(intent
-                        .getStringExtra(MessageCenterService.EXTRA_FROM));
-                    if (!mUserJID.equals(from)) {
-                        // not for us
-                        return;
-                    }
-
-                    String action = intent.getAction();
-
-                    if (MessageCenterService.ACTION_LAST_ACTIVITY.equals(action)) {
-                        String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                        if (id != null && id.equals(mLastActivityRequestId)) {
-                            mLastActivityRequestId = null;
-                            // ignore last activity if we had an available presence in the meantime
-                            if (mAvailableResources.size() == 0) {
-                                String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
-                                if (type == null || !type.equalsIgnoreCase(IQ.Type.error.toString())) {
-                                    long seconds = intent.getLongExtra(MessageCenterService.EXTRA_SECONDS, -1);
-                                    setLastSeenSeconds(context, seconds);
-                                }
-                                else {
-                                    setCurrentStatusText(context.getString(R.string.seen_offline_label));
-                                }
-                            }
-                        }
-                    }
-
-                    else if (MessageCenterService.ACTION_VERSION.equals(action)) {
-                        // compare version and show warning if needed
-                        String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                        if (id != null && id.equals(mVersionRequestId)) {
-                            mVersionRequestId = null;
-                            String name = intent.getStringExtra(MessageCenterService.EXTRA_VERSION_NAME);
-                            if (name != null && name.equalsIgnoreCase(context.getString(R.string.app_name))) {
-                                String version = intent.getStringExtra(MessageCenterService.EXTRA_VERSION_NUMBER);
-                                if (version != null) {
-                                    // cache the version
-                                    String fullFrom = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                                    Contact.setVersion(fullFrom, version);
-                                    setVersionInfo(context, version);
-                                }
-                            }
-                        }
-                    }
-
-                    else if (MessageCenterService.ACTION_PUBLICKEY.equals(action)) {
-                        String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                        if (id != null && id.equals(mKeyRequestId)) {
-                            // reload contact
-                            invalidateContact();
-                            // request presence again
-                            requestPresence();
-                        }
-                    }
-
-                    else if (MessageCenterService.ACTION_BLOCKED.equals(intent.getAction())) {
-                        // reload contact
-                        reloadContact();
-                        // this will update block/unblock menu items
-                        updateUI();
-                        Toast.makeText(context,
-                            R.string.msg_user_blocked,
-                            Toast.LENGTH_LONG).show();
-                    }
-
-                    else if (MessageCenterService.ACTION_UNBLOCKED.equals(intent.getAction())) {
-                        // reload contact
-                        reloadContact();
-                        // this will update block/unblock menu items
-                        updateUI();
-                        // hide any block warning
-                        // a new warning will be issued for the key if needed
-                        hideWarning();
-                        // request presence subscription when unblocking
-                        requestPresence();
-                        Toast.makeText(context,
-                            R.string.msg_user_unblocked,
-                            Toast.LENGTH_LONG).show();
-                    }
-
-                    else if (MessageCenterService.ACTION_SUBSCRIBED.equals(intent.getAction())) {
-                        // reload contact
-                        invalidateContact();
-                        // request presence
-                        requestPresence();
-                    }
-                }
-            };
-
-            // listen for some stuff we need
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
-            filter.addAction(MessageCenterService.ACTION_VERSION);
-            filter.addAction(MessageCenterService.ACTION_PUBLICKEY);
-            filter.addAction(MessageCenterService.ACTION_BLOCKED);
-            filter.addAction(MessageCenterService.ACTION_UNBLOCKED);
-            filter.addAction(MessageCenterService.ACTION_SUBSCRIBED);
-            mLocalBroadcastManager.registerReceiver(mBroadcastReceiver, filter);
-        }
-
         // setup invitation bar
         boolean visible = (mConversation.getRequestStatus() == Threads.REQUEST_WAITING);
 
@@ -754,11 +707,11 @@ public class ComposeMessageFragment extends AbstractComposeFragment
                     public void onClick(View v) {
                         mInvitationBar.setVisibility(View.GONE);
 
-                        int action;
+                        PrivacyCommand action;
                         if (v.getId() == R.id.button_accept)
-                            action = PRIVACY_ACCEPT;
+                            action = PrivacyCommand.ACCEPT;
                         else
-                            action = PRIVACY_REJECT;
+                            action = PrivacyCommand.REJECT;
 
                         setPrivacy(v.getContext(), action);
                     }
@@ -785,20 +738,20 @@ public class ComposeMessageFragment extends AbstractComposeFragment
             mInvitationBar.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
-    void setPrivacy(@NonNull Context ctx, int action) {
+    void setPrivacy(@NonNull Context ctx, PrivacyCommand action) {
         int status;
 
         switch (action) {
-            case PRIVACY_ACCEPT:
+            case ACCEPT:
                 status = Threads.REQUEST_REPLY_PENDING_ACCEPT;
                 break;
 
-            case PRIVACY_BLOCK:
-            case PRIVACY_REJECT:
+            case BLOCK:
+            case REJECT:
                 status = Threads.REQUEST_REPLY_PENDING_BLOCK;
                 break;
 
-            case PRIVACY_UNBLOCK:
+            case UNBLOCK:
                 status = Threads.REQUEST_REPLY_PENDING_UNBLOCK;
                 break;
 
@@ -813,7 +766,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         UsersProvider.setRequestStatus(ctx, mUserJID, status);
 
         // accept invitation
-        if (action == PRIVACY_ACCEPT) {
+        if (action == PrivacyCommand.ACCEPT) {
             // trust the key
             String fingerprint = getContact().getFingerprint();
             Kontalk.get().getMessagesController()
@@ -823,8 +776,12 @@ public class ComposeMessageFragment extends AbstractComposeFragment
 
         // reload contact
         invalidateContact();
+
         // send command to message center
-        MessageCenterService.replySubscription(ctx, mUserJID, action);
+        BareJid jid = JidCreate.bareFromOrThrowUnchecked(mUserJID);
+        MessageCenterService.bus()
+            .post(new SetUserPrivacyRequest(jid, action));
+
         // reload manually
         mConversation = Conversation.loadFromUserId(ctx, mUserJID);
         if (mConversation == null) {
@@ -835,8 +792,14 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         if (threadId == 0) {
             // no thread means no peer observer will be invoked
             // we need to manually trigger this
-            MessageCenterService.requestConnectionStatus(ctx);
-            MessageCenterService.requestRosterStatus(ctx);
+            ConnectedEvent connectedEvent = mServiceBus.getStickyEvent(ConnectedEvent.class);
+            if (connectedEvent != null) {
+                onConnected(connectedEvent);
+            }
+            RosterLoadedEvent rosterLoadedEvent = mServiceBus.getStickyEvent(RosterLoadedEvent.class);
+            if (rosterLoadedEvent != null) {
+                onRosterLoaded(rosterLoadedEvent);
+            }
         }
     }
 
@@ -898,9 +861,8 @@ public class ComposeMessageFragment extends AbstractComposeFragment
                     // TODO check for null
 
                     // send create group command now
-                    MessageCenterService.createGroup(getContext(), groupJid,
-                        title, users, encrypted,
-                        ContentUris.parseId(cmdMsg), msgId);
+                    MessageCenterService.bus()
+                        .post(new SendMessageRequest(ContentUris.parseId(cmdMsg)));
 
                     // open the new conversation
                     ((ComposeMessageParent) getActivity()).loadConversation(groupThreadId, true);
@@ -976,7 +938,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
                                 break;
                             case NEGATIVE:
                                 // block user immediately
-                                setPrivacy(dialog.getContext(), PRIVACY_BLOCK);
+                                setPrivacy(dialog.getContext(), PrivacyCommand.BLOCK);
                                 break;
                         }
                     }
@@ -1027,7 +989,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
                                         // hide warning bar
                                         hideWarning();
                                         // block user immediately
-                                        setPrivacy(dialog.getContext(), PRIVACY_BLOCK);
+                                        setPrivacy(dialog.getContext(), PrivacyCommand.BLOCK);
                                         break;
                                 }
                             }
@@ -1071,19 +1033,126 @@ public class ComposeMessageFragment extends AbstractComposeFragment
             setStatusText(statusText);
     }
 
-    private void requestVersion(String jid) {
-        Context context = getActivity();
-        if (context != null) {
-            mVersionRequestId = StringUtils.randomString(6);
-            MessageCenterService.requestVersionInfo(context, jid, mVersionRequestId);
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onPublicKey(PublicKeyEvent event) {
+        if (event.id != null && event.id.equals(mKeyRequestId)) {
+            // reload contact
+            invalidateContact();
+            // request presence again
+            requestPresence();
         }
     }
 
-    private void requestPublicKey(String jid) {
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onLastActivity(LastActivityEvent event) {
+        final Context context = getContext();
+        if (context == null)
+            return;
+
+        if (event.id != null && event.id.equals(mLastActivityRequestId)) {
+            mLastActivityRequestId = null;
+            // ignore last activity if we had an available presence in the meantime
+            if (mAvailableResources.size() == 0) {
+                if (event.error == null && event.idleTime >= 0) {
+                    setLastSeenSeconds(context, event.idleTime);
+                }
+                else {
+                    setCurrentStatusText(context.getString(R.string.seen_offline_label));
+                }
+            }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onVersion(VersionEvent event) {
+        Context context = getContext();
+        if (context == null)
+            return;
+
+        // compare version and show warning if needed
+        if (event.id != null && event.id.equals(mVersionRequestId)) {
+            mVersionRequestId = null;
+            if (event.name != null && event.name.equalsIgnoreCase(context.getString(R.string.app_name))) {
+                if (event.version != null) {
+                    // cache the version
+                    Contact.setVersion(event.jid.toString(), event.version);
+                    setVersionInfo(context, event.version);
+                }
+            }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onUserSubscribed(UserSubscribedEvent event) {
+        if (!isUserId(event.jid.toString())) {
+            // not for us
+            return;
+        }
+
+        // reload contact
+        invalidateContact();
+        // request presence
+        requestPresence();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onUserBlocked(UserBlockedEvent event) {
+        final Context context = getContext();
+        if (context == null)
+            return;
+
+        if (!isUserId(event.jid.toString())) {
+            // not for us
+            return;
+        }
+
+        // reload contact
+        reloadContact();
+        // this will update block/unblock menu items
+        updateUI();
+        Toast.makeText(context,
+            R.string.msg_user_blocked,
+            Toast.LENGTH_LONG).show();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onUserUnblocked(UserUnblockedEvent event) {
+        final Context context = getContext();
+        if (context == null)
+            return;
+
+        if (!isUserId(event.jid.toString())) {
+            // not for us
+            return;
+        }
+
+        // reload contact
+        reloadContact();
+        // this will update block/unblock menu items
+        updateUI();
+        // hide any block warning
+        // a new warning will be issued for the key if needed
+        hideWarning();
+        // request presence subscription when unblocking
+        requestPresence();
+        Toast.makeText(context,
+            R.string.msg_user_unblocked,
+            Toast.LENGTH_LONG).show();
+    }
+
+    private void requestVersion(Jid jid) {
+        Context context = getActivity();
+        if (context != null) {
+            mVersionRequestId = StringUtils.randomString(6);
+            mServiceBus.post(new VersionRequest(mVersionRequestId, jid));
+        }
+    }
+
+    private void requestPublicKey(Jid jid) {
         Context context = getActivity();
         if (context != null) {
             mKeyRequestId = StringUtils.randomString(6);
-            MessageCenterService.requestPublicKey(context, jid, mKeyRequestId);
+            mServiceBus.post(new PublicKeyRequest(mKeyRequestId, jid));
         }
     }
 

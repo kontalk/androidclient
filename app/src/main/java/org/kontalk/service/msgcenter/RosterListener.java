@@ -27,17 +27,14 @@ import org.jivesoftware.smack.roster.RosterEntry;
 import org.jivesoftware.smack.roster.RosterLoadedListener;
 import org.jxmpp.jid.Jid;
 
-import android.content.Intent;
 import android.os.Handler;
 
 import org.kontalk.Log;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MyUsers;
-
-import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_SUBSCRIBED;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TYPE;
+import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
+import org.kontalk.service.msgcenter.event.UserSubscribedEvent;
 
 
 /**
@@ -65,7 +62,7 @@ public class RosterListener implements RosterLoadedListener, org.jivesoftware.sm
                 @Override
                 public void run() {
                     // roster has been loaded
-                    service.broadcast(MessageCenterService.ACTION_ROSTER_LOADED);
+                    MessageCenterService.bus().postSticky(new RosterLoadedEvent());
                 }
             });
         }
@@ -100,7 +97,7 @@ public class RosterListener implements RosterLoadedListener, org.jivesoftware.sm
         for (Jid jid : addresses) {
             RosterEntry e = service.getRosterEntry(jid.asBareJid());
             if (e != null && e.canSeeHisPresence()) {
-                userSubscribed(service, jid);
+                userSubscribed(jid);
             }
         }
     }
@@ -114,18 +111,15 @@ public class RosterListener implements RosterLoadedListener, org.jivesoftware.sm
     public void presenceChanged(Presence presence) {
     }
 
-    private void userSubscribed(MessageCenterService service, Jid jid) {
+    private void userSubscribed(Jid jid) {
         String from = jid.asBareJid().toString();
 
         // invalidate cached contact
         Contact.invalidate(from);
 
-        // send a broadcast
-        Intent i = new Intent(ACTION_SUBSCRIBED);
-        i.putExtra(EXTRA_TYPE, Presence.Type.subscribed.name());
-        i.putExtra(EXTRA_FROM, jid.toString());
-
-        service.sendBroadcast(i);
+        // send an event
+        MessageCenterService.bus()
+            .post(new UserSubscribedEvent(jid));
 
         // MessagesController will send any pending messages
     }

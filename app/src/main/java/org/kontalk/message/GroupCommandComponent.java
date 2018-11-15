@@ -23,6 +23,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jxmpp.jid.Jid;
+import org.jxmpp.jid.impl.JidCreate;
+
 import android.content.Context;
 import android.database.Cursor;
 
@@ -51,12 +54,10 @@ public class GroupCommandComponent extends MessageComponent<GroupExtension> {
     public static final String COMMAND_REMOVE = "remove";
 
     private final String mFrom;
-    private final String mOwnJid;
 
-    public GroupCommandComponent(GroupExtension content, String from, String ownJid) {
+    public GroupCommandComponent(GroupExtension content, String from) {
         super(content, 0, false, 0);
         mFrom = from;
-        mOwnJid = ownJid;
     }
 
     public String getFrom() {
@@ -110,13 +111,13 @@ public class GroupCommandComponent extends MessageComponent<GroupExtension> {
         List<GroupExtension.Member> members = mContent.getMembers();
         Set<String> output = new HashSet<>();
         if (includeOwner)
-            output.add(mContent.getOwner());
+            output.add(mContent.getOwner().toString());
 
         for (int i = 0; i < members.size(); i++) {
             GroupExtension.Member user = members.get(i);
             // exclude own JID from the list
             if (user.operation == operation)
-                output.add(user.jid);
+                output.add(user.jid.toString());
         }
         return output.toArray(new String[output.size()]);
     }
@@ -240,16 +241,22 @@ public class GroupCommandComponent extends MessageComponent<GroupExtension> {
             (added != null ? added.length : 0) +
             (removed != null ? removed.length : 0));
         if (members != null) {
-            for (String m : members)
-                list.add(new GroupExtension.Member(m, GroupExtension.Member.Operation.NONE));
+            for (String m : members) {
+                Jid jid = JidCreate.fromOrThrowUnchecked(m);
+                list.add(new GroupExtension.Member(jid, GroupExtension.Member.Operation.NONE));
+            }
         }
         if (added != null) {
-            for (String m : added)
-                list.add(new GroupExtension.Member(m, GroupExtension.Member.Operation.ADD));
+            for (String m : added) {
+                Jid jid = JidCreate.fromOrThrowUnchecked(m);
+                list.add(new GroupExtension.Member(jid, GroupExtension.Member.Operation.ADD));
+            }
         }
         if (removed != null) {
-            for (String m : removed)
-                list.add(new GroupExtension.Member(m, GroupExtension.Member.Operation.REMOVE));
+            for (String m : removed) {
+                Jid jid = JidCreate.fromOrThrowUnchecked(m);
+                list.add(new GroupExtension.Member(jid, GroupExtension.Member.Operation.REMOVE));
+            }
         }
         return list;
     }
