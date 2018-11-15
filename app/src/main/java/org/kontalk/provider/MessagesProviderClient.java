@@ -137,6 +137,7 @@ public class MessagesProviderClient {
         values.put(Messages.ATTACHMENT_LOCAL_URI, uri.toString());
         values.put(Messages.ATTACHMENT_LENGTH, length);
         values.put(Messages.ATTACHMENT_COMPRESS, compress);
+        values.put(Messages.ATTACHMENT_SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
 
         return context.getContentResolver().insert(Messages.CONTENT_URI, values);
     }
@@ -422,9 +423,12 @@ public class MessagesProviderClient {
     }
 
     /** Set the local Uri of a media message, marking it as downloaded. */
-    public static void downloaded(Context context, long msgId, Uri localUri) {
+    public static void downloaded(Context context, long msgId, Uri localUri, boolean encrypted, long length) {
         ContentValues values = new ContentValues(1);
         values.put(Messages.ATTACHMENT_LOCAL_URI, localUri.toString());
+        values.put(Messages.ATTACHMENT_ENCRYPTED, encrypted);
+        if (length >= 0)
+            values.put(Messages.ATTACHMENT_LENGTH, length);
         context.getContentResolver().update(ContentUris
             .withAppendedId(Messages.CONTENT_URI, msgId), values, null, null);
     }

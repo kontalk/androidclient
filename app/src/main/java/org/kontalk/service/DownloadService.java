@@ -39,7 +39,6 @@ import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -58,7 +57,6 @@ import org.kontalk.crypto.PersonalKey;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MessagesProviderClient;
-import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.ConversationsActivity;
@@ -259,7 +257,8 @@ public class DownloadService extends IntentService implements DownloadListener {
     public void completed(String url, String mime, File destination) {
         Uri uri = Uri.fromFile(destination);
 
-        ContentValues values = null;
+        boolean destinationEncrypted = mEncrypted;
+        long destinationLength = -1;
 
         // encrypted file?
         if (mEncrypted) {
@@ -292,9 +291,8 @@ public class DownloadService extends IntentService implements DownloadListener {
                     outFile.renameTo(destination);
 
                     // save this for later
-                    values = new ContentValues(3);
-                    values.put(Messages.ATTACHMENT_ENCRYPTED, false);
-                    values.put(Messages.ATTACHMENT_LENGTH, destination.length());
+                    destinationEncrypted = false;
+                    destinationLength = destination.length();
                 }
             }
             catch (Exception e) {
@@ -322,7 +320,8 @@ public class DownloadService extends IntentService implements DownloadListener {
         }
 
         // mark file as downloaded
-        MessagesProviderClient.downloaded(this, mMessageId, uri);
+        MessagesProviderClient.downloaded(this, mMessageId, uri,
+            destinationEncrypted, destinationLength);
 
         // update media store
         MediaStorage.scanFile(this, destination, mime);

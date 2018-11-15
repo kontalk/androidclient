@@ -2347,7 +2347,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     if (attachment.getFetchUrl() != null) {
                         // in this case we will need the length too
                         msg.addExtension(new OutOfBandData(attachment.getFetchUrl(),
-                            attachment.getMime(), attachment.getLength(), attachment.isEncrypted()));
+                            attachment.getMime(), attachment.getLength(),
+                            attachment.getSecurityFlags() != Coder.SECURITY_CLEARTEXT));
                     }
                 }
 
