@@ -19,6 +19,8 @@
 package org.kontalk;
 
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -752,6 +754,9 @@ public class MessagesController {
         // and stop them
         Set<Long> pendingGroupCommandThreads = new HashSet<>();
 
+        // a list of messages to be deleted
+        List<Long> messagesToDelete = new LinkedList<>();
+
         while (c.moveToNext()) {
             // TODO constants for column indexes
             long id = c.getLong(0);
@@ -790,10 +795,18 @@ public class MessagesController {
                  */
                 String[] groupMembers = MessagesProviderClient.getGroupMembers(mContext, groupJid, -1);
                 if (groupMembers.length == 0) {
-                    // no group member left - skip message
-                    // this might be a pending message that was queued before we realized there were no members left
-                    // since the group might get populated again, we just skip the message but keep it
-                    Log.d(TAG, "no members in group - skipping message");
+                    if (threadId == MyMessages.Messages.NO_THREAD) {
+                        // no group member left and ghost thread
+                        // Finally delete the message
+                        Log.d(TAG, "message " + id + " for ghost group with no members - marking for deletion");
+                        messagesToDelete.add(id);
+                    }
+                    else {
+                        // no group member left - skip message
+                        // This might be a pending message that was queued before we realized there were no members left
+                        // since the group might get populated again, we just skip the message but keep it
+                        Log.d(TAG, "no members in group - skipping message " + id);
+                    }
                     continue;
                 }
             }
@@ -816,6 +829,11 @@ public class MessagesController {
             }
 
             MessageCenterService.bus().post(event);
+        }
+
+        // very inefficient, but it rarely happens
+        for (long id : messagesToDelete) {
+            MessagesProviderClient.deleteMessage(mContext, id);
         }
     }
 
