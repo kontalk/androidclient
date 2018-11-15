@@ -63,6 +63,7 @@ import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.SearchActivity;
+import org.kontalk.util.CustomSimpleXmppStringprep;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
@@ -171,6 +172,9 @@ public class Kontalk extends Application {
         // register reporting manager
         if (Preferences.isReportingEnabled(this))
             ReportingManager.register(this);
+
+        // hacks
+        CustomSimpleXmppStringprep.setup();
 
         // register security provider
         SecureConnectionManager.init(this);

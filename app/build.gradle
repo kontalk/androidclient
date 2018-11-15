@@ -26,6 +26,7 @@ task checkstyle(type: Checkstyle){
         '**/XMPPTCPConnection.java',
         '**/BundleAndDefer*.java',
         '**/ProximityScreenLocker*.java',
+        '**/CustomSimpleXmppStringprep.java',
         'main/java/com/**'
     def configProps = ['baseDir': projectDir.absolutePath]
     configProperties configProps
