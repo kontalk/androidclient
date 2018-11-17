@@ -18,6 +18,7 @@
 
 package org.kontalk.ui;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -36,7 +37,7 @@ import org.kontalk.util.ViewUtils;
  * My key activity.
  * @author Daniele Ricci
  */
-public class MyKeyActivity extends ToolbarActivity {
+public class MyKeyActivity extends ToolbarActivity implements ViewUtils.OnQRCodeGeneratedListener {
     private static final String TAG = Kontalk.TAG;
 
     private View mViewport;
@@ -44,6 +45,7 @@ public class MyKeyActivity extends ToolbarActivity {
     private TextView mTextName;
     private TextView mTextFingerprint;
     private ImageView mQRCode;
+    private View mLoading;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +59,7 @@ public class MyKeyActivity extends ToolbarActivity {
         mTextName = findViewById(R.id.name);
         mTextFingerprint = findViewById(R.id.fingerprint);
         mQRCode = findViewById(R.id.qrcode);
+        mLoading = findViewById(R.id.loading);
     }
 
     @Override
@@ -83,8 +86,8 @@ public class MyKeyActivity extends ToolbarActivity {
         mTextFingerprint.setText(PGP.formatFingerprint(fingerprint)
             .replaceFirst("  ", "\n"));
 
-        ViewUtils.getQRCodeBitmapAsync(this, mViewport, mQRCode,
-            PGP.createFingerprintURI(fingerprint));
+        ViewUtils.getQRCodeBitmapAsync(this, mViewport,
+            PGP.createFingerprintURI(fingerprint), this);
     }
 
     @Override
@@ -92,4 +95,15 @@ public class MyKeyActivity extends ToolbarActivity {
         return true;
     }
 
+    @Override
+    public void onQRCodeGenerated(Bitmap qrCode) {
+        mLoading.setVisibility(View.GONE);
+        mQRCode.setImageBitmap(qrCode);
+    }
+
+    @Override
+    public void onQRCodeError(Exception e) {
+        mLoading.setVisibility(View.GONE);
+        // TODO error
+    }
 }
