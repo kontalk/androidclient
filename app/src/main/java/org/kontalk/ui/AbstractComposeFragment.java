@@ -1212,9 +1212,11 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
         try {
             mCurrentPhoto = MediaStorage.getOutgoingPhotoFile();
-            Uri uri = Uri.fromFile(mCurrentPhoto);
 
             final Intent intent = SystemUtils.externalIntent(MediaStore.ACTION_IMAGE_CAPTURE);
+            Uri uri = MediaStorage.getWorldWritableUri(getContext(),
+                Uri.fromFile(mCurrentPhoto), intent, true);
+
             intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                 intent.setClipData(ClipData.newUri(context.getContentResolver(),
