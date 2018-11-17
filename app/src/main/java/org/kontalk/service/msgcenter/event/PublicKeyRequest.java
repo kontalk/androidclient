@@ -18,6 +18,7 @@
 
 package org.kontalk.service.msgcenter.event;
 
+import org.jivesoftware.smack.packet.id.StanzaIdUtil;
 import org.jxmpp.jid.Jid;
 
 
@@ -30,7 +31,7 @@ public class PublicKeyRequest extends RequestEvent {
     public final Jid jid;
 
     public PublicKeyRequest(Jid jid) {
-        this(null, jid);
+        this(StanzaIdUtil.newStanzaId(), jid);
     }
 
     /** Use null jid to request public keys for the whole roster. */
