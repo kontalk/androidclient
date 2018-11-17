@@ -25,6 +25,7 @@
 - Fix message center not shutting down when inactive
 - Fix invisible incoming replied messages (#1224)
 - Remove unneeded permissions (#1238)
+- Fix search items in wrong order (#1232)
 
 ## [4.2.0] - 2018-09-04
 ### Changed
