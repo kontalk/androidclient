@@ -12,6 +12,9 @@
 - Allow replying to own messages
 - Use same emoji type acroll all screens (#1229)
 - Use an event bus for communicating with the message center (#1236)
+- Update Smack library to version 4.3.1
+- Generate QR codes in the background (#1237)
+- Move some account-related preferences into their own new section
 
 ### Fixed
 - Sort search results in inverted timestamp order (#1223)
@@ -21,6 +24,7 @@
 - Fix messages skipped until next app opening
 - Fix message center not shutting down when inactive
 - Fix invisible incoming replied messages (#1224)
+- Remove unneeded permissions (#1238)
 
 ## [4.2.0] - 2018-09-04
 ### Changed
