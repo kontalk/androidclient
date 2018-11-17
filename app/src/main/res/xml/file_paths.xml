@@ -26,4 +26,6 @@
     <external-path name="my_pictures" path="Pictures/Kontalk" />
     <external-path name="my_downloads" path="Download/Kontalk" />
     <external-path name="my_photos" path="DCIM/Kontalk" />
+
+    <external-cache-path name="debug" path="debug" />
 </paths>

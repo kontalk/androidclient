@@ -39,6 +39,7 @@ import org.kontalk.util.SystemUtils;
  */
 public final class Log {
 
+    private static final String LOG_DIRECTORY = "debug";
     private static final String LOG_FILENAME = "kontalk-android.log";
     private static DateFormat DATE_FORMAT;  // created on demand
 
@@ -49,7 +50,9 @@ public final class Log {
         try {
             if (Preferences.isDebugLogEnabled(context)) {
                 DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
-                sLogFile = new File(context.getExternalCacheDir(), LOG_FILENAME);
+                File logDir = new File(context.getExternalCacheDir(), LOG_DIRECTORY);
+                logDir.mkdirs();
+                sLogFile = new File(logDir, LOG_FILENAME);
                 sLogFileWriter = new RotatingFileWriter(sLogFile);
             }
             else {
