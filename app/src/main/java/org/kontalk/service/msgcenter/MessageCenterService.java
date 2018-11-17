@@ -1813,11 +1813,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 if (conn != null && conn.isConnected()) {
                     Jid jid = conn.getXMPPServiceDomain();
                     if (Keyring.getPublicKey(MessageCenterService.this, jid.toString(), MyUsers.Keys.TRUST_UNKNOWN) == null) {
-                        PublicKeyPublish pub = new PublicKeyPublish();
-                        pub.setStanzaId();
-                        pub.setTo(jid);
-                        PublicKeyListener listener = new PublicKeyListener(MessageCenterService.this, pub);
-                        sendIqWithReply(pub, false, listener, listener);
+                        BUS.post(new PublicKeyRequest(jid));
                     }
                 }
             }
