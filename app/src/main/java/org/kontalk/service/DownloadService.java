@@ -139,6 +139,14 @@ public class DownloadService extends IntentService implements DownloadListener {
         }
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mDownloadClient != null) {
+            mDownloadClient.close();
+        }
+    }
+
     private void onDownloadURL(Uri uri, Bundle args) {
         String url = uri.toString();
 
