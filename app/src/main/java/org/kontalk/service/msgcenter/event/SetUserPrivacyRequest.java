@@ -28,13 +28,12 @@ import org.kontalk.service.msgcenter.PrivacyCommand;
  * Used to accept a presence subscription as well as block/unblock someone.
  * @author Daniele Ricci
  */
-public class SetUserPrivacyRequest extends RequestEvent {
+public class SetUserPrivacyRequest {
 
     public final BareJid jid;
     public final PrivacyCommand command;
 
     public SetUserPrivacyRequest(BareJid jid, PrivacyCommand command) {
-        super(null);
         this.jid = jid;
         this.command = command;
     }
