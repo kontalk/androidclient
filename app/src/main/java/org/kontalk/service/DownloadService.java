@@ -346,6 +346,7 @@ public class DownloadService extends IntentService implements DownloadListener {
 
             // create intent for download complete notification
             Intent i = new Intent(Intent.ACTION_VIEW);
+            uri = MediaStorage.getWorldReadableUri(this, uri, i, true);
             i.setDataAndType(uri, mime);
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
