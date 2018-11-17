@@ -104,6 +104,7 @@ public class ViewUtils {
 
     public interface OnQRCodeGeneratedListener {
         void onQRCodeGenerated(Bitmap qrCode);
+
         void onQRCodeError(Exception e);
     }
 

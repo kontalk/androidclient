@@ -18,6 +18,11 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <Preference android:key="pref_account_settings"
+        android:title="@string/pref_account_settings"
+        android:persistent="false"
+        android:layout="@layout/md_preference_custom"/>
+
     <Preference android:key="pref_network_settings"
         android:title="@string/pref_network_settings"
         android:persistent="false"

@@ -86,6 +86,7 @@ public final class PreferencesFragment extends RootPreferenceFragment {
 
     @Override
     protected void setupPreferences() {
+        setupPreferences("pref_account_settings", R.xml.preferences_account);
         setupPreferences("pref_network_settings", R.xml.preferences_network);
         setupPreferences("pref_messaging_settings", R.xml.preferences_messaging);
         setupPreferences("pref_appearance_settings", R.xml.preferences_appearance);
