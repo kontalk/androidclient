@@ -1358,17 +1358,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 @Override
                 public void callback(String putUrl, String getUrl) {
                     // start upload intent service
-                    // TODO move to UploadService.start static method
-                    Intent i = new Intent(MessageCenterService.this, UploadService.class);
-                    i.setData(mediaUri);
-                    i.setAction(UploadService.ACTION_UPLOAD);
-                    i.putExtra(UploadService.EXTRA_POST_URL, putUrl);
-                    i.putExtra(UploadService.EXTRA_GET_URL, getUrl);
-                    i.putExtra(UploadService.EXTRA_DATABASE_ID, databaseId);
-                    i.putExtra(UploadService.EXTRA_MIME, mime);
                     // delete original (actually it's the encrypted temp file) if we already encrypted it
-                    i.putExtra(UploadService.EXTRA_DELETE_ORIGINAL, encrypt);
-                    ContextCompat.startForegroundService(MessageCenterService.this, i);
+                    UploadService.start(MessageCenterService.this, mediaUri,
+                        putUrl, getUrl, databaseId, mime, encrypt);
                 }
             });
 

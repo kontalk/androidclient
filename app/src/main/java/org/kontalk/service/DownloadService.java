@@ -84,6 +84,14 @@ public class DownloadService extends IntentService implements DownloadListener {
     private static final String ACTION_DOWNLOAD_URL = "org.kontalk.action.DOWNLOAD_URL";
     private static final String ACTION_DOWNLOAD_ABORT = "org.kontalk.action.DOWNLOAD_ABORT";
 
+    private static final String EXTRA_MSG_ID = "org.kontalk.download.message.id";
+    private static final String EXTRA_MSG_SERVER_ID = "org.kontalk.download.message.serverId";
+    private static final String EXTRA_MSG_SENDER = "org.kontalk.message.download.sender";
+    private static final String EXTRA_MSG_CONVERSATION = "org.kontalk.message.download.context";
+    private static final String EXTRA_MSG_MIME = "org.kontalk.message.download.mime";
+    private static final String EXTRA_MSG_TIMESTAMP = "org.kontalk.message.download.timestamp";
+    private static final String EXTRA_MSG_ENCRYPTED = "org.kontalk.message.download.encrypted";
+    private static final String EXTRA_MSG_COMPRESS = "org.kontalk.message.download.compress";
     private static final String EXTRA_NOTIFY = "org.kontalk.download.notify";
 
     private ProgressNotificationBuilder mNotificationBuilder;
@@ -172,20 +180,20 @@ public class DownloadService extends IntentService implements DownloadListener {
                 return;
             }
 
-            mMessageId = args.getLong(CompositeMessage.MSG_ID, 0);
-            mPeer = args.getString(CompositeMessage.MSG_SENDER);
-            mConversation = args.getString(CompositeMessage.MSG_CONVERSATION);
-            mEncrypted = args.getBoolean(CompositeMessage.MSG_ENCRYPTED, false);
+            mMessageId = args.getLong(EXTRA_MSG_ID, 0);
+            mPeer = args.getString(EXTRA_MSG_SENDER);
+            mConversation = args.getString(EXTRA_MSG_CONVERSATION);
+            mEncrypted = args.getBoolean(EXTRA_MSG_ENCRYPTED, false);
             sQueue.put(url, mMessageId);
 
             Date date;
-            long timestamp = args.getLong(CompositeMessage.MSG_TIMESTAMP);
+            long timestamp = args.getLong(EXTRA_MSG_TIMESTAMP);
             if (timestamp > 0)
                 date = new Date(timestamp);
             else
                 date = new Date();
 
-            String mime = args.getString(CompositeMessage.MSG_MIME);
+            String mime = args.getString(EXTRA_MSG_MIME);
             // this will be used if the server doesn't provide one
             // if the server provides a filename, only the path will be used
             File defaultFile = CompositeMessage.getIncomingFile(mime, date);
@@ -426,13 +434,13 @@ public class DownloadService extends IntentService implements DownloadListener {
     public static void start(Context context, long databaseId, String sender,
             String mime, long timestamp, boolean encrypted, String url, String conversation, boolean notify) {
         Intent i = new Intent(context, DownloadService.class);
-        i.setAction(DownloadService.ACTION_DOWNLOAD_URL);
-        i.putExtra(CompositeMessage.MSG_ID, databaseId);
-        i.putExtra(CompositeMessage.MSG_SENDER, sender);
-        i.putExtra(CompositeMessage.MSG_CONVERSATION, conversation);
-        i.putExtra(CompositeMessage.MSG_MIME, mime);
-        i.putExtra(CompositeMessage.MSG_TIMESTAMP, timestamp);
-        i.putExtra(CompositeMessage.MSG_ENCRYPTED, encrypted);
+        i.setAction(ACTION_DOWNLOAD_URL);
+        i.putExtra(EXTRA_MSG_ID, databaseId);
+        i.putExtra(EXTRA_MSG_SENDER, sender);
+        i.putExtra(EXTRA_MSG_CONVERSATION, conversation);
+        i.putExtra(EXTRA_MSG_MIME, mime);
+        i.putExtra(EXTRA_MSG_TIMESTAMP, timestamp);
+        i.putExtra(EXTRA_MSG_ENCRYPTED, encrypted);
         i.putExtra(EXTRA_NOTIFY, notify);
         i.setData(Uri.parse(url));
         ContextCompat.startForegroundService(context, i);
@@ -440,7 +448,7 @@ public class DownloadService extends IntentService implements DownloadListener {
 
     public static void abort(Context context, Uri uri) {
         Intent i = new Intent(context, DownloadService.class);
-        i.setAction(DownloadService.ACTION_DOWNLOAD_ABORT);
+        i.setAction(ACTION_DOWNLOAD_ABORT);
         i.setData(uri);
         ContextCompat.startForegroundService(context, i);
     }

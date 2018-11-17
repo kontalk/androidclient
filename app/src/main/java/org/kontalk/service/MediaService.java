@@ -28,7 +28,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.JobIntentService;
 import android.support.v4.content.LocalBroadcastManager;
 
-import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.provider.MessagesProviderClient.MessageUpdater;
@@ -50,8 +49,15 @@ public class MediaService extends JobIntentService {
 
     private static final String ACTION_PREPARE_MESSAGE = "org.kontalk.action.PREPARE_MESSAGE";
 
+    private static final String EXTRA_MSG_ID = "org.kontalk.media.message.id";
+    private static final String EXTRA_MSG_SERVER_ID = "org.kontalk.media.message.serverId";
+    private static final String EXTRA_MSG_MIME = "org.kontalk.media.message.mime";
+    private static final String EXTRA_MSG_MEDIA = "org.kontalk.media.message.media";
+    private static final String EXTRA_MSG_COMPRESS = "org.kontalk.media.message.compress";
+
     /**
      * Broadcasted when a media message is ready for sending.
+     * @deprecated We should use the event bus.
      */
     @Deprecated
     public static final String ACTION_MEDIA_READY = "org.kontalk.action.MEDIA_READY";
@@ -66,9 +72,9 @@ public class MediaService extends JobIntentService {
     }
 
     private void onPrepareMessage(Uri uri, Bundle args) {
-        long databaseId = args.getLong(CompositeMessage.MSG_ID);
-        String mime = args.getString(CompositeMessage.MSG_MIME);
-        boolean media = args.getBoolean("org.kontalk.message.media", false);
+        long databaseId = args.getLong(EXTRA_MSG_ID);
+        String mime = args.getString(EXTRA_MSG_MIME);
+        boolean media = args.getBoolean(EXTRA_MSG_MEDIA, false);
 
         try {
             File previewFile = null;
@@ -103,7 +109,7 @@ public class MediaService extends JobIntentService {
                 previewFile != null ? previewFile.toString() : null,
                 uri, length);
 
-            // TODO send message to message center bus
+            // TODO post event to message center bus
             Intent i = new Intent(ACTION_MEDIA_READY);
             i.putExtra("org.kontalk.message.msgId", databaseId);
             LocalBroadcastManager.getInstance(this).sendBroadcast(i);
@@ -118,12 +124,12 @@ public class MediaService extends JobIntentService {
 
     public static void prepareMessage(Context context, String msgId, long databaseId, Uri uri, String mime, boolean media, int compress) {
         Intent i = new Intent(context, MediaService.class);
-        i.setAction(MediaService.ACTION_PREPARE_MESSAGE);
-        i.putExtra(CompositeMessage.MSG_SERVER_ID, msgId);
-        i.putExtra(CompositeMessage.MSG_ID, databaseId);
-        i.putExtra(CompositeMessage.MSG_MIME, mime);
-        i.putExtra("org.kontalk.message.media", media);
-        i.putExtra(CompositeMessage.MSG_COMPRESS, compress);
+        i.setAction(ACTION_PREPARE_MESSAGE);
+        i.putExtra(EXTRA_MSG_SERVER_ID, msgId);
+        i.putExtra(EXTRA_MSG_ID, databaseId);
+        i.putExtra(EXTRA_MSG_MIME, mime);
+        i.putExtra(EXTRA_MSG_MEDIA, media);
+        i.putExtra(EXTRA_MSG_COMPRESS, compress);
         i.setData(uri);
         enqueueWork(context, MediaService.class, JOB_ID, i);
     }

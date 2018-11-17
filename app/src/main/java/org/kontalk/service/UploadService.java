@@ -35,6 +35,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 
 import org.kontalk.Log;
 import org.kontalk.R;
@@ -305,5 +306,20 @@ public class UploadService extends IntentService implements ProgressListener {
 
     public static boolean isQueued(String url) {
         return queue.containsKey(url);
+    }
+
+    public static void start(Context context, Uri mediaUri,
+            String putUrl, String getUrl, long databaseId,
+            String mime, boolean deleteOriginal) {
+        Intent i = new Intent(context, UploadService.class);
+        i.setData(mediaUri);
+        i.setAction(UploadService.ACTION_UPLOAD);
+        i.putExtra(UploadService.EXTRA_POST_URL, putUrl);
+        i.putExtra(UploadService.EXTRA_GET_URL, getUrl);
+        i.putExtra(UploadService.EXTRA_DATABASE_ID, databaseId);
+        i.putExtra(UploadService.EXTRA_MIME, mime);
+        // delete original (actually it's the encrypted temp file) if we already encrypted it
+        i.putExtra(UploadService.EXTRA_DELETE_ORIGINAL, deleteOriginal);
+        ContextCompat.startForegroundService(context, i);
     }
 }
