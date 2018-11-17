@@ -470,10 +470,12 @@ public class MessagesController {
             if (att != null && att.getFetchUrl() != null &&
                     Preferences.canAutodownloadMedia(mContext, att.getLength())) {
                 long databaseId = ContentUris.parseId(msgUri);
+                String conversation = groupInfo != null ?
+                    groupInfo.getContent().getJid().toString() : msg.getSender();
                 DownloadService.start(mContext, databaseId, sender,
                         att.getMime(), msg.getTimestamp(),
                         att.getSecurityFlags() != Coder.SECURITY_CLEARTEXT,
-                        att.getFetchUrl(), false);
+                        att.getFetchUrl(), conversation, false);
 
                 // only one attachment is supported
                 break;

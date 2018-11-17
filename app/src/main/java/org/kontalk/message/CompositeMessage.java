@@ -127,15 +127,22 @@ public class CompositeMessage {
     public static final int COLUMN_GROUP_TYPE = 27;
     public static final int COLUMN_GROUP_MEMBERSHIP = 28;
 
+    // these deprecated constants should be moved in their respective classes
+    @Deprecated
     public static final String MSG_ID = "org.kontalk.message.id";
+    @Deprecated
     public static final String MSG_SERVER_ID = "org.kontalk.message.serverId";
+    @Deprecated
     public static final String MSG_SENDER = "org.kontalk.message.sender";
+    @Deprecated
+    public static final String MSG_CONVERSATION = "org.kontalk.message.context";
+    @Deprecated
     public static final String MSG_MIME = "org.kontalk.message.mime";
-    public static final String MSG_CONTENT = "org.kontalk.message.content";
-    public static final String MSG_RECIPIENTS = "org.kontalk.message.recipients";
-    public static final String MSG_GROUP = "org.kontalk.message.group";
+    @Deprecated
     public static final String MSG_TIMESTAMP = "org.kontalk.message.timestamp";
+    @Deprecated
     public static final String MSG_ENCRYPTED = "org.kontalk.message.encrypted";
+    @Deprecated
     public static final String MSG_COMPRESS = "org.kontalk.message.compress";
 
     private static final int SUFFIX_LENGTH = "Component".length();

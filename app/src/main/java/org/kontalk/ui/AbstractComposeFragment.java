@@ -1132,7 +1132,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             DownloadService.start(getContext(), msg.getDatabaseId(),
                 msg.getSender(), attachment.getMime(), msg.getTimestamp(),
                 attachment.getSecurityFlags() != Coder.SECURITY_CLEARTEXT,
-                attachment.getFetchUrl());
+                attachment.getFetchUrl(), getUserId());
         }
         else {
             // corrupted message :(

@@ -95,6 +95,7 @@ public class DownloadService extends IntentService implements DownloadListener {
 
     private long mMessageId;
     private String mPeer;
+    private String mConversation;
     private boolean mEncrypted;
     private boolean mNotify;
 
@@ -173,6 +174,7 @@ public class DownloadService extends IntentService implements DownloadListener {
 
             mMessageId = args.getLong(CompositeMessage.MSG_ID, 0);
             mPeer = args.getString(CompositeMessage.MSG_SENDER);
+            mConversation = args.getString(CompositeMessage.MSG_CONVERSATION);
             mEncrypted = args.getBoolean(CompositeMessage.MSG_ENCRYPTED, false);
             sQueue.put(url, mMessageId);
 
@@ -338,7 +340,7 @@ public class DownloadService extends IntentService implements DownloadListener {
         stopForeground();
 
         // notify only if conversation is not open
-        if (!MessagingNotification.isPaused(mPeer) && mNotify) {
+        if (!MessagingNotification.isPaused(mConversation) && mNotify) {
 
             // detect mime type if not available
             if (mime == null)
@@ -417,16 +419,17 @@ public class DownloadService extends IntentService implements DownloadListener {
     }
 
     public static void start(Context context, long databaseId, String sender,
-            String mime, long timestamp, boolean encrypted, String url) {
-        start(context, databaseId, sender, mime, timestamp, encrypted, url, true);
+            String mime, long timestamp, boolean encrypted, String url, String conversation) {
+        start(context, databaseId, sender, mime, timestamp, encrypted, url, conversation, true);
     }
 
     public static void start(Context context, long databaseId, String sender,
-            String mime, long timestamp, boolean encrypted, String url, boolean notify) {
+            String mime, long timestamp, boolean encrypted, String url, String conversation, boolean notify) {
         Intent i = new Intent(context, DownloadService.class);
         i.setAction(DownloadService.ACTION_DOWNLOAD_URL);
         i.putExtra(CompositeMessage.MSG_ID, databaseId);
         i.putExtra(CompositeMessage.MSG_SENDER, sender);
+        i.putExtra(CompositeMessage.MSG_CONVERSATION, conversation);
         i.putExtra(CompositeMessage.MSG_MIME, mime);
         i.putExtra(CompositeMessage.MSG_TIMESTAMP, timestamp);
         i.putExtra(CompositeMessage.MSG_ENCRYPTED, encrypted);
