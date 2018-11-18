@@ -41,6 +41,6 @@ before_deploy:
 deploy:
   skip_cleanup: true
   provider: script
-  script: ./gradlew publish
+  script: ./gradlew publishBeta
   on:
     tags: true

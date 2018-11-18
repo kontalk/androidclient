@@ -234,11 +234,11 @@ if (travisBuild) {
         serviceAccountCredentials = rootProject.file('dist/googleplay-developer-key.json')
     }
 
-    task publish(dependsOn: ['publishGoogleplayRelease']) {
+    task publishBeta(dependsOn: ['publishGoogleplayRelease']) {
         group = 'Kontalk'
         description = 'Publish to Google Play beta channel'
     }
-    publish.dependsOn 'testGoogleplayReleaseUnitTest'
+    publishBeta.dependsOn 'testGoogleplayReleaseUnitTest'
 }
 else if (project.hasProperty('GOOGLE_PLAY_DEVELOPER_KEY_FILE')) {
     play {
