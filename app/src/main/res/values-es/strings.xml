@@ -743,4 +743,13 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
     <string name="title_archived_threads">Chats archivados</string>
     <string name="footer_archived_threads">Chats archivados (%d)</string>
 
+    <string name="pref_account_settings">Cuenta</string>
+    <string name="pref_title_foreground_service_mandatory">Kontalk requiere que esta configuración funcione correctamente en este dispositivo</string>
+
+    <string name="pref_copy_database">Copiar la base de datos</string>
+    <string name="msg_copy_database_success">Base de datos copiada a: %s</string>
+    <string name="msg_copy_database_failed">Falló la copia de base de datos a: %s</string>
+
+    <string name="err_emoji_disabled_in_multiwindow">Emoji no puede ser usado en modo multi-ventana.</string>
+
     </resources>
