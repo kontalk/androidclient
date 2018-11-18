@@ -229,22 +229,22 @@ dependencies {
 
 if (travisBuild) {
     play {
-        track = 'alpha'
-        jsonFile = rootProject.file('dist/googleplay-developer-key.json')
-        untrackOld = true
+        track = 'beta'
+        releaseStatus = 'completed'
+        serviceAccountCredentials = rootProject.file('dist/googleplay-developer-key.json')
     }
 
     task publish(dependsOn: ['publishGoogleplayRelease']) {
         group = 'Kontalk'
-        description = 'Publish to Google Play alpha channel'
+        description = 'Publish to Google Play beta channel'
     }
     publish.dependsOn 'testGoogleplayReleaseUnitTest'
 }
 else if (project.hasProperty('GOOGLE_PLAY_DEVELOPER_KEY_FILE')) {
     play {
-        track = 'beta'
-        jsonFile = file(GOOGLE_PLAY_DEVELOPER_KEY_FILE)
-        untrackOld = true
+        track = 'alpha'
+        releaseStatus = 'draft'
+        serviceAccountCredentials = rootProject.file('dist/googleplay-developer-key.json')
     }
 }
 
