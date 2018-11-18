@@ -23,8 +23,6 @@ import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jxmpp.jid.BareJid;
 
-import android.content.Intent;
-
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.authenticator.Authenticator;
@@ -37,12 +35,8 @@ import org.kontalk.data.Contact;
 import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.UsersProvider;
+import org.kontalk.service.msgcenter.event.PublicKeyEvent;
 import org.kontalk.sync.SyncAdapter;
-
-import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_PUBLICKEY;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_ERROR_EXCEPTION;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PUBLIC_KEY;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TYPE;
 
 
 /**
@@ -96,9 +90,8 @@ class PublicKeyListener extends MessageCenterPacketListener implements Exception
             String id = p.getStanzaId();
 
             // broadcast key update
-            Intent i = prepareIntent(packet, ACTION_PUBLICKEY);
-            i.putExtra(EXTRA_PUBLIC_KEY, _publicKey);
-            sendBroadcast(i);
+            MessageCenterService.bus()
+                .post(new PublicKeyEvent(packet.getFrom(), _publicKey, packet.getStanzaId()));
 
             // if we are not syncing and this is not a response for the Syncer
             // save the key immediately
@@ -143,9 +136,7 @@ class PublicKeyListener extends MessageCenterPacketListener implements Exception
     @Override
     public void processException(Exception exception) {
         Log.w(TAG, "error processing public key", exception);
-        Intent i = prepareResponseIntent(mRequest, ACTION_PUBLICKEY);
-        i.putExtra(EXTRA_TYPE, IQ.Type.error.toString());
-        i.putExtra(EXTRA_ERROR_EXCEPTION, exception);
-        sendBroadcast(i);
+        MessageCenterService.bus()
+            .post(new PublicKeyEvent(exception, mRequest.getTo(), mRequest.getStanzaId()));
     }
 }

@@ -95,6 +95,10 @@ public class ClientHTTPConnection {
     }
 
     public void abort() {
+        close();
+    }
+
+    public void close() {
         try {
             currentRequest.disconnect();
         }

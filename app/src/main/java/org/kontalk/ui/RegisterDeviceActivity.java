@@ -21,6 +21,7 @@ package org.kontalk.ui;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.View;
@@ -37,7 +38,7 @@ import org.kontalk.util.ViewUtils;
  * Shows the secure token for registering another device with the same key.
  * @author Daniele Ricci
  */
-public class RegisterDeviceActivity extends ToolbarActivity {
+public class RegisterDeviceActivity extends ToolbarActivity implements ViewUtils.OnQRCodeGeneratedListener {
     private static final String TAG = Kontalk.TAG;
 
     private View mViewport;
@@ -45,6 +46,7 @@ public class RegisterDeviceActivity extends ToolbarActivity {
     private TextView mTextServer;
     private TextView mTextToken;
     private ImageView mQRCode;
+    private View mLoading;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +60,7 @@ public class RegisterDeviceActivity extends ToolbarActivity {
         mTextServer = findViewById(R.id.servername);
         mTextToken = findViewById(R.id.token);
         mQRCode = findViewById(R.id.qrcode);
+        mLoading = findViewById(R.id.loading);
     }
 
     @SuppressLint("SetTextI18n")
@@ -81,13 +84,25 @@ public class RegisterDeviceActivity extends ToolbarActivity {
             mTextToken.setText(token);
         }
 
-        ViewUtils.getQRCodeBitmapAsync(this, mViewport, mQRCode,
-            generateTokenText(account, token, from));
+        ViewUtils.getQRCodeBitmapAsync(this, mViewport,
+            generateTokenText(account, token, from), this);
     }
 
     @Override
     protected boolean isNormalUpNavigation() {
         return true;
+    }
+
+    @Override
+    public void onQRCodeGenerated(Bitmap qrCode) {
+        mLoading.setVisibility(View.GONE);
+        mQRCode.setImageBitmap(qrCode);
+    }
+
+    @Override
+    public void onQRCodeError(Exception e) {
+        mLoading.setVisibility(View.GONE);
+        // TODO error
     }
 
     /** This must match the parsing done in {@link #parseTokenText}. */
@@ -115,10 +130,10 @@ public class RegisterDeviceActivity extends ToolbarActivity {
         }
     }
 
-    public static void start(@NonNull Context context, @NonNull String token, @NonNull String from) {
+    public static void start(@NonNull Context context, @NonNull String token, @NonNull String server) {
         Intent i = new Intent(context, RegisterDeviceActivity.class);
         i.putExtra("token", token);
-        i.putExtra("from", from);
+        i.putExtra("from", server);
         context.startActivity(i);
     }
 

@@ -30,6 +30,7 @@ import android.util.AttributeSet;
 
 import org.kontalk.Log;
 import org.kontalk.R;
+import org.kontalk.util.MediaStorage;
 
 
 /**
@@ -40,43 +41,37 @@ public class SendDebugLogPreference extends Preference {
 
     public SendDebugLogPreference(Context context) {
         super(context);
-        init();
     }
 
     public SendDebugLogPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init();
     }
 
     public SendDebugLogPreference(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init();
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public SendDebugLogPreference(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
-        init();
     }
 
-    private void init() {
-        setOnPreferenceClickListener(new OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                sendDebugLog(getContext());
-                return true;
-            }
-        });
+    @Override
+    protected void onClick() {
+        super.onClick();
+        sendDebugLog(getContext());
     }
 
-    void sendDebugLog(Context context) {
+    private void sendDebugLog(Context context) {
         File file = Log.getLogFile();
         if (file != null && file.isFile()) {
             Intent i = new Intent(Intent.ACTION_SEND);
             i.setType("text/plain");
             i.putExtra(Intent.EXTRA_EMAIL, new String[] { context.getString(R.string.mailto) });
             i.putExtra(Intent.EXTRA_SUBJECT, "Kontalk debug log");
-            i.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
+            Uri uri = MediaStorage.getWorldReadableUri(context,
+                Uri.fromFile(file), i, true);
+            i.putExtra(Intent.EXTRA_STREAM, uri);
             context.startActivity(i);
         }
     }

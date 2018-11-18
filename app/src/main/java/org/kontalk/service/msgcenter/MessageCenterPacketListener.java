@@ -32,7 +32,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.annotation.CheckResult;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import org.kontalk.client.EndpointServer;
@@ -40,22 +39,20 @@ import org.kontalk.client.KontalkConnection;
 import org.kontalk.service.msgcenter.MessageCenterService.IdleConnectionHandler;
 import org.kontalk.util.WakefulHashSet;
 
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
-
 
 /**
  * Packet listener for the Message Center.
  * @author Daniele Ricci
  */
-abstract class MessageCenterPacketListener implements StanzaListener {
+public abstract class MessageCenterPacketListener implements StanzaListener {
     protected static final String TAG = MessageCenterService.TAG;
 
     private WeakReference<MessageCenterService> mInstance;
+    private WeakReference<KontalkConnection> mConnection;
 
     MessageCenterPacketListener(MessageCenterService instance) {
         mInstance = new WeakReference<>(instance);
+        mConnection = new WeakReference<>(instance.mConnection);
     }
 
     protected MessageCenterService getInstance() {
@@ -68,8 +65,7 @@ abstract class MessageCenterPacketListener implements StanzaListener {
     }
 
     protected KontalkConnection getConnection() {
-        MessageCenterService instance = mInstance.get();
-        return (instance != null) ? instance.mConnection : null;
+        return mConnection.get();
     }
 
     protected EndpointServer getServer() {
@@ -97,12 +93,8 @@ abstract class MessageCenterPacketListener implements StanzaListener {
             instance.queueTask(task);
     }
 
-    protected void broadcast(String action) {
-        MessageCenterService instance = mInstance.get();
-        if (instance != null && instance.isStarted())
-            instance.broadcast(action);
-    }
-
+    /** @deprecated Use service bus. */
+    @Deprecated
     protected void sendBroadcast(Intent intent) {
         MessageCenterService instance = mInstance.get();
         if (instance != null && instance.isStarted())
@@ -213,35 +205,5 @@ abstract class MessageCenterPacketListener implements StanzaListener {
         MessageCenterService instance = mInstance.get();
         if (instance != null)
             instance.endKeyPairImport();
-    }
-
-    /**
-     * Prepare an intent with common stanza parameters.
-     * @param packet the stanza
-     * @return a prepared intent
-     */
-    protected Intent prepareIntent(@NonNull Stanza packet, @NonNull String action) {
-        Intent i = new Intent(action);
-        i.putExtra(EXTRA_PACKET_ID, packet.getStanzaId());
-        if (packet.getFrom() != null)
-            i.putExtra(EXTRA_FROM, packet.getFrom().toString());
-        if (packet.getTo() != null)
-            i.putExtra(EXTRA_TO, packet.getTo().toString());
-        return i;
-    }
-
-    /**
-     * Prepare an intent with common stanza parameters from a request stanza.
-     * @param request the original request stanza
-     * @return a prepared intent with inverted from/to
-     */
-    protected Intent prepareResponseIntent(@NonNull Stanza request, @NonNull String action) {
-        Intent i = new Intent(action);
-        i.putExtra(EXTRA_PACKET_ID, request.getStanzaId());
-        if (request.getFrom() != null)
-            i.putExtra(EXTRA_TO, request.getFrom().toString());
-        if (request.getTo() != null)
-            i.putExtra(EXTRA_FROM, request.getTo().toString());
-        return i;
     }
 }

@@ -48,7 +48,8 @@
             android:singleLine="true"
             tools:text="Test Contact"/>
 
-        <TextView android:id="@android:id/text2"
+        <com.vanniktech.emoji.EmojiTextView
+            android:id="@android:id/text2"
             style="@style/AvatarBannerSubtitleStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

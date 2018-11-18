@@ -302,7 +302,7 @@ public final class Preferences {
     }
 
     public static long getLastPushNotification() {
-        return getLongOnce("pref_last_push_notification");
+        return getLong("pref_last_push_notification", -1);
     }
 
     /** TODO cache value */

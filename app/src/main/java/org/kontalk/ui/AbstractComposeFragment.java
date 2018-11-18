@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,20 +36,19 @@ import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.enums.SnackbarType;
 import com.nispok.snackbar.listeners.ActionClickListener;
 
-import org.jivesoftware.smack.packet.Presence;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.jivesoftware.smackx.chatstates.ChatState;
-import org.jxmpp.jid.Jid;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.AsyncQueryHandler;
-import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
@@ -70,7 +68,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.text.ClipboardManager;
 import android.text.TextUtils;
 import android.util.SparseBooleanArray;
@@ -114,10 +111,14 @@ import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.DownloadService;
-import org.kontalk.service.msgcenter.MessageCenterClient;
-import org.kontalk.service.msgcenter.MessageCenterClient.ConnectionLifecycleListener;
-import org.kontalk.service.msgcenter.MessageCenterClient.PresenceListener;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.event.ChatStateEvent;
+import org.kontalk.service.msgcenter.event.ConnectedEvent;
+import org.kontalk.service.msgcenter.event.DisconnectedEvent;
+import org.kontalk.service.msgcenter.event.NoPresenceEvent;
+import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
+import org.kontalk.service.msgcenter.event.UserOfflineEvent;
+import org.kontalk.service.msgcenter.event.UserOnlineEvent;
 import org.kontalk.ui.adapter.MessageListAdapter;
 import org.kontalk.ui.view.AttachmentRevealFrameLayout;
 import org.kontalk.ui.view.AudioContentView;
@@ -234,13 +235,12 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     private PeerObserver mPeerObserver;
     private File mCurrentPhoto;
 
-    protected LocalBroadcastManager mLocalBroadcastManager;
-    private PresenceReceiver mPresenceReceiver;
-
     private boolean mOfflineModeWarned;
     protected CharSequence mCurrentStatus;
 
     private int mCheckedItemCount;
+
+    protected EventBus mServiceBus = MessageCenterService.bus();
 
     /**
      * Returns a new fragment instance from a picked contact.
@@ -323,18 +323,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         }
 
         processArguments(savedInstanceState);
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        mLocalBroadcastManager = LocalBroadcastManager.getInstance(context);
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mLocalBroadcastManager = null;
     }
 
     @Override
@@ -466,8 +454,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                     if (text != null && !TextUtils.isEmpty(text.getContent()))
                         copyTextMenu.setVisible(true);
 
-                    // incoming text message: enable reply
-                    if (msg.isIncoming() && text != null) {
+                    // text message: enable reply
+                    if (text != null) {
                         replyMenu.setVisible(true);
                     }
 
@@ -768,6 +756,16 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     @Override
     public void onTextEntryFocus() {
         tryHideAttachmentView(true);
+    }
+
+    @Override
+    public boolean canOpenEmoji() {
+        if (SystemUtils.supportsMultiWindow() && getActivity().isInMultiWindowMode()) {
+            Toast.makeText(getContext(), R.string.err_emoji_disabled_in_multiwindow,
+                Toast.LENGTH_LONG).show();
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -1134,7 +1132,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             DownloadService.start(getContext(), msg.getDatabaseId(),
                 msg.getSender(), attachment.getMime(), msg.getTimestamp(),
                 attachment.getSecurityFlags() != Coder.SECURITY_CLEARTEXT,
-                attachment.getFetchUrl());
+                attachment.getFetchUrl(), getUserId());
         }
         else {
             // corrupted message :(
@@ -1157,7 +1155,9 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
         if (attachment != null) {
             Intent i = new Intent(Intent.ACTION_VIEW);
-            i.setDataAndType(attachment.getLocalUri(), attachment.getMime());
+            Uri uri = MediaStorage.getWorldReadableUri(getContext(),
+                attachment.getLocalUri(), i, true);
+            i.setDataAndType(uri, attachment.getMime());
             try {
                 startActivity(i);
             }
@@ -1212,9 +1212,11 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
         try {
             mCurrentPhoto = MediaStorage.getOutgoingPhotoFile();
-            Uri uri = Uri.fromFile(mCurrentPhoto);
 
             final Intent intent = SystemUtils.externalIntent(MediaStore.ACTION_IMAGE_CAPTURE);
+            Uri uri = MediaStorage.getWorldWritableUri(getContext(),
+                Uri.fromFile(mCurrentPhoto), intent, true);
+
             intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                 intent.setClipData(ClipData.newUri(context.getContentResolver(),
@@ -1394,10 +1396,17 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     private void replyMessage(CompositeMessage msg) {
         TextComponent textComponent = msg.getComponent(TextComponent.class);
         if (textComponent != null) {
-            String sender = msg.getSender();
-            Contact contact = Contact.findByUserId(getContext(), sender);
+            String displayName;
+            if (msg.getDirection() == Messages.DIRECTION_IN) {
+                String sender = msg.getSender();
+                Contact contact = Contact.findByUserId(getContext(), sender);
+                displayName = contact.getDisplayName();
+            }
+            else {
+                displayName = Authenticator.getDefaultDisplayName(getContext());
+            }
 
-            mReplyBar.show(msg.getDatabaseId(), contact.getDisplayName(), textComponent.getContent());
+            mReplyBar.show(msg.getDatabaseId(), displayName, textComponent.getContent());
         }
     }
 
@@ -1456,19 +1465,17 @@ public abstract class AbstractComposeFragment extends ListFragment implements
      */
     protected abstract String getDecodedName(CompositeMessage msg);
 
+    // TODO abstract those intent creators
     private void shareMessage(CompositeMessage msg) {
         Intent i = null;
         AttachmentComponent attachment = msg.getComponent(AttachmentComponent.class);
 
         if (attachment != null) {
-            i = ComposeMessage.sendMediaMessage(attachment.getLocalUri(),
-                attachment.getMime());
+            i = ComposeMessage.sendMediaMessage(getContext(),
+                attachment.getLocalUri(), attachment.getMime());
         }
-
         else if (msg.getComponent(TextComponent.class) != null) {
             TextComponent txt = msg.getComponent(TextComponent.class);
-
-            //if (txt != null)
             i = ComposeMessage.sendTextMessage(txt.getContent());
         }
         else if (msg.getComponent(LocationComponent.class) != null) {
@@ -1479,11 +1486,13 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                     + location.getLatitude() + "," + location.getLongitude()));
         }
 
-        if (i != null)
+        if (i != null) {
             startActivity(i);
-        else
+        }
+        else {
             // TODO ehm...
             Log.w(TAG, "error sharing message");
+        }
     }
 
     protected void loadConversationMetadata(Uri uri) {
@@ -1839,158 +1848,95 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             registerPeerObserver();
         }
 
-        // subscribe to presence notifications
-        subscribePresence();
+        // register to events now
+        if (!mServiceBus.isRegistered(this))
+            mServiceBus.register(this);
 
         updateUI();
+    }
+
+    protected void resetConnectionStatus() {
+        // reset compose sent flag
+        mComposer.resetCompose();
+        // reset available resources list
+        mAvailableResources.clear();
     }
 
     /**
      * Called when a presence is received.
      */
-    protected abstract void onPresence(String jid, Presence.Type type,
-        boolean removed, Presence.Mode mode, String fingerprint);
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onUserOnline(UserOnlineEvent event) {
+        // check that origin matches the current chat
+        if (!isUserId(event.jid.toString())) {
+            // not for us
+            return;
+        }
 
-    protected abstract void onConnected();
+        mAvailableResources.add(event.jid.toString());
+    }
 
-    protected abstract void onDisconnected();
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onUserOffline(UserOfflineEvent event) {
+        // check that origin matches the current chat
+        if (!isUserId(event.jid.toString())) {
+            // not for us
+            return;
+        }
+
+        mAvailableResources.remove(event.jid.toString());
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public abstract void onNoUserPresence(NoPresenceEvent event);
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN_ORDERED)
+    public void onConnected(ConnectedEvent event) {
+        resetConnectionStatus();
+        mConnected = true;
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onDisconnected(DisconnectedEvent event) {
+        resetConnectionStatus();
+        mConnected = false;
+    }
 
     /**
      * Called when the roster has been loaded (ACTION_ROSTER).
      */
-    protected abstract void onRosterLoaded();
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN_ORDERED)
+    public void onRosterLoaded(RosterLoadedEvent event) {
+    }
 
     /**
      * Called when the contact starts typing.
      */
-    protected abstract void onStartTyping(String jid, String groupJid);
+    protected abstract void onStartTyping(String jid, @Nullable String groupJid);
 
     /**
      * Called when the contact stops typing.
      */
-    protected abstract void onStopTyping(String jid, String groupJid);
+    protected abstract void onStopTyping(String jid, @Nullable String groupJid);
 
     /**
      * Should return true if the contact is a user ID in the current context.
      */
     protected abstract boolean isUserId(String jid);
 
-    class PresenceReceiver extends BroadcastReceiver implements
-            ConnectionLifecycleListener,
-            PresenceListener {
-        public void onReceive(Context context, Intent intent) {
-            // activity is terminating
-            if (getContext() == null)
-                return;
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onChateState(ChatStateEvent event) {
+        // we are receiving a composing notification from our peer
+        String from = event.from.toString();
+        if (isUserId(from)) {
+            String groupJid = event.group != null ? event.group.toString() : null;
 
-            String action = intent.getAction();
-
-            if (MessageCenterService.ACTION_MESSAGE.equals(action)) {
-                String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                String chatState = intent.getStringExtra("org.kontalk.message.chatState");
-
-                // we are receiving a composing notification from our peer
-                if (from != null && isUserId(from)) {
-                    String groupJid = intent.getStringExtra(MessageCenterService.EXTRA_GROUP_JID);
-
-                    if (chatState != null && ChatState.composing.toString().equals(chatState)) {
-                        onStartTyping(from, groupJid);
-                    }
-                    else {
-                        onStopTyping(from, groupJid);
-                    }
-                }
-            }
-        }
-
-        @Override
-        public void onConnected() {
-            // reset compose sent flag
-            mComposer.resetCompose();
-            // reset available resources list
-            mAvailableResources.clear();
-
-            mConnected = true;
-            AbstractComposeFragment.this.onConnected();
-        }
-
-        @Override
-        public void onDisconnected() {
-            mConnected = false;
-            AbstractComposeFragment.this.onDisconnected();
-        }
-
-        @Override
-        public void onRosterLoaded() {
-            AbstractComposeFragment.this.onRosterLoaded();
-        }
-
-        @Override
-        public void onPresence(Jid from,
-            Presence.Type type, Presence.Mode mode, int priority,
-            String status, Date delay,
-            String rosterName, boolean subscribedFrom, boolean subscribedTo,
-            String fingerprint) {
-
-            // since this listener is used also for global presence (for groups),
-            // check that the origin is among group members
-            if (mConversation.isGroupChat() && !isUserId(from.toString())) {
-                // not for us
-                return;
-            }
-
-            boolean removed = false;
-            if (type == Presence.Type.available) {
-                mAvailableResources.add(from.toString());
-            }
-            else if (type == Presence.Type.unavailable) {
-                removed = mAvailableResources.remove(from.toString());
-            }
-
-            AbstractComposeFragment.this.onPresence(from.toString(), type, removed, mode, fingerprint);
-        }
-    }
-
-    private void subscribePresence() {
-        if (mPresenceReceiver == null) {
-            mPresenceReceiver = new PresenceReceiver();
-
-            // listen for user presence, connection and incoming messages
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(MessageCenterService.ACTION_MESSAGE);
-
-            mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
-
-            Context ctx = getContext();
-            MessageCenterClient msgc = MessageCenterClient.getInstance(ctx);
-            msgc.addConnectionLifecycleListener(mPresenceReceiver);
-
-            if (mConversation.isGroupChat()) {
-                // we will filter out unwanted presences.
-                // It may be inelegant, but this way we don't have to change our
-                // subscription when group members change
-                msgc.addGlobalPresenceListener(mPresenceReceiver);
+            if (event.chatState == ChatState.composing) {
+                onStartTyping(event.from.toString(), groupJid);
             }
             else {
-                msgc.addPresenceListener(mPresenceReceiver, getUserId());
+                onStopTyping(from, groupJid);
             }
-
-            // request connection and roster load status
-            if (ctx != null) {
-                MessageCenterService.requestConnectionStatus(ctx);
-                MessageCenterService.requestRosterStatus(ctx);
-            }
-        }
-    }
-
-    private void unsubscribePresence() {
-        if (mPresenceReceiver != null) {
-            mLocalBroadcastManager.unregisterReceiver(mPresenceReceiver);
-            MessageCenterClient.getInstance(getContext())
-                .removeConnectionLifecycleListener(mPresenceReceiver)
-                .removePresenceListener(mPresenceReceiver, getUserId())
-                .removeGlobalPresenceListener(mPresenceReceiver);
-            mPresenceReceiver = null;
         }
     }
 
@@ -2176,8 +2122,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     public void onPause() {
         super.onPause();
 
-        // unsubcribe presence notifications
-        unsubscribePresence();
+        // not interested in any more events
+        mServiceBus.unregister(this);
 
         // notify composer bar
         mComposer.onPause();

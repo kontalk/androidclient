@@ -111,10 +111,7 @@ class RegenerateKeyPairListener extends RegisterKeyPairListener {
                             Kontalk.get().getCachedPassphrase());
 
                         // listen for connection events
-                        setupConnectedReceiver();
-
-                        // request connection status to proceed
-                        MessageCenterService.requestConnectionStatus(context);
+                        registerConnectionEvents();
 
                         // CONNECTED listener will do the rest
                     }

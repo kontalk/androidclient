@@ -51,9 +51,6 @@ import org.jivesoftware.smackx.iqregister.packet.Registration;
 import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
-
-import org.kontalk.BuildConfig;
-import org.kontalk.util.XMPPUtils;
 import org.spongycastle.openpgp.PGPException;
 
 import android.Manifest;
@@ -68,6 +65,7 @@ import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Base64;
 
+import org.kontalk.BuildConfig;
 import org.kontalk.Log;
 import org.kontalk.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.crypto.PersonalKey;
@@ -75,6 +73,7 @@ import org.kontalk.crypto.X509Bridge;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.XMPPConnectionHelper;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
+import org.kontalk.util.XMPPUtils;
 
 
 /**
@@ -934,6 +933,21 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private static int firstDigit(long n) {
         while (n < -9 || 9 < n) n /= 10;
         return (int) Math.abs(n);
+    }
+
+    public static String formatForDisplay(PhoneNumber phone) {
+        return PhoneNumberUtil.getInstance()
+            .format(phone, PhoneNumberFormat.INTERNATIONAL);
+    }
+
+    public static String formatForDisplay(String phoneNumber) {
+        try {
+            return formatForDisplay(PhoneNumberUtil.getInstance()
+                .parse(phoneNumber, null));
+        }
+        catch (NumberParseException e) {
+            return phoneNumber;
+        }
     }
 
     /** Returns the (parsed) number stored in this device SIM card. */

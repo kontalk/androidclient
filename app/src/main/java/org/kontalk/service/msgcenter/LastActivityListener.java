@@ -18,49 +18,38 @@
 
 package org.kontalk.service.msgcenter;
 
-import android.content.Intent;
-
 import org.jivesoftware.smack.ExceptionCallback;
+import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
+import org.jxmpp.jid.Jid;
 
-import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_LAST_ACTIVITY;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_ERROR_EXCEPTION;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_SECONDS;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TYPE;
+import org.kontalk.service.msgcenter.event.LastActivityEvent;
 
 
 /**
  * Packet listener for last activity iq.
  * @author Daniele Ricci
  */
-class LastActivityListener extends MessageCenterPacketListener implements ExceptionCallback {
-
-    public LastActivityListener(MessageCenterService instance) {
-        super(instance);
-    }
+class LastActivityListener implements StanzaListener, ExceptionCallback {
 
     @Override
     public void processStanza(Stanza packet) {
-        Intent i = prepareIntent(packet, ACTION_LAST_ACTIVITY);
-
         LastActivity p = (LastActivity) packet;
-        i.putExtra(EXTRA_SECONDS, p.getIdleTime());
-        i.putExtra(EXTRA_TYPE, p.getType().toString());
-
-        sendBroadcast(i);
+        MessageCenterService.bus()
+            .post(new LastActivityEvent(p.getFrom(), p.getIdleTime(), p.getStanzaId()));
     }
 
     @Override
     public void processException(Exception exception) {
         if (exception instanceof XMPPException.XMPPErrorException) {
-            Intent i = prepareIntent(((XMPPException.XMPPErrorException) exception)
-                .getXMPPError().getStanza(), ACTION_LAST_ACTIVITY);
-            i.putExtra(EXTRA_TYPE, IQ.Type.error.toString());
-            i.putExtra(EXTRA_ERROR_EXCEPTION, exception);
-            sendBroadcast(i);
+            String id = ((XMPPException.XMPPErrorException) exception)
+                .getStanzaError().getStanza().getStanzaId();
+            Jid jid = ((XMPPException.XMPPErrorException) exception)
+                .getStanzaError().getStanza().getFrom();
+            MessageCenterService.bus()
+                .post(new LastActivityEvent(exception, jid, id));
         }
         // we currently don't handle reply timeouts
     }

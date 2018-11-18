@@ -20,8 +20,9 @@ package org.kontalk.ui.view;
 
 import java.util.regex.Pattern;
 
+import com.vanniktech.emoji.EmojiTextView;
+
 import android.content.Context;
-import android.support.v7.widget.AppCompatTextView;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
@@ -35,7 +36,7 @@ import org.kontalk.message.GroupCommandComponent;
  * Message component for {@link GroupCommandComponent}.
  * @author Daniele Ricci
  */
-public class GroupContentView extends AppCompatTextView
+public class GroupContentView extends EmojiTextView
     implements MessageContentView<GroupCommandComponent> {
 
     private GroupCommandComponent mComponent;
@@ -46,10 +47,6 @@ public class GroupContentView extends AppCompatTextView
 
     public GroupContentView(Context context, AttributeSet attrs) {
         super(context, attrs);
-    }
-
-    public GroupContentView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
     }
 
     @Override
@@ -74,12 +71,12 @@ public class GroupContentView extends AppCompatTextView
         // member left group
         else if (component.isPartCommand()) {
             // sending to the group JID, this is our own part command
-            if (component.getContent().getJID().equalsIgnoreCase(component.getFrom())) {
+            if (component.getContent().getJid().equals(component.getFrom())) {
                 text = getResources().getString(R.string.group_command_self_parted);
             }
             else {
                 Contact c = Contact.findByUserId(getContext(), component.getFrom());
-                boolean isOwner = component.getFrom().equalsIgnoreCase(mComponent.getContent().getOwner());
+                boolean isOwner = mComponent.getContent().getOwner().equals(component.getFrom());
                 text = getResources().getString(isOwner ?
                     R.string.group_command_owner_parted : R.string.group_command_user_parted,
                     c.getDisplayName());

@@ -329,6 +329,15 @@ public final class SystemUtils {
         return false;
     }
 
+    /** Mainly for converting arrays of Jids to arrays of String :) */
+    public static <T> String[] toString(final T[] array) {
+        String[] out = new String[array.length];
+        for (int i = 0; i < array.length; i++) {
+            out[i] = array[i] != null ? array[i].toString() : null;
+        }
+        return out;
+    }
+
     /** Instead of importing the whole commons-io :) */
     public static long copy(final InputStream input, final OutputStream output) throws IOException {
         byte[] buffer = new byte[4096];
@@ -475,6 +484,27 @@ public final class SystemUtils {
         PowerManager.WakeLock lock = pwm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, tag);
         lock.setReferenceCounted(referenceCounted);
         return lock;
+    }
+
+    public static boolean isIgnoringBatteryOptimizations(Context context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+            return true;
+
+        PowerManager pwm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        return pwm.isIgnoringBatteryOptimizations(context.getPackageName());
+    }
+
+    public static boolean supportsJobScheduler() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
+    }
+
+    public static boolean supportsMultiWindow() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
+    }
+
+    /** Return true if the platform can and will broadcast network state change *implicit* intents. */
+    public static boolean isReceivingNetworkStateChanges() {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.N;
     }
 
 }

@@ -68,9 +68,7 @@ class ImportKeyPairListener extends RegisterKeyPairListener {
         // proceed to send the public key to the server for approval
 
         // listen for connection events
-        setupConnectedReceiver();
-        // request connection status
-        MessageCenterService.requestConnectionStatus(getContext());
+        registerConnectionEvents();
 
         // CONNECTED listener will do the rest
     }

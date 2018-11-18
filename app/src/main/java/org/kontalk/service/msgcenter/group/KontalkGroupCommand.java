@@ -18,27 +18,29 @@
 
 package org.kontalk.service.msgcenter.group;
 
+import org.jxmpp.jid.Jid;
+
 
 public abstract class KontalkGroupCommand implements GroupCommand {
 
-    private String mGroupJid;
-    private String[] mMembers;
+    private Jid mGroupJid;
+    private Jid[] mMembers;
 
-    public void setMembers(String[] members) {
+    public void setMembers(Jid[] members) {
         mMembers = members;
     }
 
-    public String[] getMembers() {
+    public Jid[] getMembers() {
         return mMembers;
     }
 
     @Override
-    public void setGroupJid(String groupJid) {
+    public void setGroupJid(Jid groupJid) {
         mGroupJid = groupJid;
     }
 
     @Override
-    public String getGroupJid() {
+    public Jid getGroupJid() {
         return mGroupJid;
     }
 

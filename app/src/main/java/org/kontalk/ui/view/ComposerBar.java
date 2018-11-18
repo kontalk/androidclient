@@ -381,7 +381,8 @@ public class ComposerBar extends RelativeLayout implements
         mEmojiButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                toggleEmojiDrawer();
+                if (mListener != null && mListener.canOpenEmoji())
+                    toggleEmojiDrawer();
             }
         });
 

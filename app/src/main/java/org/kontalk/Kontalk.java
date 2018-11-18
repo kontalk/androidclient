@@ -36,11 +36,14 @@ import android.accounts.OnAccountsUpdateListener;
 import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.os.Build;
 import android.os.Handler;
-import android.os.StrictMode;
 import android.preference.PreferenceManager;
+import android.support.annotation.RequiresApi;
 
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGP;
@@ -60,7 +63,9 @@ import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.SearchActivity;
+import org.kontalk.util.CustomSimpleXmppStringprep;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.SystemUtils;
 
 
 /**
@@ -114,7 +119,7 @@ public class Kontalk extends Application {
                 }
                 // foreground service
                 else if ("pref_foreground_service".equals(key)) {
-                    MessageCenterService.updateForegroundStatus(Kontalk.this);
+                    MessageCenterService.start(Kontalk.this);
                 }
                 // reporting opt-in
                 else if ("pref_reporting".equals(key)) {
@@ -139,7 +144,7 @@ public class Kontalk extends Application {
                     }
                     // hide presence flag / encrypt user data flag
                     else if ("pref_hide_presence".equals(key) || "pref_encrypt_userdata".equals(key)) {
-                        MessageCenterService.updateStatus(Kontalk.this);
+                        MessageCenterService.updateStatus(Preferences.getStatusMessage());
                     }
                     // changing remove prefix
                     else if ("pref_remove_prefix".equals(key)) {
@@ -154,11 +159,6 @@ public class Kontalk extends Application {
         super.onCreate();
         sInstance = this;
 
-        if (BuildConfig.DEBUG) {
-            StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectAll().build());
-            StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().build());
-        }
-
         // init preferences
         // This must be done before registering the reporting manager
         // because we need access to the reporting opt-in preference.
@@ -172,6 +172,9 @@ public class Kontalk extends Application {
         // register reporting manager
         if (Preferences.isReportingEnabled(this))
             ReportingManager.register(this);
+
+        // hacks
+        CustomSimpleXmppStringprep.setup();
 
         // register security provider
         SecureConnectionManager.init(this);
@@ -191,6 +194,11 @@ public class Kontalk extends Application {
 
         // init the messages controller
         initMessagesController();
+
+        // register network state receiver manually
+        if (!SystemUtils.isReceivingNetworkStateChanges()) {
+            registerNetworkStateReceiver();
+        }
 
         // init emoji manager
         // FIXME this is taking a very long time
@@ -293,6 +301,12 @@ public class Kontalk extends Application {
 
     private void initMessagesController() {
         mMessagesController = new MessagesController(this);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private void registerNetworkStateReceiver() {
+        registerReceiver(new NetworkStateReceiver(),
+            new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
 
     /** Returns the messages controller singleton instance. */

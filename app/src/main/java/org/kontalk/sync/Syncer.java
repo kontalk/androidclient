@@ -18,31 +18,22 @@
 
 package org.kontalk.sync;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.jivesoftware.smack.packet.IQ;
-import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smack.packet.StanzaError;
-import org.jivesoftware.smack.util.StringUtils;
+import org.greenrobot.eventbus.EventBus;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
 
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;
 import android.annotation.TargetApi;
-import android.content.BroadcastReceiver;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SyncResult;
 import android.database.Cursor;
 import android.net.Uri;
@@ -52,7 +43,6 @@ import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.RawContacts;
-import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 
 import org.kontalk.Log;
@@ -93,290 +83,16 @@ public class Syncer {
     /** {@link RawContacts} column for the JID. */
     public static final String RAW_COLUMN_USERID = RawContacts.SYNC3;
 
-    /** Random packet id used for requesting public keys. */
-    static final String IQ_KEYS_PACKET_ID = StringUtils.randomString(10);
-
-    /** Random packet id used for requesting the blocklist. */
-    static final String IQ_BLOCKLIST_PACKET_ID = StringUtils.randomString(10);
-
     private volatile boolean mCanceled;
     private final Context mContext;
 
-    private final static class PresenceItem {
-        public String from;
-        public String status;
-        public String rosterName;
-        public long timestamp;
-        public byte[] publicKey;
-        public boolean blocked;
-        public boolean presence;
-        /** True if found during roster match. */
-        public boolean matched;
-        /** Discard this entry: it has not been found on server. */
-        public boolean discarded;
-    }
+    private final EventBus mServiceBus = MessageCenterService.bus();
 
-    // FIXME this class should handle most recent/available presence stanzas
-    private static final class PresenceBroadcastReceiver extends BroadcastReceiver {
-        /** Max number of items in a roster match request. */
-        private static final int MAX_ROSTER_MATCH_SIZE = 500;
-
-        private List<PresenceItem> response;
-        private final WeakReference<Syncer> notifyTo;
-
-        private final List<String> jidList;
-        private int rosterParts = -1;
-        private String[] iq;
-        private String presenceId;
-
-        private int presenceCount;
-        private int pubkeyCount;
-        private int rosterCount;
-        /** Packet id list for not matched contacts (in roster but not matched on server). */
-        private Set<String> notMatched = new HashSet<>();
-        private boolean blocklistReceived;
-
-        public PresenceBroadcastReceiver(List<String> jidList, Syncer notifyTo) {
-            this.notifyTo = new WeakReference<>(notifyTo);
-            this.jidList = jidList;
-        }
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-
-            if (MessageCenterService.ACTION_PRESENCE.equals(action)) {
-
-                // consider only presences received *after* roster response
-                if (response != null && presenceId != null) {
-
-                    String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                    String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
-                    String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                    if (type != null && presenceId.equals(id)) {
-                        // update presence item data
-                        String bareJid = XmppStringUtils.parseBareJid(jid);
-                        PresenceItem item = getPresenceItem(bareJid);
-                        item.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
-                        item.timestamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
-                        item.rosterName = intent.getStringExtra(MessageCenterService.EXTRA_ROSTER_NAME);
-                        if (!item.presence) {
-                            item.presence = true;
-                            // increment presence count
-                            presenceCount++;
-                            // check user existance (only if subscription is "both")
-                            if (!item.matched && intent.getBooleanExtra(MessageCenterService.EXTRA_SUBSCRIBED_FROM, false) &&
-                                intent.getBooleanExtra(MessageCenterService.EXTRA_SUBSCRIBED_TO, false)) {
-                                // verify actual user existance through last activity
-                                String lastActivityId = StringUtils.randomString(6);
-                                MessageCenterService.requestLastActivity(context, item.from, lastActivityId);
-                                notMatched.add(lastActivityId);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // roster match result received
-            else if (MessageCenterService.ACTION_ROSTER_MATCH.equals(action)) {
-                String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                for (String iqId : iq) {
-                    if (iqId.equals(id)) {
-                        // decrease roster parts counter
-                        rosterParts--;
-
-                        String[] list = intent.getStringArrayExtra(MessageCenterService.EXTRA_JIDLIST);
-                        if (list != null) {
-                            rosterCount += list.length;
-                            if (response == null) {
-                                // prepare list to be filled in with presence data
-                                response = new ArrayList<>(rosterCount);
-                            }
-                            for (String jid : list) {
-                                PresenceItem p = new PresenceItem();
-                                p.from = jid;
-                                p.matched = true;
-                                response.add(p);
-                            }
-                        }
-
-                        if (rosterParts <= 0) {
-                            // all roster parts received
-
-                            if (rosterCount == 0 && blocklistReceived) {
-                                // no roster elements
-                                finish();
-                            }
-                            else {
-                                Syncer w = notifyTo.get();
-                                if (w != null) {
-                                    // request presence data for the whole roster
-                                    presenceId = StringUtils.randomString(6);
-                                    w.requestPresenceData(presenceId);
-                                    // request public keys for the whole roster
-                                    w.requestPublicKeys();
-                                    // request block list
-                                    w.requestBlocklist();
-                                }
-                            }
-                        }
-
-                        // no need to continue
-                        break;
-                    }
-                }
-            }
-
-            else if (MessageCenterService.ACTION_PUBLICKEY.equals(action)) {
-                if (response != null) {
-                    String requestId = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                    if (IQ_KEYS_PACKET_ID.equals(requestId)) {
-                        String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                        // see if bare JID is present in roster response
-                        String compare = XmppStringUtils.parseBareJid(jid);
-                        for (PresenceItem item : response) {
-                            if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(compare)) {
-                                item.publicKey = intent.getByteArrayExtra(MessageCenterService.EXTRA_PUBLIC_KEY);
-
-                                // increment vcard count
-                                pubkeyCount++;
-                                break;
-                            }
-                        }
-
-                        // done with presence data and blocklist
-                        if (pubkeyCount == presenceCount && blocklistReceived && notMatched.size() == 0)
-                            finish();
-                    }
-                }
-
-            }
-
-            else if (MessageCenterService.ACTION_BLOCKLIST.equals(action)) {
-                String requestId = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                if (IQ_BLOCKLIST_PACKET_ID.equals(requestId)) {
-                    blocklistReceived = true;
-
-                    String[] list = intent.getStringArrayExtra(MessageCenterService.EXTRA_BLOCKLIST);
-                    if (list != null) {
-
-                        for (String jid : list) {
-                            // see if bare JID is present in roster response
-                            String compare = XmppStringUtils.parseBareJid(jid);
-                            for (PresenceItem item : response) {
-                                if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(compare)) {
-                                    item.blocked = true;
-
-                                    break;
-                                }
-                            }
-                        }
-
-                    }
-
-                    // done with presence data and blocklist
-                    if (pubkeyCount >= presenceCount && notMatched.size() == 0)
-                        finish();
-                }
-            }
-
-            // last activity (for user existance verification)
-            else if (MessageCenterService.ACTION_LAST_ACTIVITY.equals(action)) {
-                String requestId = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                if (notMatched.contains(requestId)) {
-                    notMatched.remove(requestId);
-
-                    String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
-                    // consider only item-not-found (404) errors
-                    if (type != null && type.equalsIgnoreCase(IQ.Type.error.toString()) &&
-                            StanzaError.Condition.item_not_found.toString().equals(intent
-                                .getStringExtra(MessageCenterService.EXTRA_ERROR_CONDITION))) {
-                        // user does not exist!
-                        String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                        // discard entry
-                        discardPresenceItem(jid);
-                        // unsubscribe!
-                        unsubscribe(context, jid);
-
-                        if (pubkeyCount >= presenceCount && blocklistReceived && notMatched.size() == 0)
-                            finish();
-                    }
-                }
-            }
-
-            // connected! Retry...
-            else if (MessageCenterService.ACTION_CONNECTED.equals(action) && rosterParts < 0) {
-                Syncer w = notifyTo.get();
-                if (w != null) {
-                    // request a roster match
-                    rosterParts = getRosterParts(jidList);
-                    iq = new String[rosterParts];
-                    for (int i = 0; i < rosterParts; i++) {
-                        int end = (i+1)*MAX_ROSTER_MATCH_SIZE;
-                        if (end >= jidList.size())
-                            end = jidList.size();
-                        List<String> slice = jidList.subList(i*MAX_ROSTER_MATCH_SIZE, end);
-
-                        iq[i] = StringUtils.randomString(6);
-                        w.requestRosterMatch(iq[i], slice);
-                    }
-                }
-            }
-        }
-
-        private void discardPresenceItem(String jid) {
-            for (PresenceItem item : response) {
-                if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(jid)) {
-                    item.discarded = true;
-                    return;
-                }
-            }
-        }
-
-        private PresenceItem getPresenceItem(String jid) {
-            for (PresenceItem item : response) {
-                if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(jid))
-                    return item;
-            }
-
-            // add item if not found
-            PresenceItem item = new PresenceItem();
-            item.from = jid;
-            response.add(item);
-            return item;
-        }
-
-        private void unsubscribe(Context context, String jid) {
-            Intent i = new Intent(context, MessageCenterService.class);
-            i.setAction(MessageCenterService.ACTION_PRESENCE);
-            i.putExtra(MessageCenterService.EXTRA_TO, jid);
-            i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.unsubscribe.name());
-            context.startService(i);
-        }
-
-        private int getRosterParts(List<String> jidList) {
-            return (int) Math.ceil((double) jidList.size() / MAX_ROSTER_MATCH_SIZE);
-        }
-
-        public List<PresenceItem> getResponse() {
-            return (rosterCount >= 0) ? response : null;
-        }
-
-        private void finish() {
-            Syncer w = notifyTo.get();
-            if (w != null) {
-                synchronized (w) {
-                    w.notifyAll();
-                }
-            }
-        }
-    }
-
-    public Syncer(Context context) {
+    Syncer(Context context) {
         mContext = context;
     }
 
-    public void onSyncCanceled() {
+    void onSyncCanceled() {
         mCanceled = true;
     }
 
@@ -403,7 +119,7 @@ public class Syncer {
      * is received, it deletes all the raw contacts created by us and then
      * recreates only the ones the server has found a match for.
      */
-    public void performSync(Context context, Account account, String authority,
+    void performSync(Context context, Account account, String authority,
         ContentProviderClient provider, ContentProviderClient usersProvider,
         SyncResult syncResult)
             throws OperationCanceledException {
@@ -483,22 +199,10 @@ public class Syncer {
         }
 
         else {
-            final LocalBroadcastManager lbm = LocalBroadcastManager
-                .getInstance(mContext);
-
-            // register presence broadcast receiver
-            PresenceBroadcastReceiver receiver = new PresenceBroadcastReceiver(jidList, this);
-            IntentFilter f = new IntentFilter();
-            f.addAction(MessageCenterService.ACTION_PRESENCE);
-            f.addAction(MessageCenterService.ACTION_ROSTER_MATCH);
-            f.addAction(MessageCenterService.ACTION_PUBLICKEY);
-            f.addAction(MessageCenterService.ACTION_BLOCKLIST);
-            f.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
-            f.addAction(MessageCenterService.ACTION_CONNECTED);
-            lbm.registerReceiver(receiver, f);
-
-            // request current connection status
-            MessageCenterService.requestConnectionStatus(mContext);
+            // register to events
+            // registering will request current connection status and proceed
+            SyncProcedure receiver = new SyncProcedure(jidList, this);
+            mServiceBus.register(receiver);
 
             // wait for the service to complete its job
             synchronized (this) {
@@ -512,12 +216,12 @@ public class Syncer {
                 }
             }
 
-            lbm.unregisterReceiver(receiver);
+            mServiceBus.unregister(receiver);
 
             // last chance to quit
             if (mCanceled) throw new OperationCanceledException();
 
-            List<PresenceItem> res = receiver.getResponse();
+            List<SyncProcedure.PresenceItem> res = receiver.getResponse();
             if (res != null) {
                 ArrayList<ContentProviderOperation> operations =
                     new ArrayList<>();
@@ -544,12 +248,12 @@ public class Syncer {
                 ContentValues registeredValues = new ContentValues();
                 registeredValues.put(Users.REGISTERED, 1);
                 for (int i = 0; i < res.size(); i++) {
-                    PresenceItem entry = res.get(i);
+                    SyncProcedure.PresenceItem entry = res.get(i);
                     if (entry.discarded)
                         continue;
 
                     final RawPhoneNumberEntry data = lookupNumbers
-                        .get(XmppStringUtils.parseLocalpart(entry.from));
+                        .get(entry.from.getLocalpartOrThrow().toString());
                     if (data != null && data.lookupKey != null) {
                         // add contact
                         addContact(account,
@@ -581,11 +285,11 @@ public class Syncer {
                                 int trustLevel = Authenticator.isSelfJID(mContext, entry.from) ?
                                     MyUsers.Keys.TRUST_VERIFIED : -1;
                                 // update keys table immediately
-                                Keyring.setKey(mContext, entry.from, entry.publicKey, trustLevel);
+                                Keyring.setKey(mContext, entry.from.toString(), entry.publicKey, trustLevel);
 
                                 // no data from system contacts, use name from public key
                                 if (data == null) {
-                                    PGPUserID uid = PGP.parseUserId(pubKey, XmppStringUtils.parseDomain(entry.from));
+                                    PGPUserID uid = PGP.parseUserId(pubKey, entry.from.getDomain().toString());
                                     if (uid != null) {
                                         registeredValues.put(Users.DISPLAY_NAME, uid.getName());
                                     }
@@ -605,7 +309,7 @@ public class Syncer {
                         // blocked status
                         registeredValues.put(Users.BLOCKED, entry.blocked);
                         // user JID as reported by the server
-                        registeredValues.put(Users.JID, entry.from);
+                        registeredValues.put(Users.JID, entry.from.toString());
 
                         /*
                          * Since UsersProvider.resync inserted the user row
@@ -617,9 +321,9 @@ public class Syncer {
                         String origJid;
                         if (data != null)
                             origJid = XMPPUtils.createLocalJID(mContext,
-                                XmppStringUtils.parseLocalpart(entry.from));
+                                XmppStringUtils.parseLocalpart(entry.from.toString()));
                         else
-                            origJid = entry.from;
+                            origJid = entry.from.toString();
                         usersProvider.update(Users.CONTENT_URI_OFFLINE, registeredValues,
                             Users.JID + " = ?", new String[] { origJid });
 
@@ -689,36 +393,6 @@ public class Syncer {
         }
     }
 
-    void requestRosterMatch(String id, List<String> list) {
-        Intent i = new Intent(mContext, MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_ROSTER_MATCH);
-        i.putExtra(MessageCenterService.EXTRA_PACKET_ID, id);
-        i.putExtra(MessageCenterService.EXTRA_JIDLIST, list.toArray(new String[list.size()]));
-        mContext.startService(i);
-    }
-
-    void requestPresenceData(String id) {
-        Intent i = new Intent(mContext, MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_PRESENCE);
-        i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.probe.toString());
-        i.putExtra(MessageCenterService.EXTRA_PACKET_ID, id);
-        mContext.startService(i);
-    }
-
-    void requestPublicKeys() {
-        Intent i = new Intent(mContext, MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_PUBLICKEY);
-        i.putExtra(MessageCenterService.EXTRA_PACKET_ID, IQ_KEYS_PACKET_ID);
-        mContext.startService(i);
-    }
-
-    void requestBlocklist() {
-        Intent i = new Intent(mContext, MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_BLOCKLIST);
-        i.putExtra(MessageCenterService.EXTRA_PACKET_ID, IQ_BLOCKLIST_PACKET_ID);
-        mContext.startService(i);
-    }
-
     private String getDisplayName(ContentProviderClient client, String lookupKey, String defaultValue) {
         String displayName = null;
         Cursor nameQuery = null;
@@ -739,7 +413,8 @@ public class Syncer {
             try {
                 nameQuery.close();
             }
-            catch (Exception ignored) {}
+            catch (Exception ignored) {
+            }
         }
 
         return (displayName != null) ? displayName : defaultValue;

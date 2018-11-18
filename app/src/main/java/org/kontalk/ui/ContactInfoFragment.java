@@ -22,22 +22,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.jivesoftware.smack.packet.IQ;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
-import org.jxmpp.util.XmppStringUtils;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,6 +49,14 @@ import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.event.ConnectedEvent;
+import org.kontalk.service.msgcenter.event.LastActivityEvent;
+import org.kontalk.service.msgcenter.event.LastActivityRequest;
+import org.kontalk.service.msgcenter.event.NoPresenceEvent;
+import org.kontalk.service.msgcenter.event.PresenceRequest;
+import org.kontalk.service.msgcenter.event.RosterLoadedEvent;
+import org.kontalk.service.msgcenter.event.UserOfflineEvent;
+import org.kontalk.service.msgcenter.event.UserOnlineEvent;
 import org.kontalk.ui.view.ContactInfoBanner;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Permissions;
@@ -83,9 +88,7 @@ public class ContactInfoFragment extends Fragment
 
     String mLastActivityRequestId;
 
-    // created on demand
-    private BroadcastReceiver mReceiver;
-    private LocalBroadcastManager mLocalBroadcastManager;
+    private EventBus mServiceBus = MessageCenterService.bus();
 
     public static ContactInfoFragment newInstance(String userId) {
         ContactInfoFragment f = new ContactInfoFragment();
@@ -177,7 +180,9 @@ public class ContactInfoFragment extends Fragment
             mTrustStatus.setVisibility(View.GONE);
         }
 
-        registerEvents(context);
+        if (!mServiceBus.isRegistered(this)) {
+            mServiceBus.register(this);
+        }
         /*
         if (mReceiver == null) {
             // listen to roster entry status requests
@@ -199,150 +204,125 @@ public class ContactInfoFragment extends Fragment
         */
     }
 
-    private void registerEvents(Context context) {
-        if (mReceiver == null) {
-            mReceiver = new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context context, Intent intent) {
-                    String action = intent.getAction();
+    // TODO version event
+    // TODO blocked event
+    // TODO unblocked event
+    // TODO subscribed event
+    // TODO roster status event
 
-                    if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
-                        // reset available resources list
-                        mAvailableResources.clear();
-                        // reset any pending request
-                        mLastActivityRequestId = null;
-                    }
-
-                    else if (MessageCenterService.ACTION_ROSTER_LOADED.equals(action)) {
-                        requestPresence(context);
-                    }
-
-                    else {
-                        String from = XmppStringUtils.parseBareJid(intent
-                            .getStringExtra(MessageCenterService.EXTRA_FROM));
-                        if (!mContact.getJID().equals(from)) {
-                            // not for us
-                            return;
-                        }
-
-                        if (MessageCenterService.ACTION_PRESENCE.equals(action)) {
-                            // we handle only (un)available presence stanzas
-                            String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
-                            Presence.Type presenceType = (type != null) ? Presence.Type.fromString(type) : null;
-
-                            String mode = intent.getStringExtra(MessageCenterService.EXTRA_SHOW);
-                            Presence.Mode presenceMode = (mode != null) ? Presence.Mode.fromString(mode) : null;
-
-                            String fingerprint = intent.getStringExtra(MessageCenterService.EXTRA_FINGERPRINT);
-
-                            boolean removed = false;
-                            if (presenceType == Presence.Type.available) {
-                                mAvailableResources.add(from);
-                            }
-                            else if (presenceType == Presence.Type.unavailable) {
-                                removed = mAvailableResources.remove(from);
-                            }
-
-                            onPresence(from, presenceType, removed, presenceMode, fingerprint);
-                        }
-
-                        else if (MessageCenterService.ACTION_LAST_ACTIVITY.equals(action)) {
-                            String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                            if (id != null && id.equals(mLastActivityRequestId)) {
-                                mLastActivityRequestId = null;
-                                // ignore last activity if we had an available presence in the meantime
-                                if (mAvailableResources.size() == 0) {
-                                    String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
-                                    if (type == null || !type.equalsIgnoreCase(IQ.Type.error.toString())) {
-                                        long seconds = intent.getLongExtra(MessageCenterService.EXTRA_SECONDS, -1);
-                                        setLastSeenSeconds(context, seconds);
-                                    }
-                                    else {
-                                        mInfoBanner.setSummary(context.getString(R.string.seen_offline_label));
-                                    }
-                                }
-                            }
-                        }
-
-                        // TODO handle blocked
-                        // TODO handle unblocked
-                        // TODO handle subscribed
-                        // TODO handle roster status
-                        // TODO handle version
-                    }
-                }
-            };
-
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(MessageCenterService.ACTION_CONNECTED);
-            filter.addAction(MessageCenterService.ACTION_ROSTER_LOADED);
-            filter.addAction(MessageCenterService.ACTION_PRESENCE);
-            filter.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
-            // TODO filter.addAction(MessageCenterService.ACTION_VERSION);
-            // TODO filter.addAction(MessageCenterService.ACTION_BLOCKED);
-            // TODO filter.addAction(MessageCenterService.ACTION_UNBLOCKED);
-            // TODO filter.addAction(MessageCenterService.ACTION_SUBSCRIBED);
-            // TODO filter.addAction(MessageCenterService.ACTION_ROSTER_STATUS);
-            mLocalBroadcastManager.registerReceiver(mReceiver, filter);
-        }
-
-        MessageCenterService.requestConnectionStatus(context);
-        MessageCenterService.requestRosterStatus(context);
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN_ORDERED)
+    public void onConnected(ConnectedEvent event) {
+        // reset available resources list
+        mAvailableResources.clear();
+        // reset any pending request
+        mLastActivityRequestId = null;
     }
 
-    protected void onPresence(String jid, Presence.Type type, boolean removed, Presence.Mode mode, String fingerprint) {
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN_ORDERED)
+    public void onRosterLoaded(RosterLoadedEvent event) {
+        requestPresence();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onUserOnline(UserOnlineEvent event) {
         final Context context = getContext();
         if (context == null)
             return;
 
-        if (type == null) {
-            // no roster entry found, awaiting subscription or not subscribed
-
-            mInfoBanner.setSummary(context.getString(R.string.invitation_sent_label));
+        if (!mContact.getJID().equals(event.jid.asBareJid().toString())) {
+            // not for us
+            return;
         }
 
-        // (un)available presence
-        else if (type == Presence.Type.available || type == Presence.Type.unavailable) {
+        mAvailableResources.add(event.jid.toString());
 
-            CharSequence statusText = null;
+        CharSequence statusText;
 
-            if (type == Presence.Type.available) {
-                boolean isAway = (mode == Presence.Mode.away);
-                if (isAway) {
-                    statusText = context.getString(R.string.seen_away_label);
+        boolean isAway = (event.mode == Presence.Mode.away);
+        if (isAway) {
+            statusText = context.getString(R.string.seen_away_label);
+        }
+        else {
+            statusText = context.getString(R.string.seen_online_label);
+        }
+
+        mInfoBanner.setSummary(statusText);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onUserOffline(UserOfflineEvent event) {
+        final Context context = getContext();
+        if (context == null)
+            return;
+
+        if (!mContact.getJID().equals(event.jid.asBareJid().toString())) {
+            // not for us
+            return;
+        }
+
+        CharSequence statusText = null;
+
+        boolean removed = mAvailableResources.remove(event.jid.toString());
+
+        /*
+         * All available resources have gone. Mark
+         * the user as offline immediately and use the
+         * timestamp provided with the stanza (if any).
+         */
+        if (mAvailableResources.size() == 0) {
+            if (removed) {
+                // resource was removed now, mark as just offline
+                statusText = formatLastSeenText(context,
+                    context.getText(R.string.seen_moment_ago_label));
+            }
+            else {
+                // resource is offline, request last activity
+                if (mContact.getLastSeen() > 0) {
+                    setLastSeenTimestamp(context, mContact.getLastSeen());
+                }
+                else if (mLastActivityRequestId == null) {
+                    mLastActivityRequestId = StringUtils.randomString(6);
+                    mServiceBus.post(new LastActivityRequest(mLastActivityRequestId, event.jid.asBareJid()));
+                }
+            }
+        }
+
+        if (statusText != null) {
+            mInfoBanner.setSummary(statusText);
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onNoUserPresence(NoPresenceEvent event) {
+        final Context context = getContext();
+        if (context == null)
+            return;
+
+        if (!mContact.getJID().equals(event.jid.asBareJid().toString())) {
+            // not for us
+            return;
+        }
+
+        // no roster entry found, awaiting subscription or not subscribed
+        mInfoBanner.setSummary(context.getString(R.string.invitation_sent_label));
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onLastActivity(LastActivityEvent event) {
+        final Context context = getContext();
+        if (context == null)
+            return;
+
+        if (event.id != null && event.id.equals(mLastActivityRequestId)) {
+            mLastActivityRequestId = null;
+            // ignore last activity if we had an available presence in the meantime
+            if (mAvailableResources.size() == 0) {
+                if (event.error == null && event.idleTime >= 0) {
+                    setLastSeenSeconds(context, event.idleTime);
                 }
                 else {
-                    statusText = context.getString(R.string.seen_online_label);
+                    mInfoBanner.setSummary(context.getString(R.string.seen_offline_label));
                 }
-            }
-            else if (type == Presence.Type.unavailable) {
-                /*
-                 * All available resources have gone. Mark
-                 * the user as offline immediately and use the
-                 * timestamp provided with the stanza (if any).
-                 */
-                if (mAvailableResources.size() == 0) {
-                    if (removed) {
-                        // resource was removed now, mark as just offline
-                        statusText = formatLastSeenText(context,
-                            context.getText(R.string.seen_moment_ago_label));
-                    }
-                    else {
-                        // resource is offline, request last activity
-                        if (mContact.getLastSeen() > 0) {
-                            setLastSeenTimestamp(context, mContact.getLastSeen());
-                        }
-                        else if (mLastActivityRequestId == null) {
-                            mLastActivityRequestId = StringUtils.randomString(6);
-                            MessageCenterService.requestLastActivity(context,
-                                XmppStringUtils.parseBareJid(jid), mLastActivityRequestId);
-                        }
-                    }
-                }
-            }
-
-            if (statusText != null) {
-                mInfoBanner.setSummary(statusText);
             }
         }
     }
@@ -361,10 +341,15 @@ public class ContactInfoFragment extends Fragment
         return context.getString(R.string.contactinfo_last_seen, text);
     }
 
-    void requestPresence(Context context) {
+    private void requestPresence() {
+        final Context context = getContext();
+        if (context == null)
+            return;
+
         // do not request presence for domain JIDs
-        if (!XMPPUtils.isDomainJID(mContact.getJID()))
-            MessageCenterService.requestPresence(context, mContact.getJID());
+        if (!XMPPUtils.isDomainJID(mContact.getJID())) {
+            mServiceBus.post(new PresenceRequest(mContact.getJID()));
+        }
     }
 
     @Override
@@ -491,12 +476,9 @@ public class ContactInfoFragment extends Fragment
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-        if (mLocalBroadcastManager != null && mReceiver != null) {
-            mLocalBroadcastManager.unregisterReceiver(mReceiver);
-        }
-        mReceiver = null;
+    public void onPause() {
+        super.onPause();
+        mServiceBus.unregister(this);
     }
 
     @Override
@@ -505,7 +487,6 @@ public class ContactInfoFragment extends Fragment
         if (!(context instanceof ContactInfoParent))
             throw new IllegalArgumentException("parent activity must implement " +
                 ContactInfoParent.class.getSimpleName());
-        mLocalBroadcastManager = LocalBroadcastManager.getInstance(context);
     }
 
     @Override

@@ -37,10 +37,6 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteConstraintException;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteQueryBuilder;
-import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.BaseColumns;
@@ -49,6 +45,12 @@ import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.RawContacts;
 import android.support.annotation.NonNull;
 import android.support.annotation.VisibleForTesting;
+
+import io.requery.android.database.sqlite.SQLiteDatabase;
+import io.requery.android.database.sqlite.SQLiteDatabaseConfiguration;
+import io.requery.android.database.sqlite.SQLiteOpenHelper;
+import io.requery.android.database.sqlite.SQLiteQueryBuilder;
+import io.requery.android.database.sqlite.SQLiteStatement;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
@@ -234,7 +236,9 @@ public class UsersProvider extends ContentProvider {
         @Override
         public void onOpen(SQLiteDatabase db) {
             String path = mContext.getDatabasePath(DATABASE_NAME).getPath();
-            dbReader = SQLiteDatabase.openDatabase(path, null, 0);
+            SQLiteDatabaseConfiguration configuration =
+                createConfiguration(path, SQLiteDatabase.OPEN_READONLY);
+            dbReader = SQLiteDatabase.openDatabase(configuration, null, null);
         }
 
         public boolean isNew() {
@@ -410,7 +414,7 @@ public class UsersProvider extends ContentProvider {
             case USERS_JID: {
                 // TODO append to selection
                 String userId = uri.getPathSegments().get(1);
-                selection = TABLE_USERS + "." + Users.JID + " = ?";
+                selection = TABLE_USERS + "." + Users.JID + " = ? COLLATE NOCASE";
                 selectionArgs = new String[] { userId };
                 break;
             }
@@ -422,7 +426,7 @@ public class UsersProvider extends ContentProvider {
             case KEYS_JID:
             case KEYS_JID_FINGERPRINT:
                 String userId = uri.getPathSegments().get(1);
-                selection = DatabaseUtils.concatenateWhere(selection, Keys.JID + "=?");
+                selection = DatabaseUtils.concatenateWhere(selection, Keys.JID + "=? COLLATE NOCASE");
                 selectionArgs = DatabaseUtils.appendSelectionArgs(selectionArgs, new String[] { userId });
                 // TODO support for fingerprint in Uri
                 break;
@@ -966,7 +970,7 @@ public class UsersProvider extends ContentProvider {
                     values.remove(Users.NUMBER);
                 }
 
-                db.update(table, values, Users.JID + "=?", new String[] { jid });
+                db.update(table, values, Users.JID + "=? COLLATE NOCASE", new String[] { jid });
             }
         }
 
@@ -1007,7 +1011,7 @@ public class UsersProvider extends ContentProvider {
             if (!insertOnly) {
                 // we got a duplicated key, update the requested values
                 rows = db.update(TABLE_KEYS, values,
-                    Keys.JID + "=? AND " + Keys.FINGERPRINT + "=?",
+                    Keys.JID + "=? COLLATE NOCASE AND " + Keys.FINGERPRINT + "=?",
                     new String[]{ jid, fingerprint });
             }
         }
@@ -1056,7 +1060,7 @@ public class UsersProvider extends ContentProvider {
 
     private int deleteKeys(String userId, String fingerprint, String selection, String[] selectionArgs) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        selection = DatabaseUtils.concatenateWhere(selection, Keys.JID + "=?");
+        selection = DatabaseUtils.concatenateWhere(selection, Keys.JID + "=? COLLATE NOCASE");
         selection = DatabaseUtils.concatenateWhere(selection, Keys.FINGERPRINT + "=?");
         selectionArgs = DatabaseUtils.appendSelectionArgs(selectionArgs, new String[] { userId, fingerprint });
         return db.delete(TABLE_KEYS, selection, selectionArgs);
@@ -1088,7 +1092,7 @@ public class UsersProvider extends ContentProvider {
         }
         // TODO Uri.withAppendedPath(Users.CONTENT_URI, msg.getSender(true))
         context.getContentResolver().update(Users.CONTENT_URI,
-            registeredValues, Users.JID+"=?", new String[] { jid });
+            registeredValues, Users.JID+"=? COLLATE NOCASE", new String[] { jid });
     }
 
     /** Retrieves the last seen timestamp for a user. */
@@ -1112,14 +1116,14 @@ public class UsersProvider extends ContentProvider {
         ContentValues values = new ContentValues(1);
         values.put(Users.LAST_SEEN, time);
         context.getContentResolver().update(Users.CONTENT_URI,
-            values, Users.JID + "=?", new String[] { jid });
+            values, Users.JID + "=? COLLATE NOCASE", new String[] { jid });
     }
 
     public static void setBlockStatus(Context context, String jid, boolean blocked) {
         ContentValues values = new ContentValues(1);
         values.put(Users.BLOCKED, blocked);
         context.getContentResolver().update(Users.CONTENT_URI,
-            values, Users.JID + "=?", new String[] { jid });
+            values, Users.JID + "=? COLLATE NOCASE", new String[] { jid });
     }
 
     // FIXME what is this doing here? Using Messages Uri
@@ -1129,7 +1133,7 @@ public class UsersProvider extends ContentProvider {
 
         // FIXME this won't work on new threads
         return context.getContentResolver().update(MyMessages.Threads.Requests.CONTENT_URI,
-            values, MyMessages.Threads.PEER + "=?",
+            values, MyMessages.Threads.PEER + "=? COLLATE NOCASE",
             new String[] { jid });
     }
 
@@ -1137,7 +1141,7 @@ public class UsersProvider extends ContentProvider {
         ContentValues values = new ContentValues(1);
         values.put(Users.DISPLAY_NAME, displayName);
         return context.getContentResolver().update(Users.CONTENT_URI,
-            values, Users.JID + " = ? AND (" + Users.DISPLAY_NAME + " IS NULL OR LENGTH(" + Users.DISPLAY_NAME + ") = 0)",
+            values, Users.JID + " = ? COLLATE NOCASE AND (" + Users.DISPLAY_NAME + " IS NULL OR LENGTH(" + Users.DISPLAY_NAME + ") = 0)",
             new String[] { jid });
     }
 

@@ -30,11 +30,11 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
 
-import android.content.BroadcastReceiver;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.support.v4.content.LocalBroadcastManager;
 
 import org.kontalk.Log;
 import org.kontalk.R;
@@ -42,6 +42,9 @@ import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.event.ConnectedEvent;
+import org.kontalk.service.msgcenter.event.ServerListEvent;
+import org.kontalk.service.msgcenter.event.ServerListRequest;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
@@ -54,7 +57,7 @@ import org.kontalk.util.SystemUtils;
  *
  * @author Daniele Ricci
  */
-public class ServerListUpdater extends BroadcastReceiver {
+public class ServerListUpdater {
     private static final String TAG = ServerListUpdater.class.getSimpleName();
 
     private static ServerList sCurrentList;
@@ -63,12 +66,12 @@ public class ServerListUpdater extends BroadcastReceiver {
         new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", Locale.US);
 
     private final Context mContext;
-    private final LocalBroadcastManager mLocalBroadcastManager;
     private UpdaterListener mListener;
+
+    private EventBus mServiceBus = MessageCenterService.bus();
 
     public ServerListUpdater(Context context) {
         mContext = context;
-        mLocalBroadcastManager = LocalBroadcastManager.getInstance(context);
     }
 
     public void setListener(UpdaterListener listener) {
@@ -108,12 +111,8 @@ public class ServerListUpdater extends BroadcastReceiver {
         }
 
         // register for and request connection status
-        IntentFilter f = new IntentFilter();
-        f.addAction(MessageCenterService.ACTION_CONNECTED);
-        f.addAction(MessageCenterService.ACTION_SERVERLIST);
-        mLocalBroadcastManager.registerReceiver(this, f);
+        mServiceBus.register(this);
 
-        MessageCenterService.requestConnectionStatus(mContext);
         MessageCenterService.start(mContext);
     }
 
@@ -122,67 +121,62 @@ public class ServerListUpdater extends BroadcastReceiver {
     }
 
     private void unregisterReceiver() {
-        mLocalBroadcastManager.unregisterReceiver(this);
+        mServiceBus.unregister(this);
     }
 
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        String action = intent.getAction();
+    @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
+    public void onConnected(ConnectedEvent event) {
+        // request serverlist
+        mServiceBus.post(new ServerListRequest(null));
+    }
 
-        if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
-            // request serverlist
-            MessageCenterService.requestServerList(mContext);
-        }
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onServerList(ServerListEvent event) {
+        // we don't need this any more
+        unregisterReceiver();
 
-        else if (MessageCenterService.ACTION_SERVERLIST.equals(action)) {
-            // we don't need this any more
-            unregisterReceiver();
+        if (event.servers != null && event.servers.length > 0) {
+            Properties prop = new Properties();
+            Date now = new Date();
+            ServerList list = new ServerList(now);
+            prop.setProperty("timestamp", sTimestampFormat.format(now));
 
-            String[] items = intent
-                .getStringArrayExtra(MessageCenterService.EXTRA_JIDLIST);
-            if (items != null && items.length > 0) {
-                String network = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                Properties prop = new Properties();
-                Date now = new Date();
-                ServerList list = new ServerList(now);
-                prop.setProperty("timestamp", sTimestampFormat.format(now));
+            for (int i = 0; i < event.servers.length; i++) {
+                String item = event.servers[i];
+                prop.setProperty("server" + (i + 1), item);
+                list.add(new EndpointServer(item));
+            }
 
-                for (int i = 0; i < items.length; i++) {
-                    String item = network + '|' + items[i];
-                    prop.setProperty("server" + (i + 1), item);
-                    list.add(new EndpointServer(item));
-                }
+            OutputStream out = null;
+            try {
+                out = new FileOutputStream(getCachedListFile(mContext));
+                prop.store(out, null);
+                out.close();
 
-                OutputStream out = null;
+                // update cached list
+                sCurrentList = list;
+
+                if (mListener != null)
+                    mListener.updated(list);
+            }
+            catch (IOException e) {
+                if (mListener != null)
+                    mListener.error(e);
+            }
+            finally {
                 try {
-                    out = new FileOutputStream(getCachedListFile(mContext));
-                    prop.store(out, null);
-                    out.close();
-
-                    // update cached list
-                    sCurrentList = list;
-
-                    if (mListener != null)
-                        mListener.updated(list);
+                    if (out != null)
+                        out.close();
                 }
                 catch (IOException e) {
-                    if (mListener != null)
-                        mListener.error(e);
-                }
-                finally {
-                    try {
-                        out.close();
-                    }
-                    catch (Exception e) {
-                        // ignored
-                    }
+                    // ignored
                 }
             }
+        }
 
-            else {
-                if (mListener != null)
-                    mListener.error(null);
-            }
+        else {
+            if (mListener != null)
+                mListener.error(null);
         }
     }
 

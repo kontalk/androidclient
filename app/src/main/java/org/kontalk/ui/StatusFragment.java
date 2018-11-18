@@ -102,7 +102,7 @@ public class StatusFragment extends ListFragment implements View.OnClickListener
             Preferences.addRecentStatusMessage(parent, text);
 
             // start the message center to push the status message
-            MessageCenterService.updateStatus(parent);
+            MessageCenterService.updateStatus(text);
 
             parent.finish();
         }

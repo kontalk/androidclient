@@ -34,15 +34,16 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteConstraintException;
-import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabaseLockedException;
 import android.database.sqlite.SQLiteException;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
+
+import io.requery.android.database.sqlite.SQLiteDatabase;
+import io.requery.android.database.sqlite.SQLiteOpenHelper;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.Log;
@@ -108,7 +109,7 @@ public class MessagesProvider extends ContentProvider {
     @VisibleForTesting
     static class DatabaseHelper extends SQLiteOpenHelper {
         @VisibleForTesting
-        static final int DATABASE_VERSION = 18;
+        static final int DATABASE_VERSION = 20;
         @VisibleForTesting
         static final String DATABASE_NAME = "messages.db";
 
@@ -186,7 +187,7 @@ public class MessagesProvider extends ContentProvider {
             "request_status INTEGER NOT NULL DEFAULT 0," +
             "sticky INTEGER NOT NULL DEFAULT 0," +
             "encryption INTEGER NOT NULL DEFAULT 1," +
-            "archived NOT NULL DEFAULT 0" +
+            "archived INTEGER NOT NULL DEFAULT 0" +
             ")";
 
         /** This table will contain the latest message from each conversation. */
@@ -233,7 +234,9 @@ public class MessagesProvider extends ContentProvider {
         /** This table will contain every text message to speed-up full text searches. */
         private static final String SCHEMA_FULLTEXT =
             "CREATE VIRTUAL TABLE " + TABLE_FULLTEXT + " USING fts3 (" +
+            "msg_id INTEGER PRIMARY KEY," +
             "thread_id INTEGER NOT NULL, " +
+            "timestamp INTEGER NOT NULL," +
             "content TEXT" +
             ")";
 
@@ -429,7 +432,29 @@ public class MessagesProvider extends ContentProvider {
         };
 
         private static final String[] SCHEMA_UPGRADE_V17 = {
-            "ALTER TABLE threads ADD COLUMN archived NOT NULL DEFAULT 0",
+            "ALTER TABLE threads ADD COLUMN archived INTEGER NOT NULL DEFAULT 0",
+        };
+
+        private static final String[] SCHEMA_UPGRADE_V18 = {
+            "CREATE VIRTUAL TABLE fulltext_timestamp USING fts3 (" +
+                "msg_id INTEGER PRIMARY KEY," +
+                "thread_id INTEGER NOT NULL," +
+                "timestamp INTEGER NOT NULL," +
+                "content TEXT)",
+            "INSERT INTO fulltext_timestamp" +
+                " SELECT _id, thread_id, timestamp, CAST(body_content AS TEXT)" +
+                "  FROM messages" +
+                " WHERE body_mime = 'text/plain' AND" +
+                " encrypted = 0",
+            "DROP TABLE fulltext",
+            "ALTER TABLE fulltext_timestamp RENAME TO fulltext",
+        };
+
+        // fill missing timestamps in fulltext
+        private static final String[] SCHEMA_UPGRADE_V19 = {
+            "UPDATE fulltext\n" +
+                "SET timestamp = (SELECT timestamp FROM messages WHERE _id = fulltext.msg_id) \n" +
+                "where EXISTS (SELECT timestamp FROM messages WHERE _id = fulltext.msg_id)",
         };
 
         /** If true, fail all operations. */
@@ -512,6 +537,16 @@ public class MessagesProvider extends ContentProvider {
                         db.execSQL(sql);
                     }
                     // fall through
+                case 18:
+                    for (String sql : SCHEMA_UPGRADE_V18) {
+                        db.execSQL(sql);
+                    }
+                    // fall through
+                case 19:
+                    for (String sql : SCHEMA_UPGRADE_V19) {
+                        db.execSQL(sql);
+                    }
+                    // fall through
             }
         }
 
@@ -586,7 +621,7 @@ public class MessagesProvider extends ContentProvider {
             case THREADS_PEER:
                 qb.setTables(TABLE_THREADS_GROUPS);
                 qb.setProjectionMap(threadsProjectionMap);
-                qb.appendWhere(Threads.PEER + "=" + DatabaseUtils.sqlEscapeString(uri.getPathSegments().get(1)));
+                qb.appendWhere(Threads.PEER + "=" + DatabaseUtils.sqlEscapeString(uri.getPathSegments().get(1)) + " COLLATE NOCASE");
                 break;
 
             case CONVERSATIONS_ID:
@@ -627,7 +662,7 @@ public class MessagesProvider extends ContentProvider {
                 qb.setTables(TABLE_GROUPS);
                 qb.setProjectionMap(groupsProjectionMap
                 );
-                qb.appendWhere(Groups.GROUP_JID + "=?");
+                qb.appendWhere(Groups.GROUP_JID + "=? COLLATE NOCASE");
                 if (selectionArgs != null) {
                     // conditions appended here will get added before the caller-supplied selection
                     selectionArgs = SystemUtils.concatenate(new String[] { uri.getLastPathSegment() },
@@ -641,7 +676,7 @@ public class MessagesProvider extends ContentProvider {
             case GROUPS_MEMBERS:
                 qb.setTables(TABLE_GROUP_MEMBERS);
                 qb.setProjectionMap(groupsMembersProjectionMap);
-                qb.appendWhere(Groups.GROUP_JID + "=?");
+                qb.appendWhere(Groups.GROUP_JID + "=? COLLATE NOCASE");
                 if (selectionArgs != null) {
                     // conditions appended here will get added before the caller-supplied selection
                     selectionArgs = SystemUtils.concatenate(new String[] { uri.getPathSegments().get(1) },
@@ -784,9 +819,10 @@ public class MessagesProvider extends ContentProvider {
                     byte[] content = values.getAsByteArray(Messages.BODY_CONTENT);
                     String mime = values.getAsString(Messages.BODY_MIME);
                     Boolean encrypted = values.getAsBoolean(Messages.ENCRYPTED);
+                    long timestamp = values.getAsLong(Messages.TIMESTAMP);
                     if (content != null && content.length > 0 && TextComponent.MIME_TYPE.equals(mime) &&
                             (encrypted == null || !encrypted)) {
-                        updateFulltext(db, rowId, threadId, content);
+                        updateFulltext(db, rowId, threadId, content, timestamp);
                     }
                 }
 
@@ -842,7 +878,7 @@ public class MessagesProvider extends ContentProvider {
         Cursor c = null;
         try {
             c = db.query(TABLE_THREADS, new String[] { Threads.REQUEST_STATUS },
-                Threads.PEER + "=?", new String[] { peer }, null, null, null);
+                Threads.PEER + "=? COLLATE NOCASE", new String[] { peer }, null, null, null);
             return c.moveToFirst() && c.getInt(0) == Threads.REQUEST_WAITING;
         }
         catch (Exception e) {
@@ -995,10 +1031,11 @@ public class MessagesProvider extends ContentProvider {
                 values.remove(Threads.DIRECTION);
             }
 
-            db.update(TABLE_THREADS, values, "peer = ?", new String[] { peer });
+            values.remove(Threads.PEER);
+            db.update(TABLE_THREADS, values, "peer = ? COLLATE NOCASE", new String[] { peer });
             // the client did not pass the thread id, query for it manually
             if (threadId < 0) {
-                Cursor c = db.query(TABLE_THREADS, new String[] { Threads._ID }, "peer = ?", new String[] { peer }, null, null, null);
+                Cursor c = db.query(TABLE_THREADS, new String[] { Threads._ID }, "peer = ? COLLATE NOCASE", new String[] { peer }, null, null, null);
                 if (c.moveToFirst())
                     threadId = c.getLong(0);
                 c.close();
@@ -1075,7 +1112,7 @@ public class MessagesProvider extends ContentProvider {
             case GROUPS_ID: {
                 table = TABLE_GROUPS;
                 String groupId = uri.getLastPathSegment();
-                where = Groups.GROUP_JID + " = ?";
+                where = Groups.GROUP_JID + " = ? COLLATE NOCASE";
                 args = new String[] { groupId };
                 if (selection != null) {
                     where += " AND (" + selection + ")";
@@ -1088,7 +1125,7 @@ public class MessagesProvider extends ContentProvider {
             case GROUPS_MEMBERS: {
                 String groupId = uri.getPathSegments().get(1);
                 table = TABLE_GROUP_MEMBERS;
-                where = Groups.GROUP_JID + " = ?";
+                where = Groups.GROUP_JID + " = ? COLLATE NOCASE";
                 args = new String[] { groupId };
                 if (selection != null) {
                     where += " AND (" + selection + ")";
@@ -1100,7 +1137,7 @@ public class MessagesProvider extends ContentProvider {
 
             case GROUPS_MEMBERS_ID: {
                 table = TABLE_GROUP_MEMBERS;
-                where = Groups.GROUP_JID + " = ? AND " + Groups.PEER + " = ?";
+                where = Groups.GROUP_JID + " = ? COLLATE NOCASE AND " + Groups.PEER + " = ? COLLATE NOCASE";
                 args = new String[] { uri.getPathSegments().get(1), uri.getLastPathSegment() };
                 if (selection != null) {
                     where += " AND (" + selection + ")";
@@ -1202,7 +1239,7 @@ public class MessagesProvider extends ContentProvider {
                         doUpdateFulltext = true;
                         projection = new String[] { Messages.THREAD_ID, Messages._ID,
                                 Messages.DIRECTION, Messages.ENCRYPTED,
-                                Messages.BODY_CONTENT };
+                                Messages.BODY_CONTENT, Messages.TIMESTAMP };
                     }
                     else {
                         doUpdateFulltext = false;
@@ -1232,7 +1269,7 @@ public class MessagesProvider extends ContentProvider {
                                 int direction = c.getInt(2);
                                 int encrypted = c.getInt(3);
                                 if (direction != Messages.DIRECTION_IN || encrypted == 0)
-                                    updateFulltext(db, c.getLong(1), threadId, c.getBlob(4));
+                                    updateFulltext(db, c.getLong(1), threadId, c.getBlob(4), c.getLong(5));
                             }
                         }
 
@@ -1272,7 +1309,7 @@ public class MessagesProvider extends ContentProvider {
         db.execSQL("UPDATE " + TABLE_GROUP_MEMBERS + " SET pending = pending & ~("+flags+") WHERE " + where, args);
     }
 
-    private void updateFulltext(SQLiteDatabase db, long id, long threadId, byte[] content) {
+    private void updateFulltext(SQLiteDatabase db, long id, long threadId, byte[] content, long timestamp) {
         // use the binary content converted to string
         String text = new String(content);
 
@@ -1280,6 +1317,7 @@ public class MessagesProvider extends ContentProvider {
         fulltext.put(Fulltext._ID, id);
         fulltext.put(Fulltext.THREAD_ID, threadId);
         fulltext.put(Fulltext.CONTENT, text);
+        fulltext.put(Fulltext.TIMESTAMP, timestamp);
         db.replace(TABLE_FULLTEXT, null, fulltext);
     }
 
@@ -1341,7 +1379,7 @@ public class MessagesProvider extends ContentProvider {
 
             case THREADS_PEER:
                 table = TABLE_THREADS;
-                where = "peer = ?";
+                where = "peer = ? COLLATE NOCASE";
                 args = new String[] { uri.getLastPathSegment() };
                 if (selection != null) {
                     where += " AND (" + selection + ")";
@@ -1352,7 +1390,7 @@ public class MessagesProvider extends ContentProvider {
 
             case GROUPS_ID:
                 table = TABLE_GROUPS;
-                where = Groups.GROUP_JID + "=?";
+                where = Groups.GROUP_JID + "=? COLLATE NOCASE";
                 args = new String[] { uri.getLastPathSegment() };
                 if (selection != null) {
                     where += " AND (" + selection + ")";
@@ -1363,7 +1401,7 @@ public class MessagesProvider extends ContentProvider {
 
             case GROUPS_MEMBERS_ID:
                 table = TABLE_GROUP_MEMBERS;
-                where = Groups.GROUP_JID + " = ? AND " + Groups.PEER + " = ?";
+                where = Groups.GROUP_JID + " = ? COLLATE NOCASE AND " + Groups.PEER + " = ? COLLATE NOCASE";
                 args = new String[] { uri.getPathSegments().get(1), uri.getLastPathSegment() };
                 if (selection != null) {
                     where += " AND (" + selection + ")";
@@ -1737,7 +1775,9 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Groups.MEMBERSHIP, Groups.MEMBERSHIP);
 
         fulltextProjectionMap = new HashMap<>();
+        fulltextProjectionMap.put(Fulltext._ID, Fulltext._ID);
         fulltextProjectionMap.put(Fulltext.THREAD_ID, Fulltext.THREAD_ID);
+        fulltextProjectionMap.put(Fulltext.TIMESTAMP, Fulltext.TIMESTAMP);
         fulltextProjectionMap.put(Fulltext.CONTENT, Fulltext.CONTENT);
 
         groupsProjectionMap = new HashMap<>();

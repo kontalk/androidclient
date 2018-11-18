@@ -38,6 +38,7 @@
     <string name="menu_import_key">Import key</string>
     <string name="menu_import_device">Register from another device</string>
     <string name="menu_manual_verification">Already have a code?</string>
+    <string name="pref_account_settings">Account</string>
     <string name="pref_network_settings">Network</string>
     <string name="pref_network_uri">Manual server address</string>
     <string name="pref_title_network_uri">This will override server list automatic management</string>
@@ -619,11 +620,15 @@
 
     <string name="pref_foreground_service">Enable foreground service</string>
     <string name="pref_title_foreground_service">Activate this if you want Kontalk to be active in the background when going low on resources. A sticky notification will be displayed</string>
+    <string name="pref_title_foreground_service_mandatory">Kontalk requires this settings to work correctly on this device</string>
 
     <string name="menu_import_messages">Import messages</string>
 
     <string name="pref_debug_log">Enable debug log</string>
     <string name="pref_send_debug_log">Send debug log</string>
+    <string name="pref_copy_database">Copy database</string>
+    <string name="msg_copy_database_success">Database copied to: %s</string>
+    <string name="msg_copy_database_failed">Database copy failed: %s</string>
 
     <string name="registration_poweredby">Powered by</string>
 
@@ -681,6 +686,8 @@
     <string name="err_location_denied">We need access to your location if you want to share it.</string>
 
     <string name="err_validation_phone_state_denied">If you allow Kontalk to manage phone calls, it can automatically detect your phone number.\nKontalk won\'t use the granted permission for anything else.</string>
+
+    <string name="err_emoji_disabled_in_multiwindow">Emoji can\'t be used in multi-window mode.</string>
 
     <string name="permission_messages_label">Access to Kontalk messages</string>
     <string name="permission_messages_description">Can read from and write to the Kontalk messages database</string>

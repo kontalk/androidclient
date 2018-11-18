@@ -25,7 +25,8 @@
     android:paddingRight="16dp"
     android:paddingTop="8dp" >
 
-    <TextView android:id="@+id/title"
+    <com.vanniktech.emoji.EmojiTextView
+        android:id="@+id/title"
         style="@style/TextAppearance.GroupInfo.Title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
