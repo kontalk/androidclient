@@ -67,10 +67,12 @@ import android.os.Handler;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.text.HtmlCompat;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
 import android.text.Editable;
 import android.text.InputType;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Base64;
@@ -165,6 +167,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private byte[] mImportedPrivateKey;
     Map<String, Keyring.TrustedFingerprint> mTrustedKeys;
     private boolean mForce;
+    private boolean mAcceptTerms;
 
     private LocalBroadcastManager lbm;
 
@@ -409,6 +412,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mPassphrase = saved.passphrase;
             mImportedPublicKey = saved.importedPublicKey;
             mImportedPrivateKey = saved.importedPrivateKey;
+            mForce = saved.force;
             mTrustedKeys = saved.trustedKeys;
 
             // update UI
@@ -766,6 +770,26 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         }
     }
 
+    void termsAccepted(EndpointServer server) {
+        if (!SystemUtils.isNetworkConnectionAvailable(this)) {
+            error(R.string.err_validation_nonetwork);
+            return;
+        }
+
+        enableControls(false);
+        startProgress(getString(R.string.import_device_requesting));
+
+        mAcceptTerms = true;
+
+        EndpointServer.EndpointServerProvider provider =
+            new EndpointServer.SingleServerProvider(server);
+        mValidator = new NumberValidator(this, provider, mName, mPhoneNumber,
+            mKey, mPassphrase, getBrandImageSize());
+        mValidator.setListener(this);
+        mValidator.acceptTerms();
+        mValidator.start();
+    }
+
     void startValidation(final boolean force, final boolean fallback) {
         mForce = force;
         if (!fallback) {
@@ -833,6 +857,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
         if (testImport)
             mValidator.testImport();
+        else if (mAcceptTerms)
+            mValidator.acceptTerms();
 
         mValidator.start();
         return true;
@@ -844,6 +870,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
      * @param v not used
      */
     public void validatePhone(View v) {
+        mAcceptTerms = false;
         keepScreenOn(true);
         startValidation(false, false);
     }
@@ -1517,9 +1544,55 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
+    public void onAcceptTermsRequired(final NumberValidator v, final String termsUrl) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                acceptTermsDialog(v.getServer(), termsUrl);
+                abort();
+            }
+        });
+    }
+
+    @Override
     public void onValidationRequested(NumberValidator v, String sender, String challenge, String brandImage, String brandLink, boolean canFallback) {
         Log.d(TAG, "validation has been requested, requesting validation code to user");
         proceedManual(sender, challenge, brandImage, brandLink, canFallback);
+    }
+
+    void acceptTermsDialog(final EndpointServer server, String termsUrl) {
+        // build dialog text
+        String baseText = getString(R.string.registration_accept_terms_text,
+            server.getNetwork(), termsUrl);
+
+        Spanned text = HtmlCompat.fromHtml(baseText, 0);
+
+        MaterialDialog dialog = new MaterialDialog.Builder(this)
+            .title(R.string.registration_accept_terms_title)
+            .content(text)
+            .positiveText(R.string.yes)
+            .positiveColorRes(R.color.button_success)
+            .negativeText(R.string.no)
+            .negativeColorRes(R.color.button_danger)
+            .onAny(new MaterialDialog.SingleButtonCallback() {
+                @Override
+                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                    switch (which) {
+                        case POSITIVE:
+                            termsAccepted(server);
+                            break;
+                        case NEGATIVE:
+                            break;
+                    }
+                }
+            })
+            .build();
+
+        try {
+            dialog.show();
+        }
+        catch (Exception ignored) {
+        }
     }
 
     void userExistsWarning() {

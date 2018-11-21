@@ -631,6 +631,8 @@
     <string name="msg_copy_database_failed">Database copy failed: %s</string>
 
     <string name="registration_poweredby">Powered by</string>
+    <string name="registration_accept_terms_title">Accept service terms?</string>
+    <string name="registration_accept_terms_text"><![CDATA[Server at <b>%1$s</b> is requesting to <a href="%2$s">accept terms of service</a>.]]></string>
 
     <string name="audio_duration_max">%1$s / %2$s</string>
 
