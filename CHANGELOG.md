@@ -15,6 +15,7 @@
 - Update Smack library to version 4.3.1
 - Generate QR codes in the background (#1237)
 - Move some account-related preferences into their own new section
+- Ask user to accept service terms if server requests it (#1211)
 
 ### Fixed
 - Sort search results in inverted timestamp order (#1223)
