@@ -143,6 +143,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public static final String PARAM_PUBLICKEY = "org.kontalk.publickey";
     public static final String PARAM_PRIVATEKEY = "org.kontalk.privatekey";
     public static final String PARAM_SERVER_URI = "org.kontalk.server";
+    public static final String PARAM_TERMS_URL = "org.kontalk.termsURL";
     public static final String PARAM_CHALLENGE = "org.kontalk.challenge";
     public static final String PARAM_TRUSTED_KEYS = "org.kontalk.trustedkeys";
 
@@ -515,6 +516,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                     trustedKeys = Keyring.fromTrustedFingerprintMap(keys);
                 }
                 finishLogin(data.getStringExtra(PARAM_SERVER_URI),
+                    data.getStringExtra(PARAM_TERMS_URL),
                     data.getStringExtra(PARAM_CHALLENGE),
                     data.getByteArrayExtra(PARAM_PRIVATEKEY),
                     data.getByteArrayExtra(PARAM_PUBLICKEY),
@@ -1392,7 +1394,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             @Override
             public void run() {
                 abort(true);
-                finishLogin(v.getServer().toString(), v.getServerChallenge(), privateKey, publicKey, false, mTrustedKeys);
+                finishLogin(v.getServer().toString(), null, v.getServerChallenge(), privateKey, publicKey, false, mTrustedKeys);
             }
         });
     }
@@ -1448,7 +1450,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         setProgressMessage(getString(R.string.msg_initializing));
     }
 
-    protected void finishLogin(final String serverUri, final String challenge,
+    protected void finishLogin(final String serverUri, final String termsUrl, final String challenge,
             final byte[] privateKeyData, final byte[] publicKeyData, boolean updateKey,
             Map<String, Keyring.TrustedFingerprint> trustedKeys) {
         Log.v(TAG, "finishing login");
@@ -1465,10 +1467,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             }
         }
 
-        completeLogin(serverUri, challenge, privateKeyData, publicKeyData, trustedKeys);
+        completeLogin(serverUri, termsUrl, challenge, privateKeyData, publicKeyData, trustedKeys);
     }
 
-    private void completeLogin(String serverUri, String challenge,
+    private void completeLogin(String serverUri, String termsUrl, String challenge,
             byte[] privateKeyData, byte[] publicKeyData, Map<String, Keyring.TrustedFingerprint> trustedKeys) {
         // generate the bridge certificate
         byte[] bridgeCertData;
