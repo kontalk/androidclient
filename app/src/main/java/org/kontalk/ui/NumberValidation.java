@@ -43,6 +43,9 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPException;
@@ -115,6 +118,10 @@ import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
 import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
 import org.kontalk.service.MessagesImporterService;
 import org.kontalk.service.msgcenter.SQLiteRosterStore;
+import org.kontalk.service.registration.RegistrationService;
+import org.kontalk.service.registration.event.KeyReceivedEvent;
+import org.kontalk.service.registration.event.RetrieveKeyError;
+import org.kontalk.service.registration.event.RetrieveKeyRequest;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.adapter.CountryCodesAdapter;
 import org.kontalk.ui.adapter.CountryCodesAdapter.CountryCode;
@@ -183,6 +190,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     private KeyGeneratorReceiver mKeyReceiver;
     private BroadcastReceiver mMessagesImporterReceiver;
+
+    private EventBus mServiceBus = RegistrationService.bus();
 
     private static final class RetainData {
         NumberValidator validator;
@@ -307,6 +316,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 setProgressMessage(data.progressMessage, true);
             }
         }
+
+        // start registration service immediately
+        RegistrationService.start(this);
     }
 
     /** Not used. */
@@ -991,12 +1003,43 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         enableControls(false);
         startProgress(getString(R.string.import_device_requesting));
 
+        mServiceBus.register(this);
+        mServiceBus.post(new RetrieveKeyRequest(new EndpointServer(server), account, token));
+
+        /*
         EndpointServer.EndpointServerProvider provider =
             new EndpointServer.SingleServerProvider(server);
         mValidator = new NumberValidator(this, provider, account, token);
         mValidator.setListener(this);
         mValidator.requestPrivateKey();
         mValidator.start();
+        */
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onKeyReceived(final KeyReceivedEvent event) {
+        new MaterialDialog.Builder(NumberValidation.this)
+            .title(R.string.title_passphrase)
+            .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
+            .input(null, null, new MaterialDialog.InputCallback() {
+                @Override
+                public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+                    /* TODO
+                    if (!startImport(v.getServer(), v.getPhone(),
+                            event.privateKeyData, event.publicKeyData, input.toString())) {
+                        abort();
+                    }
+                    */
+                }
+            })
+            .negativeText(android.R.string.cancel)
+            .positiveText(android.R.string.ok)
+            .show();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onRetrieveKeyError(RetrieveKeyError event) {
+        // TODO
     }
 
     private void importAskPassphrase(final ZipInputStream zip) {
@@ -1330,6 +1373,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public void abort(boolean ending) {
         if (!ending) {
             abortProgress(true);
+            // TODO stop registration service?
         }
 
         mForce = false;
@@ -1337,6 +1381,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mValidator.shutdown();
             mValidator = null;
         }
+        mServiceBus.unregister(this);
     }
 
     private void setProgressMessage(CharSequence message) {
@@ -1415,6 +1460,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
+    @Deprecated
     public void onPrivateKeyReceived(final NumberValidator v, final byte[] privateKey, final byte[] publicKey) {
         // ask for a passphrase
         runOnUiThread(new Runnable() {
@@ -1439,6 +1485,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
+    @Deprecated
     public void onPrivateKeyRequestFailed(NumberValidator v, int reason) {
         // TODO
     }

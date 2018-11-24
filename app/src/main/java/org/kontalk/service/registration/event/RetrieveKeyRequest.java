@@ -19,6 +19,8 @@
 package org.kontalk.service.registration.event;
 
 
+import android.support.annotation.NonNull;
+
 import org.kontalk.client.EndpointServer;
 
 /**
@@ -32,7 +34,7 @@ public class RetrieveKeyRequest {
     public final String phoneNumber;
     public final String privateKeyToken;
 
-    public RetrieveKeyRequest(EndpointServer server, String phoneNumber, String privateKeyToken) {
+    public RetrieveKeyRequest(@NonNull EndpointServer server, @NonNull String phoneNumber, @NonNull String privateKeyToken) {
         this.server = server;
         this.phoneNumber = phoneNumber;
         this.privateKeyToken = privateKeyToken;

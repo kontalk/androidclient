@@ -20,19 +20,16 @@ package org.kontalk.service.registration.event;
 
 
 /**
- * Import personal key request event.
+ * Event posted by the registration service if it received errors from the
+ * server while requesting the private key.
  * @author Daniele Ricci
  */
-public class ImportKeyRequest {
+public class RetrieveKeyError {
 
-    public final byte[] privateKeyData;
-    public final byte[] publicKeyData;
-    public final String passphrase;
+    public final Exception exception;
 
-    public ImportKeyRequest(byte[] privateKeyData, byte[] publicKeyData, String passphrase) {
-        this.privateKeyData = privateKeyData;
-        this.publicKeyData = publicKeyData;
-        this.passphrase = passphrase;
+    public RetrieveKeyError(Exception exception) {
+        this.exception = exception;
     }
 
 }

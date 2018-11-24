@@ -18,18 +18,43 @@
 
 package org.kontalk.service.registration;
 
+import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.cert.CertificateException;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.jivesoftware.smack.SmackException;
+import org.jivesoftware.smack.StanzaListener;
+import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.filter.StanzaIdFilter;
+import org.jivesoftware.smack.packet.ExtensionElement;
+import org.jivesoftware.smack.packet.IQ;
+import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smackx.iqregister.packet.Registration;
+import org.spongycastle.openpgp.PGPException;
 
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
 import org.kontalk.BuildConfig;
+import org.kontalk.client.Account;
+import org.kontalk.client.NumberValidator;
+import org.kontalk.client.SmackInitializer;
+import org.kontalk.crypto.PersonalKey;
+import org.kontalk.service.XMPPConnectionHelper;
 import org.kontalk.service.registration.event.ImportKeyRequest;
+import org.kontalk.service.registration.event.KeyReceivedEvent;
+import org.kontalk.service.registration.event.RetrieveKeyError;
 import org.kontalk.service.registration.event.RetrieveKeyRequest;
 import org.kontalk.service.registration.event.VerificationRequest;
 import org.kontalk.util.EventBusIndex;
@@ -46,7 +71,7 @@ import org.kontalk.util.EventBusIndex;
  * </ul>
  * @author Daniele Ricci
  */
-public class RegistrationService extends Service {
+public class RegistrationService extends Service implements XMPPConnectionHelper.ConnectionHelperListener {
     private static final String TAG = RegistrationService.TAG;
 
     private static final EventBus BUS;
@@ -60,6 +85,11 @@ public class RegistrationService extends Service {
             .build();
     }
 
+    private HandlerThread mServiceHandler;
+    private Handler mInternalHandler;
+
+    private XMPPConnectionHelper mConnector;
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (!BUS.isRegistered(this)) {
@@ -68,9 +98,49 @@ public class RegistrationService extends Service {
         return START_STICKY;
     }
 
+    private void configure() {
+        SmackInitializer.initializeRegistration();
+    }
+
+    private void unconfigure() {
+        SmackInitializer.deinitializeRegistration();
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        configure();
+
+        // internal handler
+        mServiceHandler = new HandlerThread(NumberValidator.class.getSimpleName()) {
+            @Override
+            protected void onLooperPrepared() {
+                mInternalHandler = new Handler(getLooper());
+            }
+        };
+        mServiceHandler.start();
+    }
+
     @Override
     public void onDestroy() {
         BUS.unregister(this);
+        unconfigure();
+
+        final HandlerThread serviceHandler = mServiceHandler;
+        mInternalHandler.post(new Runnable() {
+            public void run() {
+                try {
+                    serviceHandler.quit();
+                    reset();
+                }
+                catch (Exception e) {
+                    // ignored
+                }
+            }
+        });
+
+        mInternalHandler = null;
+        mServiceHandler = null;
     }
 
     @Nullable
@@ -99,7 +169,135 @@ public class RegistrationService extends Service {
      */
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onRetrieveKeyRequest(RetrieveKeyRequest request) {
-        // TODO begin by requesting instructions, but we can skip accepting terms since it's the same server
+        reset();
+        // connect to the provided server
+        mConnector = new XMPPConnectionHelper(this, request.server, true);
+        mConnector.setRetryEnabled(false);
+
+        try {
+            initConnectionAnonymous();
+
+            // prepare private key request form
+            Stanza form = createPrivateKeyRequest(request.privateKeyToken);
+
+            XMPPConnection conn = mConnector.getConnection();
+            conn.addAsyncStanzaListener(new StanzaListener() {
+                public void processStanza(Stanza packet) {
+                    IQ iq = (IQ) packet;
+                    if (iq.getType() == IQ.Type.result) {
+                        ExtensionElement _accountData = iq.getExtension(Account.ELEMENT_NAME, Account.NAMESPACE);
+                        if (_accountData instanceof Account) {
+                            Account accountData = (Account) _accountData;
+
+                            byte[] privateKeyData = accountData.getPrivateKeyData();
+                            byte[] publicKeyData = accountData.getPublicKeyData();
+                            if (privateKeyData != null && privateKeyData.length > 0 &&
+                                publicKeyData != null && publicKeyData.length > 0) {
+
+                                BUS.post(new KeyReceivedEvent(privateKeyData, publicKeyData));
+                                return;
+                            }
+                        }
+                    }
+
+                    // TODO properly parse errors from the server
+                    BUS.post(new RetrieveKeyError(new IllegalStateException("Server did not reply with key.")));
+                }
+            }, new StanzaIdFilter(form.getStanzaId()));
+
+            // send request packet
+            conn.sendStanza(form);
+        }
+        catch (Exception e) {
+            BUS.post(new RetrieveKeyError(e));
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    public void onKeyReceived(KeyReceivedEvent event) {
+        reset();
+    }
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    public void onRetrieveKeyError(RetrieveKeyError event) {
+        reset();
+    }
+
+    private void initConnectionAnonymous() throws XMPPException, SmackException,
+        PGPException, KeyStoreException, NoSuchProviderException,
+        NoSuchAlgorithmException, CertificateException,
+        IOException, InterruptedException {
+
+        initConnection(null, false);
+    }
+
+    private void initConnection(PersonalKey key, boolean loginTest) throws XMPPException, SmackException,
+        PGPException, KeyStoreException, NoSuchProviderException,
+        NoSuchAlgorithmException, CertificateException,
+        IOException, InterruptedException {
+
+        if (!mConnector.isConnected() || mConnector.isServerDirty()) {
+            mConnector.setListener(this);
+            mConnector.connectOnce(key, loginTest);
+        }
+    }
+
+    private Stanza createPrivateKeyRequest(String privateKeyToken) {
+        Registration iq = new Registration();
+        iq.setType(IQ.Type.get);
+        iq.setTo(mConnector.getConnection().getXMPPServiceDomain());
+
+        Account account = new Account();
+        account.setPrivateKeyToken(privateKeyToken);
+        iq.addExtension(account);
+
+        return iq;
+    }
+
+    void reset() {
+        if (mConnector != null) {
+            mConnector.shutdown();
+        }
+    }
+
+    @Override
+    public void created(XMPPConnection connection) {
+
+    }
+
+    @Override
+    public void aborted(Exception e) {
+
+    }
+
+    @Override
+    public void reconnectingIn(int seconds) {
+
+    }
+
+    @Override
+    public void authenticationFailed() {
+
+    }
+
+    @Override
+    public void connected(XMPPConnection connection) {
+
+    }
+
+    @Override
+    public void authenticated(XMPPConnection connection, boolean resumed) {
+
+    }
+
+    @Override
+    public void connectionClosed() {
+
+    }
+
+    @Override
+    public void connectionClosedOnError(Exception e) {
+
     }
 
     public static EventBus bus() {

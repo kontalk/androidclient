@@ -20,19 +20,18 @@ package org.kontalk.service.registration.event;
 
 
 /**
- * Import personal key request event.
+ * Event posted by the registration service to notify that an account has been
+ * retrieved from the server.
  * @author Daniele Ricci
  */
-public class ImportKeyRequest {
+public class KeyReceivedEvent {
 
     public final byte[] privateKeyData;
     public final byte[] publicKeyData;
-    public final String passphrase;
 
-    public ImportKeyRequest(byte[] privateKeyData, byte[] publicKeyData, String passphrase) {
+    public KeyReceivedEvent(byte[] privateKeyData, byte[] publicKeyData) {
         this.privateKeyData = privateKeyData;
         this.publicKeyData = publicKeyData;
-        this.passphrase = passphrase;
     }
 
 }
