@@ -19,24 +19,16 @@
 package org.kontalk.service.registration.event;
 
 
-import org.kontalk.client.EndpointServer;
-
 /**
- * Import personal key request event.
+ * Event posted by UI when a passphrase has been typed in by the user.
+ * Depending on its state, the registration service will act accordingly.
  * @author Daniele Ricci
  */
-public class ImportKeyRequest {
+public class PassphraseInputEvent {
 
-    public final EndpointServer server;
-    public final byte[] privateKeyData;
-    public final byte[] publicKeyData;
     public final String passphrase;
 
-    public ImportKeyRequest(EndpointServer server,
-            byte[] privateKeyData, byte[] publicKeyData, String passphrase) {
-        this.server = server;
-        this.privateKeyData = privateKeyData;
-        this.publicKeyData = publicKeyData;
+    public PassphraseInputEvent(String passphrase) {
         this.passphrase = passphrase;
     }
 

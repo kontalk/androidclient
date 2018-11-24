@@ -28,14 +28,15 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.jivesoftware.smack.SmackException;
-import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.filter.StanzaIdFilter;
 import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.IQ;
-import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smack.util.ExceptionCallback;
+import org.jivesoftware.smack.util.SuccessCallback;
 import org.jivesoftware.smackx.iqregister.packet.Registration;
+import org.jivesoftware.smackx.xdata.FormField;
+import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.spongycastle.openpgp.PGPException;
 
 import android.app.Service;
@@ -44,16 +45,21 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import org.kontalk.BuildConfig;
+import org.kontalk.Log;
 import org.kontalk.client.Account;
+import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.client.SmackInitializer;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.service.XMPPConnectionHelper;
+import org.kontalk.service.registration.event.ImportKeyError;
 import org.kontalk.service.registration.event.ImportKeyRequest;
 import org.kontalk.service.registration.event.KeyReceivedEvent;
+import org.kontalk.service.registration.event.PassphraseInputEvent;
 import org.kontalk.service.registration.event.RetrieveKeyError;
 import org.kontalk.service.registration.event.RetrieveKeyRequest;
 import org.kontalk.service.registration.event.VerificationRequest;
@@ -85,6 +91,42 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             .build();
     }
 
+    /**
+     * A list of possible states this service can be.
+     * Maybe a state a machine here...?
+     */
+    enum State {
+        IDLE,
+        CONNECTING,
+        WAITING_PASSPHRASE,
+    }
+
+    /** Possible processes, that is, workflows for states. */
+    enum Workflow {
+        REGISTRATION,
+        IMPORT_KEY,
+        RETRIEVE_KEY,
+    }
+
+    /** Posted as a sticky event on the bus. */
+    public static final class CurrentState {
+        public Workflow workflow;
+        public State state;
+        public EndpointServer server;
+        public String phoneNumber;
+
+        CurrentState() {
+            state = State.IDLE;
+        }
+
+        CurrentState(@NonNull CurrentState cs) {
+            this.workflow = cs.workflow;
+            this.state = cs.state;
+            this.server = cs.server;
+            this.phoneNumber = cs.phoneNumber;
+        }
+    }
+
     private HandlerThread mServiceHandler;
     private Handler mInternalHandler;
 
@@ -110,6 +152,8 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
     public void onCreate() {
         super.onCreate();
         configure();
+
+        updateState(State.IDLE);
 
         // internal handler
         mServiceHandler = new HandlerThread(NumberValidator.class.getSimpleName()) {
@@ -149,6 +193,31 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         return null;
     }
 
+    private void updateState(State state, Object... other) {
+        CurrentState cstate = currentState();
+        // always produce a new object
+        if (cstate == null) {
+            cstate = new CurrentState();
+        }
+        else {
+            cstate = new CurrentState(cstate);
+        }
+
+        cstate.state = state;
+
+        // ehm...
+        for (Object data : other) {
+            if (data instanceof EndpointServer) {
+                cstate.server = (EndpointServer) data;
+            }
+            else if (data instanceof Workflow) {
+                cstate.workflow = (Workflow) data;
+            }
+        }
+
+        BUS.postSticky(cstate);
+    }
+
     // TODO use events also for internal processing
 
     /** Full registration procedure. */
@@ -160,7 +229,51 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
     /** Import existing key from a personal keypack. */
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onImportKeyRequest(ImportKeyRequest request) {
-        // TODO begin by requesting instructions for service terms url
+        // begin by requesting instructions for service terms url
+        reset();
+
+        updateState(State.CONNECTING, Workflow.IMPORT_KEY, request.server);
+
+        // connect to the provided server
+        mConnector = new XMPPConnectionHelper(this, request.server, true);
+        mConnector.setRetryEnabled(false);
+
+        try {
+            initConnectionAnonymous();
+
+            // send instructions form
+            IQ form = createInstructionsForm();
+            final XMPPConnection conn = mConnector.getConnection();
+            conn.sendIqRequestAsync(form).onSuccess(new SuccessCallback<IQ>() {
+                @Override
+                public void onSuccess(IQ result) {
+                    DataForm response = result.getExtension("x", "jabber:x:data");
+                    if (response != null && response.hasField("accept-terms")) {
+                        FormField termsUrlField = response.getField("terms");
+                        if (termsUrlField != null) {
+                            String termsUrl = termsUrlField.getFirstValue();
+                            if (termsUrl != null) {
+                                Log.d(TAG, "server request terms acceptance: " + termsUrl);
+                                // TODO BUS.post(AcceptTermsRequestBlaBla...)
+                                return;
+                            }
+                        }
+                    }
+
+                    // no terms, just proceed
+                    // TODO BUS.post(blabla...)
+                }
+            }).onError(new ExceptionCallback<Exception>() {
+                @Override
+                public void processException(Exception exception) {
+                    // TODO properly parse errors from the server
+                    BUS.post(new ImportKeyError(new IllegalStateException("Server did not reply with instructions.")));
+                }
+            });
+        }
+        catch (Exception e) {
+            BUS.post(new RetrieveKeyError(e));
+        }
     }
 
     /**
@@ -170,6 +283,9 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onRetrieveKeyRequest(RetrieveKeyRequest request) {
         reset();
+
+        updateState(State.CONNECTING, Workflow.IMPORT_KEY, request.server);
+
         // connect to the provided server
         mConnector = new XMPPConnectionHelper(this, request.server, true);
         mConnector.setRetryEnabled(false);
@@ -178,35 +294,38 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             initConnectionAnonymous();
 
             // prepare private key request form
-            Stanza form = createPrivateKeyRequest(request.privateKeyToken);
+            IQ form = createPrivateKeyRequest(request.privateKeyToken);
 
-            XMPPConnection conn = mConnector.getConnection();
-            conn.addAsyncStanzaListener(new StanzaListener() {
-                public void processStanza(Stanza packet) {
-                    IQ iq = (IQ) packet;
-                    if (iq.getType() == IQ.Type.result) {
-                        ExtensionElement _accountData = iq.getExtension(Account.ELEMENT_NAME, Account.NAMESPACE);
-                        if (_accountData instanceof Account) {
-                            Account accountData = (Account) _accountData;
+            // send request packet
+            final XMPPConnection conn = mConnector.getConnection();
+            conn.sendIqRequestAsync(form).onSuccess(new SuccessCallback<IQ>() {
+                @Override
+                public void onSuccess(IQ result) {
+                    ExtensionElement _accountData = result.getExtension(Account.ELEMENT_NAME, Account.NAMESPACE);
+                    if (_accountData instanceof Account) {
+                        Account accountData = (Account) _accountData;
 
-                            byte[] privateKeyData = accountData.getPrivateKeyData();
-                            byte[] publicKeyData = accountData.getPublicKeyData();
-                            if (privateKeyData != null && privateKeyData.length > 0 &&
-                                publicKeyData != null && publicKeyData.length > 0) {
+                        byte[] privateKeyData = accountData.getPrivateKeyData();
+                        byte[] publicKeyData = accountData.getPublicKeyData();
+                        if (privateKeyData != null && privateKeyData.length > 0 &&
+                            publicKeyData != null && publicKeyData.length > 0) {
 
-                                BUS.post(new KeyReceivedEvent(privateKeyData, publicKeyData));
-                                return;
-                            }
+                            BUS.post(new KeyReceivedEvent(privateKeyData, publicKeyData));
+                            updateState(State.WAITING_PASSPHRASE);
+                            return;
                         }
                     }
 
+                    // unexpected response
+                    BUS.post(new RetrieveKeyError(new IllegalStateException("Server did not reply with key.")));
+                }
+            }).onError(new ExceptionCallback<Exception>() {
+                @Override
+                public void processException(Exception exception) {
                     // TODO properly parse errors from the server
                     BUS.post(new RetrieveKeyError(new IllegalStateException("Server did not reply with key.")));
                 }
-            }, new StanzaIdFilter(form.getStanzaId()));
-
-            // send request packet
-            conn.sendStanza(form);
+            });
         }
         catch (Exception e) {
             BUS.post(new RetrieveKeyError(e));
@@ -221,6 +340,19 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onRetrieveKeyError(RetrieveKeyError event) {
         reset();
+    }
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    public void onPassphraseInput(PassphraseInputEvent event) {
+        CurrentState cstate = currentState();
+        switch (cstate.workflow) {
+            case RETRIEVE_KEY: {
+                if (cstate.state == State.WAITING_PASSPHRASE) {
+                    // TODO proceed with import
+                }
+                break;
+            }
+        }
     }
 
     private void initConnectionAnonymous() throws XMPPException, SmackException,
@@ -242,7 +374,14 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         }
     }
 
-    private Stanza createPrivateKeyRequest(String privateKeyToken) {
+    private IQ createInstructionsForm() {
+        Registration iq = new Registration();
+        iq.setTo(mConnector.getConnection().getXMPPServiceDomain());
+        iq.setType(IQ.Type.get);
+        return iq;
+    }
+
+    private IQ createPrivateKeyRequest(String privateKeyToken) {
         Registration iq = new Registration();
         iq.setType(IQ.Type.get);
         iq.setTo(mConnector.getConnection().getXMPPServiceDomain());
@@ -258,6 +397,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         if (mConnector != null) {
             mConnector.shutdown();
         }
+        updateState(State.IDLE);
     }
 
     @Override
@@ -302,6 +442,10 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
 
     public static EventBus bus() {
         return BUS;
+    }
+
+    public static CurrentState currentState() {
+        return BUS.getStickyEvent(CurrentState.class);
     }
 
     public static void start(Context context) {

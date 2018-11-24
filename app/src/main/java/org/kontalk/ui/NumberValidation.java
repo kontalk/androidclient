@@ -120,6 +120,7 @@ import org.kontalk.service.MessagesImporterService;
 import org.kontalk.service.msgcenter.SQLiteRosterStore;
 import org.kontalk.service.registration.RegistrationService;
 import org.kontalk.service.registration.event.KeyReceivedEvent;
+import org.kontalk.service.registration.event.PassphraseInputEvent;
 import org.kontalk.service.registration.event.RetrieveKeyError;
 import org.kontalk.service.registration.event.RetrieveKeyRequest;
 import org.kontalk.sync.SyncAdapter;
@@ -1024,12 +1025,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             .input(null, null, new MaterialDialog.InputCallback() {
                 @Override
                 public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
-                    /* TODO
-                    if (!startImport(v.getServer(), v.getPhone(),
-                            event.privateKeyData, event.publicKeyData, input.toString())) {
-                        abort();
-                    }
-                    */
+                    mServiceBus.post(new PassphraseInputEvent(input.toString()));
                 }
             })
             .negativeText(android.R.string.cancel)
