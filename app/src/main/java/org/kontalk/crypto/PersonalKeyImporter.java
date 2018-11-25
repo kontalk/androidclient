@@ -19,8 +19,12 @@
 package org.kontalk.crypto;
 
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.SignatureException;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -29,6 +33,7 @@ import java.util.zip.ZipInputStream;
 
 import org.spongycastle.bcpg.ArmoredInputStream;
 import org.spongycastle.openpgp.PGPException;
+import org.spongycastle.operator.OperatorCreationException;
 
 import org.kontalk.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.provider.Keyring;
@@ -99,9 +104,7 @@ public class PersonalKeyImporter implements PersonalKeyPack {
         }
 
         if (privateKey == null || publicKey == null) {
-            IOException e = new IOException("invalid data");
-            e.initCause(zipException);
-            throw e;
+            throw new IOException("invalid data", zipException);
         }
 
         mPrivateKey = privateKey;
@@ -118,12 +121,28 @@ public class PersonalKeyImporter implements PersonalKeyPack {
 
     /** Creates a {@link PersonalKey} out of the imported data, if possible. */
     public PersonalKey createPersonalKey() throws PGPException, NoSuchProviderException,
-            CertificateException, IOException {
-        if (mPrivateKey != null && mPublicKey != null)
-            return PersonalKey.load(
-                new ArmoredInputStream(mPrivateKey.getInputStream()),
-                new ArmoredInputStream(mPublicKey.getInputStream()),
-                mPassphrase, null);
+            CertificateException, IOException, OperatorCreationException, NoSuchAlgorithmException,
+            InvalidKeyException, SignatureException {
+        if (mPrivateKey != null && mPublicKey != null) {
+
+            PGP.PGPKeyPairRing ring;
+            try {
+                ring = PGP.PGPKeyPairRing.loadArmored(mPrivateKey.getInputStream(),
+                    mPublicKey.getInputStream());
+            }
+            catch (IOException e) {
+                // try not armored
+                ring = PGP.PGPKeyPairRing.load(mPrivateKey.getInputStream(),
+                    mPublicKey.getInputStream());
+            }
+
+            // bridge certificate for connection
+            X509Certificate bridgeCert = X509Bridge.createCertificate(ring.publicKey,
+                ring.secretKey.getSecretKey(), mPassphrase);
+
+            return PersonalKey.load(ring.secretKey, ring.publicKey,
+                mPassphrase, bridgeCert);
+        }
         return null;
     }
 

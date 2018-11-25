@@ -119,10 +119,16 @@ import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
 import org.kontalk.service.MessagesImporterService;
 import org.kontalk.service.msgcenter.SQLiteRosterStore;
 import org.kontalk.service.registration.RegistrationService;
+import org.kontalk.service.registration.event.AcceptTermsRequest;
+import org.kontalk.service.registration.event.AccountCreatedEvent;
+import org.kontalk.service.registration.event.ImportKeyError;
+import org.kontalk.service.registration.event.ImportKeyRequest;
 import org.kontalk.service.registration.event.KeyReceivedEvent;
+import org.kontalk.service.registration.event.LoginTestEvent;
 import org.kontalk.service.registration.event.PassphraseInputEvent;
 import org.kontalk.service.registration.event.RetrieveKeyError;
 import org.kontalk.service.registration.event.RetrieveKeyRequest;
+import org.kontalk.service.registration.event.TermsAcceptedEvent;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.adapter.CountryCodesAdapter;
 import org.kontalk.ui.adapter.CountryCodesAdapter.CountryCode;
@@ -158,24 +164,35 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private static final String CHOOSER_TAG_MESSAGES_DB = "messages.db";
 
     private AccountManager mAccountManager;
+
     private EditText mNameText;
     private Spinner mCountryCode;
     private EditText mPhone;
     private Button mValidateButton;
     private MaterialDialog mProgress;
     private CharSequence mProgressMessage;
+
+    @Deprecated
     NumberValidator mValidator;
     Handler mHandler;
 
+    @Deprecated
     private String mPhoneNumber;
+    @Deprecated
     private String mName;
 
+    @Deprecated
     PersonalKey mKey;
+    @Deprecated
     private String mPassphrase;
+    @Deprecated
     private byte[] mImportedPublicKey;
+    @Deprecated
     private byte[] mImportedPrivateKey;
+    @Deprecated
     Map<String, Keyring.TrustedFingerprint> mTrustedKeys;
     private boolean mForce;
+    @Deprecated
     private boolean mAcceptTerms;
 
     private LocalBroadcastManager lbm;
@@ -278,7 +295,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             }
 
             public void onNothingSelected(AdapterView<?> parent) {
-                // TODO Auto-generated method stub
+                // unused
             }
         });
 
@@ -664,6 +681,17 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             .show();
     }
 
+    void onError(Throwable e) {
+        keepScreenOn(false);
+        int msgId;
+        if (e instanceof SocketException)
+            msgId = R.string.err_validation_network_error;
+        else
+            msgId = R.string.err_validation_error;
+        Toast.makeText(NumberValidation.this, msgId, Toast.LENGTH_LONG).show();
+        abort();
+    }
+
     private void checkInput(boolean importing, final ParameterRunnable<Boolean> callback) {
         final String phoneStr;
 
@@ -1035,17 +1063,49 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onRetrieveKeyError(RetrieveKeyError event) {
-        // TODO
+        // FIXME maybe a somewhat more detailed explaination
+        onError(event.exception);
     }
 
-    private void importAskPassphrase(final ZipInputStream zip) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onImportKeyError(ImportKeyError event) {
+        // FIXME maybe a somewhat more detailed explaination
+        onError(event.exception);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onLoginTest(LoginTestEvent event) {
+        if (event.exception != null) {
+            onError(event.exception);
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onAccountCreated(AccountCreatedEvent event) {
+        // send back result
+        final Intent intent = new Intent();
+        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, event.account.name);
+        intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, Authenticator.ACCOUNT_TYPE);
+
+        setAccountAuthenticatorResult(intent.getExtras());
+        setResult(RESULT_OK, intent);
+
+        ReportingManager.logSignUp(RegistrationService.currentState().challenge);
+
+        // manual sync starter
+        delayedSync();
+    }
+
+    private void importAskPassphrase(final InputStream zip) {
         new MaterialDialog.Builder(this)
             .title(R.string.title_passphrase)
             .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
             .input(null, null, new MaterialDialog.InputCallback() {
                 @Override
-                public void onInput(MaterialDialog dialog, CharSequence input) {
-                    startImport(zip, dialog.getInputEditText().getText().toString());
+                public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+                    mServiceBus.post(new ImportKeyRequest(Preferences
+                        .getEndpointServer(NumberValidation.this),
+                        zip, input.toString()));
                 }
             })
             .onNegative(new MaterialDialog.SingleButtonCallback() {
@@ -1062,34 +1122,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             .negativeText(android.R.string.cancel)
             .positiveText(android.R.string.ok)
             .show();
-    }
-
-    private void startImport(InputStream in) {
-        ZipInputStream zip = null;
-        try {
-            zip = new ZipInputStream(in);
-
-            // ask passphrase to user and assign to mPassphrase
-            importAskPassphrase(zip);
-        }
-        catch (Exception e) {
-            Log.e(TAG, "error importing keys", e);
-            ReportingManager.logException(e);
-            mImportedPublicKey = mImportedPrivateKey = null;
-            mTrustedKeys = null;
-
-            try {
-                if (zip != null)
-                    zip.close();
-            }
-            catch (IOException ignored) {
-                // ignored.
-            }
-
-            Toast.makeText(NumberValidation.this,
-                R.string.err_import_keypair_failed,
-                Toast.LENGTH_LONG).show();
-        }
     }
 
     @Override
@@ -1124,7 +1156,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         }
         else {
             try {
-                startImport(new FileInputStream(file));
+                importAskPassphrase(new FileInputStream(file));
             }
             catch (FileNotFoundException e) {
                 Log.e(TAG, "error importing keys", e);
@@ -1139,6 +1171,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public void onFileChooserDismissed(@NonNull FileChooserDialog dialog) {
     }
 
+    @Deprecated
     void startImport(ZipInputStream zip, String passphrase) {
         PersonalKeyImporter importer = null;
         String manualServer = Preferences.getServerURI();
@@ -1588,27 +1621,17 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         });
     }
 
+    @Deprecated
     @Override
     public void onAcceptTermsRequired(final NumberValidator v, final String termsUrl) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                acceptTermsDialog(v.getServer(), termsUrl);
-                abort();
-            }
-        });
     }
 
-    @Override
-    public void onValidationRequested(NumberValidator v, String sender, String challenge, String brandImage, String brandLink, boolean canFallback) {
-        Log.d(TAG, "validation has been requested, requesting validation code to user");
-        proceedManual(sender, challenge, brandImage, brandLink, canFallback);
-    }
-
-    void acceptTermsDialog(final EndpointServer server, String termsUrl) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onAcceptTermsRequested(AcceptTermsRequest request) {
         // build dialog text
+        RegistrationService.CurrentState cstate = RegistrationService.currentState();
         String baseText = getString(R.string.registration_accept_terms_text,
-            server.getNetwork(), termsUrl);
+            cstate.server.getNetwork(), request.termsUrl);
 
         Spanned text = HtmlCompat.fromHtml(baseText, 0);
 
@@ -1624,9 +1647,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                     switch (which) {
                         case POSITIVE:
-                            termsAccepted(server);
+                            mServiceBus.post(new TermsAcceptedEvent());
                             break;
                         case NEGATIVE:
+                            abort();
                             break;
                     }
                 }
@@ -1638,6 +1662,12 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         }
         catch (Exception ignored) {
         }
+    }
+
+    @Override
+    public void onValidationRequested(NumberValidator v, String sender, String challenge, String brandImage, String brandLink, boolean canFallback) {
+        Log.d(TAG, "validation has been requested, requesting validation code to user");
+        proceedManual(sender, challenge, brandImage, brandLink, canFallback);
     }
 
     void userExistsWarning() {

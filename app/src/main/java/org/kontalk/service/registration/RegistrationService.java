@@ -19,10 +19,15 @@
 package org.kontalk.service.registration;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.security.GeneralSecurityException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.util.Map;
+import java.util.zip.ZipInputStream;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -37,33 +42,55 @@ import org.jivesoftware.smack.util.SuccessCallback;
 import org.jivesoftware.smackx.iqregister.packet.Registration;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
+import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPException;
+import org.spongycastle.operator.OperatorCreationException;
 
+import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
 import android.app.Service;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
+import android.util.Base64;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.Log;
+import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.Account;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.client.SmackInitializer;
+import org.kontalk.crypto.PGPUidMismatchException;
+import org.kontalk.crypto.PGPUserID;
 import org.kontalk.crypto.PersonalKey;
+import org.kontalk.crypto.PersonalKeyImporter;
+import org.kontalk.provider.Keyring;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.XMPPConnectionHelper;
+import org.kontalk.service.msgcenter.SQLiteRosterStore;
+import org.kontalk.service.registration.event.AcceptTermsRequest;
+import org.kontalk.service.registration.event.AccountCreatedEvent;
 import org.kontalk.service.registration.event.ImportKeyError;
 import org.kontalk.service.registration.event.ImportKeyRequest;
 import org.kontalk.service.registration.event.KeyReceivedEvent;
+import org.kontalk.service.registration.event.LoginTestEvent;
 import org.kontalk.service.registration.event.PassphraseInputEvent;
 import org.kontalk.service.registration.event.RetrieveKeyError;
 import org.kontalk.service.registration.event.RetrieveKeyRequest;
+import org.kontalk.service.registration.event.TermsAcceptedEvent;
 import org.kontalk.service.registration.event.VerificationRequest;
 import org.kontalk.util.EventBusIndex;
+import org.kontalk.util.XMPPUtils;
 
 
 /**
@@ -96,9 +123,14 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
      * Maybe a state a machine here...?
      */
     enum State {
+        /** Doing nothing. */
         IDLE,
+        /** Connecting to a server. */
         CONNECTING,
+        /** Waiting for a passphrase from UI. */
         WAITING_PASSPHRASE,
+        /** Processing an imported key. */
+        IMPORTING_KEY,
     }
 
     /** Possible processes, that is, workflows for states. */
@@ -114,6 +146,17 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         public State state;
         public EndpointServer server;
         public String phoneNumber;
+        public String displayName;
+        public String challenge;
+
+        // these two are filled with imported key data if available
+        // otherwise they will be filled with output of PersonalKey.store()
+        public byte[] privateKey;
+        public byte[] publicKey;
+        public PersonalKey key;
+        public String passphrase;
+
+        public Map<String, Keyring.TrustedFingerprint> trustedKeys;
 
         CurrentState() {
             state = State.IDLE;
@@ -124,7 +167,17 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             this.state = cs.state;
             this.server = cs.server;
             this.phoneNumber = cs.phoneNumber;
+            this.displayName = cs.displayName;
+            this.challenge = cs.challenge;
+            this.privateKey = cs.privateKey;
+            this.publicKey = cs.publicKey;
+            this.key = cs.key;
+            this.passphrase = cs.passphrase;
+            this.trustedKeys = cs.trustedKeys;
         }
+    }
+
+    private static final class NoPhoneNumberFoundException extends Exception {
     }
 
     private HandlerThread mServiceHandler;
@@ -185,6 +238,9 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
 
         mInternalHandler = null;
         mServiceHandler = null;
+
+        // TODO save state if we are still to do something
+        // TODO Preferences.saveRegistrationProgress(...)
     }
 
     @Nullable
@@ -193,7 +249,15 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         return null;
     }
 
-    private void updateState(State state, Object... other) {
+    private CurrentState updateState(State state) {
+        return updateState(state, null, null);
+    }
+
+    private CurrentState updateState(State state, Workflow workflow) {
+        return updateState(state, workflow, null);
+    }
+
+    private CurrentState updateState(State state, Workflow workflow, EndpointServer server) {
         CurrentState cstate = currentState();
         // always produce a new object
         if (cstate == null) {
@@ -204,18 +268,15 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         }
 
         cstate.state = state;
-
-        // ehm...
-        for (Object data : other) {
-            if (data instanceof EndpointServer) {
-                cstate.server = (EndpointServer) data;
-            }
-            else if (data instanceof Workflow) {
-                cstate.workflow = (Workflow) data;
-            }
+        if (workflow != null) {
+            cstate.workflow = workflow;
+        }
+        if (server != null) {
+            cstate.server = server;
         }
 
         BUS.postSticky(cstate);
+        return cstate;
     }
 
     // TODO use events also for internal processing
@@ -223,17 +284,14 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
     /** Full registration procedure. */
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onVerificationRequest(VerificationRequest request) {
-        // TODO begin by requesting instructions
-    }
-
-    /** Import existing key from a personal keypack. */
-    @Subscribe(threadMode = ThreadMode.ASYNC)
-    public void onImportKeyRequest(ImportKeyRequest request) {
         // begin by requesting instructions for service terms url
         reset();
 
-        updateState(State.CONNECTING, Workflow.IMPORT_KEY, request.server);
+        CurrentState cstate = currentState();
+        cstate.phoneNumber = request.phoneNumber;
+        // TODO updateState(State.CONNECTING, Workflow.REGISTRATION, request.serverProvider.next());
 
+        /*
         // connect to the provided server
         mConnector = new XMPPConnectionHelper(this, request.server, true);
         mConnector.setRetryEnabled(false);
@@ -254,7 +312,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                             String termsUrl = termsUrlField.getFirstValue();
                             if (termsUrl != null) {
                                 Log.d(TAG, "server request terms acceptance: " + termsUrl);
-                                // TODO BUS.post(AcceptTermsRequestBlaBla...)
+                                BUS.post(new AcceptTermsRequest(termsUrl));
                                 return;
                             }
                         }
@@ -262,6 +320,146 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
 
                     // no terms, just proceed
                     // TODO BUS.post(blabla...)
+                }
+            }).onError(new ExceptionCallback<Exception>() {
+                @Override
+                public void processException(Exception exception) {
+                    // TODO properly parse errors from the server
+                    BUS.post(new ImportKeyError(new IllegalStateException("Server did not reply with instructions.")));
+                }
+            });
+        }
+        catch (Exception e) {
+            BUS.post(new RetrieveKeyError(e));
+        }
+        */
+    }
+
+    /** Import existing key from a personal keypack. */
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    public void onImportKeyRequest(ImportKeyRequest request) {
+        // begin by requesting instructions for service terms url
+        reset();
+
+        CurrentState cstate = updateState(State.IMPORTING_KEY, Workflow.IMPORT_KEY);
+
+        // start by validating the key
+        PersonalKeyImporter importer;
+        try {
+            importer = createImporter(request.in, request.passphrase);
+            importer.load();
+
+            cstate.key = importer.createPersonalKey();
+            if (cstate.key == null)
+                throw new PGPException("unable to load imported personal key.");
+
+            String uidStr = cstate.key.getUserId(null);
+            PGPUserID uid = PGPUserID.parse(uidStr);
+            if (uid == null)
+                throw new PGPException("malformed user ID: " + uidStr);
+
+            Map<String, String> accountInfo = importer.getAccountInfo();
+            if (accountInfo != null) {
+                String phoneNumber = accountInfo.get("phoneNumber");
+                if (!TextUtils.isEmpty(phoneNumber)) {
+                    cstate.phoneNumber = phoneNumber;
+                }
+            }
+
+            // personal key corrupted or too old
+            if (cstate.phoneNumber == null) {
+                throw new NoPhoneNumberFoundException();
+            }
+
+            // check that uid matches phone number
+            String email = uid.getEmail();
+            String numberHash = XMPPUtils.createLocalpart(cstate.phoneNumber);
+            String localpart = XmppStringUtils.parseLocalpart(email);
+            if (!numberHash.equalsIgnoreCase(localpart))
+                throw new PGPUidMismatchException("email does not match phone number: " + email);
+
+            // use server from the key only if we didn't set our own
+            cstate.server = (request.server != null) ? request.server :
+                new EndpointServer(XmppStringUtils.parseDomain(email));
+
+            cstate.displayName = uid.getName();
+            cstate.passphrase = request.passphrase;
+            cstate.privateKey = importer.getPrivateKeyData();
+            cstate.publicKey = importer.getPublicKeyData();
+
+            try {
+                cstate.trustedKeys = importer.getTrustedKeys();
+            }
+            catch (Exception e) {
+                // this is not a critical error so we can just ignore it
+                Log.w(TAG, "unable to load trusted keys from key pack", e);
+                ReportingManager.logException(e);
+            }
+        }
+        catch (PGPUidMismatchException e) {
+            Log.w(TAG, "uid mismatch!");
+            BUS.post(new ImportKeyError(e));
+            return;
+        }
+        catch (PGPException e) {
+            // PGP specific error
+            BUS.post(new ImportKeyError(e));
+            return;
+        }
+        catch (GeneralSecurityException e) {
+            BUS.post(new ImportKeyError(e));
+            return;
+        }
+        catch (IOException e) {
+            BUS.post(new ImportKeyError(e));
+            return;
+        }
+        catch (OperatorCreationException e) {
+            // serious device problem
+            throw new RuntimeException(e);
+        }
+        catch (NoPhoneNumberFoundException e) {
+            BUS.post(new ImportKeyError(e));
+            return;
+        }
+        finally {
+            try {
+                request.in.close();
+            }
+            catch (IOException ignored) {
+            }
+        }
+
+        updateState(State.CONNECTING);
+
+        // connect to the provided server
+        mConnector = new XMPPConnectionHelper(this, cstate.server, true);
+        mConnector.setRetryEnabled(false);
+
+        try {
+            initConnectionAnonymous();
+
+            // send instructions form
+            IQ form = createInstructionsForm();
+            final XMPPConnection conn = mConnector.getConnection();
+            conn.sendIqRequestAsync(form).onSuccess(new SuccessCallback<IQ>() {
+                @Override
+                public void onSuccess(IQ result) {
+                    DataForm response = result.getExtension("x", "jabber:x:data");
+                    if (response != null && response.hasField("accept-terms")) {
+                        FormField termsUrlField = response.getField("terms");
+                        if (termsUrlField != null) {
+                            String termsUrl = termsUrlField.getFirstValue();
+                            if (termsUrl != null) {
+                                Log.d(TAG, "server request terms acceptance: " + termsUrl);
+                                BUS.post(new AcceptTermsRequest(termsUrl));
+                                return;
+                            }
+                        }
+                    }
+
+                    // no terms, just proceed
+                    loginTestWithImportedKey();
                 }
             }).onError(new ExceptionCallback<Exception>() {
                 @Override
@@ -284,7 +482,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
     public void onRetrieveKeyRequest(RetrieveKeyRequest request) {
         reset();
 
-        updateState(State.CONNECTING, Workflow.IMPORT_KEY, request.server);
+        updateState(State.CONNECTING, Workflow.RETRIEVE_KEY, request.server);
 
         // connect to the provided server
         mConnector = new XMPPConnectionHelper(this, request.server, true);
@@ -309,6 +507,10 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                         byte[] publicKeyData = accountData.getPublicKeyData();
                         if (privateKeyData != null && privateKeyData.length > 0 &&
                             publicKeyData != null && publicKeyData.length > 0) {
+
+                            CurrentState cstate = currentState();
+                            cstate.privateKey = privateKeyData;
+                            cstate.publicKey = publicKeyData;
 
                             BUS.post(new KeyReceivedEvent(privateKeyData, publicKeyData));
                             updateState(State.WAITING_PASSPHRASE);
@@ -345,6 +547,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onPassphraseInput(PassphraseInputEvent event) {
         CurrentState cstate = currentState();
+        cstate.passphrase = event.passphrase;
         switch (cstate.workflow) {
             case RETRIEVE_KEY: {
                 if (cstate.state == State.WAITING_PASSPHRASE) {
@@ -352,6 +555,66 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                 }
                 break;
             }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    public void onTermsAccepted(TermsAcceptedEvent event) {
+        CurrentState cstate = currentState();
+        switch (cstate.workflow) {
+            case REGISTRATION: {
+                // TODO
+                break;
+            }
+            case IMPORT_KEY: {
+                loginTestWithImportedKey();
+                break;
+            }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    public void onLoginTest(LoginTestEvent event) {
+        if (event.exception == null) {
+            createAccount();
+        }
+    }
+
+    private void createAccount() {
+        CurrentState cstate = currentState();
+        final android.accounts.Account account = new android.accounts
+            .Account(cstate.phoneNumber, Authenticator.ACCOUNT_TYPE);
+
+        // workaround for bug in AccountManager (http://stackoverflow.com/a/11698139/1045199)
+        // procedure will continue in removeAccount callback
+        try {
+            AccountManager.get(this).removeAccount(account,
+                new AccountRemovalCallback(this, account, cstate.passphrase,
+                    cstate.privateKey, cstate.publicKey, cstate.key.getBridgeCertificate().getEncoded(),
+                    cstate.displayName, cstate.server.toString(), cstate.trustedKeys),
+                null);
+        }
+        catch (CertificateEncodingException e) {
+            // cannot happen
+            throw new RuntimeException("unable to build X.509 bridge certificate", e);
+        }
+    }
+
+    private PersonalKeyImporter createImporter(InputStream in, String passphrase) {
+        return new PersonalKeyImporter(new ZipInputStream(in), passphrase);
+    }
+
+    /** Run a test login with the imported key. */
+    private void loginTestWithImportedKey() {
+        CurrentState cstate = currentState();
+        try {
+            // connect to server
+            initConnection(cstate.key, true);
+            // login successful!!!
+            BUS.post(new LoginTestEvent());
+        }
+        catch (Exception e) {
+            BUS.post(new LoginTestEvent(e));
         }
     }
 
@@ -397,6 +660,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         if (mConnector != null) {
             mConnector.shutdown();
         }
+        BUS.removeStickyEvent(CurrentState.class);
         updateState(State.IDLE);
     }
 
@@ -454,6 +718,71 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
 
     public static void stop(Context context) {
         context.stopService(new Intent(context, RegistrationService.class));
+    }
+
+    private static class AccountRemovalCallback implements AccountManagerCallback<Boolean> {
+        private Context context;
+        private final android.accounts.Account account;
+        private final String passphrase;
+        private final byte[] privateKeyData;
+        private final byte[] publicKeyData;
+        private final byte[] bridgeCertData;
+        private final String name;
+        private final String serverUri;
+        private final Map<String, Keyring.TrustedFingerprint> trustedKeys;
+
+        AccountRemovalCallback(Context context, android.accounts.Account account,
+            String passphrase, byte[] privateKeyData, byte[] publicKeyData,
+            byte[] bridgeCertData, String name, String serverUri,
+            Map<String, Keyring.TrustedFingerprint> trustedKeys) {
+            this.context = context.getApplicationContext();
+            this.account = account;
+            this.passphrase = passphrase;
+            this.privateKeyData = privateKeyData;
+            this.publicKeyData = publicKeyData;
+            this.bridgeCertData = bridgeCertData;
+            this.name = name;
+            this.serverUri = serverUri;
+            this.trustedKeys = trustedKeys;
+        }
+
+        @Override
+        public void run(AccountManagerFuture<Boolean> result) {
+            // store trusted keys
+            if (trustedKeys != null) {
+                Keyring.setTrustedKeys(context, trustedKeys);
+            }
+
+            AccountManager am = (AccountManager) context
+                .getSystemService(Context.ACCOUNT_SERVICE);
+
+            // account userdata
+            Bundle data = new Bundle();
+            data.putString(Authenticator.DATA_PRIVATEKEY, Base64.encodeToString(privateKeyData, Base64.NO_WRAP));
+            data.putString(Authenticator.DATA_PUBLICKEY, Base64.encodeToString(publicKeyData, Base64.NO_WRAP));
+            data.putString(Authenticator.DATA_BRIDGECERT, Base64.encodeToString(bridgeCertData, Base64.NO_WRAP));
+            data.putString(Authenticator.DATA_NAME, name);
+            data.putString(Authenticator.DATA_SERVER_URI, serverUri);
+
+            // this is the password to the private key
+            am.addAccountExplicitly(account, passphrase, data);
+
+            // put data once more (workaround for Android bug http://stackoverflow.com/a/11698139/1045199)
+            am.setUserData(account, Authenticator.DATA_PRIVATEKEY, data.getString(Authenticator.DATA_PRIVATEKEY));
+            am.setUserData(account, Authenticator.DATA_PUBLICKEY, data.getString(Authenticator.DATA_PUBLICKEY));
+            am.setUserData(account, Authenticator.DATA_BRIDGECERT, data.getString(Authenticator.DATA_BRIDGECERT));
+            am.setUserData(account, Authenticator.DATA_NAME, data.getString(Authenticator.DATA_NAME));
+            am.setUserData(account, Authenticator.DATA_SERVER_URI, serverUri);
+
+            // Set contacts sync for this account.
+            ContentResolver.setSyncAutomatically(account, ContactsContract.AUTHORITY, true);
+            ContentResolver.setIsSyncable(account, ContactsContract.AUTHORITY, 1);
+
+            // clear old roster information
+            SQLiteRosterStore.purge(context);
+
+            BUS.post(new AccountCreatedEvent(account));
+        }
     }
 
 }

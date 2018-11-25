@@ -18,29 +18,11 @@
 
 package org.kontalk.service.registration.event;
 
-import java.io.InputStream;
-
-import android.support.annotation.Nullable;
-
-import org.kontalk.client.EndpointServer;
-
 
 /**
- * Post this to request to the registration service to import a keypack from
- * a zip file.
+ * Event posted by the UI to notify that the user accepted the service terms.
+ * The registration service can therefore continue its job.
  * @author Daniele Ricci
  */
-public class ImportKeyRequest {
-
-    /** Will be null if we are to auto-detect it from the key. */
-    public final EndpointServer server;
-    public final InputStream in;
-    public final String passphrase;
-
-    public ImportKeyRequest(@Nullable EndpointServer server, InputStream in, String passphrase) {
-        this.server = server;
-        this.in = in;
-        this.passphrase = passphrase;
-    }
-
+public class TermsAcceptedEvent {
 }

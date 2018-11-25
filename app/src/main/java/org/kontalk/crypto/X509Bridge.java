@@ -389,19 +389,19 @@ public class X509Bridge {
     }
 
     public static X509Certificate load(byte[] certData)
-            throws CertificateException, NoSuchProviderException {
+            throws CertificateException {
         return load(new ByteArrayInputStream(certData));
     }
 
     public static X509Certificate load(InputStream certData)
-            throws CertificateException, NoSuchProviderException {
+            throws CertificateException {
 
         CertificateFactory certFactory = CertificateFactory.getInstance("X.509", PGP.PROVIDER);
         return (X509Certificate) certFactory.generateCertificate(certData);
     }
 
     public static KeyStore exportCertificate(X509Certificate certificate, PrivateKey privateKey)
-            throws KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException {
+            throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
 
         KeyStore store = KeyStore.getInstance("PKCS12", PGP.PROVIDER);
 

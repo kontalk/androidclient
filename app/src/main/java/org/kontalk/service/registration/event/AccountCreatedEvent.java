@@ -18,29 +18,18 @@
 
 package org.kontalk.service.registration.event;
 
-import java.io.InputStream;
-
-import android.support.annotation.Nullable;
-
-import org.kontalk.client.EndpointServer;
+import android.accounts.Account;
 
 
 /**
- * Post this to request to the registration service to import a keypack from
- * a zip file.
+ * Event posted by the registration service when the account is created.
  * @author Daniele Ricci
  */
-public class ImportKeyRequest {
+public class AccountCreatedEvent {
 
-    /** Will be null if we are to auto-detect it from the key. */
-    public final EndpointServer server;
-    public final InputStream in;
-    public final String passphrase;
+    public final Account account;
 
-    public ImportKeyRequest(@Nullable EndpointServer server, InputStream in, String passphrase) {
-        this.server = server;
-        this.in = in;
-        this.passphrase = passphrase;
+    public AccountCreatedEvent(Account account) {
+        this.account = account;
     }
-
 }

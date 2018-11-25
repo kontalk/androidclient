@@ -20,6 +20,7 @@ package org.kontalk.crypto;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.security.InvalidAlgorithmParameterException;
@@ -130,11 +131,27 @@ public class PGP {
             return new PGPKeyPairRing(publicKey, secretKey);
         }
 
+        public static PGPKeyPairRing load(InputStream privateKeyData, InputStream publicKeyData)
+            throws IOException, PGPException {
+            PGPPublicKeyRing publicKey = new PGPPublicKeyRing(publicKeyData, sFingerprintCalculator);
+            PGPSecretKeyRing secretKey = new PGPSecretKeyRing(privateKeyData, sFingerprintCalculator);
+            return new PGPKeyPairRing(publicKey, secretKey);
+        }
+
         public static PGPKeyPairRing loadArmored(byte[] privateKeyData, byte[] publicKeyData)
                 throws IOException, PGPException {
             ArmoredInputStream inPublic = new ArmoredInputStream(new ByteArrayInputStream(publicKeyData));
             PGPPublicKeyRing publicKey = new PGPPublicKeyRing(inPublic, sFingerprintCalculator);
             ArmoredInputStream inPrivate = new ArmoredInputStream(new ByteArrayInputStream(privateKeyData));
+            PGPSecretKeyRing secretKey = new PGPSecretKeyRing(inPrivate, sFingerprintCalculator);
+            return new PGPKeyPairRing(publicKey, secretKey);
+        }
+
+        public static PGPKeyPairRing loadArmored(InputStream privateKeyData, InputStream publicKeyData)
+            throws IOException, PGPException {
+            ArmoredInputStream inPublic = new ArmoredInputStream(publicKeyData);
+            PGPPublicKeyRing publicKey = new PGPPublicKeyRing(inPublic, sFingerprintCalculator);
+            ArmoredInputStream inPrivate = new ArmoredInputStream(privateKeyData);
             PGPSecretKeyRing secretKey = new PGPSecretKeyRing(inPrivate, sFingerprintCalculator);
             return new PGPKeyPairRing(publicKey, secretKey);
         }

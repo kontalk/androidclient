@@ -251,7 +251,7 @@ public class PersonalKey implements Parcelable {
     }
 
     private static PGPKeyPairRing test(PGPSecretKeyRing secRing, PGPPublicKeyRing pubRing, String passphrase, X509Certificate bridgeCert)
-            throws PGPException, IOException, CertificateException, NoSuchProviderException {
+            throws PGPException {
 
         // for now we just do a test load
         load(secRing, pubRing, passphrase, bridgeCert);
@@ -289,7 +289,7 @@ public class PersonalKey implements Parcelable {
 
     /** Creates a {@link PersonalKey} from private and public key byte buffers. */
     public static PersonalKey load(byte[] privateKeyData, byte[] publicKeyData, String passphrase, X509Certificate bridgeCert)
-        throws PGPException, IOException, CertificateException, NoSuchProviderException {
+        throws PGPException, IOException {
 
         PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, sFingerprintCalculator);
         PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, sFingerprintCalculator);
@@ -299,7 +299,7 @@ public class PersonalKey implements Parcelable {
 
     @SuppressWarnings("unchecked")
     public static PersonalKey load(PGPSecretKeyRing secRing, PGPPublicKeyRing pubRing, String passphrase, X509Certificate bridgeCert)
-            throws PGPException, IOException, CertificateException, NoSuchProviderException {
+            throws PGPException {
 
         PGPDigestCalculatorProvider sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build();
         PBESecretKeyDecryptor decryptor = new JcePBESecretKeyDecryptorBuilder(sha1Calc)
