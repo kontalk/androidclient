@@ -35,6 +35,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.filter.StanzaIdFilter;
 import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.util.ExceptionCallback;
@@ -442,32 +443,24 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             // send instructions form
             IQ form = createInstructionsForm();
             final XMPPConnection conn = mConnector.getConnection();
-            conn.sendIqRequestAsync(form).onSuccess(new SuccessCallback<IQ>() {
-                @Override
-                public void onSuccess(IQ result) {
-                    DataForm response = result.getExtension("x", "jabber:x:data");
-                    if (response != null && response.hasField("accept-terms")) {
-                        FormField termsUrlField = response.getField("terms");
-                        if (termsUrlField != null) {
-                            String termsUrl = termsUrlField.getFirstValue();
-                            if (termsUrl != null) {
-                                Log.d(TAG, "server request terms acceptance: " + termsUrl);
-                                BUS.post(new AcceptTermsRequest(termsUrl));
-                                return;
-                            }
-                        }
-                    }
+            IQ result = conn.createStanzaCollectorAndSend(new StanzaIdFilter(form.getStanzaId()), form)
+                .nextResultOrThrow();
 
-                    // no terms, just proceed
-                    loginTestWithImportedKey();
+            DataForm response = result.getExtension("x", "jabber:x:data");
+            if (response != null && response.hasField("accept-terms")) {
+                FormField termsUrlField = response.getField("terms");
+                if (termsUrlField != null) {
+                    String termsUrl = termsUrlField.getFirstValue();
+                    if (termsUrl != null) {
+                        Log.d(TAG, "server request terms acceptance: " + termsUrl);
+                        BUS.post(new AcceptTermsRequest(termsUrl));
+                        return;
+                    }
                 }
-            }).onError(new ExceptionCallback<Exception>() {
-                @Override
-                public void processException(Exception exception) {
-                    // TODO properly parse errors from the server
-                    BUS.post(new ImportKeyError(new IllegalStateException("Server did not reply with instructions.")));
-                }
-            });
+            }
+
+            // no terms, just proceed
+            loginTestWithImportedKey();
         }
         catch (Exception e) {
             BUS.post(new RetrieveKeyError(e));
@@ -496,38 +489,30 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
 
             // send request packet
             final XMPPConnection conn = mConnector.getConnection();
-            conn.sendIqRequestAsync(form).onSuccess(new SuccessCallback<IQ>() {
-                @Override
-                public void onSuccess(IQ result) {
-                    ExtensionElement _accountData = result.getExtension(Account.ELEMENT_NAME, Account.NAMESPACE);
-                    if (_accountData instanceof Account) {
-                        Account accountData = (Account) _accountData;
+            IQ result = conn.createStanzaCollectorAndSend(new StanzaIdFilter(form.getStanzaId()), form)
+                .nextResultOrThrow();
 
-                        byte[] privateKeyData = accountData.getPrivateKeyData();
-                        byte[] publicKeyData = accountData.getPublicKeyData();
-                        if (privateKeyData != null && privateKeyData.length > 0 &&
-                            publicKeyData != null && publicKeyData.length > 0) {
+            ExtensionElement _accountData = result.getExtension(Account.ELEMENT_NAME, Account.NAMESPACE);
+            if (_accountData instanceof Account) {
+                Account accountData = (Account) _accountData;
 
-                            CurrentState cstate = currentState();
-                            cstate.privateKey = privateKeyData;
-                            cstate.publicKey = publicKeyData;
+                byte[] privateKeyData = accountData.getPrivateKeyData();
+                byte[] publicKeyData = accountData.getPublicKeyData();
+                if (privateKeyData != null && privateKeyData.length > 0 &&
+                    publicKeyData != null && publicKeyData.length > 0) {
 
-                            BUS.post(new KeyReceivedEvent(privateKeyData, publicKeyData));
-                            updateState(State.WAITING_PASSPHRASE);
-                            return;
-                        }
-                    }
+                    CurrentState cstate = currentState();
+                    cstate.privateKey = privateKeyData;
+                    cstate.publicKey = publicKeyData;
 
-                    // unexpected response
-                    BUS.post(new RetrieveKeyError(new IllegalStateException("Server did not reply with key.")));
+                    BUS.post(new KeyReceivedEvent(privateKeyData, publicKeyData));
+                    updateState(State.WAITING_PASSPHRASE);
+                    return;
                 }
-            }).onError(new ExceptionCallback<Exception>() {
-                @Override
-                public void processException(Exception exception) {
-                    // TODO properly parse errors from the server
-                    BUS.post(new RetrieveKeyError(new IllegalStateException("Server did not reply with key.")));
-                }
-            });
+            }
+
+            // unexpected response
+            BUS.post(new RetrieveKeyError(new IllegalStateException("Server did not reply with key.")));
         }
         catch (Exception e) {
             BUS.post(new RetrieveKeyError(e));
@@ -536,7 +521,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onKeyReceived(KeyReceivedEvent event) {
-        reset();
+        disconnect();
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
@@ -657,11 +642,15 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
     }
 
     void reset() {
+        disconnect();
+        BUS.removeStickyEvent(CurrentState.class);
+        updateState(State.IDLE);
+    }
+
+    private void disconnect() {
         if (mConnector != null) {
             mConnector.shutdown();
         }
-        BUS.removeStickyEvent(CurrentState.class);
-        updateState(State.IDLE);
     }
 
     @Override

@@ -1103,6 +1103,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             .input(null, null, new MaterialDialog.InputCallback() {
                 @Override
                 public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+                    mServiceBus.register(this);
                     mServiceBus.post(new ImportKeyRequest(Preferences
                         .getEndpointServer(NumberValidation.this),
                         zip, input.toString()));
