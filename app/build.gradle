@@ -240,7 +240,7 @@ if (travisBuild) {
     }
     publishBeta.dependsOn 'testGoogleplayReleaseUnitTest'
 }
-else if (project.hasProperty('GOOGLE_PLAY_DEVELOPER_KEY_FILE')) {
+else {
     play {
         track = 'alpha'
         releaseStatus = 'draft'
