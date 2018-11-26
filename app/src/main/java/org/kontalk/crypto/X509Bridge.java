@@ -60,6 +60,7 @@ import org.spongycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.spongycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.spongycastle.crypto.params.AsymmetricKeyParameter;
 import org.spongycastle.crypto.util.PrivateKeyFactory;
+import org.spongycastle.jce.provider.BouncyCastleProvider;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPPrivateKey;
 import org.spongycastle.openpgp.PGPPublicKey;
@@ -79,6 +80,7 @@ import org.spongycastle.operator.bc.BcContentSignerBuilder;
 import org.spongycastle.operator.bc.BcDSAContentSignerBuilder;
 import org.spongycastle.operator.bc.BcRSAContentSignerBuilder;
 
+import android.os.Build;
 import android.os.Parcel;
 
 
@@ -378,7 +380,12 @@ public class X509Bridge {
          * Checks that this certificate has indeed been correctly signed.
          */
         X509Certificate cert = new JcaX509CertificateConverter().getCertificate(holder);
-        cert.verify(pubKey);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            cert.verify(pubKey, PGP.PROVIDER);
+        }
+        else {
+            cert.verify(pubKey);
+        }
 
         return cert;
     }
