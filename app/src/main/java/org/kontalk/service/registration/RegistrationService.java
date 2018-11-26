@@ -38,8 +38,6 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.StanzaIdFilter;
 import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.IQ;
-import org.jivesoftware.smack.util.ExceptionCallback;
-import org.jivesoftware.smack.util.SuccessCallback;
 import org.jivesoftware.smackx.iqregister.packet.Registration;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
@@ -91,6 +89,7 @@ import org.kontalk.service.registration.event.RetrieveKeyRequest;
 import org.kontalk.service.registration.event.TermsAcceptedEvent;
 import org.kontalk.service.registration.event.VerificationRequest;
 import org.kontalk.util.EventBusIndex;
+import org.kontalk.util.Preferences;
 import org.kontalk.util.XMPPUtils;
 
 
@@ -106,7 +105,7 @@ import org.kontalk.util.XMPPUtils;
  * @author Daniele Ricci
  */
 public class RegistrationService extends Service implements XMPPConnectionHelper.ConnectionHelperListener {
-    private static final String TAG = RegistrationService.TAG;
+    private static final String TAG = RegistrationService.class.getSimpleName();
 
     private static final EventBus BUS;
 
@@ -126,12 +125,16 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
     enum State {
         /** Doing nothing. */
         IDLE,
-        /** Connecting to a server. */
+        /** Connecting to a server (no key). */
         CONNECTING,
         /** Waiting for a passphrase from UI. */
         WAITING_PASSPHRASE,
         /** Processing an imported key. */
         IMPORTING_KEY,
+        /** Doing a login test with the key. */
+        TESTING_KEY,
+        /** Creating account. */
+        CREATING_ACCOUNT,
     }
 
     /** Possible processes, that is, workflows for states. */
@@ -354,11 +357,6 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             if (cstate.key == null)
                 throw new PGPException("unable to load imported personal key.");
 
-            String uidStr = cstate.key.getUserId(null);
-            PGPUserID uid = PGPUserID.parse(uidStr);
-            if (uid == null)
-                throw new PGPException("malformed user ID: " + uidStr);
-
             Map<String, String> accountInfo = importer.getAccountInfo();
             if (accountInfo != null) {
                 String phoneNumber = accountInfo.get("phoneNumber");
@@ -372,16 +370,11 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                 throw new NoPhoneNumberFoundException();
             }
 
-            // check that uid matches phone number
-            String email = uid.getEmail();
-            String numberHash = XMPPUtils.createLocalpart(cstate.phoneNumber);
-            String localpart = XmppStringUtils.parseLocalpart(email);
-            if (!numberHash.equalsIgnoreCase(localpart))
-                throw new PGPUidMismatchException("email does not match phone number: " + email);
+            PGPUserID uid = verifyImportedKey(cstate.key, cstate.phoneNumber);
 
             // use server from the key only if we didn't set our own
             cstate.server = (request.server != null) ? request.server :
-                new EndpointServer(XmppStringUtils.parseDomain(email));
+                new EndpointServer(XmppStringUtils.parseDomain(uid.getEmail()));
 
             cstate.displayName = uid.getName();
             cstate.passphrase = request.passphrase;
@@ -504,6 +497,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                     CurrentState cstate = currentState();
                     cstate.privateKey = privateKeyData;
                     cstate.publicKey = publicKeyData;
+                    cstate.phoneNumber = request.phoneNumber;
 
                     BUS.post(new KeyReceivedEvent(privateKeyData, publicKeyData));
                     updateState(State.WAITING_PASSPHRASE);
@@ -536,7 +530,8 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         switch (cstate.workflow) {
             case RETRIEVE_KEY: {
                 if (cstate.state == State.WAITING_PASSPHRASE) {
-                    // TODO proceed with import
+                    // proceed with import
+                    loadRetrievedKey();
                 }
                 break;
             }
@@ -565,8 +560,66 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         }
     }
 
+    private void loadRetrievedKey() {
+        CurrentState cstate = updateState(State.IMPORTING_KEY);
+
+        try {
+            cstate.key = PersonalKeyImporter.importPersonalKey(cstate.privateKey,
+                cstate.publicKey, cstate.passphrase);
+            PGPUserID uid = verifyImportedKey(cstate.key, cstate.phoneNumber);
+
+            // use server from the key only if we didn't set our own
+            cstate.server = (cstate.server != null) ? cstate.server :
+                new EndpointServer(XmppStringUtils.parseDomain(uid.getEmail()));
+
+            cstate.displayName = uid.getName();
+
+            loginTestWithImportedKey();
+        }
+        catch (PGPUidMismatchException e) {
+            Log.w(TAG, "uid mismatch!");
+            BUS.post(new RetrieveKeyError(e));
+        }
+        catch (PGPException e) {
+            // PGP specific error
+            BUS.post(new RetrieveKeyError(e));
+        }
+        catch (GeneralSecurityException e) {
+            BUS.post(new RetrieveKeyError(e));
+        }
+        catch (IOException e) {
+            BUS.post(new RetrieveKeyError(e));
+        }
+        catch (OperatorCreationException e) {
+            // serious device problem
+            throw new RuntimeException(e);
+        }
+    }
+
+    @NonNull
+    private PGPUserID verifyImportedKey(PersonalKey key, String phoneNumber) throws PGPException {
+        String uidStr = key.getUserId(null);
+        PGPUserID uid = PGPUserID.parse(uidStr);
+        if (uid == null)
+            throw new PGPException("malformed user ID: " + uidStr);
+
+        // check that uid matches phone number
+        String email = uid.getEmail();
+        String numberHash = XMPPUtils.createLocalpart(phoneNumber);
+        String localpart = XmppStringUtils.parseLocalpart(email);
+        if (!numberHash.equalsIgnoreCase(localpart))
+            throw new PGPUidMismatchException("email does not match phone number: " + email);
+        return uid;
+    }
+
     private void createAccount() {
-        CurrentState cstate = currentState();
+        CurrentState cstate = updateState(State.CREATING_ACCOUNT);
+
+        // if we are retrieving a key from the server, delete the custom address
+        if (cstate.workflow == Workflow.RETRIEVE_KEY) {
+            Preferences.setServerURI(null);
+        }
+
         final android.accounts.Account account = new android.accounts
             .Account(cstate.phoneNumber, Authenticator.ACCOUNT_TYPE);
 
@@ -591,10 +644,12 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
 
     /** Run a test login with the imported key. */
     private void loginTestWithImportedKey() {
-        CurrentState cstate = currentState();
         try {
+            CurrentState cstate = updateState(State.TESTING_KEY);
+
             // connect to server
             initConnection(cstate.key, true);
+            mConnector.shutdown();
             // login successful!!!
             BUS.post(new LoginTestEvent());
         }
@@ -617,6 +672,8 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         IOException, InterruptedException {
 
         if (!mConnector.isConnected() || mConnector.isServerDirty()) {
+            // this will force the connector to recreate the connection
+            mConnector.setServer(mConnector.getServer());
             mConnector.setListener(this);
             mConnector.connectOnce(key, loginTest);
         }

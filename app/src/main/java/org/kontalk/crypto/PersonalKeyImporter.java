@@ -19,6 +19,7 @@
 package org.kontalk.crypto;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -124,24 +125,8 @@ public class PersonalKeyImporter implements PersonalKeyPack {
             CertificateException, IOException, OperatorCreationException, NoSuchAlgorithmException,
             InvalidKeyException, SignatureException {
         if (mPrivateKey != null && mPublicKey != null) {
-
-            PGP.PGPKeyPairRing ring;
-            try {
-                ring = PGP.PGPKeyPairRing.loadArmored(mPrivateKey.getInputStream(),
-                    mPublicKey.getInputStream());
-            }
-            catch (IOException e) {
-                // try not armored
-                ring = PGP.PGPKeyPairRing.load(mPrivateKey.getInputStream(),
-                    mPublicKey.getInputStream());
-            }
-
-            // bridge certificate for connection
-            X509Certificate bridgeCert = X509Bridge.createCertificate(ring.publicKey,
-                ring.secretKey.getSecretKey(), mPassphrase);
-
-            return PersonalKey.load(ring.secretKey, ring.publicKey,
-                mPassphrase, bridgeCert);
+            return importPersonalKey(mPrivateKey.getInputStream(),
+                mPublicKey.getInputStream(), mPassphrase);
         }
         return null;
     }
@@ -190,6 +175,52 @@ public class PersonalKeyImporter implements PersonalKeyPack {
         }
 
         return null;
+    }
+
+    public static PersonalKey importPersonalKey(byte[] privateKeyData, byte[] publicKeyData, String passphrase)
+            throws PGPException, IOException, CertificateException, NoSuchAlgorithmException,
+            OperatorCreationException, SignatureException, NoSuchProviderException, InvalidKeyException {
+        PGP.PGPKeyPairRing ring;
+        try {
+            ring = PGP.PGPKeyPairRing.loadArmored(privateKeyData, publicKeyData);
+        }
+        catch (IOException e) {
+            // try not armored
+            ring = PGP.PGPKeyPairRing.load(privateKeyData, publicKeyData);
+        }
+
+        // bridge certificate for connection
+        X509Certificate bridgeCert = X509Bridge.createCertificate(ring.publicKey,
+            ring.secretKey.getSecretKey(), passphrase);
+
+        return PersonalKey.load(ring.secretKey, ring.publicKey,
+            passphrase, bridgeCert);
+    }
+
+    public static PersonalKey importPersonalKey(InputStream privateKeyData, InputStream publicKeyData, String passphrase)
+        throws PGPException, IOException, CertificateException, NoSuchAlgorithmException,
+        OperatorCreationException, SignatureException, NoSuchProviderException, InvalidKeyException {
+        PGP.PGPKeyPairRing ring;
+        try {
+            ring = PGP.PGPKeyPairRing.loadArmored(privateKeyData, publicKeyData);
+        }
+        catch (IOException e) {
+            // try not armored
+            ring = PGP.PGPKeyPairRing.load(privateKeyData, publicKeyData);
+        }
+
+        return importPersonalKey(ring, passphrase);
+    }
+
+    private static PersonalKey importPersonalKey(PGP.PGPKeyPairRing ring, String passphrase)
+            throws CertificateException, NoSuchAlgorithmException, IOException,
+            NoSuchProviderException, SignatureException, PGPException, InvalidKeyException, OperatorCreationException {
+        // bridge certificate for connection
+        X509Certificate bridgeCert = X509Bridge.createCertificate(ring.publicKey,
+            ring.secretKey.getSecretKey(), passphrase);
+
+        return PersonalKey.load(ring.secretKey, ring.publicKey,
+            passphrase, bridgeCert);
     }
 
 }

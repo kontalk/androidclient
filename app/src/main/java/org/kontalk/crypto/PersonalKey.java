@@ -224,7 +224,7 @@ public class PersonalKey implements Parcelable {
 
     /** Checks that the given personal key data is correct. */
     public static PGPKeyPairRing test(InputStream privateKeyData, InputStream publicKeyData, String passphrase, InputStream bridgeCertData)
-            throws PGPException, IOException, CertificateException, NoSuchProviderException {
+            throws PGPException, IOException, CertificateException {
 
         PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, sFingerprintCalculator);
         PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, sFingerprintCalculator);
@@ -238,7 +238,7 @@ public class PersonalKey implements Parcelable {
 
     /** Checks that the given personal key data is correct. */
     public static PGPKeyPairRing test(byte[] privateKeyData, byte[] publicKeyData, String passphrase, byte[] bridgeCertData)
-            throws PGPException, IOException, CertificateException, NoSuchProviderException {
+            throws PGPException, IOException, CertificateException {
 
         PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, sFingerprintCalculator);
         PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, sFingerprintCalculator);
@@ -261,7 +261,7 @@ public class PersonalKey implements Parcelable {
 
     /** Creates a {@link PersonalKey} from private and public key input streams. */
     public static PersonalKey load(InputStream privateKeyData, InputStream publicKeyData, String passphrase, InputStream bridgeCertData)
-            throws PGPException, IOException, CertificateException, NoSuchProviderException {
+            throws PGPException, IOException, CertificateException {
 
         PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, sFingerprintCalculator);
         PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, sFingerprintCalculator);
@@ -275,7 +275,7 @@ public class PersonalKey implements Parcelable {
 
     /** Creates a {@link PersonalKey} from private and public key byte buffers. */
     public static PersonalKey load(byte[] privateKeyData, byte[] publicKeyData, String passphrase, byte[] bridgeCertData)
-            throws PGPException, IOException, CertificateException, NoSuchProviderException {
+            throws PGPException, IOException, CertificateException {
 
         PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, sFingerprintCalculator);
         PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, sFingerprintCalculator);
