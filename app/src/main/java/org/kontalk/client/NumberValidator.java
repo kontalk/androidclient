@@ -83,7 +83,9 @@ import org.kontalk.util.XMPPUtils;
  * request.
  * @author Daniele Ricci
  * @version 1.0
+ * @deprecated Replaced by the {@link org.kontalk.service.registration.RegistrationService}.
  */
+@Deprecated
 public class NumberValidator implements Runnable, ConnectionHelperListener {
     @SuppressWarnings("WeakerAccess")
     static final String TAG = NumberValidator.class.getSimpleName();

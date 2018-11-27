@@ -28,11 +28,13 @@ import org.kontalk.client.EndpointServer;
 public class VerificationRequest {
 
     public final String phoneNumber;
+    public final String displayName;
     public final EndpointServer.EndpointServerProvider serverProvider;
 
-    public VerificationRequest(String phoneNumber,
+    public VerificationRequest(String phoneNumber, String displayName,
             EndpointServer.EndpointServerProvider serverProvider) {
         this.phoneNumber = phoneNumber;
+        this.displayName = displayName;
         this.serverProvider = serverProvider;
     }
 

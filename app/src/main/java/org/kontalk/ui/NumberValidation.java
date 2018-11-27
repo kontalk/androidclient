@@ -920,7 +920,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
      */
     public void validatePhone(View v) {
         mAcceptTerms = false;
-        keepScreenOn(true);
         startValidation(false, false);
     }
 
@@ -1076,7 +1075,15 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onLoginTest(LoginTestEvent event) {
         if (event.exception != null) {
-            onGenericError(event.exception);
+            if (RegistrationService.currentState().workflow == RegistrationService.Workflow.IMPORT_KEY) {
+                // We are importing a key but the server refused it.
+                // Proceed with normal verification but using the imported key
+                // which will be signed by the server again
+                // TODO proceed with normal verification flow
+            }
+            else {
+                onGenericError(event.exception);
+            }
         }
     }
 
@@ -1130,7 +1137,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     @Override
     public void onFileSelection(@NonNull FileChooserDialog fileChooserDialog, @NonNull File file) {
         if (CHOOSER_TAG_MESSAGES_DB.equals(fileChooserDialog.getTag())) {
-            // TODO this whole progress and report system is for debug purposes only
+            // FIXME this whole progress and report system is for debug purposes only
             if (mMessagesImporterReceiver == null) {
                 mMessagesImporterReceiver = new BroadcastReceiver() {
                     @Override

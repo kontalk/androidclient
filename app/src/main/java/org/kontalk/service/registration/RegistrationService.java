@@ -123,7 +123,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
      * A list of possible states this service can be.
      * Maybe a state a machine here...?
      */
-    enum State {
+    public enum State {
         /** Doing nothing. */
         IDLE,
         /** Connecting to a server (no key). */
@@ -139,7 +139,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
     }
 
     /** Possible processes, that is, workflows for states. */
-    enum Workflow {
+    public enum Workflow {
         REGISTRATION,
         IMPORT_KEY,
         RETRIEVE_KEY,
@@ -284,17 +284,16 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         return cstate;
     }
 
-    // TODO use events also for internal processing
-
     /** Full registration procedure. */
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onVerificationRequest(VerificationRequest request) {
         // begin by requesting instructions for service terms url
         reset();
 
-        CurrentState cstate = currentState();
+        CurrentState cstate = updateState(State.CONNECTING, Workflow.REGISTRATION,
+            request.serverProvider.next());
         cstate.phoneNumber = request.phoneNumber;
-        // TODO updateState(State.CONNECTING, Workflow.REGISTRATION, request.serverProvider.next());
+        cstate.displayName = request.displayName;
 
         /*
         // connect to the provided server
