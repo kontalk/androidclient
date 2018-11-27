@@ -489,6 +489,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     protected void onStop() {
         super.onStop();
         keepScreenOn(false);
+        mServiceBus.unregister(this);
 
         stopKeyReceiver();
         stopMessagesImporterReceiver();
