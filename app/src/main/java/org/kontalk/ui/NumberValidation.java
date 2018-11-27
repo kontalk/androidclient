@@ -93,6 +93,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
@@ -165,10 +167,15 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     private AccountManager mAccountManager;
 
-    private EditText mNameText;
-    private Spinner mCountryCode;
-    private EditText mPhone;
-    private Button mValidateButton;
+    @BindView(R.id.name)
+    EditText mNameText;
+    @BindView(R.id.phone_cc)
+    Spinner mCountryCode;
+    @BindView(R.id.phone_number)
+    EditText mPhone;
+    @BindView(R.id.button_validate)
+    Button mValidateButton;
+
     private MaterialDialog mProgress;
     private CharSequence mProgressMessage;
 
@@ -259,6 +266,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.number_validation);
+        ButterKnife.bind(this);
         setupToolbar(false, false);
 
         mAccountManager = AccountManager.get(this);
@@ -268,11 +276,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
         final Intent intent = getIntent();
         mFromInternal = intent.getBooleanExtra(PARAM_FROM_INTERNAL, false);
-
-        mNameText = findViewById(R.id.name);
-        mCountryCode = findViewById(R.id.phone_cc);
-        mPhone = findViewById(R.id.phone_number);
-        mValidateButton = findViewById(R.id.button_validate);
 
         // populate country codes
         final CountryCodesAdapter ccList = new CountryCodesAdapter(this,
