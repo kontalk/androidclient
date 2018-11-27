@@ -26,7 +26,6 @@ import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.Enumeration;
@@ -53,7 +52,7 @@ public class InternalTrustStore {
     /** Sets all {@link HttpsURLConnection}s to use our trust store. */
     public static void initUrlConnections(Context context)
             throws  NoSuchAlgorithmException, CertificateException,
-            NoSuchProviderException, KeyStoreException, IOException,
+            KeyStoreException, IOException,
             KeyManagementException {
         if (!sInitialized) {
             sInitialized = true;
@@ -75,7 +74,6 @@ public class InternalTrustStore {
      */
     public static KeyStore getTrustStore(Context context)
             throws KeyStoreException,
-            NoSuchProviderException,
             NoSuchAlgorithmException,
             CertificateException,
             IOException {

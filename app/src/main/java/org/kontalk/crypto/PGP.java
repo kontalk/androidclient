@@ -26,7 +26,6 @@ import java.io.ObjectOutputStream;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.PublicKey;
@@ -178,7 +177,7 @@ public class PGP {
 
     /** Creates an ECDSA/ECDH key pair. */
     public static PGPDecryptedKeyPairRing create(Date timestamp)
-            throws NoSuchAlgorithmException, NoSuchProviderException, PGPException, InvalidAlgorithmParameterException {
+            throws NoSuchAlgorithmException, PGPException, InvalidAlgorithmParameterException {
 
         KeyPairGenerator gen;
         PGPKeyPair authKp, encryptKp, signKp;
@@ -272,7 +271,7 @@ public class PGP {
     }
 
     public static void toParcel(PGPDecryptedKeyPairRing pair, Parcel dest)
-            throws NoSuchProviderException, PGPException, IOException {
+            throws IOException {
         writeKeyPairToParcel(pair.authKey, dest);
         writeKeyPairToParcel(pair.signKey, dest);
         writeKeyPairToParcel(pair.encryptKey, dest);

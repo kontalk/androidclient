@@ -156,15 +156,8 @@ public class Authenticator extends AbstractAccountAuthenticator {
         return null;
     }
 
-    public static boolean hasPersonalKey(AccountManager am, Account account) {
-        return account != null &&
-            am.getUserData(account, DATA_PRIVATEKEY) != null &&
-            am.getUserData(account, DATA_PUBLICKEY) != null &&
-            am.getUserData(account, DATA_BRIDGECERT) != null;
-    }
-
     public static PersonalKey loadDefaultPersonalKey(Context ctx, String passphrase)
-            throws PGPException, IOException, CertificateException, NoSuchProviderException {
+            throws PGPException, IOException, CertificateException {
         AccountManager m = AccountManager.get(ctx);
         Account acc = getDefaultAccount(m);
 
@@ -185,7 +178,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
     }
 
     public static void exportDefaultPersonalKey(Context ctx, OutputStream dest, String passphrase, String exportPassphrase, boolean bridgeCertificate)
-            throws CertificateException, NoSuchProviderException, PGPException,
+            throws CertificateException, PGPException,
                 IOException, KeyStoreException, NoSuchAlgorithmException {
 
         AccountManager m = AccountManager.get(ctx);

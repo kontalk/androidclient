@@ -18,6 +18,7 @@
 
 package org.kontalk.crypto;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
@@ -121,17 +122,18 @@ public class PersonalKeyImporter implements PersonalKeyPack {
     }
 
     /** Creates a {@link PersonalKey} out of the imported data, if possible. */
-    public PersonalKey createPersonalKey() throws PGPException, NoSuchProviderException,
-            CertificateException, IOException, OperatorCreationException, NoSuchAlgorithmException,
+    public PersonalKey createPersonalKey(ByteArrayOutputStream privateKeyBuf, ByteArrayOutputStream publicKeyBuf)
+            throws PGPException, NoSuchProviderException, CertificateException,
+            IOException, OperatorCreationException, NoSuchAlgorithmException,
             InvalidKeyException, SignatureException {
         if (mPrivateKey != null && mPublicKey != null) {
             return importPersonalKey(mPrivateKey.getInputStream(),
-                mPublicKey.getInputStream(), mPassphrase);
+                mPublicKey.getInputStream(), mPassphrase, privateKeyBuf, publicKeyBuf);
         }
         return null;
     }
 
-    public PGPKeyPairRing createKeyPairRing() throws PGPException, NoSuchProviderException,
+    public PGPKeyPairRing createKeyPairRing() throws PGPException,
             CertificateException, IOException {
         if (mPrivateKey != null && mPublicKey != null)
             return PersonalKey.test(
@@ -177,7 +179,8 @@ public class PersonalKeyImporter implements PersonalKeyPack {
         return null;
     }
 
-    public static PersonalKey importPersonalKey(byte[] privateKeyData, byte[] publicKeyData, String passphrase)
+    public static PersonalKey importPersonalKey(byte[] privateKeyData, byte[] publicKeyData, String passphrase,
+            ByteArrayOutputStream privateKeyBuf, ByteArrayOutputStream publicKeyBuf)
             throws PGPException, IOException, CertificateException, NoSuchAlgorithmException,
             OperatorCreationException, SignatureException, NoSuchProviderException, InvalidKeyException {
         PGP.PGPKeyPairRing ring;
@@ -193,11 +196,15 @@ public class PersonalKeyImporter implements PersonalKeyPack {
         X509Certificate bridgeCert = X509Bridge.createCertificate(ring.publicKey,
             ring.secretKey.getSecretKey(), passphrase);
 
-        return PersonalKey.load(ring.secretKey, ring.publicKey,
+        PersonalKey key = PersonalKey.load(ring.secretKey, ring.publicKey,
             passphrase, bridgeCert);
+        privateKeyBuf.write(ring.secretKey.getEncoded());
+        publicKeyBuf.write(ring.publicKey.getEncoded());
+        return key;
     }
 
-    public static PersonalKey importPersonalKey(InputStream privateKeyData, InputStream publicKeyData, String passphrase)
+    public static PersonalKey importPersonalKey(InputStream privateKeyData, InputStream publicKeyData, String passphrase,
+        ByteArrayOutputStream privateKeyBuf, ByteArrayOutputStream publicKeyBuf)
         throws PGPException, IOException, CertificateException, NoSuchAlgorithmException,
         OperatorCreationException, SignatureException, NoSuchProviderException, InvalidKeyException {
         PGP.PGPKeyPairRing ring;
@@ -209,7 +216,10 @@ public class PersonalKeyImporter implements PersonalKeyPack {
             ring = PGP.PGPKeyPairRing.load(privateKeyData, publicKeyData);
         }
 
-        return importPersonalKey(ring, passphrase);
+        PersonalKey key = importPersonalKey(ring, passphrase);
+        privateKeyBuf.write(ring.secretKey.getEncoded());
+        publicKeyBuf.write(ring.publicKey.getEncoded());
+        return key;
     }
 
     private static PersonalKey importPersonalKey(PGP.PGPKeyPairRing ring, String passphrase)

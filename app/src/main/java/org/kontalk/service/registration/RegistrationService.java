@@ -18,6 +18,7 @@
 
 package org.kontalk.service.registration;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
@@ -181,7 +182,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         }
     }
 
-    private static final class NoPhoneNumberFoundException extends Exception {
+    public static final class NoPhoneNumberFoundException extends Exception {
     }
 
     private HandlerThread mServiceHandler;
@@ -353,7 +354,10 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             importer = createImporter(request.in, request.passphrase);
             importer.load();
 
-            cstate.key = importer.createPersonalKey();
+            ByteArrayOutputStream privateKeyBuf = new ByteArrayOutputStream();
+            ByteArrayOutputStream publicKeyBuf = new ByteArrayOutputStream();
+
+            cstate.key = importer.createPersonalKey(privateKeyBuf, publicKeyBuf);
             if (cstate.key == null)
                 throw new PGPException("unable to load imported personal key.");
 
@@ -378,8 +382,9 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
 
             cstate.displayName = uid.getName();
             cstate.passphrase = request.passphrase;
-            cstate.privateKey = importer.getPrivateKeyData();
-            cstate.publicKey = importer.getPublicKeyData();
+            // copy over the parsed keys (imported keys may be armored)
+            cstate.privateKey = privateKeyBuf.toByteArray();
+            cstate.publicKey = publicKeyBuf.toByteArray();
 
             try {
                 cstate.trustedKeys = importer.getTrustedKeys();
@@ -564,8 +569,10 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         CurrentState cstate = updateState(State.IMPORTING_KEY);
 
         try {
+            ByteArrayOutputStream privateKeyBuf = new ByteArrayOutputStream();
+            ByteArrayOutputStream publicKeyBuf = new ByteArrayOutputStream();
             cstate.key = PersonalKeyImporter.importPersonalKey(cstate.privateKey,
-                cstate.publicKey, cstate.passphrase);
+                cstate.publicKey, cstate.passphrase, privateKeyBuf, publicKeyBuf);
             PGPUserID uid = verifyImportedKey(cstate.key, cstate.phoneNumber);
 
             // use server from the key only if we didn't set our own
@@ -573,6 +580,9 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                 new EndpointServer(XmppStringUtils.parseDomain(uid.getEmail()));
 
             cstate.displayName = uid.getName();
+            // copy over the parsed keys (it should be the same, but you never know...)
+            cstate.privateKey = privateKeyBuf.toByteArray();
+            cstate.publicKey = publicKeyBuf.toByteArray();
 
             loginTestWithImportedKey();
         }
