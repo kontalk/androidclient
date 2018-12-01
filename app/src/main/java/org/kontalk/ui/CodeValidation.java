@@ -463,6 +463,11 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
+    public void onAcceptTermsRequired(NumberValidator v, String termsUrl) {
+        // not used.
+    }
+
+    @Override
     public void onValidationRequested(NumberValidator v, String sender, String challenge, String brandImage, String brandLink, boolean canFallback) {
         // not used.
     }

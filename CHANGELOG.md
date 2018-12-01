@@ -10,11 +10,12 @@
 - Support for multi-window (#1101)
 - Improve registration screen (#1209)
 - Allow replying to own messages
-- Use same emoji type acroll all screens (#1229)
+- Use same emoji type across all screens (#1229)
 - Use an event bus for communicating with the message center (#1236)
 - Update Smack library to version 4.3.1
 - Generate QR codes in the background (#1237)
 - Move some account-related preferences into their own new section
+- Ask user to accept service terms if server requests it (#1211)
 
 ### Fixed
 - Sort search results in inverted timestamp order (#1223)

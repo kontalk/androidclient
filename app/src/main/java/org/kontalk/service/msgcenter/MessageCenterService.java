@@ -3045,12 +3045,23 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private static void startForegroundIfNeeded(Context context, Intent intent) {
         if (shouldStartInForeground(context)) {
-            intent.putExtra(EXTRA_FOREGROUND, true);
-            ContextCompat.startForegroundService(context, intent);
+            startForegroundForced(context, intent);
         }
         else {
-            context.startService(intent);
+            try {
+                context.startService(intent);
+            }
+            catch (IllegalStateException e) {
+                // for some reason we are starting in the background
+                // but we are not allowed to do so. Just start in foreground.
+                startForegroundForced(context, intent);
+            }
         }
+    }
+
+    private static void startForegroundForced(Context context, Intent intent) {
+        intent.putExtra(EXTRA_FOREGROUND, true);
+        ContextCompat.startForegroundService(context, intent);
     }
 
     public static void start(Context context) {

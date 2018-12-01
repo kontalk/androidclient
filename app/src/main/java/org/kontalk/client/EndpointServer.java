@@ -126,10 +126,15 @@ public class EndpointServer {
      */
     public static class SingleServerProvider implements EndpointServerProvider {
         private String mUri;
+        private EndpointServer mProvided;
         private boolean mCalled;
 
         public SingleServerProvider(String uri) {
             mUri = uri;
+        }
+
+        public SingleServerProvider(EndpointServer server) {
+            mProvided = server;
         }
 
         @Override
@@ -139,13 +144,17 @@ public class EndpointServer {
             }
             else {
                 mCalled = true;
-                try {
-                    return new EndpointServer(mUri);
+                if (mProvided == null) {
+                    try {
+                        return new EndpointServer(mUri);
+                    }
+                    catch (Exception e) {
+                        // custom is not valid
+                        return null;
+                    }
                 }
-                catch (Exception e) {
-                    // custom is not valid
-                    return null;
-                }
+
+                return mProvided;
             }
         }
 

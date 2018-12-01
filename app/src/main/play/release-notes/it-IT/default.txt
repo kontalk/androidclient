@@ -1,0 +1,10 @@
+Questa versione è supportata dal servizio di registrazione offerto da https://JMP.Chat
+Aiutaci a migliorarla e correggere bug segnalandoli su GitHub o discutendoli sul nostro forum: https://forum.kontalk.org
+
+* NUOVO: archivia chat
+* NUOVO: copia message multipli negli appunti
+* Categorie di notifiche
+* Nuove emoji
+* Migliorata schermata principale
+* Svariati miglioramenti di performance
+* Altre correzioni

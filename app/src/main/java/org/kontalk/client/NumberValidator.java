@@ -88,16 +88,20 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     @SuppressWarnings("WeakerAccess")
     static final String TAG = NumberValidator.class.getSimpleName();
 
-    /** Initialization */
-    private static final int STEP_INIT = 0;
-    /** Validation step (sending phone number and waiting for SMS) */
-    private static final int STEP_VALIDATION = 1;
-    /** Requesting authentication token */
-    private static final int STEP_AUTH_TOKEN = 2;
-    /** Login test for imported key */
-    private static final int STEP_LOGIN_TEST = 3;
-    /** Requesting private key to server */
-    private static final int STEP_REQUEST_KEY = 4;
+    enum ValidationStep {
+        /** Initialization */
+        STEP_INIT,
+        /** Instructions request step */
+        STEP_INSTRUCTIONS,
+        /** Validation step (sending phone number and waiting for SMS) */
+        STEP_VALIDATION,
+        /** Requesting authentication token */
+        STEP_AUTH_TOKEN,
+        /** Login test for imported key */
+        STEP_LOGIN_TEST,
+        /** Requesting private key to server */
+        STEP_REQUEST_KEY,
+    }
 
     public static final int ERROR_THROTTLING = 1;
     public static final int ERROR_USER_EXISTS = 2;
@@ -143,6 +147,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private final String mPhone;
     private boolean mForce;
     private boolean mFallback;
+    private boolean mAcceptTerms;
     private PersonalKey mKey;
     @SuppressWarnings("WeakerAccess")
     PGPKeyPairRing mKeyRing;
@@ -160,7 +165,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     @SuppressWarnings("WeakerAccess")
     NumberValidatorListener mListener;
     @SuppressWarnings("WeakerAccess")
-    volatile int mStep;
+    volatile ValidationStep mStep;
     private CharSequence mValidationCode;
 
     private Thread mThread;
@@ -192,6 +197,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         mPassphrase = passphrase;
         mBrandImageSize = brandImageSize;
 
+        mStep = ValidationStep.STEP_INIT;
         mConnector = new XMPPConnectionHelper(context.getApplicationContext(), mServerProvider.next(), true);
         mConnector.setRetryEnabled(false);
 
@@ -281,120 +287,90 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
         try {
             // begin!
-            if (mStep == STEP_INIT) {
-                synchronized (mKeyLock) {
-                    if (mKey == null && (mImportedPrivateKey == null || mImportedPublicKey == null)) {
-                        Log.v(TAG, "waiting for key generator");
-                        try {
-                            // wait endlessly?
-                            mKeyLock.wait();
+            switch (mStep) {
+                case STEP_INIT: {
+                    synchronized (mKeyLock) {
+                        if (mKey == null && (mImportedPrivateKey == null || mImportedPublicKey == null)) {
+                            Log.v(TAG, "waiting for key generator");
+                            try {
+                                // wait endlessly?
+                                mKeyLock.wait();
+                            }
+                            catch (InterruptedException e) {
+                                mStep = ValidationStep.STEP_INIT;
+                                return;
+                            }
+                            Log.v(TAG, "key generation completed " + mKey);
                         }
-                        catch (InterruptedException e) {
-                            mStep = STEP_INIT;
+                    }
+
+                    // request instructions
+                    mStep = ValidationStep.STEP_INSTRUCTIONS;
+
+                    try {
+                        initConnection();
+                    }
+                    catch (Exception e) {
+                        EndpointServer server = mServerProvider.next();
+                        if (server != null) {
+                            Log.w(TAG, "connection error - trying next server in list", e);
+                            // run again with new server
+                            mStep = ValidationStep.STEP_INIT;
+                            mConnector.setServer(server);
+                            run();
                             return;
                         }
-                        Log.v(TAG, "key generation completed " + mKey);
+                        else {
+                            // last server to try, no chance for connection
+                            throw e;
+                        }
                     }
-                }
 
-                // request number validation via sms
-                mStep = STEP_VALIDATION;
-                try {
-                    initConnection();
-                }
-                catch (Exception e) {
-                    EndpointServer server = mServerProvider.next();
-                    if (server != null) {
-                        Log.w(TAG, "connection error - trying next server in list", e);
-                        // run again with new server
-                        mStep = STEP_INIT;
-                        mConnector.setServer(server);
-                        run();
-                        return;
-                    }
-                    else {
-                        // last server to try, no chance for connection
-                        throw e;
-                    }
-                }
+                    final AbstractXMPPConnection conn = mConnector.getConnection();
 
-                final AbstractXMPPConnection conn = mConnector.getConnection();
+                    Stanza form = createInstructionsForm();
 
-                Stanza form = createRegistrationForm();
+                    // setup listener for form response
+                    conn.addAsyncStanzaListener(new StanzaListener() {
+                        public void processStanza(Stanza packet) {
+                            int reason = 0;
+                            IQ iq = (IQ) packet;
 
-                // setup listener for form response
-                conn.addAsyncStanzaListener(new StanzaListener() {
-                    public void processStanza(Stanza packet) {
-                        int reason = 0;
-                        IQ iq = (IQ) packet;
+                            // whatever we received, close the connection now
+                            conn.disconnect();
 
-                        // whatever we received, close the connection now
-                        conn.disconnect();
-
-                        if (iq.getType() == IQ.Type.result) {
-                            DataForm response = iq.getExtension("x", "jabber:x:data");
-                            if (response != null) {
-                                // ok! message will be sent
-                                String smsFrom = null, challenge = null,
-                                    brandLink = null;
-                                boolean canFallback = false;
-                                List<FormField> iter = response.getFields();
-                                for (FormField field : iter) {
-                                    String fieldName = field.getVariable();
-                                    if ("from".equals(fieldName)) {
-                                        smsFrom = field.getFirstValue();
-                                    }
-                                    else if ("challenge".equals(fieldName)) {
-                                        challenge = field.getFirstValue();
-                                    }
-                                    else if ("brand-link".equals(fieldName)) {
-                                        brandLink = field.getFirstValue();
-                                    }
-                                    else if ("can-fallback".equals(fieldName) && field.getType() == FormField.Type.bool) {
-                                        String val = field.getFirstValue();
-                                        canFallback = "1".equals(val) || "true".equalsIgnoreCase(val) || "yes".equalsIgnoreCase(val);
+                            if (iq.getType() == IQ.Type.result) {
+                                DataForm response = iq.getExtension("x", "jabber:x:data");
+                                if (response != null && response.hasField("accept-terms")) {
+                                    FormField termsUrlField = response.getField("terms");
+                                    if (termsUrlField != null) {
+                                        String termsUrl = termsUrlField.getFirstValue();
+                                        if (termsUrl != null) {
+                                            Log.d(TAG, "server request terms acceptance: " + termsUrl);
+                                            mListener.onAcceptTermsRequired(NumberValidator.this, termsUrl);
+                                            // prevent error handling
+                                            return;
+                                        }
                                     }
                                 }
-
-                                // brand image needs some more complex logic
-                                final String brandImage = getBrandImageField(response);
-
-                                if (smsFrom != null) {
-                                    Log.d(TAG, "using sender id: " + smsFrom + ", challenge: " + challenge);
-                                    mServerChallenge = challenge;
-                                    ReportingManager.logRegister(challenge);
-
-                                    mListener.onValidationRequested(NumberValidator.this,
-                                        smsFrom, challenge, brandImage, brandLink, canFallback);
-
+                                else {
+                                    // skip terms and continue
+                                    run();
                                     // prevent error handling
                                     return;
                                 }
                             }
-                        }
 
-                        else if (iq.getType() == IQ.Type.error) {
-                            StanzaError error = iq.getError();
+                            else if (iq.getType() == IQ.Type.error) {
+                                StanzaError error = iq.getError();
 
-                            if (error.getCondition() == StanzaError.Condition.conflict) {
-                                reason = ERROR_USER_EXISTS;
-
-                            }
-
-                            else if (error.getCondition() == StanzaError.Condition.service_unavailable) {
-
-                                if (error.getType() == StanzaError.Type.WAIT) {
-                                    reason = ERROR_THROTTLING;
-
-                                }
-
-                                else {
+                                if (error.getCondition() == StanzaError.Condition.service_unavailable) {
                                     // no registration support - try the next server
 
                                     EndpointServer server = mServerProvider.next();
                                     if (server != null) {
                                         // run again with new server
-                                        mStep = STEP_INIT;
+                                        mStep = ValidationStep.STEP_INIT;
                                         mConnector.setServer(server);
                                         run();
                                         return;
@@ -408,173 +384,272 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                                 }
                             }
 
+                            // validation failed :(
+                            if (reason >= 0)
+                                mListener.onValidationFailed(NumberValidator.this, reason);
+
+                            mStep = ValidationStep.STEP_INIT;
                         }
+                    }, new StanzaIdFilter(form.getStanzaId()));
 
-                        // validation failed :(
-                        if (reason >= 0)
-                            mListener.onValidationFailed(NumberValidator.this, reason);
+                    // send registration form
+                    conn.sendStanza(form);
 
-                        mStep = STEP_INIT;
-                    }
-                }, new StanzaIdFilter(form.getStanzaId()));
-
-                // send registration form
-                conn.sendStanza(form);
-            }
-
-            // sms received, request authentication token
-            else if (mStep == STEP_AUTH_TOKEN) {
-                Log.d(TAG, "requesting authentication token");
-
-                // generate keyring immediately
-                // needed for connection
-                if (mKey != null) {
-                    String userId = XMPPUtils.createLocalpart(mPhone);
-                    mKeyRing = mKey.storeNetwork(userId, mConnector.getNetwork(),
-                        mName, mPassphrase);
-                }
-                else {
-                    mKeyRing = PGPKeyPairRing.loadArmored(mImportedPrivateKey, mImportedPublicKey);
+                    break;
                 }
 
-                // bridge certificate for connection
-                mBridgeCert = X509Bridge.createCertificate(mKeyRing.publicKey,
-                    mKeyRing.secretKey.getSecretKey(), mPassphrase);
+                case STEP_INSTRUCTIONS: {
+                    // request number validation via sms
+                    mStep = ValidationStep.STEP_VALIDATION;
 
-                // connect to server
-                initConnection();
-
-                // prepare final verification form
-                Stanza form = createValidationForm();
-
-                XMPPConnection conn = mConnector.getConnection();
-                conn.addAsyncStanzaListener(new StanzaListener() {
-                    public void processStanza(Stanza packet) {
-                        IQ iq = (IQ) packet;
-                        if (iq.getType() == IQ.Type.result) {
-                            DataForm response = iq.getExtension("x", "jabber:x:data");
-                            if (response != null) {
-                                String publicKey = null;
-
-                                // ok! message will be sent
-                                List<FormField> iter = response.getFields();
-                                for (FormField field : iter) {
-                                    if ("publickey".equals(field.getVariable())) {
-                                        publicKey = field.getFirstValue();
-                                    }
-                                }
-
-                                if (!TextUtils.isEmpty(publicKey)) {
-                                    byte[] publicKeyData;
-                                    byte[] privateKeyData;
-                                    try {
-                                        publicKeyData = Base64.decode(publicKey, Base64.DEFAULT);
-                                        privateKeyData = mKeyRing.secretKey.getEncoded();
-                                    }
-                                    catch (Exception e) {
-                                        // TODO that easy?
-                                        publicKeyData = null;
-                                        privateKeyData = null;
-                                    }
-
-                                    mListener.onAuthTokenReceived(NumberValidator.this, privateKeyData, publicKeyData);
-
-                                    // prevent error handling
-                                    return;
-                                }
-                            }
-                        }
-
-                        // validation failed :(
-                        // TODO check for service-unavailable errors (meaning
-                        // we must call onServerCheckFailed()
-                        mListener.onAuthTokenFailed(NumberValidator.this, -1);
-                        mStep = STEP_INIT;
-                    }
-                }, new StanzaIdFilter(form.getStanzaId()));
-
-                // send registration form
-                conn.sendStanza(form);
-            }
-
-            // try imported key by performing a login test
-            else if (mStep == STEP_LOGIN_TEST) {
-                if (mImportedPrivateKey == null || mImportedPublicKey == null)
-                    throw new AssertionError("requesting a login test with no imported key!");
-
-                // generate keyring immediately
-                // needed for connection
-                try {
-                    mKeyRing = PGPKeyPairRing.loadArmored(mImportedPrivateKey, mImportedPublicKey);
-                }
-                catch (IOException e) {
-                    // try not armored
-                    mKeyRing = PGPKeyPairRing.load(mImportedPrivateKey, mImportedPublicKey);
-                }
-
-                // bridge certificate for connection
-                mBridgeCert = X509Bridge.createCertificate(mKeyRing.publicKey,
-                    mKeyRing.secretKey.getSecretKey(), mPassphrase);
-
-                try {
                     // connect to server
                     initConnection();
-                }
-                catch (Exception e) {
-                    // login test failed, run again normally
-                    mStep = STEP_INIT;
-                    // mark server as dirty
-                    mConnector.setServer(mConnector.getServer());
-                    run();
-                    return;
-                }
 
-                // login successful!!!
-                if (mListener != null)
-                    mListener.onAuthTokenReceived(this,
-                        mKeyRing.secretKey.getEncoded(), mKeyRing.publicKey.getEncoded());
-            }
+                    final AbstractXMPPConnection conn = mConnector.getConnection();
 
-            // request private key to server via secure token
-            else if (mStep == STEP_REQUEST_KEY) {
-                if (mPrivateKeyToken == null)
-                    throw new AssertionError("requesting a private key with no secure token!");
+                    Stanza form = createRegistrationForm();
 
-                // we don't need these
-                mKeyRing = null;
-                mBridgeCert = null;
+                    // setup listener for form response
+                    conn.addAsyncStanzaListener(new StanzaListener() {
+                        public void processStanza(Stanza packet) {
+                            int reason = 0;
+                            IQ iq = (IQ) packet;
 
-                // connect to server
-                initConnection();
+                            // whatever we received, close the connection now
+                            conn.disconnect();
 
-                // prepare final verification form
-                Stanza request = createPrivateKeyRequest();
+                            if (iq.getType() == IQ.Type.result) {
+                                DataForm response = iq.getExtension("x", "jabber:x:data");
+                                if (response != null) {
+                                    // ok! message will be sent
+                                    String smsFrom = null, challenge = null,
+                                        brandLink = null;
+                                    boolean canFallback = false;
+                                    List<FormField> iter = response.getFields();
+                                    for (FormField field : iter) {
+                                        String fieldName = field.getVariable();
+                                        if ("from".equals(fieldName)) {
+                                            smsFrom = field.getFirstValue();
+                                        }
+                                        else if ("challenge".equals(fieldName)) {
+                                            challenge = field.getFirstValue();
+                                        }
+                                        else if ("brand-link".equals(fieldName)) {
+                                            brandLink = field.getFirstValue();
+                                        }
+                                        else if ("can-fallback".equals(fieldName) && field.getType() == FormField.Type.bool) {
+                                            String val = field.getFirstValue();
+                                            canFallback = "1".equals(val) || "true".equalsIgnoreCase(val) || "yes".equalsIgnoreCase(val);
+                                        }
+                                    }
 
-                XMPPConnection conn = mConnector.getConnection();
-                conn.addAsyncStanzaListener(new StanzaListener() {
-                    public void processStanza(Stanza packet) {
-                        IQ iq = (IQ) packet;
-                        if (iq.getType() == IQ.Type.result) {
-                            ExtensionElement _accountData = iq.getExtension(Account.ELEMENT_NAME, Account.NAMESPACE);
-                            if (_accountData instanceof Account) {
-                                Account accountData = (Account) _accountData;
+                                    // brand image needs some more complex logic
+                                    final String brandImage = getBrandImageField(response);
 
-                                byte[] privateKeyData = accountData.getPrivateKeyData();
-                                byte[] publicKeyData = accountData.getPublicKeyData();
-                                if (privateKeyData != null && privateKeyData.length > 0 &&
-                                    publicKeyData != null && publicKeyData.length > 0) {
-                                    mListener.onPrivateKeyReceived(NumberValidator.this, privateKeyData, publicKeyData);
-                                    return;
+                                    if (smsFrom != null) {
+                                        Log.d(TAG, "using sender id: " + smsFrom + ", challenge: " + challenge);
+                                        mServerChallenge = challenge;
+                                        ReportingManager.logRegister(challenge);
+
+                                        mListener.onValidationRequested(NumberValidator.this,
+                                            smsFrom, challenge, brandImage, brandLink, canFallback);
+
+                                        // prevent error handling
+                                        return;
+                                    }
                                 }
                             }
+
+                            else if (iq.getType() == IQ.Type.error) {
+                                StanzaError error = iq.getError();
+
+                                if (error.getCondition() == StanzaError.Condition.conflict) {
+                                    reason = ERROR_USER_EXISTS;
+                                }
+
+                                else if (error.getCondition() == StanzaError.Condition.service_unavailable) {
+                                    if (error.getType() == StanzaError.Type.WAIT) {
+                                        reason = ERROR_THROTTLING;
+                                    }
+                                    else {
+                                        // no registration support - fail now
+                                        mListener.onServerCheckFailed(NumberValidator.this);
+                                        // onValidationFailed will not be called
+                                        reason = -1;
+                                    }
+                                }
+                            }
+
+                            // validation failed :(
+                            if (reason >= 0)
+                                mListener.onValidationFailed(NumberValidator.this, reason);
+
+                            mStep = ValidationStep.STEP_INIT;
                         }
+                    }, new StanzaIdFilter(form.getStanzaId()));
 
-                        mListener.onPrivateKeyRequestFailed(NumberValidator.this, -1);
+                    // send registration form
+                    conn.sendStanza(form);
+                    break;
+                }
+
+                // sms received, request authentication token
+                case STEP_AUTH_TOKEN: {
+                    Log.d(TAG, "requesting authentication token");
+
+                    // generate keyring immediately
+                    // needed for connection
+                    if (mKey != null) {
+                        String userId = XMPPUtils.createLocalpart(mPhone);
+                        mKeyRing = mKey.storeNetwork(userId, mConnector.getNetwork(),
+                            mName, mPassphrase);
                     }
-                }, new StanzaIdFilter(request.getStanzaId()));
+                    else {
+                        mKeyRing = PGPKeyPairRing.loadArmored(mImportedPrivateKey, mImportedPublicKey);
+                    }
 
-                // send request packet
-                conn.sendStanza(request);
+                    // bridge certificate for connection
+                    mBridgeCert = X509Bridge.createCertificate(mKeyRing.publicKey,
+                        mKeyRing.secretKey.getSecretKey(), mPassphrase);
+
+                    // connect to server
+                    initConnection();
+
+                    // prepare final verification form
+                    Stanza form = createValidationForm();
+
+                    XMPPConnection conn = mConnector.getConnection();
+                    conn.addAsyncStanzaListener(new StanzaListener() {
+                        public void processStanza(Stanza packet) {
+                            IQ iq = (IQ) packet;
+                            if (iq.getType() == IQ.Type.result) {
+                                DataForm response = iq.getExtension("x", "jabber:x:data");
+                                if (response != null) {
+                                    String publicKey = null;
+
+                                    // ok! message will be sent
+                                    List<FormField> iter = response.getFields();
+                                    for (FormField field : iter) {
+                                        if ("publickey".equals(field.getVariable())) {
+                                            publicKey = field.getFirstValue();
+                                        }
+                                    }
+
+                                    if (!TextUtils.isEmpty(publicKey)) {
+                                        byte[] publicKeyData;
+                                        byte[] privateKeyData;
+                                        try {
+                                            publicKeyData = Base64.decode(publicKey, Base64.DEFAULT);
+                                            privateKeyData = mKeyRing.secretKey.getEncoded();
+                                        }
+                                        catch (Exception e) {
+                                            // TODO that easy?
+                                            publicKeyData = null;
+                                            privateKeyData = null;
+                                        }
+
+                                        mListener.onAuthTokenReceived(NumberValidator.this, privateKeyData, publicKeyData);
+
+                                        // prevent error handling
+                                        return;
+                                    }
+                                }
+                            }
+
+                            // validation failed :(
+                            // TODO check for service-unavailable errors (meaning
+                            // we must call onServerCheckFailed()
+                            mListener.onAuthTokenFailed(NumberValidator.this, -1);
+                            mStep = ValidationStep.STEP_INIT;
+                        }
+                    }, new StanzaIdFilter(form.getStanzaId()));
+
+                    // send registration form
+                    conn.sendStanza(form);
+                    break;
+                }
+
+                // try imported key by performing a login test
+                case STEP_LOGIN_TEST: {
+                    if (mImportedPrivateKey == null || mImportedPublicKey == null)
+                        throw new AssertionError("requesting a login test with no imported key!");
+
+                    // generate keyring immediately
+                    // needed for connection
+                    try {
+                        mKeyRing = PGPKeyPairRing.loadArmored(mImportedPrivateKey, mImportedPublicKey);
+                    }
+                    catch (IOException e) {
+                        // try not armored
+                        mKeyRing = PGPKeyPairRing.load(mImportedPrivateKey, mImportedPublicKey);
+                    }
+
+                    // bridge certificate for connection
+                    mBridgeCert = X509Bridge.createCertificate(mKeyRing.publicKey,
+                        mKeyRing.secretKey.getSecretKey(), mPassphrase);
+
+                    try {
+                        // connect to server
+                        initConnection();
+                    }
+                    catch (Exception e) {
+                        // login test failed, run again normally
+                        mStep = ValidationStep.STEP_INIT;
+                        // mark server as dirty
+                        mConnector.setServer(mConnector.getServer());
+                        run();
+                        return;
+                    }
+
+                    // login successful!!!
+                    if (mListener != null)
+                        mListener.onAuthTokenReceived(this,
+                            mKeyRing.secretKey.getEncoded(), mKeyRing.publicKey.getEncoded());
+                    break;
+                }
+
+                // request private key to server via secure token
+                case STEP_REQUEST_KEY: {
+                    if (mPrivateKeyToken == null)
+                        throw new AssertionError("requesting a private key with no secure token!");
+
+                    // we don't need these
+                    mKeyRing = null;
+                    mBridgeCert = null;
+
+                    // connect to server
+                    initConnection();
+
+                    // prepare final verification form
+                    Stanza request = createPrivateKeyRequest();
+
+                    XMPPConnection conn = mConnector.getConnection();
+                    conn.addAsyncStanzaListener(new StanzaListener() {
+                        public void processStanza(Stanza packet) {
+                            IQ iq = (IQ) packet;
+                            if (iq.getType() == IQ.Type.result) {
+                                ExtensionElement _accountData = iq.getExtension(Account.ELEMENT_NAME, Account.NAMESPACE);
+                                if (_accountData instanceof Account) {
+                                    Account accountData = (Account) _accountData;
+
+                                    byte[] privateKeyData = accountData.getPrivateKeyData();
+                                    byte[] publicKeyData = accountData.getPublicKeyData();
+                                    if (privateKeyData != null && privateKeyData.length > 0 &&
+                                        publicKeyData != null && publicKeyData.length > 0) {
+                                        mListener.onPrivateKeyReceived(NumberValidator.this, privateKeyData, publicKeyData);
+                                        return;
+                                    }
+                                }
+                            }
+
+                            mListener.onPrivateKeyRequestFailed(NumberValidator.this, -1);
+                        }
+                    }, new StanzaIdFilter(request.getStanzaId()));
+
+                    // send request packet
+                    conn.sendStanza(request);
+                    break;
+                }
             }
         }
         catch (Throwable e) {
@@ -582,7 +657,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
             if (mListener != null)
                 mListener.onError(this, e);
 
-            mStep = STEP_INIT;
+            mStep = ValidationStep.STEP_INIT;
         }
     }
 
@@ -622,22 +697,29 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         Log.w(TAG, "exiting");
     }
 
+    public void acceptTerms() {
+        mAcceptTerms = true;
+        mStep = ValidationStep.STEP_INSTRUCTIONS;
+        // next start call will trigger the next condition
+        mThread = null;
+    }
+
     /** Forcibly inputs the validation code. */
     public void manualInput(CharSequence code) {
         mValidationCode = code;
-        mStep = STEP_AUTH_TOKEN;
+        mStep = ValidationStep.STEP_AUTH_TOKEN;
         // next start call will trigger the next condition
         mThread = null;
     }
 
     public void testImport() {
-        mStep = STEP_LOGIN_TEST;
+        mStep = ValidationStep.STEP_LOGIN_TEST;
         // next start call will trigger the next condition
         mThread = null;
     }
 
     public void requestPrivateKey() {
-        mStep = STEP_REQUEST_KEY;
+        mStep = ValidationStep.STEP_REQUEST_KEY;
         // next start call will trigger the next condition
         mThread = null;
     }
@@ -665,8 +747,15 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 key = mKey.copy(mBridgeCert);
             }
 
-            mConnector.connectOnce(key, mStep == STEP_LOGIN_TEST);
+            mConnector.connectOnce(key, mStep == ValidationStep.STEP_LOGIN_TEST);
         }
+    }
+
+    private Stanza createInstructionsForm() {
+        Registration iq = new Registration();
+        iq.setTo(mConnector.getConnection().getXMPPServiceDomain());
+        iq.setType(IQ.Type.get);
+        return iq;
     }
 
     private Stanza createRegistrationForm() {
@@ -681,14 +770,19 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         form.addField(type);
 
         FormField phone = new FormField("phone");
-        phone.setLabel("Phone number");
         phone.setType(FormField.Type.text_single);
         phone.addValue(mPhone);
         form.addField(phone);
 
+        if (mAcceptTerms) {
+            FormField acceptTerms = new FormField("accept-terms");
+            acceptTerms.setType(FormField.Type.bool);
+            acceptTerms.addValue(String.valueOf(mAcceptTerms));
+            form.addField(acceptTerms);
+        }
+
         if (mForce) {
             FormField force = new FormField("force");
-            force.setLabel("Force registration");
             force.setType(FormField.Type.bool);
             force.addValue(String.valueOf(mForce));
             form.addField(force);
@@ -696,7 +790,6 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
         if (mFallback) {
             FormField fallback = new FormField("fallback");
-            fallback.setLabel("Fallback");
             fallback.setType(FormField.Type.bool);
             fallback.addValue(String.valueOf(mFallback));
             form.addField(fallback);
@@ -704,7 +797,6 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         else {
             // not falling back, ask for our preferred challenge
             FormField challenge = new FormField("challenge");
-            challenge.setLabel("Challenge type");
             challenge.setType(FormField.Type.text_single);
             challenge.addValue(DEFAULT_CHALLENGE);
             form.addField(challenge);
@@ -814,6 +906,9 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
         /** Called if the server doesn't support registration/auth tokens. */
         void onServerCheckFailed(NumberValidator v);
+
+        /** Called if the server requests terms to be accepted before commencing registration. */
+        void onAcceptTermsRequired(NumberValidator v, String termsUrl);
 
         /** Called on confirmation that the validation SMS is being sent. */
         void onValidationRequested(NumberValidator v, String sender, String challenge, String brandImage, String brandLink, boolean canFallback);
