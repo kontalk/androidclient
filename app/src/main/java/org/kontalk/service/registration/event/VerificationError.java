@@ -18,32 +18,18 @@
 
 package org.kontalk.service.registration.event;
 
-import org.kontalk.client.EndpointServer;
-
-import static org.kontalk.service.registration.RegistrationService.*;
-
 
 /**
- * Phone number verification request event.
+ * Event posted by the registration service if it received errors from the
+ * server while requesting user registration.
  * @author Daniele Ricci
  */
-public class VerificationRequest {
+public class VerificationError {
 
-    public final String phoneNumber;
-    public final String displayName;
-    public final EndpointServer.EndpointServerProvider serverProvider;
-    public final boolean force;
-    @BrandImageSize
-    public final int brandImageSize;
+    public final Exception exception;
 
-    public VerificationRequest(String phoneNumber, String displayName,
-            EndpointServer.EndpointServerProvider serverProvider,
-            boolean force, @BrandImageSize int brandImageSize) {
-        this.phoneNumber = phoneNumber;
-        this.displayName = displayName;
-        this.serverProvider = serverProvider;
-        this.force = force;
-        this.brandImageSize = brandImageSize;
+    public VerificationError(Exception exception) {
+        this.exception = exception;
     }
 
 }

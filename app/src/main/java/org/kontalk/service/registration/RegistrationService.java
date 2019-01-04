@@ -21,12 +21,16 @@ package org.kontalk.service.registration;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.security.GeneralSecurityException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipInputStream;
 
@@ -40,6 +44,7 @@ import org.jivesoftware.smack.filter.StanzaIdFilter;
 import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smackx.iqregister.packet.Registration;
+import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.jxmpp.util.XmppStringUtils;
@@ -58,6 +63,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.provider.ContactsContract;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -88,7 +94,9 @@ import org.kontalk.service.registration.event.PassphraseInputEvent;
 import org.kontalk.service.registration.event.RetrieveKeyError;
 import org.kontalk.service.registration.event.RetrieveKeyRequest;
 import org.kontalk.service.registration.event.TermsAcceptedEvent;
+import org.kontalk.service.registration.event.VerificationError;
 import org.kontalk.service.registration.event.VerificationRequest;
+import org.kontalk.service.registration.event.VerificationRequestedEvent;
 import org.kontalk.util.EventBusIndex;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.XMPPUtils;
@@ -128,6 +136,8 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         IDLE,
         /** Connecting to a server (no key). */
         CONNECTING,
+        /** Requesting verification to a server. */
+        REQUESTING_VERIFICATION,
         /** Waiting for a passphrase from UI. */
         WAITING_PASSPHRASE,
         /** Processing an imported key. */
@@ -145,6 +155,41 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         RETRIEVE_KEY,
     }
 
+    // constants for choosing a brand image size
+    public static final int BRAND_IMAGE_VECTOR = 0;
+    public static final int BRAND_IMAGE_SMALL = 1;
+    public static final int BRAND_IMAGE_MEDIUM = 2;
+    public static final int BRAND_IMAGE_LARGE = 3;
+    public static final int BRAND_IMAGE_HD = 4;
+
+    private static final List<String> BRAND_IMAGE_SIZES = Arrays.asList(
+        "brand-image-vector",
+        "brand-image-small",
+        "brand-image-medium",
+        "brand-image-large",
+        "brand-image-hd"
+    );
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({
+        BRAND_IMAGE_VECTOR,
+        BRAND_IMAGE_SMALL,
+        BRAND_IMAGE_MEDIUM,
+        BRAND_IMAGE_LARGE,
+        BRAND_IMAGE_HD
+    })
+    public @interface BrandImageSize {}
+
+    // from Kontalk server code
+    /** Challenge the user with a verification PIN sent through a SMS or a told through a phone call. */
+    public static final String CHALLENGE_PIN = "pin";
+    /** Challenge the user with a missed call from a random number and making the user guess the digits. */
+    public static final String CHALLENGE_MISSED_CALL = "missedcall";
+    /** Challenge the user with the caller ID presented in a user-initiated call to a given phone number. */
+    public static final String CHALLENGE_CALLER_ID = "callerid";
+    // default requested challenge
+    private static final String DEFAULT_CHALLENGE = CHALLENGE_PIN;
+
     /** Posted as a sticky event on the bus. */
     public static final class CurrentState {
         public Workflow workflow;
@@ -153,6 +198,14 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         public String phoneNumber;
         public String displayName;
         public String challenge;
+        public boolean acceptTerms;
+        public boolean force;
+        public boolean fallback;
+        @BrandImageSize
+        public int brandImageSize;
+
+        // this will be used if available during normal registration flow
+        public EndpointServer.EndpointServerProvider serverProvider;
 
         // these two are filled with imported key data if available
         // otherwise they will be filled with output of PersonalKey.store()
@@ -174,6 +227,11 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             this.phoneNumber = cs.phoneNumber;
             this.displayName = cs.displayName;
             this.challenge = cs.challenge;
+            this.acceptTerms = cs.acceptTerms;
+            this.force = cs.force;
+            this.fallback = cs.fallback;
+            this.brandImageSize = cs.brandImageSize;
+            this.serverProvider = cs.serverProvider;
             this.privateKey = cs.privateKey;
             this.publicKey = cs.publicKey;
             this.key = cs.key;
@@ -292,12 +350,16 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
 
         CurrentState cstate = updateState(State.CONNECTING, Workflow.REGISTRATION,
             request.serverProvider.next());
+        cstate.serverProvider = request.serverProvider;
         cstate.phoneNumber = request.phoneNumber;
         cstate.displayName = request.displayName;
+        cstate.force = request.force;
+        cstate.brandImageSize = request.brandImageSize;
 
-        /*
+        updateState(State.CONNECTING);
+
         // connect to the provided server
-        mConnector = new XMPPConnectionHelper(this, request.server, true);
+        mConnector = new XMPPConnectionHelper(this, cstate.server, true);
         mConnector.setRetryEnabled(false);
 
         try {
@@ -306,37 +368,28 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             // send instructions form
             IQ form = createInstructionsForm();
             final XMPPConnection conn = mConnector.getConnection();
-            conn.sendIqRequestAsync(form).onSuccess(new SuccessCallback<IQ>() {
-                @Override
-                public void onSuccess(IQ result) {
-                    DataForm response = result.getExtension("x", "jabber:x:data");
-                    if (response != null && response.hasField("accept-terms")) {
-                        FormField termsUrlField = response.getField("terms");
-                        if (termsUrlField != null) {
-                            String termsUrl = termsUrlField.getFirstValue();
-                            if (termsUrl != null) {
-                                Log.d(TAG, "server request terms acceptance: " + termsUrl);
-                                BUS.post(new AcceptTermsRequest(termsUrl));
-                                return;
-                            }
-                        }
-                    }
+            IQ result = conn.createStanzaCollectorAndSend(new StanzaIdFilter(form.getStanzaId()), form)
+                .nextResultOrThrow();
 
-                    // no terms, just proceed
-                    // TODO BUS.post(blabla...)
+            DataForm response = result.getExtension("x", "jabber:x:data");
+            if (response != null && response.hasField("accept-terms")) {
+                FormField termsUrlField = response.getField("terms");
+                if (termsUrlField != null) {
+                    String termsUrl = termsUrlField.getFirstValue();
+                    if (termsUrl != null) {
+                        Log.d(TAG, "server request terms acceptance: " + termsUrl);
+                        BUS.post(new AcceptTermsRequest(termsUrl));
+                        return;
+                    }
                 }
-            }).onError(new ExceptionCallback<Exception>() {
-                @Override
-                public void processException(Exception exception) {
-                    // TODO properly parse errors from the server
-                    BUS.post(new ImportKeyError(new IllegalStateException("Server did not reply with instructions.")));
-                }
-            });
+            }
+
+            // no terms, just proceed
+            requestRegistration();
         }
         catch (Exception e) {
-            BUS.post(new RetrieveKeyError(e));
+            BUS.post(new VerificationError(e));
         }
-        */
     }
 
     /** Import existing key from a personal keypack. */
@@ -440,8 +493,14 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             // send instructions form
             IQ form = createInstructionsForm();
             final XMPPConnection conn = mConnector.getConnection();
-            IQ result = conn.createStanzaCollectorAndSend(new StanzaIdFilter(form.getStanzaId()), form)
-                .nextResultOrThrow();
+            IQ result;
+            try {
+                result = conn.createStanzaCollectorAndSend(new StanzaIdFilter(form.getStanzaId()), form)
+                    .nextResultOrThrow();
+            }
+            finally {
+                disconnect();
+            }
 
             DataForm response = result.getExtension("x", "jabber:x:data");
             if (response != null && response.hasField("accept-terms")) {
@@ -486,8 +545,14 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
 
             // send request packet
             final XMPPConnection conn = mConnector.getConnection();
-            IQ result = conn.createStanzaCollectorAndSend(new StanzaIdFilter(form.getStanzaId()), form)
-                .nextResultOrThrow();
+            IQ result;
+            try {
+                result = conn.createStanzaCollectorAndSend(new StanzaIdFilter(form.getStanzaId()), form)
+                    .nextResultOrThrow();
+            }
+            finally {
+                disconnect();
+            }
 
             ExtensionElement _accountData = result.getExtension(Account.ELEMENT_NAME, Account.NAMESPACE);
             if (_accountData instanceof Account) {
@@ -545,9 +610,10 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onTermsAccepted(TermsAcceptedEvent event) {
         CurrentState cstate = currentState();
+        cstate.acceptTerms = true;
         switch (cstate.workflow) {
             case REGISTRATION: {
-                // TODO
+                requestRegistration();
                 break;
             }
             case IMPORT_KEY: {
@@ -563,6 +629,130 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             createAccount();
         }
     }
+
+    private void requestRegistration() {
+        CurrentState cstate = updateState(State.REQUESTING_VERIFICATION);
+
+        try {
+            initConnectionAnonymous();
+
+            // prepare private key request form
+            IQ form = createRegistrationForm(cstate.phoneNumber,
+                cstate.acceptTerms, cstate.force, cstate.fallback);
+
+            // send request packet
+            final XMPPConnection conn = mConnector.getConnection();
+            IQ result;
+            try {
+                result = conn.createStanzaCollectorAndSend(new StanzaIdFilter(form.getStanzaId()), form)
+                    .nextResultOrThrow();
+            }
+            finally {
+                disconnect();
+            }
+
+            DataForm response = result.getExtension("x", "jabber:x:data");
+            if (response != null) {
+                // ok! message will be sent
+                String smsFrom = null, challenge = null,
+                    brandLink = null;
+                boolean canFallback = false;
+                List<FormField> iter = response.getFields();
+                for (FormField field : iter) {
+                    String fieldName = field.getVariable();
+                    if ("from".equals(fieldName)) {
+                        smsFrom = field.getFirstValue();
+                    }
+                    else if ("challenge".equals(fieldName)) {
+                        challenge = field.getFirstValue();
+                    }
+                    else if ("brand-link".equals(fieldName)) {
+                        brandLink = field.getFirstValue();
+                    }
+                    else if ("can-fallback".equals(fieldName) && field.getType() == FormField.Type.bool) {
+                        String val = field.getFirstValue();
+                        canFallback = "1".equals(val) || "true".equalsIgnoreCase(val) || "yes".equalsIgnoreCase(val);
+                    }
+                }
+
+                // brand image needs some more complex logic
+                final String brandImage = getBrandImageField(response, cstate.brandImageSize);
+
+                if (smsFrom != null) {
+                    Log.d(TAG, "using sender id: " + smsFrom + ", challenge: " + challenge);
+                    cstate.challenge = challenge;
+                    ReportingManager.logRegister(challenge);
+
+                    BUS.post(new VerificationRequestedEvent(smsFrom, challenge,
+                        brandImage, brandLink, canFallback));
+                    return;
+                }
+            }
+
+            // TODO clarify error
+            throw new Exception("Invalid response");
+        }
+        catch (Exception e) {
+            BUS.post(new VerificationError(e));
+        }
+    }
+
+    /**
+     * Finds the appropriate brand image form field from the response to use.
+     * @param form the response form
+     * @param brandImageSize the brand image size factor
+     * @return a brand image URL, or null if none was found
+     */
+    @SuppressWarnings("WeakerAccess")
+    @Nullable
+    String getBrandImageField(DataForm form, @BrandImageSize int brandImageSize) {
+        // logic could be optimized, but it does its job.
+        // Besides, it's a one-time method.
+        String preferredSize = getBrandImageAttributeName(brandImageSize);
+        String result = findField(form, preferredSize);
+
+        if (result == null) {
+            // preferred attribute not found, look for other ones from the smaller ones
+            for (int i = brandImageSize - 1; i > BRAND_IMAGE_VECTOR; i--) {
+                String size = getBrandImageAttributeName(i);
+                result = findField(form, size);
+            }
+        }
+
+        if (result == null) {
+            // no smaller size found, try a bigger one
+            for (int i = brandImageSize + 1; i <= BRAND_IMAGE_HD; i++) {
+                String size = getBrandImageAttributeName(i);
+                result = findField(form, size);
+            }
+        }
+
+        // nothing was found if result is still null
+        return result;
+    }
+
+    private String findField(DataForm form, String name) {
+        FormField field = form.getField(name);
+        if (field != null) {
+            List<CharSequence> values = field.getValues();
+            if (values != null && values.size() > 0) {
+                CharSequence value = values.get(0);
+                return value != null && value.toString().trim().length() > 0 ?
+                    value.toString() : null;
+            }
+        }
+        return null;
+    }
+
+    private String getBrandImageAttributeName(@BrandImageSize int size) {
+        try {
+            return BRAND_IMAGE_SIZES.get(size);
+        }
+        catch (IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException("invalid brand image size: " + size);
+        }
+    }
+
 
     private void loadRetrievedKey() {
         CurrentState cstate = updateState(State.IMPORTING_KEY);
@@ -657,8 +847,12 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             CurrentState cstate = updateState(State.TESTING_KEY);
 
             // connect to server
-            initConnection(cstate.key, true);
-            mConnector.shutdown();
+            try {
+                initConnection(cstate.key, true);
+            }
+            finally {
+                disconnect();
+            }
             // login successful!!!
             BUS.post(new LoginTestEvent());
         }
@@ -692,6 +886,54 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         Registration iq = new Registration();
         iq.setTo(mConnector.getConnection().getXMPPServiceDomain());
         iq.setType(IQ.Type.get);
+        return iq;
+    }
+
+    private IQ createRegistrationForm(String phoneNumber, boolean acceptTerms, boolean force, boolean fallback) {
+        Registration iq = new Registration();
+        iq.setType(IQ.Type.set);
+        iq.setTo(mConnector.getConnection().getXMPPServiceDomain());
+        Form form = new Form(DataForm.Type.submit);
+
+        FormField type = new FormField("FORM_TYPE");
+        type.setType(FormField.Type.hidden);
+        type.addValue(Registration.NAMESPACE);
+        form.addField(type);
+
+        FormField phone = new FormField("phone");
+        phone.setType(FormField.Type.text_single);
+        phone.addValue(phoneNumber);
+        form.addField(phone);
+
+        if (acceptTerms) {
+            FormField fAcceptTerms = new FormField("accept-terms");
+            fAcceptTerms.setType(FormField.Type.bool);
+            fAcceptTerms.addValue(Boolean.TRUE.toString());
+            form.addField(fAcceptTerms);
+        }
+
+        if (force) {
+            FormField fForce = new FormField("force");
+            fForce.setType(FormField.Type.bool);
+            fForce.addValue(Boolean.TRUE.toString());
+            form.addField(fForce);
+        }
+
+        if (fallback) {
+            FormField fFallback = new FormField("fallback");
+            fFallback.setType(FormField.Type.bool);
+            fFallback.addValue(Boolean.TRUE.toString());
+            form.addField(fFallback);
+        }
+        else {
+            // not falling back, ask for our preferred challenge
+            FormField challenge = new FormField("challenge");
+            challenge.setType(FormField.Type.text_single);
+            challenge.addValue(DEFAULT_CHALLENGE);
+            form.addField(challenge);
+        }
+
+        iq.addExtension(form.getDataFormToSend());
         return iq;
     }
 
