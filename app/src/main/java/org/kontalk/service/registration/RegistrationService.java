@@ -362,33 +362,54 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         mConnector = new XMPPConnectionHelper(this, cstate.server, true);
         mConnector.setRetryEnabled(false);
 
-        try {
-            initConnectionAnonymous();
+        Exception lastError = null;
+        while (cstate.server != null) {
+            try {
+                initConnectionAnonymous();
 
-            // send instructions form
-            IQ form = createInstructionsForm();
-            final XMPPConnection conn = mConnector.getConnection();
-            IQ result = conn.createStanzaCollectorAndSend(new StanzaIdFilter(form.getStanzaId()), form)
-                .nextResultOrThrow();
+                // send instructions form
+                IQ form = createInstructionsForm();
+                final XMPPConnection conn = mConnector.getConnection();
+                IQ result;
+                try {
+                    result = conn.createStanzaCollectorAndSend(new StanzaIdFilter(form.getStanzaId()), form)
+                        .nextResultOrThrow();
+                }
+                finally {
+                    disconnect();
+                }
 
-            DataForm response = result.getExtension("x", "jabber:x:data");
-            if (response != null && response.hasField("accept-terms")) {
-                FormField termsUrlField = response.getField("terms");
-                if (termsUrlField != null) {
-                    String termsUrl = termsUrlField.getFirstValue();
-                    if (termsUrl != null) {
-                        Log.d(TAG, "server request terms acceptance: " + termsUrl);
-                        BUS.post(new AcceptTermsRequest(termsUrl));
-                        return;
+                DataForm response = result.getExtension("x", "jabber:x:data");
+                if (response != null && response.hasField("accept-terms")) {
+                    FormField termsUrlField = response.getField("terms");
+                    if (termsUrlField != null) {
+                        String termsUrl = termsUrlField.getFirstValue();
+                        if (termsUrl != null) {
+                            Log.d(TAG, "server request terms acceptance: " + termsUrl);
+                            BUS.post(new AcceptTermsRequest(termsUrl));
+                            return;
+                        }
                     }
                 }
-            }
 
-            // no terms, just proceed
-            requestRegistration();
+                // no terms, just proceed
+                requestRegistration();
+                break;
+            }
+            catch (Exception e) {
+                // try the next server
+                cstate.server = cstate.serverProvider.next();
+                if (cstate.server != null) {
+                    mConnector.setServer(cstate.server);
+                }
+                else {
+                    lastError = e;
+                }
+            }
         }
-        catch (Exception e) {
-            BUS.post(new VerificationError(e));
+
+        if (lastError != null) {
+            BUS.post(new VerificationError(lastError));
         }
     }
 
