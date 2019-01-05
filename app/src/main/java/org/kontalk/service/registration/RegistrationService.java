@@ -43,6 +43,7 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.StanzaIdFilter;
 import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.IQ;
+import org.jivesoftware.smack.packet.StanzaError;
 import org.jivesoftware.smackx.iqregister.packet.Registration;
 import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
@@ -86,6 +87,7 @@ import org.kontalk.service.XMPPConnectionHelper;
 import org.kontalk.service.msgcenter.SQLiteRosterStore;
 import org.kontalk.service.registration.event.AcceptTermsRequest;
 import org.kontalk.service.registration.event.AccountCreatedEvent;
+import org.kontalk.service.registration.event.FallbackVerificationRequest;
 import org.kontalk.service.registration.event.ImportKeyError;
 import org.kontalk.service.registration.event.ImportKeyRequest;
 import org.kontalk.service.registration.event.KeyReceivedEvent;
@@ -93,6 +95,7 @@ import org.kontalk.service.registration.event.LoginTestEvent;
 import org.kontalk.service.registration.event.PassphraseInputEvent;
 import org.kontalk.service.registration.event.RetrieveKeyError;
 import org.kontalk.service.registration.event.RetrieveKeyRequest;
+import org.kontalk.service.registration.event.ServerCheckError;
 import org.kontalk.service.registration.event.TermsAcceptedEvent;
 import org.kontalk.service.registration.event.VerificationError;
 import org.kontalk.service.registration.event.VerificationRequest;
@@ -409,7 +412,18 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         }
 
         if (lastError != null) {
-            BUS.post(new VerificationError(lastError));
+            Object errorEvent = null;
+            if (lastError instanceof XMPPException.XMPPErrorException) {
+                final StanzaError error = ((XMPPException.XMPPErrorException) lastError).getStanzaError();
+                if (error.getCondition() == StanzaError.Condition.service_unavailable) {
+                    errorEvent = new ServerCheckError((XMPPException.XMPPErrorException) lastError);
+                }
+            }
+
+            if (errorEvent == null) {
+                errorEvent = new VerificationError(lastError);
+            }
+            BUS.post(errorEvent);
         }
     }
 
@@ -645,6 +659,12 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
+    public void onFallbackVerificationRequest(FallbackVerificationRequest request) {
+        // TODO
+        throw new UnsupportedOperationException("Not implemented yet.");
+    }
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onLoginTest(LoginTestEvent event) {
         if (event.exception == null) {
             createAccount();
@@ -702,6 +722,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                 if (smsFrom != null) {
                     Log.d(TAG, "using sender id: " + smsFrom + ", challenge: " + challenge);
                     cstate.challenge = challenge;
+                    // TODO ? cstate.challengeSender = smsFrom;
                     ReportingManager.logRegister(challenge);
 
                     BUS.post(new VerificationRequestedEvent(smsFrom, challenge,
@@ -714,6 +735,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             throw new Exception("Invalid response");
         }
         catch (Exception e) {
+            // TODO parse XMPP errors (throttling and conflict)
             BUS.post(new VerificationError(e));
         }
     }
