@@ -282,6 +282,10 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             }
         };
         mServiceHandler.start();
+
+        // TODO restore state and send some event to UI
+
+        // TODO we should start key generation just in case
     }
 
     @Override
