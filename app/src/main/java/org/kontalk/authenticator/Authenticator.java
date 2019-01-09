@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
