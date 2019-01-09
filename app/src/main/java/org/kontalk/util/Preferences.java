@@ -87,6 +87,10 @@ public final class Preferences {
         }
     }
 
+    public static SharedPreferences getInstance() {
+        return sPreferences;
+    }
+
     public static void setCachedCustomBackground(Drawable customBackground) {
         sCustomBackground = customBackground;
     }
@@ -105,7 +109,7 @@ public final class Preferences {
         pref.setSummary(context.getString(R.string.server_list_last_update, timestamp));
     }
 
-    private static String getString(String key, String defaultValue) {
+    public static String getString(String key, String defaultValue) {
         return sPreferences.getString(key, defaultValue);
     }
 
@@ -138,7 +142,7 @@ public final class Preferences {
         return value;
     }
 
-    private static boolean getBoolean(String key, boolean defaultValue) {
+    public static boolean getBoolean(String key, boolean defaultValue) {
         return sPreferences.getBoolean(key, defaultValue);
     }
 
@@ -636,60 +640,8 @@ public final class Preferences {
             .apply();
     }
 
-    /**
-     * Saves the current registration progress data. Used for recoverying a
-     * registration after a restart or in very low memory situations.
-     */
-    public static boolean saveRegistrationProgress(String name,
-        String phoneNumber, PersonalKey key, String passphrase,
-        byte[] importedPublicKey, byte[] importedPrivateKey, String serverUri,
-        String sender, String challenge, String brandImage, String brandLink,
-        boolean canFallback, boolean force, Map<String, Keyring.TrustedFingerprint> trustedKeys) {
-
-        ByteArrayOutputStream trustedKeysOut = null;
-        if (trustedKeys != null) {
-            trustedKeysOut = new ByteArrayOutputStream();
-            Properties prop = new Properties();
-
-            for (Map.Entry<String, Keyring.TrustedFingerprint> e : trustedKeys.entrySet()) {
-                Keyring.TrustedFingerprint fingerprint = e.getValue();
-                if (fingerprint != null) {
-                    prop.put(e.getKey(), fingerprint.toString());
-                }
-            }
-
-            try {
-                prop.store(trustedKeysOut, null);
-            }
-            catch (IOException e) {
-                // something went wrong
-                // we can't have IOExceptions from byte buffers anyway
-                trustedKeysOut = null;
-            }
-        }
-
-        return sPreferences.edit()
-            .putString("registration_name", name)
-            .putString("registration_phone", phoneNumber)
-            .putString("registration_key", key != null ? key.toBase64() : null)
-            .putString("registration_importedpublickey", importedPublicKey != null ?
-                Base64.encodeToString(importedPublicKey, Base64.NO_WRAP) : null)
-            .putString("registration_importedprivatekey", importedPrivateKey != null ?
-                Base64.encodeToString(importedPrivateKey, Base64.NO_WRAP) : null)
-            .putString("registration_passphrase", passphrase)
-            .putString("registration_server", serverUri)
-            .putString("registration_sender", sender)
-            .putString("registration_challenge", challenge)
-            .putString("registration_brandimage", brandImage)
-            .putString("registration_brandlink", brandLink)
-            .putBoolean("registration_canfallback", canFallback)
-            .putBoolean("registration_force", force)
-            .putString("registration_trustedkeys", trustedKeysOut != null ?
-                Base64.encodeToString(trustedKeysOut.toByteArray(), Base64.NO_WRAP) : null)
-            .commit();
-    }
-
     @SuppressWarnings({"unchecked"})
+    @Deprecated
     public static RegistrationProgress getRegistrationProgress() {
         String name = getString("registration_name", null);
         if (name != null) {
@@ -741,6 +693,7 @@ public final class Preferences {
         return null;
     }
 
+    @Deprecated
     public static void clearRegistrationProgress() {
         sPreferences.edit()
             .remove("registration_name")
@@ -760,6 +713,7 @@ public final class Preferences {
             .apply();
     }
 
+    @Deprecated
     public static final class RegistrationProgress {
         public String name;
         public String phone;

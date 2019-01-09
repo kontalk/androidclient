@@ -43,7 +43,6 @@ import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.jivesoftware.smack.util.StringUtils;
 
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
@@ -95,14 +94,10 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.client.NumberValidator.NumberValidatorListener;
-import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyPack;
 import org.kontalk.provider.Keyring;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.DatabaseImporterService;
-import org.kontalk.service.KeyPairGeneratorService;
-import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
-import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
 import org.kontalk.service.MessagesImporterService;
 import org.kontalk.service.registration.RegistrationService;
 import org.kontalk.service.registration.event.AcceptTermsRequest;
@@ -153,8 +148,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     private static final String CHOOSER_TAG_MESSAGES_DB = "messages.db";
 
-    private AccountManager mAccountManager;
-
     @BindView(R.id.name)
     EditText mNameText;
     @BindView(R.id.phone_cc)
@@ -174,8 +167,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private String mPhoneNumber;
     private String mName;
 
-    @Deprecated
-    PersonalKey mKey;
     private boolean mForce;
 
     private LocalBroadcastManager lbm;
@@ -189,7 +180,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     private boolean mPermissionsAsked;
 
-    private KeyGeneratorReceiver mKeyReceiver;
     private BroadcastReceiver mMessagesImporterReceiver;
 
     private EventBus mServiceBus = RegistrationService.bus();
@@ -245,7 +235,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         ButterKnife.bind(this);
         setupToolbar(false, false);
 
-        mAccountManager = AccountManager.get(this);
         mHandler = new Handler();
 
         lbm = LocalBroadcastManager.getInstance(getApplicationContext());
@@ -313,9 +302,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 setProgressMessage(data.progressMessage, true);
             }
         }
-
-        // start registration service immediately
-        RegistrationService.start(this);
     }
 
     /** Not used. */
@@ -329,7 +315,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         super.onSaveInstanceState(state);
         state.putString("name", mName);
         state.putString("phoneNumber", mPhoneNumber);
-        state.putParcelable("key", mKey);
         state.putBoolean("permissionsAsked", mPermissionsAsked);
     }
 
@@ -339,7 +324,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
         mName = savedInstanceState.getString("name");
         mPhoneNumber = savedInstanceState.getString("phoneNumber");
-        mKey = savedInstanceState.getParcelable("key");
         mPermissionsAsked = savedInstanceState.getBoolean("permissionsAsked");
     }
 
@@ -357,7 +341,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.number_validation_menu, menu);
-        menu.findItem(R.id.menu_manual_verification).setVisible(BuildConfig.DEBUG);
         menu.findItem(R.id.menu_import_messages_database).setVisible(BuildConfig.DEBUG);
         return true;
     }
@@ -391,67 +374,17 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     protected void onStart() {
         super.onStart();
 
-        // TODO instead of reading our current progress, wait for the
-        // Registration service to send as an event for restoring the current
-        // state. Be careful to the mClearState flag (I don't remember what was for :)
-
-        Preferences.RegistrationProgress saved = null;
-        if (mClearState) {
-            Preferences.clearRegistrationProgress();
-            mClearState = false;
-        }
-        else {
-            try {
-                saved = Preferences.getRegistrationProgress();
+        // register to the bus immediately if we have saved state
+        if (RegistrationService.hasSavedState()) {
+            if (mClearState) {
+                RegistrationService.clearSavedState();
+                mClearState = false;
             }
-            catch (Exception e) {
-                Log.w(TAG, "unable to restore registration progress");
-                Preferences.clearRegistrationProgress();
-            }
+            mServiceBus.register(this);
         }
-        if (saved != null) {
-            mName = saved.name;
-            mPhoneNumber = saved.phone;
-            mKey = saved.key;
-            mForce = saved.force;
 
-            // update UI
-            mNameText.setText(mName);
-            mPhone.setText(mPhoneNumber);
-            syncCountryCodeSelector();
-
-            startValidationCode(REQUEST_MANUAL_VALIDATION, saved.sender,
-                saved.brandImage, saved.brandLink, saved.challenge, saved.canFallback);
-        }
-        else {
-            if (mKey == null) {
-                PersonalKeyRunnable action = new PersonalKeyRunnable() {
-                    public void run(PersonalKey key) {
-                        if (key != null) {
-                            mKey = key;
-                            if (mValidator != null)
-                                // this will release the waiting lock
-                                mValidator.setKey(mKey);
-                        }
-
-                        // no key, key pair generation started
-                    }
-                };
-
-                // random passphrase (40 characters!!!!)
-                String mPassphrase = StringUtils.randomString(40);
-
-                mKeyReceiver = new KeyGeneratorReceiver(mHandler, action);
-
-                IntentFilter filter = new IntentFilter(KeyPairGeneratorService.ACTION_GENERATE);
-                filter.addAction(KeyPairGeneratorService.ACTION_STARTED);
-                lbm.registerReceiver(mKeyReceiver, filter);
-
-                Intent i = new Intent(this, KeyPairGeneratorService.class);
-                i.setAction(KeyPairGeneratorService.ACTION_GENERATE);
-                startService(i);
-            }
-        }
+        // start registration service immediately
+        RegistrationService.start(this);
     }
 
     @Override
@@ -460,7 +393,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         keepScreenOn(false);
         mServiceBus.unregister(this);
 
-        stopKeyReceiver();
         stopMessagesImporterReceiver();
 
         if (mProgress != null) {
@@ -476,13 +408,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         super.onResume();
         // ask for access to contacts
         askPermissions();
-    }
-
-    void stopKeyReceiver() {
-        if (mKeyReceiver != null) {
-            lbm.unregisterReceiver(mKeyReceiver);
-            mKeyReceiver = null;
-        }
     }
 
     void stopMessagesImporterReceiver() {
@@ -510,6 +435,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_MANUAL_VALIDATION) {
             if (resultCode == RESULT_OK) {
+                // FIXME @deprecated handled by the registration service
                 Map<String, Keyring.TrustedFingerprint> trustedKeys = null;
                 Map<String, String> keys = (HashMap) data.getSerializableExtra(PARAM_TRUSTED_KEYS);
                 if (keys != null) {
@@ -525,7 +451,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             }
             else if (resultCode == RESULT_FALLBACK) {
                 mClearState = true;
-                startValidation(data.getBooleanExtra("force", false), true);
+                startValidation(RegistrationService.currentState().force, true);
             }
         }
         else if (requestCode == REQUEST_SCAN_TOKEN) {
@@ -902,9 +828,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                     // import keys -- number verification with server is still needed
                     // though because of key rollback protection
                     // TODO allow for manual validation too
-
-                    // do not wait for the generated key
-                    stopKeyReceiver();
 
                     if (!Permissions.canReadExternalStorage(NumberValidation.this)) {
                         // TODO rationale
@@ -1335,14 +1258,14 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         statusInitializing();
 
         if (updateKey) {
-            // update public key
+            /* update public key
             try {
                 mKey.update(publicKeyData);
             }
             catch (IOException e) {
                 // abort
                 throw new RuntimeException("error decoding public key", e);
-            }
+            }*/
         }
 
         completeLogin(serverUri, termsUrl, challenge, privateKeyData, publicKeyData, trustedKeys);
@@ -1443,6 +1366,18 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onVerificationRequested(VerificationRequestedEvent event) {
+        RegistrationService.CurrentState state = RegistrationService.currentState();
+        if (state.restored) {
+            mName = state.displayName;
+            mPhoneNumber = state.phoneNumber;
+            mForce = state.force;
+
+            // update UI
+            mNameText.setText(mName);
+            mPhone.setText(mPhoneNumber);
+            syncCountryCodeSelector();
+        }
+
         Log.d(TAG, "validation has been requested, requesting validation code to user");
         proceedManual(event.sender, event.challenge, event.brandImageUrl, event.brandLink, event.canFallback);
     }

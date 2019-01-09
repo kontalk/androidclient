@@ -18,6 +18,7 @@
 
 package org.kontalk.service.registration;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,8 +31,10 @@ import java.security.NoSuchProviderException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.zip.ZipInputStream;
 
 import org.greenrobot.eventbus.EventBus;
@@ -59,6 +62,7 @@ import android.app.Service;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -67,6 +71,7 @@ import android.provider.ContactsContract;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Base64;
 
@@ -75,7 +80,6 @@ import org.kontalk.Log;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.Account;
 import org.kontalk.client.EndpointServer;
-import org.kontalk.client.NumberValidator;
 import org.kontalk.client.SmackInitializer;
 import org.kontalk.crypto.PGPUidMismatchException;
 import org.kontalk.crypto.PGPUserID;
@@ -83,6 +87,7 @@ import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyImporter;
 import org.kontalk.provider.Keyring;
 import org.kontalk.reporting.ReportingManager;
+import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.XMPPConnectionHelper;
 import org.kontalk.service.msgcenter.SQLiteRosterStore;
 import org.kontalk.service.registration.event.AcceptTermsRequest;
@@ -219,6 +224,10 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
 
         public Map<String, Keyring.TrustedFingerprint> trustedKeys;
 
+        /** Will be true if the state was restored from preferences. */
+        // do not copy
+        public boolean restored;
+
         CurrentState() {
             state = State.IDLE;
         }
@@ -246,10 +255,15 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
     public static final class NoPhoneNumberFoundException extends Exception {
     }
 
+    private LocalBroadcastManager mLocalBroadcastManager;
+
     private HandlerThread mServiceHandler;
     private Handler mInternalHandler;
 
     private XMPPConnectionHelper mConnector;
+
+    private KeyPairGeneratorService.KeyGeneratorReceiver mKeyReceiver;
+    private final Object mKeyLock = new Object();
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -275,7 +289,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         updateState(State.IDLE);
 
         // internal handler
-        mServiceHandler = new HandlerThread(NumberValidator.class.getSimpleName()) {
+        mServiceHandler = new HandlerThread(RegistrationService.class.getSimpleName()) {
             @Override
             protected void onLooperPrepared() {
                 mInternalHandler = new Handler(getLooper());
@@ -283,13 +297,28 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         };
         mServiceHandler.start();
 
-        // TODO restore state and send some event to UI
+        mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
 
-        // TODO we should start key generation just in case
+        // restore state from preferences in case the app was killed mid-registration
+        CurrentState state = null;
+        try {
+            state = restoreState();
+        }
+        catch (Exception e) {
+            Log.w(TAG, "unable to restore registration progress", e);
+            clearSavedState();
+        }
+
+        if (state == null || state.key == null) {
+            // since it may take some time, we should start key generation just
+            // in case, even if eventually we won't need it (e.g. import)
+            startKeyGenerator();
+        }
     }
 
     @Override
     public void onDestroy() {
+        stopKeyReceiver();
         BUS.unregister(this);
         unconfigure();
 
@@ -308,9 +337,6 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
 
         mInternalHandler = null;
         mServiceHandler = null;
-
-        // TODO save state if we are still to do something
-        // TODO Preferences.saveRegistrationProgress(...)
     }
 
     @Nullable
@@ -319,15 +345,161 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         return null;
     }
 
-    private CurrentState updateState(State state) {
+    private void startKeyGenerator() {
+        KeyPairGeneratorService.PersonalKeyRunnable action = new KeyPairGeneratorService.PersonalKeyRunnable() {
+            @Override
+            public void run(PersonalKey key) {
+                CurrentState state = currentState();
+                state.key = key;
+                mKeyLock.notifyAll();
+            }
+        };
+        mKeyReceiver = new KeyPairGeneratorService.KeyGeneratorReceiver(new Handler(), action);
+        IntentFilter filter = new IntentFilter(KeyPairGeneratorService.ACTION_GENERATE);
+        filter.addAction(KeyPairGeneratorService.ACTION_STARTED);
+        mLocalBroadcastManager.registerReceiver(mKeyReceiver, filter);
+
+        Intent i = new Intent(this, KeyPairGeneratorService.class);
+        i.setAction(KeyPairGeneratorService.ACTION_GENERATE);
+        startService(i);
+    }
+
+    private void stopKeyReceiver() {
+        if (mKeyReceiver != null) {
+            mLocalBroadcastManager.unregisterReceiver(mKeyReceiver);
+            mKeyReceiver = null;
+        }
+    }
+
+    private CurrentState restoreState() {
+        String _state = Preferences.getString("registration_state", null);
+        String workflow = Preferences.getString("registration_workflow", null);
+        if (_state != null && workflow != null) {
+            CurrentState state = updateState(State.valueOf(_state), Workflow.valueOf(workflow));
+
+            state.displayName = Preferences.getString("registration_name", null);
+            state.phoneNumber = Preferences.getString("registration_phone", null);
+            String serverUri = Preferences.getString("registration_server", null);
+            state.server = serverUri != null ? new EndpointServer(serverUri) : null;
+            String key = Preferences.getString("registration_key", null);
+            state.key = !TextUtils.isEmpty(key) ? PersonalKey.fromBase64(key) : null;
+            state.passphrase = Preferences.getString("registration_passphrase", null);
+            state.challenge = Preferences.getString("registration_challenge", null);
+            state.force = Preferences.getBoolean("registration_force", false);
+
+            String trustedKeys = Preferences.getString("registration_trustedkeys", null);
+            if (trustedKeys != null) {
+                ByteArrayInputStream trustedKeysProp =
+                    new ByteArrayInputStream(Base64.decode(trustedKeys, Base64.NO_WRAP));
+                try {
+                    Properties prop = new Properties();
+                    prop.load(trustedKeysProp);
+                    state.trustedKeys = new HashMap<>(prop.size());
+                    for (Map.Entry e : prop.entrySet()) {
+                        Keyring.TrustedFingerprint fingerprint =
+                            Keyring.TrustedFingerprint.fromString((String) e.getValue());
+                        if (fingerprint != null) {
+                            state.trustedKeys.put((String) e.getKey(), fingerprint);
+                        }
+                    }
+                }
+                catch (IOException ignored) {
+                }
+            }
+
+            String sender = Preferences.getString("registration_sender", null);
+            String brandImage = Preferences.getString("registration_brandimage", null);
+            String brandLink = Preferences.getString("registration_brandlink", null);
+            boolean canFallback = Preferences.getBoolean("registration_canfallback", false);
+
+            // send appropriate event to UI
+            switch (state.workflow) {
+                case REGISTRATION:
+                    BUS.post(new VerificationRequestedEvent(sender, state.challenge,
+                        brandImage, brandLink, canFallback));
+                    break;
+                // TODO other workflows
+            }
+
+            state.restored = true;
+            return state;
+        }
+        return null;
+    }
+
+    private static void saveState(String sender, String brandImage, String brandLink, boolean canFallback) {
+        CurrentState state = currentState();
+        if (state != null && state.workflow != null) {
+            ByteArrayOutputStream trustedKeysOut = null;
+            if (state.trustedKeys != null) {
+                trustedKeysOut = new ByteArrayOutputStream();
+                Properties prop = new Properties();
+
+                for (Map.Entry<String, Keyring.TrustedFingerprint> e : state.trustedKeys.entrySet()) {
+                    Keyring.TrustedFingerprint fingerprint = e.getValue();
+                    if (fingerprint != null) {
+                        prop.put(e.getKey(), fingerprint.toString());
+                    }
+                }
+
+                try {
+                    prop.store(trustedKeysOut, null);
+                }
+                catch (IOException e) {
+                    // something went wrong
+                    // we can't have IOExceptions from byte buffers anyway
+                    trustedKeysOut = null;
+                }
+            }
+
+            Preferences.getInstance().edit()
+                .putString("registration_state", state.state.toString())
+                .putString("registration_workflow", state.workflow.toString())
+                .putString("registration_name", state.displayName)
+                .putString("registration_phone", state.phoneNumber)
+                .putString("registration_key", state.key != null ? state.key.toBase64() : null)
+                .putString("registration_passphrase", state.passphrase)
+                .putString("registration_server", state.server.toString())
+                .putString("registration_sender", sender)
+                .putString("registration_challenge", state.challenge)
+                .putString("registration_brandimage", brandImage)
+                .putString("registration_brandlink", brandLink)
+                .putBoolean("registration_canfallback", canFallback)
+                .putBoolean("registration_force", state.force)
+                .putString("registration_trustedkeys", trustedKeysOut != null ?
+                    Base64.encodeToString(trustedKeysOut.toByteArray(), Base64.NO_WRAP) : null)
+                .apply();
+        }
+    }
+
+    public static void clearSavedState() {
+        Preferences.getInstance().edit()
+            .remove("registration_workflow")
+            .remove("registration_state")
+            .remove("registration_name")
+            .remove("registration_phone")
+            .remove("registration_key")
+            .remove("registration_passphrase")
+            .remove("registration_server")
+            .remove("registration_sender")
+            .remove("registration_challenge")
+            .remove("registration_brandimage")
+            .remove("registration_brandlink")
+            .remove("registration_canfallback")
+            .remove("registration_force")
+            .remove("registration_trustedkeys")
+            .apply();
+    }
+
+    private synchronized CurrentState updateState(State state) {
         return updateState(state, null, null);
     }
 
-    private CurrentState updateState(State state, Workflow workflow) {
+    private synchronized CurrentState updateState(State state, Workflow workflow) {
         return updateState(state, workflow, null);
     }
 
-    private CurrentState updateState(State state, Workflow workflow, EndpointServer server) {
+    private synchronized CurrentState updateState(State state, Workflow workflow, EndpointServer server) {
         CurrentState cstate = currentState();
         // always produce a new object
         if (cstate == null) {
@@ -354,6 +526,22 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
     public void onVerificationRequest(VerificationRequest request) {
         // begin by requesting instructions for service terms url
         reset();
+
+        synchronized (mKeyLock) {
+            CurrentState cstate = currentState();
+            if (cstate.key == null) {
+                Log.v(TAG, "waiting for key generator");
+                try {
+                    // wait endlessly?
+                    mKeyLock.wait();
+                }
+                catch (InterruptedException e) {
+                    // TODO what??
+                    return;
+                }
+                Log.v(TAG, "key generation completed");
+            }
+        }
 
         CurrentState cstate = updateState(State.CONNECTING, Workflow.REGISTRATION,
             request.serverProvider.next());
@@ -434,8 +622,8 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
     /** Import existing key from a personal keypack. */
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onImportKeyRequest(ImportKeyRequest request) {
-        // begin by requesting instructions for service terms url
         reset();
+        stopKeyReceiver();
 
         CurrentState cstate = updateState(State.IMPORTING_KEY, Workflow.IMPORT_KEY);
 
@@ -569,6 +757,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onRetrieveKeyRequest(RetrieveKeyRequest request) {
         reset();
+        stopKeyReceiver();
 
         updateState(State.CONNECTING, Workflow.RETRIEVE_KEY, request.server);
 
@@ -726,8 +915,10 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                 if (smsFrom != null) {
                     Log.d(TAG, "using sender id: " + smsFrom + ", challenge: " + challenge);
                     cstate.challenge = challenge;
-                    // TODO ? cstate.challengeSender = smsFrom;
                     ReportingManager.logRegister(challenge);
+
+                    // time to save state
+                    saveState(smsFrom, brandImage, brandLink, canFallback);
 
                     BUS.post(new VerificationRequestedEvent(smsFrom, challenge,
                         brandImage, brandLink, canFallback));
@@ -1050,6 +1241,11 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
 
     public static EventBus bus() {
         return BUS;
+    }
+
+    public static boolean hasSavedState() {
+        return Preferences.getString("registration_state", null) != null &&
+            Preferences.getString("registration_workflow", null) != null;
     }
 
     public static CurrentState currentState() {
