@@ -752,4 +752,7 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
 
     <string name="err_emoji_disabled_in_multiwindow">Emoji no puede ser usado en modo multi-ventana.</string>
 
+    <string name="registration_accept_terms_title">¿Aceptar las condiciones del servicio\?</string>
+    <string name="registration_accept_terms_text">El servidor en &lt;b&gt;%1$s&lt;/b&gt; solicita &lt;a href=%2$s&gt;aceptar los términos del servicio &lt;/a&gt;.</string>
+
     </resources>
