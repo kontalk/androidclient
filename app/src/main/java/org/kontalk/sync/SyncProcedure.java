@@ -32,10 +32,14 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jxmpp.jid.BareJid;
 import org.jxmpp.jid.Jid;
 
+import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
+
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.event.BlocklistEvent;
 import org.kontalk.service.msgcenter.event.BlocklistRequest;
 import org.kontalk.service.msgcenter.event.ConnectedEvent;
+import org.kontalk.service.msgcenter.event.DisconnectedEvent;
 import org.kontalk.service.msgcenter.event.LastActivityEvent;
 import org.kontalk.service.msgcenter.event.LastActivityRequest;
 import org.kontalk.service.msgcenter.event.PresenceEvent;
@@ -59,13 +63,14 @@ public class SyncProcedure {
     static final String IQ_KEYS_PACKET_ID = StringUtils.randomString(10);
 
     /** Random packet id used for requesting the blocklist. */
-    private static final String IQ_BLOCKLIST_PACKET_ID = StringUtils.randomString(10);
+    @VisibleForTesting
+    static final String IQ_BLOCKLIST_PACKET_ID = StringUtils.randomString(10);
 
     /** Max number of items in a roster match request. */
     private static final int MAX_ROSTER_MATCH_SIZE = 500;
 
     private List<PresenceItem> mResponse;
-    private final WeakReference<Syncer> mNotifyTo;
+    private final WeakReference<Object> mNotifyTo;
 
     private final List<String> mJidList;
     private int mRosterParts = -1;
@@ -93,16 +98,31 @@ public class SyncProcedure {
         public boolean matched;
         /** Discard this entry: it has not been found on server. */
         public boolean discarded;
+
+        /** Mainly for tests. */
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            return (obj instanceof PresenceItem) &&
+                ((PresenceItem) obj).from.equals(from) &&
+                StringUtils.nullSafeCharSequenceEquals(((PresenceItem) obj).status, status) &&
+                StringUtils.nullSafeCharSequenceEquals(((PresenceItem) obj).rosterName, rosterName) &&
+                ((PresenceItem) obj).timestamp == timestamp &&
+                // too much? -- ((PresenceItem) obj).publicKey...
+                ((PresenceItem) obj).blocked == blocked &&
+                ((PresenceItem) obj).presence == presence &&
+                ((PresenceItem) obj).matched == matched &&
+                ((PresenceItem) obj).discarded == discarded;
+        }
     }
 
-    SyncProcedure(List<String> jidList, Syncer notifyTo) {
+    SyncProcedure(List<String> jidList, Object notifyTo) {
         mNotifyTo = new WeakReference<>(notifyTo);
         mJidList = jidList;
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
-    public void onConnected(ConnectedEvent event) {
-        Syncer w = mNotifyTo.get();
+    public synchronized void onConnected(ConnectedEvent event) {
+        Object w = mNotifyTo.get();
         if (w != null) {
             // request a roster match
             mRosterParts = getRosterParts(mJidList);
@@ -120,8 +140,14 @@ public class SyncProcedure {
         }
     }
 
+    @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
+    public synchronized void onDisconnected(DisconnectedEvent event) {
+        mResponse = null;
+        finish();
+    }
+
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    public void onPresence(PresenceEvent event) {
+    public synchronized void onPresence(PresenceEvent event) {
         // consider only presences received *after* roster response
         if (mResponse != null && mPresenceId != null) {
             if (event.type != null && mPresenceId.equals(event.id)) {
@@ -148,7 +174,7 @@ public class SyncProcedure {
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    public void onRosterMatch(RosterMatchEvent event) {
+    public synchronized void onRosterMatch(RosterMatchEvent event) {
         // TODO handle errors
         for (String iqId : mIqIds) {
             if (iqId.equals(event.id)) {
@@ -177,7 +203,7 @@ public class SyncProcedure {
                         finish();
                     }
                     else {
-                        Syncer w = mNotifyTo.get();
+                        Object w = mNotifyTo.get();
                         if (w != null) {
                             // request presence data for the whole roster
                             mPresenceId = StringUtils.randomString(6);
@@ -197,7 +223,7 @@ public class SyncProcedure {
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    public void onBlocklist(BlocklistEvent event) {
+    public synchronized void onBlocklist(BlocklistEvent event) {
         if (IQ_BLOCKLIST_PACKET_ID.equals(event.id)) {
             mNlocklistReceived = true;
 
@@ -222,7 +248,7 @@ public class SyncProcedure {
 
     /** Last activity (for user existance verification). */
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    public void onLastActivity(LastActivityEvent event) {
+    public synchronized void onLastActivity(LastActivityEvent event) {
         if (mNotMatched.contains(event.id)) {
             mNotMatched.remove(event.id);
 
@@ -241,7 +267,7 @@ public class SyncProcedure {
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    public void onPublicKey(PublicKeyEvent event) {
+    public synchronized void onPublicKey(PublicKeyEvent event) {
         if (mResponse != null) {
             if (IQ_KEYS_PACKET_ID.equals(event.id)) {
                 // see if bare JID is present in roster response
@@ -297,7 +323,6 @@ public class SyncProcedure {
         mServiceBus.post(new PublicKeyRequest(id, null));
     }
 
-
     private void requestBlocklist(String id) {
         mServiceBus.post(new BlocklistRequest(id));
     }
@@ -315,7 +340,7 @@ public class SyncProcedure {
     }
 
     private void finish() {
-        Syncer w = mNotifyTo.get();
+        Object w = mNotifyTo.get();
         if (w != null) {
             synchronized (w) {
                 w.notifyAll();
