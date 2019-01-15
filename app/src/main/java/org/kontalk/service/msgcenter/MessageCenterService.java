@@ -2176,7 +2176,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             return;
         }
 
-        Conversation conv = Conversation.loadFromUserId(this, message.getRecipient());
+        Conversation conv = Conversation.loadFromUserId(this, message.getPeer());
         if (conv == null) {
             // this is actually a bug
             ReportingManager.logException(new IllegalArgumentException("no conversation for message!"));
@@ -2195,7 +2195,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (group != null) {
             groupInfo = group.getContent();
 
-            toGroup = XMPPUtils.parseJids(conv.getGroupPeers());
+            toGroup = XMPPUtils.parseJids(conv.getGroupPeersForSending());
             convJid = groupInfo.getJid();
 
             groupController = GroupControllerFactory
@@ -2214,7 +2214,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
         }
         else {
-            to = JidCreate.fromOrThrowUnchecked(message.getRecipient());
+            to = JidCreate.fromOrThrowUnchecked(message.getPeer());
             toGroup = new Jid[]{to};
             convJid = to;
         }
@@ -2376,13 +2376,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             if (message.getSecurityFlags() != Coder.SECURITY_CLEARTEXT) {
                 byte[] toMessage = null;
+                boolean encryptError = false;
                 try {
                     Coder coder = Keyring.getEncryptCoder(this, mServer, key, SystemUtils.toString(toGroup));
                     if (coder != null) {
 
                         // no extensions, create a simple text version to save space
                         if (msg.getExtensions().size() == 0) {
-                            toMessage = coder.encryptText(msg.getBody());
+                            if (!(request instanceof SendDeliveryReceiptRequest)) {
+                                // a special case for delivery receipts whom doesn't have a body
+                                // but we want to encrypt it for groups (extensions.size() > 0)
+                                toMessage = coder.encryptText(msg.getBody());
+                            }
                         }
 
                         // some extension, encrypt whole stanza just to be sure
@@ -2390,16 +2395,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             toMessage = coder.encryptStanza(msg.toXML(null));
                         }
 
-                        org.jivesoftware.smack.packet.Message encMsg =
-                            new org.jivesoftware.smack.packet.Message(msg.getTo(), msg.getType());
+                        if (toMessage != null) {
+                            org.jivesoftware.smack.packet.Message encMsg =
+                                new org.jivesoftware.smack.packet.Message(msg.getTo(), msg.getType());
 
-                        encMsg.setBody(getString(R.string.text_encrypted));
-                        encMsg.setStanzaId(m.getStanzaId());
-                        encMsg.addExtension(new E2EEncryption(toMessage));
+                            encMsg.setBody(getString(R.string.text_encrypted));
+                            encMsg.setStanzaId(m.getStanzaId());
+                            encMsg.addExtension(new E2EEncryption(toMessage));
 
-                        // save the unencrypted stanza for later
-                        originalStanza = msg;
-                        m = encMsg;
+                            // save the unencrypted stanza for later
+                            originalStanza = msg;
+                            m = encMsg;
+                        }
                     }
                 }
 
@@ -2412,6 +2419,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         Toast.makeText(this, R.string.warn_no_public_key,
                             Toast.LENGTH_LONG).show();
                     }
+                    encryptError = true;
                 }
                 catch (GeneralSecurityException e) {
                     // warn user: message will not be sent
@@ -2419,9 +2427,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         Toast.makeText(this, R.string.warn_encryption_failed,
                             Toast.LENGTH_LONG).show();
                     }
+                    encryptError = true;
                 }
 
-                if (toMessage == null) {
+                if (encryptError) {
                     // message was not encrypted for some reason, mark it pending user review
                     MessageUpdater.forMessage(this, msgId)
                         .setStatus(Messages.STATUS_PENDING)

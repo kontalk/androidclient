@@ -309,6 +309,14 @@ public class Conversation {
         return mGroupPeers;
     }
 
+    /**
+     * Special version of {@link #getGroupPeers} that returns members with any flags.
+     * An ugly hack for the message center.
+     */
+    public String[] getGroupPeersForSending() {
+        return MessagesProviderClient.getGroupMembers(mContext, mGroupJid, -1);
+    }
+
     public boolean isGroupChat() {
         loadGroupPeers(false);
         return mGroupJid != null;

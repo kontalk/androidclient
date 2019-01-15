@@ -82,7 +82,8 @@ public class GroupCommandComponent extends MessageComponent<GroupExtension> {
     }
 
     public boolean isSetSubjectCommand() {
-        return mContent.getType() == GroupExtension.Type.SET;
+        return mContent.getType() == GroupExtension.Type.SET &&
+            mContent.getMembers().size() == 0;
     }
 
     public String[] getCreateMembers() {
