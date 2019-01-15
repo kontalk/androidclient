@@ -87,42 +87,42 @@ public class GroupContentView extends EmojiTextView
         else if (component.isSetSubjectCommand()) {
             text = new StringBuilder();
 
-            if (component.isAddOrRemoveCommand()) {
-                // add member(s)
-                String[] added = component.getAddedMembers();
-                if (added != null && added.length > 0) {
-                    ((StringBuilder) text).append(getResources().getString(R.string.group_command_users_added));
-                    for (String member : added) {
-                        // TODO use something more "colorful"
-                        ((StringBuilder) text).append("\n");
+            String subject = component.getContent().getSubject();
+            if (subject != null) {
+                if (text.length() > 0)
+                    ((StringBuilder) text).append("\n");
+                ((StringBuilder) text).append(getResources().getString(R.string.group_command_subject, subject));
+            }
+        }
 
-                        Contact c = Contact.findByUserId(getContext(), member);
-                        ((StringBuilder) text).append(c.getDisplayName());
-                    }
-                }
+        else if (component.isAddOrRemoveCommand()) {
+            text = new StringBuilder();
 
-                // remove member(s)
-                String[] removed = component.getRemovedMembers();
-                if (removed != null && removed.length > 0) {
-                    if (text.length() > 0)
-                        ((StringBuilder) text).append("\n");
-                    ((StringBuilder) text).append(getResources().getString(R.string.group_command_users_removed));
-                    for (String member : removed) {
-                        // TODO use something more "colorful"
-                        ((StringBuilder) text).append("\n");
+            // add member(s)
+            String[] added = component.getAddedMembers();
+            if (added != null && added.length > 0) {
+                ((StringBuilder) text).append(getResources().getString(R.string.group_command_users_added));
+                for (String member : added) {
+                    // TODO use something more "colorful"
+                    ((StringBuilder) text).append("\n");
 
-                        Contact c = Contact.findByUserId(getContext(), member);
-                        ((StringBuilder) text).append(c.getDisplayName());
-                    }
+                    Contact c = Contact.findByUserId(getContext(), member);
+                    ((StringBuilder) text).append(c.getDisplayName());
                 }
             }
 
-            else {
-                String subject = component.getContent().getSubject();
-                if (subject != null) {
-                    if (text.length() > 0)
-                        ((StringBuilder) text).append("\n");
-                    ((StringBuilder) text).append(getResources().getString(R.string.group_command_subject, subject));
+            // remove member(s)
+            String[] removed = component.getRemovedMembers();
+            if (removed != null && removed.length > 0) {
+                if (text.length() > 0)
+                    ((StringBuilder) text).append("\n");
+                ((StringBuilder) text).append(getResources().getString(R.string.group_command_users_removed));
+                for (String member : removed) {
+                    // TODO use something more "colorful"
+                    ((StringBuilder) text).append("\n");
+
+                    Contact c = Contact.findByUserId(getContext(), member);
+                    ((StringBuilder) text).append(c.getDisplayName());
                 }
             }
         }
