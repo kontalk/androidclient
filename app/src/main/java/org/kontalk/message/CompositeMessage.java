@@ -175,6 +175,15 @@ public class CompositeMessage {
         mId = id;
     }
 
+    public String getPeer() {
+        if (isIncoming()) {
+            return getSender(true);
+        }
+        else {
+            return getRecipient(true);
+        }
+    }
+
     public String getSender(boolean generic) {
         return generic && XmppStringUtils.isFullJID(mSender) ?
             XmppStringUtils.parseBareJid(mSender) : mSender;
@@ -184,8 +193,13 @@ public class CompositeMessage {
         return getSender(false);
     }
 
+    public String getRecipient(boolean generic) {
+        return generic && XmppStringUtils.isFullJID(mRecipient) ?
+            XmppStringUtils.parseBareJid(mRecipient) : mRecipient;
+    }
+
     public String getRecipient() {
-        return mRecipient;
+        return getRecipient(false);
     }
 
     public long getTimestamp() {
