@@ -2195,7 +2195,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (group != null) {
             groupInfo = group.getContent();
 
-            toGroup = XMPPUtils.parseJids(conv.getGroupPeers());
+            toGroup = XMPPUtils.parseJids(conv.getGroupPeersForSending());
             convJid = groupInfo.getJid();
 
             groupController = GroupControllerFactory
