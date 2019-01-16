@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kontalk.client;
+package org.kontalk.client.smack;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -70,6 +70,7 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.PasswordCallback;
 
 import org.jivesoftware.smack.AbstractConnectionListener;
+
 import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.ConnectionConfiguration.DnssecMode;
@@ -403,6 +404,11 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
         SSLSession sslSession = secureSocket != null ? secureSocket.getSession() : null;
         saslAuthentication.authenticate(username, password, config.getAuthzid(), sslSession);
 
+        // Wait for stream features after the authentication.
+        // TODO: The name of this synchronization point "maybeCompressFeaturesReceived" is not perfect. It should be
+        // renamed to "streamFeaturesAfterAuthenticationReceived".
+        maybeCompressFeaturesReceived.checkIfSuccessOrWait();
+
         // If compression is enabled then request the server to use stream compression. XEP-170
         // recommends to perform stream compression before resource binding.
         maybeEnableCompression();
@@ -572,7 +578,7 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
         }
     }
 
-    private void connectUsingConfiguration() throws ConnectionException, IOException {
+    private void connectUsingConfiguration() throws ConnectionException, IOException, InterruptedException {
         List<HostAddress> failedAddresses = populateHostAddresses();
         SocketFactory socketFactory = config.getSocketFactory();
         ProxyInfo proxyInfo = config.getProxyInfo();
@@ -591,14 +597,17 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                 innerloop: while (inetAddresses.hasNext()) {
                     // Create a *new* Socket before every connection attempt, i.e. connect() call, since Sockets are not
                     // re-usable after a failed connection attempt. See also SMACK-724.
-                    socket = socketFactory.createSocket();
+                    SmackFuture.SocketFuture socketFuture = new SmackFuture.SocketFuture(socketFactory);
 
                     final InetAddress inetAddress = inetAddresses.next();
                     final String inetAddressAndPort = inetAddress + " at port " + port;
+                    final InetSocketAddress inetSocketAddress = new InetSocketAddress(inetAddress, port);
                     LOGGER.finer("Trying to establish TCP connection to " + inetAddressAndPort);
+                    socketFuture.connectAsync(inetSocketAddress, timeout);
+
                     try {
-                        socket.connect(new InetSocketAddress(inetAddress, port), timeout);
-                    } catch (Exception e) {
+                        socket = socketFuture.getOrThrow();
+                    } catch (IOException e) {
                         hostAddress.setException(inetAddress, e);
                         if (inetAddresses.hasNext()) {
                             continue innerloop;

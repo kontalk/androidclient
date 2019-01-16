@@ -56,6 +56,7 @@ import android.annotation.SuppressLint;
 
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
+import org.kontalk.client.smack.XMPPTCPConnection;
 import org.kontalk.service.msgcenter.SecureConnectionManager;
 
 

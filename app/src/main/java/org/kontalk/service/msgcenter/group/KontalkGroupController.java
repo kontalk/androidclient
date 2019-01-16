@@ -35,7 +35,7 @@ import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.client.GroupExtension;
 import org.kontalk.client.KontalkGroupManager;
-import org.kontalk.client.XMPPTCPConnection;
+import org.kontalk.client.smack.XMPPTCPConnection;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.GroupCommandAckListener;
