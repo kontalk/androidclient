@@ -23,8 +23,7 @@ task checkstyle(type: Checkstyle){
     exclude '**/CircularSeekBar.java',
         '**/FrameLayoutFixed.java',
         '**/AbsListViewScrollDetector.java',
-        '**/XMPPTCPConnection.java',
-        '**/BundleAndDefer*.java',
+        '**/java/org/kontalk/client/smack/**',
         '**/ProximityScreenLocker*.java',
         '**/CustomSimpleXmppStringprep.java',
         'main/java/com/**'
