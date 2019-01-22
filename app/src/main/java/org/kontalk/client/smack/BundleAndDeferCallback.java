@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kontalk.client;
+package org.kontalk.client.smack;
 
 /**
  * This callback is used to get the current value of the period in which Smack does bundle and defer
