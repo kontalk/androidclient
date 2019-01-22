@@ -709,4 +709,24 @@ Desabilite a criptografia apenas se o seu contato não posuir uma chave pessoal.
     <string name="permission_users_label">Acesso às informações de usuários do Kontalk</string>
     <string name="permission_users_description">Pode ler e escrever no banco de dados e no chaveiro dos usuários</string>
 
-    </resources>
+    <string name="pref_account_settings">Conta</string>
+    <string name="open_conversation">Ver</string>
+    <string name="menu_ctx_archive_threads">Arquivar</string>
+    <string name="menu_ctx_unarchive_threads">Desarquivar</string>
+    <string name="menu_ctx_delete_threads">Excluir</string>
+    <string name="seen_group_typing_label_one">%s está digitando…</string>
+    <string name="seen_group_typing_label_two">%1$s e %2$s estão digitando…</string>
+    <string name="seen_group_typing_label_more">%d pessoas estão digitando…</string>
+    <string name="pref_server_messages">Receber mensagens do servidor</string>
+    <string name="menu_import_messages">Importar mensagens</string>
+
+    <string name="pref_copy_database">Copiar o banco de dados</string>
+    <string name="msg_copy_database_success">Banco de dados copiado para: %s</string>
+    <string name="notify_other_channel_description">Outras notificações</string>
+
+    <plurals name="group_people_online">
+	<item quantity="one">1 conectado</item>
+	<item quantity="other">%d conectados</item>
+</plurals>
+
+</resources>
