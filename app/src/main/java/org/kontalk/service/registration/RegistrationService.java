@@ -349,9 +349,13 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         KeyPairGeneratorService.PersonalKeyRunnable action = new KeyPairGeneratorService.PersonalKeyRunnable() {
             @Override
             public void run(PersonalKey key) {
-                CurrentState state = currentState();
-                state.key = key;
-                mKeyLock.notifyAll();
+                if (key != null) {
+                    synchronized (mKeyLock) {
+                        CurrentState state = currentState();
+                        state.key = key;
+                        mKeyLock.notifyAll();
+                    }
+                }
             }
         };
         mKeyReceiver = new KeyPairGeneratorService.KeyGeneratorReceiver(new Handler(), action);
@@ -1187,10 +1191,15 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         return iq;
     }
 
-    void reset() {
+    synchronized void reset() {
         disconnect();
+
+        // key might be stored before reset
+        PersonalKey key = currentState().key;
+
         BUS.removeStickyEvent(CurrentState.class);
-        updateState(State.IDLE);
+        CurrentState state = updateState(State.IDLE);
+        state.key = key;
     }
 
     private void disconnect() {
