@@ -389,6 +389,11 @@ public class PersonalKey implements Parcelable {
         throw new PGPException("invalid key data");
     }
 
+    public static PersonalKey withBridgeCert(PersonalKey key, X509Certificate bridgeCert) {
+        return new PersonalKey(key.getAuthKeyPair(),
+            key.getSignKeyPair(), key.getEncryptKeyPair(), bridgeCert);
+    }
+
     public static PersonalKey create(Date timestamp) throws IOException {
         try {
             PGPDecryptedKeyPairRing kp = PGP.create(timestamp);

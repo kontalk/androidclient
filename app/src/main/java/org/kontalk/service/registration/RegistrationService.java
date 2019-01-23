@@ -30,6 +30,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +48,7 @@ import org.jivesoftware.smack.filter.StanzaIdFilter;
 import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.StanzaError;
+import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.iqregister.packet.Registration;
 import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
@@ -81,10 +83,12 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.Account;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.SmackInitializer;
+import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PGPUidMismatchException;
 import org.kontalk.crypto.PGPUserID;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyImporter;
+import org.kontalk.crypto.X509Bridge;
 import org.kontalk.provider.Keyring;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.KeyPairGeneratorService;
@@ -92,6 +96,8 @@ import org.kontalk.service.XMPPConnectionHelper;
 import org.kontalk.service.msgcenter.SQLiteRosterStore;
 import org.kontalk.service.registration.event.AcceptTermsRequest;
 import org.kontalk.service.registration.event.AccountCreatedEvent;
+import org.kontalk.service.registration.event.ChallengeError;
+import org.kontalk.service.registration.event.ChallengeRequest;
 import org.kontalk.service.registration.event.FallbackVerificationRequest;
 import org.kontalk.service.registration.event.ImportKeyError;
 import org.kontalk.service.registration.event.ImportKeyRequest;
@@ -150,6 +156,8 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         WAITING_PASSPHRASE,
         /** Processing an imported key. */
         IMPORTING_KEY,
+        /** Sending the challenge code to the server. */
+        REQUESTING_CHALLENGE,
         /** Doing a login test with the key. */
         TESTING_KEY,
         /** Creating account. */
@@ -554,6 +562,8 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         cstate.displayName = request.displayName;
         cstate.force = request.force;
         cstate.brandImageSize = request.brandImageSize;
+        // random passphrase for now
+        cstate.passphrase = StringUtils.randomString(40);
 
         updateState(State.CONNECTING);
 
@@ -859,6 +869,70 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
     public void onFallbackVerificationRequest(FallbackVerificationRequest request) {
         // TODO
         throw new UnsupportedOperationException("Not implemented yet.");
+    }
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    public void onChallengeRequest(ChallengeRequest request) {
+        CurrentState cstate = updateState(State.REQUESTING_CHALLENGE);
+
+        try {
+            // generate keyring immediately
+            // needed for connection
+            String userId = XMPPUtils.createLocalpart(cstate.phoneNumber);
+            PGP.PGPKeyPairRing keyRing = cstate.key.storeNetwork(userId, mConnector.getNetwork(),
+                cstate.displayName, cstate.passphrase);
+
+            // bridge certificate for connection
+            X509Certificate bridgeCert = X509Bridge.createCertificate(keyRing.publicKey,
+                keyRing.secretKey.getSecretKey(), cstate.passphrase);
+
+            cstate.key = PersonalKey.withBridgeCert(cstate.key, bridgeCert);
+
+            initConnection(cstate.key, false);
+
+            // prepare private key request form
+            IQ form = createChallengeForm(request.code);
+
+            // send request packet
+            final XMPPConnection conn = mConnector.getConnection();
+            IQ result;
+            try {
+                result = conn.createStanzaCollectorAndSend(new StanzaIdFilter(form.getStanzaId()), form)
+                    .nextResultOrThrow();
+            }
+            finally {
+                disconnect();
+            }
+
+            DataForm response = result.getExtension("x", "jabber:x:data");
+            if (response != null) {
+                String publicKey = null;
+
+                // ok! message will be sent
+                List<FormField> iter = response.getFields();
+                for (FormField field : iter) {
+                    if ("publickey".equals(field.getVariable())) {
+                        publicKey = field.getFirstValue();
+                    }
+                }
+
+                if (!TextUtils.isEmpty(publicKey)) {
+                    cstate.publicKey = Base64.decode(publicKey, Base64.DEFAULT);
+                    cstate.privateKey = keyRing.secretKey.getEncoded();
+
+                    createAccount();
+                    return;
+                }
+            }
+
+            // TODO clarify error
+            throw new Exception("Invalid response");
+        }
+        catch (Exception e) {
+            // TODO check for service-unavailable errors (meaning
+            // we must call onServerCheckFailed()
+            BUS.post(new ChallengeError(e));
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
@@ -1173,6 +1247,29 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             challenge.setType(FormField.Type.text_single);
             challenge.addValue(DEFAULT_CHALLENGE);
             form.addField(challenge);
+        }
+
+        iq.addExtension(form.getDataFormToSend());
+        return iq;
+    }
+
+    private IQ createChallengeForm(CharSequence code) {
+        Registration iq = new Registration();
+        iq.setType(IQ.Type.set);
+        iq.setTo(mConnector.getConnection().getXMPPServiceDomain());
+        Form form = new Form(DataForm.Type.submit);
+
+        FormField type = new FormField("FORM_TYPE");
+        type.setType(FormField.Type.hidden);
+        type.addValue("http://kontalk.org/protocol/register#code");
+        form.addField(type);
+
+        if (code != null) {
+            FormField codeField = new FormField("code");
+            codeField.setLabel("Validation code");
+            codeField.setType(FormField.Type.text_single);
+            codeField.addValue(code.toString());
+            form.addField(codeField);
         }
 
         iq.addExtension(form.getDataFormToSend());

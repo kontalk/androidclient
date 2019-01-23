@@ -64,25 +64,46 @@ public class RegistrationServiceTest extends TestServerTest {
     }
 
     @Test
-    public void requestVerificationTest() throws InterruptedException {
+    public void requestVerificationTest() throws Exception {
         RequestVerificationTestListener listener = new RequestVerificationTestListener();
         mBus.register(listener);
 
         mBus.post(new VerificationRequest("+15555215554", "Device-5554",
-            TEST_SERVER_PROVIDER, true, RegistrationService.BRAND_IMAGE_LARGE));
+            TEST_SERVER_PROVIDER,
+            //new EndpointServer.SingleServerProvider("prime.kontalk.net|10.0.2.2"),
+            true, RegistrationService.BRAND_IMAGE_LARGE));
 
         synchronized (this) {
             wait(10000);
         }
-        mBus.unregister(listener);
+
+        if (listener.verificationError != null)
+            throw listener.verificationError;
 
         assertTrue(listener.acceptTermsEvent);
         assertTrue(listener.verificationRequestedEvent);
+
+        // send challenge
+        mBus.post(new ChallengeRequest("123456"));
+
+        synchronized (this) {
+            wait(100000);
+        }
+        mBus.unregister(listener);
+
+        if (listener.challengeError != null)
+            throw listener.challengeError;
+
+        assertTrue(listener.accountCreated);
     }
 
     public class RequestVerificationTestListener {
         public boolean acceptTermsEvent;
         public boolean verificationRequestedEvent;
+        public boolean accountCreated;
+
+        private Exception verificationError;
+        private Exception challengeError;
 
         @Subscribe(threadMode = ThreadMode.MAIN)
         public void onAcceptTermsRequested(AcceptTermsRequest request) {
@@ -100,11 +121,23 @@ public class RegistrationServiceTest extends TestServerTest {
 
         @Subscribe(threadMode = ThreadMode.MAIN)
         public void onVerificationError(VerificationError error) {
-            this.verificationRequestedEvent = true;
+            this.verificationError = error.exception;
             synchronized (RegistrationServiceTest.this) {
                 RegistrationServiceTest.this.notify();
             }
         }
-    }
 
+        @Subscribe(threadMode = ThreadMode.MAIN)
+        public void onChallengeError(ChallengeError error) {
+            this.challengeError = error.exception;
+            synchronized (RegistrationServiceTest.this) {
+                RegistrationServiceTest.this.notify();
+            }
+        }
+
+        @Subscribe(threadMode = ThreadMode.MAIN)
+        public void onAccountCreated(AccountCreatedEvent event) {
+            this.accountCreated = true;
+        }
+    }
 }
