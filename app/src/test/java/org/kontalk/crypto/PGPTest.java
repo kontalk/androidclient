@@ -18,6 +18,12 @@
 
 package org.kontalk.crypto;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.Date;
+
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -29,5 +35,21 @@ public class PGPTest {
     public void testFormatFingerprint() throws Exception {
         String fpr = PGP.formatFingerprint("F28947756EB27311E86F6309274BE2A3BD56E37A");
         assertEquals("F289 4775 6EB2 7311 E86F  6309 274B E2A3 BD56 E37A", fpr);
+    }
+
+    @Test
+    public void testBase64() throws Exception {
+        PGP.registerProvider();
+        final PGP.PGPDecryptedKeyPairRing createdKey = PGP.create(new Date());
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ObjectOutputStream dest = new ObjectOutputStream(out);
+        PGP.serialize(createdKey, dest);
+
+        byte[] buf = out.toByteArray();
+        ObjectInputStream src = new ObjectInputStream(new ByteArrayInputStream(buf));
+        final PGP.PGPDecryptedKeyPairRing serializedKey = PGP.unserialize(src);
+
+        assertNotNull(serializedKey);
     }
 }

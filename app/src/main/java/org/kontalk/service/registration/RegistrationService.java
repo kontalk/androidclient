@@ -876,6 +876,10 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         CurrentState cstate = updateState(State.REQUESTING_CHALLENGE);
 
         try {
+            // connect to the provided server
+            mConnector = new XMPPConnectionHelper(this, cstate.server, true);
+            mConnector.setRetryEnabled(false);
+
             // generate keyring immediately
             // needed for connection
             String userId = XMPPUtils.createLocalpart(cstate.phoneNumber);

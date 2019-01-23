@@ -382,66 +382,49 @@ public class PGP {
             throws PGPException, IOException {
 
         PrivateKey privAuth = convertPrivateKey(pair.authKey.getPrivateKey());
-        PublicKey pubAuth = convertPublicKey(pair.authKey.getPublicKey());
-        int algoAuth = pair.authKey.getPrivateKey().getPublicKeyPacket().getAlgorithm();
-        Date dateAuth = pair.authKey.getPrivateKey().getPublicKeyPacket().getTime();
+        byte[] pubAuth = pair.authKey.getPublicKey().getEncoded();
 
         PrivateKey privSign = convertPrivateKey(pair.signKey.getPrivateKey());
-        PublicKey pubSign = convertPublicKey(pair.signKey.getPublicKey());
-        int algoSign = pair.signKey.getPrivateKey().getPublicKeyPacket().getAlgorithm();
-        Date dateSign = pair.signKey.getPrivateKey().getPublicKeyPacket().getTime();
+        byte[] pubSign = pair.signKey.getPublicKey().getEncoded();
 
         PrivateKey privEnc = convertPrivateKey(pair.encryptKey.getPrivateKey());
-        PublicKey pubEnc = convertPublicKey(pair.encryptKey.getPublicKey());
-        int algoEnc = pair.encryptKey.getPrivateKey().getPublicKeyPacket().getAlgorithm();
-        Date dateEnc = pair.encryptKey.getPrivateKey().getPublicKeyPacket().getTime();
+        byte[] pubEnc = pair.encryptKey.getPublicKey().getEncoded();
 
         dest.writeObject(privAuth);
         dest.writeObject(pubAuth);
-        dest.writeInt(algoAuth);
-        dest.writeLong(dateAuth.getTime());
 
         dest.writeObject(privSign);
         dest.writeObject(pubSign);
-        dest.writeInt(algoSign);
-        dest.writeLong(dateSign.getTime());
 
         dest.writeObject(privEnc);
         dest.writeObject(pubEnc);
-        dest.writeInt(algoEnc);
-        dest.writeLong(dateEnc.getTime());
     }
 
     public static PGPDecryptedKeyPairRing unserialize(ObjectInputStream in)
             throws IOException, ClassNotFoundException, PGPException {
         ensureKeyConverter();
 
-        // TODO read byte data
-
         PrivateKey privAuth = (PrivateKey) in.readObject();
-        PublicKey pubAuth = (PublicKey) in.readObject();
-        int algoAuth = in.readInt();
-        Date dateAuth = new Date(in.readLong());
+        byte[] pubAuthData = (byte[]) in.readObject();
+        PGPObjectFactory pubAuthIn = new PGPObjectFactory(pubAuthData, sFingerprintCalculator);
 
-        PGPPublicKey pubKeyAuth = sKeyConverter.getPGPPublicKey(algoAuth, pubAuth, dateAuth);
+        PGPPublicKey pubKeyAuth = ((PGPPublicKeyRing) pubAuthIn.nextObject()).getPublicKey();
         PGPPrivateKey privKeyAuth = sKeyConverter.getPGPPrivateKey(pubKeyAuth, privAuth);
         PGPKeyPair authKp = new PGPKeyPair(pubKeyAuth, privKeyAuth);
 
         PrivateKey privSign = (PrivateKey) in.readObject();
-        PublicKey pubSign = (PublicKey) in.readObject();
-        int algoSign = in.readInt();
-        Date dateSign = new Date(in.readLong());
+        byte[] pubSignData = (byte[]) in.readObject();
+        PGPObjectFactory pubSignIn = new PGPObjectFactory(pubSignData, sFingerprintCalculator);
 
-        PGPPublicKey pubKeySign = sKeyConverter.getPGPPublicKey(algoSign, pubSign, dateSign);
+        PGPPublicKey pubKeySign = ((PGPPublicKeyRing) pubSignIn.nextObject()).getPublicKey();
         PGPPrivateKey privKeySign = sKeyConverter.getPGPPrivateKey(pubKeySign, privSign);
         PGPKeyPair signKp = new PGPKeyPair(pubKeySign, privKeySign);
 
         PrivateKey privEnc = (PrivateKey) in.readObject();
-        PublicKey pubEnc = (PublicKey) in.readObject();
-        int algoEnc = in.readInt();
-        Date dateEnc = new Date(in.readLong());
+        byte[] pubEncData = (byte[]) in.readObject();
+        PGPObjectFactory pubEncIn = new PGPObjectFactory(pubEncData, sFingerprintCalculator);
 
-        PGPPublicKey pubKeyEnc = sKeyConverter.getPGPPublicKey(algoEnc, pubEnc, dateEnc);
+        PGPPublicKey pubKeyEnc = ((PGPPublicKeyRing) pubEncIn.nextObject()).getPublicKey();
         PGPPrivateKey privKeyEnc = sKeyConverter.getPGPPrivateKey(pubKeyEnc, privEnc);
         PGPKeyPair encryptKp = new PGPKeyPair(pubKeyEnc, privKeyEnc);
 

@@ -24,9 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
@@ -46,11 +43,7 @@ import org.spongycastle.openpgp.operator.PBESecretKeyDecryptor;
 import org.spongycastle.openpgp.operator.PGPDigestCalculatorProvider;
 import org.spongycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
 import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
-import org.spongycastle.operator.OperatorCreationException;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Base64;
@@ -59,7 +52,6 @@ import android.util.Base64OutputStream;
 
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGP.PGPDecryptedKeyPairRing;
 import org.kontalk.crypto.PGP.PGPKeyPairRing;
 
@@ -418,30 +410,6 @@ public class PersonalKey implements Parcelable {
             mPair.authKey = new PGPKeyPair(revoked, mPair.authKey.getPrivateKey());
 
         return revoked;
-    }
-
-    /** Stores the public keyring to the system {@link AccountManager}. */
-    public void updateAccountManager(Context context)
-        throws IOException, InvalidKeyException,
-        IllegalStateException, NoSuchAlgorithmException, SignatureException,
-        CertificateException, NoSuchProviderException, PGPException, OperatorCreationException {
-
-        AccountManager am = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
-        Account account = Authenticator.getDefaultAccount(am);
-
-        if (account != null) {
-            PGPPublicKeyRing pubRing = getPublicKeyRing();
-
-            // regenerate bridge certificate
-            byte[] bridgeCertData = X509Bridge.createCertificate(pubRing,
-                    mPair.authKey.getPrivateKey()).getEncoded();
-            byte[] publicKeyData = pubRing.getEncoded();
-
-            am.setUserData(account, Authenticator.DATA_PUBLICKEY,
-                Base64.encodeToString(publicKeyData, Base64.NO_WRAP));
-            am.setUserData(account, Authenticator.DATA_BRIDGECERT,
-                    Base64.encodeToString(bridgeCertData, Base64.NO_WRAP));
-        }
     }
 
     @Override
