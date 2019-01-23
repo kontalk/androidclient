@@ -20,6 +20,7 @@ package org.kontalk;
 
 import org.junit.Before;
 
+import org.kontalk.client.EndpointServer;
 import org.kontalk.util.Preferences;
 
 
@@ -28,6 +29,9 @@ import org.kontalk.util.Preferences;
  */
 public abstract class TestServerTest {
     public static final String TEST_SERVER_URI = "prime.kontalk.net|zeta.kontalk.net:7222";
+
+    public static final EndpointServer.EndpointServerProvider TEST_SERVER_PROVIDER =
+        new EndpointServer.SingleServerProvider(TEST_SERVER_URI);
 
     @Before
     public void setUp() {

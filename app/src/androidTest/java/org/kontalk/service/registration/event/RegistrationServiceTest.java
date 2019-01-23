@@ -18,6 +18,9 @@
 
 package org.kontalk.service.registration.event;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,10 +34,14 @@ import android.support.test.runner.AndroidJUnit4;
 import org.kontalk.TestServerTest;
 import org.kontalk.service.registration.RegistrationService;
 
+import static org.junit.Assert.*;
+
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class RegistrationServiceTest extends TestServerTest {
+
+    private EventBus mBus = RegistrationService.bus();
 
     @Before
     public void setUp() {
@@ -42,6 +49,11 @@ public class RegistrationServiceTest extends TestServerTest {
         InstrumentationRegistry.getTargetContext()
             .startService(new Intent(InstrumentationRegistry.getTargetContext(),
                 RegistrationService.class));
+        try {
+            Thread.sleep(1000);
+        }
+        catch (InterruptedException ignored) {
+        }
     }
 
     @After
@@ -52,8 +64,47 @@ public class RegistrationServiceTest extends TestServerTest {
     }
 
     @Test
-    public void requestVerificationTest() {
-        // TODO VerificationRequest reception and reply
+    public void requestVerificationTest() throws InterruptedException {
+        RequestVerificationTestListener listener = new RequestVerificationTestListener();
+        mBus.register(listener);
+
+        mBus.post(new VerificationRequest("+15555215554", "Device-5554",
+            TEST_SERVER_PROVIDER, true, RegistrationService.BRAND_IMAGE_LARGE));
+
+        synchronized (this) {
+            wait(10000);
+        }
+        mBus.unregister(listener);
+
+        assertTrue(listener.acceptTermsEvent);
+        assertTrue(listener.verificationRequestedEvent);
+    }
+
+    public class RequestVerificationTestListener {
+        public boolean acceptTermsEvent;
+        public boolean verificationRequestedEvent;
+
+        @Subscribe(threadMode = ThreadMode.MAIN)
+        public void onAcceptTermsRequested(AcceptTermsRequest request) {
+            acceptTermsEvent = true;
+            mBus.post(new TermsAcceptedEvent());
+        }
+
+        @Subscribe(threadMode = ThreadMode.MAIN)
+        public void onVerificationRequested(VerificationRequestedEvent event) {
+            this.verificationRequestedEvent = true;
+            synchronized (RegistrationServiceTest.this) {
+                RegistrationServiceTest.this.notify();
+            }
+        }
+
+        @Subscribe(threadMode = ThreadMode.MAIN)
+        public void onVerificationError(VerificationError error) {
+            this.verificationRequestedEvent = true;
+            synchronized (RegistrationServiceTest.this) {
+                RegistrationServiceTest.this.notify();
+            }
+        }
     }
 
 }
