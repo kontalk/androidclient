@@ -25,10 +25,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 
 import com.afollestad.materialdialogs.DialogAction;
@@ -44,6 +42,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
@@ -93,9 +92,7 @@ import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
-import org.kontalk.client.NumberValidator.NumberValidatorListener;
 import org.kontalk.crypto.PersonalKeyPack;
-import org.kontalk.provider.Keyring;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.DatabaseImporterService;
 import org.kontalk.service.MessagesImporterService;
@@ -112,6 +109,7 @@ import org.kontalk.service.registration.event.RetrieveKeyError;
 import org.kontalk.service.registration.event.RetrieveKeyRequest;
 import org.kontalk.service.registration.event.ServerCheckError;
 import org.kontalk.service.registration.event.TermsAcceptedEvent;
+import org.kontalk.service.registration.event.UserConflictError;
 import org.kontalk.service.registration.event.VerificationError;
 import org.kontalk.service.registration.event.VerificationRequest;
 import org.kontalk.service.registration.event.VerificationRequestedEvent;
@@ -127,7 +125,7 @@ import org.kontalk.util.SystemUtils;
 
 /** Number validation activity. */
 public class NumberValidation extends AccountAuthenticatorActionBarActivity
-        implements NumberValidatorListener, FileChooserDialog.FileCallback {
+        implements FileChooserDialog.FileCallback {
     static final String TAG = NumberValidation.class.getSimpleName();
 
     static final int REQUEST_MANUAL_VALIDATION = 771;
@@ -139,6 +137,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     public static final String PARAM_FROM_INTERNAL = "org.kontalk.internal";
 
+    public static final String PARAM_ACCOUNT_NAME = "org.kontalk.accountName";
     public static final String PARAM_PUBLICKEY = "org.kontalk.publickey";
     public static final String PARAM_PRIVATEKEY = "org.kontalk.privatekey";
     public static final String PARAM_SERVER_URI = "org.kontalk.server";
@@ -160,8 +159,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private MaterialDialog mProgress;
     private CharSequence mProgressMessage;
 
-    @Deprecated
-    NumberValidator mValidator;
     Handler mHandler;
 
     private String mPhoneNumber;
@@ -185,7 +182,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private EventBus mServiceBus = RegistrationService.bus();
 
     private static final class RetainData {
-        NumberValidator validator;
         /** @deprecated Use saved instance state. */
         @Deprecated
         CharSequence progressMessage;
@@ -293,10 +289,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 if (data.syncing) {
                     delayedSync();
                 }
-
-                mValidator = data.validator;
-                if (mValidator != null)
-                    mValidator.setListener(this);
             }
             if (data.progressMessage != null) {
                 setProgressMessage(data.progressMessage, true);
@@ -331,7 +323,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     @Override
     public Object onRetainCustomNonConfigurationInstance() {
         RetainData data = new RetainData();
-        data.validator = mValidator;
         if (mProgress != null) data.progressMessage = mProgressMessage;
         data.syncing = mSyncing;
         return data;
@@ -435,19 +426,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_MANUAL_VALIDATION) {
             if (resultCode == RESULT_OK) {
-                // FIXME @deprecated handled by the registration service
-                Map<String, Keyring.TrustedFingerprint> trustedKeys = null;
-                Map<String, String> keys = (HashMap) data.getSerializableExtra(PARAM_TRUSTED_KEYS);
-                if (keys != null) {
-                    trustedKeys = Keyring.fromTrustedFingerprintMap(keys);
-                }
-                finishLogin(data.getStringExtra(PARAM_SERVER_URI),
-                    data.getStringExtra(PARAM_TERMS_URL),
-                    data.getStringExtra(PARAM_CHALLENGE),
-                    data.getByteArrayExtra(PARAM_PRIVATEKEY),
-                    data.getByteArrayExtra(PARAM_PUBLICKEY),
-                    true,
-                    trustedKeys);
+                finishLogin(data.getStringExtra(PARAM_ACCOUNT_NAME));
             }
             else if (resultCode == RESULT_FALLBACK) {
                 mClearState = true;
@@ -1158,10 +1137,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     public void abort() {
         mForce = false;
-        if (mValidator != null) {
-            mValidator.shutdown();
-            mValidator = null;
-        }
         keepScreenOn(false);
         enableControls(true);
         mServiceBus.unregister(this);
@@ -1223,27 +1198,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         mHandler.postDelayed(mSyncStart, 2000);
     }
 
-    /** Used only if imported key was tested successfully. */
-    @Override
-    @Deprecated
-    public void onAuthTokenReceived(final NumberValidator v, final byte[] privateKey, final byte[] publicKey) {
-    }
-
-    @Override
-    @Deprecated
-    public void onAuthTokenFailed(NumberValidator v, int reason) {
-    }
-
-    @Override
-    @Deprecated
-    public void onPrivateKeyReceived(final NumberValidator v, final byte[] privateKey, final byte[] publicKey) {
-    }
-
-    @Override
-    @Deprecated
-    public void onPrivateKeyRequestFailed(NumberValidator v, int reason) {
-    }
-
     private void statusInitializing() {
         if (mProgress == null)
             startProgress();
@@ -1251,74 +1205,11 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         setProgressMessage(getString(R.string.msg_initializing));
     }
 
-    protected void finishLogin(final String serverUri, final String termsUrl, final String challenge,
-            final byte[] privateKeyData, final byte[] publicKeyData, boolean updateKey,
-            Map<String, Keyring.TrustedFingerprint> trustedKeys) {
+    protected void finishLogin(final String accountName) {
         Log.v(TAG, "finishing login");
         statusInitializing();
 
-        if (updateKey) {
-            /* update public key
-            try {
-                mKey.update(publicKeyData);
-            }
-            catch (IOException e) {
-                // abort
-                throw new RuntimeException("error decoding public key", e);
-            }*/
-        }
-
-        completeLogin(serverUri, termsUrl, challenge, privateKeyData, publicKeyData, trustedKeys);
-    }
-
-    private void completeLogin(String serverUri, String termsUrl, String challenge,
-            byte[] privateKeyData, byte[] publicKeyData, Map<String, Keyring.TrustedFingerprint> trustedKeys) {
-    }
-
-    @Override
-    @Deprecated
-    public void onError(NumberValidator v, final Throwable e) {
-    }
-
-    @Override
-    @Deprecated
-    public void onServerCheckFailed(NumberValidator v) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(NumberValidation.this, R.string.err_validation_server_not_supported, Toast.LENGTH_LONG).show();
-                abort();
-            }
-        });
-    }
-
-    @Override
-    @Deprecated
-    public void onValidationFailed(NumberValidator v, final int reason) {
-        Log.e(TAG, "phone number validation failed (" + reason + ")");
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (reason == NumberValidator.ERROR_USER_EXISTS) {
-                    userExistsWarning();
-                }
-                else {
-                    int msg;
-                    if (reason == NumberValidator.ERROR_THROTTLING)
-                        msg = R.string.err_validation_retry_later;
-                    else
-                        msg = R.string.err_validation_failed;
-
-                    Toast.makeText(NumberValidation.this, msg, Toast.LENGTH_LONG).show();
-                }
-                abort();
-            }
-        });
-    }
-
-    @Deprecated
-    @Override
-    public void onAcceptTermsRequired(final NumberValidator v, final String termsUrl) {
+        onAccountCreated(new AccountCreatedEvent(new Account(accountName, null)));
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -1330,6 +1221,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
         Spanned text = HtmlCompat.fromHtml(baseText, 0);
 
+        // FIXME clicking on the link pauses the activity and cancels the whole process
         MaterialDialog dialog = new MaterialDialog.Builder(this)
             .title(R.string.registration_accept_terms_title)
             .content(text)
@@ -1359,11 +1251,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         }
     }
 
-    @Deprecated
-    @Override
-    public void onValidationRequested(NumberValidator v, String sender, String challenge, String brandImage, String brandLink, boolean canFallback) {
-    }
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onVerificationRequested(VerificationRequestedEvent event) {
         RegistrationService.CurrentState state = RegistrationService.currentState();
@@ -1388,14 +1275,29 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             Toast.makeText(this, R.string.err_validation_server_not_supported,
                 Toast.LENGTH_LONG).show();
         }
+        else if (error instanceof UserConflictError) {
+            userExistsWarning();
+        }
         else {
             Log.e(TAG, "validation error.", error.exception);
             keepScreenOn(false);
             int msgId;
-            if (error.exception instanceof SocketException)
+            if (error.exception instanceof SocketException) {
                 msgId = R.string.err_validation_network_error;
-            else
+            }
+            else {
                 msgId = R.string.err_validation_error;
+            }
+            /* TODO
+            int msg;
+            if (reason == NumberValidator.ERROR_THROTTLING)
+                msg = R.string.err_validation_retry_later;
+            else
+                msg = R.string.err_validation_failed;
+
+            Toast.makeText(NumberValidation.this, msg, Toast.LENGTH_LONG).show();
+            }
+            */
             Toast.makeText(this, msgId, Toast.LENGTH_LONG).show();
         }
         abort();

@@ -108,6 +108,7 @@ import org.kontalk.service.registration.event.RetrieveKeyError;
 import org.kontalk.service.registration.event.RetrieveKeyRequest;
 import org.kontalk.service.registration.event.ServerCheckError;
 import org.kontalk.service.registration.event.TermsAcceptedEvent;
+import org.kontalk.service.registration.event.UserConflictError;
 import org.kontalk.service.registration.event.VerificationError;
 import org.kontalk.service.registration.event.VerificationRequest;
 import org.kontalk.service.registration.event.VerificationRequestedEvent;
@@ -867,8 +868,9 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onFallbackVerificationRequest(FallbackVerificationRequest request) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented yet.");
+        CurrentState cstate = currentState();
+        cstate.fallback = true;
+        requestRegistration();
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
@@ -1012,8 +1014,22 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             throw new Exception("Invalid response");
         }
         catch (Exception e) {
-            // TODO parse XMPP errors (throttling and conflict)
-            BUS.post(new VerificationError(e));
+            Object errorEvent = null;
+            if (e instanceof XMPPException.XMPPErrorException) {
+                final StanzaError error = ((XMPPException.XMPPErrorException) e).getStanzaError();
+                if (error.getCondition() == StanzaError.Condition.service_unavailable) {
+                    errorEvent = new ServerCheckError((XMPPException.XMPPErrorException) e);
+                }
+                else if (error.getCondition() == StanzaError.Condition.conflict) {
+                    errorEvent = new UserConflictError((XMPPException.XMPPErrorException) e);
+                }
+                // TODO parse XMPP errors (throttling)
+            }
+
+            if (errorEvent == null) {
+                errorEvent = new VerificationError(e);
+            }
+            BUS.post(errorEvent);
         }
     }
 
