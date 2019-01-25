@@ -280,7 +280,24 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         if (!BUS.isRegistered(this)) {
             BUS.register(this);
         }
-        return START_STICKY;
+
+        // restore state from preferences in case the app was killed mid-registration
+        CurrentState state = null;
+        try {
+            state = restoreState();
+        }
+        catch (Exception e) {
+            Log.w(TAG, "unable to restore registration progress", e);
+            clearSavedState();
+        }
+
+        if (state == null || state.key == null) {
+            // since it may take some time, we should start key generation just
+            // in case, even if eventually we won't need it (e.g. import)
+            startKeyGenerator();
+        }
+
+        return START_NOT_STICKY;
     }
 
     private void configure() {
@@ -308,22 +325,6 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         mServiceHandler.start();
 
         mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
-
-        // restore state from preferences in case the app was killed mid-registration
-        CurrentState state = null;
-        try {
-            state = restoreState();
-        }
-        catch (Exception e) {
-            Log.w(TAG, "unable to restore registration progress", e);
-            clearSavedState();
-        }
-
-        if (state == null || state.key == null) {
-            // since it may take some time, we should start key generation just
-            // in case, even if eventually we won't need it (e.g. import)
-            startKeyGenerator();
-        }
     }
 
     @Override
@@ -924,8 +925,14 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                 }
 
                 if (!TextUtils.isEmpty(publicKey)) {
-                    cstate.publicKey = Base64.decode(publicKey, Base64.DEFAULT);
+                    keyRing.publicKey = cstate.key.update(Base64.decode(publicKey, Base64.DEFAULT));
+                    cstate.publicKey = keyRing.publicKey.getEncoded();
                     cstate.privateKey = keyRing.secretKey.getEncoded();
+
+                    // bridge certificate for connection
+                    bridgeCert = X509Bridge.createCertificate(keyRing.publicKey,
+                        keyRing.secretKey.getSecretKey(), cstate.passphrase);
+                    cstate.key = cstate.key.copy(bridgeCert);
 
                     createAccount();
                     return;

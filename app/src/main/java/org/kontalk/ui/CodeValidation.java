@@ -60,7 +60,6 @@ import org.kontalk.service.registration.event.AccountCreatedEvent;
 import org.kontalk.service.registration.event.ChallengeError;
 import org.kontalk.service.registration.event.ChallengeRequest;
 import org.kontalk.util.InternalTrustStore;
-import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
 
@@ -286,7 +285,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity {
                 @Override
                 public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
                     // we are going back voluntarily
-                    Preferences.clearRegistrationProgress();
+                    RegistrationService.clearSavedState();
                     CodeValidation.super.onBackPressed();
                 }
             })
@@ -388,7 +387,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity {
         }
         else {
             // ending - clear registration progress
-            Preferences.clearRegistrationProgress();
+            RegistrationService.clearSavedState();
         }
         keepScreenOn(false);
         mServiceBus.unregister(this);

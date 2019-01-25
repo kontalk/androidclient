@@ -42,7 +42,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
@@ -377,8 +376,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 RegistrationService.clearSavedState();
                 mClearState = false;
             }
-            mServiceBus.register(this);
         }
+
+        mServiceBus.register(this);
 
         // start registration service immediately
         RegistrationService.start(this);
@@ -760,7 +760,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             provider = Preferences.getEndpointServerProvider(this);
         }
 
-        mServiceBus.register(this);
         mServiceBus.post(new VerificationRequest(phoneNumber, displayName,
             provider, force, getBrandImageSize()));
         return true;
@@ -776,7 +775,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         Log.d(TAG, "sending fallback validation request");
         startProgress();
 
-        mServiceBus.register(this);
         mServiceBus.post(new FallbackVerificationRequest());
         return true;
     }
@@ -889,7 +887,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
         startProgress(getString(R.string.import_device_requesting));
 
-        mServiceBus.register(this);
         mServiceBus.post(new RetrieveKeyRequest(new EndpointServer(server), account, token));
     }
 
@@ -965,7 +962,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                     startProgress(getString(R.string.msg_importing_key));
 
-                    mServiceBus.register(NumberValidation.this);
                     mServiceBus.post(new ImportKeyRequest(Preferences
                         .getEndpointServer(NumberValidation.this),
                         zip, input.toString()));
@@ -1034,79 +1030,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public void onFileChooserDismissed(@NonNull FileChooserDialog dialog) {
     }
 
-    /**
-     * Final step in the import device process: load key data as a PersonalKey
-     * and initiate a normal import process.
-
-    @Deprecated
-    boolean startImport(EndpointServer server, String account, byte[] privateKeyData, byte[] publicKeyData, String passphrase) {
-        String manualServer = null;
-        try {
-            PersonalKey key = PersonalKey.load(privateKeyData, publicKeyData, passphrase, (X509Certificate) null);
-
-            String uidStr = key.getUserId(null);
-            PGPUserID uid = PGPUserID.parse(uidStr);
-            if (uid == null)
-                throw new PGPException("malformed user ID: " + uidStr);
-
-            // check that uid matches phone number
-            String email = uid.getEmail();
-            String numberHash = XMPPUtils.createLocalpart(account);
-            String localpart = XmppStringUtils.parseLocalpart(email);
-            if (!numberHash.equalsIgnoreCase(localpart))
-                throw new PGPUidMismatchException("email does not match phone number: " + email);
-
-            // use server from the key only if we didn't set our own
-            if (server == null)
-                manualServer = XmppStringUtils.parseDomain(email);
-            else
-                manualServer = server.toString();
-
-            mName = uid.getName();
-            mPhoneNumber = account;
-            mImportedPublicKey = publicKeyData;
-            mImportedPrivateKey = privateKeyData;
-        }
-
-        catch (PGPUidMismatchException e) {
-            Log.w(TAG, "uid mismatch!");
-            mImportedPublicKey = mImportedPrivateKey = null;
-            mName = null;
-
-            Toast.makeText(this,
-                R.string.err_import_keypair_uid_mismatch,
-                Toast.LENGTH_LONG).show();
-        }
-
-        catch (Exception e) {
-            Log.e(TAG, "error importing keys", e);
-            ReportingManager.logException(e);
-            mImportedPublicKey = mImportedPrivateKey = null;
-            mTrustedKeys = null;
-            mName = null;
-
-            Toast.makeText(this,
-                R.string.err_import_keypair_failed,
-                Toast.LENGTH_LONG).show();
-        }
-
-        if (mImportedPublicKey != null && mImportedPrivateKey != null) {
-            // we can now store the passphrase
-            mPassphrase = passphrase;
-
-            // begin usual validation
-            // TODO implement fallback usage
-            if (!startValidationNormal(manualServer, true, false, true)) {
-                return false;
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-    */
-
     /** No search here. */
     @Override
     public boolean onSearchRequested() {
@@ -1165,7 +1088,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         mForce = false;
         keepScreenOn(false);
         enableControls(true);
-        mServiceBus.unregister(this);
     }
 
     private void setProgressMessage(CharSequence message) {
@@ -1235,7 +1157,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         Log.v(TAG, "finishing login");
         statusInitializing();
 
-        onAccountCreated(new AccountCreatedEvent(new Account(accountName, null)));
+        onAccountCreated(new AccountCreatedEvent(Authenticator.getDefaultAccount(this)));
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
