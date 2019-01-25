@@ -24,13 +24,12 @@ import org.jivesoftware.smack.packet.StanzaError;
 
 /**
  * Event posted by the registration service if the server reported that it
- * doesn't support registration. The error is posted after all servers were
- * tried.
+ * the client should refrain from trying again for some time.
  * @author Daniele Ricci
  */
-public class ServerCheckError extends VerificationError {
+public class ThrottlingError extends VerificationError {
 
-    public ServerCheckError(XMPPException.XMPPErrorException exception) {
+    public ThrottlingError(XMPPException.XMPPErrorException exception) {
         super(exception);
     }
 

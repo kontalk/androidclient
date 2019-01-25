@@ -18,9 +18,9 @@
 
 package org.kontalk.service.registration.event;
 
-
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.StanzaError;
+
 
 /**
  * Event posted by the registration service if the server reported that another

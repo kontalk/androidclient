@@ -403,22 +403,18 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity {
             msgId = R.string.err_validation_network_error;
         }
         else {
-            msgId = R.string.err_validation_error;
+            String challenge = RegistrationService.currentState().challenge;
+            if (RegistrationService.CHALLENGE_CALLER_ID.equals(challenge)) {
+                // we are verifying through user-initiated missed call
+                // notify the user that the verification didn't succeed
+                msgId = R.string.err_authentication_failed_callerid;
+            }
+            else {
+                // we are verifying through PIN-based challenge
+                // notify the user that the challenge code wasn't accepted
+                msgId = R.string.err_authentication_failed;
+            }
         }
-        /* TODO
-        int resId;
-        String challenge = getIntent().getStringExtra("challenge");
-        if (NumberValidator.CHALLENGE_CALLER_ID.equals(challenge)) {
-            // we are verifying through user-initiated missed call
-            // notify the user that the verification didn't succeed
-            resId = R.string.err_authentication_failed_callerid;
-        }
-        else {
-            // we are verifying through PIN-based challenge
-            // notify the user that the challenge code wasn't accepted
-            resId = R.string.err_authentication_failed;
-        }
-        */
         Toast.makeText(this, msgId, Toast.LENGTH_LONG).show();
         abort(false);
     }

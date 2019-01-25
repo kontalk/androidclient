@@ -109,6 +109,7 @@ import org.kontalk.service.registration.event.RetrieveKeyError;
 import org.kontalk.service.registration.event.RetrieveKeyRequest;
 import org.kontalk.service.registration.event.ServerCheckError;
 import org.kontalk.service.registration.event.TermsAcceptedEvent;
+import org.kontalk.service.registration.event.ThrottlingError;
 import org.kontalk.service.registration.event.UserConflictError;
 import org.kontalk.service.registration.event.VerificationError;
 import org.kontalk.service.registration.event.VerificationRequest;
@@ -161,9 +162,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     Handler mHandler;
 
-    private String mPhoneNumber;
-    private String mName;
-
     private boolean mForce;
 
     private LocalBroadcastManager lbm;
@@ -175,6 +173,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     Runnable mSyncStart;
     private boolean mSyncing;
 
+    private boolean mWaitingAcceptTerms;
     private boolean mPermissionsAsked;
 
     private BroadcastReceiver mMessagesImporterReceiver;
@@ -190,6 +189,16 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         boolean syncing;
 
         RetainData() {
+        }
+    }
+
+    private static final class RegistrationInput {
+        final String displayName;
+        final String phoneNumber;
+
+        RegistrationInput(String displayName, String phoneNumber) {
+            this.displayName = displayName;
+            this.phoneNumber = phoneNumber;
         }
     }
 
@@ -305,17 +314,14 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     @Override
     protected void onSaveInstanceState(Bundle state) {
         super.onSaveInstanceState(state);
-        state.putString("name", mName);
-        state.putString("phoneNumber", mPhoneNumber);
+        state.putBoolean("waitingAcceptTerms", mWaitingAcceptTerms);
         state.putBoolean("permissionsAsked", mPermissionsAsked);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-
-        mName = savedInstanceState.getString("name");
-        mPhoneNumber = savedInstanceState.getString("phoneNumber");
+        mWaitingAcceptTerms = savedInstanceState.getBoolean("waitingAcceptTerms");
         mPermissionsAsked = savedInstanceState.getBoolean("permissionsAsked");
     }
 
@@ -387,7 +393,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         stopMessagesImporterReceiver();
 
         if (mProgress != null) {
-            if (isFinishing())
+            if (!isWaitingAcceptTerms() && isFinishing())
                 mProgress.cancel();
             else
                 mProgress.dismiss();
@@ -399,6 +405,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         super.onResume();
         // ask for access to contacts
         askPermissions();
+    }
+
+    private boolean isWaitingAcceptTerms() {
+        return mWaitingAcceptTerms;
     }
 
     void stopMessagesImporterReceiver() {
@@ -571,17 +581,22 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         abort();
     }
 
-    private void checkInput(boolean importing, final ParameterRunnable<Boolean> callback) {
+    private void checkInput(boolean importing, final ParameterRunnable<RegistrationInput> callback) {
         final String phoneStr;
+        final String displayName;
 
         // check name first
         if (!importing) {
-            mName = mNameText.getText().toString().trim();
-            if (mName.length() == 0) {
+            displayName = mNameText.getText().toString().trim();
+            if (displayName.length() == 0) {
                 error(R.string.msg_no_name);
-                callback.run(false);
+                callback.run(null);
                 return;
             }
+        }
+        else {
+            // retrieve from imported key later
+            displayName = null;
         }
 
         String phoneInput = mPhone.getText().toString();
@@ -592,7 +607,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             CountryCode cc = (CountryCode) mCountryCode.getSelectedItem();
             if (cc == null) {
                 error(R.string.msg_invalid_cc);
-                callback.run(false);
+                callback.run(null);
                 return;
             }
 
@@ -618,7 +633,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 }
                 catch (NumberParseException e1) {
                     error(R.string.msg_invalid_number);
-                    callback.run(false);
+                    callback.run(null);
                     return;
                 }
 
@@ -639,7 +654,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             if (phoneStr == null) {
                 Toast.makeText(this, R.string.warn_invalid_number, Toast.LENGTH_SHORT)
                     .show();
-                callback.run(false);
+                callback.run(null);
                 return;
             }
 
@@ -657,11 +672,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                         public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                             switch (which) {
                                 case POSITIVE:
-                                    mPhoneNumber = phoneStr;
-                                    callback.run(true);
+                                    callback.run(new RegistrationInput(displayName, phoneStr));
                                     break;
                                 case NEGATIVE:
-                                    callback.run(false);
+                                    callback.run(null);
                                     break;
                             }
                         }
@@ -669,7 +683,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                     .cancelListener(new OnCancelListener() {
                         @Override
                         public void onCancel(DialogInterface dialog) {
-                            callback.run(false);
+                            callback.run(null);
                         }
                     })
                     .build();
@@ -680,15 +694,12 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 dialog.show();
             }
             else {
-                callback.run(true);
+                callback.run(new RegistrationInput(displayName, phoneStr));
             }
         }
         else {
             // we will use the data from the imported key
-            mName = null;
-            mPhoneNumber = null;
-
-            callback.run(true);
+            callback.run(new RegistrationInput(null, null));
         }
     }
 
@@ -696,15 +707,15 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         mForce = force;
         enableControls(false);
 
-        checkInput(false, new ParameterRunnable<Boolean>() {
+        checkInput(false, new ParameterRunnable<RegistrationInput>() {
             @Override
-            public void run(Boolean result) {
-                if (result) {
+            public void run(RegistrationInput result) {
+                if (result != null) {
                     if (fallback) {
                         startFallbackValidation();
                     }
                     else {
-                        startValidationNormal(null, force);
+                        startValidationNormal(null, result.displayName, result.phoneNumber, force);
                     }
                 }
                 else {
@@ -731,7 +742,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         }
     }
 
-    private boolean startValidationNormal(String manualServer, boolean force) {
+    private boolean startValidationNormal(String manualServer, String displayName, String phoneNumber, boolean force) {
         if (!SystemUtils.isNetworkConnectionAvailable(this)) {
             error(R.string.err_validation_nonetwork);
             return false;
@@ -750,7 +761,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         }
 
         mServiceBus.register(this);
-        mServiceBus.post(new VerificationRequest(mPhoneNumber, mName,
+        mServiceBus.post(new VerificationRequest(phoneNumber, displayName,
             provider, force, getBrandImageSize()));
         return true;
     }
@@ -800,10 +811,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     /** Opens import keys from another device wizard. */
     private void importKey() {
-        checkInput(true, new ParameterRunnable<Boolean>() {
+        checkInput(true, new ParameterRunnable<RegistrationInput>() {
             @Override
-            public void run(Boolean result) {
-                if (result) {
+            public void run(RegistrationInput result) {
+                if (result != null) {
                     // import keys -- number verification with server is still needed
                     // though because of key rollback protection
                     // TODO allow for manual validation too
@@ -1135,7 +1146,22 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         mProgress.show();
     }
 
+    public void abortProgress() {
+        if (mProgress != null) {
+            mProgress.dismiss();
+            mProgress = null;
+        }
+    }
+
     public void abort() {
+        abort(false);
+    }
+
+    public void abort(boolean ending) {
+        if (!ending) {
+            abortProgress();
+        }
+
         mForce = false;
         keepScreenOn(false);
         enableControls(true);
@@ -1214,6 +1240,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAcceptTermsRequested(AcceptTermsRequest request) {
+        mWaitingAcceptTerms = true;
+
         // build dialog text
         RegistrationService.CurrentState cstate = RegistrationService.currentState();
         String baseText = getString(R.string.registration_accept_terms_text,
@@ -1242,6 +1270,12 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                     }
                 }
             })
+            .dismissListener(new OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialog) {
+                    mWaitingAcceptTerms = false;
+                }
+            })
             .build();
 
         try {
@@ -1255,18 +1289,16 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public void onVerificationRequested(VerificationRequestedEvent event) {
         RegistrationService.CurrentState state = RegistrationService.currentState();
         if (state.restored) {
-            mName = state.displayName;
-            mPhoneNumber = state.phoneNumber;
             mForce = state.force;
 
             // update UI
-            mNameText.setText(mName);
-            mPhone.setText(mPhoneNumber);
+            mNameText.setText(state.displayName);
+            mPhone.setText(state.phoneNumber);
             syncCountryCodeSelector();
         }
 
         Log.d(TAG, "validation has been requested, requesting validation code to user");
-        proceedManual(event.sender, event.challenge, event.brandImageUrl, event.brandLink, event.canFallback);
+        proceedManual(event.sender, event.brandImageUrl, event.brandLink, event.canFallback);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -1278,6 +1310,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         else if (error instanceof UserConflictError) {
             userExistsWarning();
         }
+        else if (error instanceof ThrottlingError) {
+            Toast.makeText(this, R.string.err_validation_retry_later,
+                Toast.LENGTH_LONG).show();
+        }
         else {
             Log.e(TAG, "validation error.", error.exception);
             keepScreenOn(false);
@@ -1288,16 +1324,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             else {
                 msgId = R.string.err_validation_error;
             }
-            /* TODO
-            int msg;
-            if (reason == NumberValidator.ERROR_THROTTLING)
-                msg = R.string.err_validation_retry_later;
-            else
-                msg = R.string.err_validation_failed;
-
-            Toast.makeText(NumberValidation.this, msg, Toast.LENGTH_LONG).show();
-            }
-            */
             Toast.makeText(this, msgId, Toast.LENGTH_LONG).show();
         }
         abort();
@@ -1332,22 +1358,21 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     /** Proceeds to the next step in manual validation. */
-    private void proceedManual(final String sender, final String challenge, final String brandImage, final String brandLink, final boolean canFallback) {
+    private void proceedManual(final String sender, final String brandImage, final String brandLink, final boolean canFallback) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                startValidationCode(REQUEST_MANUAL_VALIDATION, sender, challenge, brandImage, brandLink, canFallback);
+                startValidationCode(REQUEST_MANUAL_VALIDATION, sender, brandImage, brandLink, canFallback);
             }
         });
     }
 
-    void startValidationCode(int requestCode, String sender, String challenge,
+    void startValidationCode(int requestCode, String sender,
             String brandImage, String brandLink, boolean canFallback) {
 
         Intent i = new Intent(NumberValidation.this, CodeValidation.class);
         i.putExtra("requestCode", requestCode);
         i.putExtra("sender", sender);
-        i.putExtra("challenge", challenge);
         i.putExtra("canFallback", canFallback);
         i.putExtra("brandImage", brandImage);
         i.putExtra("brandLink", brandLink);

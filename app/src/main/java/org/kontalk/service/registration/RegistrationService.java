@@ -108,6 +108,7 @@ import org.kontalk.service.registration.event.RetrieveKeyError;
 import org.kontalk.service.registration.event.RetrieveKeyRequest;
 import org.kontalk.service.registration.event.ServerCheckError;
 import org.kontalk.service.registration.event.TermsAcceptedEvent;
+import org.kontalk.service.registration.event.ThrottlingError;
 import org.kontalk.service.registration.event.UserConflictError;
 import org.kontalk.service.registration.event.VerificationError;
 import org.kontalk.service.registration.event.VerificationRequest;
@@ -1018,12 +1019,16 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             if (e instanceof XMPPException.XMPPErrorException) {
                 final StanzaError error = ((XMPPException.XMPPErrorException) e).getStanzaError();
                 if (error.getCondition() == StanzaError.Condition.service_unavailable) {
-                    errorEvent = new ServerCheckError((XMPPException.XMPPErrorException) e);
+                    if (error.getType() == StanzaError.Type.WAIT) {
+                        errorEvent = new ThrottlingError((XMPPException.XMPPErrorException) e);
+                    }
+                    else {
+                        errorEvent = new ServerCheckError((XMPPException.XMPPErrorException) e);
+                    }
                 }
                 else if (error.getCondition() == StanzaError.Condition.conflict) {
                     errorEvent = new UserConflictError((XMPPException.XMPPErrorException) e);
                 }
-                // TODO parse XMPP errors (throttling)
             }
 
             if (errorEvent == null) {
