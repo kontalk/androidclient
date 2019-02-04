@@ -758,4 +758,6 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
     <string name="registration_accept_terms_title">Servicebedingungen akzeptieren\?</string>
     <string name="err_emoji_disabled_in_multiwindow">Emoji kann im Multi-Fenstwmodus nicht verwendet werden.</string>
 
+    <string name="registration_accept_terms_text">Server von &lt;b&gt;%1$s&lt;/b&gt; fordert an &lt;a href=%2$s&gt;die Nutzungsbedingungen zu akzeptieren&lt;/a&gt;.</string>
+
     </resources>
