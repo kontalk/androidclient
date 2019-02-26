@@ -1,0 +1,14 @@
+'''Volg @kontalknet op Twitter of identi.ca om op datum te bly met die nuutste veranderinge en op diens status'''
+
+Kontalk is 'n private kitsboodskapper, jy kan teks stuur en ontvang, prentjie en stem boodskappe (ander lêertipes binnekort) kosteloos stuur(*).
+
+* '''Jou foon nommer is jou ID.''' Geen gebruikersname of wagwoorde * '''Dit vind outomaties ander Kontalk gebruikers''' deur te kyk na jou adresboek en maak dit nog makliker om te begin gesels op Kontalk met jou vriende * '''Punt-tot-punt enkripsie''' verseker sekuur en private gesprekke, sodat net jy en die persoon wat jy is om te praat kan hulle lees * Jou en alle telefoonnommers op die netwerk gebruik is onomkeerbaar geënkripteer * Dit ondersteun meervoudige toestelle, wat dit baie maklik maak om te begin gesels op jou foon en hou die gesprek op jou tablet * Gebaseer op oop standaarde: XMPP en OpenPGP
+
+Die netwerk maak staat op donasiesom die infrastruktuur aan die gang te hou. Indien moontlik, maak  asseblief 'n donasie op [http://kontalk.net/ kontalk.net]. Selfs klein bedraggies maak 'n daatwerklike verskil.
+
+Jy kan alle toestemmings gebruik deur die program vind by [https://github.com/kontalk/androidclient/wiki/Android-client-permissions hierdie bladsy].
+
+Hierdie weergawe is gestroop van alle Google komponente. Dus beteken geen ondersteuning vir stoot kennisgewings nie.
+
+(*) Draer onkostes vir Internet verkeer mag van toepassing wees
+
