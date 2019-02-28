@@ -73,8 +73,20 @@ public class RegistrationServiceTest extends TestServerTest {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
         stopService();
+        // remove any created account
+        AccountManagerCallback<Boolean> callback = new AccountManagerCallback<Boolean>() {
+            public void run(AccountManagerFuture<Boolean> future) {
+                synchronized (RegistrationServiceTest.this) {
+                    RegistrationServiceTest.this.notify();
+                }
+            }
+        };
+        Authenticator.removeDefaultAccount(InstrumentationRegistry.getTargetContext(), callback);
+        synchronized (this) {
+            wait(3000);
+        }
     }
 
     private void startService() {
@@ -105,7 +117,7 @@ public class RegistrationServiceTest extends TestServerTest {
         mBus.register(listener);
 
         mBus.post(new VerificationRequest("+15555215554", "Device-5554",
-            TEST_SERVER_PROVIDER,
+            mTestServerProvider,
             //new EndpointServer.SingleServerProvider("prime.kontalk.net|10.0.2.2"),
             true, RegistrationService.BRAND_IMAGE_LARGE));
 
@@ -198,7 +210,7 @@ public class RegistrationServiceTest extends TestServerTest {
         mBus.register(listener);
 
         mBus.post(new VerificationRequest("+15555215554", "Device-5554",
-            TEST_SERVER_PROVIDER,
+            mTestServerProvider,
             //new EndpointServer.SingleServerProvider("prime.kontalk.net|10.0.2.2"),
             true, RegistrationService.BRAND_IMAGE_LARGE));
 

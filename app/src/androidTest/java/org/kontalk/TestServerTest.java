@@ -30,13 +30,13 @@ import org.kontalk.util.Preferences;
 public abstract class TestServerTest {
     public static final String TEST_SERVER_URI = "prime.kontalk.net|zeta.kontalk.net:7222";
 
-    public static final EndpointServer.EndpointServerProvider TEST_SERVER_PROVIDER =
-        new EndpointServer.SingleServerProvider(TEST_SERVER_URI);
+    protected EndpointServer.EndpointServerProvider mTestServerProvider;
 
     @Before
     public void setUp() {
         Preferences.setServerURI(TEST_SERVER_URI);
         Preferences.setAcceptAnyCertificate(true);
+        mTestServerProvider = new EndpointServer.SingleServerProvider(TEST_SERVER_URI);
     }
 
 }

@@ -1162,6 +1162,9 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
     private void createAccount() {
         CurrentState cstate = updateState(State.CREATING_ACCOUNT);
 
+        // point of no return: we can clear saved state now
+        clearSavedState();
+
         // if we are retrieving a key from the server, delete the custom address
         if (cstate.workflow == Workflow.RETRIEVE_KEY) {
             Preferences.setServerURI(null);
