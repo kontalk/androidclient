@@ -24,8 +24,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -175,6 +177,13 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private boolean mWaitingAcceptTerms;
     private boolean mPermissionsAsked;
 
+    /**
+     * A list of servers for which the user accepted the service terms.
+     * We need to keep a record so we don't ask twice for the same server
+     * (that's because two attempts might get two different random servers).
+     */
+    private Set<String> mAcceptedTermsServers = new HashSet<>();
+
     private BroadcastReceiver mMessagesImporterReceiver;
 
     private EventBus mServiceBus = RegistrationService.bus();
@@ -315,6 +324,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         super.onSaveInstanceState(state);
         state.putBoolean("waitingAcceptTerms", mWaitingAcceptTerms);
         state.putBoolean("permissionsAsked", mPermissionsAsked);
+        state.putStringArrayList("acceptedTermsServers", new ArrayList<>(mAcceptedTermsServers));
     }
 
     @Override
@@ -322,6 +332,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         super.onRestoreInstanceState(savedInstanceState);
         mWaitingAcceptTerms = savedInstanceState.getBoolean("waitingAcceptTerms");
         mPermissionsAsked = savedInstanceState.getBoolean("permissionsAsked");
+        List<String> acceptedTermsServers = savedInstanceState.getStringArrayList("acceptedTermsServers");
+        if (acceptedTermsServers != null) {
+            mAcceptedTermsServers = new HashSet<>(acceptedTermsServers);
+        }
     }
 
     /** Returning the validator thread. */
@@ -422,13 +436,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
-    }
-
-    @Override
-    protected void onUserLeaveHint() {
-        keepScreenOn(false);
-        if (mProgress != null)
-            mProgress.cancel();
     }
 
     @Override
@@ -1069,7 +1076,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         mProgress.show();
     }
 
-    public void abortProgress() {
+    private void abortProgress() {
         if (mProgress != null) {
             mProgress.dismiss();
             mProgress = null;
@@ -1162,10 +1169,16 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAcceptTermsRequested(AcceptTermsRequest request) {
+        RegistrationService.CurrentState cstate = RegistrationService.currentState();
+        if (mAcceptedTermsServers.contains(cstate.server.getNetwork())) {
+            // terms already accepted for this server
+            mServiceBus.post(new TermsAcceptedEvent());
+            return;
+        }
+
         mWaitingAcceptTerms = true;
 
         // build dialog text
-        RegistrationService.CurrentState cstate = RegistrationService.currentState();
         String baseText = getString(R.string.registration_accept_terms_text,
             cstate.server.getNetwork(), request.termsUrl);
 
@@ -1184,6 +1197,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                     switch (which) {
                         case POSITIVE:
+                            mAcceptedTermsServers.add(cstate.server.getNetwork());
+                            startProgress();
                             mServiceBus.post(new TermsAcceptedEvent());
                             break;
                         case NEGATIVE:

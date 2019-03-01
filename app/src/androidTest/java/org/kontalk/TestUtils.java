@@ -21,6 +21,8 @@ package org.kontalk;
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
 
+import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.test.InstrumentationRegistry;
@@ -31,6 +33,7 @@ import android.widget.AdapterView;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.TextComponent;
+import org.kontalk.service.registration.event.RegistrationServiceTest;
 import org.kontalk.util.MessageUtils;
 
 import static org.hamcrest.Matchers.notNullValue;
@@ -60,6 +63,21 @@ public class TestUtils {
             Authenticator.getDefaultAccount
                 (InstrumentationRegistry.getTargetContext()),
             notNullValue());
+    }
+
+    public static void removeDefaultAccount() throws InterruptedException {
+        final Object monitor = new Object();
+        AccountManagerCallback<Boolean> callback = new AccountManagerCallback<Boolean>() {
+            public void run(AccountManagerFuture<Boolean> future) {
+                synchronized (monitor) {
+                    monitor.notify();
+                }
+            }
+        };
+        Authenticator.removeDefaultAccount(InstrumentationRegistry.getTargetContext(), callback);
+        synchronized (monitor) {
+            monitor.wait(3000);
+        }
     }
 
     public static Matcher<View> withMessageDirection(final int direction) {

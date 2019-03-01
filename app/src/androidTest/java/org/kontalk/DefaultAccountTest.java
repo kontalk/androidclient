@@ -25,7 +25,7 @@ package org.kontalk;
 public abstract class DefaultAccountTest extends TestServerTest {
 
     @Override
-    public void setUp() {
+    public void setUp() throws Exception {
         TestUtils.skipIfDefaultAccountDoesNotExist();
         super.setUp();
     }

@@ -18,16 +18,19 @@
 
 package org.kontalk.ui;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import android.support.test.espresso.NoMatchingRootException;
+import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.TestServerTest;
 import org.kontalk.TestUtils;
@@ -37,9 +40,12 @@ import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static android.support.test.espresso.action.ViewActions.replaceText;
 import static android.support.test.espresso.action.ViewActions.scrollTo;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.RootMatchers.isDialog;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withParent;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
 
 
@@ -55,9 +61,14 @@ public class RegistrationTest extends TestServerTest {
         new ActivityTestRule<>(ConversationsActivity.class);
 
     @Before
-    public void setUp() {
-        TestUtils.skipIfDefaultAccountExists();
+    public void setUp() throws Exception {
+        TestUtils.removeDefaultAccount();
         super.setUp();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        TestUtils.removeDefaultAccount();
     }
 
     @Test
@@ -70,20 +81,65 @@ public class RegistrationTest extends TestServerTest {
         onView(withId(R.id.button_validate))
             .perform(scrollTo(), click());
 
+        // input confirmation dialog
+        onView(withText(R.string.msg_register_confirm_number1))
+            .inRoot(isDialog())
+            .check(matches(isDisplayed()));
+        onView(allOf(withId(R.id.md_buttonDefaultPositive),
+                     withText(android.R.string.ok),
+                     isDisplayed()))
+            .inRoot(isDialog())
+            .perform(click());
+
+        // wait for connection
+        // FIXME non-deterministic
         try {
-            onView(allOf(withId(R.id.md_buttonDefaultPositive), isDisplayed()))
+            Thread.sleep(5000);
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // service terms dialog
+        try {
+            onView(withText(R.string.registration_accept_terms_title))
+                .inRoot(isDialog())
+                .check(matches(isDisplayed()));
+
+            onView(allOf(withId(R.id.md_buttonDefaultPositive), withText(R.string.yes), isDisplayed()))
+                .inRoot(isDialog())
+                .perform(click());
+        }
+        catch (NoMatchingViewException e) {
+            // A-EHM... ignoring since the dialog might or might not appear
+            Log.w("TEST", "No matching service terms dialog");
+        }
+
+        // wait for connection
+        // FIXME non-deterministic
+        try {
+            Thread.sleep(5000);
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // force registration dialog
+        try {
+            onView(allOf(withId(R.id.md_buttonDefaultNeutral), withText(R.string.btn_device_overwrite), isDisplayed()))
                 .inRoot(isDialog())
                 .perform(click());
         }
         catch (NoMatchingRootException e) {
             // A-EHM... ignoring since the dialog might or might not appear
+            Log.w("TEST", "No matching account override dialog");
         }
 
         // Added a sleep statement to match the app's execution delay.
         // The recommended way to handle such scenarios is to use Espresso idling resources:
         // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
         try {
-            Thread.sleep(1000);
+            Thread.sleep(3000);
         }
         catch (InterruptedException e) {
             e.printStackTrace();

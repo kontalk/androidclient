@@ -33,7 +33,7 @@ public abstract class TestServerTest {
     protected EndpointServer.EndpointServerProvider mTestServerProvider;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         Preferences.setServerURI(TEST_SERVER_URI);
         Preferences.setAcceptAnyCertificate(true);
         mTestServerProvider = new EndpointServer.SingleServerProvider(TEST_SERVER_URI);

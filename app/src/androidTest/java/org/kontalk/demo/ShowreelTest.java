@@ -201,7 +201,7 @@ public class ShowreelTest extends TestServerTest {
         new ActivityTestRule<>(ConversationsActivity.class);
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         TestUtils.skipIfDefaultAccountDoesNotExist();
         super.setUp();
     }

@@ -36,6 +36,7 @@ import android.support.test.filters.LargeTest;
 import android.support.test.runner.AndroidJUnit4;
 
 import org.kontalk.TestServerTest;
+import org.kontalk.TestUtils;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.service.registration.RegistrationService;
 
@@ -51,23 +52,11 @@ public class RegistrationServiceTest extends TestServerTest {
     @BeforeClass
     public static void setUpBeforeClass() throws InterruptedException {
         // always start with a clean slate
-        final Object monitor = new Object();
-        Authenticator.removeDefaultAccount(InstrumentationRegistry
-            .getTargetContext(), new AccountManagerCallback<Boolean>() {
-            @Override
-            public void run(AccountManagerFuture<Boolean> future) {
-                synchronized (monitor) {
-                    monitor.notify();
-                }
-            }
-        });
-        synchronized (monitor) {
-            monitor.wait(3000);
-        }
+        TestUtils.removeDefaultAccount();
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         super.setUp();
         startService();
     }
@@ -76,17 +65,7 @@ public class RegistrationServiceTest extends TestServerTest {
     public void tearDown() throws Exception {
         stopService();
         // remove any created account
-        AccountManagerCallback<Boolean> callback = new AccountManagerCallback<Boolean>() {
-            public void run(AccountManagerFuture<Boolean> future) {
-                synchronized (RegistrationServiceTest.this) {
-                    RegistrationServiceTest.this.notify();
-                }
-            }
-        };
-        Authenticator.removeDefaultAccount(InstrumentationRegistry.getTargetContext(), callback);
-        synchronized (this) {
-            wait(3000);
-        }
+        TestUtils.removeDefaultAccount();
     }
 
     private void startService() {
