@@ -33,7 +33,6 @@ import android.widget.AdapterView;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.TextComponent;
-import org.kontalk.service.registration.event.RegistrationServiceTest;
 import org.kontalk.util.MessageUtils;
 
 import static org.hamcrest.Matchers.notNullValue;

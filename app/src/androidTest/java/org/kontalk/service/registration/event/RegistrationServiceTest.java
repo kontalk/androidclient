@@ -28,8 +28,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.accounts.AccountManagerCallback;
-import android.accounts.AccountManagerFuture;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
@@ -37,7 +35,6 @@ import android.support.test.runner.AndroidJUnit4;
 
 import org.kontalk.TestServerTest;
 import org.kontalk.TestUtils;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.service.registration.RegistrationService;
 
 import static org.junit.Assert.assertTrue;
