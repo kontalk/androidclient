@@ -4,7 +4,7 @@ jdk: oraclejdk8
 env:
   global:
     - ANDROID_TARGET=android-24
-    - ANDROID_ABI=x86
+    - ANDROID_ABI=armeabi-v7a
 android:
   components:
     - tools
@@ -27,7 +27,7 @@ before_install:
   - yes | sdkmanager "platforms;android-28"
 before_script:
   - echo no | android create avd --force -n test -t $ANDROID_TARGET --abi $ANDROID_ABI
-  - emulator -avd test -no-accel -no-audio -no-window &
+  - emulator -avd test -no-audio -no-window &
   - android-wait-for-emulator
   - adb shell input keyevent 82 &
   - adb shell setprop dalvik.vm.dexopt-flags v=n,o=v
