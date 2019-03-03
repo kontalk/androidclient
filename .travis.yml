@@ -5,6 +5,8 @@ env:
   global:
     - ANDROID_TARGET=android-24
     - ANDROID_ABI=armeabi-v7a
+    # install timeout in minutes (2 minutes by default)
+    - ADB_INSTALL_TIMEOUT=8
 android:
   components:
     - tools
