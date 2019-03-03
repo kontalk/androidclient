@@ -25,10 +25,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import android.Manifest;
 import android.app.Activity;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
+import android.support.test.rule.GrantPermissionRule;
 import android.support.test.runner.AndroidJUnit4;
 
 import org.kontalk.BuildConfig;
@@ -45,6 +47,15 @@ public class NumberValidationTest {
     public ActivityTestRule<NumberValidation> mActivityRule
         = new ActivityTestRule<>(NumberValidation.class);
     private Solo solo;
+
+    @Rule
+    public GrantPermissionRule mPermissionRule =
+        GrantPermissionRule.grant(Manifest.permission.READ_PHONE_STATE,
+            Manifest.permission.READ_CONTACTS,
+            Manifest.permission.WRITE_CONTACTS,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.CAMERA);
 
     @Before
     public void setUp() throws Exception {

@@ -24,10 +24,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import android.Manifest;
 import android.support.test.espresso.NoMatchingRootException;
 import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
+import android.support.test.rule.GrantPermissionRule;
 import android.support.test.runner.AndroidJUnit4;
 
 import org.kontalk.Log;
@@ -58,6 +60,15 @@ public class RegistrationTest extends TestServerTest {
     @Rule
     public ActivityTestRule<ConversationsActivity> mActivityTestRule =
         new ActivityTestRule<>(ConversationsActivity.class);
+
+    @Rule
+    public GrantPermissionRule mPermissionRule =
+        GrantPermissionRule.grant(Manifest.permission.READ_PHONE_STATE,
+            Manifest.permission.READ_CONTACTS,
+            Manifest.permission.WRITE_CONTACTS,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.CAMERA);
 
     @Before
     public void setUp() throws Exception {
