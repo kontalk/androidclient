@@ -7,6 +7,8 @@ env:
     - ANDROID_ABI=armeabi-v7a
     # install timeout in minutes (2 minutes by default)
     - ADB_INSTALL_TIMEOUT=8
+    # disable QEMU audio
+    - QEMU_AUDIO_DRV=none
 android:
   components:
     - tools
