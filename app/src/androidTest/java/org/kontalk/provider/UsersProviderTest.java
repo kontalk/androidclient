@@ -470,6 +470,9 @@ public class UsersProviderTest extends ProviderTestCase2<UsersProvider> {
         catch (UnsupportedOperationException e) {
             // tried to start sync with no account. All good!
         }
+        catch (NullPointerException e) {
+            // tried to start sync with no account. All good! (for API 21)
+        }
         assertQuery(MyUsers.Keys.CONTENT_URI);
     }
 
