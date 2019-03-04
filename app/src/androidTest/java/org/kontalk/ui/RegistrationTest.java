@@ -18,6 +18,10 @@
 
 package org.kontalk.ui;
 
+import java.util.Collection;
+import java.util.concurrent.TimeUnit;
+
+import org.greenrobot.eventbus.EventBus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,6 +29,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import android.Manifest;
+import android.support.test.espresso.IdlingPolicies;
+import android.support.test.espresso.IdlingRegistry;
+import android.support.test.espresso.IdlingResource;
 import android.support.test.espresso.NoMatchingRootException;
 import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.filters.LargeTest;
@@ -32,10 +39,13 @@ import android.support.test.rule.ActivityTestRule;
 import android.support.test.rule.GrantPermissionRule;
 import android.support.test.runner.AndroidJUnit4;
 
+import org.kontalk.EventIdlingResource;
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.TestServerTest;
 import org.kontalk.TestUtils;
+import org.kontalk.service.registration.RegistrationService;
+import org.kontalk.service.registration.event.AcceptTermsRequest;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
@@ -56,6 +66,8 @@ public class RegistrationTest extends TestServerTest {
     private static final String TEST_PIN_CODE = "123456";
     private static final String TEST_USERNAME = "dev-5554";
     private static final String TEST_USERID = "5555215554";
+
+    private EventBus mBus = RegistrationService.bus();
 
     @Rule
     public ActivityTestRule<ConversationsActivity> mActivityTestRule =
@@ -79,6 +91,10 @@ public class RegistrationTest extends TestServerTest {
     @After
     public void tearDown() throws Exception {
         TestUtils.removeDefaultAccount();
+        Collection<IdlingResource> idlingResourceList = IdlingRegistry.getInstance().getResources();
+        for (IdlingResource resource : idlingResourceList) {
+            IdlingRegistry.getInstance().unregister(resource);
+        }
     }
 
     @Test
@@ -101,14 +117,12 @@ public class RegistrationTest extends TestServerTest {
             .inRoot(isDialog())
             .perform(click());
 
-        // wait for connection
-        // FIXME non-deterministic
-        try {
-            Thread.sleep(5000);
-        }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        // register accept terms event
+        IdlingPolicies.setIdlingResourceTimeout(5, TimeUnit.MINUTES);
+        IdlingPolicies.setMasterPolicyTimeout(5, TimeUnit.MINUTES);
+        IdlingRegistry.getInstance()
+            .register(new EventIdlingResource<AcceptTermsRequest>
+                (AcceptTermsRequest.class.getSimpleName(), mBus));
 
         // service terms dialog
         try {
