@@ -695,8 +695,8 @@ Desabilite a criptografia apenas se o seu contato não posuir uma chave pessoal.
     <string name="btn_reply_cancel_description">Cancelar a resposta</string>
     <string name="reply_message_deleted">A mensagem foi excluída.</string>
 
-    <string name="err_validation_contacts_denied">O Kontalk precisa acessar os contatos para funcionar corretamente. Como ele vai saber com quem você pode conversar?
-\nVocê será questionado novamente quando se registrar.</string>
+    <string name="err_validation_contacts_denied">O Kontalk precisa acessar seus contatos para funcionar corretamente. Como ele saberia com quem você pode conversar\?
+\nVocê pode cancelar agora, mas será questionado novamente após se registrar.</string>
     <string name="err_contacts_denied">O Kontalk precisa acessar os contatos para funcionar corretamente. Como ele vai saber com quem você pode conversar?
 \nVocê pode permitir o acesso aos contatos a partir das configurações do Android.</string>
     <string name="warn_contacts_denied">Você negou acesso aos seus contatos. Você não poderá ver as alterações dos contatos aqui.</string>
@@ -709,4 +709,68 @@ Desabilite a criptografia apenas se o seu contato não posuir uma chave pessoal.
     <string name="permission_users_label">Acesso às informações de usuários do Kontalk</string>
     <string name="permission_users_description">Pode ler e escrever no banco de dados e no chaveiro dos usuários</string>
 
+    <string name="pref_account_settings">Conta</string>
+    <string name="open_conversation">Ver</string>
+    <string name="menu_ctx_archive_threads">Arquivar</string>
+    <string name="menu_ctx_unarchive_threads">Desarquivar</string>
+    <string name="menu_ctx_delete_threads">Excluir</string>
+    <string name="seen_group_typing_label_one">%s está digitando…</string>
+    <string name="seen_group_typing_label_two">%1$s e %2$s estão digitando…</string>
+    <string name="seen_group_typing_label_more">%d pessoas estão digitando…</string>
+    <string name="pref_server_messages">Receber mensagens do servidor</string>
+    <string name="menu_import_messages">Importar mensagens</string>
+
+    <string name="pref_copy_database">Copiar o banco de dados</string>
+    <string name="msg_copy_database_success">Banco de dados copiado para: %s</string>
+    <string name="notify_other_channel_description">Outras notificações</string>
+
+    <plurals name="group_people_online">
+	<item quantity="one">1 conectado</item>
+	<item quantity="other">%d conectados</item>
+</plurals>
+
+<string name="text_archived_conversations_empty">Para arquivar conversas, selecione-as na tela principal e aperte o botão <b>arquivar</b> no menu.</string>
+    <string name="pref_title_server_messages">Permitir mensagens de administradores de servidores. Você talvez perca notícias importantes com isso desativado</string>
+
+    <string name="msg_request_doze_failed_all">Não foi possível encontrar configuração de otimização de bateria, abrindo configurações do sistema.</string>
+
+    <string name="pref_title_foreground_service_mandatory">O Kontalk necessita dessas configurações para funcionar corretamente nesse dispositivo</string>
+
+    <string name="msg_copy_database_failed">Cópia do banco de dados falhou: %s</string>
+
+    <string name="registration_accept_terms_title">Aceitar termos de serviço\?</string>
+    <string name="registration_accept_terms_text">O servidor em &lt;b&gt;%1$s&lt;/b&gt; está pedindo que &lt;a href=%2$s&gt;aceite seus termos de serviço&lt;/a&gt;.</string>
+
+    <string name="title_archived_threads">Conversas arquivadas</string>
+    <string name="footer_archived_threads">Conversas arquivadas (%d)</string>
+
+    <string name="err_camera_scanner_denied">É necessário acessar sua câmera para escanear o código do outro dispositivo.</string>
+    <string name="err_camera_picture_denied">É necessário acessar sua câmera para tirar fotos.</string>
+
+    <string name="err_audio_or_storage_denied">É necessário acessar seu microfone para gravar sua voz e acessar o armazenamento externo para guardar suas gravações.</string>
+
+    <string name="err_location_denied">É necessário acessar sua localização se você quiser compartilhá-la.</string>
+
+    <string name="err_validation_phone_state_denied">Se você permitir que o Kontalk gerencie chamadas telefônicas, ele pode detectar automaticamente seu número de telefone.
+\nEle não usará a permissão para nada além disso.</string>
+
+    <string name="err_emoji_disabled_in_multiwindow">Emoji não pode ser utilizado no modo de múltiplas telas.</string>
+
+    <string name="pref_enable_outgoing_sound">Tocar som ao enviar mensagens</string>
+
+    <string name="contact_name_server">Seu servidor</string>
+
+    <string name="notify_incoming_message_channel_name">Mensagens</string>
+    <string name="notify_incoming_message_channel_description">Mensagens recebidas</string>
+
+    <string name="notify_media_download_channel_name">Downloads</string>
+    <string name="notify_media_download_channel_description">Downloads de mídia</string>
+
+    <string name="notify_media_upload_channel_name">Envios</string>
+    <string name="notify_media_upload_channel_description">Envios de mídia</string>
+
+    <string name="notify_message_center_channel_name">Centro de Mensagens</string>
+    <string name="notify_message_center_channel_description">Necessário para manter o serviço do Kontalk vivo</string>
+
+    <string name="notify_other_channel_name">Outro</string>
     </resources>
