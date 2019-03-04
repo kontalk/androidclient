@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Kontalk Android client
+     Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+<resources>
+  <string name="app_name">Kontalk</string>
+<string name="yes">Taip</string>
+    <string name="no">Ne</string>
+    <string name="send">Siųsti</string>
+    <string name="menu_compose">Rašyti</string>
+    <string name="menu_create_group">Sukurti grupę</string>
+    <string name="menu_delete_all">Ištrinti pokalbius</string>
+    <string name="mykey_activity_title">Mano asmeninis raktas</string>
+    <string name="menu_settings">Nustatymai</string>
+    <string name="menu_import_key">Importuoti raktą</string>
+    <string name="menu_manual_verification">Jau turite kodą\?</string>
+    <string name="pref_account_settings">Paskyra</string>
+    <string name="pref_network_settings">Tinklas</string>
+    <string name="pref_network_uri">Rankinis serverio adresas</string>
+    <string name="number_validation_intro1">Įveskite savo vardą, pasirinkite šalies kodą ir įveskite savo mobiliojo telefono numerį. Daugiau instrukcijų bus pateikta kitame langelyje.</string>
+    </resources>

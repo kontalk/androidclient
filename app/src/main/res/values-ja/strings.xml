@@ -159,7 +159,7 @@
   <string name="title_invalid_number">数字が正しくありません</string>
   <string name="err_store_message_failed">送信トレイにメッセージを保存することができません。</string>
   <string name="msg_invalid_number">正しい電話番号を入力してください。</string>
-  <string name="msg_invalid_cc">正しい国コードを入力してください。</string>
+  <string name="msg_invalid_cc">国を選択してください。</string>
   <string name="title_invalid_code">コードが正しくありません</string>
   <string name="msg_invalid_code">正しいコードを入力してください。</string>
   <string name="title_no_name">あなたの名前</string>
@@ -353,7 +353,7 @@ http://kontalk.org/</string>
   <string name="err_server_invalid_format">アドレスの形式が正しくありません。</string>
   <string name="err_no_contacts_app">連絡先のアプリが見つかりません。</string>
 <string name="title_user_exists">ユーザーが存在します</string>
-    <string name="err_validation_user_exists"><b>使用している番号はすでにKontalkに登録されています。</b>別のデバイスで登録している場合、この方法では Kontalk から遮断されます。デバイス間でアカウントをコピーする方法については、ドキュメントを参照してください。とにかく続行するには OK を選択します。</string>
+    <string name="err_validation_user_exists"><b>使用している番号はすでにKontalkに登録されています。</b>別のデバイスで登録している場合、この方法では Kontalk から遮断されます。別のデバイスを登録する場合は、転送アカウントを選択してください。</string>
     <string name="warning_user_blocked">あなたがこのユーザーをブロックしました。</string>
 
     <string name="about_credits_devteam"><b>Kontalk の提供:</b></string>
@@ -422,7 +422,7 @@ http://kontalk.org/</string>
     <string name="button_load_next_page">さらにメッセージを読み込む</string>
 
     <plurals name="unread_messages">
-	<item quantity="other">1 未読メッセージ</item>
+	<item quantity="other">%d 未読メッセージ</item>
 </plurals>
 
 <string name="menu_create_group">グループを作成</string>
@@ -590,4 +590,151 @@ http://kontalk.org/</string>
     <string name="msg_doze_mode">Kontalk は、正しく機能するためにバッテリー最適化からホワイトリストに登録する必要があります。 お使いのバッテリーを消耗しないことを約束します。</string>
     <string name="btn_request_doze_mode_whitelist">アクセス許可の要求</string>
 
-    </resources>
+    <string name="menu_import_device">別のデバイスから登録</string>
+    <string name="pref_account_settings">アカウント</string>
+    <string name="open_conversation">表示</string>
+    <string name="menu_ctx_archive_threads">アーカイブ</string>
+    <string name="menu_ctx_unarchive_threads">アーカイブ解除</string>
+    <string name="menu_ctx_delete_threads">削除</string>
+    <string name="location_message">位置メッセージ</string>
+    <string name="position_screen_title">位置</string>
+    <string name="text_archived_conversations_empty">チャットをアーカイブするには、メイン画面から選択して、ツールバーの<b>アーカイブ</b>ボタンを使用してください。</string>
+    <string name="seen_offline_label">オフライン</string>
+    <string name="seen_group_typing_label_one">%s さんが入力しています…</string>
+    <string name="seen_group_typing_label_two">%1$s さんと %2$s さんが入力しています…</string>
+    <string name="seen_group_typing_label_more">%d 人が入力しています…</string>
+    <string name="pref_maps_google_label">Google マップ</string>
+    <string name="pref_maps_osm_label">OpenStreetMap</string>
+
+    <string name="notification_location">位置を送信しました</string>
+    <string name="location_no_result">結果はありません</string>
+    <string name="places_nearby">近くの場所</string>
+    <string name="send_selected_location">選択した位置を送信</string>
+    <string name="send_location">現在の位置を送信</string>
+    <string name="accurate_to">%1$s メートルの精度</string>
+    <string name="meters_away">%d m 離れています</string>
+    <string name="kilometers_away">%.2f km 離れています</string>
+    <string name="loading">読み込んでいます…</string>
+    <string name="your_position">あなた</string>
+    <string name="err_googlemaps_fallback_osm">Google マップは利用できません。 OpenStreetMap に戻します。</string>
+    <string name="err_location_no_providers">位置プロバイダーが利用できません。現在の位置は利用できません。</string>
+    <string name="err_location_access_unknown_error">位置サービスのアクティベーションをリクエストできません。</string>
+    <string name="err_location_permission">位置のアクセスが拒否されました。</string>
+    <string name="msg_location_disabled">位置にアクセスする必要があります。 OK を選択し、設定に移動して有効にしてください。</string>
+
+    <string name="menu_open_map">マップ中で開く</string>
+    <string name="menu_map">マップ</string>
+    <string name="menu_satellite">衛星</string>
+
+    <string name="pref_server_messages">サーバーメッセージを受信</string>
+    <string name="pref_title_server_messages">サーバー管理者からのメッセージを許可します。これを無効にすると重要なニュースを見逃す可能性があります</string>
+
+    <string name="notification_ticker_service_running">Kontalk はバックグラウンドで実行しています</string>
+    <string name="notification_text_service_running">タップして開く</string>
+
+    <string name="err_audio_record_permission">マイクのアクセスが拒否されました。</string>
+    <string name="err_audio_record_writing_permission">外部ストレージのアクセスが拒否されました。</string>
+    <string name="pref_location_settings">位置</string>
+    <string name="pref_maps_service">サービスプロバイダー</string>
+
+    <string name="msg_request_doze_failed_manual">次の画面で Kontalk が最適化されていないとしてマークしてください。</string>
+    <string name="msg_request_doze_failed_all">バッテリーの最適化設定が見つからなかったため、システム設定に移動します。</string>
+
+    <string name="pref_foreground_service">フォアグラウンドサービスを有効にする</string>
+    <string name="pref_title_foreground_service">リソースが少なくなったときに Kontalk をバックグラウンドでアクティブのままにしたい場合は、これを有効にします。 スティッキー通知が表示されます</string>
+    <string name="pref_title_foreground_service_mandatory">このデバイスで Kontalk を正しく機能させるには、この設定が必要です</string>
+
+    <string name="menu_import_messages">メッセージのインポート</string>
+
+    <string name="pref_copy_database">データベースのコピー</string>
+    <string name="msg_copy_database_success">データベースをコピーしました: %s</string>
+    <string name="msg_copy_database_failed">データベースのコピーに失敗しました: %s</string>
+
+    <string name="registration_accept_terms_title">サービス利用規約に同意しますか\?</string>
+    <string name="registration_accept_terms_text">&lt;b&gt;%1$s&lt;/b&gt; のサーバーが &lt;a href=%2$s&gt;サービス利用規約の同意&lt;/a&gt; を要求しています。</string>
+
+    <string name="pref_register_device">デバイスの登録</string>
+    <string name="register_device_title">デバイスの登録</string>
+    <string name="register_device_instructions">他のデバイスから、下のバーコードを撮影するか、次のデータを手動で入力してください。</string>
+    <string name="register_device_request_error">デバイス登録の要求時にエラーが発生しました。</string>
+    <string name="register_device_requesting">登録を要求しています…</string>
+    <string name="register_device_nonetwork">ネットワークが利用できません。後でもう一度やり直してください。</string>
+    <string name="register_device_offline">オフラインモードが有効です。</string>
+
+    <string name="import_device_title">アカウントのインポート</string>
+    <string name="import_device_instructions">他のデバイスに表示されるので、要求されたデータを以下に入力してください。</string>
+    <string name="import_device_hint_account">電話番号</string>
+    <string name="import_device_hint_server">サーバー名</string>
+    <string name="import_device_hint_token">シークレットコード</string>
+    <string name="err_import_device_fill_all">すべての項目を入力してください。</string>
+    <string name="import_device_requesting">アカウントを要求しています…</string>
+    <string name="import_device_invalid_barcode">バーコードに有効なデータが見つかりません。</string>
+    <string name="import_device_scan_screen_title">シークレットコードをスキャン</string>
+    <string name="import_device_btn_scan">バーコードをスキャン</string>
+    <string name="import_device_btn_input">手動で入力</string>
+    <string name="import_device_message">他のデバイスで Kontalk を開き、メニュー &gt; 設定 &gt; メンテナンス &gt; デバイスの登録を選択します。 シークレットコードとそれを表すバーコードが表示されます。</string>
+
+    <string name="btn_device_overwrite">古いアカウントまたはデバイスを紛失しました</string>
+    <string name="btn_device_import">アカウントを転送</string>
+
+    <string name="contactinfo_activity_title">連絡先情報</string>
+    <string name="contactinfo_last_seen">前回の表示 %s</string>
+    <string name="contactinfo_phone_number">電話番号</string>
+    <string name="contactinfo_fingerprint">指紋</string>
+    <string name="contactinfo_userid">ユーザーID</string>
+
+    <string name="btn_reply_cancel_description">返信のキャンセル</string>
+    <string name="reply_message_deleted">メッセージを削除しました。</string>
+
+    <string name="title_archived_threads">アーカイブしたチャット</string>
+    <string name="footer_archived_threads">アーカイブしたチャット (%d)</string>
+
+    <string name="err_validation_contacts_denied">正しく機能するために Kontalk は連絡先にアクセスする必要があります。 チャットできる相手をどのように確認できますか\?\?
+\n今は、キャンセルすることができますが、登録した後に再び尋ねられます。</string>
+    <string name="err_contacts_denied">正しく機能するために Kontalkは連絡先にアクセスする必要があります。 チャットできる相手をどのように確認できますか\?\?
+\nAndroid の設定から連絡先へのアクセスを許可することができます。</string>
+    <string name="warn_contacts_denied">連絡先へのアクセスを拒否しました。 ここで連絡先の変更を参照することはできません。</string>
+    <string name="err_camera_scanner_denied">他の機器からバーコードをスキャンするため、カメラにアクセスする必要があります。</string>
+    <string name="err_camera_picture_denied">写真を撮るため、カメラにアクセスする必要があります。</string>
+
+    <string name="err_audio_or_storage_denied">声を録音するためにマイクにアクセスする必要があります。録音を保存するため外部ストレージにアクセスする必要があります。</string>
+
+    <string name="err_storage_denied">メディアを保存するために Kontalk はローカルストレージにアクセスする必要があります。
+\nAndroid の設定からストレージへのアクセスを許可することができます。</string>
+
+    <string name="err_location_denied">位置を共有したい場合は、位置にアクセスする必要があります。</string>
+
+    <string name="err_validation_phone_state_denied">Kontalk に通話の管理を許可すると、自動的にお使いの電話番号を検出することができます。
+\nKontalk は許可されたアクセス許可を他には使用しません。</string>
+
+    <string name="err_emoji_disabled_in_multiwindow">絵文字はマルチウィンドウモードでは使用できません。</string>
+
+    <string name="permission_messages_label">Kontalk メッセージへのアクセス</string>
+    <string name="permission_messages_description">Kontalk メッセージデータベースの読み書きが可能</string>
+    <string name="permission_users_label">Kontalk ユーザー情報へのアクセス</string>
+    <string name="permission_users_description">Kontalk ユーザーデータベースと鍵リングの読み書きが可能</string>
+
+    <string name="pref_enable_outgoing_sound">送信メッセージのサウンドを再生する</string>
+
+    <string name="contact_name_server">お使いのサーバー</string>
+
+    <string name="notify_incoming_message_channel_name">メッセージ</string>
+    <string name="notify_incoming_message_channel_description">受信メッセージ</string>
+
+    <string name="notify_media_download_channel_name">ダウンロード</string>
+    <string name="notify_media_download_channel_description">メディアダウンロード</string>
+
+    <string name="notify_media_upload_channel_name">アップロード</string>
+    <string name="notify_media_upload_channel_description">メディアアップロード</string>
+
+    <string name="notify_message_center_channel_name">メッセージセンター</string>
+    <string name="notify_message_center_channel_description">Kontalk サービスを存続させるために必要</string>
+
+    <string name="notify_other_channel_name">その他</string>
+    <string name="notify_other_channel_description">その他の通知</string>
+
+    <plurals name="group_people_online">
+	<item quantity="other">%d オンライン</item>
+</plurals>
+
+</resources>
