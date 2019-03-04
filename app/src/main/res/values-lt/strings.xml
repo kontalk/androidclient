@@ -17,4 +17,17 @@
  -->
 <resources>
   <string name="app_name">Kontalk</string>
-</resources>
+<string name="yes">Taip</string>
+    <string name="no">Ne</string>
+    <string name="send">Siųsti</string>
+    <string name="menu_compose">Rašyti</string>
+    <string name="menu_create_group">Sukurti grupę</string>
+    <string name="menu_delete_all">Ištrinti pokalbius</string>
+    <string name="mykey_activity_title">Mano asmeninis raktas</string>
+    <string name="menu_settings">Nustatymai</string>
+    <string name="menu_import_key">Importuoti raktą</string>
+    <string name="menu_manual_verification">Jau turite kodą\?</string>
+    <string name="pref_account_settings">Paskyra</string>
+    <string name="pref_network_settings">Tinklas</string>
+    <string name="pref_network_uri">Rankinis serverio adresas</string>
+    </resources>
