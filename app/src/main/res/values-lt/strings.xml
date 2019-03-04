@@ -30,4 +30,5 @@
     <string name="pref_account_settings">Paskyra</string>
     <string name="pref_network_settings">Tinklas</string>
     <string name="pref_network_uri">Rankinis serverio adresas</string>
+    <string name="number_validation_intro1">Įveskite savo vardą, pasirinkite šalies kodą ir įveskite savo mobiliojo telefono numerį. Daugiau instrukcijų bus pateikta kitame langelyje.</string>
     </resources>
