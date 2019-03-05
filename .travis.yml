@@ -2,7 +2,7 @@ language: android
 jdk: oraclejdk8
 env:
   global:
-    - ANDROID_TARGET=android-21
+    - ANDROID_TARGET=android-22
     - ANDROID_ABI=armeabi-v7a
     # install timeout in minutes (2 minutes by default)
     - ADB_INSTALL_TIMEOUT=8
@@ -37,6 +37,8 @@ before_script:
   - adb shell settings put global animator_duration_scale 0 &
   - adb shell input keyevent 82 &
   - adb shell setprop dalvik.vm.dexopt-flags v=n,o=v
+  - adb logcat -c
+  - adb logcat &
 script:
   - ./gradlew clean build test connectedCheck jacocoTestReport
 after_success:
