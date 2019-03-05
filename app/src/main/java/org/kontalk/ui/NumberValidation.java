@@ -1049,8 +1049,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     private void startProgress(CharSequence message) {
         if (mProgress == null) {
-            mProgress = new NonSearchableDialog.Builder(this)
-                .progress(true, 0)
+            MaterialDialog.Builder builder = new NonSearchableDialog
+                .Builder(this)
                 .cancelListener(new OnCancelListener() {
                     @Override
                     public void onCancel(DialogInterface dialog) {
@@ -1066,8 +1066,13 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                             mSyncStart = null;
                         }
                     }
-                })
-                .build();
+                });
+
+            if (!BuildConfig.TESTING.get()) {
+                builder.progress(true, 0);
+            }
+
+            mProgress = builder.build();
             mProgress.setCanceledOnTouchOutside(false);
             setProgressMessage(message != null ? message : getText(R.string.msg_validating_phone));
         }

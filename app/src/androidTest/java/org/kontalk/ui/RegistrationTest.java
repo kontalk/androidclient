@@ -19,9 +19,10 @@
 package org.kontalk.ui;
 
 import java.util.Collection;
-import java.util.concurrent.TimeUnit;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,7 +30,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import android.Manifest;
-import android.support.test.espresso.IdlingPolicies;
+import android.os.Handler;
+import android.os.Looper;
+import android.support.test.espresso.Espresso;
 import android.support.test.espresso.IdlingRegistry;
 import android.support.test.espresso.IdlingResource;
 import android.support.test.espresso.NoMatchingRootException;
@@ -39,13 +42,15 @@ import android.support.test.rule.ActivityTestRule;
 import android.support.test.rule.GrantPermissionRule;
 import android.support.test.runner.AndroidJUnit4;
 
-import org.kontalk.EventIdlingResource;
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.TestServerTest;
 import org.kontalk.TestUtils;
 import org.kontalk.service.registration.RegistrationService;
 import org.kontalk.service.registration.event.AcceptTermsRequest;
+import org.kontalk.service.registration.event.AccountCreatedEvent;
+import org.kontalk.service.registration.event.UserConflictError;
+import org.kontalk.service.registration.event.VerificationRequestedEvent;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
@@ -118,11 +123,8 @@ public class RegistrationTest extends TestServerTest {
             .perform(click());
 
         // register accept terms event
-        IdlingPolicies.setIdlingResourceTimeout(5, TimeUnit.MINUTES);
-        IdlingPolicies.setMasterPolicyTimeout(5, TimeUnit.MINUTES);
-        IdlingRegistry.getInstance()
-            .register(new EventIdlingResource<AcceptTermsRequest>
-                (AcceptTermsRequest.class.getSimpleName(), mBus));
+        IdlingResource acceptTermsResource = TestUtils
+            .registerEventIdlingResource(mBus, AcceptTermsRequest.class);
 
         // service terms dialog
         try {
@@ -139,54 +141,105 @@ public class RegistrationTest extends TestServerTest {
             Log.w("TEST", "No matching service terms dialog");
         }
 
-        // wait for connection
-        // FIXME non-deterministic
-        try {
-            Thread.sleep(5000);
-        }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        TestUtils.unregisterIdlingResource(acceptTermsResource);
+
+        UserConflictOrVerificationRequestedIdlingResource registrationResource =
+            TestUtils.registerIdlingResource(new UserConflictOrVerificationRequestedIdlingResource(mBus, 2000));
 
         // force registration dialog
         try {
             onView(allOf(withId(R.id.md_buttonDefaultNeutral), withText(R.string.btn_device_overwrite), isDisplayed()))
                 .inRoot(isDialog())
                 .perform(click());
+            // we are going to try again
+            registrationResource.reset();
         }
         catch (NoMatchingRootException e) {
             // A-EHM... ignoring since the dialog might or might not appear
             Log.w("TEST", "No matching account override dialog");
         }
 
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        try {
-            Thread.sleep(3000);
-        }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
         onView(withId(R.id.validation_code))
             .perform(scrollTo(), replaceText(TEST_PIN_CODE), closeSoftKeyboard());
+
+        TestUtils.unregisterIdlingResource(registrationResource);
 
         onView(withId(R.id.send_button))
             .perform(scrollTo(), click());
 
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        try {
-            Thread.sleep(5000);
-        }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        IdlingResource accountResource = TestUtils
+            .registerEventIdlingResource(mBus, AccountCreatedEvent.class);
+
+        Espresso.onIdle();
+
+        TestUtils.unregisterIdlingResource(accountResource);
 
         // we should have an account now
         TestUtils.assertDefaultAccountExists();
+    }
+
+    private static final class UserConflictOrVerificationRequestedIdlingResource
+            implements IdlingResource {
+
+        private final EventBus mBus;
+        private final long mTimeoutMs;
+
+        private final Handler mHandler;
+        private final Runnable mTransitionToIdle;
+
+        private ResourceCallback mCallback;
+        private boolean mEventReceived;
+
+        UserConflictOrVerificationRequestedIdlingResource(EventBus bus, long timeoutMs) {
+            mHandler = new Handler(Looper.getMainLooper());
+            mBus = bus;
+            mBus.register(this);
+            mTimeoutMs = timeoutMs;
+
+            mTransitionToIdle = new Runnable() {
+                @Override
+                public void run() {
+                    mEventReceived = true;
+                    if (mCallback != null) {
+                        mCallback.onTransitionToIdle();
+                    }
+                }
+            };
+        }
+
+        @Override
+        public String getName() {
+            return getClass().getSimpleName();
+        }
+
+        public void reset() {
+            mEventReceived = false;
+            mHandler.removeCallbacks(mTransitionToIdle);
+        }
+
+        @Subscribe(threadMode = ThreadMode.ASYNC)
+        public void onUserConflict(UserConflictError event) {
+            Log.d("TEST", "got idling event: " + event);
+            mHandler.postDelayed(mTransitionToIdle, mTimeoutMs);
+        }
+
+        @Subscribe(threadMode = ThreadMode.ASYNC)
+        public void onVerificationRequested(VerificationRequestedEvent event) {
+            Log.d("TEST", "got idling event: " + event);
+            mHandler.postDelayed(mTransitionToIdle, mTimeoutMs);
+            mEventReceived = true;
+            mBus.unregister(this);
+        }
+
+        @Override
+        public boolean isIdleNow() {
+            return mEventReceived;
+        }
+
+        @Override
+        public void registerIdleTransitionCallback(ResourceCallback callback) {
+            mCallback = callback;
+        }
     }
 
 }

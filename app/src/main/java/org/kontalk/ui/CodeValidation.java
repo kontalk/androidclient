@@ -51,6 +51,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.kontalk.BuildConfig;
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.client.NumberValidator;
@@ -375,7 +376,9 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity {
     }
 
     private void startProgress() {
-        mProgress.setVisibility(View.VISIBLE);
+        if (!BuildConfig.TESTING.get()) {
+            mProgress.setVisibility(View.VISIBLE);
+        }
         enableControls(false);
         keepScreenOn(true);
     }

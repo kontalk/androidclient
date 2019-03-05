@@ -18,6 +18,9 @@
 
 package org.kontalk;
 
+import java.util.concurrent.TimeUnit;
+
+import org.greenrobot.eventbus.EventBus;
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
 
@@ -26,6 +29,9 @@ import android.accounts.AccountManagerFuture;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.IdlingPolicies;
+import android.support.test.espresso.IdlingRegistry;
+import android.support.test.espresso.IdlingResource;
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.AdapterView;
@@ -42,6 +48,10 @@ import static org.junit.Assume.assumeTrue;
 
 
 public class TestUtils {
+    static {
+        BuildConfig.TESTING.set(true);
+    }
+
     private TestUtils() {
     }
 
@@ -121,5 +131,29 @@ public class TestUtils {
                 return false;
             }
         };
+    }
+
+    public static IdlingResource registerEventIdlingResource(EventBus bus, Class klass) {
+        IdlingPolicies.setIdlingResourceTimeout(5, TimeUnit.MINUTES);
+        IdlingPolicies.setMasterPolicyTimeout(5, TimeUnit.MINUTES);
+
+        IdlingResource resource = new EventIdlingResource(klass.getSimpleName(), bus, klass);
+        IdlingRegistry.getInstance().register(resource);
+        return resource;
+    }
+
+    public static <T extends IdlingResource> T registerIdlingResource(T resource) {
+        IdlingPolicies.setIdlingResourceTimeout(5, TimeUnit.MINUTES);
+        IdlingPolicies.setMasterPolicyTimeout(5, TimeUnit.MINUTES);
+
+        IdlingRegistry.getInstance().register(resource);
+        return resource;
+    }
+
+    public static void unregisterIdlingResource(IdlingResource resource) {
+        IdlingPolicies.setIdlingResourceTimeout(1, TimeUnit.MINUTES);
+        IdlingPolicies.setMasterPolicyTimeout(1, TimeUnit.MINUTES);
+
+        IdlingRegistry.getInstance().unregister(resource);
     }
 }
