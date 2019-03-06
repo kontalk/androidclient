@@ -94,6 +94,7 @@ import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.XMPPConnectionHelper;
 import org.kontalk.service.msgcenter.SQLiteRosterStore;
+import org.kontalk.service.registration.event.AbortRequest;
 import org.kontalk.service.registration.event.AcceptTermsRequest;
 import org.kontalk.service.registration.event.AccountCreatedEvent;
 import org.kontalk.service.registration.event.ChallengeError;
@@ -536,6 +537,14 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         return cstate;
     }
 
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    public void onAbortRequest(AbortRequest request) {
+        reset();
+        synchronized (mKeyLock) {
+            mKeyLock.notifyAll();
+        }
+    }
+
     /** Full registration procedure. */
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onVerificationRequest(VerificationRequest request) {
@@ -549,6 +558,10 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                 try {
                     // wait endlessly?
                     mKeyLock.wait();
+                    if (cstate.key == null) {
+                        // interrupted by abort request
+                        throw new InterruptedException();
+                    }
                 }
                 catch (InterruptedException e) {
                     // TODO what??

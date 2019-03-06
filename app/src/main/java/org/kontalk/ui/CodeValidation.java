@@ -423,6 +423,8 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAccountCreated(AccountCreatedEvent event) {
+        RegistrationService.stop(this);
+
         abort(true);
         Intent i = new Intent();
         i.putExtra(NumberValidation.PARAM_ACCOUNT_NAME, event.account.name);

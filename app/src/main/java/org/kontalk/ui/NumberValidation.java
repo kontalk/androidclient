@@ -98,6 +98,7 @@ import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.DatabaseImporterService;
 import org.kontalk.service.MessagesImporterService;
 import org.kontalk.service.registration.RegistrationService;
+import org.kontalk.service.registration.event.AbortRequest;
 import org.kontalk.service.registration.event.AcceptTermsRequest;
 import org.kontalk.service.registration.event.AccountCreatedEvent;
 import org.kontalk.service.registration.event.FallbackVerificationRequest;
@@ -384,15 +385,16 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     protected void onStart() {
         super.onStart();
 
-        // register to the bus immediately if we have saved state
         if (RegistrationService.hasSavedState()) {
             if (mClearState) {
                 RegistrationService.clearSavedState();
                 mClearState = false;
             }
+            else {
+                // register to the bus immediately if we have saved state
+                register();
+            }
         }
-
-        mServiceBus.register(this);
 
         // start registration service immediately
         RegistrationService.start(this);
@@ -419,6 +421,23 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         super.onResume();
         // ask for access to contacts
         askPermissions();
+    }
+
+    private void register() {
+        if (!mServiceBus.isRegistered(this)) {
+            mServiceBus.register(this);
+        }
+    }
+
+    private void register(Object postEvent) {
+        register();
+        mServiceBus.post(postEvent);
+    }
+
+    private void unregister() {
+        if (mServiceBus.isRegistered(this)) {
+            mServiceBus.unregister(this);
+        }
     }
 
     private boolean isWaitingAcceptTerms() {
@@ -767,7 +786,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             provider = Preferences.getEndpointServerProvider(this);
         }
 
-        mServiceBus.post(new VerificationRequest(phoneNumber, displayName,
+        register(new VerificationRequest(phoneNumber, displayName,
             provider, force, getBrandImageSize()));
         return true;
     }
@@ -782,7 +801,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         Log.d(TAG, "sending fallback validation request");
         startProgress();
 
-        mServiceBus.post(new FallbackVerificationRequest());
+        register(new FallbackVerificationRequest());
         return true;
     }
 
@@ -894,7 +913,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
         startProgress(getString(R.string.import_device_requesting));
 
-        mServiceBus.post(new RetrieveKeyRequest(new EndpointServer(server), account, token));
+        register(new RetrieveKeyRequest(new EndpointServer(server), account, token));
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -905,7 +924,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             .input(null, null, new MaterialDialog.InputCallback() {
                 @Override
                 public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
-                    mServiceBus.post(new PassphraseInputEvent(input.toString()));
+                    register(new PassphraseInputEvent(input.toString()));
                 }
             })
             .negativeText(android.R.string.cancel)
@@ -946,6 +965,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAccountCreated(AccountCreatedEvent event) {
+        RegistrationService.stop(this);
+
         // send back result
         final Intent intent = new Intent();
         intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, event.account.name);
@@ -969,7 +990,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                     startProgress(getString(R.string.msg_importing_key));
 
-                    mServiceBus.post(new ImportKeyRequest(Preferences
+                    register(new ImportKeyRequest(Preferences
                         .getEndpointServer(NumberValidation.this),
                         zip, input.toString()));
                 }
@@ -1086,6 +1107,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mProgress.dismiss();
             mProgress = null;
         }
+        keepScreenOn(false);
+        enableControls(true);
     }
 
     public void abort() {
@@ -1096,6 +1119,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         if (!ending) {
             abortProgress();
         }
+
+        unregister();
+        mServiceBus.post(new AbortRequest());
 
         mForce = false;
         keepScreenOn(false);
@@ -1177,7 +1203,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         RegistrationService.CurrentState cstate = RegistrationService.currentState();
         if (mAcceptedTermsServers.contains(cstate.server.getNetwork())) {
             // terms already accepted for this server
-            mServiceBus.post(new TermsAcceptedEvent());
+            register(new TermsAcceptedEvent());
             return;
         }
 
@@ -1204,7 +1230,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                         case POSITIVE:
                             mAcceptedTermsServers.add(cstate.server.getNetwork());
                             startProgress();
-                            mServiceBus.post(new TermsAcceptedEvent());
+                            register(new TermsAcceptedEvent());
                             break;
                         case NEGATIVE:
                             abort();
@@ -1304,6 +1330,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                abortProgress();
                 startValidationCode(REQUEST_MANUAL_VALIDATION, sender, brandImage, brandLink, canFallback);
             }
         });
