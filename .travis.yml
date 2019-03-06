@@ -40,7 +40,7 @@ before_script:
   - adb logcat -c
   - adb logcat &
 script:
-  - ./gradlew clean build test connectedCheck jacocoTestReport
+  - ./gradlew clean build connectedCheck jacocoTestReport
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 before_deploy:
