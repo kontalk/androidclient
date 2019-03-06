@@ -227,7 +227,6 @@ public class RegistrationTest extends TestServerTest {
         public void onVerificationRequested(VerificationRequestedEvent event) {
             Log.d("TEST", "got idling event: " + event);
             mHandler.postDelayed(mTransitionToIdle, mTimeoutMs);
-            mEventReceived = true;
             mBus.unregister(this);
         }
 
