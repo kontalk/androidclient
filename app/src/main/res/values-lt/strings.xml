@@ -543,4 +543,7 @@
 	<item quantity="other">%d žmonių</item>
 </plurals>
 
+    <string name="authenticator_name">Tapatybės nustatymo tarnyba</string>
+    <string name="download_service">Atsisiuntimo tarnyba</string>
+    <string name="share">Bendrinti</string>
     </resources>
