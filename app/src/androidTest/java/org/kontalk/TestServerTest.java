@@ -28,7 +28,7 @@ import org.kontalk.util.Preferences;
  * Sets the test server address and some other stuff in {@link #setUp()}.
  */
 public abstract class TestServerTest {
-    public static final String TEST_SERVER_URI = "prime.kontalk.net|zeta.kontalk.net:7222";
+    public static final String TEST_SERVER_URI = "prime.kontalk.net|10.0.2.2:5222";
 
     protected EndpointServer.EndpointServerProvider mTestServerProvider;
 
