@@ -1,0 +1,120 @@
+# Server configuration for the integration test server
+
+# XMPP host where you're serving your Kontalk instance
+# Kontalk extensions support one virtual host only for now
+sess-man/plugins-conf/urn\:ietf\:params\:xml\:ns\:xmpp-sasl/host={{ .Env.XMPP_SERVICE }}
+# Virtual hosts served by this instance (must match the above)
+--virt-hosts={{ .Env.XMPP_SERVICE }}
+# Administrator JID (must be in the above domain)
+--admins=admin@{{ .Env.XMPP_SERVICE }}
+
+# Fingerprint of the GPG server key
+sess-man/plugins-conf/fingerprint={{ .Env.FINGERPRINT }}
+
+# The global network domain (do not change this if you want to participate in the Kontalk global network)
+sess-man/plugins-conf/network-domain=kontalk.net
+sess-man/plugins-conf/service-terms-url=https://kontalk.github.io/network/privacy
+
+# Database configuration (the two db-uri parameters must be identical)
+--user-db=mysql
+--user-db-uri=jdbc:mysql://db:3306/{{ .Env.MYSQL_DATABASE }}?user={{ .Env.MYSQL_USER }}&password={{ urlquery .Env.MYSQL_PASSWORD }}&useUnicode=true&characterEncoding=UTF-8&serverTimezone={{ urlquery .Env.MYSQL_TIMEZONE }}
+sess-man/plugins-conf/db-uri=jdbc:mysql://db:3306/{{ .Env.MYSQL_DATABASE }}?user={{ .Env.MYSQL_USER }}&password={{ urlquery .Env.MYSQL_PASSWORD }}&useUnicode=true&characterEncoding=UTF-8&serverTimezone={{ urlquery .Env.MYSQL_TIMEZONE }}
+pubsub/pubsub-repo-url=jdbc:mysql://db:3306/{{ .Env.MYSQL_DATABASE }}?user={{ .Env.MYSQL_USER }}&password={{ urlquery .Env.MYSQL_PASSWORD }}&useUnicode=true&characterEncoding=UTF-8&serverTimezone={{ urlquery .Env.MYSQL_TIMEZONE }}
+
+# Registration provider configuration
+# Dummy provider configuration
+# It will always accept 123456 as a valid verification code
+# Good for a remote test server
+sess-man/plugins-conf/kontalk\:jabber\:iq\:register/providers[s]=dummy=org.kontalk.xmppserver.registration.DummyProvider
+sess-man/plugins-conf/kontalk\:jabber\:iq\:register/dummy-sender=123456
+# set to true to disable registration security checks
+sess-man/plugins-conf/kontalk\:jabber\:iq\:register/disable-security[B]=false
+
+# Endpoints configuration
+# All endpoints must declare a clientCertCA pointing to a valid certificate chain file
+# (any CA chain will do, it won't actually be used but Tigase won't work without it)
+
+# Client endpoint configuration
+--c2s-ports=5222,5223
+c2s/connections/5223/socket=ssl
+c2s/clientCertCA=trusted.pem
+
+# Websocket endpoint configuration
+message-router/components/msg-receivers/ws2s.active[B]=false
+ws2s/connections/5290/socket=ssl
+ws2s/clientCertCA=trusted.pem
+
+# BOSH endpoint configuration
+message-router/components/msg-receivers/bosh.active[B]=false
+bosh/connections/5280/socket=ssl
+bosh/clientCertCA=trusted.pem
+
+# S2S endpoint configuration (comment to disable XMPP federation)
+--s2s-ports=5269
+
+# Enabled plugins, comma-separated
+# prefixed with a minus (-) means not loaded, prefixed with nothing or with a plus (+) means loaded.
+# add "+kontalk:push:legacy" to enable Kontalk push notifications (external component must also be configured below)
+--sm-plugins=-amp,-message-carbons,-jabber:iq:auth,-jabber:iq:register,-jabber:iq:privacy,-jabber:iq:last,-msgoffline,-urn:xmpp:blocking,-urn:xmpp:csi:0,+message,+msgoffline2,+presence:urn:xmpp:pubkey:2,+kontalk:jabber:iq:register,+kontalk:jabber:iq:roster,+urn:xmpp:pubkey:2,+kontalk:urn:xmpp:blocking,+kontalk:urn:xmpp:csi:0,+kontalk:jabber:iq:last,+pep
+
+# Comment these to revert to default logging
+--debug=server,xmpp.impl
+--debug-packages=org.kontalk
+
+# External components. Do not change the default names!
+# --comp-xxx parameter pairs follow a numbering order
+# whenever you delete/comment or insert a component, remember to fix the numbering!!
+
+# Network component
+# enables server list commands. Particularly needed if participating in a global network
+--comp-name-1=network
+--comp-class-1=org.kontalk.xmppserver.NetworkComponent
+
+# Phone number lookup component
+# enables discovery of contacts in the local/global network by their phone numbers
+--comp-name-2=probe
+--comp-class-2=org.kontalk.xmppserver.probe.ProbeComponent
+
+# For group chats
+--comp-name-3=multicast
+--comp-class-3=org.kontalk.xmppserver.ExtendedAddressing
+
+# External XMPP component protocol
+# needed for HttpFileUploadComponent
+--comp-name-4=ext
+--comp-class-4=tigase.server.ext.ComponentProtocol
+# these must match HttpFileUploadComponent configuration
+--external=media.{{ .Env.XMPP_SERVICE }}:secret:listen:5270
+
+# For other stuff, including OMEMO
+--comp-name-5=pubsub
+--comp-class-5=tigase.pubsub.PubSubComponent
+
+# GCM push notifications
+# remember to fix --sm-plugins too (see above)
+#--comp-name-6=push
+#--comp-class-6=org.kontalk.xmppserver.KontalkLegacyPushComponent
+#push/gcm-projectid=PROJECT-ID
+#push/gcm-apikey=API-KEY
+
+# Internal parameters
+# the following properties must not be changed unless you really know what you're doing
+basic-conf/auth-repo-params/sasl-mechs=EXTERNAL
+sess-man/plugins-conf/urn\:ietf\:params\:xml\:ns\:xmpp-sasl/factory=org.kontalk.xmppserver.auth.KontalkSaslServerFactory
+sess-man/plugins-conf/urn\:ietf\:params\:xml\:ns\:xmpp-sasl/mechanism-selector=org.kontalk.xmppserver.auth.KontalkMechanismSelector
+sess-man/plugins-conf/urn\:ietf\:params\:xml\:ns\:xmpp-sasl/callbackhandler-EXTERNAL=org.kontalk.xmppserver.auth.KontalkCertificateCallbackHandler
+sess-man/plugins-conf/presence-state/extended-presence-processors=org.kontalk.xmppserver.presence.PublicKeyPresence
+c2s/processors[s]=urn:xmpp:sm:3=org.kontalk.xmppserver.KontalkIOProcessor
+c2s/processors/urn\:xmpp\:sm\:3/ack-timeout[I]=60
+message-router/components/msg-receivers/amp.active[B]=false
+pubsub/pubsub-repo-class=tigase.pubsub.repository.PubSubDAOJDBC
+pubsub/persistent-pep[B]=true
+pubsub/send-last-published-item-on-presence[B]=true
+
+basic-conf/logging/handlers=java.util.logging.ConsoleHandler
+basic-conf/logging/java.util.logging.ConsoleHandler.level=ALL
+
+--vhost-anonymous-enabled=false
+--vhost-tls-required=false
+--hardened-mode=true
+config-type=--gen-config-def

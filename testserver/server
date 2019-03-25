@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Runs a Kontalk test server
+
+set -e
+
+cd "$(dirname "$0")"
+
+if [[ ! -d xmppserver-docker ]]; then
+    git clone https://github.com/kontalk/xmppserver-docker.git
+fi
+
+cp \
+  config.yml.in \
+  init.properties.in \
+  server-private.key \
+  server-public.key \
+  trusted.pem \
+  xmppserver-docker/config
+
+cp local.properties \
+  xmppserver-docker
+
+cd xmppserver-docker
+./launcher bootstrap
+./launcher up
