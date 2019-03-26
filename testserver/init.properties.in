@@ -25,8 +25,13 @@ pubsub/pubsub-repo-url=jdbc:mysql://db:3306/{{ .Env.MYSQL_DATABASE }}?user={{ .E
 # Dummy provider configuration
 # It will always accept 123456 as a valid verification code
 # Good for a remote test server
-sess-man/plugins-conf/kontalk\:jabber\:iq\:register/providers[s]=dummy=org.kontalk.xmppserver.registration.DummyProvider
+# FIXME AndroidEmulatorProvider won't work because it requires adb locally
+sess-man/plugins-conf/kontalk\:jabber\:iq\:register/providers[s]=dummy=org.kontalk.xmppserver.registration.DummyProvider,android=org.kontalk.xmppserver.registration.AndroidEmulatorProvider
 sess-man/plugins-conf/kontalk\:jabber\:iq\:register/dummy-sender=123456
+sess-man/plugins-conf/kontalk\:jabber\:iq\:register/android-sender=+1234567
+sess-man/plugins-conf/kontalk\:jabber\:iq\:register/android-device=emulator-5554
+sess-man/plugins-conf/kontalk\:jabber\:iq\:register/default-provider=dummy
+sess-man/plugins-conf/kontalk\:jabber\:iq\:register/fallback-provider=android
 # set to true to disable registration security checks
 sess-man/plugins-conf/kontalk\:jabber\:iq\:register/disable-security[B]=false
 
