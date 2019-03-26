@@ -16,7 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.service.registration.event;
+package org.kontalk.service.registration;
+
+import java.io.InputStream;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -24,7 +26,6 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -33,9 +34,20 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.runner.AndroidJUnit4;
 
+import org.kontalk.DefaultAccountTest;
 import org.kontalk.TestServerTest;
 import org.kontalk.TestUtils;
-import org.kontalk.service.registration.RegistrationService;
+import org.kontalk.service.registration.event.AcceptTermsRequest;
+import org.kontalk.service.registration.event.AccountCreatedEvent;
+import org.kontalk.service.registration.event.ChallengeError;
+import org.kontalk.service.registration.event.ChallengeRequest;
+import org.kontalk.service.registration.event.ImportKeyError;
+import org.kontalk.service.registration.event.ImportKeyRequest;
+import org.kontalk.service.registration.event.LoginTestEvent;
+import org.kontalk.service.registration.event.TermsAcceptedEvent;
+import org.kontalk.service.registration.event.VerificationError;
+import org.kontalk.service.registration.event.VerificationRequest;
+import org.kontalk.service.registration.event.VerificationRequestedEvent;
 
 import static org.junit.Assert.assertTrue;
 
@@ -121,13 +133,52 @@ public class RegistrationServiceTest extends TestServerTest {
         assertTrue(listener.accountCreated);
     }
 
+    @Test
+    public void saveAndResumeRequestVerificationTest() throws Exception {
+        RequestVerificationTestListener listener = new RequestVerificationTestListener();
+        mBus.register(listener);
+
+        mBus.post(new VerificationRequest("+15555215554", "Device-5554",
+            mTestServerProvider, true, RegistrationService.BRAND_IMAGE_LARGE));
+
+        synchronized (this) {
+            wait(10000);
+        }
+
+        if (listener.verificationError != null)
+            throw listener.verificationError;
+
+        assertTrue(listener.acceptTermsEvent);
+        assertTrue(listener.verificationRequestedEvent);
+
+        stopService();
+
+        startService();
+
+        // send challenge
+        mBus.post(new ChallengeRequest("123456"));
+
+        synchronized (this) {
+            wait(10000);
+        }
+        mBus.unregister(listener);
+
+        if (listener.challengeError != null)
+            throw listener.challengeError;
+
+        assertTrue(listener.accountCreated);
+    }
+
+    // TODO monitor locking is not precise, we should use semaphores
     public class RequestVerificationTestListener {
         public boolean acceptTermsEvent;
         public boolean verificationRequestedEvent;
         public boolean accountCreated;
 
-        private Exception verificationError;
-        private Exception challengeError;
+        public Exception verificationError;
+        public Exception challengeError;
+        public Exception importKeyError;
+        public Exception loginTestError;
 
         @Subscribe(threadMode = ThreadMode.MAIN)
         public void onAcceptTermsRequested(AcceptTermsRequest request) {
@@ -160,61 +211,70 @@ public class RegistrationServiceTest extends TestServerTest {
         }
 
         @Subscribe(threadMode = ThreadMode.MAIN)
+        public void onImportKeyError(ImportKeyError error) {
+            this.importKeyError = error.exception;
+            synchronized (RegistrationServiceTest.this) {
+                RegistrationServiceTest.this.notify();
+            }
+        }
+
+        @Subscribe(threadMode = ThreadMode.MAIN)
         public void onAccountCreated(AccountCreatedEvent event) {
             this.accountCreated = true;
             synchronized (RegistrationServiceTest.this) {
                 RegistrationServiceTest.this.notify();
             }
         }
+
+        @Subscribe(threadMode = ThreadMode.MAIN)
+        public void onLoginTest(LoginTestEvent event) {
+            this.loginTestError = event.exception;
+            synchronized (RegistrationServiceTest.this) {
+                RegistrationServiceTest.this.notify();
+            }
+        }
     }
 
+    /**
+     * Tests registration workflow using secret data passed on by another device.
+     */
     @Test
-    @Ignore
     public void registerDeviceTest() {
         // TODO
+        throw new AssertionError("Not implemented.");
     }
 
+    // TODO this test will only work straight if the account on the server is the same, so we need a way to preset it
     @Test
-    @Ignore
-    public void importKeyTest() {
-        // TODO
-    }
-
-    @Test
-    public void saveAndResumeRequestVerificationTest() throws Exception {
+    public void importKeyTest() throws Exception {
         RequestVerificationTestListener listener = new RequestVerificationTestListener();
         mBus.register(listener);
 
-        mBus.post(new VerificationRequest("+15555215554", "Device-5554",
-            mTestServerProvider,
-            //new EndpointServer.SingleServerProvider("prime.kontalk.net|10.0.2.2"),
-            true, RegistrationService.BRAND_IMAGE_LARGE));
+        InputStream keyPackInput = InstrumentationRegistry.getContext().getAssets().open("keys/kontalk-keys.zip");
+
+        mBus.post(new ImportKeyRequest(mTestServerProvider.next(),
+            keyPackInput, DefaultAccountTest.TEST_PASSPHRASE));
 
         synchronized (this) {
             wait(10000);
         }
 
-        if (listener.verificationError != null)
-            throw listener.verificationError;
+        keyPackInput.close();
+
+        if (listener.importKeyError != null)
+            throw listener.importKeyError;
 
         assertTrue(listener.acceptTermsEvent);
-        assertTrue(listener.verificationRequestedEvent);
-
-        stopService();
-
-        startService();
-
-        // send challenge
-        mBus.post(new ChallengeRequest("123456"));
 
         synchronized (this) {
             wait(10000);
         }
         mBus.unregister(listener);
 
-        if (listener.challengeError != null)
-            throw listener.challengeError;
+        if (listener.loginTestError != null)
+            throw listener.loginTestError;
 
         assertTrue(listener.accountCreated);
     }
+
 }

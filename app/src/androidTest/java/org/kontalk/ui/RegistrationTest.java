@@ -241,4 +241,24 @@ public class RegistrationTest extends TestServerTest {
         }
     }
 
+    /**
+     * Tests the import key workflow when the server doesn't trust the key
+     * because it was overruled by another one. User must verify the phone
+     * number, but the key will be reused.
+     */
+    @Test
+    public void importUntrustedKeyTest() {
+        // TODO
+        throw new AssertionError("Not implemented.");
+    }
+
+    /**
+     * Tries to import a revoked key and should fail permanently.
+     */
+    @Test
+    public void importRevokedKeyTest() {
+        // TODO
+        throw new AssertionError("Not implemented.");
+    }
+
 }

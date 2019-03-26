@@ -41,8 +41,9 @@ import org.kontalk.util.MessageUtils;
  */
 public abstract class DefaultAccountTest extends TestServerTest {
 
-    private static final String TEST_USERNAME = "dev-5554";
-    private static final String TEST_USERID = "+15555215554";
+    public static final String TEST_USERNAME = "dev-5554";
+    public static final String TEST_USERID = "+15555215554";
+    public static final String TEST_PASSPHRASE = "integration";
 
     private static final long MAX_KEY_SIZE = 102400; // 100 KB
 
@@ -89,7 +90,7 @@ public abstract class DefaultAccountTest extends TestServerTest {
         data.putString(Authenticator.DATA_NAME, displayName);
         data.putString(Authenticator.DATA_SERVER_URI, TEST_SERVER_URI);
 
-        am.addAccountExplicitly(account, "integration", data);
+        am.addAccountExplicitly(account, TEST_PASSPHRASE, data);
 
         // put data once more (workaround for Android bug http://stackoverflow.com/a/11698139/1045199)
         am.setUserData(account, Authenticator.DATA_PRIVATEKEY, data.getString(Authenticator.DATA_PRIVATEKEY));
