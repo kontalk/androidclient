@@ -992,7 +992,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
                     register(new ImportKeyRequest(Preferences
                         .getEndpointServer(NumberValidation.this),
-                        zip, input.toString()));
+                        zip, input.toString(), true, getBrandImageSize()));
                 }
             })
             .onNegative(new MaterialDialog.SingleButtonCallback() {

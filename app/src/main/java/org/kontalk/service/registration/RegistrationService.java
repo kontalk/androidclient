@@ -232,6 +232,13 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         public byte[] publicKey;
         public PersonalKey key;
         public String passphrase;
+        /**
+         * Maps to {@link ImportKeyRequest#fallbackVerification}.
+         * There is no need to persist this because after the registration has
+         * passed the first step, it will be indistinguishable from a normal
+         * registration.
+         */
+        public boolean importFallbackVerification;
 
         public Map<String, Keyring.TrustedFingerprint> trustedKeys;
 
@@ -259,6 +266,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             this.publicKey = cs.publicKey;
             this.key = cs.key;
             this.passphrase = cs.passphrase;
+            this.importFallbackVerification = cs.importFallbackVerification;
             this.trustedKeys = cs.trustedKeys;
         }
     }
@@ -403,6 +411,11 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             state.challenge = Preferences.getString("registration_challenge", null);
             state.force = Preferences.getBoolean("registration_force", false);
 
+            String privateKey = Preferences.getString("registration_privatekey", null);
+            state.privateKey = !TextUtils.isEmpty(privateKey) ? Base64.decode(privateKey, Base64.NO_WRAP) : null;
+            String publicKey = Preferences.getString("registration_publickey", null);
+            state.publicKey = !TextUtils.isEmpty(publicKey) ? Base64.decode(publicKey, Base64.NO_WRAP) : null;
+
             String trustedKeys = Preferences.getString("registration_trustedkeys", null);
             if (trustedKeys != null) {
                 ByteArrayInputStream trustedKeysProp =
@@ -430,11 +443,17 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
 
             // send appropriate event to UI
             switch (state.workflow) {
-                case REGISTRATION:
+                case REGISTRATION: {
                     BUS.post(new VerificationRequestedEvent(sender, state.challenge,
                         brandImage, brandLink, canFallback));
                     break;
-                // TODO other workflows
+                }
+                case IMPORT_KEY: {
+                    state.importFallbackVerification = true;
+                    BUS.post(new VerificationRequestedEvent(sender, state.challenge,
+                        brandImage, brandLink, canFallback));
+                    break;
+                }
             }
 
             state.restored = true;
@@ -482,6 +501,10 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                 .putString("registration_brandlink", brandLink)
                 .putBoolean("registration_canfallback", canFallback)
                 .putBoolean("registration_force", state.force)
+                .putString("registration_privatekey", state.privateKey != null ?
+                    Base64.encodeToString(state.privateKey, Base64.NO_WRAP) : null)
+                .putString("registration_publickey", state.privateKey != null ?
+                    Base64.encodeToString(state.publicKey, Base64.NO_WRAP) : null)
                 .putString("registration_trustedkeys", trustedKeysOut != null ?
                     Base64.encodeToString(trustedKeysOut.toByteArray(), Base64.NO_WRAP) : null)
                 .apply();
@@ -694,6 +717,10 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             // copy over the parsed keys (imported keys may be armored)
             cstate.privateKey = privateKeyBuf.toByteArray();
             cstate.publicKey = publicKeyBuf.toByteArray();
+            cstate.importFallbackVerification = request.fallbackVerification;
+            cstate.brandImageSize = request.brandImageSize;
+            // we are assuming we are forcing our way in since we are importing
+            cstate.force = true;
 
             try {
                 cstate.trustedKeys = importer.getTrustedKeys();
@@ -897,11 +924,17 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             mConnector = new XMPPConnectionHelper(this, cstate.server, true);
             mConnector.setRetryEnabled(false);
 
-            // generate keyring immediately
-            // needed for connection
-            String userId = XMPPUtils.createLocalpart(cstate.phoneNumber);
-            PGP.PGPKeyPairRing keyRing = cstate.key.storeNetwork(userId, mConnector.getNetwork(),
-                cstate.displayName, cstate.passphrase);
+            PGP.PGPKeyPairRing keyRing;
+            if (!cstate.importFallbackVerification) {
+                // generate keyring immediately
+                // needed for connection
+                String userId = XMPPUtils.createLocalpart(cstate.phoneNumber);
+                keyRing = cstate.key.storeNetwork(userId, mConnector.getNetwork(),
+                    cstate.displayName, cstate.passphrase);
+            }
+            else {
+                keyRing = PersonalKey.test(cstate.privateKey, cstate.publicKey, cstate.passphrase, null);
+            }
 
             // bridge certificate for connection
             X509Certificate bridgeCert = X509Bridge.createCertificate(keyRing.publicKey,
@@ -1114,7 +1147,6 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         }
     }
 
-
     private void loadRetrievedKey() {
         CurrentState cstate = updateState(State.IMPORTING_KEY);
 
@@ -1221,7 +1253,13 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             BUS.post(new LoginTestEvent());
         }
         catch (Exception e) {
-            BUS.post(new LoginTestEvent(e));
+            CurrentState cstate = currentState();
+            if (cstate.importFallbackVerification) {
+                requestRegistration();
+            }
+            else {
+                BUS.post(new LoginTestEvent(e));
+            }
         }
     }
 

@@ -23,6 +23,7 @@ import java.io.InputStream;
 import android.support.annotation.Nullable;
 
 import org.kontalk.client.EndpointServer;
+import org.kontalk.service.registration.RegistrationService;
 
 
 /**
@@ -34,13 +35,27 @@ public class ImportKeyRequest {
 
     /** Will be null if we are to auto-detect it from the key. */
     public final EndpointServer server;
+
+    /** An input stream from the personal key pack file. */
     public final InputStream in;
+
+    /** The passphrase protecting the personal key. */
     public final String passphrase;
 
-    public ImportKeyRequest(@Nullable EndpointServer server, InputStream in, String passphrase) {
+    /** If the server rejects our key, set this to true to proceed to verification. */
+    public final boolean fallbackVerification;
+
+    /** Will be needed if we'll fallback to normal verification. */
+    @RegistrationService.BrandImageSize
+    public final int brandImageSize;
+
+    public ImportKeyRequest(@Nullable EndpointServer server, InputStream in, String passphrase,
+            boolean fallbackVerification, @RegistrationService.BrandImageSize int brandImageSize) {
         this.server = server;
         this.in = in;
         this.passphrase = passphrase;
+        this.fallbackVerification = fallbackVerification;
+        this.brandImageSize = brandImageSize;
     }
 
 }

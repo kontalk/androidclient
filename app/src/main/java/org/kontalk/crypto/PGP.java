@@ -408,7 +408,7 @@ public class PGP {
         byte[] pubAuthData = (byte[]) in.readObject();
         PGPObjectFactory pubAuthIn = new PGPObjectFactory(pubAuthData, sFingerprintCalculator);
 
-        PGPPublicKey pubKeyAuth = ((PGPPublicKeyRing) pubAuthIn.nextObject()).getPublicKey();
+        PGPPublicKey pubKeyAuth = extractPublicKey(pubAuthIn);
         PGPPrivateKey privKeyAuth = sKeyConverter.getPGPPrivateKey(pubKeyAuth, privAuth);
         PGPKeyPair authKp = new PGPKeyPair(pubKeyAuth, privKeyAuth);
 
@@ -416,7 +416,7 @@ public class PGP {
         byte[] pubSignData = (byte[]) in.readObject();
         PGPObjectFactory pubSignIn = new PGPObjectFactory(pubSignData, sFingerprintCalculator);
 
-        PGPPublicKey pubKeySign = ((PGPPublicKeyRing) pubSignIn.nextObject()).getPublicKey();
+        PGPPublicKey pubKeySign = extractPublicKey(pubSignIn);
         PGPPrivateKey privKeySign = sKeyConverter.getPGPPrivateKey(pubKeySign, privSign);
         PGPKeyPair signKp = new PGPKeyPair(pubKeySign, privKeySign);
 
@@ -424,11 +424,24 @@ public class PGP {
         byte[] pubEncData = (byte[]) in.readObject();
         PGPObjectFactory pubEncIn = new PGPObjectFactory(pubEncData, sFingerprintCalculator);
 
-        PGPPublicKey pubKeyEnc = ((PGPPublicKeyRing) pubEncIn.nextObject()).getPublicKey();
+        PGPPublicKey pubKeyEnc = extractPublicKey(pubEncIn);
         PGPPrivateKey privKeyEnc = sKeyConverter.getPGPPrivateKey(pubKeyEnc, privEnc);
         PGPKeyPair encryptKp = new PGPKeyPair(pubKeyEnc, privKeyEnc);
 
         return new PGPDecryptedKeyPairRing(authKp, signKp, encryptKp);
+    }
+
+    private static PGPPublicKey extractPublicKey(PGPObjectFactory in) throws IOException, PGPException {
+        Object object = in.nextObject();
+        if (object instanceof PGPPublicKeyRing) {
+            return ((PGPPublicKeyRing) object).getPublicKey();
+        }
+        else if (object instanceof PGPPublicKey) {
+            return (PGPPublicKey) object;
+        }
+        else {
+            throw new PGPException("Invalid key data");
+        }
     }
 
     public static String getFingerprint(PGPPublicKey publicKey) {
