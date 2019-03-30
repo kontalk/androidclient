@@ -42,6 +42,7 @@ import android.support.test.rule.ActivityTestRule;
 import android.support.test.rule.GrantPermissionRule;
 import android.support.test.runner.AndroidJUnit4;
 
+import org.kontalk.EventIdlingResource;
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.TestServerTest;
@@ -112,6 +113,10 @@ public class RegistrationTest extends TestServerTest {
         onView(withId(R.id.button_validate))
             .perform(scrollTo(), click());
 
+        // register accept terms event
+        EventIdlingResource acceptTermsResource = TestUtils
+            .registerEventIdlingResource(mBus, AcceptTermsRequest.class);
+
         // input confirmation dialog
         onView(withText(R.string.msg_register_confirm_number1))
             .inRoot(isDialog())
@@ -122,9 +127,10 @@ public class RegistrationTest extends TestServerTest {
             .inRoot(isDialog())
             .perform(click());
 
-        // register accept terms event
-        IdlingResource acceptTermsResource = TestUtils
-            .registerEventIdlingResource(mBus, AcceptTermsRequest.class);
+        acceptTermsResource.start();
+
+        UserConflictOrVerificationRequestedIdlingResource registrationResource =
+            TestUtils.registerIdlingResource(new UserConflictOrVerificationRequestedIdlingResource(mBus, 2000));
 
         // service terms dialog
         try {
@@ -141,18 +147,20 @@ public class RegistrationTest extends TestServerTest {
             Log.w("TEST", "No matching service terms dialog");
         }
 
-        TestUtils.unregisterIdlingResource(acceptTermsResource);
+        registrationResource.start();
 
-        UserConflictOrVerificationRequestedIdlingResource registrationResource =
-            TestUtils.registerIdlingResource(new UserConflictOrVerificationRequestedIdlingResource(mBus, 2000));
+        TestUtils.unregisterIdlingResource(acceptTermsResource);
 
         // force registration dialog
         try {
+            // we are going to try again
+            registrationResource.reset();
+
             onView(allOf(withId(R.id.md_buttonDefaultNeutral), withText(R.string.btn_device_overwrite), isDisplayed()))
                 .inRoot(isDialog())
                 .perform(click());
-            // we are going to try again
-            registrationResource.reset();
+
+            registrationResource.start();
         }
         catch (NoMatchingRootException e) {
             // A-EHM... ignoring since the dialog might or might not appear
@@ -164,11 +172,13 @@ public class RegistrationTest extends TestServerTest {
 
         TestUtils.unregisterIdlingResource(registrationResource);
 
+        EventIdlingResource accountResource = TestUtils
+            .registerEventIdlingResource(mBus, AccountCreatedEvent.class);
+
         onView(withId(R.id.send_button))
             .perform(scrollTo(), click());
 
-        IdlingResource accountResource = TestUtils
-            .registerEventIdlingResource(mBus, AccountCreatedEvent.class);
+        accountResource.start();
 
         Espresso.onIdle();
 
@@ -187,6 +197,7 @@ public class RegistrationTest extends TestServerTest {
         private final Handler mHandler;
         private final Runnable mTransitionToIdle;
 
+        private boolean mRunning;
         private ResourceCallback mCallback;
         private boolean mEventReceived;
 
@@ -213,6 +224,7 @@ public class RegistrationTest extends TestServerTest {
         }
 
         public void reset() {
+            mRunning = false;
             mEventReceived = false;
             mHandler.removeCallbacks(mTransitionToIdle);
         }
@@ -232,12 +244,16 @@ public class RegistrationTest extends TestServerTest {
 
         @Override
         public boolean isIdleNow() {
-            return mEventReceived;
+            return !mRunning || mEventReceived;
         }
 
         @Override
         public void registerIdleTransitionCallback(ResourceCallback callback) {
             mCallback = callback;
+        }
+
+        public void start() {
+            mRunning = true;
         }
     }
 

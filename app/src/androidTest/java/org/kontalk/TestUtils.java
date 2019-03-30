@@ -133,11 +133,11 @@ public class TestUtils {
         };
     }
 
-    public static IdlingResource registerEventIdlingResource(EventBus bus, Class klass) {
+    public static EventIdlingResource registerEventIdlingResource(EventBus bus, Class klass) {
         IdlingPolicies.setIdlingResourceTimeout(5, TimeUnit.MINUTES);
         IdlingPolicies.setMasterPolicyTimeout(5, TimeUnit.MINUTES);
 
-        IdlingResource resource = new EventIdlingResource(klass.getSimpleName(), bus, klass);
+        EventIdlingResource resource = new EventIdlingResource(klass.getSimpleName(), bus, klass);
         IdlingRegistry.getInstance().register(resource);
         return resource;
     }

@@ -43,6 +43,7 @@ public class EventIdlingResource implements IdlingResource {
     private final Handler mHandler;
     private final Runnable mTransitionToIdle;
 
+    private boolean mRunning;
     private ResourceCallback mCallback;
     private boolean mEventReceived;
 
@@ -85,11 +86,15 @@ public class EventIdlingResource implements IdlingResource {
 
     @Override
     public boolean isIdleNow() {
-        return mEventReceived;
+        return !mRunning || mEventReceived;
     }
 
     @Override
     public void registerIdleTransitionCallback(ResourceCallback callback) {
         this.mCallback = callback;
+    }
+
+    public void start() {
+        mRunning = true;
     }
 }
