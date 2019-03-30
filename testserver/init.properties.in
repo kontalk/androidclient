@@ -33,7 +33,7 @@ sess-man/plugins-conf/kontalk\:jabber\:iq\:register/android-device=emulator-5554
 sess-man/plugins-conf/kontalk\:jabber\:iq\:register/default-provider=dummy
 sess-man/plugins-conf/kontalk\:jabber\:iq\:register/fallback-provider=android
 # set to true to disable registration security checks
-sess-man/plugins-conf/kontalk\:jabber\:iq\:register/disable-security[B]=false
+sess-man/plugins-conf/kontalk\:jabber\:iq\:register/disable-security[B]=true
 
 # Endpoints configuration
 # All endpoints must declare a clientCertCA pointing to a valid certificate chain file
