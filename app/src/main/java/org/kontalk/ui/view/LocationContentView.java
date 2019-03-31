@@ -21,6 +21,8 @@ package org.kontalk.ui.view;
 import java.util.regex.Pattern;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.model.GlideUrl;
+import com.bumptech.glide.load.model.LazyHeaders;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -110,7 +112,12 @@ public class LocationContentView extends RelativeLayout
             mAddress.setText(mComponent.getStreet());
         }
 
-        Glide.with(getContext()).load(imageURL).into(mContent);
+        GlideUrl url = new GlideUrl(imageURL, new LazyHeaders.Builder()
+            .addHeader("Referer", getContext().getResources().getString(R.string.website))
+            .build());
+        Glide.with(getContext())
+            .load(url)
+            .into(mContent);
     }
 
     @Override
