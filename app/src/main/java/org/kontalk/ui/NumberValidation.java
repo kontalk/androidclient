@@ -46,6 +46,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -58,6 +59,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.text.HtmlCompat;
 import android.telephony.PhoneNumberUtils;
@@ -1209,48 +1212,22 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
         mWaitingAcceptTerms = true;
 
-        // build dialog text
-        String baseText = getString(R.string.registration_accept_terms_text,
-            cstate.server.getNetwork(), request.termsUrl);
+        DialogFragment dialog = AcceptTermsDialogFragment.newInstance(cstate.server.getNetwork(), request.termsUrl);
+        dialog.show(getSupportFragmentManager(), "accept_terms");
+    }
 
-        Spanned text = HtmlCompat.fromHtml(baseText, 0);
+    public void onAcceptTermsConfirmed(String network) {
+        mAcceptedTermsServers.add(network);
+        startProgress();
+        register(new TermsAcceptedEvent());
+    }
 
-        // FIXME clicking on the link pauses the activity and cancels the whole process
-        MaterialDialog dialog = new MaterialDialog.Builder(this)
-            .title(R.string.registration_accept_terms_title)
-            .content(text)
-            .positiveText(R.string.yes)
-            .positiveColorRes(R.color.button_success)
-            .negativeText(R.string.no)
-            .negativeColorRes(R.color.button_danger)
-            .onAny(new MaterialDialog.SingleButtonCallback() {
-                @Override
-                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                    switch (which) {
-                        case POSITIVE:
-                            mAcceptedTermsServers.add(cstate.server.getNetwork());
-                            startProgress();
-                            register(new TermsAcceptedEvent());
-                            break;
-                        case NEGATIVE:
-                            abort();
-                            break;
-                    }
-                }
-            })
-            .dismissListener(new OnDismissListener() {
-                @Override
-                public void onDismiss(DialogInterface dialog) {
-                    mWaitingAcceptTerms = false;
-                }
-            })
-            .build();
+    public void onAcceptTermsCancel() {
+        abort();
+    }
 
-        try {
-            dialog.show();
-        }
-        catch (Exception ignored) {
-        }
+    public void onAcceptTermsDismiss() {
+        mWaitingAcceptTerms = false;
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -1347,6 +1324,61 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         i.putExtra("brandLink", brandLink);
 
         startActivityForResult(i, REQUEST_MANUAL_VALIDATION);
+    }
+
+    public static final class AcceptTermsDialogFragment extends DialogFragment {
+
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+            // build dialog text
+            String network = getArguments().getString("network");
+            String termsUrl = getArguments().getString("termsURL");
+            String baseText = getString(R.string.registration_accept_terms_text,
+                network, termsUrl);
+
+            Spanned text = HtmlCompat.fromHtml(baseText, 0);
+
+            return new MaterialDialog.Builder(getActivity())
+                .title(R.string.registration_accept_terms_title)
+                .content(text)
+                .positiveText(R.string.yes)
+                .positiveColorRes(R.color.button_success)
+                .negativeText(R.string.no)
+                .negativeColorRes(R.color.button_danger)
+                .onAny(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        switch (which) {
+                            case POSITIVE:
+                                ((NumberValidation) getActivity())
+                                    .onAcceptTermsConfirmed(getArguments().getString("network"));
+                                break;
+                            case NEGATIVE:
+                                ((NumberValidation) getActivity())
+                                    .onAcceptTermsCancel();
+                                break;
+                        }
+                    }
+                })
+                .dismissListener(new OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        ((NumberValidation) getActivity())
+                            .onAcceptTermsDismiss();
+                    }
+                })
+                .build();
+        }
+
+        public static AcceptTermsDialogFragment newInstance(String network, String termsUrl) {
+            AcceptTermsDialogFragment f = new AcceptTermsDialogFragment();
+            Bundle args = new Bundle();
+            args.putString("network", network);
+            args.putString("termsURL", termsUrl);
+            f.setArguments(args);
+            return f;
+        }
     }
 
 }

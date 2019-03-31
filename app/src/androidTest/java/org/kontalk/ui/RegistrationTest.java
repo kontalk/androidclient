@@ -25,6 +25,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -61,8 +62,11 @@ import static android.support.test.espresso.action.ViewActions.scrollTo;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.RootMatchers.isDialog;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static net.slideshare.mobile.test.util.OrientationChangeAction.orientationLandscape;
+import static net.slideshare.mobile.test.util.OrientationChangeAction.orientationPortrait;
 import static org.hamcrest.Matchers.allOf;
 
 
@@ -88,6 +92,13 @@ public class RegistrationTest extends TestServerTest {
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.CAMERA);
 
+    @BeforeClass
+    public static void setUpBeforeClass() throws InterruptedException {
+        // always start with a clean slate
+        TestUtils.removeDefaultAccount();
+        RegistrationService.clearSavedState();
+    }
+
     @Before
     public void setUp() throws Exception {
         TestUtils.removeDefaultAccount();
@@ -104,7 +115,7 @@ public class RegistrationTest extends TestServerTest {
     }
 
     @Test
-    public void registrationTest() {
+    public void registrationTest() throws Exception {
         onView(withId(R.id.name))
             .perform(scrollTo(), replaceText(TEST_USERNAME), closeSoftKeyboard());
         onView(withId(R.id.phone_number))
@@ -126,6 +137,9 @@ public class RegistrationTest extends TestServerTest {
                      isDisplayed()))
             .inRoot(isDialog())
             .perform(click());
+
+        // introduce a little anarchy
+        onView(isRoot()).perform(orientationLandscape());
 
         acceptTermsResource.start();
 
@@ -159,6 +173,9 @@ public class RegistrationTest extends TestServerTest {
             onView(allOf(withId(R.id.md_buttonDefaultNeutral), withText(R.string.btn_device_overwrite), isDisplayed()))
                 .inRoot(isDialog())
                 .perform(click());
+
+            // introduce a little anarchy
+            onView(isRoot()).perform(orientationPortrait());
 
             registrationResource.start();
         }
