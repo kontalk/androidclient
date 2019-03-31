@@ -587,7 +587,6 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                     }
                 }
                 catch (InterruptedException e) {
-                    // TODO what??
                     return;
                 }
                 Log.v(TAG, "key generation completed");
@@ -989,8 +988,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             throw new Exception("Invalid response");
         }
         catch (Exception e) {
-            // TODO check for service-unavailable errors (meaning
-            // we must call onServerCheckFailed()
+            // TODO check for specific errors
             BUS.post(new ChallengeError(e));
         }
     }
@@ -1391,44 +1389,38 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         }
     }
 
+    // TODO do we really need these listeners?
+
     @Override
     public void created(XMPPConnection connection) {
-
     }
 
     @Override
     public void aborted(Exception e) {
-
     }
 
     @Override
     public void reconnectingIn(int seconds) {
-
     }
 
     @Override
     public void authenticationFailed() {
-
     }
 
     @Override
     public void connected(XMPPConnection connection) {
-
     }
 
     @Override
     public void authenticated(XMPPConnection connection, boolean resumed) {
-
     }
 
     @Override
     public void connectionClosed() {
-
     }
 
     @Override
     public void connectionClosedOnError(Exception e) {
-
     }
 
     public static EventBus bus() {
