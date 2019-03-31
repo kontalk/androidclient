@@ -153,6 +153,8 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         IDLE,
         /** Connecting to a server (no key). */
         CONNECTING,
+        /** Waiting for terms acceptance. */
+        WAITING_ACCEPT_TERMS,
         /** Requesting verification to a server. */
         REQUESTING_VERIFICATION,
         /** Waiting for a passphrase from UI. */
@@ -226,6 +228,9 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         // this will be used if available during normal registration flow
         public EndpointServer.EndpointServerProvider serverProvider;
 
+        // not saved to state
+        public String termsUrl;
+
         // these two are filled with imported key data if available
         // otherwise they will be filled with output of PersonalKey.store()
         public byte[] privateKey;
@@ -262,6 +267,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             this.fallback = cs.fallback;
             this.brandImageSize = cs.brandImageSize;
             this.serverProvider = cs.serverProvider;
+            this.termsUrl = cs.termsUrl;
             this.privateKey = cs.privateKey;
             this.publicKey = cs.publicKey;
             this.key = cs.key;
@@ -298,6 +304,19 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         catch (Exception e) {
             Log.w(TAG, "unable to restore registration progress", e);
             clearSavedState();
+        }
+
+        if (state == null) {
+            state = currentState();
+
+            if (state != null) {
+                // handling non-persistent states
+                switch (state.state) {
+                    case WAITING_ACCEPT_TERMS:
+                        BUS.post(new AcceptTermsRequest(state.termsUrl));
+                        break;
+                }
+            }
         }
 
         if (state == null || state.key == null) {
@@ -633,6 +652,8 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                         String termsUrl = termsUrlField.getFirstValue();
                         if (termsUrl != null) {
                             Log.d(TAG, "server request terms acceptance: " + termsUrl);
+                            cstate = updateState(State.WAITING_ACCEPT_TERMS);
+                            cstate.termsUrl = termsUrl;
                             BUS.post(new AcceptTermsRequest(termsUrl));
                             return;
                         }
@@ -792,6 +813,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                     String termsUrl = termsUrlField.getFirstValue();
                     if (termsUrl != null) {
                         Log.d(TAG, "server request terms acceptance: " + termsUrl);
+                        updateState(State.WAITING_ACCEPT_TERMS);
                         BUS.post(new AcceptTermsRequest(termsUrl));
                         return;
                     }
