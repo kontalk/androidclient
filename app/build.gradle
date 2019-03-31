@@ -258,3 +258,8 @@ else {
 }
 
 apply plugin: 'com.google.gms.google-services'
+
+googleServices {
+    // temporary workaround for Smack dependency problem
+    disableVersionCheck = true
+}
