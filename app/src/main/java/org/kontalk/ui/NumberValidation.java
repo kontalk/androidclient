@@ -388,7 +388,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     protected void onStart() {
         super.onStart();
 
-        if (RegistrationService.hasSavedState()) {
+        if (RegistrationService.hasSavedState() || getLastCustomNonConfigurationInstance() != null) {
             if (mClearState) {
                 RegistrationService.clearSavedState();
                 mClearState = false;
@@ -1210,10 +1210,12 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             return;
         }
 
-        mWaitingAcceptTerms = true;
+        if (!mWaitingAcceptTerms) {
+            mWaitingAcceptTerms = true;
 
-        DialogFragment dialog = AcceptTermsDialogFragment.newInstance(cstate.server.getNetwork(), request.termsUrl);
-        dialog.show(getSupportFragmentManager(), "accept_terms");
+            DialogFragment dialog = AcceptTermsDialogFragment.newInstance(cstate.server.getNetwork(), request.termsUrl);
+            dialog.show(getSupportFragmentManager(), "accept_terms");
+        }
     }
 
     public void onAcceptTermsConfirmed(String network) {
