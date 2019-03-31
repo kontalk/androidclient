@@ -31,4 +31,519 @@
     <string name="pref_network_settings">Tinklas</string>
     <string name="pref_network_uri">Rankinis serverio adresas</string>
     <string name="number_validation_intro1">Įveskite savo vardą, pasirinkite šalies kodą ir įveskite savo mobiliojo telefono numerį. Daugiau instrukcijų bus pateikta kitame langelyje.</string>
+    <string name="code_validation_intro_manual">Įveskite gautą patvirtinimo kodą. Turėkite omenyje, kad patvirtinimo kodas gali būti naudojamas tik vieną kartą.</string>
+    <string name="hint_validation_name">Jūsų vardas</string>
+    <string name="hint_validation_number">Jūsų numeris</string>
+    <string name="hint_validation_code">Patvirtinimo kodas</string>
+    <string name="warn_invalid_number">Įveskite teisingą telefono numerį.</string>
+    <string name="msg_validating_phone">Užklausiama registracija…</string>
+    <string name="msg_importing_key">Importuojamas asmeninis raktas…</string>
+    <string name="title_confirm_cancel_registration">Atsisakyti registracijos\?</string>
+    <string name="msg_initializing">Registruojamasi į Kontalk tinklą…</string>
+    <string name="msg_authenticated">Prisiregistruota prie tinklo!</string>
+    <string name="resend">Siųsti dar kartą</string>
+    <string name="copy_message_text">Kopijuoti tekstą</string>
+    <string name="delete_message">Ištrinti žinutę</string>
+    <string name="confirm_delete_all">Ištrinti visus pokalbius</string>
+    <string name="confirm_will_delete_all">Visi pokalbiai bus ištrinti.</string>
+    <string name="sending_message">Siunčiama žinutė…</string>
+    <string name="message_text_copied">Žinutės tekstas nukopijuotas.</string>
+    <string name="reply">Atsakyti</string>
+    <string name="delete_thread">Ištrinti pokalbį</string>
+    <string name="menu_ctx_delete_threads">Ištrinti</string>
+    <string name="confirm_delete_thread">Ištrinti pokalbį</string>
+    <string name="confirm_will_delete_thread">Visas pokalbis bus ištrintas.</string>
+    <string name="new_messages">Naujos žinutės</string>
+    <string name="only_one_account_supported">Yra palaikoma tik viena Kontalk paskyra.</string>
+    <string name="from_label">"Nuo: "</string>
+    <string name="to_address_label">"Kam: "</string>
+    <string name="sent_label">"Išsiųsta: "</string>
+    <string name="received_label">"Gauta: "</string>
+    <string name="error_label">"Klaida: "</string>
+    <string name="size_unknown">(nežinoma)</string>
+    <string name="title_file_info">Failo informacija</string>
+    <string name="pref_maintenance">Priežiūra</string>
+    <string name="pref_regenerate_keypair">Iš naujo generuoti asmeninį raktą</string>
+    <string name="pref_privacy_settings">Privatumas</string>
+    <string name="error_delete_thread">Nepavyko ištrinti gijos.</string>
+    <string name="error_delete_message">Nepavyko ištrinti žinutės.</string>
+    <string name="download_file">Atsisiųsti failą</string>
+    <string name="download_again">Atsisiųsti dar kartą</string>
+    <string name="download">Atsisiųsti</string>
+    <string name="download_cancel">Atsisakyti atsisiuntimo</string>
+    <string name="has_draft">Juodraštis</string>
+    <string name="pref_update_server_list">Atnaujinti serverių sąrašą</string>
+    <string name="server_list_last_update">Paskutinis atnaujinimas: %s</string>
+    <string name="pref_push_notifications_disabled">Išjungta</string>
+    <string name="text_search_results_empty">Žinučių nerasta.</string>
+    <string name="pref_notification_settings">Pranešimai</string>
+    <string name="pref_enable_notifications">Pranešimai</string>
+    <string name="confirm_delete_message">Ištrinti žinutę</string>
+    <string name="confirm_will_delete_message">Žinutė bus ištrinta.</string>
+    <string name="title_user_exists">Naudotojas yra</string>
+    <string name="err_validation_failed">Telefono numerio patvirtinimas patyrė nesėkmę.</string>
+    <string name="err_validation_retry_later">Per daug bandymų. Palaukite kelias minutes ir bandykite dar kartą.</string>
+    <string name="err_validation_error">Patvirtinimo metu įvyko klaida. Vėliau bandykite dar kartą.</string>
+    <string name="err_validation_network_error">Nepavyko prisijungti prie serverio. Vėliau bandykite dar kartą.</string>
+    <string name="msg_draft_saved">Žinutė įrašyta kaip juodraštis.</string>
+    <string name="send_mime_not_supported">Failo tipas nėra palaikomas.</string>
+    <string name="button_validation_fallback">Nieko negaunate\?</string>
+    <string name="button_validation_fallback_callerid">Bandyti kitu būdu</string>
+    <string name="notify_ticker_download_completed">Atsisiuntimas užbaigtas</string>
+    <string name="notify_title_download_completed">Atsisiuntimas užbaigtas</string>
+    <string name="notify_text_download_completed">Priedo atsisiuntimas užbaigtas</string>
+    <string name="notify_ticker_download_error">Atsisiuntimas nepavyko</string>
+    <string name="notify_title_download_error">Atsisiuntimo klaida</string>
+    <string name="notify_text_decryption_error">Iššifravimas nepavyko</string>
+    <string name="notify_text_download_error">Priedo atsisiuntimas nepavyko</string>
+    <string name="title_invalid_number">Neteisingas numeris</string>
+    <string name="msg_invalid_cc">Pasirinkite šalį.</string>
+    <string name="msg_register_confirm_number2">Dar kartą patikrinkite, ar numeris yra teisingas.</string>
+    <string name="title_invalid_code">Neteisingas kodas</string>
+    <string name="title_nonetwork">Nėra interneto ryšio</string>
+    <string name="title_fallback">Atsirado problemų\?</string>
+    <string name="title_no_name">Jūsų vardas</string>
+    <string name="menu_refresh">Įkelti iš naujo</string>
+    <string name="title_error">Klaida</string>
+    <string name="person_me">Aš</string>
+    <string name="err_sync_nonetwork">Tinklas neprieinamas. Vėliau bandykite dar kartą.</string>
+    <string name="title_user_not_found">Naudotojas nerastas</string>
+    <string name="pref_appearance_settings">Išvaizda</string>
+    <string name="pref_font_size">Šrifto dydis</string>
+    <string name="menu_invite_group">Pridėti naudotojus</string>
+    <string name="menu_group_info">Grupės informacija</string>
+    <string name="menu_block_user">Užblokuoti</string>
+    <string name="menu_unblock_user">Atblokuoti</string>
+    <string name="open_file">Atverti failą</string>
+    <string name="downloading_attachment">Atsisiunčiamas priedas…</string>
+    <string name="decrypting_attachment">Iššifruojamas priedas…</string>
+    <string name="seen_moment_ago_label">prieš kelias akimirkas</string>
+    <string name="seen_typing_label">rašo…</string>
+    <string name="seen_group_typing_label_one">%s rašo…</string>
+    <string name="seen_group_typing_label_two">%1$s ir %2$s rašo…</string>
+    <string name="pref_background_uri">Fonas</string>
+    <string name="err_attachment_corrupted">Nepavyko atsisiųsti priedo. Gali būti, kad žinutė yra sugadinta.</string>
+    <string name="serverlist_updating">Atnaujinamas serverių sąrašas…</string>
+    <string name="serverlist_update_error">Nepavyko atsisiųsti serverių sąrašo. Vėliau bandykite dar kartą.</string>
+    <string name="serverlist_update_nodata">Nerasta jokio prieinamo serverių sąrašo.</string>
+    <string name="serverlist_update_nonetwork">Tinklas neprieinamas. Vėliau bandykite dar kartą.</string>
+    <string name="pref_vibrate_label_always">Visada</string>
+    <string name="pref_vibrate_label_never">Niekada</string>
+    <string name="pref_fontsize_label_small">Mažas</string>
+    <string name="pref_fontsize_label_medium">Vidutinis</string>
+    <string name="pref_fontsize_label_large">Didelis</string>
+    <string name="pref_balloon_label_iphone">iPhone</string>
+    <string name="pref_text_enter_label_newline_send">Siųsti</string>
+    <string name="pref_idle_time_label_never">Niekada</string>
+    <string name="pref_maps_google_label">Google Žemėlapiai</string>
+    <string name="pref_maps_osm_label">OpenStreetMap</string>
+
+    <string name="pref_export_keypair">Eksportuoti asmeninį raktą</string>
+    <string name="msg_import_keypair_complete">Asmeninio rakto importavimas užbaigtas.</string>
+    <string name="err_import_keypair_failed">Asmeninio rakto importavimas nepavyko.</string>
+    <string name="title_passphrase">Slaptažodis</string>
+    <string name="title_passphrase_request">Asmeninio rakto slaptažodis</string>
+    <string name="err_invalid_passphrase">Neteisingas slaptažodis. Paleiskite programėlę iš naujo ir bandykite kitą.</string>
+
+    <string name="msg_status_sending">Siunčiama</string>
+    <string name="msg_status_sent">Išsiųsta</string>
+    <string name="msg_status_notaccepted">Atmesta</string>
+    <string name="msg_status_notdelivered">Nepristatyta</string>
+    <string name="msg_status_delivered">Pristatyta</string>
+    <string name="msg_status_encrypted">Šifruota</string>
+
+    <string name="attachment_camera">Kamera</string>
+    <string name="attachment_picture">Galerija</string>
+    <string name="attachment_file">Failas</string>
+    <string name="attachment_location">Vieta</string>
+
+    <string name="location_no_result">Rezultatų nėra</string>
+    <string name="places_nearby">Gretimos vietos</string>
+    <string name="send_selected_location">Siųsti pasirinktą vietą</string>
+    <string name="send_location">Siųsti jūsų dabartinę vietą</string>
+    <string name="loading">Įkeliama…</string>
+    <string name="your_position">Jūs</string>
+    <string name="err_location_permission">Prieiga prie vietos buvo uždrausta.</string>
+    <string name="menu_open_map">Atverti žemėlapiuose</string>
+    <string name="menu_map">Žemėlapis</string>
+    <string name="menu_satellite">Palydovas</string>
+
+    <string name="msg_not_implemented">Kol kas neįgyvendinta.</string>
+
+    <string name="pref_other">Kita</string>
+    <string name="pref_donate">Paaukoti</string>
+    <string name="pref_about">Apie</string>
+
+    <string name="title_about">Apie</string>
+    <string name="title_donation">Paaukoti</string>
+    <string name="title_credits">Padėkos</string>
+
+    <string name="about_version">%1$s (%2$d)</string>
+
+    <string name="social_twitter">Twitter</string>
+    <string name="social_googleplus">Google Plus</string>
+    <string name="social_facebook">Facebook</string>
+    <string name="social_identica">Identi.ca</string>
+
+    <string name="title_bitcoin_dialog">Bitcoin</string>
+    <string name="app_description">Bendruomenės valdomas tikralaikių pokalbių tinklas</string>
+    <string name="service_name">Žinučių centras</string>
+    <string name="sync_service_name">Sinchronizuoti adresatus</string>
+    <string name="menu_search">Ieškoti</string>
+    <string name="pref_title_network_uri">Tai nustelbs automatinį serverių sąrašo tvarkymą</string>
+    <string name="number_validation_intro2">Jeigu šiame įrenginyje negalite sulaukti skambučių ar gauti SMS žinučių, įterpkite savo telefono numerį: mes susiesime numerį su šiuo įrenginiu.</string>
+    <string name="code_validation_intro">Netrukus turėtumėte gauti SMS žinutę ar sulaukti skambučio.</string>
+    <string name="code_validation_intro2">Žemiau įveskite kodą, kurį gavote ar išgirdote.</string>
+    <string name="code_validation_intro3">Turėkite omenyje, kad SMS žinutės ar skambučio galite sulaukti iš užsienio numerio.</string>
+    <string name="code_validation_intro_missed_call">Netrukus į savo numerį turėtumėte sulaukti praleisto skambučio. <b>NEATSILIEPKITE Į SKAMBUTĮ.</b></string>
+    <string name="code_validation_intro2_missed_call">Įveskite paskutinius %d skaitmenis numerio, kuris jums skambino.</string>
+    <string name="code_validation_intro_callerid">Bakstelėkite mygtuką žemiau ir inicijuokite praleistą skambutį į tą telefono numerį. Turėkite omenyje, kad <b>skambutis privalo būti inicijuotas iš telefono numerio, kurį registruojate</b>. Skambutis bus nemokamas, jeigu išgirdę pirmąjį toną, padėsite ragelį. Mums šito pakaks.</string>
+    <string name="code_validation_intro2_callerid">Nutraukę skambutį, grįžkite čia ir žemiau bakstelėkite patvirtinimo mygtuką.</string>
+    <string name="confirm_cancel_registration">Jeigu grįšite, turėsite pradėti registraciją nuo pat pradžių. Jeigu norite perjungti programėlę, tiesiog, naudokite įrenginio pradžios mygtuką.</string>
+    <string name="view_contact">Rodyti adresatą</string>
+    <string name="view_conversation">Rodyti pokalbį</string>
+    <string name="menu_ctx_archive_threads">Archyvuoti</string>
+    <string name="menu_ctx_unarchive_threads">Išarchyvuoti</string>
+    <string name="delete_thread_messages">Ištrinti pokalbio istoriją</string>
+    <string name="hint_enter_text">Čia įveskite tekstą</string>
+    <string name="hint_type_to_compose">Rašykite</string>
+    <string name="view_image">Rodyti paveikslą</string>
+    <string name="title_message_options">Žinučių parametrai</string>
+    <string name="menu_message_details">Išsamiau</string>
+    <string name="title_message_details">Išsamiau apie žinutę</string>
+    <string name="message_type_label">"Tipas: "</string>
+    <string name="text_message">Tekstinė žinutė</string>
+    <string name="location_message">Vietos žinutė</string>
+    <string name="image_message">Paveikslo žinutė</string>
+    <string name="audio_message">Garso žinutė</string>
+    <string name="refused_label">"Nepriimta: "</string>
+    <string name="notdelivered_label">"Nepristatyta: "</string>
+    <string name="delivered_label">"Pristatyta: "</string>
+    <string name="encrypted_label">"Šifruota: "</string>
+    <string name="security_label">"Saugumas: "</string>
+    <string name="size_label">"Dydis: "</string>
+    <string name="pref_restart_msgcenter">Paleisti žinučių centrą iš naujo</string>
+    <string name="pref_title_restart_msgcenter">Naudokite tai, jeigu Kontalk tinkamai neveikia</string>
+    <string name="pref_idle_time">Atsijungti esant neveiklumui</string>
+    <string name="pref_title_idle_time">Kiek laiko laukti prieš atsijungiant dėl neveiklumo</string>
+    <string name="pref_wakeup_time">Iš naujo prisijungti prie serverio</string>
+    <string name="pref_title_regenerate_keypair">Naudokite tai tuo atveju, jeigu jūsų asmeninis raktas buvo sukompromituotas</string>
+    <string name="pref_regenerate_keypair_confirm">Jūsų paskyrai bus sugeneruota ir priskirta nauja raktų pora. Jūsų senasis raktas taps negaliojantis.</string>
+    <string name="pref_encrypt">Šifruoti žinutes</string>
+    <string name="pref_encrypt_userdata">Šifruoti asmeninius duomenis</string>
+    <string name="pref_auto_accept_subscriptions">Automatiškai priimti pakvietimus</string>
+    <string name="contact_not_registered">Atrodo, kad adresatas nėra užsiregistravęs Kontalk.</string>
+    <string name="decrypt_message">Iššifruoti žinutę</string>
+    <string name="hint_search_full">Ieškoti žinučių</string>
+    <string name="hint_search_quickbox">Tekstas jūsų žinutėse</string>
+    <string name="title_search">Ieškoti: \"%s\"</string>
+    <string name="pref_title_enable_notifications">Rodyti žinučių pranešimus būsenos juostoje</string>
+    <string name="pref_vibrate">Vibruoti</string>
+    <string name="confirm_will_delete_messages">Pasirinktos žinutės bus ištrintos.</string>
+    <string name="err_authentication_failed">Patvirtinimo kodas atmestas. Tapatybės nustatymas patyrė nesėkmę.</string>
+    <string name="err_authentication_failed_callerid">Patvirtinimas nebuvo sėkmingas. Pabandykite dar kartą paskambinti į telefono numerį ir palaukti šiek tiek ilgiau.</string>
+    <string name="msg_validation_canceled">Patvirtinimo atsisakyta. Gali būti, kad vis tiek gausite SMS žinutę.</string>
+    <string name="err_validation_nonetwork">Nėra prieinamo interneto ryšio. Tam, kad veiktų, Kontalk reikalauja aktyvaus interneto ryšio.</string>
+    <string name="err_validation_server_not_supported">Pasirinktas serveris nepalaiko registracijos. Nustatymų ekrane sukonfigūruokite kitą serverį.</string>
+    <string name="text_encrypted">(šifruota)</string>
+    <string name="peer_unknown">(nežinoma)</string>
+    <string name="button_validate">Registruotis</string>
+    <string name="button_validation_register">Patvirtinti</string>
+    <string name="msg_invalid_number">Įveskite teisingą telefono numerį.</string>
+    <string name="msg_register_confirm_number1">Mes patvirtinsime telefono numerį:</string>
+    <string name="msg_invalid_code">Įveskite teisingą kodą.</string>
+    <string name="msg_fallback">Pabandysime kitokiu būdu patvirtinti jūsų telefono numerį.</string>
+    <string name="msg_no_name">Įveskite vardą.</string>
+    <string name="menu_invite">Pakviesti naudotojus</string>
+    <string name="msg_do_refresh">Norėdami atnaujinti adresatų sąrašą, naudokite Meniu &gt; Įkelti iš naujo.</string>
+    <string name="msg_sync_progress">Iš naujo įkeliamas adresatų sąrašas…</string>
+    <string name="err_sync_failed">Nepavyko iš naujo įkelti adresatų sąrašo. Vėliau bandykite dar kartą.</string>
+    <string name="text_invite_message">Labas! Išbandyk Kontalk, nemokamą susirašinėjimo programėlę! http://kontalk.org/</string>
+    <string name="text_contacts_empty">Nauji naudotojai bus automatiškai pridėti į šį sąrašą.
+\n
+\nNorėdami kažkam išsiųsti pakvietimą, naudokite <b>Meniu</b> &gt; <b>Pakviesti naudotojus</b>.</string>
+    <string name="text_conversations_empty">Norėdami pradėti rašyti žinutes, žemiau naudokite <b>naujos žinutės</b> mygtuką.</string>
+    <string name="text_archived_conversations_empty">Norėdami archyvuoti pokalbius, pasirinkite juos pagrindiniame ekrane ir įrankių juostoje naudokite <b>archyvavimo</b> mygtuką.</string>
+    <string name="message_user_not_found">Atrodo, kad adresatas nėra užregistruotas Kontalk. Galite bandyti vis tiek susisiekti su naudotoju arba išsiųsti jam/jai pakvietimo žinutę.</string>
+    <string name="yes_user_not_found">Vis tiek susisiekti su naudotoju</string>
+    <string name="no_user_not_found">Siųsti pakvietimą</string>
+    <string name="menu_status">Būsena</string>
+    <string name="menu_attachment">Pridėti priedą</string>
+    <string name="menu_smileys">Šypsenėlės</string>
+    <string name="menu_start_group">Pradėti grupę</string>
+    <string name="menu_set_group_subject">Nustatyti grupės temą</string>
+    <string name="menu_leave_group">Išeiti iš grupės</string>
+    <string name="menu_encryption">Šifravimas</string>
+    <string name="vcard_message">vCard žinutė</string>
+    <string name="open_audio">Atkurti garso įrašo failą</string>
+    <string name="msg_msgcenter_restarted">Žinučių centras paleistas iš naujo.</string>
+    <string name="seen_group_typing_label_more">%d žmonės rašo…</string>
+    <string name="pref_custom_background">Tinkintas fonas</string>
+    <string name="pref_title_background_uri">Nustatyti tinkintą pokalbių fono paveikslą</string>
+    <string name="err_custom_background">Nustatant foną, įvyko klaida. Pabandykite pasirinkti kitą paveikslą.</string>
+    <string name="pref_idle_time_label_5m">5 minutes</string>
+    <string name="pref_idle_time_label_15m">15 minučių</string>
+    <string name="pref_idle_time_label_30m">30 minučių</string>
+    <string name="pref_idle_time_label_1h">1 valandą</string>
+    <string name="pref_change_passphrase">Pakeisti asmeninio rakto slaptažodį</string>
+    <string name="err_import_keypair_uid_mismatch">Importuotas raktas neatitinka jūsų įvesto telefono numerio.</string>
+    <string name="attachment_contact">Adresatas</string>
+    <string name="attachment_audio">Garso įrašas</string>
+    <string name="attachment_video">Vaizdo įrašas</string>
+    <string name="attachment_vcard">Adresatas</string>
+    <string name="notification_location">išsiuntė jums vietą</string>
+    <string name="accurate_to">%1$s metrų tikslumu</string>
+    <string name="meters_away">%d m atstumu</string>
+    <string name="kilometers_away">%.2f km atstumu</string>
+    <string name="err_googlemaps_fallback_osm">Google Maps neprieinama, grįžtama prie OpenStreetMap.</string>
+    <string name="err_location_no_providers">Nėra jokių prieinamų vietos teikėjų. Dabartinė vieta nebus prieinama.</string>
+    <string name="chooser_send_picture">Siųsti paveikslą</string>
+    <string name="chooser_error_no_camera_app">Nėra prieinama jokia kameros programėlė.</string>
+    <string name="chooser_error_no_gallery_app">Nėra prieinama jokia galerijos programėlė.</string>
+    <string name="chooser_error_no_app">Nėra prieinama jokia tinkama programa atverti failą.</string>
+
+    <string name="chooser_error_no_browser">Nėra prieinama jokia naršyklė atverti nuorodą.</string>
+    <string name="pref_help">Žinynas</string>
+    <string name="donate_text">Tam, kad galėtų veikti, Kontalk reikia lėšų. Apsvarstykite galimybę paaukoti, netgi nedidelę sumą.</string>
+    <string name="text_bitcoin_dialog">Bitcoin adresas:
+\n%s</string>
+    <string name="donate_wallet">Google Play</string>
+    <string name="donate_paypal">PayPal</string>
+    <string name="donate_bitcoin">Bitcoin</string>
+    <string name="donate_flattr">Flattr</string>
+
+    <string name="msg_generating_keypair">Fone generuojamas asmeninis raktas.</string>
+    <string name="notify_gen_keypair_ticker">Generuojamas asmeninis raktas…</string>
+    <string name="notify_gen_keypair_title">Generuojamas asmeninis raktas</string>
+    <string name="notify_gen_keypair_text">Galite tęsti darbą kaip įprasta.</string>
+
+    <string name="msg_xmpp_upgrading">Naujinama…</string>
+    <string name="title_no_personal_key">Nėra jokio asmeninio rakto</string>
+    <string name="msg_no_personal_key">Šiuo metu asmeninis raktas yra neprieinamas (tikriausiai, dėl to, kad atsinaujinote). Jeigu nesugeneruosite asmeninio rakto, negalėsite prisijungti prie Kontalk tinklo. Įveskite savo vardą, užverdami ir vėl atverdami Kontalk.</string>
+    <string name="err_keypair_export_other">Nepavyko eksportuoti asmeninio rakto.</string>
+
+    <string name="security_status_good">geras</string>
+    <string name="security_status_bad">blogas</string>
+
+    <string name="security_error_decrypt_failed">" (iššifravimas nepavyko)"</string>
+    <string name="security_error_public_key_unavail">" (viešasis raktas neprieinamas)"</string>
+
+    <string name="invite_notification">kviečia jus į pokalbį</string>
+    <string name="title_invitation">Pakvietimas į pokalbį</string>
+    <string name="text_invitation2">Kontrolinis kodas:</string>
+    <string name="button_accept">Priimti</string>
+    <string name="button_refuse">Atmesti</string>
+    <string name="button_block">Užblokuoti</string>
+    <string name="button_ignore">Nepaisyti</string>
+    <string name="button_identity">Tapatybė</string>
+    <string name="button_private_chat">Privatus pokalbis</string>
+    <string name="text_invitation_info">(pakvietimas į pokalbį)</string>
+    <string name="title_identity">Tapatybė</string>
+    <string name="title_identity_self">Tapatybė (tai esate jūs!)</string>
+
+    <string name="msg_connecting_iab">Jungiamasi prie Google Play…</string>
+    <string name="msg_iab_thankyou">Ačiū!</string>
+    <string name="msg_iab_thankyou_warning">Kažkas nutiko, bet paaukojimas buvo priimtas. Dėkojame!</string>
+
+    <string name="copy_clipboard">Kopijuoti į iškarpinę</string>
+    <string name="bitcoin_clipboard_copied">Bitcoin adresas nukopijuotas į iškarpinę.</string>
+
+    <string name="warn_no_personal_key">Nepavyko įkelti asmeninio rakto. Norėdami vis tiek išsiųsti žinutę, išjunkite nustatymuose šifravimą.</string>
+    <string name="warn_no_public_key">Nepavyko rasti šio naudotojo viešojo rakto. Pabandykite iš naujo įkelti savo adresatų sąrašą arba, norėdami vis tiek išsiųsti žinutę, išjunkite nustatymuose šifravimą.</string>
+    <string name="warn_encryption_failed">Nepavyko šifruoti žinutės. Norėdami vis tiek ją išsiųsti, išjunkite nustatymuose šifravimą.</string>
+    <string name="warn_not_subscribed">Nepavyko išsiųsti žinutės. Naudotojas kol kas nepriėmė jūsų pakvietimo.</string>
+
+    <string name="pref_sync_invisible_contacts">Įtraukti nematomus adresatus</string>
+    <string name="pref_title_sync_invisible_contacts">Įtraukti adresatus, kurie nėra rodomi Adresatų programėlėje. Įjunkite, jei naudojate DAVDroid</string>
+
+    <string name="pref_server_messages">Gauti serverio žinutes</string>
+    <string name="pref_title_server_messages">Leisti žinutes nuo serverio administratorių. Jei tai išjungsite, galite praleisti svarbias naujienas</string>
+
+    <string name="pref_accept_any_certificate">Priimti bet kokį SSL liudijimą</string>
+
+    <string name="pref_delete_account">Ištrinti savo paskyrą</string>
+    <string name="msg_delete_account">Ištrinus paskyrą, taip pat bus ištrintos ir visos jūsų žinutės. Jūsų paskyra bus ištrinta serveryje automatiškai po kelių savaičių.</string>
+    <string name="msg_delete_account_progress">Ištrinama jūsų paskyra…</string>
+
+    <string name="msg_user_blocked">Naudotojas užblokuotas.</string>
+    <string name="msg_user_unblocked">Naudotojas atblokuotas.</string>
+    <string name="title_block_user_warning">Ar tikrai užblokuoti šį naudotoją\?</string>
+    <string name="title_unblock_user_warning">Ar tikrai atblokuoti šį naudotoją\?</string>
+    <string name="title_disable_encryption">Išjungti šifravimą šiam pokalbiui\?</string>
+    <string name="msg_disable_encryption">Visos naujos šiame pokalbyje išsiųstos žinutės NEBUS šifruojamos.
+\nIšjunkite šifravimą tik tuo atveju, jeigu jūsų adresatas neturi viešojo rakto.</string>
+    <string name="menu_disable_encryption">Išjungti</string>
+
+    <string name="notification_text_more">Bakstelėkite, norėdami sužinoti daugiau</string>
+
+    <string name="title_auth_error">Tapatybės nustatymo klaida</string>
+    <string name="notification_ticker_service_running">Kontalk veikia fone</string>
+    <string name="notification_text_service_running">Bakstelėkite, norėdami atverti</string>
+
+    <string name="title_password1">Slaptažodis:</string>
+    <string name="title_password2">Patvirtinkite slaptažodį:</string>
+
+    <string name="err_password_too_short">Slaptažodyje privalo būti bent %d simboliai.</string>
+    <string name="err_passwords_mismatch">Slaptažodžiai nesutampa!</string>
+    <string name="err_password_invalid">Neteisingas slaptažodis.</string>
+
+    <string name="err_change_passphrase">Nepavyko pakeisti asmeninio rakto slaptažodžio.</string>
+    <string name="err_file_not_found">Failas nerastas.</string>
+    <string name="err_audio_record_permission">Prieiga prie mikrofono buvo uždrausta.</string>
+    <string name="slide_to_cancel">PERBRAUKITE, NORĖDAMI ATSISAKYTI</string>
+
+    <string name="pref_media_settings">Medija</string>
+    <string name="pref_image_resize">Keisti paveikslų dydžius</string>
+    <string name="pref_media_autodownload_threshold">Automatinio atsiuntimo slenkstis</string>
+    <string name="pref_title_media_autodownload_threshold">Failai, kurių dydis mažesnis nei šis, visada bus atsiunčiami automatiškai</string>
+    <string name="pref_msg_media_autodownload_threshold">Įveskite reikšmę, KB. Nustatykite į 0, kad niekada nebūtų atsiunčiama automatiškai.</string>
+
+    <string name="pref_media_autodownload">Atsisiųsti automatiškai</string>
+    <string name="pref_media_autodownload_label_never">Niekada</string>
+    <string name="pref_media_autodownload_label_always">Visada</string>
+
+    <string name="pref_location_settings">Vieta</string>
+    <string name="pref_maps_service">Paslaugos teikėjas</string>
+
+    <string name="pref_on">Įjungta</string>
+    <string name="pref_off">Išjungta</string>
+
+    <string name="err_server_invalid_format">Neteisingas adreso formatas.</string>
+
+    <string name="err_no_contacts_app">Nerasta jokios adresatų programėlės.</string>
+    <string name="err_no_contact">Adresatas nerastas.</string>
+
+    <string name="warning_button_details">IŠSAMIAU</string>
+    <string name="warning_older_version">Jūsų bičiulis naudoja senesnę Kontalk versiją. Kai kurios ypatybės gali tinkamai neveikti.</string>
+    <string name="warning_public_key_changed">Pasikeitė asmeninis raktas</string>
+    <string name="title_public_key_changed_warning">Pasikeitė asmeninis raktas</string>
+    <string name="warning_public_key_unknown">Asmeninis raktas kol kas nepatvirtintas</string>
+    <string name="warning_public_key_group_unverified">Kai kurių grupės dalyvių tapatybės nebuvo patvirtintos.</string>
+
+    <string name="warning_user_blocked">Jūs užblokavote šį naudotoją.</string>
+
+    <string name="about_credits_devteam"><b>Programėlę Kontalk jums pateikė:</b></string>
+    <string name="about_credits_gfx"><b>Grafika/Piktogramos</b></string>
+    <string name="about_credits_contrib"><b>Talkininkai</b></string>
+    <string name="about_credits_translators"><b>Vertėjai</b></string>
+
+    <string name="pref_show_blocked_users">Rodyti užblokuotus naudotojus</string>
+    <string name="button_load_next_page">Įkelti daugiau žinučių</string>
+
+    <string name="title_group_subject">Grupės tema</string>
+    <string name="group_command_create">Grupė sukurta:</string>
+    <string name="group_command_self_parted">Jūs išėjote iš grupės.</string>
+    <string name="group_command_user_parted">%s išėjo iš grupės.</string>
+    <string name="group_command_owner_parted">Savininkas (%s) išėjo iš grupės. Niekas negali pridėti ar pašalinti dalyvių.</string>
+    <string name="group_command_subject">Grupės tema nustatyta į: %s</string>
+    <string name="group_command_users_added">Pridėti naudotojai:</string>
+    <string name="group_command_users_removed">Pašalinti naudotojai:</string>
+
+    <string name="group_command_text_create">Grupė sukurta</string>
+    <string name="group_command_text_part">Kažkas išėjo iš šios grupės</string>
+    <string name="group_command_text_part_self">Jūs išėjote iš šios grupės</string>
+    <string name="group_command_text_part_kicked">Jūs buvote pašalinti iš šios grupės</string>
+    <string name="group_command_text_add_remove">Kažkas buvo pridėtas ar pašalintas</string>
+
+    <string name="groupinfo_activity_title">Grupės informacija</string>
+
+    <string name="group_info_set_title">Pakeisti temą</string>
+    <string name="group_info_leave">Išeiti iš grupės</string>
+    <string name="group_info_members">Grupės dalyviai</string>
+    <string name="group_info_ignore_all">Nepaisyti visų</string>
+    <string name="group_info_owner_member">Savininkas</string>
+    <string name="confirm_will_leave_group">Išėję iš grupės, daugiau nebegalėsite į ją ateiti.</string>
+    <string name="leave_group_delete_messages">Taip pat ištrinti pokalbio istoriją</string>
+    <string name="group_info_menu_remove">Šalinti</string>
+    <string name="group_info_menu_add_again">Pridėti dar kartą</string>
+
+    <string name="title_ignore_all_identities">Nepaisyti visų tapatybių\?</string>
+    <string name="msg_ignore_all_identities">Visos nepatvirtintos tapatybės bus pažymėtos kaip nepaisomos.</string>
+    <string name="learn_more">Sužinoti daugiau</string>
+
+    <string name="status_label">"Būsena: "</string>
+    <string name="action_compose">Naujas pokalbis</string>
+    <string name="action_compose_group">Nauja grupė</string>
+
+    <string name="delete_threads_leave_any_groups">Taip pat išeiti iš bet kokių grupių</string>
+
+    <string name="check_dont_show_again">Daugiau neberodyti</string>
+
+    <string name="menu_import_messages">Importuoti žinutes</string>
+
+    <string name="pref_debug_log">Įjungti derinimo žurnalą</string>
+    <string name="pref_send_debug_log">Siųsti derinimo žurnalą</string>
+    <string name="pref_copy_database">Kopijuoti duomenų bazę</string>
+    <string name="msg_copy_database_success">Duomenų bazė nukopijuota į: %s</string>
+    <string name="msg_copy_database_failed">Nepavyko nukopijuoti duomenų bazę: %s</string>
+
+    <string name="registration_poweredby">Veikia su</string>
+    <string name="registration_accept_terms_title">Sutinkate su paslaugos sąlygomis\?</string>
+    <string name="registration_accept_terms_text">Serveris ties &lt;b&gt;%1$s&lt;/b&gt; prašo &lt;a href=%2$s&gt;sutikti su paslaugos sąlygomis&lt;/a&gt;.</string>
+
+    <string name="audio_duration_max">%1$s / %2$s</string>
+
+    <string name="pref_register_device">Registruoti įrenginį</string>
+    <string name="register_device_title">Registruoti įrenginį</string>
+    <string name="register_device_request_error">Klaida, užklausiant įrenginio registracijos.</string>
+    <string name="register_device_requesting">Užklausiama registracija…</string>
+    <string name="register_device_nonetwork">Tinklas neprieinamas. Vėliau bandykite dar kartą.</string>
+    <string name="import_device_title">Importuoti paskyrą</string>
+    <string name="import_device_hint_account">Telefono numeris</string>
+    <string name="import_device_hint_server">Serverio pavadinimas</string>
+    <string name="import_device_hint_token">Slaptas kodas</string>
+    <string name="err_import_device_fill_all">Užpildykite visus laukus.</string>
+    <string name="import_device_requesting">Užklausiama paskyra…</string>
+    <string name="import_device_btn_input">Įvesti rankiniu būdu</string>
+    <string name="btn_device_overwrite">Aš praradau savo senąją paskyrą ar įrenginį</string>
+    <string name="contactinfo_phone_number">Telefono numeris</string>
+    <string name="contactinfo_fingerprint">Kontrolinis kodas</string>
+    <string name="contactinfo_userid">Naudotojo ID</string>
+
+    <string name="btn_reply_cancel_description">Atsisakyti atsakymo</string>
+    <string name="reply_message_deleted">Žinutė buvo ištrinta.</string>
+
+    <string name="title_archived_threads">Archyvuoti pokalbiai</string>
+    <string name="footer_archived_threads">Archyvuoti pokalbiai (%d)</string>
+
+    <string name="permission_messages_label">Prieiga prie Kontalk žinučių</string>
+    <string name="permission_messages_description">Gali skaityti ir rašyti į Kontalk žinučių duomenų bazę</string>
+    <string name="permission_users_label">Prieiga prie Kontalk naudotojų informacijos</string>
+    <string name="permission_users_description">Gali skaityti ir rašyti į Kontalk naudotojų duomenų bazę ir raktinę</string>
+
+    <string name="contact_name_server">Jūsų serveris</string>
+
+    <string name="notify_incoming_message_channel_name">Žinutės</string>
+    <string name="notify_media_download_channel_name">Atsiuntimai</string>
+    <string name="notify_message_center_channel_name">Žinučių centras</string>
+    <string name="notify_other_channel_name">Kita</string>
+    <string name="notify_other_channel_description">Kiti pranešimai</string>
+
+    <plurals name="confirm_will_delete_threads">
+	<item quantity="one">Pasirinktas pokalbis bus ištrintas.</item>
+	<item quantity="few">Pasirinkti pokalbiai bus ištrinti.</item>
+	<item quantity="other">Pasirinkti pokalbiai bus ištrinti.</item>
+</plurals>
+
+    <plurals name="delete_threads_leave_groups">
+	<item quantity="one">Taip pat išeiti iš grupės</item>
+	<item quantity="few">Taip pat išeiti iš grupių</item>
+	<item quantity="other">Taip pat išeiti iš grupių</item>
+</plurals>
+
+    <plurals name="notification_more">
+	<item quantity="one">+ dar %d</item>
+	<item quantity="few">+ dar %d</item>
+	<item quantity="other">+ dar %d</item>
+</plurals>
+
+    <plurals name="group_people">
+	<item quantity="one">%d žmogus</item>
+	<item quantity="few">%d žmonės</item>
+	<item quantity="other">%d žmonių</item>
+</plurals>
+
+    <string name="authenticator_name">Tapatybės nustatymo tarnyba</string>
+    <string name="download_service">Atsisiuntimo tarnyba</string>
+    <string name="share">Bendrinti</string>
     </resources>
