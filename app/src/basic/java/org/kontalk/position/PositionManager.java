@@ -40,9 +40,9 @@ public class PositionManager {
         return new PositionOsmFragment();
     }
 
-    public static String getStaticMapUrl(Context context, double lat, double lon, Integer zoom, int width, int height, Integer scale) {
-        return new OsmStaticUrlBuilder().setCenter(lat, lon).setZoom(zoom)
-                .setMarker(lat, lon).setSize(width, height).toString();
+    public static RequestDetails getStaticMapUrl(Context context, double lat, double lon, Integer zoom, int width, int height, Integer scale) {
+        return new RequestDetails(new OsmStaticUrlBuilder().setCenter(lat, lon).setZoom(zoom)
+                .setMarker(lat, lon).setSize(width, height).toString());
     }
 
     public static String getMapsUrl(Context context, double lat, double lon) {

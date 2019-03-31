@@ -39,6 +39,7 @@ import android.widget.TextView;
 import org.kontalk.R;
 import org.kontalk.message.LocationComponent;
 import org.kontalk.position.PositionManager;
+import org.kontalk.position.RequestDetails;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.util.CombinedDrawable;
 
@@ -93,7 +94,7 @@ public class LocationContentView extends RelativeLayout
         mPlaceholder.setVisibility(GONE);
         mContent.setVisibility(VISIBLE);
 
-        PositionManager.RequestDetails imageURL = PositionManager.getStaticMapUrl(getContext(),
+        RequestDetails imageURL = PositionManager.getStaticMapUrl(getContext(),
             mComponent.getLatitude(), mComponent.getLongitude(), 15,
             200, 100, (int) getContext().getResources().getDisplayMetrics().density);
 

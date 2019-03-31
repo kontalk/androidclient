@@ -18,8 +18,6 @@
 
 package org.kontalk.position;
 
-
-import com.bumptech.glide.load.model.Headers;
 import com.bumptech.glide.load.model.LazyHeaders;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -34,10 +32,10 @@ import android.widget.Toast;
 import org.kontalk.R;
 import org.kontalk.util.Preferences;
 
-/**
- * @author andreacappelli
- */
 
+/**
+ * @author Andrea Cappelli
+ */
 public class PositionManager {
     private static final String PROVIDER_GOOGLE = "google";
     private static final String PROVIDER_OSM = "osm";
@@ -143,20 +141,6 @@ public class PositionManager {
 
     public static RecyclerView.Adapter<?> createPlacesAdapter(Context context) {
         return new PlacesAdapter(context);
-    }
-
-    public static class RequestDetails {
-        public final String url;
-        public final Headers headers;
-
-        public RequestDetails(String url) {
-            this(url, Headers.DEFAULT);
-        }
-
-        public RequestDetails(String url, Headers headers) {
-            this.url = url;
-            this.headers = headers;
-        }
     }
 
 }
