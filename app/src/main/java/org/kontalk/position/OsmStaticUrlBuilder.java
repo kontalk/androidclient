@@ -48,30 +48,22 @@ public class OsmStaticUrlBuilder {
     }
 
     public OsmStaticUrlBuilder setMarker(double lat, double lon) {
-        StringBuilder marker = new StringBuilder();
-
-        marker.append(lat)
-            .append(',')
-            .append(lon);
-
-        mMarker = marker.toString();
-
+        mMarker = String.valueOf(lat) + "," + lon;
         return this;
     }
 
+    @Override
     public String toString() {
-        return new StringBuilder()
-            .append(URL)
-            .append("?center=")
-            .append(mCenter)
-            .append("&zoom=")
-            .append(mZoom)
-            .append("&size=")
-            .append(mSize)
-            .append("&markers=")
-            .append(mMarker)
-            .append(",ol-marker")
-            .toString();
+        return URL +
+            "?center=" +
+            mCenter +
+            "&zoom=" +
+            mZoom +
+            "&size=" +
+            mSize +
+            "&markers=" +
+            mMarker +
+            ",ol-marker";
     }
 
 }

@@ -138,6 +138,7 @@ import org.kontalk.message.AttachmentComponent;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.GroupCommandComponent;
 import org.kontalk.message.GroupComponent;
+import org.kontalk.message.HiddenTextComponent;
 import org.kontalk.message.InReplyToComponent;
 import org.kontalk.message.LocationComponent;
 import org.kontalk.message.ReferencedMessage;
@@ -2310,8 +2311,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             if (!(request instanceof SendDeliveryReceiptRequest)) {
                 TextComponent body = message.getComponent(TextComponent.class);
-                if (body != null)
+                if (body != null) {
                     msg.setBody(body.getContent());
+                }
+                else {
+                    HiddenTextComponent body2 = message.getComponent(HiddenTextComponent.class);
+                    if (body2 != null) {
+                        msg.setBody(body2.getContent());
+                    }
+                }
 
                 // generate preview if needed
                 AttachmentComponent attachment = message.getComponent(AttachmentComponent.class);

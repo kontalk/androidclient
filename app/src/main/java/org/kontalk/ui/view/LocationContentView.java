@@ -22,7 +22,6 @@ import java.util.regex.Pattern;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.model.GlideUrl;
-import com.bumptech.glide.load.model.LazyHeaders;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -94,7 +93,7 @@ public class LocationContentView extends RelativeLayout
         mPlaceholder.setVisibility(GONE);
         mContent.setVisibility(VISIBLE);
 
-        String imageURL = PositionManager.getStaticMapUrl(getContext(),
+        PositionManager.RequestDetails imageURL = PositionManager.getStaticMapUrl(getContext(),
             mComponent.getLatitude(), mComponent.getLongitude(), 15,
             200, 100, (int) getContext().getResources().getDisplayMetrics().density);
 
@@ -112,12 +111,12 @@ public class LocationContentView extends RelativeLayout
             mAddress.setText(mComponent.getStreet());
         }
 
-        GlideUrl url = new GlideUrl(imageURL, new LazyHeaders.Builder()
-            .addHeader("Referer", getContext().getResources().getString(R.string.website))
-            .build());
-        Glide.with(getContext())
-            .load(url)
-            .into(mContent);
+        if (imageURL != null) {
+            GlideUrl url = new GlideUrl(imageURL.url, imageURL.headers);
+            Glide.with(getContext())
+                .load(url)
+                .into(mContent);
+        }
     }
 
     @Override
@@ -153,8 +152,7 @@ public class LocationContentView extends RelativeLayout
         defaultDrawable.getPaint().setColor(ContextCompat.getColor(getContext(), R.color.map_placeholder_background));
         Drawable drawable = getContext().getResources().getDrawable(iconRes).mutate();
         DrawableCompat.setTint(drawable, ContextCompat.getColor(getContext(), R.color.app_primary));
-        CombinedDrawable combinedDrawable = new CombinedDrawable(defaultDrawable, drawable);
 
-        return combinedDrawable;
+        return new CombinedDrawable(defaultDrawable, drawable);
     }
 }

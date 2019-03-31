@@ -374,6 +374,11 @@ public class CompositeMessage {
                     String text = c.getString(COLUMN_GEO_TEXT);
                     String street = c.getString(COLUMN_GEO_STREET);
 
+                    // send text along
+                    if (bodyText.length() > 0) {
+                        addComponent(new HiddenTextComponent(bodyText));
+                    }
+
                     LocationComponent location = new LocationComponent(lat, lon, text, street);
                     addComponent(location);
                 }
