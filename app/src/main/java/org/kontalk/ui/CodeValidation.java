@@ -54,7 +54,6 @@ import android.widget.Toast;
 import org.kontalk.BuildConfig;
 import org.kontalk.Log;
 import org.kontalk.R;
-import org.kontalk.client.NumberValidator;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.registration.RegistrationService;
 import org.kontalk.service.registration.event.AccountCreatedEvent;
@@ -137,11 +136,11 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity {
             }
 
             CharSequence textId1, textId2;
-            if (NumberValidator.isMissedCall(sender) || NumberValidator.CHALLENGE_MISSED_CALL.equals(challenge)) {
+            if (RegistrationService.isMissedCall(sender) || RegistrationService.CHALLENGE_MISSED_CALL.equals(challenge)) {
                 // reverse missed call
                 textId1 = getText(R.string.code_validation_intro_missed_call);
                 textId2 = getString(R.string.code_validation_intro2_missed_call,
-                    NumberValidator.getChallengeLength(sender));
+                    RegistrationService.getChallengeLength(sender));
                 if (canFallback) {
                     mFallbackButton.setText(R.string.button_validation_fallback);
                     mFallbackButton.setVisibility(View.VISIBLE);
@@ -152,7 +151,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity {
                 mCallButton.setVisibility(View.GONE);
                 mCode.setVisibility(View.VISIBLE);
             }
-            else if (NumberValidator.CHALLENGE_CALLER_ID.equals(challenge)) {
+            else if (RegistrationService.CHALLENGE_CALLER_ID.equals(challenge)) {
                 // user-initiated missed call
                 textId1 = getText(R.string.code_validation_intro_callerid);
                 textId2 = getText(R.string.code_validation_intro2_callerid);

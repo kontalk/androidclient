@@ -34,9 +34,16 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipInputStream;
+
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -57,9 +64,11 @@ import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.operator.OperatorCreationException;
 
+import android.Manifest;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -73,7 +82,9 @@ import android.provider.ContactsContract;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresPermission;
 import android.support.v4.content.LocalBroadcastManager;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Base64;
 
@@ -1464,6 +1475,161 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
 
     public static void stop(Context context) {
         context.stopService(new Intent(context, RegistrationService.class));
+    }
+
+    public static boolean isMissedCall(String senderId) {
+        // very quick way to check if we are using missed call based verification
+        return senderId != null && senderId.endsWith("???");
+    }
+
+    public static int getChallengeLength(String senderId) {
+        int count = 0;
+        if (senderId != null) {
+            for (int i = senderId.length()-1; i >= 0; i--) {
+                if (senderId.charAt(i) == '?')
+                    count++;
+                else
+                    break;
+            }
+        }
+        return count;
+    }
+
+    /** Handles special numbers not handled by libphonenumber. */
+    public static boolean isSpecialNumber(Phonenumber.PhoneNumber number) {
+        if (number.getCountryCode() == 31) {
+            // handle special M2M numbers: 11 digits starting with 097[0-8]
+            final Pattern regex = Pattern.compile("^97[0-8][0-9]{8}$");
+            Matcher m = regex.matcher(String.valueOf(number.getNationalNumber()));
+            return m.matches();
+        }
+        return false;
+    }
+
+    /**
+     * Handles special cases in a parsed phone number.
+     * @param phoneNumber the phone number to check. It will be modified in place.
+     */
+    public static void handleSpecialCases(Phonenumber.PhoneNumber phoneNumber) {
+        PhoneNumberUtil util = PhoneNumberUtil.getInstance();
+
+        // Argentina numbering rules
+        int argCode = util.getCountryCodeForRegion("AR");
+        if (phoneNumber.getCountryCode() == argCode) {
+            // forcibly add the 9 between country code and national number
+            long nsn = phoneNumber.getNationalNumber();
+            if (firstDigit(nsn) != 9) {
+                phoneNumber.setNationalNumber(addSignificantDigits(nsn, 9));
+            }
+        }
+    }
+
+    static long addSignificantDigits(long n, int ds) {
+        final long orig = n;
+        int count = 1;
+        while (n < -9 || 9 < n) {
+            n /= 10;
+            count++;
+        }
+        long power = ds * (long) Math.pow(10, count);
+        return orig + power;
+    }
+
+    private static int firstDigit(long n) {
+        while (n < -9 || 9 < n) n /= 10;
+        return (int) Math.abs(n);
+    }
+
+    /**
+     * Converts pretty much any phone number into E.164 format.
+     * @param myNumber used to take the country code if not found in the number
+     * @param lastResortCc manual country code last resort
+     * @throws IllegalArgumentException if no country code is available.
+     */
+    public static String fixNumber(Context context, String number, String myNumber, int lastResortCc)
+        throws NumberParseException {
+
+        final TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        String myRegionCode = tm.getSimCountryIso();
+        if (myRegionCode != null)
+            myRegionCode = myRegionCode.toUpperCase(Locale.US);
+
+        return fixNumber(number, myNumber, myRegionCode, lastResortCc);
+    }
+
+    static String fixNumber(String number, String myNumber, String myRegionCode, int lastResortCc)
+        throws NumberParseException {
+
+        PhoneNumberUtil util = PhoneNumberUtil.getInstance();
+        try {
+            if (myNumber != null) {
+                Phonenumber.PhoneNumber myNum = util.parse(myNumber, myRegionCode);
+                // use region code found in my number
+                myRegionCode = util.getRegionCodeForNumber(myNum);
+            }
+        }
+        catch (NumberParseException e) {
+            // ehm :)
+        }
+
+        Phonenumber.PhoneNumber parsedNum;
+        try {
+            parsedNum = util.parse(number, myRegionCode);
+        }
+        catch (NumberParseException e) {
+            // parse failed with default region code, try last resort
+            if (lastResortCc > 0) {
+                myRegionCode = util.getRegionCodeForCountryCode(lastResortCc);
+                parsedNum = util.parse(number, myRegionCode);
+            }
+            else {
+                if (BuildConfig.DEBUG) {
+                    return number.startsWith("+") ? number : ("+1" + number);
+                }
+                throw e;
+            }
+        }
+
+        handleSpecialCases(parsedNum);
+
+        // a NumberParseException would have been thrown at this point
+        return util.format(parsedNum, PhoneNumberUtil.PhoneNumberFormat.E164);
+    }
+
+    public static String formatForDisplay(Phonenumber.PhoneNumber phone) {
+        return PhoneNumberUtil.getInstance()
+            .format(phone, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL);
+    }
+
+    public static String formatForDisplay(String phoneNumber) {
+        try {
+            return formatForDisplay(PhoneNumberUtil.getInstance()
+                .parse(phoneNumber, null));
+        }
+        catch (NumberParseException e) {
+            return phoneNumber;
+        }
+    }
+
+    /** Returns the (parsed) number stored in this device SIM card. */
+    @SuppressLint({"HardwareIds", "MissingPermission"})
+    @RequiresPermission(Manifest.permission.READ_PHONE_STATE)
+    public static Phonenumber.PhoneNumber getMyNumber(Context context) {
+        try {
+            final TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            final String regionCode = tm.getSimCountryIso().toUpperCase(Locale.US);
+            return PhoneNumberUtil.getInstance().parse(tm.getLine1Number(), regionCode);
+        }
+        catch (Exception e) {
+            return null;
+        }
+    }
+
+    /** Returns the localized region name for the given region code. */
+    public static String getRegionDisplayName(String regionCode, Locale language) {
+        return (regionCode == null || regionCode.equals("ZZ") ||
+            regionCode.equals(PhoneNumberUtil.REGION_CODE_FOR_NON_GEO_ENTITY))
+            ? "" : new Locale("", regionCode).getDisplayCountry(language);
     }
 
     private static class AccountRemovalCallback implements AccountManagerCallback<Boolean> {

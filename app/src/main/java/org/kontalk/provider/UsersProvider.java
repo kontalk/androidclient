@@ -56,12 +56,12 @@ import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.NumberValidator;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers.Keys;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.reporting.ReportingManager;
+import org.kontalk.service.registration.RegistrationService;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.XMPPUtils;
@@ -448,7 +448,7 @@ public class UsersProvider extends ContentProvider {
 
                 // fix number
                 try {
-                    number = NumberValidator.fixNumber(context, number,
+                    number = RegistrationService.fixNumber(context, number,
                             Authenticator.getDefaultAccountName(context), null);
                 }
                 catch (Exception e) {
@@ -659,7 +659,7 @@ public class UsersProvider extends ContentProvider {
 
                         // fix number
                         try {
-                            number = NumberValidator.fixNumber(context, number,
+                            number = RegistrationService.fixNumber(context, number,
                                 Authenticator.getDefaultAccountName(context), 0);
                         }
                         catch (Exception e) {
@@ -734,7 +734,7 @@ public class UsersProvider extends ContentProvider {
 
                             // fix number
                             try {
-                                number = NumberValidator.fixNumber(context, number,
+                                number = RegistrationService.fixNumber(context, number,
                                     Authenticator.getDefaultAccountName(context), 0);
                             }
                             catch (Exception e) {

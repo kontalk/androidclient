@@ -48,7 +48,6 @@ import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.NumberValidator;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyPack;
 import org.kontalk.reporting.ReportingManager;
@@ -56,6 +55,7 @@ import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.event.ConnectedEvent;
 import org.kontalk.service.msgcenter.event.PrivateKeyUploadedEvent;
 import org.kontalk.service.msgcenter.event.UploadPrivateKeyRequest;
+import org.kontalk.service.registration.RegistrationService;
 import org.kontalk.ui.LockedDialog;
 import org.kontalk.ui.PasswordInputDialog;
 import org.kontalk.ui.RegisterDeviceActivity;
@@ -96,7 +96,7 @@ public class AccountFragment extends RootPreferenceFragment {
         String phoneNumber = Authenticator.getDefaultAccountName(getContext());
         final Preference accountInfo = findPreference("pref_account_info");
         accountInfo.setTitle(displayName);
-        accountInfo.setSummary(NumberValidator.formatForDisplay(phoneNumber));
+        accountInfo.setSummary(RegistrationService.formatForDisplay(phoneNumber));
 
         // change passphrase
         final Preference changePassphrase = findPreference("pref_change_passphrase");

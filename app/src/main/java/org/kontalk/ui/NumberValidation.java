@@ -95,7 +95,6 @@ import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
-import org.kontalk.client.NumberValidator;
 import org.kontalk.crypto.PersonalKeyPack;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.DatabaseImporterService;
@@ -510,7 +509,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
         // FIXME this doesn't consider creation because of configuration change
         CountryCodesAdapter ccList = (CountryCodesAdapter) mCountryCode.getAdapter();
-        PhoneNumber myNum = NumberValidator.getMyNumber(this);
+        PhoneNumber myNum = RegistrationService.getMyNumber(this);
         if (myNum != null) {
             CountryCode cc = new CountryCode();
             cc.regionCode = util.getRegionCodeForNumber(myNum);
@@ -656,8 +655,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                         }
                     }
                     // handle special cases
-                    NumberValidator.handleSpecialCases(phone);
-                    if (!util.isValidNumberForRegion(phone, cc.regionCode) && !NumberValidator.isSpecialNumber(phone))
+                    RegistrationService.handleSpecialCases(phone);
+                    if (!util.isValidNumberForRegion(phone, cc.regionCode) && !RegistrationService.isSpecialNumber(phone))
                         throw new NumberParseException(ErrorType.INVALID_COUNTRY_CODE, "invalid number for region " + cc.regionCode);
                 }
                 catch (NumberParseException e1) {

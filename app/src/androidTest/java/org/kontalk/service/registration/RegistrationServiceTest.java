@@ -51,6 +51,7 @@ import org.kontalk.service.registration.event.VerificationError;
 import org.kontalk.service.registration.event.VerificationRequest;
 import org.kontalk.service.registration.event.VerificationRequestedEvent;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 
@@ -100,6 +101,24 @@ public class RegistrationServiceTest extends TestServerTest {
         }
         catch (InterruptedException ignored) {
         }
+    }
+
+    @Test
+    public void testFixNumber() throws Exception {
+        // see https://github.com/kontalk/androidclient/issues/917
+        assertEquals("+5491112345678", RegistrationService.fixNumber("+54 9 11 1234 5678", "+5491112345678", "AR", 0));
+        assertEquals("+5491112345678", RegistrationService.fixNumber("+54 11 1234 5678", "+5491112345678", "AR", 0));
+        // invalid case: RegistrationService.fixNumber("15 1234 5678", "+5491112345678", "AR", 0);
+        assertEquals("+5491112345678", RegistrationService.fixNumber("0 11 15 1234 5678", "+5491112345678", "AR", 0));
+
+        assertEquals("+393351234567", RegistrationService.fixNumber("+39 335 123 4567", "+393321213456", "IT", 0));
+        assertEquals("+393351234567", RegistrationService.fixNumber("335 123 4567", "+393321213456", "IT", 0));
+    }
+
+    @Test
+    public void testAddSignificantDigits() {
+        assertEquals(91112345678L, RegistrationService.addSignificantDigits(1112345678L, 9));
+        assertEquals(341112345678L, RegistrationService.addSignificantDigits(1112345678L, 34));
     }
 
     @Test
