@@ -129,6 +129,9 @@ public class RegistrationServiceTest extends TestServerTest {
             throw listener.challengeError;
 
         assertTrue(listener.accountCreated);
+
+        // we should have an account now
+        TestUtils.assertDefaultAccountExists();
     }
 
     @Test
@@ -163,6 +166,121 @@ public class RegistrationServiceTest extends TestServerTest {
             throw listener.challengeError;
 
         assertTrue(listener.accountCreated);
+
+        // we should have an account now
+        TestUtils.assertDefaultAccountExists();
+    }
+
+    /**
+     * Tests registration workflow using secret data passed on by another device.
+     */
+    @Test
+    public void registerDeviceTest() {
+        // TODO
+        throw new AssertionError("Not implemented.");
+    }
+
+    @Test
+    public void importKeyTest() throws Exception {
+        RequestVerificationTestListener listener = new RequestVerificationTestListener();
+        mBus.register(listener);
+
+        InputStream keyPackInput = InstrumentationRegistry.getContext().getAssets().open("keys/kontalk-keys.zip");
+
+        mBus.post(new ImportKeyRequest(mTestServerProvider.next(),
+            keyPackInput, DefaultAccountTest.TEST_PASSPHRASE,
+            true, RegistrationService.BRAND_IMAGE_LARGE));
+
+        listener.waitAndReset(10, TimeUnit.SECONDS, 1);
+
+        keyPackInput.close();
+
+        if (listener.importKeyError != null)
+            throw listener.importKeyError;
+
+        assertTrue(listener.acceptTermsEvent);
+
+        listener.waitAndReset(10, TimeUnit.SECONDS, 1);
+
+        // either the account was created or a verification workflow has started
+        assertTrue(listener.verificationRequestedEvent || listener.accountCreated);
+
+        if (listener.verificationRequestedEvent) {
+            // send challenge
+            mBus.post(new ChallengeRequest("123456"));
+
+            listener.waitAndReset(10, TimeUnit.SECONDS, 1);
+
+            if (listener.challengeError != null)
+                throw listener.challengeError;
+        }
+        else {
+            // this shouldn't happen since we set fallbackVerification to true
+            if (listener.loginTestError != null)
+                throw listener.loginTestError;
+        }
+
+        mBus.unregister(listener);
+
+        assertTrue(listener.accountCreated);
+
+        // we should have an account now
+        TestUtils.assertDefaultAccountExists();
+    }
+
+    @Test
+    public void saveAndResumeImportKeyTest() throws Exception {
+        // for this test to work we need to first create a new account
+        // so the fallback registration procedure will trigger
+        requestVerificationTest();
+        tearDown();
+        setUp();
+
+        RequestVerificationTestListener listener = new RequestVerificationTestListener();
+        mBus.register(listener);
+
+        InputStream keyPackInput = InstrumentationRegistry.getContext().getAssets().open("keys/kontalk-keys.zip");
+
+        mBus.post(new ImportKeyRequest(mTestServerProvider.next(),
+            keyPackInput, DefaultAccountTest.TEST_PASSPHRASE,
+            true, RegistrationService.BRAND_IMAGE_LARGE));
+
+        // wait for error or verification requested
+        listener.waitAndReset(10, TimeUnit.SECONDS, 1);
+
+        keyPackInput.close();
+
+        if (listener.importKeyError != null)
+            throw listener.importKeyError;
+
+        assertTrue(listener.acceptTermsEvent);
+        assertTrue(listener.verificationRequestedEvent);
+
+        stopService();
+
+        listener.verificationRequestedEvent = false;
+
+        startService();
+
+        // wait for verification requested
+        listener.waitAndReset(10, TimeUnit.SECONDS, 1);
+
+        assertTrue(listener.verificationRequestedEvent);
+
+        // send challenge
+        mBus.post(new ChallengeRequest("123456"));
+
+        listener.waitAndReset(20, TimeUnit.SECONDS, 1);
+
+        if (listener.challengeError != null)
+            throw listener.challengeError;
+
+        mBus.unregister(listener);
+
+        assertTrue(listener.accountCreated);
+
+        // we should have an account now
+        TestUtils.assertDefaultAccountExists();
     }
 
     public class RequestVerificationTestListener {
@@ -227,112 +345,6 @@ public class RegistrationServiceTest extends TestServerTest {
             this.loginTestError = event.exception;
             lock.countDown();
         }
-    }
-
-    /**
-     * Tests registration workflow using secret data passed on by another device.
-     */
-    @Test
-    public void registerDeviceTest() {
-        // TODO
-        throw new AssertionError("Not implemented.");
-    }
-
-    @Test
-    public void importKeyTest() throws Exception {
-        RequestVerificationTestListener listener = new RequestVerificationTestListener();
-        mBus.register(listener);
-
-        InputStream keyPackInput = InstrumentationRegistry.getContext().getAssets().open("keys/kontalk-keys.zip");
-
-        mBus.post(new ImportKeyRequest(mTestServerProvider.next(),
-            keyPackInput, DefaultAccountTest.TEST_PASSPHRASE,
-            true, RegistrationService.BRAND_IMAGE_LARGE));
-
-        listener.waitAndReset(10, TimeUnit.SECONDS, 1);
-
-        keyPackInput.close();
-
-        if (listener.importKeyError != null)
-            throw listener.importKeyError;
-
-        assertTrue(listener.acceptTermsEvent);
-
-        listener.waitAndReset(10, TimeUnit.SECONDS, 1);
-
-        // either the account was created or a verification workflow has started
-        assertTrue(listener.verificationRequestedEvent || listener.accountCreated);
-
-        if (listener.verificationRequestedEvent) {
-            // send challenge
-            mBus.post(new ChallengeRequest("123456"));
-
-            listener.waitAndReset(10, TimeUnit.SECONDS, 1);
-
-            if (listener.challengeError != null)
-                throw listener.challengeError;
-        }
-        else {
-            // this shouldn't happen since we set fallbackVerification to true
-            if (listener.loginTestError != null)
-                throw listener.loginTestError;
-        }
-
-        mBus.unregister(listener);
-
-        assertTrue(listener.accountCreated);
-    }
-
-    @Test
-    public void saveAndResumeImportKeyTest() throws Exception {
-        // for this test to work we need to first create a new account
-        // so the fallback registration procedure will trigger
-        requestVerificationTest();
-        tearDown();
-        setUp();
-
-        RequestVerificationTestListener listener = new RequestVerificationTestListener();
-        mBus.register(listener);
-
-        InputStream keyPackInput = InstrumentationRegistry.getContext().getAssets().open("keys/kontalk-keys.zip");
-
-        mBus.post(new ImportKeyRequest(mTestServerProvider.next(),
-            keyPackInput, DefaultAccountTest.TEST_PASSPHRASE,
-            true, RegistrationService.BRAND_IMAGE_LARGE));
-
-        // wait for error or verification requested
-        listener.waitAndReset(10, TimeUnit.SECONDS, 1);
-
-        keyPackInput.close();
-
-        if (listener.importKeyError != null)
-            throw listener.importKeyError;
-
-        assertTrue(listener.acceptTermsEvent);
-        assertTrue(listener.verificationRequestedEvent);
-
-        stopService();
-
-        listener.verificationRequestedEvent = false;
-
-        startService();
-
-        // wait for verification requested
-        listener.waitAndReset(10, TimeUnit.SECONDS, 1);
-
-        assertTrue(listener.verificationRequestedEvent);
-
-        // send challenge
-        mBus.post(new ChallengeRequest("123456"));
-
-        listener.waitAndReset(20, TimeUnit.SECONDS, 1);
-
-        if (listener.challengeError != null)
-            throw listener.challengeError;
-
-        mBus.unregister(listener);
-
-        assertTrue(listener.accountCreated);
     }
 
 }
