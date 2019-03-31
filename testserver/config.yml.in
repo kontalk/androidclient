@@ -1,0 +1,24 @@
+component_jid: media.{{ .Env.XMPP_SERVICE }}
+component_secret: secret
+component_host: tigase
+component_port: 5270
+
+storage_path : ../disk
+
+whitelist:
+  - {{ .Env.XMPP_SERVICE }}
+max_file_size: {{ .Env.HTTPUPLOAD_MAX_SIZE }}
+
+http_address: 0.0.0.0
+http_port: 8828
+#http_keyfile: server.key
+#http_certfile: server.crt
+
+get_url : https://{{ .Env.XMPP_SERVICE }}:8828/
+put_url : https://{{ .Env.XMPP_SERVICE }}:8828/
+
+expire_interval: 82800  #time in secs between expiry runs (82800 secs = 23 hours). set to '0' to disable
+expire_maxage: 2592000  #files older than this (in secs) get deleted by expiry runs (2592000 = 30 days)
+user_quota_hard: 104857600   #100MiB. set to '0' to disable rejection on uploads over hard quota
+user_quota_soft: 78643200    #75MiB. set to '0' to disable deletion of old uploads over soft quota an expiry runs
+allow_web_clients: true #answer OPTIONS requests to allow web clients to upload files

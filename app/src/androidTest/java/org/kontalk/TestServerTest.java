@@ -20,6 +20,7 @@ package org.kontalk;
 
 import org.junit.Before;
 
+import org.kontalk.client.EndpointServer;
 import org.kontalk.util.Preferences;
 
 
@@ -27,12 +28,15 @@ import org.kontalk.util.Preferences;
  * Sets the test server address and some other stuff in {@link #setUp()}.
  */
 public abstract class TestServerTest {
-    public static final String TEST_SERVER_URI = "prime.kontalk.net|zeta.kontalk.net:7222";
+    public static final String TEST_SERVER_URI = "prime.kontalk.net|10.0.2.2:5222";
+
+    protected EndpointServer.EndpointServerProvider mTestServerProvider;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         Preferences.setServerURI(TEST_SERVER_URI);
         Preferences.setAcceptAnyCertificate(true);
+        mTestServerProvider = new EndpointServer.SingleServerProvider(TEST_SERVER_URI);
     }
 
 }

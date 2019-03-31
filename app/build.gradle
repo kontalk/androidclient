@@ -26,7 +26,8 @@ task checkstyle(type: Checkstyle){
         '**/java/org/kontalk/client/smack/**',
         '**/ProximityScreenLocker*.java',
         '**/CustomSimpleXmppStringprep.java',
-        'main/java/com/**'
+        'main/java/com/**',
+        'androidTest/java/net/**'
     def configProps = ['baseDir': projectDir.absolutePath]
     configProperties configProps
     classpath = files()
@@ -53,11 +54,14 @@ android {
                 arguments = [ eventBusIndex : 'org.kontalk.util.EventBusIndex' ]
             }
         }
+
+        // for testing
+        buildConfigField "java.util.concurrent.atomic.AtomicBoolean", "TESTING", "new java.util.concurrent.atomic.AtomicBoolean(false)"
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     signingConfigs {
@@ -99,6 +103,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
             testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg', 'proguard-test.cfg'
             ext.enableCrashlytics = false
+            ext.alwaysUpdateBuildId = false
             testCoverageEnabled true
         }
     }
@@ -115,6 +120,7 @@ android {
 
     testOptions {
         unitTests.returnDefaultValues = true
+        animationsDisabled = true
     }
 
     productFlavors {
@@ -193,12 +199,15 @@ dependencies {
     implementation 'de.hdodenhof:circleimageview:2.1.0'
 
     // other libraries
-    implementation 'com.googlecode.libphonenumber:libphonenumber:8.9.7'
+    implementation 'com.googlecode.libphonenumber:libphonenumber:8.10.8'
     implementation 'com.google.zxing:core:3.3.1'
     implementation 'me.dm7.barcodescanner:zxing:1.9.8'
     implementation 'com.github.instacart.truetime-android:library:3.3'
     implementation 'org.greenrobot:eventbus:3.1.1'
     annotationProcessor 'org.greenrobot:eventbus-annotation-processor:3.1.1'
+    // version 10 needs AndroidX
+    implementation 'com.jakewharton:butterknife:9.0.0'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:9.0.0'
 
     // maps libraries
     implementation "com.github.kontalk.AnyMaps:anymaps-base:$anyMapsVersion"
@@ -206,12 +215,12 @@ dependencies {
     googleplayImplementation "com.github.kontalk.AnyMaps:anymaps-google:$anyMapsVersion"
 
     // Google Play Services
-    googleplayImplementation "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
-    googleplayImplementation "com.google.android.gms:play-services-maps:$googlePlayServicesVersion"
-    googleplayImplementation "com.google.android.gms:play-services-location:$googlePlayServicesVersion"
-    googleplayImplementation "com.google.firebase:firebase-core:16.0.6"
-    googleplayImplementation "com.google.firebase:firebase-messaging:17.3.4"
-    googleplayImplementation('com.crashlytics.sdk.android:crashlytics:2.9.8@aar') {
+    googleplayImplementation "com.google.android.gms:play-services-base:16.1.0"
+    googleplayImplementation "com.google.android.gms:play-services-maps:16.1.0"
+    googleplayImplementation "com.google.android.gms:play-services-location:16.0.0"
+    googleplayImplementation "com.google.firebase:firebase-core:16.0.8"
+    googleplayImplementation "com.google.firebase:firebase-messaging:17.5.0"
+    googleplayImplementation('com.crashlytics.sdk.android:crashlytics:2.9.9@aar') {
         transitive = true
     }
 
@@ -223,6 +232,7 @@ dependencies {
     androidTestImplementation "com.android.support:support-annotations:$appcompatVersion"
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-intents:3.0.2'
+    androidTestImplementation 'com.android.support.test:monitor:1.0.2'
     androidTestImplementation 'com.jayway.android.robotium:robotium-solo:5.6.3'
 }
 

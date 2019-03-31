@@ -20,12 +20,12 @@ package org.kontalk.crypto;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.PublicKey;
@@ -130,11 +130,27 @@ public class PGP {
             return new PGPKeyPairRing(publicKey, secretKey);
         }
 
+        public static PGPKeyPairRing load(InputStream privateKeyData, InputStream publicKeyData)
+            throws IOException, PGPException {
+            PGPPublicKeyRing publicKey = new PGPPublicKeyRing(publicKeyData, sFingerprintCalculator);
+            PGPSecretKeyRing secretKey = new PGPSecretKeyRing(privateKeyData, sFingerprintCalculator);
+            return new PGPKeyPairRing(publicKey, secretKey);
+        }
+
         public static PGPKeyPairRing loadArmored(byte[] privateKeyData, byte[] publicKeyData)
                 throws IOException, PGPException {
             ArmoredInputStream inPublic = new ArmoredInputStream(new ByteArrayInputStream(publicKeyData));
             PGPPublicKeyRing publicKey = new PGPPublicKeyRing(inPublic, sFingerprintCalculator);
             ArmoredInputStream inPrivate = new ArmoredInputStream(new ByteArrayInputStream(privateKeyData));
+            PGPSecretKeyRing secretKey = new PGPSecretKeyRing(inPrivate, sFingerprintCalculator);
+            return new PGPKeyPairRing(publicKey, secretKey);
+        }
+
+        public static PGPKeyPairRing loadArmored(InputStream privateKeyData, InputStream publicKeyData)
+            throws IOException, PGPException {
+            ArmoredInputStream inPublic = new ArmoredInputStream(publicKeyData);
+            PGPPublicKeyRing publicKey = new PGPPublicKeyRing(inPublic, sFingerprintCalculator);
+            ArmoredInputStream inPrivate = new ArmoredInputStream(privateKeyData);
             PGPSecretKeyRing secretKey = new PGPSecretKeyRing(inPrivate, sFingerprintCalculator);
             return new PGPKeyPairRing(publicKey, secretKey);
         }
@@ -161,7 +177,7 @@ public class PGP {
 
     /** Creates an ECDSA/ECDH key pair. */
     public static PGPDecryptedKeyPairRing create(Date timestamp)
-            throws NoSuchAlgorithmException, NoSuchProviderException, PGPException, InvalidAlgorithmParameterException {
+            throws NoSuchAlgorithmException, PGPException, InvalidAlgorithmParameterException {
 
         KeyPairGenerator gen;
         PGPKeyPair authKp, encryptKp, signKp;
@@ -255,7 +271,7 @@ public class PGP {
     }
 
     public static void toParcel(PGPDecryptedKeyPairRing pair, Parcel dest)
-            throws NoSuchProviderException, PGPException, IOException {
+            throws IOException {
         writeKeyPairToParcel(pair.authKey, dest);
         writeKeyPairToParcel(pair.signKey, dest);
         writeKeyPairToParcel(pair.encryptKey, dest);
@@ -366,70 +382,66 @@ public class PGP {
             throws PGPException, IOException {
 
         PrivateKey privAuth = convertPrivateKey(pair.authKey.getPrivateKey());
-        PublicKey pubAuth = convertPublicKey(pair.authKey.getPublicKey());
-        int algoAuth = pair.authKey.getPrivateKey().getPublicKeyPacket().getAlgorithm();
-        Date dateAuth = pair.authKey.getPrivateKey().getPublicKeyPacket().getTime();
+        byte[] pubAuth = pair.authKey.getPublicKey().getEncoded();
 
         PrivateKey privSign = convertPrivateKey(pair.signKey.getPrivateKey());
-        PublicKey pubSign = convertPublicKey(pair.signKey.getPublicKey());
-        int algoSign = pair.signKey.getPrivateKey().getPublicKeyPacket().getAlgorithm();
-        Date dateSign = pair.signKey.getPrivateKey().getPublicKeyPacket().getTime();
+        byte[] pubSign = pair.signKey.getPublicKey().getEncoded();
 
         PrivateKey privEnc = convertPrivateKey(pair.encryptKey.getPrivateKey());
-        PublicKey pubEnc = convertPublicKey(pair.encryptKey.getPublicKey());
-        int algoEnc = pair.encryptKey.getPrivateKey().getPublicKeyPacket().getAlgorithm();
-        Date dateEnc = pair.encryptKey.getPrivateKey().getPublicKeyPacket().getTime();
+        byte[] pubEnc = pair.encryptKey.getPublicKey().getEncoded();
 
         dest.writeObject(privAuth);
         dest.writeObject(pubAuth);
-        dest.writeInt(algoAuth);
-        dest.writeLong(dateAuth.getTime());
 
         dest.writeObject(privSign);
         dest.writeObject(pubSign);
-        dest.writeInt(algoSign);
-        dest.writeLong(dateSign.getTime());
 
         dest.writeObject(privEnc);
         dest.writeObject(pubEnc);
-        dest.writeInt(algoEnc);
-        dest.writeLong(dateEnc.getTime());
     }
 
     public static PGPDecryptedKeyPairRing unserialize(ObjectInputStream in)
             throws IOException, ClassNotFoundException, PGPException {
         ensureKeyConverter();
 
-        // TODO read byte data
-
         PrivateKey privAuth = (PrivateKey) in.readObject();
-        PublicKey pubAuth = (PublicKey) in.readObject();
-        int algoAuth = in.readInt();
-        Date dateAuth = new Date(in.readLong());
+        byte[] pubAuthData = (byte[]) in.readObject();
+        PGPObjectFactory pubAuthIn = new PGPObjectFactory(pubAuthData, sFingerprintCalculator);
 
-        PGPPublicKey pubKeyAuth = sKeyConverter.getPGPPublicKey(algoAuth, pubAuth, dateAuth);
+        PGPPublicKey pubKeyAuth = extractPublicKey(pubAuthIn);
         PGPPrivateKey privKeyAuth = sKeyConverter.getPGPPrivateKey(pubKeyAuth, privAuth);
         PGPKeyPair authKp = new PGPKeyPair(pubKeyAuth, privKeyAuth);
 
         PrivateKey privSign = (PrivateKey) in.readObject();
-        PublicKey pubSign = (PublicKey) in.readObject();
-        int algoSign = in.readInt();
-        Date dateSign = new Date(in.readLong());
+        byte[] pubSignData = (byte[]) in.readObject();
+        PGPObjectFactory pubSignIn = new PGPObjectFactory(pubSignData, sFingerprintCalculator);
 
-        PGPPublicKey pubKeySign = sKeyConverter.getPGPPublicKey(algoSign, pubSign, dateSign);
+        PGPPublicKey pubKeySign = extractPublicKey(pubSignIn);
         PGPPrivateKey privKeySign = sKeyConverter.getPGPPrivateKey(pubKeySign, privSign);
         PGPKeyPair signKp = new PGPKeyPair(pubKeySign, privKeySign);
 
         PrivateKey privEnc = (PrivateKey) in.readObject();
-        PublicKey pubEnc = (PublicKey) in.readObject();
-        int algoEnc = in.readInt();
-        Date dateEnc = new Date(in.readLong());
+        byte[] pubEncData = (byte[]) in.readObject();
+        PGPObjectFactory pubEncIn = new PGPObjectFactory(pubEncData, sFingerprintCalculator);
 
-        PGPPublicKey pubKeyEnc = sKeyConverter.getPGPPublicKey(algoEnc, pubEnc, dateEnc);
+        PGPPublicKey pubKeyEnc = extractPublicKey(pubEncIn);
         PGPPrivateKey privKeyEnc = sKeyConverter.getPGPPrivateKey(pubKeyEnc, privEnc);
         PGPKeyPair encryptKp = new PGPKeyPair(pubKeyEnc, privKeyEnc);
 
         return new PGPDecryptedKeyPairRing(authKp, signKp, encryptKp);
+    }
+
+    private static PGPPublicKey extractPublicKey(PGPObjectFactory in) throws IOException, PGPException {
+        Object object = in.nextObject();
+        if (object instanceof PGPPublicKeyRing) {
+            return ((PGPPublicKeyRing) object).getPublicKey();
+        }
+        else if (object instanceof PGPPublicKey) {
+            return (PGPPublicKey) object;
+        }
+        else {
+            throw new PGPException("Invalid key data");
+        }
     }
 
     public static String getFingerprint(PGPPublicKey publicKey) {

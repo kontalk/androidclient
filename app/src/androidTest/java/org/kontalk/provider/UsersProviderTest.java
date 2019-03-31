@@ -464,7 +464,15 @@ public class UsersProviderTest extends ProviderTestCase2<UsersProvider> {
 
     @Test
     public void testSetup() {
-        assertQuery(MyUsers.Users.CONTENT_URI);
+        try {
+            assertQuery(MyUsers.Users.CONTENT_URI);
+        }
+        catch (UnsupportedOperationException e) {
+            // tried to start sync with no account. All good!
+        }
+        catch (NullPointerException e) {
+            // tried to start sync with no account. All good! (for API 21)
+        }
         assertQuery(MyUsers.Keys.CONTENT_URI);
     }
 
@@ -481,6 +489,9 @@ public class UsersProviderTest extends ProviderTestCase2<UsersProvider> {
         PGPPublicKeyRing publicKey = Keyring.getPublicKey(getMockContext(), TEST_USERID, MyUsers.Keys.TRUST_VERIFIED);
         assertNotNull(publicKey);
         assertTrue(Arrays.equals(publicKey.getEncoded(), originalKey.getEncoded()));
+
+        String testFingerprint = PGP.getFingerprint(originalKey.getPublicKey());
+        getMockContentResolver().delete(MyUsers.Keys.getUri(TEST_USERID, testFingerprint), null, null);
     }
 
     private void assertQuery(Uri uri) {

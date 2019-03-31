@@ -24,9 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
@@ -46,11 +43,7 @@ import org.spongycastle.openpgp.operator.PBESecretKeyDecryptor;
 import org.spongycastle.openpgp.operator.PGPDigestCalculatorProvider;
 import org.spongycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
 import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
-import org.spongycastle.operator.OperatorCreationException;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Base64;
@@ -59,7 +52,6 @@ import android.util.Base64OutputStream;
 
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGP.PGPDecryptedKeyPairRing;
 import org.kontalk.crypto.PGP.PGPKeyPairRing;
 
@@ -224,7 +216,7 @@ public class PersonalKey implements Parcelable {
 
     /** Checks that the given personal key data is correct. */
     public static PGPKeyPairRing test(InputStream privateKeyData, InputStream publicKeyData, String passphrase, InputStream bridgeCertData)
-            throws PGPException, IOException, CertificateException, NoSuchProviderException {
+            throws PGPException, IOException, CertificateException {
 
         PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, sFingerprintCalculator);
         PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, sFingerprintCalculator);
@@ -238,7 +230,7 @@ public class PersonalKey implements Parcelable {
 
     /** Checks that the given personal key data is correct. */
     public static PGPKeyPairRing test(byte[] privateKeyData, byte[] publicKeyData, String passphrase, byte[] bridgeCertData)
-            throws PGPException, IOException, CertificateException, NoSuchProviderException {
+            throws PGPException, IOException, CertificateException {
 
         PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, sFingerprintCalculator);
         PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, sFingerprintCalculator);
@@ -251,7 +243,7 @@ public class PersonalKey implements Parcelable {
     }
 
     private static PGPKeyPairRing test(PGPSecretKeyRing secRing, PGPPublicKeyRing pubRing, String passphrase, X509Certificate bridgeCert)
-            throws PGPException, IOException, CertificateException, NoSuchProviderException {
+            throws PGPException {
 
         // for now we just do a test load
         load(secRing, pubRing, passphrase, bridgeCert);
@@ -261,7 +253,7 @@ public class PersonalKey implements Parcelable {
 
     /** Creates a {@link PersonalKey} from private and public key input streams. */
     public static PersonalKey load(InputStream privateKeyData, InputStream publicKeyData, String passphrase, InputStream bridgeCertData)
-            throws PGPException, IOException, CertificateException, NoSuchProviderException {
+            throws PGPException, IOException, CertificateException {
 
         PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, sFingerprintCalculator);
         PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, sFingerprintCalculator);
@@ -275,7 +267,7 @@ public class PersonalKey implements Parcelable {
 
     /** Creates a {@link PersonalKey} from private and public key byte buffers. */
     public static PersonalKey load(byte[] privateKeyData, byte[] publicKeyData, String passphrase, byte[] bridgeCertData)
-            throws PGPException, IOException, CertificateException, NoSuchProviderException {
+            throws PGPException, IOException, CertificateException {
 
         PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, sFingerprintCalculator);
         PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, sFingerprintCalculator);
@@ -289,7 +281,7 @@ public class PersonalKey implements Parcelable {
 
     /** Creates a {@link PersonalKey} from private and public key byte buffers. */
     public static PersonalKey load(byte[] privateKeyData, byte[] publicKeyData, String passphrase, X509Certificate bridgeCert)
-        throws PGPException, IOException, CertificateException, NoSuchProviderException {
+        throws PGPException, IOException {
 
         PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, sFingerprintCalculator);
         PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, sFingerprintCalculator);
@@ -299,7 +291,7 @@ public class PersonalKey implements Parcelable {
 
     @SuppressWarnings("unchecked")
     public static PersonalKey load(PGPSecretKeyRing secRing, PGPPublicKeyRing pubRing, String passphrase, X509Certificate bridgeCert)
-            throws PGPException, IOException, CertificateException, NoSuchProviderException {
+            throws PGPException {
 
         PGPDigestCalculatorProvider sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build();
         PBESecretKeyDecryptor decryptor = new JcePBESecretKeyDecryptorBuilder(sha1Calc)
@@ -389,6 +381,11 @@ public class PersonalKey implements Parcelable {
         throw new PGPException("invalid key data");
     }
 
+    public static PersonalKey withBridgeCert(PersonalKey key, X509Certificate bridgeCert) {
+        return new PersonalKey(key.getAuthKeyPair(),
+            key.getSignKeyPair(), key.getEncryptKeyPair(), bridgeCert);
+    }
+
     public static PersonalKey create(Date timestamp) throws IOException {
         try {
             PGPDecryptedKeyPairRing kp = PGP.create(timestamp);
@@ -413,30 +410,6 @@ public class PersonalKey implements Parcelable {
             mPair.authKey = new PGPKeyPair(revoked, mPair.authKey.getPrivateKey());
 
         return revoked;
-    }
-
-    /** Stores the public keyring to the system {@link AccountManager}. */
-    public void updateAccountManager(Context context)
-        throws IOException, InvalidKeyException,
-        IllegalStateException, NoSuchAlgorithmException, SignatureException,
-        CertificateException, NoSuchProviderException, PGPException, OperatorCreationException {
-
-        AccountManager am = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
-        Account account = Authenticator.getDefaultAccount(am);
-
-        if (account != null) {
-            PGPPublicKeyRing pubRing = getPublicKeyRing();
-
-            // regenerate bridge certificate
-            byte[] bridgeCertData = X509Bridge.createCertificate(pubRing,
-                    mPair.authKey.getPrivateKey()).getEncoded();
-            byte[] publicKeyData = pubRing.getEncoded();
-
-            am.setUserData(account, Authenticator.DATA_PUBLICKEY,
-                Base64.encodeToString(publicKeyData, Base64.NO_WRAP));
-            am.setUserData(account, Authenticator.DATA_BRIDGECERT,
-                    Base64.encodeToString(bridgeCertData, Base64.NO_WRAP));
-        }
     }
 
     @Override

@@ -18,16 +18,11 @@
 
 package org.kontalk.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
 
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
@@ -48,7 +43,6 @@ import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
-import android.util.Base64;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -57,8 +51,6 @@ import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
-import org.kontalk.crypto.PersonalKey;
-import org.kontalk.provider.Keyring;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.msgcenter.MessageCenterService;
 
@@ -87,6 +79,10 @@ public final class Preferences {
         }
     }
 
+    public static SharedPreferences getInstance() {
+        return sPreferences;
+    }
+
     public static void setCachedCustomBackground(Drawable customBackground) {
         sCustomBackground = customBackground;
     }
@@ -105,7 +101,7 @@ public final class Preferences {
         pref.setSummary(context.getString(R.string.server_list_last_update, timestamp));
     }
 
-    private static String getString(String key, String defaultValue) {
+    public static String getString(String key, String defaultValue) {
         return sPreferences.getString(key, defaultValue);
     }
 
@@ -138,7 +134,7 @@ public final class Preferences {
         return value;
     }
 
-    private static boolean getBoolean(String key, boolean defaultValue) {
+    public static boolean getBoolean(String key, boolean defaultValue) {
         return sPreferences.getBoolean(key, defaultValue);
     }
 
@@ -634,147 +630,6 @@ public final class Preferences {
         sPreferences.edit()
             .putBoolean("permission_asked_" + permission, true)
             .apply();
-    }
-
-    /**
-     * Saves the current registration progress data. Used for recoverying a
-     * registration after a restart or in very low memory situations.
-     */
-    public static boolean saveRegistrationProgress(String name,
-        String phoneNumber, PersonalKey key, String passphrase,
-        byte[] importedPublicKey, byte[] importedPrivateKey, String serverUri,
-        String sender, String challenge, String brandImage, String brandLink,
-        boolean canFallback, boolean force, Map<String, Keyring.TrustedFingerprint> trustedKeys) {
-
-        ByteArrayOutputStream trustedKeysOut = null;
-        if (trustedKeys != null) {
-            trustedKeysOut = new ByteArrayOutputStream();
-            Properties prop = new Properties();
-
-            for (Map.Entry<String, Keyring.TrustedFingerprint> e : trustedKeys.entrySet()) {
-                Keyring.TrustedFingerprint fingerprint = e.getValue();
-                if (fingerprint != null) {
-                    prop.put(e.getKey(), fingerprint.toString());
-                }
-            }
-
-            try {
-                prop.store(trustedKeysOut, null);
-            }
-            catch (IOException e) {
-                // something went wrong
-                // we can't have IOExceptions from byte buffers anyway
-                trustedKeysOut = null;
-            }
-        }
-
-        return sPreferences.edit()
-            .putString("registration_name", name)
-            .putString("registration_phone", phoneNumber)
-            .putString("registration_key", key != null ? key.toBase64() : null)
-            .putString("registration_importedpublickey", importedPublicKey != null ?
-                Base64.encodeToString(importedPublicKey, Base64.NO_WRAP) : null)
-            .putString("registration_importedprivatekey", importedPrivateKey != null ?
-                Base64.encodeToString(importedPrivateKey, Base64.NO_WRAP) : null)
-            .putString("registration_passphrase", passphrase)
-            .putString("registration_server", serverUri)
-            .putString("registration_sender", sender)
-            .putString("registration_challenge", challenge)
-            .putString("registration_brandimage", brandImage)
-            .putString("registration_brandlink", brandLink)
-            .putBoolean("registration_canfallback", canFallback)
-            .putBoolean("registration_force", force)
-            .putString("registration_trustedkeys", trustedKeysOut != null ?
-                Base64.encodeToString(trustedKeysOut.toByteArray(), Base64.NO_WRAP) : null)
-            .commit();
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public static RegistrationProgress getRegistrationProgress() {
-        String name = getString("registration_name", null);
-        if (name != null) {
-            RegistrationProgress p = new RegistrationProgress();
-            p.name = name;
-            p.phone = getString("registration_phone", null);
-            String serverUri = getString("registration_server", null);
-            p.server = serverUri != null ? new EndpointServer(serverUri) : null;
-            String key = getString("registration_key", null);
-            p.key = !TextUtils.isEmpty(key) ? PersonalKey.fromBase64(key) : null;
-            p.passphrase = getString("registration_passphrase", null);
-
-            String importedPublicKey = getString("registration_importedpublickey", null);
-            if (importedPublicKey != null)
-                p.importedPublicKey = Base64.decode(importedPublicKey, Base64.NO_WRAP);
-            String importedPrivateKey = getString("registration_importedprivatekey", null);
-            if (importedPrivateKey != null)
-                p.importedPrivateKey = Base64.decode(importedPrivateKey, Base64.NO_WRAP);
-
-            p.sender = getString("registration_sender", null);
-            p.challenge = getString("registration_challenge", null);
-            p.brandImage = getString("registration_brandimage", null);
-            p.brandLink = getString("registration_brandlink", null);
-            p.canFallback = getBoolean("registration_canfallback", false);
-            p.force = getBoolean("registration_force", false);
-
-            String trustedKeys = getString("registration_trustedkeys", null);
-            if (trustedKeys != null) {
-                ByteArrayInputStream trustedKeysProp =
-                    new ByteArrayInputStream(Base64.decode(trustedKeys, Base64.NO_WRAP));
-                try {
-                    Properties prop = new Properties();
-                    prop.load(trustedKeysProp);
-                    p.trustedKeys = new HashMap<>(prop.size());
-                    for (Map.Entry e : prop.entrySet()) {
-                        Keyring.TrustedFingerprint fingerprint =
-                            Keyring.TrustedFingerprint.fromString((String) e.getValue());
-                        if (fingerprint != null) {
-                            p.trustedKeys.put((String) e.getKey(), fingerprint);
-                        }
-                    }
-                }
-                catch (IOException ignored) {
-                }
-            }
-
-            return p;
-        }
-        return null;
-    }
-
-    public static void clearRegistrationProgress() {
-        sPreferences.edit()
-            .remove("registration_name")
-            .remove("registration_phone")
-            .remove("registration_key")
-            .remove("registration_importedpublickey")
-            .remove("registration_importedprivatekey")
-            .remove("registration_passphrase")
-            .remove("registration_server")
-            .remove("registration_sender")
-            .remove("registration_challenge")
-            .remove("registration_brandimage")
-            .remove("registration_brandlink")
-            .remove("registration_canfallback")
-            .remove("registration_force")
-            .remove("registration_trustedkeys")
-            .apply();
-    }
-
-    public static final class RegistrationProgress {
-        public String name;
-        public String phone;
-        public PersonalKey key;
-        public String passphrase;
-        public byte[] importedPublicKey;
-        public byte[] importedPrivateKey;
-        public EndpointServer server;
-        public String sender;
-        public String challenge;
-        public String brandImage;
-        public String brandLink;
-        public boolean canFallback;
-        public boolean force;
-        public Map<String, Keyring.TrustedFingerprint> trustedKeys;
     }
 
     /** Recent statuses database helper. */

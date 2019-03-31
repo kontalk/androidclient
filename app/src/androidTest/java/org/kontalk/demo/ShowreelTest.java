@@ -26,12 +26,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import android.Manifest;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
+import android.support.test.rule.GrantPermissionRule;
 import android.support.test.runner.AndroidJUnit4;
 
 import org.kontalk.TestServerTest;
@@ -200,8 +202,17 @@ public class ShowreelTest extends TestServerTest {
     public ActivityTestRule<ConversationsActivity> mActivityTestRule =
         new ActivityTestRule<>(ConversationsActivity.class);
 
+    @Rule
+    public GrantPermissionRule mPermissionRule =
+        GrantPermissionRule.grant(Manifest.permission.READ_PHONE_STATE,
+            Manifest.permission.READ_CONTACTS,
+            Manifest.permission.WRITE_CONTACTS,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.CAMERA);
+
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         TestUtils.skipIfDefaultAccountDoesNotExist();
         super.setUp();
     }

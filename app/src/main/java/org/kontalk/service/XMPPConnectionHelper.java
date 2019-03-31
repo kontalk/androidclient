@@ -31,7 +31,6 @@ import com.segment.backo.Backo;
 import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.ConnectionListener;
 import org.jivesoftware.smack.SmackException;
-import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.sasl.SASLError;
@@ -347,7 +346,7 @@ public class XMPPConnectionHelper extends Thread {
     }
 
     /** Shuts down this client thread gracefully. */
-    public void shutdown() throws NotConnectedException {
+    public void shutdown() {
         mConnecting = false;
         interrupt();
 

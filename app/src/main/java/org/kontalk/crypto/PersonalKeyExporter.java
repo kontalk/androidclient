@@ -25,7 +25,6 @@ import java.io.OutputStreamWriter;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -50,7 +49,7 @@ public class PersonalKeyExporter implements PersonalKeyPack {
 
     public void save(byte[] privateKey, byte[] publicKey, OutputStream dest, String passphrase, String exportPassphrase, byte[] bridgeCert,
                      Map<String, Keyring.TrustedFingerprint> trustedKeys, String phoneNumber)
-        throws PGPException, IOException, CertificateException, NoSuchProviderException, KeyStoreException, NoSuchAlgorithmException {
+        throws PGPException, IOException, CertificateException, KeyStoreException, NoSuchAlgorithmException {
 
         // put everything in a zip file
         ZipOutputStream zip = new ZipOutputStream(dest);

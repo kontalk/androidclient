@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 
 import com.vanniktech.emoji.EmojiManager;
@@ -260,21 +259,14 @@ public class Kontalk extends Application {
     }
 
     public PersonalKey getPersonalKey() throws PGPException, IOException, CertificateException {
-        try {
-            if (mDefaultKey == null)
-                mDefaultKey = Authenticator.loadDefaultPersonalKey(this, getCachedPassphrase());
-        }
-        catch (NoSuchProviderException e) {
-            // this shouldn't happen, so crash the application
-            throw new RuntimeException("no such crypto provider!?", e);
-        }
-
+        if (mDefaultKey == null)
+            mDefaultKey = Authenticator.loadDefaultPersonalKey(this, getCachedPassphrase());
         return mDefaultKey;
     }
 
     public void exportPersonalKey(OutputStream out, String exportPassphrase)
             throws CertificateException, PGPException, IOException,
-                NoSuchProviderException, KeyStoreException, NoSuchAlgorithmException {
+                KeyStoreException, NoSuchAlgorithmException {
 
         Authenticator.exportDefaultPersonalKey(this, out, getCachedPassphrase(), exportPassphrase, true);
     }

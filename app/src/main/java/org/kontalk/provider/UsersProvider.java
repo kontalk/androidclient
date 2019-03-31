@@ -135,24 +135,6 @@ public class UsersProvider extends ContentProvider {
         private static final String SCHEMA_KEYS =
             "CREATE TABLE " + TABLE_KEYS + " " + CREATE_TABLE_KEYS;
 
-        private static final String[] SCHEMA_UPGRADE_V9 = {
-            // online table
-            "CREATE TABLE users_backup " + CREATE_TABLE_USERS,
-            "INSERT INTO users_backup SELECT _id, jid, number, display_name, lookup_key, contact_id, registered, status, last_seen, blocked FROM " + TABLE_USERS,
-            "DROP TABLE " + TABLE_USERS,
-            "ALTER TABLE users_backup RENAME TO " + TABLE_USERS,
-            // offline table
-            "CREATE TABLE users_backup " + CREATE_TABLE_USERS,
-            "INSERT INTO users_backup SELECT _id, jid, number, display_name, lookup_key, contact_id, registered, status, last_seen, blocked FROM " + TABLE_USERS_OFFLINE,
-            "DROP TABLE " + TABLE_USERS_OFFLINE,
-            "ALTER TABLE users_backup RENAME TO " + TABLE_USERS_OFFLINE,
-            // keys table
-            "CREATE TABLE keys_backup " + CREATE_TABLE_KEYS,
-            "INSERT INTO keys_backup SELECT jid, fingerprint, "+Keys.TRUST_VERIFIED+", strftime('%s')*1000, public_key FROM " + TABLE_KEYS + " WHERE fingerprint IS NOT NULL",
-            "DROP TABLE " + TABLE_KEYS,
-            "ALTER TABLE keys_backup RENAME TO " + TABLE_KEYS,
-        };
-
         private static final String[] SCHEMA_UPGRADE_V10 = {
             "DROP TABLE IF EXISTS users",
             SCHEMA_USERS,
@@ -208,11 +190,6 @@ public class UsersProvider extends ContentProvider {
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             switch (oldVersion) {
-                case 9:
-                    // new keys management
-                    for (String sql : SCHEMA_UPGRADE_V9)
-                        db.execSQL(sql);
-                    break;
                 case 10:
                     for (String sql : SCHEMA_UPGRADE_V10)
                         db.execSQL(sql);
