@@ -50,7 +50,7 @@ public final class Log {
         try {
             if (Preferences.isDebugLogEnabled(context)) {
                 DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
-                File logDir = new File(context.getExternalCacheDir(), LOG_DIRECTORY);
+                File logDir = new File(context.getCacheDir(), LOG_DIRECTORY);
                 logDir.mkdirs();
                 sLogFile = new File(logDir, LOG_FILENAME);
                 sLogFileWriter = new RotatingFileWriter(sLogFile);
