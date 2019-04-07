@@ -218,7 +218,7 @@ dependencies {
     googleplayImplementation "com.google.android.gms:play-services-maps:16.1.0"
     googleplayImplementation "com.google.android.gms:play-services-location:16.0.0"
     googleplayImplementation "com.google.firebase:firebase-core:16.0.8"
-    googleplayImplementation "com.google.firebase:firebase-messaging:17.5.0"
+    googleplayImplementation "com.google.firebase:firebase-messaging:17.6.0"
     googleplayImplementation('com.crashlytics.sdk.android:crashlytics:2.9.9@aar') {
         transitive = true
     }
