@@ -769,9 +769,12 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         if (action == PrivacyCommand.ACCEPT) {
             // trust the key
             String fingerprint = getContact().getFingerprint();
-            Kontalk.get().getMessagesController()
-                .setTrustLevelAndRetryMessages(mUserJID,
-                    fingerprint, MyUsers.Keys.TRUST_VERIFIED);
+            // we might not have a fingerprint if it's an XMPP user
+            if (fingerprint != null) {
+                Kontalk.get().getMessagesController()
+                    .setTrustLevelAndRetryMessages(mUserJID,
+                        fingerprint, MyUsers.Keys.TRUST_VERIFIED);
+            }
         }
 
         // reload contact
