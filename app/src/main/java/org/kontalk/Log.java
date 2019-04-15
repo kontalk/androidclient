@@ -43,24 +43,29 @@ public final class Log {
     private static final String LOG_FILENAME = "kontalk-android.log";
     private static DateFormat DATE_FORMAT;  // created on demand
 
+    /** A lock to fight race conditions when switching the debug log on and off. */
+    private static final Object sDebugLock = new Object();
+
     private static RotatingFileWriter sLogFileWriter;
     private static File sLogFile;
 
     public static void init(Context context) {
         try {
-            if (Preferences.isDebugLogEnabled(context)) {
-                DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
-                File logDir = new File(context.getCacheDir(), LOG_DIRECTORY);
-                logDir.mkdirs();
-                sLogFile = new File(logDir, LOG_FILENAME);
-                sLogFileWriter = new RotatingFileWriter(sLogFile);
-            }
-            else {
-                if (sLogFileWriter != null) {
-                    sLogFileWriter.abort();
-                    sLogFileWriter = null;
+            synchronized (sDebugLock) {
+                if (Preferences.isDebugLogEnabled(context)) {
+                    DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+                    File logDir = new File(context.getCacheDir(), LOG_DIRECTORY);
+                    logDir.mkdirs();
+                    sLogFile = new File(logDir, LOG_FILENAME);
+                    sLogFileWriter = new RotatingFileWriter(sLogFile);
                 }
-                DATE_FORMAT = null;
+                else {
+                    if (sLogFileWriter != null) {
+                        sLogFileWriter.abort();
+                        sLogFileWriter = null;
+                    }
+                    DATE_FORMAT = null;
+                }
             }
         }
         catch (IOException e) {
@@ -106,21 +111,25 @@ public final class Log {
     }
 
     private static void log(String tag, int level, Throwable tr) {
-        if (sLogFileWriter != null && tr != null) {
-            log(tag, level, android.util.Log.getStackTraceString(tr));
+        synchronized (sDebugLock) {
+            if (sLogFileWriter != null && tr != null) {
+                log(tag, level, android.util.Log.getStackTraceString(tr));
+            }
         }
     }
 
     private static void log(String tag, int level, String msg) {
-        if (sLogFileWriter != null) {
-            try {
-                sLogFileWriter.println(buildLog(tag, level, msg));
-                sLogFileWriter.flush();
-            }
-            catch (IOException e) {
-                // disable logging but keep the file
-                SystemUtils.closeStream(sLogFileWriter);
-                sLogFileWriter = null;
+        synchronized (sDebugLock) {
+            if (sLogFileWriter != null) {
+                try {
+                    sLogFileWriter.println(buildLog(tag, level, msg));
+                    sLogFileWriter.flush();
+                }
+                catch (IOException e) {
+                    // disable logging but keep the file
+                    SystemUtils.closeStream(sLogFileWriter);
+                    sLogFileWriter = null;
+                }
             }
         }
     }
