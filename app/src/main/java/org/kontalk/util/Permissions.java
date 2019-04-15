@@ -34,13 +34,14 @@ import pub.devrel.easypermissions.EasyPermissions;
  */
 public class Permissions {
 
-    public static final int RC_CALL_PHONE = 1001;
-    public static final int RC_CONTACTS = 1002;
-    public static final int RC_READ_EXT_STORAGE = 1003;
-    public static final int RC_CAMERA = 1004;
-    public static final int RC_RECORD_AUDIO = 1005;
-    public static final int RC_LOCATION = 1006;
-    public static final int RC_PHONE_STATE = 1007;
+    public static final int RC_CALL_PHONE = 201;
+    public static final int RC_CONTACTS = 202;
+    public static final int RC_READ_EXT_STORAGE = 203;
+    public static final int RC_WRITE_EXT_STORAGE = 204;
+    public static final int RC_CAMERA = 205;
+    public static final int RC_RECORD_AUDIO = 206;
+    public static final int RC_LOCATION = 207;
+    public static final int RC_PHONE_STATE = 208;
 
     public static boolean canCallPhone(Context context) {
         return EasyPermissions.hasPermissions(context,
@@ -95,7 +96,14 @@ public class Permissions {
 
     @SuppressLint("InlinedApi")
     public static void requestWriteExternalStorage(Activity activity, String rationale) {
-        EasyPermissions.requestPermissions(activity, rationale, RC_READ_EXT_STORAGE,
+        EasyPermissions.requestPermissions(activity, rationale, RC_WRITE_EXT_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE);
+    }
+
+    @SuppressLint("InlinedApi")
+    public static void requestWriteExternalStorage(Fragment fragment, String rationale) {
+        EasyPermissions.requestPermissions(fragment, rationale, RC_WRITE_EXT_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE);
     }

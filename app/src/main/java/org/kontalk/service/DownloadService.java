@@ -18,11 +18,6 @@
 
 package org.kontalk.service;
 
-/*
- * TODO instead of using a notification ID per type, use a notification ID per
- * download.
- */
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -35,6 +30,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.greenrobot.eventbus.EventBus;
+
 import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -46,6 +43,7 @@ import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 
+import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
@@ -62,7 +60,9 @@ import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.ConversationsActivity;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.ProgressNotificationBuilder;
+import org.kontalk.util.EventBusIndex;
 import org.kontalk.util.MediaStorage;
+import org.kontalk.util.Permissions;
 import org.kontalk.util.Preferences;
 
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOADING;
@@ -77,6 +77,18 @@ import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOAD_OK;
  */
 public class DownloadService extends IntentService implements DownloadListener {
     private static final String TAG = MessageCenterService.TAG;
+
+    // used only for events to UI
+    private static final EventBus BUS;
+
+    static {
+        BUS = EventBus.builder()
+            // TODO .logger(...)
+            .addIndex(new EventBusIndex())
+            .throwSubscriberException(BuildConfig.DEBUG)
+            .logNoSubscriberMessages(BuildConfig.DEBUG)
+            .build();
+    }
 
     /** A map to avoid duplicate downloads. */
     private static final Map<String, Long> sQueue = new LinkedHashMap<>();
@@ -180,9 +192,18 @@ public class DownloadService extends IntentService implements DownloadListener {
                 return;
             }
 
+            // needed in case the next if triggers
+            mConversation = args.getString(EXTRA_MSG_CONVERSATION);
+
+            // check for write permission
+            // an event will be sent to the compose activity if present
+            if (!Permissions.canWriteExternalStorage(this)) {
+                writePermissionDenied();
+                return;
+            }
+
             mMessageId = args.getLong(EXTRA_MSG_ID, 0);
             mPeer = args.getString(EXTRA_MSG_SENDER);
-            mConversation = args.getString(EXTRA_MSG_CONVERSATION);
             mEncrypted = args.getBoolean(EXTRA_MSG_ENCRYPTED, false);
             sQueue.put(url, mMessageId);
 
@@ -200,6 +221,8 @@ public class DownloadService extends IntentService implements DownloadListener {
             if (defaultFile == null) {
                 defaultFile = MediaStorage.getIncomingFile(date, "bin");
             }
+
+            BUS.post(new DownloadStarted(mMessageId));
 
             // download content
             mDownloadClient.downloadAutofilename(url, defaultFile, date, this);
@@ -226,6 +249,15 @@ public class DownloadService extends IntentService implements DownloadListener {
             // remove from queue - will never be processed
             else
                 sQueue.remove(url);
+        }
+    }
+
+    private void writePermissionDenied() {
+        if (MessagingNotification.isPaused(mConversation)) {
+            BUS.post(new WritePermissionDenied());
+        }
+        else {
+            permissionDeniedNotification();
         }
     }
 
@@ -390,8 +422,12 @@ public class DownloadService extends IntentService implements DownloadListener {
     }
 
     private void errorNotification(String ticker, String text) {
+        errorNotification(ticker, text, getString(R.string.notify_title_download_error), null);
+    }
+
+    private void errorNotification(String ticker, String text, String title, Intent baseIntent) {
         // create intent for download error notification
-        Intent i = new Intent(this, ConversationsActivity.class);
+        Intent i = baseIntent != null ? baseIntent : new Intent(this, ConversationsActivity.class);
         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
                 NOTIFICATION_ID_DOWNLOAD_ERROR, i, 0);
@@ -400,7 +436,7 @@ public class DownloadService extends IntentService implements DownloadListener {
         NotificationCompat.Builder builder = new NotificationCompat
             .Builder(getApplicationContext(), MessagingNotification.CHANNEL_MEDIA_DOWNLOAD)
             .setSmallIcon(R.drawable.ic_stat_notify)
-            .setContentTitle(getString(R.string.notify_title_download_error))
+            .setContentTitle(title)
             .setContentText(text)
             .setTicker(ticker)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
@@ -410,6 +446,13 @@ public class DownloadService extends IntentService implements DownloadListener {
 
         // notify!!
         mNotificationManager.notify(NOTIFICATION_ID_DOWNLOAD_ERROR, builder.build());
+    }
+
+    private void permissionDeniedNotification() {
+        errorNotification(getString(R.string.notify_ticker_download_permission_denied_error),
+            getString(R.string.notify_summary_download_permission_denied_error),
+            getString(R.string.notify_title_download_permission_denied_error),
+            ConversationsActivity.writeStoragePermissionRequest(this));
     }
 
     @Override
@@ -422,13 +465,12 @@ public class DownloadService extends IntentService implements DownloadListener {
         }
     }
 
-    public static boolean isQueued(String url) {
-        return sQueue.containsKey(url);
+    public static EventBus bus() {
+        return BUS;
     }
 
-    public static void start(Context context, long databaseId, String sender,
-            String mime, long timestamp, boolean encrypted, String url, String conversation) {
-        start(context, databaseId, sender, mime, timestamp, encrypted, url, conversation, true);
+    public static boolean isQueued(String url) {
+        return sQueue.containsKey(url);
     }
 
     public static void start(Context context, long databaseId, String sender,
@@ -451,6 +493,17 @@ public class DownloadService extends IntentService implements DownloadListener {
         i.setAction(ACTION_DOWNLOAD_ABORT);
         i.setData(uri);
         ContextCompat.startForegroundService(context, i);
+    }
+
+    public static class WritePermissionDenied {
+    }
+
+    public static class DownloadStarted {
+        public final long id;
+
+        DownloadStarted(long id) {
+            this.id = id;
+        }
     }
 
 }

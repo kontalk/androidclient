@@ -240,7 +240,15 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
     private int mCheckedItemCount;
 
+    /**
+     * It will hold the ID of the latest manually requested media download.
+     * Used to restart the download automatically after the permission has been
+     * granted.
+     */
+    private long mWaitingDownload;
+
     protected EventBus mServiceBus = MessageCenterService.bus();
+    protected EventBus mDownloadBus = DownloadService.bus();
 
     /**
      * Returns a new fragment instance from a picked contact.
@@ -554,6 +562,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
             case R.id.menu_download: {
                 CompositeMessage msg = getCheckedItem();
+                mWaitingDownload = msg.getDatabaseId();
                 startDownload(msg);
                 mode.finish();
                 return true;
@@ -1132,7 +1141,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             DownloadService.start(getContext(), msg.getDatabaseId(),
                 msg.getSender(), attachment.getMime(), msg.getTimestamp(),
                 attachment.getSecurityFlags() != Coder.SECURITY_CLEARTEXT,
-                attachment.getFetchUrl(), getUserId());
+                attachment.getFetchUrl(), getUserId(), false);
         }
         else {
             // corrupted message :(
@@ -1662,7 +1671,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     }
 
     @Override
-    public void onSaveInstanceState(Bundle out) {
+    public void onSaveInstanceState(@NonNull Bundle out) {
         super.onSaveInstanceState(out);
         out.putParcelable(Uri.class.getName(), Threads.getUri(getUserId()));
         // save composer status
@@ -1860,6 +1869,29 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         mComposer.resetCompose();
         // reset available resources list
         mAvailableResources.clear();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onDownloadStarted(DownloadService.DownloadStarted event) {
+        // needed to avoid multiple download starting for the same media
+        if (event.id == mWaitingDownload) {
+            mWaitingDownload = 0;
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onDownloadWritePermissionDenied(DownloadService.WritePermissionDenied event) {
+        Permissions.requestWriteExternalStorage(this, getString(R.string.err_storage_denied_interactive));
+    }
+
+    @AfterPermissionGranted(Permissions.RC_WRITE_EXT_STORAGE)
+    void onWriteStorageGranted() {
+        if (mWaitingDownload > 0) {
+            CompositeMessage msg = CompositeMessage.loadMessage(getContext(), mWaitingDownload);
+            if (msg != null) {
+                startDownload(msg);
+            }
+        }
     }
 
     /**
@@ -2098,6 +2130,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         // hold message center
         MessageCenterService.hold(getActivity(), true);
 
+        mDownloadBus.register(this);
+
         ComposeMessage activity = getParentActivity();
         if (activity == null || !activity.hasLostFocus() || activity.hasWindowFocus()) {
             onFocus();
@@ -2200,6 +2234,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
         // release message center
         MessageCenterService.release(getActivity());
+
+        mDownloadBus.unregister(this);
 
         // release audio player
         AudioFragment audio = getAudioFragment();

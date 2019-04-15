@@ -684,10 +684,15 @@
     <string name="err_audio_or_storage_denied">We need access to the microphone for recording your voice and access to external storage to save your recordings.</string>
 
     <string name="err_storage_denied">Kontalk needs access to local storage to store media.\nYou can allow access to storage from Android settings.</string>
+    <string name="err_storage_denied_interactive">Kontalk needs access to local storage to store media. We will now ask for permission.</string>
 
     <string name="err_location_denied">We need access to your location if you want to share it.</string>
 
     <string name="err_validation_phone_state_denied">If you allow Kontalk to manage phone calls, it can automatically detect your phone number.\nKontalk won\'t use the granted permission for anything else.</string>
+
+    <string name="notify_ticker_download_permission_denied_error">Permission is required to download media</string>
+    <string name="notify_title_download_permission_denied_error">Permission required</string>
+    <string name="notify_summary_download_permission_denied_error">Tap to know more.</string>
 
     <string name="err_emoji_disabled_in_multiwindow">Emoji can\'t be used in multi-window mode.</string>
 
