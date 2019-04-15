@@ -328,7 +328,11 @@ public class Kontalk extends Application {
     public static void setBackendEnabled(Context context, boolean enabled) {
         PackageManager pm = context.getPackageManager();
         enableService(context, pm, MessageCenterService.class, enabled);
-        enableService(context, pm, DownloadService.class, enabled);
+        // check for backward compatibility
+        if (enabled) {
+            // DownloadService can and should be used at any time if needed
+            enableService(context, pm, DownloadService.class, true);
+        }
         enableService(context, pm, UploadService.class, enabled);
         enableService(context, pm, SystemBootStartup.class, enabled);
         enableService(context, pm, NetworkStateReceiver.class, enabled);
