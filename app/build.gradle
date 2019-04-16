@@ -47,6 +47,7 @@ android {
         resValue "string", "account_type", applicationId + '.account'
         buildConfigField "String", "ACCOUNT_TYPE", '"' + applicationId + '.account"'
         vectorDrawables.useSupportLibrary = true
+        multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         javaCompileOptions {
@@ -139,6 +140,7 @@ dependencies {
     }
 
     // support libraries
+    implementation 'com.android.support:multidex:1.0.3'
     implementation "com.android.support:appcompat-v7:$appcompatVersion"
     implementation "com.android.support:design:$appcompatVersion"
     implementation "com.android.support:gridlayout-v7:$appcompatVersion"
