@@ -189,7 +189,7 @@ dependencies {
     implementation 'com.github.daniele-athome:FloatingActionButton:2e5bbbf155'
     implementation 'com.github.vlivanov:ListViewVariants:f606578467'
     // branch sprite-strips-soft-refs-lru-cache
-    implementation 'com.github.vanniktech.Emoji:emoji-one:182e1ff4f4'
+    implementation 'com.vanniktech:emoji-one:0.6.0'
     // waiting for our pull request to be accepted
     implementation 'com.github.kontalk:CircularReveal:bc59b8dfcf'
     implementation 'me.leolin:ShortcutBadger:1.1.22@aar'
