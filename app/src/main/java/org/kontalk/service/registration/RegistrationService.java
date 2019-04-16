@@ -1255,7 +1255,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             AccountManager.get(this).removeAccount(account,
                 new AccountRemovalCallback(this, account, cstate.passphrase,
                     cstate.privateKey, cstate.publicKey, cstate.key.getBridgeCertificate().getEncoded(),
-                    cstate.displayName, cstate.server.toString(), cstate.trustedKeys),
+                    cstate.displayName, cstate.server.toString(), cstate.termsUrl, cstate.trustedKeys),
                 null);
         }
         catch (CertificateEncodingException e) {
@@ -1641,11 +1641,12 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         private final byte[] bridgeCertData;
         private final String name;
         private final String serverUri;
+        private final String serviceTermsUrl;
         private final Map<String, Keyring.TrustedFingerprint> trustedKeys;
 
         AccountRemovalCallback(Context context, android.accounts.Account account,
             String passphrase, byte[] privateKeyData, byte[] publicKeyData,
-            byte[] bridgeCertData, String name, String serverUri,
+            byte[] bridgeCertData, String name, String serverUri, String serviceTermsUrl,
             Map<String, Keyring.TrustedFingerprint> trustedKeys) {
             this.context = context.getApplicationContext();
             this.account = account;
@@ -1655,6 +1656,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             this.bridgeCertData = bridgeCertData;
             this.name = name;
             this.serverUri = serverUri;
+            this.serviceTermsUrl = serviceTermsUrl;
             this.trustedKeys = trustedKeys;
         }
 
@@ -1675,6 +1677,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             data.putString(Authenticator.DATA_BRIDGECERT, Base64.encodeToString(bridgeCertData, Base64.NO_WRAP));
             data.putString(Authenticator.DATA_NAME, name);
             data.putString(Authenticator.DATA_SERVER_URI, serverUri);
+            data.putString(Authenticator.DATA_SERVICE_TERMS_URL, serviceTermsUrl);
 
             // this is the password to the private key
             am.addAccountExplicitly(account, passphrase, data);
@@ -1684,7 +1687,8 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             am.setUserData(account, Authenticator.DATA_PUBLICKEY, data.getString(Authenticator.DATA_PUBLICKEY));
             am.setUserData(account, Authenticator.DATA_BRIDGECERT, data.getString(Authenticator.DATA_BRIDGECERT));
             am.setUserData(account, Authenticator.DATA_NAME, data.getString(Authenticator.DATA_NAME));
-            am.setUserData(account, Authenticator.DATA_SERVER_URI, serverUri);
+            am.setUserData(account, Authenticator.DATA_SERVER_URI, data.getString(Authenticator.DATA_SERVER_URI));
+            am.setUserData(account, Authenticator.DATA_SERVICE_TERMS_URL, data.getString(Authenticator.DATA_SERVICE_TERMS_URL));
 
             // Set contacts sync for this account.
             ContentResolver.setSyncAutomatically(account, ContactsContract.AUTHORITY, true);

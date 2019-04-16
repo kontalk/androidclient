@@ -38,6 +38,9 @@
     <Preference android:key="pref_register_device"
         android:title="@string/pref_register_device"
         android:layout="@layout/md_preference_custom"/>
+    <org.kontalk.ui.prefs.ServiceTermsPreference android:key="pref_service_terms"
+        android:title="@string/pref_service_terms"
+        android:layout="@layout/md_preference_custom"/>
     <Preference android:key="pref_delete_account"
         android:title="@string/pref_delete_account"
         android:layout="@layout/md_preference_custom"/>

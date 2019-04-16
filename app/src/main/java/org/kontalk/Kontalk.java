@@ -244,6 +244,12 @@ public class Kontalk extends MultiDexApplication {
 
             // register listener to handle account removal
             am.addOnAccountsUpdatedListener(listener, null, true);
+
+            // TODO remove after a few release iterations
+            if (Authenticator.getServiceTermsURL(am, account) == null) {
+                am.setUserData(account, Authenticator.DATA_SERVICE_TERMS_URL,
+                    getString(R.string.help_default_KPN_service_terms_url));
+            }
         }
         else {
             // ensure everything is cleared up

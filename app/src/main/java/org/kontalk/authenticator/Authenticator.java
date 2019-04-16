@@ -87,6 +87,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static final String DATA_NAME = "org.kontalk.key.name";
     public static final String DATA_USER_PASSPHRASE = "org.kontalk.userPassphrase";
     public static final String DATA_SERVER_URI = "org.kontalk.server";
+    public static final String DATA_SERVICE_TERMS_URL = "org.kontalk.serviceTermsURL";
 
     @SuppressWarnings("WeakerAccess")
     final Context mContext;
@@ -153,6 +154,17 @@ public class Authenticator extends AbstractAccountAuthenticator {
             return uri != null ? new EndpointServer(uri) : null;
         }
         return null;
+    }
+
+    public static String getDefaultServiceTermsURL(Context context) {
+        AccountManager am = AccountManager.get(context);
+        Account account = getDefaultAccount(am);
+        return getServiceTermsURL(am, account);
+    }
+
+    public static String getServiceTermsURL(AccountManager am, Account account) {
+        return account != null ?
+            am.getUserData(account, Authenticator.DATA_SERVICE_TERMS_URL) : null;
     }
 
     public static PersonalKey loadDefaultPersonalKey(Context ctx, String passphrase)
