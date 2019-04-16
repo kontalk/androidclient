@@ -744,4 +744,22 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
     <string name="title_archived_threads">Chat archiviate</string>
     <string name="footer_archived_threads">Chat archiviate (%d)</string>
 
+    <string name="pref_account_settings">Account</string>
+    <string name="pref_title_foreground_service_mandatory">Kontalk richiede questa impostazioni per funzionare correttamente su questo dispositivo</string>
+
+    <string name="pref_copy_database">Copia database</string>
+    <string name="msg_copy_database_success">Database copiato in: %s</string>
+    <string name="msg_copy_database_failed">Copia database fallita: %s</string>
+
+    <string name="registration_accept_terms_title">Accettare i termini di servizio\?</string>
+    <string name="registration_accept_terms_text">Il server &lt;b&gt;%1$s&lt;/b&gt; richiede di &lt;a href=%2$s&gt;accettare i termini del servizio&lt;/a&gt;.</string>
+
+    <string name="err_storage_denied_interactive">Kontalk ha bisogno di accedere alla memoria locale per salvare i contenuti multimediali. Ti chiederemo il permesso ora.</string>
+
+    <string name="notify_ticker_download_permission_denied_error">Permesso richiesto per scaricare allegati</string>
+    <string name="notify_title_download_permission_denied_error">Permesso richiesto</string>
+    <string name="notify_summary_download_permission_denied_error">Clicca qui per informazioni.</string>
+
+    <string name="err_emoji_disabled_in_multiwindow">Le emoji non possono essere usate in modalità multi-window.</string>
+
     </resources>
