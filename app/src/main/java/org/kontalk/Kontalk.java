@@ -25,7 +25,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
 import com.vanniktech.emoji.EmojiManager;
-import com.vanniktech.emoji.one.EmojiOneProvider;
+import com.vanniktech.emoji.ios.IosEmojiProvider;
 
 import org.spongycastle.openpgp.PGPException;
 
@@ -201,7 +201,7 @@ public class Kontalk extends MultiDexApplication {
 
         // init emoji manager
         // FIXME this is taking a very long time
-        EmojiManager.install(new EmojiOneProvider());
+        EmojiManager.install(new IosEmojiProvider());
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(mPrefListener);
