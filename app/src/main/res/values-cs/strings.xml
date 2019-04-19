@@ -768,4 +768,10 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
 
     <string name="err_emoji_disabled_in_multiwindow">Emoji není možné použít ve víceoknovém režimu.</string>
 
+    <string name="err_storage_denied_interactive">Kontalk potřebuje přístup k lokálnímu úložišti, aby mohl ukládat média. Nyní požádáme o povolení.</string>
+
+    <string name="notify_ticker_download_permission_denied_error">Povolení je vyžadováno, aby bylo možné stáhnout média</string>
+    <string name="notify_title_download_permission_denied_error">Je vyžadováno povolení</string>
+    <string name="notify_summary_download_permission_denied_error">Dotkni se pro více informací.</string>
+
     </resources>

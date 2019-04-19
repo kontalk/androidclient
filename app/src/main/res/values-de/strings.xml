@@ -760,4 +760,10 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
 
     <string name="registration_accept_terms_text">Server von &lt;b&gt;%1$s&lt;/b&gt; fordert an &lt;a href=%2$s&gt;die Nutzungsbedingungen zu akzeptieren&lt;/a&gt;.</string>
 
+    <string name="err_storage_denied_interactive">Kontalk benötigt Zugriff auf lokalen Speicher, um Mediendateien zu speichern. Wir werden jetzt um diese Berechtigung bitten.</string>
+
+    <string name="notify_ticker_download_permission_denied_error">Berichtigung wird zum Download von Mediendateien benötigt</string>
+    <string name="notify_title_download_permission_denied_error">Berechtigung benötigt</string>
+    <string name="notify_summary_download_permission_denied_error">Antippen um mehr zu erfahren.</string>
+
     </resources>
