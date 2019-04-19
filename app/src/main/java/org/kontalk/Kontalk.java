@@ -41,7 +41,6 @@ import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.multidex.MultiDexApplication;
 import android.support.annotation.RequiresApi;
 import android.support.multidex.MultiDexApplication;
 
