@@ -102,6 +102,9 @@ public final class PreferencesActivity extends BasePreferencesActivity
     public void onNestedPreferenceSelected(int key) {
         Fragment fragment;
         switch (key) {
+            case R.xml.preferences_account:
+                fragment = new AccountFragment();
+                break;
             case R.xml.preferences_network:
                 fragment = new NetworkFragment();
                 break;
@@ -141,9 +144,8 @@ public final class PreferencesActivity extends BasePreferencesActivity
     @Override
     public void onFolderSelection(@NonNull FolderChooserDialog folderChooserDialog, @NonNull File folder) {
         try {
-            MaintenanceFragment f = (MaintenanceFragment) getSupportFragmentManager()
+            AccountFragment f = (AccountFragment) getSupportFragmentManager()
                     .findFragmentById(R.id.container);
-
             f.exportPersonalKey(this,
                 new FileOutputStream(new File(folder, PersonalKeyPack.KEYPACK_FILENAME)));
         }

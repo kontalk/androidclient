@@ -32,6 +32,10 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -47,22 +51,20 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.kontalk.BuildConfig;
 import org.kontalk.Log;
 import org.kontalk.R;
-import org.kontalk.client.EndpointServer;
-import org.kontalk.client.NumberValidator;
-import org.kontalk.client.NumberValidator.NumberValidatorListener;
-import org.kontalk.crypto.PersonalKey;
 import org.kontalk.provider.UsersProvider;
-import org.kontalk.service.KeyPairGeneratorService;
+import org.kontalk.service.registration.RegistrationService;
+import org.kontalk.service.registration.event.AccountCreatedEvent;
+import org.kontalk.service.registration.event.ChallengeError;
+import org.kontalk.service.registration.event.ChallengeRequest;
 import org.kontalk.util.InternalTrustStore;
-import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
 
 /** Manual validation code input. */
-public class CodeValidation extends AccountAuthenticatorActionBarActivity
-        implements NumberValidatorListener {
+public class CodeValidation extends AccountAuthenticatorActionBarActivity {
     private static final String TAG = NumberValidation.TAG;
 
     private EditText mCode;
@@ -71,20 +73,11 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     private Button mCallButton;
     private ProgressBar mProgress;
 
-    private NumberValidator mValidator;
-    private PersonalKey mKey;
-    private String mName;
-    private String mPhone;
-    private String mPassphrase;
-    boolean mForce;
-    private EndpointServer.EndpointServerProvider mServerProvider;
-
-    private byte[] mImportedPrivateKey;
-    private byte[] mImportedPublicKey;
     Map<String, String> mTrustedKeys;
 
+    private EventBus mServiceBus = RegistrationService.bus();
+
     private static final class RetainData {
-        NumberValidator validator;
         Map<String, String> trustedKeys;
 
         RetainData() {
@@ -107,18 +100,16 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         // configuration change??
         RetainData data = (RetainData) getLastCustomNonConfigurationInstance();
         if (data != null) {
-            mValidator = data.validator;
-            if (mValidator != null) {
-                startProgress();
-                mValidator.setListener(this);
-            }
+            // TODO when to startProgress(); ?
             mTrustedKeys = data.trustedKeys;
         }
 
-        Intent i = getIntent();
-        mPhone = i.getStringExtra("phone");
+        Intent intent = getIntent();
+        RegistrationService.CurrentState cstate = RegistrationService.currentState();
 
-        int requestCode = i.getIntExtra("requestCode", -1);
+        String phone = cstate.phoneNumber;
+
+        int requestCode = getIntent().getIntExtra("requestCode", -1);
         if (requestCode == NumberValidation.REQUEST_VALIDATION_CODE ||
                 getIntent().getStringExtra("sender") == null) {
             findViewById(R.id.code_validation_phone)
@@ -129,27 +120,27 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 .setText(R.string.code_validation_intro_manual);
         }
         else {
-            String challenge = i.getStringExtra("challenge");
-            String sender = i.getStringExtra("sender");
-            boolean canFallback = i.getBooleanExtra("canFallback", false);
+            String challenge = cstate.challenge;
+            String sender = intent.getStringExtra("sender");
+            boolean canFallback = intent.getBooleanExtra("canFallback", false);
 
             final TextView phoneText = findViewById(R.id.code_validation_phone);
             String formattedPhone;
             try {
                 PhoneNumberUtil util = PhoneNumberUtil.getInstance();
-                Phonenumber.PhoneNumber phoneNumber = util.parse(mPhone, null);
+                Phonenumber.PhoneNumber phoneNumber = util.parse(phone, null);
                 formattedPhone = util.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL);
             }
             catch (NumberParseException e) {
-                formattedPhone = mPhone;
+                formattedPhone = phone;
             }
 
             CharSequence textId1, textId2;
-            if (NumberValidator.isMissedCall(sender) || NumberValidator.CHALLENGE_MISSED_CALL.equals(challenge)) {
+            if (RegistrationService.isMissedCall(sender) || RegistrationService.CHALLENGE_MISSED_CALL.equals(challenge)) {
                 // reverse missed call
                 textId1 = getText(R.string.code_validation_intro_missed_call);
                 textId2 = getString(R.string.code_validation_intro2_missed_call,
-                    NumberValidator.getChallengeLength(sender));
+                    RegistrationService.getChallengeLength(sender));
                 if (canFallback) {
                     mFallbackButton.setText(R.string.button_validation_fallback);
                     mFallbackButton.setVisibility(View.VISIBLE);
@@ -160,7 +151,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 mCallButton.setVisibility(View.GONE);
                 mCode.setVisibility(View.VISIBLE);
             }
-            else if (NumberValidator.CHALLENGE_CALLER_ID.equals(challenge)) {
+            else if (RegistrationService.CHALLENGE_CALLER_ID.equals(challenge)) {
                 // user-initiated missed call
                 textId1 = getText(R.string.code_validation_intro_callerid);
                 textId2 = getText(R.string.code_validation_intro2_callerid);
@@ -204,30 +195,11 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
             ((TextView) findViewById(R.id.code_validation_intro2)).setText(textId2);
         }
 
-        mKey = i.getParcelableExtra(KeyPairGeneratorService.EXTRA_KEY);
-        mName = i.getStringExtra("name");
-        mForce = i.getBooleanExtra("force", false);
-        mPassphrase = i.getStringExtra("passphrase");
-        mImportedPrivateKey = i.getByteArrayExtra("importedPrivateKey");
-        mImportedPublicKey = i.getByteArrayExtra("importedPublicKey");
-        mTrustedKeys = (HashMap) i.getSerializableExtra("trustedKeys");
-
-        String server = i.getStringExtra("server");
-        if (server != null) {
-            mServerProvider = new EndpointServer.SingleServerProvider(server);
-        }
-        else {
-            /*
-             * FIXME HUGE problem here. If we already have a verification code,
-             * how are we supposed to know from what server it came from??
-             * https://github.com/kontalk/androidclient/issues/118
-             */
-            mServerProvider = Preferences.getEndpointServerProvider(this);
-        }
+        mTrustedKeys = (HashMap) intent.getSerializableExtra("trustedKeys");
 
         // brand information
-        final String brandImage = i.getStringExtra("brandImage");
-        final String brandLink = i.getStringExtra("brandLink");
+        final String brandImage = intent.getStringExtra("brandImage");
+        final String brandLink = intent.getStringExtra("brandLink");
         if (brandImage != null) {
             findViewById(R.id.brand_poweredby).setVisibility(View.VISIBLE);
 
@@ -313,7 +285,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 @Override
                 public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
                     // we are going back voluntarily
-                    Preferences.clearRegistrationProgress();
+                    RegistrationService.clearSavedState();
                     CodeValidation.super.onBackPressed();
                 }
             })
@@ -330,7 +302,6 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     @Override
     public Object onRetainCustomNonConfigurationInstance() {
         RetainData data = new RetainData();
-        data.validator = mValidator;
         data.trustedKeys = mTrustedKeys;
         return data;
     }
@@ -371,9 +342,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
             .onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                    Intent i = new Intent();
-                    i.putExtra("force", mForce);
-                    setResult(NumberValidation.RESULT_FALLBACK, i);
+                    setResult(NumberValidation.RESULT_FALLBACK);
                     finish();
                 }
             })
@@ -384,7 +353,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     public void validateCode(View view) {
         String code = null;
         String challenge = getIntent().getStringExtra("challenge");
-        if (!NumberValidator.CHALLENGE_CALLER_ID.equals(challenge)) {
+        if (!RegistrationService.CHALLENGE_CALLER_ID.equals(challenge)) {
             code = mCode.getText().toString().trim();
             if (code.length() == 0) {
                 error(R.string.msg_invalid_code);
@@ -394,17 +363,8 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
 
         startProgress();
 
-        // send the code
-        boolean imported = (mImportedPrivateKey != null && mImportedPublicKey != null);
-        mServerProvider.reset();
-        mValidator = new NumberValidator(this, mServerProvider, mName, mPhone,
-            imported ? null : mKey, mPassphrase);
-        mValidator.setListener(this);
-        if (imported)
-            mValidator.importKey(mImportedPrivateKey, mImportedPublicKey);
-
-        mValidator.manualInput(code);
-        mValidator.start();
+        mServiceBus.register(this);
+        mServiceBus.post(new ChallengeRequest(code));
     }
 
     private void enableControls(boolean enabled) {
@@ -415,7 +375,9 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     }
 
     private void startProgress() {
-        mProgress.setVisibility(View.VISIBLE);
+        if (!BuildConfig.TESTING.get()) {
+            mProgress.setVisibility(View.VISIBLE);
+        }
         enableControls(false);
         keepScreenOn(true);
     }
@@ -427,105 +389,46 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         }
         else {
             // ending - clear registration progress
-            Preferences.clearRegistrationProgress();
+            RegistrationService.clearSavedState();
         }
         keepScreenOn(false);
-        if (mValidator != null) {
-            mValidator.shutdown();
-            mValidator = null;
+        mServiceBus.unregister(this);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onChallengeError(ChallengeError error) {
+        Log.e(TAG, "validation error.", error.exception);
+        keepScreenOn(false);
+        int msgId;
+        if (error.exception instanceof SocketException) {
+            msgId = R.string.err_validation_network_error;
         }
-    }
-
-    @Override
-    public void onError(NumberValidator v, final Throwable e) {
-        Log.e(TAG, "validation error.", e);
-        runOnUiThread(new Runnable() {
-            public void run() {
-                int msgId;
-                if (e instanceof SocketException)
-                    msgId = R.string.err_validation_network_error;
-                else
-                    msgId = R.string.err_validation_error;
-                Toast.makeText(CodeValidation.this, msgId, Toast.LENGTH_LONG).show();
-                abort(false);
+        else {
+            String challenge = RegistrationService.currentState().challenge;
+            if (RegistrationService.CHALLENGE_CALLER_ID.equals(challenge)) {
+                // we are verifying through user-initiated missed call
+                // notify the user that the verification didn't succeed
+                msgId = R.string.err_authentication_failed_callerid;
             }
-        });
-    }
-
-    @Override
-    public void onServerCheckFailed(NumberValidator v) {
-        runOnUiThread(new Runnable() {
-            public void run() {
-                Toast.makeText(CodeValidation.this, R.string.err_validation_server_not_supported, Toast.LENGTH_LONG).show();
-                abort(false);
+            else {
+                // we are verifying through PIN-based challenge
+                // notify the user that the challenge code wasn't accepted
+                msgId = R.string.err_authentication_failed;
             }
-        });
+        }
+        Toast.makeText(this, msgId, Toast.LENGTH_LONG).show();
+        abort(false);
     }
 
-    @Override
-    public void onValidationRequested(NumberValidator v, String sender, String challenge, String brandImage, String brandLink, boolean canFallback) {
-        // not used.
-    }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onAccountCreated(AccountCreatedEvent event) {
+        RegistrationService.stop(this);
 
-    @Override
-    public void onValidationFailed(NumberValidator v, int reason) {
-        // not used.
-    }
-
-    @Override
-    public void onAuthTokenReceived(final NumberValidator v, final byte[] privateKeyData, final byte[] publicKeyData) {
-        Log.d(TAG, "got authentication token!");
-
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                abort(true);
-                Intent i = new Intent();
-                i.putExtra(NumberValidation.PARAM_SERVER_URI, v.getServer().toString());
-                i.putExtra(NumberValidation.PARAM_PUBLICKEY, publicKeyData);
-                i.putExtra(NumberValidation.PARAM_PRIVATEKEY, privateKeyData);
-                i.putExtra(NumberValidation.PARAM_TRUSTED_KEYS, (HashMap) mTrustedKeys);
-                i.putExtra(NumberValidation.PARAM_CHALLENGE, v.getServerChallenge());
-                setResult(RESULT_OK, i);
-                finish();
-            }
-        });
-    }
-
-    @Override
-    public void onAuthTokenFailed(NumberValidator v, int reason) {
-        Log.e(TAG, "authentication token request failed (" + reason + ")");
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                keepScreenOn(false);
-                int resId;
-                String challenge = getIntent().getStringExtra("challenge");
-                if (NumberValidator.CHALLENGE_CALLER_ID.equals(challenge)) {
-                    // we are verifying through user-initiated missed call
-                    // notify the user that the verification didn't succeed
-                    resId = R.string.err_authentication_failed_callerid;
-                }
-                else {
-                    // we are verifying through PIN-based challenge
-                    // notify the user that the challenge code wasn't accepted
-                    resId = R.string.err_authentication_failed;
-                }
-
-                Toast.makeText(CodeValidation.this, resId, Toast.LENGTH_LONG).show();
-                abort(false);
-            }
-        });
-    }
-
-    @Override
-    public void onPrivateKeyReceived(NumberValidator v, byte[] privateKey, byte[] publicKey) {
-        // not used.
-    }
-
-    @Override
-    public void onPrivateKeyRequestFailed(NumberValidator v, int reason) {
-        // not used.
+        abort(true);
+        Intent i = new Intent();
+        i.putExtra(NumberValidation.PARAM_ACCOUNT_NAME, event.account.name);
+        setResult(RESULT_OK, i);
+        finish();
     }
 
     private static final class UsersResyncTask extends AsyncTask<Context, Void, Void> {

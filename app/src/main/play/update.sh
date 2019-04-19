@@ -26,7 +26,7 @@ function check_lang() {
     FULL_DESC=$(cat ${INFILE} | perl -MJSON -Mutf8 -n0777 \
      -E 'binmode(STDIN, ":encoding(UTF-8)"); binmode(STDOUT, ":encoding(UTF-8)"); $r = decode_json($_); print $r->{full_description}' -)
     SHORT_DESC_LEN=$(expr length "${SHORT_DESC}")
-    [ -n "${SHORT_DESC}" ] && [ "${SHORT_DESC_LEN}" -le "${MAX_SHORT_DESC_LEN}" ] && [ -n "${FULL_DESC}" ]
+    [[ -n "${SHORT_DESC}" ]] && [[ "${SHORT_DESC_LEN}" -le "${MAX_SHORT_DESC_LEN}" ]] && [[ -n "${FULL_DESC}" ]]
 }
 
 function extract_check() {
@@ -36,7 +36,7 @@ function extract_check() {
 
     OUT=$(extract_json ${INFILE} ${KEY})
     OUT_LEN=$(expr length "${OUT}")
-    [ -n "${OUT}" ] && [ "${OUT_LEN}" -le "${MAX_LEN}" ] && echo "${OUT}"
+    [[ -n "${OUT}" ]] && [[ "${OUT_LEN}" -le "${MAX_LEN}" ]] && echo "${OUT}"
 }
 
 function copy_lang() {
@@ -48,13 +48,13 @@ function copy_lang() {
     FULL_DESC=$(extract_check ${INFILE} "full_description" ${MAX_FULL_DESC_LEN})
     WHATSNEW=$(extract_check ${INFILE} "recent_changes" ${MAX_WHATSNEW_LEN})
 
-    if [ -n "${SHORT_DESC}" ] && [ -n "${FULL_DESC}" ]; then
+    if [[ -n "${SHORT_DESC}" ]] && [[ -n "${FULL_DESC}" ]]; then
         echo "Updating locale ${LOCALE}"
-        mkdir -p ${LOCALE}/listing
-        [ -n "${TITLE}" ] && echo -n "${TITLE}" >${LOCALE}/listing/title
-        echo -n "${SHORT_DESC}" >${LOCALE}/listing/shortdescription
-        echo -n "${FULL_DESC}" >${LOCALE}/listing/fulldescription
-        [ -n "${WHATSNEW}" ] && echo -n "${WHATSNEW}" >${LOCALE}/whatsnew
+        mkdir -p listings/${LOCALE} release-notes/${LOCALE}
+        [[ -n "${TITLE}" ]] && echo -n "${TITLE}" >listings/${LOCALE}/title.txt
+        echo -n "${SHORT_DESC}" >listings/${LOCALE}/short-description.txt
+        echo -n "${FULL_DESC}" >listings/${LOCALE}/full-description.txt
+        [[ -n "${WHATSNEW}" ]] && echo -n "${WHATSNEW}" >release-notes/${LOCALE}/default.txt
     else
         echo "Skipping locale ${LOCALE}"
     fi

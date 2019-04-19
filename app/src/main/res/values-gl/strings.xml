@@ -755,4 +755,16 @@ Desactivar a cifraxe só se o contacto non ten unha chave persoal.</string>
     <string name="title_archived_threads">Conversas arquivadas</string>
     <string name="footer_archived_threads">Conversas arquivadas (%d)</string>
 
+    <string name="pref_account_settings">Conta</string>
+    <string name="pref_title_foreground_service_mandatory">Kontalk require que esta configuración funcione correctamente neste dispositivo</string>
+
+    <string name="pref_copy_database">Copiar a base de datos</string>
+    <string name="msg_copy_database_success">Base de datos copiada a: %s</string>
+    <string name="msg_copy_database_failed">Fallou a copia de base de datos a: %</string>
+
+    <string name="err_emoji_disabled_in_multiwindow">Emoji non pode ser usado en modo multi-fiestra.</string>
+
+    <string name="registration_accept_terms_title">¿Aceptar as condicions do servizo\?</string>
+    <string name="registration_accept_terms_text">O servidor en %1$s &lt;b&gt;&lt;/b&gt; solicita &lt;a href=%2$s&gt;aceptar os términos do servizo &lt;/a&gt;.</string>
+
     </resources>

@@ -29,6 +29,7 @@ import org.kontalk.client.GroupExtension;
 import org.kontalk.client.KontalkGroupManager;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.service.msgcenter.event.GroupCreatedEvent;
 
 
 /**
@@ -64,8 +65,8 @@ public class GroupCommandAckListener extends MessageCenterPacketListener {
                     if (m.operation == GroupExtension.Member.Operation.ADD) {
                         // mark user as added (clear pending flag)
                         getContext().getContentResolver().update(Groups
-                            .getMembersUri(mGroup.getJID()).buildUpon()
-                            .appendPath(m.jid)
+                            .getMembersUri(mGroup.getJid()).buildUpon()
+                            .appendPath(m.jid.toString())
                             .appendQueryParameter(Messages.CLEAR_PENDING,
                                 String.valueOf(Groups.MEMBER_PENDING_ADDED))
                             .build(), null, null, null);
@@ -73,15 +74,16 @@ public class GroupCommandAckListener extends MessageCenterPacketListener {
                     else if (m.operation == GroupExtension.Member.Operation.REMOVE) {
                         // remove the user
                         getContext().getContentResolver().delete(Groups
-                            .getMembersUri(mGroup.getJID()).buildUpon()
-                            .appendPath(m.jid)
+                            .getMembersUri(mGroup.getJid()).buildUpon()
+                            .appendPath(m.jid.toString())
                             .build(), null, null);
                     }
                 }
             case CREATE:
                 // resend pending stuff -- this will continue the delivery of
                 // group messages that were waiting for this group command
-                broadcast(MessageCenterService.ACTION_GROUP_CREATED);
+                MessageCenterService.bus()
+                    .post(new GroupCreatedEvent());
                 break;
             case PART:
                 if (mCommandMessage != null) {
@@ -92,7 +94,7 @@ public class GroupCommandAckListener extends MessageCenterPacketListener {
                         // that is, no thread exists anymore for this group, so no reason to keep the group
                         // delete group (members will cascade)
                         getContext().getContentResolver()
-                            .delete(Groups.getUri(mGroup.getJID()), null, null);
+                            .delete(Groups.getUri(mGroup.getJid()), null, null);
                     }
                 }
                 break;

@@ -18,6 +18,8 @@
 
 package org.kontalk.service.msgcenter.group;
 
+import org.jxmpp.jid.Jid;
+
 
 /**
  * Group command used by the {@link GroupController}.
@@ -25,12 +27,12 @@ package org.kontalk.service.msgcenter.group;
  */
 public interface GroupCommand {
 
-    void setGroupJid(String groupJid);
+    void setGroupJid(Jid groupJid);
 
-    String getGroupJid();
+    Jid getGroupJid();
 
-    void setMembers(String[] members);
+    void setMembers(Jid[] members);
 
-    String[] getMembers();
+    Jid[] getMembers();
 
 }

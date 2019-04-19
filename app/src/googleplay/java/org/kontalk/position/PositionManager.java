@@ -18,10 +18,13 @@
 
 package org.kontalk.position;
 
+import com.bumptech.glide.load.model.LazyHeaders;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.widget.Toast;
@@ -29,10 +32,10 @@ import android.widget.Toast;
 import org.kontalk.R;
 import org.kontalk.util.Preferences;
 
-/**
- * @author andreacappelli
- */
 
+/**
+ * @author Andrea Cappelli
+ */
 public class PositionManager {
     private static final String PROVIDER_GOOGLE = "google";
     private static final String PROVIDER_OSM = "osm";
@@ -77,15 +80,27 @@ public class PositionManager {
         return fragment;
     }
 
-    public static String getStaticMapUrl(Context context, double lat, double lon, Integer zoom, int width, int height, Integer scale) {
+    public static RequestDetails getStaticMapUrl(Context context, double lat, double lon, Integer zoom, int width, int height, Integer scale) {
         String provider = Preferences.getMapsProvider(context);
         if (PROVIDER_GOOGLE.equals(provider)) {
-            return new GMStaticUrlBuilder().setCenter(lat, lon).setZoom(zoom)
-                .setMarker(lat, lon).setSize(width, height).setScale(scale).toString();
+            return new RequestDetails(new GMStaticUrlBuilder(getGoogleMapsApiKey(context))
+                .setCenter(lat, lon)
+                .setZoom(zoom)
+                .setMarker(lat, lon)
+                .setSize(width, height)
+                .setScale(scale)
+                .toString());
         }
         else if (PROVIDER_OSM.equals(provider)) {
-            return new OsmStaticUrlBuilder().setCenter(lat, lon).setZoom(zoom)
-                .setMarker(lat, lon).setSize(width, height).toString();
+            return new RequestDetails(new OsmStaticUrlBuilder()
+                .setCenter(lat, lon)
+                .setZoom(zoom)
+                .setMarker(lat, lon)
+                .setSize(width, height)
+                .toString(),
+                new LazyHeaders.Builder()
+                    .addHeader("Referer", context.getResources().getString(R.string.website))
+                    .build());
         }
 
         return null;
@@ -100,6 +115,17 @@ public class PositionManager {
             return OsmUrlBuilder.build(lat, lon);
         }
         return null;
+    }
+
+    private static String getGoogleMapsApiKey(Context context) {
+        PackageManager pm = context.getPackageManager();
+        try {
+            ApplicationInfo ai = pm.getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
+            return ai.metaData.getString("com.google.android.geo.API_KEY");
+        }
+        catch (Exception e) {
+            return null;
+        }
     }
 
     private static boolean isGoogleMapsAvailable(Context context) {

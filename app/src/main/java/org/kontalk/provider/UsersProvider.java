@@ -56,12 +56,12 @@ import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.NumberValidator;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers.Keys;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.reporting.ReportingManager;
+import org.kontalk.service.registration.RegistrationService;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.XMPPUtils;
@@ -135,24 +135,6 @@ public class UsersProvider extends ContentProvider {
         private static final String SCHEMA_KEYS =
             "CREATE TABLE " + TABLE_KEYS + " " + CREATE_TABLE_KEYS;
 
-        private static final String[] SCHEMA_UPGRADE_V9 = {
-            // online table
-            "CREATE TABLE users_backup " + CREATE_TABLE_USERS,
-            "INSERT INTO users_backup SELECT _id, jid, number, display_name, lookup_key, contact_id, registered, status, last_seen, blocked FROM " + TABLE_USERS,
-            "DROP TABLE " + TABLE_USERS,
-            "ALTER TABLE users_backup RENAME TO " + TABLE_USERS,
-            // offline table
-            "CREATE TABLE users_backup " + CREATE_TABLE_USERS,
-            "INSERT INTO users_backup SELECT _id, jid, number, display_name, lookup_key, contact_id, registered, status, last_seen, blocked FROM " + TABLE_USERS_OFFLINE,
-            "DROP TABLE " + TABLE_USERS_OFFLINE,
-            "ALTER TABLE users_backup RENAME TO " + TABLE_USERS_OFFLINE,
-            // keys table
-            "CREATE TABLE keys_backup " + CREATE_TABLE_KEYS,
-            "INSERT INTO keys_backup SELECT jid, fingerprint, "+Keys.TRUST_VERIFIED+", strftime('%s')*1000, public_key FROM " + TABLE_KEYS + " WHERE fingerprint IS NOT NULL",
-            "DROP TABLE " + TABLE_KEYS,
-            "ALTER TABLE keys_backup RENAME TO " + TABLE_KEYS,
-        };
-
         private static final String[] SCHEMA_UPGRADE_V10 = {
             "DROP TABLE IF EXISTS users",
             SCHEMA_USERS,
@@ -208,11 +190,6 @@ public class UsersProvider extends ContentProvider {
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             switch (oldVersion) {
-                case 9:
-                    // new keys management
-                    for (String sql : SCHEMA_UPGRADE_V9)
-                        db.execSQL(sql);
-                    break;
                 case 10:
                     for (String sql : SCHEMA_UPGRADE_V10)
                         db.execSQL(sql);
@@ -414,7 +391,7 @@ public class UsersProvider extends ContentProvider {
             case USERS_JID: {
                 // TODO append to selection
                 String userId = uri.getPathSegments().get(1);
-                selection = TABLE_USERS + "." + Users.JID + " = ?";
+                selection = TABLE_USERS + "." + Users.JID + " = ? COLLATE NOCASE";
                 selectionArgs = new String[] { userId };
                 break;
             }
@@ -426,7 +403,7 @@ public class UsersProvider extends ContentProvider {
             case KEYS_JID:
             case KEYS_JID_FINGERPRINT:
                 String userId = uri.getPathSegments().get(1);
-                selection = DatabaseUtils.concatenateWhere(selection, Keys.JID + "=?");
+                selection = DatabaseUtils.concatenateWhere(selection, Keys.JID + "=? COLLATE NOCASE");
                 selectionArgs = DatabaseUtils.appendSelectionArgs(selectionArgs, new String[] { userId });
                 // TODO support for fingerprint in Uri
                 break;
@@ -471,7 +448,7 @@ public class UsersProvider extends ContentProvider {
 
                 // fix number
                 try {
-                    number = NumberValidator.fixNumber(context, number,
+                    number = RegistrationService.fixNumber(context, number,
                             Authenticator.getDefaultAccountName(context), null);
                 }
                 catch (Exception e) {
@@ -682,7 +659,7 @@ public class UsersProvider extends ContentProvider {
 
                         // fix number
                         try {
-                            number = NumberValidator.fixNumber(context, number,
+                            number = RegistrationService.fixNumber(context, number,
                                 Authenticator.getDefaultAccountName(context), 0);
                         }
                         catch (Exception e) {
@@ -757,7 +734,7 @@ public class UsersProvider extends ContentProvider {
 
                             // fix number
                             try {
-                                number = NumberValidator.fixNumber(context, number,
+                                number = RegistrationService.fixNumber(context, number,
                                     Authenticator.getDefaultAccountName(context), 0);
                             }
                             catch (Exception e) {
@@ -970,7 +947,7 @@ public class UsersProvider extends ContentProvider {
                     values.remove(Users.NUMBER);
                 }
 
-                db.update(table, values, Users.JID + "=?", new String[] { jid });
+                db.update(table, values, Users.JID + "=? COLLATE NOCASE", new String[] { jid });
             }
         }
 
@@ -1011,7 +988,7 @@ public class UsersProvider extends ContentProvider {
             if (!insertOnly) {
                 // we got a duplicated key, update the requested values
                 rows = db.update(TABLE_KEYS, values,
-                    Keys.JID + "=? AND " + Keys.FINGERPRINT + "=?",
+                    Keys.JID + "=? COLLATE NOCASE AND " + Keys.FINGERPRINT + "=?",
                     new String[]{ jid, fingerprint });
             }
         }
@@ -1060,7 +1037,7 @@ public class UsersProvider extends ContentProvider {
 
     private int deleteKeys(String userId, String fingerprint, String selection, String[] selectionArgs) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        selection = DatabaseUtils.concatenateWhere(selection, Keys.JID + "=?");
+        selection = DatabaseUtils.concatenateWhere(selection, Keys.JID + "=? COLLATE NOCASE");
         selection = DatabaseUtils.concatenateWhere(selection, Keys.FINGERPRINT + "=?");
         selectionArgs = DatabaseUtils.appendSelectionArgs(selectionArgs, new String[] { userId, fingerprint });
         return db.delete(TABLE_KEYS, selection, selectionArgs);
@@ -1092,7 +1069,7 @@ public class UsersProvider extends ContentProvider {
         }
         // TODO Uri.withAppendedPath(Users.CONTENT_URI, msg.getSender(true))
         context.getContentResolver().update(Users.CONTENT_URI,
-            registeredValues, Users.JID+"=?", new String[] { jid });
+            registeredValues, Users.JID+"=? COLLATE NOCASE", new String[] { jid });
     }
 
     /** Retrieves the last seen timestamp for a user. */
@@ -1116,14 +1093,14 @@ public class UsersProvider extends ContentProvider {
         ContentValues values = new ContentValues(1);
         values.put(Users.LAST_SEEN, time);
         context.getContentResolver().update(Users.CONTENT_URI,
-            values, Users.JID + "=?", new String[] { jid });
+            values, Users.JID + "=? COLLATE NOCASE", new String[] { jid });
     }
 
     public static void setBlockStatus(Context context, String jid, boolean blocked) {
         ContentValues values = new ContentValues(1);
         values.put(Users.BLOCKED, blocked);
         context.getContentResolver().update(Users.CONTENT_URI,
-            values, Users.JID + "=?", new String[] { jid });
+            values, Users.JID + "=? COLLATE NOCASE", new String[] { jid });
     }
 
     // FIXME what is this doing here? Using Messages Uri
@@ -1133,7 +1110,7 @@ public class UsersProvider extends ContentProvider {
 
         // FIXME this won't work on new threads
         return context.getContentResolver().update(MyMessages.Threads.Requests.CONTENT_URI,
-            values, MyMessages.Threads.PEER + "=?",
+            values, MyMessages.Threads.PEER + "=? COLLATE NOCASE",
             new String[] { jid });
     }
 
@@ -1141,7 +1118,7 @@ public class UsersProvider extends ContentProvider {
         ContentValues values = new ContentValues(1);
         values.put(Users.DISPLAY_NAME, displayName);
         return context.getContentResolver().update(Users.CONTENT_URI,
-            values, Users.JID + " = ? AND (" + Users.DISPLAY_NAME + " IS NULL OR LENGTH(" + Users.DISPLAY_NAME + ") = 0)",
+            values, Users.JID + " = ? COLLATE NOCASE AND (" + Users.DISPLAY_NAME + " IS NULL OR LENGTH(" + Users.DISPLAY_NAME + ") = 0)",
             new String[] { jid });
     }
 

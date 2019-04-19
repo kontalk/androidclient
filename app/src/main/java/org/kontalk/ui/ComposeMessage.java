@@ -41,11 +41,11 @@ import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.NumberValidator;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
+import org.kontalk.service.registration.RegistrationService;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.SystemUtils;
 import org.kontalk.util.ViewUtils;
@@ -338,7 +338,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
                 try {
                     Uri uri = intent.getData();
                     // a phone number should come here...
-                    String number = NumberValidator.fixNumber(this,
+                    String number = RegistrationService.fixNumber(this,
                             uri.getSchemeSpecificPart(),
                             Authenticator.getDefaultAccountName(this), 0);
                     // compute hash and open conversation

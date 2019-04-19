@@ -34,7 +34,7 @@ import android.widget.EditText;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.R;
-import org.kontalk.client.NumberValidator;
+import org.kontalk.service.registration.RegistrationService;
 
 
 /**
@@ -84,10 +84,10 @@ public class ImportDeviceActivity extends ToolbarActivity implements View.OnClic
             try {
                 phone = util.parse(account, null);
                 // handle special cases
-                NumberValidator.handleSpecialCases(phone);
+                RegistrationService.handleSpecialCases(phone);
 
                 String regionCode = util.getRegionCodeForCountryCode(phone.getCountryCode());
-                if (!util.isValidNumberForRegion(phone, regionCode) && !NumberValidator.isSpecialNumber(phone))
+                if (!util.isValidNumberForRegion(phone, regionCode) && !RegistrationService.isSpecialNumber(phone))
                     throw new NumberParseException(NumberParseException.ErrorType.INVALID_COUNTRY_CODE, "invalid number for region " + regionCode);
             }
             catch (Exception e) {

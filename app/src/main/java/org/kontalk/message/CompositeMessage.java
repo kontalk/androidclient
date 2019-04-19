@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.jxmpp.jid.Jid;
+import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.util.XmppStringUtils;
 
 import android.content.AsyncQueryHandler;
@@ -35,10 +37,10 @@ import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
 import org.kontalk.BuildConfig;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.GroupExtension;
 import org.kontalk.data.GroupInfo;
 import org.kontalk.provider.MessagesProviderClient;
+import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
@@ -125,17 +127,6 @@ public class CompositeMessage {
     public static final int COLUMN_GROUP_TYPE = 27;
     public static final int COLUMN_GROUP_MEMBERSHIP = 28;
 
-    public static final String MSG_ID = "org.kontalk.message.id";
-    public static final String MSG_SERVER_ID = "org.kontalk.message.serverId";
-    public static final String MSG_SENDER = "org.kontalk.message.sender";
-    public static final String MSG_MIME = "org.kontalk.message.mime";
-    public static final String MSG_CONTENT = "org.kontalk.message.content";
-    public static final String MSG_RECIPIENTS = "org.kontalk.message.recipients";
-    public static final String MSG_GROUP = "org.kontalk.message.group";
-    public static final String MSG_TIMESTAMP = "org.kontalk.message.timestamp";
-    public static final String MSG_ENCRYPTED = "org.kontalk.message.encrypted";
-    public static final String MSG_COMPRESS = "org.kontalk.message.compress";
-
     private static final int SUFFIX_LENGTH = "Component".length();
 
     protected Context mContext;
@@ -150,10 +141,8 @@ public class CompositeMessage {
     protected int mSecurityFlags;
     protected long mInReplyTo;
 
-    /**
-     * Recipients (outgoing) - will contain one element for incoming
-     */
-    protected List<String> mRecipients;
+    /** Recipient (outgoing) */
+    protected String mRecipient;
 
     /** Message components. */
     protected List<MessageComponent<?>> mComponents;
@@ -164,7 +153,6 @@ public class CompositeMessage {
 
         mId = id;
         mSender = sender;
-        mRecipients = new ArrayList<String>();
         // will be updated if necessary
         mTimestamp = System.currentTimeMillis();
         mServerTimestamp = timestamp;
@@ -187,6 +175,15 @@ public class CompositeMessage {
         mId = id;
     }
 
+    public String getPeer() {
+        if (isIncoming()) {
+            return getSender(true);
+        }
+        else {
+            return getRecipient(true);
+        }
+    }
+
     public String getSender(boolean generic) {
         return generic && XmppStringUtils.isFullJID(mSender) ?
             XmppStringUtils.parseBareJid(mSender) : mSender;
@@ -196,12 +193,13 @@ public class CompositeMessage {
         return getSender(false);
     }
 
-    public List<String> getRecipients() {
-        return mRecipients;
+    public String getRecipient(boolean generic) {
+        return generic && XmppStringUtils.isFullJID(mRecipient) ?
+            XmppStringUtils.parseBareJid(mRecipient) : mRecipient;
     }
 
-    public void addRecipient(String userId) {
-        mRecipients.add(userId);
+    public String getRecipient() {
+        return getRecipient(false);
     }
 
     public long getTimestamp() {
@@ -324,7 +322,7 @@ public class CompositeMessage {
         mTimestamp = c.getLong(COLUMN_TIMESTAMP);
         mStatusChanged = c.getLong(COLUMN_STATUS_CHANGED);
         mStatus = c.getInt(COLUMN_STATUS);
-        mRecipients = new ArrayList<>();
+        mRecipient = null;
         mEncrypted = (c.getShort(COLUMN_ENCRYPTED) > 0);
         mSecurityFlags = c.getInt(COLUMN_SECURITY);
         mServerTimestamp = c.getLong(COLUMN_SERVER_TIMESTAMP);
@@ -335,7 +333,7 @@ public class CompositeMessage {
         if (direction == Messages.DIRECTION_OUT) {
             // we are the origin
             mSender = null;
-            mRecipients.add(peer);
+            mRecipient = peer;
         }
         else {
             mSender = peer;
@@ -353,10 +351,12 @@ public class CompositeMessage {
         else {
 
             String mime = c.getString(COLUMN_BODY_MIME);
-            String groupJid = c.getString(COLUMN_GROUP_JID);
+            String groupJidStr = c.getString(COLUMN_GROUP_JID);
             String groupSubject = c.getString(COLUMN_GROUP_SUBJECT);
             String groupType = c.getString(COLUMN_GROUP_TYPE);
             int groupMembership = c.getInt(COLUMN_GROUP_MEMBERSHIP);
+            Jid groupJid = groupJidStr != null ?
+                JidCreate.fromOrThrowUnchecked(groupJidStr) : null;
 
             if (body != null) {
                 // remove trailing zero
@@ -374,14 +374,24 @@ public class CompositeMessage {
                     String text = c.getString(COLUMN_GEO_TEXT);
                     String street = c.getString(COLUMN_GEO_STREET);
 
+                    // send text along
+                    if (bodyText.length() > 0) {
+                        addComponent(new HiddenTextComponent(bodyText));
+                    }
+
                     LocationComponent location = new LocationComponent(lat, lon, text, street);
                     addComponent(location);
                 }
 
                 // group command
                 else if (GroupCommandComponent.supportsMimeType(mime)) {
-                    String groupId = XmppStringUtils.parseLocalpart(groupJid);
-                    String groupOwner = XmppStringUtils.parseDomain(groupJid);
+                    if (groupJid == null) {
+                        // impossible
+                        throw new IllegalStateException("Trying to parse a group command without a group!?");
+                    }
+
+                    String groupId = groupJid.getLocalpartOrNull().toString();
+                    Jid groupOwner = JidCreate.fromOrThrowUnchecked(groupJid.getDomain());
                     GroupExtension ext = null;
 
                     String subject;
@@ -408,8 +418,7 @@ public class CompositeMessage {
                     }
 
                     if (ext != null)
-                        addComponent(new GroupCommandComponent(ext, peer,
-                            Authenticator.getSelfJID(mContext)));
+                        addComponent(new GroupCommandComponent(ext, peer));
                 }
 
                 // unknown data
@@ -460,11 +469,8 @@ public class CompositeMessage {
 
                 // TODO other type of attachments
 
-                if (att != null) {
-                    att.populateFromCursor(mContext, c);
-                    addComponent(att);
-                }
-
+                att.populateFromCursor(mContext, c);
+                addComponent(att);
             }
 
             // in reply to
@@ -478,7 +484,8 @@ public class CompositeMessage {
 
             // group information
             if (groupJid != null) {
-                GroupInfo groupInfo = new GroupInfo(groupJid, groupSubject, groupType, groupMembership);
+                GroupInfo groupInfo = new GroupInfo(groupJid,
+                    groupSubject, groupType, groupMembership);
                 addComponent(new GroupComponent(groupInfo));
             }
 
@@ -524,6 +531,21 @@ public class CompositeMessage {
 
     public static void deleteFromCursor(Context context, Cursor cursor) {
         MessagesProviderClient.deleteMessage(context, cursor.getLong(COLUMN_ID));
+    }
+
+    public static CompositeMessage loadMessage(Context context, long id) {
+        Cursor c = context.getContentResolver().query(ContentUris
+                .withAppendedId(MyMessages.Messages.CONTENT_URI, id),
+            MESSAGE_LIST_PROJECTION, null, null, null);
+        try {
+            if (c.moveToFirst()) {
+                return fromCursor(context, c);
+            }
+            return null;
+        }
+        finally {
+            c.close();
+        }
     }
 
     public static void startQuery(AsyncQueryHandler handler, int token, long threadId, long count, long lastId) {

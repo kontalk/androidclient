@@ -38,6 +38,7 @@
     <string name="menu_import_key">Import key</string>
     <string name="menu_import_device">Register from another device</string>
     <string name="menu_manual_verification">Already have a code?</string>
+    <string name="pref_account_settings">Account</string>
     <string name="pref_network_settings">Network</string>
     <string name="pref_network_uri">Manual server address</string>
     <string name="pref_title_network_uri">This will override server list automatic management</string>
@@ -630,8 +631,12 @@
     <string name="msg_copy_database_failed">Database copy failed: %s</string>
 
     <string name="registration_poweredby">Powered by</string>
+    <string name="registration_accept_terms_title">Accept service terms?</string>
+    <string name="registration_accept_terms_text"><![CDATA[Server at <b>%1$s</b> is requesting to <a href="%2$s">accept terms of service</a>.]]></string>
 
     <string name="audio_duration_max">%1$s / %2$s</string>
+
+    <string name="pref_service_terms">Service terms</string>
 
     <string name="pref_register_device">Register device</string>
     <string name="register_device_title">Register device</string>
@@ -681,10 +686,15 @@
     <string name="err_audio_or_storage_denied">We need access to the microphone for recording your voice and access to external storage to save your recordings.</string>
 
     <string name="err_storage_denied">Kontalk needs access to local storage to store media.\nYou can allow access to storage from Android settings.</string>
+    <string name="err_storage_denied_interactive">Kontalk needs access to local storage to store media. We will now ask for permission.</string>
 
     <string name="err_location_denied">We need access to your location if you want to share it.</string>
 
     <string name="err_validation_phone_state_denied">If you allow Kontalk to manage phone calls, it can automatically detect your phone number.\nKontalk won\'t use the granted permission for anything else.</string>
+
+    <string name="notify_ticker_download_permission_denied_error">Permission is required to download media</string>
+    <string name="notify_title_download_permission_denied_error">Permission required</string>
+    <string name="notify_summary_download_permission_denied_error">Tap to know more.</string>
 
     <string name="err_emoji_disabled_in_multiwindow">Emoji can\'t be used in multi-window mode.</string>
 

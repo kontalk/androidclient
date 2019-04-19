@@ -19,12 +19,14 @@
 package org.kontalk.service.msgcenter.group;
 
 
+import org.jxmpp.jid.Jid;
+
 public class KontalkAddRemoveMembersCommand extends KontalkGroupCommand
         implements AddRemoveMembersCommand {
 
     private String mSubject;
-    private String[] mAdded;
-    private String[] mRemoved;
+    private Jid[] mAdded;
+    private Jid[] mRemoved;
 
     @Override
     public void setSubject(String subject) {
@@ -37,22 +39,22 @@ public class KontalkAddRemoveMembersCommand extends KontalkGroupCommand
     }
 
     @Override
-    public void setAddedMembers(String[] members) {
+    public void setAddedMembers(Jid[] members) {
         mAdded = members;
     }
 
     @Override
-    public String[] getAddedMembers() {
+    public Jid[] getAddedMembers() {
         return mAdded;
     }
 
     @Override
-    public void setRemovedMembers(String[] members) {
+    public void setRemovedMembers(Jid[] members) {
         mRemoved = members;
     }
 
     @Override
-    public String[] getRemovedMembers() {
+    public Jid[] getRemovedMembers() {
         return mRemoved;
     }
 

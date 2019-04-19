@@ -6,7 +6,7 @@ apply plugin: 'jacoco-android'
 
 check.dependsOn 'checkstyle'
 
-task checkstyle(type: Checkstyle){
+task checkstyle(type: Checkstyle) {
     source 'src'
     include '**/*.java'
     // code from Google/AOSP
@@ -23,13 +23,18 @@ task checkstyle(type: Checkstyle){
     exclude '**/CircularSeekBar.java',
         '**/FrameLayoutFixed.java',
         '**/AbsListViewScrollDetector.java',
-        '**/XMPPTCPConnection.java',
-        '**/BundleAndDefer*.java',
+        '**/java/org/kontalk/client/smack/**',
         '**/ProximityScreenLocker*.java',
-        'main/java/com/**'
+        '**/CustomSimpleXmppStringprep.java',
+        'main/java/com/**',
+        'androidTest/java/net/**'
     def configProps = ['baseDir': projectDir.absolutePath]
     configProperties configProps
     classpath = files()
+}
+
+checkstyle {
+    configFile = new File(projectDir, "config/checkstyle/checkstyle.xml")
 }
 
 android {
@@ -47,12 +52,22 @@ android {
         resValue "string", "account_type", applicationId + '.account'
         buildConfigField "String", "ACCOUNT_TYPE", '"' + applicationId + '.account"'
         vectorDrawables.useSupportLibrary = true
+        multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [ eventBusIndex : 'org.kontalk.util.EventBusIndex' ]
+            }
+        }
+
+        // for testing
+        buildConfigField "java.util.concurrent.atomic.AtomicBoolean", "TESTING", "new java.util.concurrent.atomic.AtomicBoolean(false)"
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     signingConfigs {
@@ -94,6 +109,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
             testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg', 'proguard-test.cfg'
             ext.enableCrashlytics = false
+            ext.alwaysUpdateBuildId = false
             testCoverageEnabled true
         }
     }
@@ -110,6 +126,7 @@ android {
 
     testOptions {
         unitTests.returnDefaultValues = true
+        animationsDisabled = true
     }
 
     productFlavors {
@@ -127,6 +144,7 @@ dependencies {
         exclude group: 'net.sf.kxml'
     }
 
+    // support libraries
     implementation 'com.android.support:multidex:1.0.3'
     implementation "com.android.support:appcompat-v7:$appcompatVersion"
     implementation "com.android.support:design:$appcompatVersion"
@@ -139,6 +157,18 @@ dependencies {
     implementation "com.android.support:animated-vector-drawable:$appcompatVersion"
     implementation "com.android.support:support-v13:$appcompatVersion"
 
+    // network/protocol libraries
+    implementation "org.igniterealtime.smack:smack-tcp:$smackVersion"
+    implementation "org.igniterealtime.smack:smack-experimental:$smackVersion"
+    implementation "org.igniterealtime.smack:smack-android:$smackVersion"
+    implementation fileTree(dir: 'libs', include: "smack-omemo-${smackVersion}.jar")
+    implementation fileTree(dir: 'libs', include: "smack-omemo-signal-${smackVersion}.jar")
+    implementation 'info.guardianproject.netcipher:netcipher:1.2.1'
+    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
+    implementation 'com.segment.backo:backo:1.0.0'
+    implementation 'com.google.code.gson:gson:2.8.5'
+
+    // encryption libraries
     implementation "com.madgag.spongycastle:core:$spongyCastleVersion"
     implementation ("com.madgag.spongycastle:prov:$spongyCastleVersion") {
         exclude group: 'junit'
@@ -149,20 +179,13 @@ dependencies {
     implementation ("com.madgag.spongycastle:bcpg-jdk15on:$spongyCastleVersion") {
         exclude group: 'junit'
     }
+
+    // storage/persistence libraries
     implementation 'android.arch.persistence:db:1.1.1'
     implementation 'io.requery:sqlite-android:3.24.0'
-    implementation 'info.guardianproject.netcipher:netcipher:1.2.1'
-    implementation 'com.googlecode.libphonenumber:libphonenumber:8.9.7'
-    implementation 'com.google.zxing:core:3.3.1'
-    implementation 'me.dm7.barcodescanner:zxing:1.9.8'
-    implementation 'com.segment.backo:backo:1.0.0'
-    implementation 'pub.devrel:easypermissions:1.2.0'
-    implementation "org.igniterealtime.smack:smack-tcp:$smackVersion"
-    implementation "org.igniterealtime.smack:smack-experimental:$smackVersion"
-    implementation "org.igniterealtime.smack:smack-android:$smackVersion"
-    implementation fileTree(dir: 'libs', include: "smack-omemo-${smackVersion}.jar")
-    implementation fileTree(dir: 'libs', include: "smack-omemo-signal-${smackVersion}.jar")
-    implementation 'org.whispersystems:signal-protocol-java:2.4.0'
+
+    // UI libraries
+    implementation 'pub.devrel:easypermissions:2.0.1'
     implementation 'com.github.machinarius:preferencefragment:0.1.1'
     implementation 'com.afollestad.material-dialogs:core:0.9.6.0'
     implementation 'com.afollestad.material-dialogs:commons:0.9.6.0'
@@ -170,38 +193,45 @@ dependencies {
     implementation 'com.nispok:snackbar:2.11.0'
     // TODO Glide 4 required API level 14 at the time. It needs porting now
     implementation 'com.github.bumptech.glide:glide:3.8.0'
-    implementation 'com.github.instacart.truetime-android:library:3.3'
     implementation 'com.github.daniele-athome:FloatingActionButton:2e5bbbf155'
-    implementation 'de.hdodenhof:circleimageview:2.1.0'
     implementation 'com.github.vlivanov:ListViewVariants:f606578467'
-    // branch sprite-strips-soft-refs-lru-cache
-    implementation 'com.github.akwizgran.Emoji:emoji-one:e364918e26'
-    implementation ('com.github.ozodrukh:CircularReveal:2.0.1@aar') {
-        transitive = true
-    }
+    implementation 'com.vanniktech:emoji-ios:0.6.0'
+    // waiting for our pull request to be accepted
+    implementation 'com.github.kontalk:CircularReveal:bc59b8dfcf'
     implementation 'me.leolin:ShortcutBadger:1.1.22@aar'
     implementation 'com.bignerdranch.android:recyclerview-multiselect:0.2'
     implementation "android.arch.lifecycle:runtime:1.1.1"
     implementation "android.arch.lifecycle:extensions:1.1.1"
     implementation 'android.arch.paging:runtime:1.0.1'
+    implementation 'de.hdodenhof:circleimageview:2.1.0'
 
-    implementation 'com.google.code.gson:gson:2.8.5'
-    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
+    // other libraries
+    implementation 'com.googlecode.libphonenumber:libphonenumber:8.10.8'
+    implementation 'com.google.zxing:core:3.3.1'
+    implementation 'me.dm7.barcodescanner:zxing:1.9.8'
+    implementation 'com.github.instacart.truetime-android:library:3.3'
+    implementation 'org.greenrobot:eventbus:3.1.1'
+    annotationProcessor 'org.greenrobot:eventbus-annotation-processor:3.1.1'
+    // version 10 needs AndroidX
+    implementation 'com.jakewharton:butterknife:9.0.0'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:9.0.0'
 
+    // maps libraries
     implementation "com.github.kontalk.AnyMaps:anymaps-base:$anyMapsVersion"
     implementation "com.github.kontalk.AnyMaps:anymaps-osm:$anyMapsVersion"
-
     googleplayImplementation "com.github.kontalk.AnyMaps:anymaps-google:$anyMapsVersion"
-    googleplayImplementation "com.google.android.gms:play-services-maps:$googlePlayServicesVersion"
-    googleplayImplementation "com.google.android.gms:play-services-location:$googlePlayServicesVersion"
 
-    googleplayImplementation "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
-    googleplayImplementation "com.google.firebase:firebase-core:16.0.4"
-    googleplayImplementation "com.google.firebase:firebase-messaging:17.3.4"
-    googleplayImplementation('com.crashlytics.sdk.android:crashlytics:2.9.5@aar') {
+    // Google Play Services
+    googleplayImplementation "com.google.android.gms:play-services-base:16.1.0"
+    googleplayImplementation "com.google.android.gms:play-services-maps:16.1.0"
+    googleplayImplementation "com.google.android.gms:play-services-location:16.0.0"
+    googleplayImplementation "com.google.firebase:firebase-core:16.0.8"
+    googleplayImplementation "com.google.firebase:firebase-messaging:17.6.0"
+    googleplayImplementation('com.crashlytics.sdk.android:crashlytics:2.9.9@aar') {
         transitive = true
     }
 
+    // test dependencies
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.google.android:android-test:4.1.1.4'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
@@ -209,28 +239,34 @@ dependencies {
     androidTestImplementation "com.android.support:support-annotations:$appcompatVersion"
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-intents:3.0.2'
+    androidTestImplementation 'com.android.support.test:monitor:1.0.2'
     androidTestImplementation 'com.jayway.android.robotium:robotium-solo:5.6.3'
 }
 
 if (travisBuild) {
     play {
-        track = 'alpha'
-        jsonFile = rootProject.file('dist/googleplay-developer-key.json')
-        untrackOld = true
+        track = 'beta'
+        releaseStatus = 'completed'
+        serviceAccountCredentials = rootProject.file('dist/googleplay-developer-key.json')
     }
 
-    task publish(dependsOn: ['publishGoogleplayRelease']) {
+    task publishBeta(dependsOn: ['publishGoogleplayRelease']) {
         group = 'Kontalk'
-        description = 'Publish to Google Play alpha channel'
+        description = 'Publish to Google Play beta channel'
     }
-    publish.dependsOn 'testGoogleplayReleaseUnitTest'
+    publishBeta.dependsOn 'testGoogleplayReleaseUnitTest'
 }
-else if (project.hasProperty('GOOGLE_PLAY_DEVELOPER_KEY_FILE')) {
+else {
     play {
-        track = 'beta'
-        jsonFile = file(GOOGLE_PLAY_DEVELOPER_KEY_FILE)
-        untrackOld = true
+        track = 'alpha'
+        releaseStatus = 'draft'
+        serviceAccountCredentials = rootProject.file('dist/googleplay-developer-key.json')
     }
 }
 
 apply plugin: 'com.google.gms.google-services'
+
+googleServices {
+    // temporary workaround for Smack dependency problem
+    disableVersionCheck = true
+}

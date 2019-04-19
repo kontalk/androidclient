@@ -18,25 +18,27 @@
 
 package org.kontalk.data;
 
+import org.jxmpp.jid.Jid;
+
 
 /**
  * Group chat information.
  * @author Daniele Ricci
  */
 public class GroupInfo {
-    private final String mJid;
+    private final Jid mJid;
     private final String mSubject;
     private final String mType;
     private final int mMembership;
 
-    public GroupInfo(String jid, String subject, String type, int membership) {
+    public GroupInfo(Jid jid, String subject, String type, int membership) {
         mJid = jid;
         mSubject = subject;
         mType = type;
         mMembership = membership;
     }
 
-    public String getJid() {
+    public Jid getJid() {
         return mJid;
     }
 

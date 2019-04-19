@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kontalk Android client
+     Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <Preference android:key="pref_account_info"
+        android:title="User Display Name"
+        android:summary="+15555215554"
+        android:selectable="false"
+        android:persistent="false"
+        android:icon="@drawable/ic_default_contact"
+        android:layout="@layout/md_preference_custom"/>
+    <Preference android:key="pref_change_passphrase"
+        android:title="@string/pref_change_passphrase"
+        android:layout="@layout/md_preference_custom"/>
+    <Preference android:key="pref_regenerate_keypair"
+        android:summary="@string/pref_title_regenerate_keypair"
+        android:title="@string/pref_regenerate_keypair"
+        android:layout="@layout/md_preference_custom"/>
+    <Preference android:key="pref_export_keypair"
+        android:title="@string/pref_export_keypair"
+        android:layout="@layout/md_preference_custom"/>
+    <Preference android:key="pref_register_device"
+        android:title="@string/pref_register_device"
+        android:layout="@layout/md_preference_custom"/>
+    <org.kontalk.ui.prefs.ServiceTermsPreference android:key="pref_service_terms"
+        android:title="@string/pref_service_terms"
+        android:layout="@layout/md_preference_custom"/>
+    <Preference android:key="pref_delete_account"
+        android:title="@string/pref_delete_account"
+        android:layout="@layout/md_preference_custom"/>
+
+</PreferenceScreen>

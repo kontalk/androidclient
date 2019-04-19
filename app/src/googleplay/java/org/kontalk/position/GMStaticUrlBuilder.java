@@ -28,11 +28,16 @@ package org.kontalk.position;
 public class GMStaticUrlBuilder {
     private static final String URL = "http://maps.googleapis.com/maps/api/staticmap";
 
+    private String mApiKey;
     private String mCenter;
     private int mZoom = 15;
     private String mSize = "600x300";
     private String mMarker;
     private int mScale = 1;
+
+    public GMStaticUrlBuilder(String apiKey) {
+        this.mApiKey = apiKey;
+    }
 
     public GMStaticUrlBuilder setCenter(double lat, double lon) {
         mCenter = lat + "," + lon;
@@ -51,15 +56,7 @@ public class GMStaticUrlBuilder {
     }
 
     public GMStaticUrlBuilder setMarker(double lat, double lon) {
-        StringBuilder marker = new StringBuilder();
-
-        marker.append("%7C")
-            .append(lat)
-            .append(',')
-            .append(lon);
-
-        mMarker = marker.toString();
-
+        mMarker = "%7C" + lat + "," + lon;
         return this;
     }
 
@@ -70,19 +67,20 @@ public class GMStaticUrlBuilder {
         return this;
     }
 
+    @Override
     public String toString() {
-        return new StringBuilder()
-            .append(URL)
-            .append("?center=")
-            .append(mCenter)
-            .append("&zoom=")
-            .append(mZoom)
-            .append("&size=")
-            .append(mSize)
-            .append("&scale=")
-            .append(mScale)
-            .append("&markers=")
-            .append(mMarker)
-            .toString();
+        return URL +
+            "?center=" +
+            mCenter +
+            "&zoom=" +
+            mZoom +
+            "&size=" +
+            mSize +
+            "&scale=" +
+            mScale +
+            "&markers=" +
+            mMarker +
+            "&key=" +
+            mApiKey;
     }
 }

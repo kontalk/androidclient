@@ -427,6 +427,12 @@ public class ComposerBar extends RelativeLayout implements
             }
         });
         */
+
+        // initialize emoji popup immediately because the library asked that
+        mEmojiView = EmojiPopup.Builder.fromRootView(mRootView)
+            .setOnEmojiPopupShownListener(this)
+            .setOnEmojiPopupDismissListener(this)
+            .build(mTextEntry);
     }
 
     public void forceHideKeyboard() {
@@ -750,13 +756,6 @@ public class ComposerBar extends RelativeLayout implements
     }
 
     private void showEmojiDrawer() {
-        if (mEmojiView == null) {
-            mEmojiView = EmojiPopup.Builder.fromRootView(mRootView)
-                .setOnEmojiPopupShownListener(this)
-                .setOnEmojiPopupDismissListener(this)
-                .build(mTextEntry);
-        }
-
         // this is called only when isEmojiVisible() returns false
         // so it's guaranteed to always do the show and not the hide
         mEmojiView.toggle();

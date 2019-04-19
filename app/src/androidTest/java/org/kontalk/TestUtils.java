@@ -18,12 +18,20 @@
 
 package org.kontalk;
 
+import java.util.concurrent.TimeUnit;
+
+import org.greenrobot.eventbus.EventBus;
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
 
+import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.IdlingPolicies;
+import android.support.test.espresso.IdlingRegistry;
+import android.support.test.espresso.IdlingResource;
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.AdapterView;
@@ -40,6 +48,10 @@ import static org.junit.Assume.assumeTrue;
 
 
 public class TestUtils {
+    static {
+        BuildConfig.TESTING.set(true);
+    }
+
     private TestUtils() {
     }
 
@@ -60,6 +72,21 @@ public class TestUtils {
             Authenticator.getDefaultAccount
                 (InstrumentationRegistry.getTargetContext()),
             notNullValue());
+    }
+
+    public static void removeDefaultAccount() throws InterruptedException {
+        final Object monitor = new Object();
+        AccountManagerCallback<Boolean> callback = new AccountManagerCallback<Boolean>() {
+            public void run(AccountManagerFuture<Boolean> future) {
+                synchronized (monitor) {
+                    monitor.notify();
+                }
+            }
+        };
+        Authenticator.removeDefaultAccount(InstrumentationRegistry.getTargetContext(), callback);
+        synchronized (monitor) {
+            monitor.wait(3000);
+        }
     }
 
     public static Matcher<View> withMessageDirection(final int direction) {
@@ -104,5 +131,29 @@ public class TestUtils {
                 return false;
             }
         };
+    }
+
+    public static EventIdlingResource registerEventIdlingResource(EventBus bus, Class klass) {
+        IdlingPolicies.setIdlingResourceTimeout(5, TimeUnit.MINUTES);
+        IdlingPolicies.setMasterPolicyTimeout(5, TimeUnit.MINUTES);
+
+        EventIdlingResource resource = new EventIdlingResource(klass.getSimpleName(), bus, klass);
+        IdlingRegistry.getInstance().register(resource);
+        return resource;
+    }
+
+    public static <T extends IdlingResource> T registerIdlingResource(T resource) {
+        IdlingPolicies.setIdlingResourceTimeout(5, TimeUnit.MINUTES);
+        IdlingPolicies.setMasterPolicyTimeout(5, TimeUnit.MINUTES);
+
+        IdlingRegistry.getInstance().register(resource);
+        return resource;
+    }
+
+    public static void unregisterIdlingResource(IdlingResource resource) {
+        IdlingPolicies.setIdlingResourceTimeout(1, TimeUnit.MINUTES);
+        IdlingPolicies.setMasterPolicyTimeout(1, TimeUnit.MINUTES);
+
+        IdlingRegistry.getInstance().unregister(resource);
     }
 }

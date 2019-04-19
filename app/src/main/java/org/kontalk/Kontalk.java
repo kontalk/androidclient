@@ -22,11 +22,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 
 import com.vanniktech.emoji.EmojiManager;
-import com.vanniktech.emoji.one.EmojiOneProvider;
+import com.vanniktech.emoji.ios.IosEmojiProvider;
 
 import org.spongycastle.openpgp.PGPException;
 
@@ -44,6 +43,7 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.multidex.MultiDexApplication;
 import android.support.annotation.RequiresApi;
+import android.support.multidex.MultiDexApplication;
 
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGP;
@@ -63,6 +63,7 @@ import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.SearchActivity;
+import org.kontalk.util.CustomSimpleXmppStringprep;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
@@ -118,7 +119,7 @@ public class Kontalk extends MultiDexApplication {
                 }
                 // foreground service
                 else if ("pref_foreground_service".equals(key)) {
-                    MessageCenterService.updateForegroundStatus(Kontalk.this);
+                    MessageCenterService.start(Kontalk.this);
                 }
                 // reporting opt-in
                 else if ("pref_reporting".equals(key)) {
@@ -143,7 +144,7 @@ public class Kontalk extends MultiDexApplication {
                     }
                     // hide presence flag / encrypt user data flag
                     else if ("pref_hide_presence".equals(key) || "pref_encrypt_userdata".equals(key)) {
-                        MessageCenterService.updateStatus(Kontalk.this);
+                        MessageCenterService.updateStatus(Preferences.getStatusMessage());
                     }
                     // changing remove prefix
                     else if ("pref_remove_prefix".equals(key)) {
@@ -172,6 +173,9 @@ public class Kontalk extends MultiDexApplication {
         if (Preferences.isReportingEnabled(this))
             ReportingManager.register(this);
 
+        // hacks
+        CustomSimpleXmppStringprep.setup();
+
         // register security provider
         SecureConnectionManager.init(this);
         try {
@@ -198,7 +202,7 @@ public class Kontalk extends MultiDexApplication {
 
         // init emoji manager
         // FIXME this is taking a very long time
-        EmojiManager.install(new EmojiOneProvider());
+        EmojiManager.install(new IosEmojiProvider());
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(mPrefListener);
@@ -241,6 +245,12 @@ public class Kontalk extends MultiDexApplication {
 
             // register listener to handle account removal
             am.addOnAccountsUpdatedListener(listener, null, true);
+
+            // TODO remove after a few release iterations
+            if (Authenticator.getServiceTermsURL(am, account) == null) {
+                am.setUserData(account, Authenticator.DATA_SERVICE_TERMS_URL,
+                    getString(R.string.help_default_KPN_service_terms_url));
+            }
         }
         else {
             // ensure everything is cleared up
@@ -256,21 +266,14 @@ public class Kontalk extends MultiDexApplication {
     }
 
     public PersonalKey getPersonalKey() throws PGPException, IOException, CertificateException {
-        try {
-            if (mDefaultKey == null)
-                mDefaultKey = Authenticator.loadDefaultPersonalKey(this, getCachedPassphrase());
-        }
-        catch (NoSuchProviderException e) {
-            // this shouldn't happen, so crash the application
-            throw new RuntimeException("no such crypto provider!?", e);
-        }
-
+        if (mDefaultKey == null)
+            mDefaultKey = Authenticator.loadDefaultPersonalKey(this, getCachedPassphrase());
         return mDefaultKey;
     }
 
     public void exportPersonalKey(OutputStream out, String exportPassphrase)
             throws CertificateException, PGPException, IOException,
-                NoSuchProviderException, KeyStoreException, NoSuchAlgorithmException {
+                KeyStoreException, NoSuchAlgorithmException {
 
         Authenticator.exportDefaultPersonalKey(this, out, getCachedPassphrase(), exportPassphrase, true);
     }
@@ -332,7 +335,11 @@ public class Kontalk extends MultiDexApplication {
     public static void setBackendEnabled(Context context, boolean enabled) {
         PackageManager pm = context.getPackageManager();
         enableService(context, pm, MessageCenterService.class, enabled);
-        enableService(context, pm, DownloadService.class, enabled);
+        // check for backward compatibility
+        if (enabled) {
+            // DownloadService can and should be used at any time if needed
+            enableService(context, pm, DownloadService.class, true);
+        }
         enableService(context, pm, UploadService.class, enabled);
         enableService(context, pm, SystemBootStartup.class, enabled);
         enableService(context, pm, NetworkStateReceiver.class, enabled);

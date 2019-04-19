@@ -742,4 +742,16 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
     <string name="title_archived_threads">Xats arxivats</string>
     <string name="footer_archived_threads">Xats arxivats (%d)</string>
 
+    <string name="pref_account_settings">Compte</string>
+    <string name="pref_title_foreground_service_mandatory">Kontalk requereix que aquesta configuració funcioni correctament en aquest dispositiu</string>
+
+    <string name="pref_copy_database">Copiar la base de dades</string>
+    <string name="msg_copy_database_success">Base de dades copiada a: %</string>
+    <string name="msg_copy_database_failed">Va fallar la còpia de base de dades a: %</string>
+
+    <string name="err_emoji_disabled_in_multiwindow">Emoji no pot ser usat en manera multi-finestra.</string>
+
+    <string name="registration_accept_terms_title">Acceptar les condicions del servei\?</string>
+    <string name="registration_accept_terms_text">El servidor en &lt;b&gt;%1$s&lt;/b&gt; sol·licita &lt;a href=%2$s&gt;acceptar els termes del servei &lt;/a&gt;.</string>
+
     </resources>

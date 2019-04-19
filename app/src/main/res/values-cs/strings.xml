@@ -756,4 +756,16 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="title_archived_threads">Archivované konverzace</string>
     <string name="footer_archived_threads">Archivované konverzace (%d)</string>
 
+    <string name="pref_account_settings">Účet</string>
+    <string name="pref_title_foreground_service_mandatory">Kontalk vyžaduje toto nastavení, aby mohl fungovat na tomto zařízení</string>
+
+    <string name="pref_copy_database">Zkopírovat databázi</string>
+    <string name="msg_copy_database_success">Databáze byla zkopírována do: %s</string>
+    <string name="msg_copy_database_failed">Kopie databáze se nezdařila: %s</string>
+
+    <string name="registration_accept_terms_title">Přijmout podmínky služby\?</string>
+    <string name="registration_accept_terms_text">Server na &lt;b&gt;%1$s&lt;/b&gt; požaduje &lt;a href=%2$s&gt;přijetí podmínek služby&lt;/a&gt;.</string>
+
+    <string name="err_emoji_disabled_in_multiwindow">Emoji není možné použít ve víceoknovém režimu.</string>
+
     </resources>

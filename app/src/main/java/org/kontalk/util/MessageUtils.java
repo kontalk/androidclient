@@ -249,7 +249,7 @@ public final class MessageUtils {
 
     public static String getMessagePeer(CompositeMessage msg) {
         return msg.getDirection() == Messages.DIRECTION_IN ?
-            msg.getSender(true) : msg.getRecipients().get(0);
+            msg.getSender(true) : msg.getRecipient();
     }
 
     public static String getMessagePeer(Cursor c) {

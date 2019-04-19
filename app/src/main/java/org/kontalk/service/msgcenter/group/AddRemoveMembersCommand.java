@@ -18,6 +18,8 @@
 
 package org.kontalk.service.msgcenter.group;
 
+import org.jxmpp.jid.Jid;
+
 
 public interface AddRemoveMembersCommand extends GroupCommand {
 
@@ -25,12 +27,12 @@ public interface AddRemoveMembersCommand extends GroupCommand {
 
     String getSubject();
 
-    void setAddedMembers(String[] members);
+    void setAddedMembers(Jid[] members);
 
-    String[] getAddedMembers();
+    Jid[] getAddedMembers();
 
-    void setRemovedMembers(String[] members);
+    void setRemovedMembers(Jid[] members);
 
-    String[] getRemovedMembers();
+    Jid[] getRemovedMembers();
 
 }

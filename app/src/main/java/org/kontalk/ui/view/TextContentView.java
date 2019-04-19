@@ -27,6 +27,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.text.util.LinkifyCompat;
 import android.support.v4.widget.TextViewCompat;
 import android.text.Editable;
 import android.text.Layout;
@@ -146,7 +147,7 @@ public class TextContentView extends EmojiTextView
         // linkify!
         if (formattedMessage.length() < MAX_AFFORDABLE_SIZE) {
             try {
-                Linkify.addLinks(formattedMessage, Linkify.ALL);
+                LinkifyCompat.addLinks(formattedMessage, Linkify.ALL);
             }
             catch (Throwable e) {
                 // working around some crappy firmwares

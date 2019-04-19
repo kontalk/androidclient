@@ -18,28 +18,52 @@
 
 package org.kontalk.ui;
 
+import java.util.Collection;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import android.Manifest;
+import android.os.Handler;
+import android.os.Looper;
+import android.support.test.espresso.Espresso;
+import android.support.test.espresso.IdlingRegistry;
+import android.support.test.espresso.IdlingResource;
 import android.support.test.espresso.NoMatchingRootException;
+import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
+import android.support.test.rule.GrantPermissionRule;
 import android.support.test.runner.AndroidJUnit4;
 
+import org.kontalk.EventIdlingResource;
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.TestServerTest;
 import org.kontalk.TestUtils;
+import org.kontalk.service.registration.RegistrationService;
+import org.kontalk.service.registration.event.AcceptTermsRequest;
+import org.kontalk.service.registration.event.AccountCreatedEvent;
+import org.kontalk.service.registration.event.UserConflictError;
+import org.kontalk.service.registration.event.VerificationRequestedEvent;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static android.support.test.espresso.action.ViewActions.replaceText;
 import static android.support.test.espresso.action.ViewActions.scrollTo;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.RootMatchers.isDialog;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
 
 
@@ -50,18 +74,45 @@ public class RegistrationTest extends TestServerTest {
     private static final String TEST_USERNAME = "dev-5554";
     private static final String TEST_USERID = "5555215554";
 
+    private EventBus mBus = RegistrationService.bus();
+
     @Rule
     public ActivityTestRule<ConversationsActivity> mActivityTestRule =
         new ActivityTestRule<>(ConversationsActivity.class);
 
+    @Rule
+    public GrantPermissionRule mPermissionRule =
+        GrantPermissionRule.grant(Manifest.permission.READ_PHONE_STATE,
+            Manifest.permission.READ_CONTACTS,
+            Manifest.permission.WRITE_CONTACTS,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.CAMERA);
+
+    @BeforeClass
+    public static void setUpBeforeClass() throws InterruptedException {
+        // always start with a clean slate
+        TestUtils.removeDefaultAccount();
+        RegistrationService.clearSavedState();
+    }
+
     @Before
-    public void setUp() {
-        TestUtils.skipIfDefaultAccountExists();
+    public void setUp() throws Exception {
+        TestUtils.removeDefaultAccount();
         super.setUp();
     }
 
+    @After
+    public void tearDown() throws Exception {
+        TestUtils.removeDefaultAccount();
+        Collection<IdlingResource> idlingResourceList = IdlingRegistry.getInstance().getResources();
+        for (IdlingResource resource : idlingResourceList) {
+            IdlingRegistry.getInstance().unregister(resource);
+        }
+    }
+
     @Test
-    public void registrationTest() {
+    public void registrationTest() throws Exception {
         onView(withId(R.id.name))
             .perform(scrollTo(), replaceText(TEST_USERNAME), closeSoftKeyboard());
         onView(withId(R.id.phone_number))
@@ -70,43 +121,168 @@ public class RegistrationTest extends TestServerTest {
         onView(withId(R.id.button_validate))
             .perform(scrollTo(), click());
 
+        // register accept terms event
+        EventIdlingResource acceptTermsResource = TestUtils
+            .registerEventIdlingResource(mBus, AcceptTermsRequest.class);
+
+        // input confirmation dialog
+        onView(withText(R.string.msg_register_confirm_number1))
+            .inRoot(isDialog())
+            .check(matches(isDisplayed()));
+        onView(allOf(withId(R.id.md_buttonDefaultPositive),
+                     withText(android.R.string.ok),
+                     isDisplayed()))
+            .inRoot(isDialog())
+            .perform(click());
+
+        acceptTermsResource.start();
+
+        UserConflictOrVerificationRequestedIdlingResource registrationResource =
+            TestUtils.registerIdlingResource(new UserConflictOrVerificationRequestedIdlingResource(mBus, 2000));
+
+        // service terms dialog
         try {
-            onView(allOf(withId(R.id.md_buttonDefaultPositive), isDisplayed()))
+            onView(withText(R.string.registration_accept_terms_title))
+                .inRoot(isDialog())
+                .check(matches(isDisplayed()));
+
+            onView(allOf(withId(R.id.md_buttonDefaultPositive), withText(R.string.yes), isDisplayed()))
                 .inRoot(isDialog())
                 .perform(click());
         }
-        catch (NoMatchingRootException e) {
+        catch (NoMatchingViewException e) {
             // A-EHM... ignoring since the dialog might or might not appear
+            Log.w("TEST", "No matching service terms dialog");
         }
 
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
+        registrationResource.start();
+
+        TestUtils.unregisterIdlingResource(acceptTermsResource);
+
+        // force registration dialog
         try {
-            Thread.sleep(1000);
+            // we are going to try again
+            registrationResource.reset();
+
+            onView(allOf(withId(R.id.md_buttonDefaultNeutral), withText(R.string.btn_device_overwrite), isDisplayed()))
+                .inRoot(isDialog())
+                .perform(click());
+
+            registrationResource.start();
         }
-        catch (InterruptedException e) {
-            e.printStackTrace();
+        catch (NoMatchingRootException e) {
+            // A-EHM... ignoring since the dialog might or might not appear
+            Log.w("TEST", "No matching account override dialog");
         }
 
         onView(withId(R.id.validation_code))
             .perform(scrollTo(), replaceText(TEST_PIN_CODE), closeSoftKeyboard());
 
+        TestUtils.unregisterIdlingResource(registrationResource);
+
+        EventIdlingResource accountResource = TestUtils
+            .registerEventIdlingResource(mBus, AccountCreatedEvent.class);
+
         onView(withId(R.id.send_button))
             .perform(scrollTo(), click());
 
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        try {
-            Thread.sleep(5000);
-        }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        accountResource.start();
+
+        Espresso.onIdle();
+
+        TestUtils.unregisterIdlingResource(accountResource);
 
         // we should have an account now
         TestUtils.assertDefaultAccountExists();
+    }
+
+    private static final class UserConflictOrVerificationRequestedIdlingResource
+            implements IdlingResource {
+
+        private final EventBus mBus;
+        private final long mTimeoutMs;
+
+        private final Handler mHandler;
+        private final Runnable mTransitionToIdle;
+
+        private boolean mRunning;
+        private ResourceCallback mCallback;
+        private boolean mEventReceived;
+
+        UserConflictOrVerificationRequestedIdlingResource(EventBus bus, long timeoutMs) {
+            mHandler = new Handler(Looper.getMainLooper());
+            mBus = bus;
+            mBus.register(this);
+            mTimeoutMs = timeoutMs;
+
+            mTransitionToIdle = new Runnable() {
+                @Override
+                public void run() {
+                    mEventReceived = true;
+                    if (mCallback != null) {
+                        mCallback.onTransitionToIdle();
+                    }
+                }
+            };
+        }
+
+        @Override
+        public String getName() {
+            return getClass().getSimpleName();
+        }
+
+        public void reset() {
+            mRunning = false;
+            mEventReceived = false;
+            mHandler.removeCallbacks(mTransitionToIdle);
+        }
+
+        @Subscribe(threadMode = ThreadMode.ASYNC)
+        public void onUserConflict(UserConflictError event) {
+            Log.d("TEST", "got idling event: " + event);
+            mHandler.postDelayed(mTransitionToIdle, mTimeoutMs);
+        }
+
+        @Subscribe(threadMode = ThreadMode.ASYNC)
+        public void onVerificationRequested(VerificationRequestedEvent event) {
+            Log.d("TEST", "got idling event: " + event);
+            mHandler.postDelayed(mTransitionToIdle, mTimeoutMs);
+            mBus.unregister(this);
+        }
+
+        @Override
+        public boolean isIdleNow() {
+            return !mRunning || mEventReceived;
+        }
+
+        @Override
+        public void registerIdleTransitionCallback(ResourceCallback callback) {
+            mCallback = callback;
+        }
+
+        public void start() {
+            mRunning = true;
+        }
+    }
+
+    /**
+     * Tests the import key workflow when the server doesn't trust the key
+     * because it was overruled by another one. User must verify the phone
+     * number, but the key will be reused.
+     */
+    @Test
+    public void importUntrustedKeyTest() {
+        // TODO
+        throw new AssertionError("Not implemented.");
+    }
+
+    /**
+     * Tries to import a revoked key and should fail permanently.
+     */
+    @Test
+    public void importRevokedKeyTest() {
+        // TODO
+        throw new AssertionError("Not implemented.");
     }
 
 }

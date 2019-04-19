@@ -79,6 +79,7 @@ import org.spongycastle.operator.bc.BcContentSignerBuilder;
 import org.spongycastle.operator.bc.BcDSAContentSignerBuilder;
 import org.spongycastle.operator.bc.BcRSAContentSignerBuilder;
 
+import android.os.Build;
 import android.os.Parcel;
 
 
@@ -378,7 +379,12 @@ public class X509Bridge {
          * Checks that this certificate has indeed been correctly signed.
          */
         X509Certificate cert = new JcaX509CertificateConverter().getCertificate(holder);
-        cert.verify(pubKey);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            cert.verify(pubKey, PGP.PROVIDER);
+        }
+        else {
+            cert.verify(pubKey);
+        }
 
         return cert;
     }
@@ -389,19 +395,19 @@ public class X509Bridge {
     }
 
     public static X509Certificate load(byte[] certData)
-            throws CertificateException, NoSuchProviderException {
+            throws CertificateException {
         return load(new ByteArrayInputStream(certData));
     }
 
     public static X509Certificate load(InputStream certData)
-            throws CertificateException, NoSuchProviderException {
+            throws CertificateException {
 
         CertificateFactory certFactory = CertificateFactory.getInstance("X.509", PGP.PROVIDER);
         return (X509Certificate) certFactory.generateCertificate(certData);
     }
 
     public static KeyStore exportCertificate(X509Certificate certificate, PrivateKey privateKey)
-            throws KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException {
+            throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
 
         KeyStore store = KeyStore.getInstance("PKCS12", PGP.PROVIDER);
 

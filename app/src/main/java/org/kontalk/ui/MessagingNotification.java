@@ -586,7 +586,8 @@ public class MessagingNotification {
 
     /** Adds proper alerts to the notification. */
     private static void setAlerts(Context context, NotificationCompat.Builder builder) {
-        int defaults = 0;
+        // apparently we can't set defaults for vibrate if we want to set LED color
+        builder.setDefaults(0);
 
         if (Preferences.getNotificationLED(context)) {
             int ledColor = Preferences.getNotificationLEDColor(context);
@@ -598,16 +599,17 @@ public class MessagingNotification {
         }
 
         String ringtone = Preferences.getNotificationRingtone(context);
-        if (ringtone != null && ringtone.length() > 0)
+        if (ringtone != null && ringtone.length() > 0) {
             builder.setSound(Uri.parse(ringtone));
+        }
 
         String vibrate = Preferences.getNotificationVibrate(context);
         if ("always".equals(vibrate) || ("silent_only".equals(vibrate) &&
                 ((AudioManager) context.getSystemService(Context.AUDIO_SERVICE))
-                    .getRingerMode() != AudioManager.RINGER_MODE_NORMAL))
-            defaults |= Notification.DEFAULT_VIBRATE;
-
-        builder.setDefaults(defaults);
+                    .getRingerMode() != AudioManager.RINGER_MODE_NORMAL)) {
+            // pattern from Android's NotificationManagerService
+            builder.setVibrate(new long[] {0, 250, 250, 250});
+        }
     }
 
     /** High priority message with Kontalk colors :-) */

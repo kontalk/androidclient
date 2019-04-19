@@ -24,7 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
-import org.kontalk.client.NumberValidator;
+import org.kontalk.service.registration.RegistrationService;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -95,7 +95,7 @@ public class CountryCodesAdapter extends BaseAdapter {
         CountryCode cc = new CountryCode();
         cc.regionCode = regionCode;
         cc.countryCode = PhoneNumberUtil.getInstance().getCountryCodeForRegion(regionCode);
-        cc.regionName = NumberValidator.getRegionDisplayName(regionCode, Locale.getDefault());
+        cc.regionName = RegistrationService.getRegionDisplayName(regionCode, Locale.getDefault());
         mData.add(cc);
     }
 

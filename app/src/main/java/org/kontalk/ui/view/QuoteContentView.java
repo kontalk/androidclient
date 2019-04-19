@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 
 import android.content.Context;
 import android.graphics.Typeface;
+import android.support.v4.text.util.LinkifyCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -85,7 +86,7 @@ public class QuoteContentView extends RelativeLayout
             // linkify!
             if (formattedMessage.length() < TextContentView.MAX_AFFORDABLE_SIZE) {
                 try {
-                    Linkify.addLinks(formattedMessage, Linkify.ALL);
+                    LinkifyCompat.addLinks(formattedMessage, Linkify.ALL);
                 }
                 catch (Throwable e) {
                     // working around some crappy firmwares

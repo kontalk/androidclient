@@ -18,10 +18,6 @@
 
 package org.kontalk.data;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 import android.content.AsyncQueryHandler;
 import android.content.ContentUris;
 import android.content.Context;
@@ -34,6 +30,7 @@ import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.event.SendMessageRequest;
 import org.kontalk.service.msgcenter.group.GroupControllerFactory;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.util.MessageUtils;
@@ -312,6 +309,14 @@ public class Conversation {
         return mGroupPeers;
     }
 
+    /**
+     * Special version of {@link #getGroupPeers} that returns members with any flags.
+     * An ugly hack for the message center.
+     */
+    public String[] getGroupPeersForSending() {
+        return MessagesProviderClient.getGroupMembers(mContext, mGroupJid, -1);
+    }
+
     public boolean isGroupChat() {
         loadGroupPeers(false);
         return mGroupJid != null;
@@ -344,8 +349,8 @@ public class Conversation {
             MessagesProviderClient.setGroupMembership(mContext, mGroupJid, Groups.MEMBERSHIP_PARTED);
 
             if (actuallySend) {
-                MessageCenterService.leaveGroup(mContext, mGroupJid, mGroupPeers, encrypted,
-                    ContentUris.parseId(cmdMsg), msgId);
+                MessageCenterService.bus()
+                    .post(new SendMessageRequest(ContentUris.parseId(cmdMsg)));
             }
         }
     }
@@ -380,8 +385,8 @@ public class Conversation {
                     .leaveGroup(context, Messages.NO_THREAD, groupJid, msgId, encrypted, false);
                 // TODO check for null
 
-                MessageCenterService.leaveGroup(context, groupJid, groupPeers, encrypted,
-                    ContentUris.parseId(cmdMsg), msgId);
+                MessageCenterService.bus()
+                    .post(new SendMessageRequest(ContentUris.parseId(cmdMsg)));
             }
             else {
                 // delete group immediately (members will cascade)
@@ -468,12 +473,8 @@ public class Conversation {
         // TODO check for null
 
         // send add group member command now
-        Set<String> allMembers = new HashSet<>();
-        Collections.addAll(allMembers, getGroupPeers());
-        Collections.addAll(allMembers, members);
-        MessageCenterService.addGroupMembers(mContext, mGroupJid,
-            mGroupSubject, allMembers.toArray(new String[allMembers.size()]),
-            members, encrypted, ContentUris.parseId(cmdMsg), msgId);
+        MessageCenterService.bus()
+            .post(new SendMessageRequest(ContentUris.parseId(cmdMsg)));
     }
 
     public void removeUsers(String[] members) {
@@ -490,10 +491,9 @@ public class Conversation {
             .removeGroupMembers(mContext, getThreadId(), mGroupJid, members, msgId, encrypted);
         // TODO check for null
 
-        // send add group member command now
-        MessageCenterService.removeGroupMembers(mContext, mGroupJid,
-            mGroupSubject, getGroupPeers(), members, encrypted,
-            ContentUris.parseId(cmdMsg), msgId);
+        // send remove group member command now
+        MessageCenterService.bus()
+            .post(new SendMessageRequest(ContentUris.parseId(cmdMsg)));
     }
 
     public void setGroupSubject(String subject) {
@@ -516,10 +516,8 @@ public class Conversation {
 
         if (actuallySend) {
             // send set group subject command now
-            String[] currentMembers = getGroupPeers();
-            MessageCenterService.setGroupSubject(mContext, mGroupJid,
-                subject, currentMembers, encrypted,
-                ContentUris.parseId(cmdMsg), msgId);
+            MessageCenterService.bus()
+                .post(new SendMessageRequest(ContentUris.parseId(cmdMsg)));
         }
     }
 

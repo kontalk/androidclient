@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
 
@@ -15,6 +15,133 @@
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
-
 <resources>
-</resources>
+<string name="app_name">Kontalk</string>
+    <string name="app_name_offline">Kontalk (luring)</string>
+    <string name="app_description">Jaringan pesan instan yang digerakkan oleh komunitas</string>
+    <string name="service_name">Pusat Pesan</string>
+    <string name="authenticator_name">Layanan Otentikasi</string>
+    <string name="sync_service_name">Sinkronisasi Kontak</string>
+    <string name="download_service">Layanan Unduhan</string>
+    <string name="yes">Ya</string>
+    <string name="no">Tidak</string>
+    <string name="send">Kirim</string>
+    <string name="menu_compose">Mengarang</string>
+    <string name="menu_create_group">Buat grup</string>
+    <string name="menu_delete_all">Hapus pesan</string>
+    <string name="menu_search">Cari</string>
+    <string name="mykey_activity_title">Kunci pribadi saya</string>
+    <string name="menu_settings">Pengaturan</string>
+    <string name="menu_offline">Ke luring</string>
+    <string name="menu_online">Ke daring</string>
+    <string name="menu_import_key">Kunci impor</string>
+    <string name="menu_import_device">Daftarkan dari perangkat lain</string>
+    <string name="menu_manual_verification">Sudah punya kodenya?</string>
+    <string name="pref_network_settings">Jaringan</string>
+    <string name="pref_network_uri">Alamat server manual</string>
+    <string name="pref_title_network_uri">Ini akan menimpa daftar server manajemen otomatis</string>
+    <string name="number_validation_intro1">Silahkan ketikkan nama Anda, pilih kode negara Anda dan masukkan nomor ponsel Anda. Instruksi lebih lanjut akan disediakan di layar selanjutnya.</string>
+    <string name="number_validation_intro2">Jika Anda tidak menerima panggilan atau SMS di perangkat ini, masukkan nomor ponsel yang Anda miliki: kami akan mengaitkan nomor itu ke perangkat ini.</string>
+    <string name="code_validation_intro">Anda akan menerima SMS atau panggilan ke nomor Anda secepatnya.</string>
+    <string name="code_validation_intro2">Silahkan masukkan kode yang Anda terima atau dengarkan di bawah ini.</string>
+    <string name="code_validation_intro3">Harap dicatat bahwa SMS atau panggilan mungkin berasal dari nomor asing.</string>
+    <string name="code_validation_intro_missed_call">Anda akan menerima panggilan tidak terjawab ke nomor Anda secara singkat. <b>TOLONG JANGAN JAWAB PANGGILANNYA.</b></string>
+    <string name="code_validation_intro2_missed_call">Silahkan masukkan %d digit terakhir dari nomor panggilan yang akan Anda terima.</string>
+    <string name="code_validation_intro_callerid">Ketuk tombol di bawah dan berikan panggilan tidak terjawab ke nomor telepon itu. Harap perhatikan bahwa <b>panggilan harus dimulai dari nomor telepon yang Anda daftarkan</b>. Panggilan ini gratis jika Anda menutup telepon saat Anda mendengar dering pertama. Itu akan cukup bagi kita.</string>
+    <string name="code_validation_intro2_callerid">Setelah menutup panggilan, kembalilah kesini dan ketuk tombol verifikasi dibawah.</string>
+    <string name="code_validation_intro_manual">Silahkan masukkan kode verifikasi yang Anda terima. Harap diperhatikan bahwa kode verifikasi hanya dapat digunakan sekali.</string>
+    <string name="hint_validation_name">Nama Anda</string>
+    <string name="hint_validation_number">Nomor Anda</string>
+    <string name="hint_validation_code">Kode verifikasi</string>
+    <string name="warn_invalid_number">Silahkan masukkan nomor ponsel yang valid.</string>
+    <string name="msg_validating_phone">Meminta pendaftaran…</string>
+    <string name="msg_importing_key">Mengimpor kunci pribadi…</string>
+    <string name="title_confirm_cancel_registration">Batalkan pendaftaran?</string>
+    <string name="confirm_cancel_registration">Jika Anda kembali Anda harus memulai pendaftaran dari awal lagi. Jika Anda perlu beralih ke aplikasi lain, cukup gunakan tombol home di perangkat.</string>
+    <string name="msg_initializing">Mendaftarkan ke jaringan Kontalk…</string>
+    <string name="msg_authenticated">Terdaftar ke jaringan!</string>
+    <string name="share">Bagikan</string>
+    <string name="resend">Kirim ulang</string>
+    <string name="copy_message_text">Salin teks</string>
+    <string name="delete_message">Hapus pesan</string>
+    <string name="confirm_delete_all">Hapus semua obrolan</string>
+    <string name="confirm_will_delete_all">Semua obrolan akan dihapus.</string>
+    <string name="sending_message">Mengirim pesan…</string>
+    <string name="message_text_copied">Teks pesan di salin.</string>
+    <string name="call">Panggilan</string>
+    <string name="mark_read">Baca</string>
+    <string name="reply">Balas</string>
+    <string name="view_contact">Lihat kontak</string>
+    <string name="view_conversation">Lihat obrolan</string>
+    <string name="delete_thread">Hapus obrolan</string>
+    <string name="menu_ctx_sticky">Favorit</string>
+    <string name="delete_thread_messages">Hapus riwayat obrolan</string>
+    <string name="confirm_delete_thread">Hapus obrolan</string>
+    <string name="confirm_will_delete_thread">Seluruh obrolan akan dihapus.</string>
+    <string name="new_messages">Pesan baru</string>
+    <string name="only_one_account_supported">Hanya satu akun Kontalk yang di dukung.</string>
+    <string name="hint_enter_text">Masukkan teks Anda disini</string>
+    <string name="hint_type_to_compose">Ketik untuk menulis</string>
+    <string name="hint_open_kbd_to_compose">Buka keyboard untuk menulis pesan</string>
+    <string name="view_image">Lihat gambar</string>
+    <string name="title_message_options">Opsi pesan</string>
+    <string name="menu_message_details">Detail</string>
+    <string name="title_message_details">Detail pesan</string>
+    <string name="message_type_label">"Tipe: "</string>
+    <string name="text_message">Pesan teks</string>
+    <string name="location_message">Pesan lokasi</string>
+    <string name="image_message">Pesan gambar</string>
+    <string name="audio_message">Pesan audio</string>
+    <string name="from_label">"Dari: "</string>
+    <string name="to_address_label">"Ke: "</string>
+    <string name="sent_label">"Terkirim: "</string>
+    <string name="received_label">"Diterima: "</string>
+    <string name="error_label">"Galat: "</string>
+    <string name="sending_label">"Mengirim: "</string>
+    <string name="refused_label">"Tidak diterima: "</string>
+    <string name="notdelivered_label">"Tidak terkirim: "</string>
+    <string name="delivered_label">"Terkirim: "</string>
+    <string name="encrypted_label">"Di enkripsi: "</string>
+    <string name="security_label">"Keamanan: "</string>
+    <string name="size_label">"Ukuran: "</string>
+    <string name="size_unknown">(Tidak diketahui)</string>
+    <string name="title_file_info">Informasi file</string>
+    <string name="pref_restart_msgcenter">Nyalakan ulang pusat pesan</string>
+    <string name="pref_title_restart_msgcenter">Gunakan ini jika Kontalk tidak berfungsi dengan benar</string>
+    <string name="pref_idle_time">Putuskan sambungan saat tidak digunakan</string>
+    <string name="pref_title_idle_time">Berapa lama menunggu sebelum memutuskan untuk tidak aktif</string>
+    <string name="pref_wakeup_time">Menghubungkan kembali ke server</string>
+    <string name="pref_title_wakeup_time">Berapa lama menunggu sebelum terhubung kembali ke server setelah periode tidak aktif. Digunakan hanya jika pemberitahuan notifikasi tidak tersedia atau kualitas jaringan sangat buruk</string>
+    <string name="pref_maintenance">Pemeliharaan</string>
+    <string name="pref_regenerate_keypair">Hasilkan ulang kunci pribadi</string>
+    <string name="pref_title_regenerate_keypair">Gunakan ini jika kunci pribadi Anda telah disusupi</string>
+    <string name="pref_regenerate_keypair_confirm">Sepasang kunci baru akan dibuat dan ditetapkan ke akun Anda. Kunci lama Anda akan menjadi tidak valid.</string>
+    <string name="contacts_list_title">Pilih kontak</string>
+    <string name="position_screen_title">Posisi</string>
+    <string name="pref_messaging_settings">Perpesanan</string>
+    <string name="pref_privacy_settings">Privasi</string>
+    <string name="pref_encrypt">Enkripsikan pesan</string>
+    <string name="pref_encrypt_userdata">Enkripsikan data pribadi</string>
+    <string name="pref_title_on_encrypt_userdata">Pesan status hanya akan terlihat kepada pengguna yang memiliki nomor ponsel Anda</string>
+    <string name="pref_title_off_encrypt_userdata">Pesan status akan terlihat untuk semuanya</string>
+    <string name="pref_auto_accept_subscriptions">Otomatis menerima undangan</string>
+    <string name="pref_send_typing">Kirim pemberitahuan pengetikan</string>
+    <string name="pref_hide_presence">Sembunyikan kehadiran</string>
+    <string name="pref_title_on_hide_presence">Pengguna tidak akan melihat Anda di daring</string>
+    <string name="pref_title_off_hide_presence">Pengguna akan melihat Anda daring dan kapan Anda terakhir menghubungkan</string>
+    <string name="contact_not_registered">Kontak sepertinya tidak terdaftar di Kontalk.</string>
+    <string name="error_store_outbox">Tidak dapat menyimpan pesan ke kotak keluar. Mungkin penyimpanan Anda sudah penuh?</string>
+    <string name="error_delete_thread">Tidak dapat menghapus thread.</string>
+    <string name="error_delete_message">Tidak dapat menghapus pesan.</string>
+    <string name="decrypt_message">Mendekripsi pesan</string>
+    <string name="download_file">Unduh berkas</string>
+    <string name="download_again">Unduh lagi</string>
+    <string name="download">Unduh</string>
+    <string name="download_cancel">Batalkan unduhan</string>
+    <string name="has_draft">Draf</string>
+    <string name="pref_update_server_list">Perbarui daftar server</string>
+    <string name="server_list_last_update">Terakhir diperbarui: %s</string>
+    <string name="pref_title_push_notifications">Gunakan pemberitahuan notifikasi jika server mendukungnya, hemat baterai</string>
+    <string name="pref_push_notifications">Pemberitahuan notifikasi</string>
+    <string name="pref_push_notifications_disabled">Mati</string>
+    </resources>

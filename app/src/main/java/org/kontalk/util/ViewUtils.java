@@ -28,6 +28,8 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.vanniktech.emoji.EmojiManager;
 
+import org.jivesoftware.smack.util.Async;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -36,7 +38,6 @@ import android.graphics.Point;
 import android.text.SpannableStringBuilder;
 import android.view.View;
 import android.view.ViewTreeObserver;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 
@@ -56,9 +57,9 @@ public class ViewUtils {
     /**
      * Waits for global layout to happen and set a QR code for the minimum size
      * between height and width of the given container. The QR code will be
-     * loaded automatically in {@code destination}.
+     * returned to the given listener.
      */
-    public static void getQRCodeBitmapAsync(final Context context, final View container, final ImageView destination, final String text) {
+    public static void getQRCodeBitmapAsync(final Context context, final View container, final String text, final OnQRCodeGeneratedListener listener) {
         // no need to handle memory leaks because the view tree observer
         // is created on every activity restart
         container.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -71,14 +72,24 @@ public class ViewUtils {
                     size = Math.min(displaySize.x, displaySize.y);
                 }
 
-                try {
-                    // TODO load in another thread
-                    Bitmap qrCode = getQRCodeBitmap(size, text);
-                    destination.setImageBitmap(qrCode);
-                }
-                catch (WriterException e) {
-                    // TODO set error image on destination
-                }
+                final int qrSize = size;
+                Async.go(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            final Bitmap qrCode = getQRCodeBitmap(qrSize, text);
+                            container.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    listener.onQRCodeGenerated(qrCode);
+                                }
+                            });
+                        }
+                        catch (WriterException e) {
+                            listener.onQRCodeError(e);
+                        }
+                    }
+                });
             }
         });
     }
@@ -89,6 +100,12 @@ public class ViewUtils {
         hints.put(EncodeHintType.MARGIN, 2);
         BitMatrix matrix = writer.encode(text, BarcodeFormat.QR_CODE, size, size, hints);
         return toBitmap(matrix);
+    }
+
+    public interface OnQRCodeGeneratedListener {
+        void onQRCodeGenerated(Bitmap qrCode);
+
+        void onQRCodeError(Exception e);
     }
 
     /**

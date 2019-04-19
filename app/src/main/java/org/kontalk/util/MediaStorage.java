@@ -131,6 +131,26 @@ public abstract class MediaStorage {
      * @return the converted Uri, or the original one if not needed to be converted
      */
     public static Uri getWorldReadableUri(Context context, Uri uri, Intent intent, boolean opening) {
+        return getWorldAccessibleUri(context, uri, intent, opening,
+            Intent.FLAG_GRANT_READ_URI_PERMISSION);
+    }
+
+    /**
+     * Returns a world-writable Uri if the given Uri is file-based.
+     * @param context any context, used for {@link FileProvider#getUriForFile}
+     * @param uri Uri to be converted
+     * @param intent if not null, appropriate flags will be added
+     * @param opening true if the Uri will be used for opening (ACTION_VIEW).
+     *                In that case, if file-based Uris are allowed on the device,
+     *                the original Uri will be returned.
+     * @return the converted Uri, or the original one if not needed to be converted
+     */
+    public static Uri getWorldWritableUri(Context context, Uri uri, Intent intent, boolean opening) {
+        return getWorldAccessibleUri(context, uri, intent, opening,
+            Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+    }
+
+    private static Uri getWorldAccessibleUri(Context context, Uri uri, Intent intent, boolean opening, int flags) {
         if (isFileUriAllowed() && opening)
             return uri;
 
@@ -138,7 +158,7 @@ public abstract class MediaStorage {
             uri = FileProvider.getUriForFile(context, MediaStorage.FILE_AUTHORITY,
                 new File(uri.getPath()));
             if (intent != null) {
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                intent.addFlags(flags);
             }
         }
         return uri;

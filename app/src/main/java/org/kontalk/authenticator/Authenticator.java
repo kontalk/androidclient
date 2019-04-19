@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -88,6 +87,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static final String DATA_NAME = "org.kontalk.key.name";
     public static final String DATA_USER_PASSPHRASE = "org.kontalk.userPassphrase";
     public static final String DATA_SERVER_URI = "org.kontalk.server";
+    public static final String DATA_SERVICE_TERMS_URL = "org.kontalk.serviceTermsURL";
 
     @SuppressWarnings("WeakerAccess")
     final Context mContext;
@@ -156,15 +156,19 @@ public class Authenticator extends AbstractAccountAuthenticator {
         return null;
     }
 
-    public static boolean hasPersonalKey(AccountManager am, Account account) {
-        return account != null &&
-            am.getUserData(account, DATA_PRIVATEKEY) != null &&
-            am.getUserData(account, DATA_PUBLICKEY) != null &&
-            am.getUserData(account, DATA_BRIDGECERT) != null;
+    public static String getDefaultServiceTermsURL(Context context) {
+        AccountManager am = AccountManager.get(context);
+        Account account = getDefaultAccount(am);
+        return getServiceTermsURL(am, account);
+    }
+
+    public static String getServiceTermsURL(AccountManager am, Account account) {
+        return account != null ?
+            am.getUserData(account, Authenticator.DATA_SERVICE_TERMS_URL) : null;
     }
 
     public static PersonalKey loadDefaultPersonalKey(Context ctx, String passphrase)
-            throws PGPException, IOException, CertificateException, NoSuchProviderException {
+            throws PGPException, IOException, CertificateException {
         AccountManager m = AccountManager.get(ctx);
         Account acc = getDefaultAccount(m);
 
@@ -185,7 +189,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
     }
 
     public static void exportDefaultPersonalKey(Context ctx, OutputStream dest, String passphrase, String exportPassphrase, boolean bridgeCertificate)
-            throws CertificateException, NoSuchProviderException, PGPException,
+            throws CertificateException, PGPException,
                 IOException, KeyStoreException, NoSuchAlgorithmException {
 
         AccountManager m = AccountManager.get(ctx);
