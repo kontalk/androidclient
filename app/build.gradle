@@ -46,7 +46,6 @@ android {
         versionName project.versionName
         targetSdkVersion project.targetSdkVersion
         minSdkVersion project.minSdkVersion
-        multiDexEnabled true
         resConfigs "en", "de", "fr", "it", "es", "ca", "cs", "el", "fa", "gl", "ja", "nl", "pt", "pt-rBR", "ru", "sr", "zh-rCN", "ar", "hi", "tr", "nb-rNO"
         resValue "string", "application_id", applicationId
         resValue "string", "account_type", applicationId + '.account'
