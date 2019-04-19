@@ -29,7 +29,6 @@ import android.widget.Toast;
 import org.kontalk.R;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.util.SystemUtils;
-import org.osmdroid.tileprovider.util.StreamUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -97,8 +96,8 @@ public class CopyDatabasePreference extends Preference {
                 .show();
         }
         finally {
-            StreamUtils.closeStream(dbIn);
-            StreamUtils.closeStream(dbOut);
+            SystemUtils.closeStream(dbIn);
+            SystemUtils.closeStream(dbOut);
         }
 
         MessagesProvider.unlockForImport(context);
