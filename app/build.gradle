@@ -6,7 +6,7 @@ apply plugin: 'jacoco-android'
 
 check.dependsOn 'checkstyle'
 
-task checkstyle(type: Checkstyle){
+task checkstyle(type: Checkstyle) {
     source 'src'
     include '**/*.java'
     // code from Google/AOSP
@@ -31,6 +31,10 @@ task checkstyle(type: Checkstyle){
     def configProps = ['baseDir': projectDir.absolutePath]
     configProperties configProps
     classpath = files()
+}
+
+checkstyle {
+    configFile = new File(projectDir, "config/checkstyle/checkstyle.xml")
 }
 
 android {
