@@ -162,6 +162,7 @@ dependencies {
     implementation "org.igniterealtime.smack:smack-android:$smackVersion"
     implementation fileTree(dir: 'libs', include: "smack-omemo-${smackVersion}.jar")
     implementation fileTree(dir: 'libs', include: "smack-omemo-signal-${smackVersion}.jar")
+    implementation 'org.whispersystems:signal-protocol-java:2.4.0'
     implementation 'info.guardianproject.netcipher:netcipher:1.2.1'
     implementation 'com.squareup.okhttp3:okhttp:3.10.0'
     implementation 'com.segment.backo:backo:1.0.0'
