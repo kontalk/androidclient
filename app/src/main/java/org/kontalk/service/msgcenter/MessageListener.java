@@ -353,7 +353,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
                             .decrypt(m.getFrom().asBareJid(), m);
                         if (decrypted == null) {
                             Log.d(TAG, "could not decrypt OMEMO message, silently discarding");
-                            return;
+                            return null;
                         }
 
                         // encrypted message
