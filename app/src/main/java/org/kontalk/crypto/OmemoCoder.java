@@ -21,7 +21,16 @@ package org.kontalk.crypto;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.GeneralSecurityException;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+
+import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smackx.omemo.OmemoManager;
+import org.jivesoftware.smackx.omemo.element.OmemoElement;
+import org.jivesoftware.smackx.omemo.internal.ClearTextMessage;
+import org.jivesoftware.smackx.omemo.util.OmemoConstants;
 
 
 /**
@@ -30,8 +39,10 @@ import java.util.List;
  */
 public class OmemoCoder extends Coder {
 
-    public OmemoCoder() {
-        // TODO
+    private final OmemoManager mManager;
+
+    public OmemoCoder(XMPPConnection connection) {
+        mManager = OmemoManager.getInstanceFor(connection);
     }
 
     @Override
@@ -45,8 +56,25 @@ public class OmemoCoder extends Coder {
     }
 
     @Override
-    public DecryptOutput decryptText(byte[] encrypted, boolean verify) throws GeneralSecurityException {
-        return null;
+    public DecryptOutput decryptMessage(Message message, boolean verify) throws GeneralSecurityException {
+        ClearTextMessage cleartext;
+        try {
+            cleartext = mManager.decrypt(null, message);
+        }
+        catch (Exception e) {
+            throw new GeneralSecurityException("OMEMO decryption failed", e);
+        }
+
+        // simple text message
+        Message output = new Message();
+        output.setType(message.getType());
+        output.setFrom(message.getFrom());
+        output.setTo(message.getTo());
+        output.setBody(cleartext.getBody());
+        // copy extensions and remove our own
+        output.addExtensions(message.getExtensions());
+        output.removeExtension(OmemoElement.ENCRYPTED, OmemoConstants.OMEMO_NAMESPACE_V_AXOLOTL);
+        return new DecryptOutput(output, "text/plain", new Date(), SECURITY_ADVANCED, Collections.emptyList());
     }
 
     @Override

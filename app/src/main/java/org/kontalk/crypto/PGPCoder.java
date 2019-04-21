@@ -32,6 +32,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jivesoftware.smack.packet.ExtensionElement;
+import org.jivesoftware.smack.packet.Message;
 import org.spongycastle.bcpg.HashAlgorithmTags;
 import org.spongycastle.openpgp.PGPCompressedData;
 import org.spongycastle.openpgp.PGPCompressedDataGenerator;
@@ -58,6 +60,7 @@ import org.spongycastle.openpgp.operator.bc.BcPGPDataEncryptorBuilder;
 import org.spongycastle.openpgp.operator.bc.BcPublicKeyDataDecryptorFactory;
 import org.spongycastle.openpgp.operator.bc.BcPublicKeyKeyEncryptionMethodGenerator;
 
+import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.message.TextComponent;
 import org.kontalk.util.CPIMMessage;
@@ -71,7 +74,6 @@ import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_SEND
 import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_TIMESTAMP;
 import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_PRIVATE_KEY_NOT_FOUND;
 import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_VERIFICATION_FAILED;
-
 import static org.kontalk.crypto.VerifyException.VERIFY_EXCEPTION_INVALID_DATA;
 import static org.kontalk.crypto.VerifyException.VERIFY_EXCEPTION_VERIFICATION_FAILED;
 
@@ -220,9 +222,21 @@ public class PGPCoder extends Coder {
         return out.toByteArray();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public DecryptOutput decryptText(byte[] encrypted, boolean verify)
+    public DecryptOutput decryptMessage(Message message, boolean verify) throws GeneralSecurityException {
+        ExtensionElement _encrypted = message.getExtension(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE);
+        if (!(_encrypted instanceof E2EEncryption)) {
+            throw new DecryptException(DECRYPT_EXCEPTION_INVALID_DATA, "Not an encrypted message");
+        }
+
+        E2EEncryption encrypted = (E2EEncryption) _encrypted;
+        byte[] encryptedData = encrypted.getData();
+
+        return decryptText(encryptedData, message, verify);
+    }
+
+    @SuppressWarnings("unchecked")
+    private DecryptOutput decryptText(byte[] encrypted, Message origin, boolean verify)
                 throws GeneralSecurityException {
 
         List<DecryptException> errors = new ArrayList<>();
@@ -498,7 +512,35 @@ public class PGPCoder extends Coder {
             SystemUtils.closeStream(cDataIn);
         }
 
-        return new DecryptOutput(out, mime, timestamp, errors);
+        Message message;
+        if (XMPPUtils.XML_XMPP_TYPE.equalsIgnoreCase(mime)) {
+            try {
+                message = XMPPUtils.parseMessageStanza(out);
+            }
+            catch (Exception e) {
+                throw new DecryptException(DECRYPT_EXCEPTION_INVALID_DATA, e);
+            }
+
+            if (timestamp != null && !checkDriftedDelay(message, timestamp)) {
+                errors.add(new DecryptException(DECRYPT_EXCEPTION_INVALID_TIMESTAMP,
+                    "Drifted timestamp"));
+            }
+
+            // extensions won't be copied because the new message will take over
+        }
+        else {
+            // simple text message
+            message = new Message();
+            message.setType(origin.getType());
+            message.setFrom(origin.getFrom());
+            message.setTo(origin.getTo());
+            message.setBody(out);
+            // copy extensions and remove our own
+            message.addExtensions(message.getExtensions());
+            message.removeExtension(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE);
+        }
+
+        return new DecryptOutput(message, mime, timestamp, SECURITY_BASIC, errors);
     }
 
     @Override
@@ -846,6 +888,19 @@ public class PGPCoder extends Coder {
         }
 
         return new VerifyOutput(out, timestamp, errors);
+    }
+
+    private static boolean checkDriftedDelay(Message m, Date expected) {
+        Date stamp = XMPPUtils.getStanzaDelay(m);
+        if (stamp != null) {
+            long time = stamp.getTime();
+            long now = expected.getTime();
+            long diff = Math.abs(now - time);
+            return (diff < Coder.TIMEDIFF_THRESHOLD);
+        }
+
+        // no timestamp found
+        return true;
     }
 
 }

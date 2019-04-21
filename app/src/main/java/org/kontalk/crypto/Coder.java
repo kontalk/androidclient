@@ -25,6 +25,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.jivesoftware.smack.packet.Message;
+
 
 /**
  * Generic coder interface.
@@ -90,8 +92,8 @@ public abstract class Coder {
     /** Encrypts a stanza. */
     public abstract byte[] encryptStanza(CharSequence xml) throws GeneralSecurityException;
 
-    /** Decrypts a byte array which should contain text. */
-    public abstract DecryptOutput decryptText(byte[] encrypted, boolean verify)
+    /** Decrypts a stanza. The type of stanza is left to the implementation. */
+    public abstract DecryptOutput decryptMessage(Message message, boolean verify)
         throws GeneralSecurityException;
 
     /** Encrypts a file. */
@@ -118,14 +120,16 @@ public abstract class Coder {
 
     public static class DecryptOutput {
         public final String mime;
-        public final String cleartext;
+        public final Message cleartext;
         public final Date timestamp;
+        public final int securityFlags;
         public final List<DecryptException> errors;
 
-        DecryptOutput(String cleartext, String mime, Date timestamp, List<DecryptException> errors) {
+        DecryptOutput(Message cleartext, String mime, Date timestamp, int securityFlags, List<DecryptException> errors) {
             this.cleartext = cleartext;
             this.mime = mime;
             this.timestamp = timestamp;
+            this.securityFlags = securityFlags;
             this.errors = errors;
         }
     }
