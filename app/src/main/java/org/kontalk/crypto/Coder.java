@@ -92,7 +92,7 @@ public abstract class Coder {
     /** Encrypts a stanza. */
     public abstract byte[] encryptStanza(CharSequence xml) throws GeneralSecurityException;
 
-    /** Decrypts a stanza. The type of stanza is left to the implementation. */
+    /** Decrypts a stanza. */
     public abstract DecryptOutput decryptMessage(Message message, boolean verify)
         throws GeneralSecurityException;
 
