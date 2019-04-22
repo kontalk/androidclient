@@ -314,7 +314,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
                 }
 
                 else if (m.hasExtension(OmemoElement.ENCRYPTED, OmemoConstants.OMEMO_NAMESPACE_V_AXOLOTL)) {
-                    coder = new OmemoCoder(getConnection());
+                    coder = new OmemoCoder(getConnection(), null);
                 }
 
                 else if (m.hasExtension(OpenPGPSignedMessage.ELEMENT_NAME, OpenPGPSignedMessage.NAMESPACE)) {

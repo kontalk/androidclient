@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.jivesoftware.smack.XMPPConnection;
+import org.jxmpp.jid.Jid;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
@@ -34,8 +36,10 @@ import android.database.Cursor;
 import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 
+import org.kontalk.Log;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.Coder;
+import org.kontalk.crypto.OmemoCoder;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PGPCoder;
 import org.kontalk.crypto.PersonalKey;
@@ -46,6 +50,8 @@ import org.kontalk.crypto.PersonalKey;
  * @author Daniele Ricci
  */
 public class Keyring {
+
+    private static final String TAG = Keyring.class.getSimpleName();
 
     /**
      * Special value used in the fingerprint column so the first key that comes
@@ -58,18 +64,35 @@ public class Keyring {
     }
 
     /** Returns a {@link Coder} instance for encrypting data. */
-    public static Coder getEncryptCoder(Context context, EndpointServer server, PersonalKey key, String[] recipients) {
-        // get recipients public keys from users database
-        PGPPublicKeyRing keys[] = new PGPPublicKeyRing[recipients.length];
-        for (int i = 0; i < recipients.length; i++) {
-            PGPPublicKeyRing ring = getPublicKey(context, recipients[i], MyUsers.Keys.TRUST_UNKNOWN);
-            if (ring == null)
-                throw new IllegalArgumentException("public key not found for user " + recipients[i]);
-
-            keys[i] = ring;
+    public static Coder getEncryptCoder(Context context, int securityFlags, XMPPConnection connection, EndpointServer server, PersonalKey key, Jid[] recipients) {
+        if (securityFlags == Coder.SECURITY_ADVANCED) {
+            try {
+                return new OmemoCoder(connection, recipients);
+            }
+            catch (Exception e) {
+                Log.w(TAG, "unable to setup advanced coder, falling back to basic", e);
+                securityFlags = Coder.SECURITY_BASIC;
+            }
         }
 
-        return new PGPCoder(server, key, keys);
+        // used for fallback
+        if (securityFlags == Coder.SECURITY_BASIC) {
+            // get recipients public keys from users database
+            PGPPublicKeyRing[] keys = new PGPPublicKeyRing[recipients.length];
+            for (int i = 0; i < recipients.length; i++) {
+                PGPPublicKeyRing ring = getPublicKey(context, recipients[i].toString(), MyUsers.Keys.TRUST_UNKNOWN);
+                if (ring == null)
+                    throw new IllegalArgumentException("public key not found for user " + recipients[i]);
+
+                keys[i] = ring;
+            }
+
+            return new PGPCoder(server, key, keys);
+        }
+
+        else {
+            throw new IllegalArgumentException("Invalid security flags. No Coder found.");
+        }
     }
 
     /** Returns a {@link Coder} instance for decrypting data. */

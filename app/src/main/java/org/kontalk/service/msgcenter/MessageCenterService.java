@@ -120,7 +120,6 @@ import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.BlockingCommand;
-import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
 import org.kontalk.client.OutOfBandData;
@@ -1329,8 +1328,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             encryptTo = new String[] { message.getRecipient() };
                         }
 
-                        File encrypted = MessageUtils.encryptFile(this, in,
-                            SystemUtils.toString(encryptTo));
+                        File encrypted = MessageUtils.encryptFile(this, in, XMPPUtils.parseJids(encryptTo));
                         fileLength = encrypted.length();
                         preMediaUri = Uri.fromFile(encrypted);
                     }
@@ -2414,38 +2412,19 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             if (message.getSecurityFlags() != Coder.SECURITY_CLEARTEXT) {
-                byte[] toMessage = null;
                 boolean encryptError = false;
                 try {
-                    Coder coder = Keyring.getEncryptCoder(this, mServer, key, SystemUtils.toString(toGroup));
-                    if (coder != null) {
+                    Coder coder = Keyring.getEncryptCoder(this, message.getSecurityFlags(),
+                        mConnection, mServer, key, toGroup);
 
-                        // no extensions, create a simple text version to save space
-                        if (msg.getExtensions().size() == 0) {
-                            if (!(request instanceof SendDeliveryReceiptRequest)) {
-                                // a special case for delivery receipts whom doesn't have a body
-                                // but we want to encrypt it for groups (extensions.size() > 0)
-                                toMessage = coder.encryptText(msg.getBody());
-                            }
-                        }
+                    org.jivesoftware.smack.packet.Message encMsg = null;
 
-                        // some extension, encrypt whole stanza just to be sure
-                        else {
-                            toMessage = coder.encryptStanza(msg.toXML(null));
-                        }
+                    if (!(request instanceof SendDeliveryReceiptRequest && groupController == null)) {
+                        encMsg = coder.encryptMessage(msg, getString(R.string.text_encrypted));
+                    }
 
-                        if (toMessage != null) {
-                            org.jivesoftware.smack.packet.Message encMsg =
-                                new org.jivesoftware.smack.packet.Message(msg.getTo(), msg.getType());
-
-                            encMsg.setBody(getString(R.string.text_encrypted));
-                            encMsg.setStanzaId(m.getStanzaId());
-                            encMsg.addExtension(new E2EEncryption(toMessage));
-
-                            // save the unencrypted stanza for later
-                            originalStanza = msg;
-                            m = encMsg;
-                        }
+                    if (encMsg != null) {
+                        m = encMsg;
                     }
                 }
 

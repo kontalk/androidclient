@@ -102,7 +102,7 @@ public class MessagesProviderClient {
         // of course outgoing messages are not encrypted in database
         values.put(Messages.ENCRYPTED, false);
         values.put(Threads.ENCRYPTION, encrypted);
-        values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+        values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_ADVANCED : Coder.SECURITY_CLEARTEXT);
         if (inReplyTo > 0)
             values.put(Messages.IN_REPLY_TO, inReplyTo);
         return context.getContentResolver().insert(

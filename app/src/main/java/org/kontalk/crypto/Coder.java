@@ -86,13 +86,10 @@ public abstract class Coder {
     /** How much time to consider a message timestamp drifted (and thus compromised). */
     public static final long TIMEDIFF_THRESHOLD = TimeUnit.DAYS.toMillis(1);
 
-    /** Encrypts a string. */
-    public abstract byte[] encryptText(CharSequence text) throws GeneralSecurityException;
+    /** Encrypts a message stanza. */
+    public abstract Message encryptMessage(Message message, String placeholder) throws GeneralSecurityException;
 
-    /** Encrypts a stanza. */
-    public abstract byte[] encryptStanza(CharSequence xml) throws GeneralSecurityException;
-
-    /** Decrypts a stanza. */
+    /** Decrypts a message stanza. */
     public abstract DecryptOutput decryptMessage(Message message, boolean verify)
         throws GeneralSecurityException;
 

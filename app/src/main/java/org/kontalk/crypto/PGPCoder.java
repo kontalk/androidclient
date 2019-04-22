@@ -112,7 +112,7 @@ public class PGPCoder extends Coder {
         mSender = sender;
     }
 
-    @Override
+    @Deprecated
     public byte[] encryptText(CharSequence text) throws GeneralSecurityException {
         try {
             // consider plain text
@@ -128,8 +128,7 @@ public class PGPCoder extends Coder {
         }
     }
 
-    @Override
-    public byte[] encryptStanza(CharSequence xml) throws GeneralSecurityException {
+    private byte[] encryptStanza(CharSequence xml) throws GeneralSecurityException {
         try {
             // prepare XML wrapper
             final String xmlWrapper =
@@ -147,6 +146,19 @@ public class PGPCoder extends Coder {
         catch (IOException e) {
             throw new GeneralSecurityException(e);
         }
+    }
+
+    @Override
+    public Message encryptMessage(Message message, String placeholder) throws GeneralSecurityException {
+        byte[] toMessage = encryptStanza(message.toXML(null));
+
+        org.jivesoftware.smack.packet.Message encMsg =
+            new org.jivesoftware.smack.packet.Message(message.getTo(), message.getType());
+
+        encMsg.setBody(placeholder);
+        encMsg.setStanzaId(message.getStanzaId());
+        encMsg.addExtension(new E2EEncryption(toMessage));
+        return encMsg;
     }
 
     private byte[] encryptData(String mime, CharSequence data)

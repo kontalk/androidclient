@@ -34,6 +34,7 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 
 import org.jivesoftware.smack.util.StringUtils;
+import org.jxmpp.jid.Jid;
 import org.spongycastle.openpgp.PGPException;
 
 import android.content.ContentValues;
@@ -574,11 +575,12 @@ public final class MessageUtils {
         return StringUtils.randomString(30);
     }
 
-    public static File encryptFile(Context context, InputStream in, String[] users)
+    public static File encryptFile(Context context, InputStream in, Jid[] users)
             throws GeneralSecurityException, IOException, PGPException {
         PersonalKey key = Kontalk.get().getPersonalKey();
         EndpointServer server = Preferences.getEndpointServer(context);
-        Coder coder = Keyring.getEncryptCoder(context, server, key, users);
+        // TODO advanced coder not supported yet
+        Coder coder = Keyring.getEncryptCoder(context, Coder.SECURITY_BASIC, null, server, key, users);
         // create a temporary file to store encrypted data
         File temp = File.createTempFile("media", null, context.getCacheDir());
         FileOutputStream out = new FileOutputStream(temp);
