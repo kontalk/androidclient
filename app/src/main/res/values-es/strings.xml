@@ -755,4 +755,8 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
     <string name="registration_accept_terms_title">¿Aceptar las condiciones del servicio\?</string>
     <string name="registration_accept_terms_text">El servidor en &lt;b&gt;%1$s&lt;/b&gt; solicita &lt;a href=%2$s&gt;aceptar los términos del servicio &lt;/a&gt;.</string>
 
+    <string name="pref_service_terms">Términos de servicio</string>
+
+    <string name="err_storage_denied_interactive">Kontalk necesita acceso al almacenamiento local para guardar medios. Vamos a pedir permiso.</string>
+
     </resources>
