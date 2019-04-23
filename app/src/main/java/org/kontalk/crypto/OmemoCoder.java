@@ -124,6 +124,10 @@ public class OmemoCoder extends Coder {
             throw new GeneralSecurityException("OMEMO decryption failed", e);
         }
 
+        if (cleartext.getBody() == null) {
+            throw new DecryptException(DecryptException.DECRYPT_EXCEPTION_PRIVATE_KEY_NOT_FOUND);
+        }
+
         // simple text message
         Message output = new Message();
         output.setType(message.getType());

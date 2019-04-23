@@ -376,6 +376,9 @@ class MessageListener extends WakefulMessageCenterPacketListener {
                 // reuse security flags
                 msg.clearComponents();
                 msg.addComponent(new RawComponent(m.toXML(null).toString().getBytes(), true, msg.getSecurityFlags()));
+                // and body placeholder
+                if (body != null)
+                    msg.addComponent(new TextComponent(body));
             }
 
             // out of band data
