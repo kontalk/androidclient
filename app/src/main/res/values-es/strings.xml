@@ -759,4 +759,8 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
 
     <string name="err_storage_denied_interactive">Kontalk necesita acceso al almacenamiento local para guardar medios. Vamos a pedir permiso.</string>
 
+    <string name="notify_ticker_download_permission_denied_error">Se requiere permiso para descargar archivos multimedia</string>
+    <string name="notify_title_download_permission_denied_error">Se requiere permiso</string>
+    <string name="notify_summary_download_permission_denied_error">Pulse para saber más.</string>
+
     </resources>
