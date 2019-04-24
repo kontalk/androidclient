@@ -65,8 +65,11 @@ public class Keyring {
 
     /** Returns a {@link Coder} instance for encrypting data. */
     public static Coder getEncryptCoder(Context context, int securityFlags, XMPPConnection connection, EndpointServer server, PersonalKey key, Jid[] recipients) {
-        if (securityFlags == Coder.SECURITY_ADVANCED) {
+        if ((securityFlags & Coder.SECURITY_ADVANCED) != 0) {
             try {
+                if (recipients.length == 1 || recipients[0].equals(connection.getUser().asBareJid())) {
+                    throw new IllegalArgumentException("OMEMO with yourself is not supported");
+                }
                 return new OmemoCoder(connection, recipients);
             }
             catch (Exception e) {
@@ -75,8 +78,8 @@ public class Keyring {
             }
         }
 
-        // used for fallback
-        if (securityFlags == Coder.SECURITY_BASIC) {
+        // used also as fallback
+        if ((securityFlags & Coder.SECURITY_BASIC) != 0) {
             // get recipients public keys from users database
             PGPPublicKeyRing[] keys = new PGPPublicKeyRing[recipients.length];
             for (int i = 0; i < recipients.length; i++) {

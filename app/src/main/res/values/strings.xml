@@ -415,6 +415,7 @@
     <string name="err_keypair_export_write">Unable to write personal key to external storage.</string>
     <string name="err_keypair_export_other">Unable to export personal key.</string>
 
+    <string name="security_status_strong">strong</string>
     <string name="security_status_good">good</string>
     <string name="security_status_bad">bad</string>
 

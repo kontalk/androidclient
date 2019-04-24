@@ -86,6 +86,9 @@ public abstract class Coder {
     /** How much time to consider a message timestamp drifted (and thus compromised). */
     public static final long TIMEDIFF_THRESHOLD = TimeUnit.DAYS.toMillis(1);
 
+    /** Returns the supported security flags for the coder. */
+    public abstract int getSupportedFlags();
+
     /** Encrypts a message stanza. */
     public abstract Message encryptMessage(Message message, String placeholder) throws GeneralSecurityException;
 

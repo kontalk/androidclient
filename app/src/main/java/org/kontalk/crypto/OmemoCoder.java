@@ -73,6 +73,11 @@ public class OmemoCoder extends Coder {
         }
     }
 
+    @Override
+    public int getSupportedFlags() {
+        return Coder.SECURITY_ADVANCED;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public Message encryptMessage(Message message, String placeholder) throws GeneralSecurityException {

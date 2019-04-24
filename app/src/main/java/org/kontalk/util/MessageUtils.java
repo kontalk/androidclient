@@ -437,7 +437,12 @@ public final class MessageUtils {
             }
 
             else {
-                details.append(res.getString(R.string.security_status_good));
+                if ((securityFlags & Coder.SECURITY_BASIC) != 0) {
+                    details.append(res.getString(R.string.security_status_good));
+                }
+                else if ((securityFlags & Coder.SECURITY_ADVANCED) != 0) {
+                    details.append(res.getString(R.string.security_status_strong));
+                }
             }
 
             details.setSpan(STYLE_BOLD, startPos, details.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);

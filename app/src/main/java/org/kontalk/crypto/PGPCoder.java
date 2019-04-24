@@ -112,6 +112,11 @@ public class PGPCoder extends Coder {
         mSender = sender;
     }
 
+    @Override
+    public int getSupportedFlags() {
+        return Coder.SECURITY_BASIC;
+    }
+
     @Deprecated
     public byte[] encryptText(CharSequence text) throws GeneralSecurityException {
         try {

@@ -2417,6 +2417,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     Coder coder = Keyring.getEncryptCoder(this, message.getSecurityFlags(),
                         mConnection, mServer, key, toGroup);
 
+                    // security flags changed (most probably because of coder fallback)
+                    // update message accordingly
+                    if ((message.getSecurityFlags() & coder.getSupportedFlags()) == 0) {
+                        message.setSecurityFlags(message.getSecurityFlags() | coder.getSupportedFlags());
+                        MessagesProviderClient.MessageUpdater.forMessage(this, message.getDatabaseId())
+                            .setSecurityFlags(message.getSecurityFlags())
+                            .commit();
+                    }
+
                     org.jivesoftware.smack.packet.Message encMsg = null;
 
                     if (!(request instanceof SendDeliveryReceiptRequest && groupController == null)) {

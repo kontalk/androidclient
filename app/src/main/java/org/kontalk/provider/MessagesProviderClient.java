@@ -363,6 +363,11 @@ public class MessagesProviderClient {
             return this;
         }
 
+        public MessageUpdater setSecurityFlags(int securityFlags) {
+            mValues.put(Messages.SECURITY_FLAGS, securityFlags);
+            return this;
+        }
+
         public MessageUpdater appendWhere(String where) {
             mWhere = DatabaseUtils.concatenateWhere(mWhere, where);
             return this;
