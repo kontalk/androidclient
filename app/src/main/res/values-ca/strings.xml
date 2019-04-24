@@ -754,4 +754,12 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
     <string name="registration_accept_terms_title">Acceptar les condicions del servei\?</string>
     <string name="registration_accept_terms_text">El servidor en &lt;b&gt;%1$s&lt;/b&gt; sol·licita &lt;a href=%2$s&gt;acceptar els termes del servei &lt;/a&gt;.</string>
 
+    <string name="pref_service_terms">Condicions del servei</string>
+
+    <string name="err_storage_denied_interactive">Kontalk necessita accés a l\'emmagatzematge local per emmagatzemar mitjans. Ara demanarem permís.</string>
+
+    <string name="notify_ticker_download_permission_denied_error">Es requereix permís per descarregar arxius multimèdia</string>
+    <string name="notify_title_download_permission_denied_error">Es requereix permís</string>
+    <string name="notify_summary_download_permission_denied_error">Premi per saber més.</string>
+
     </resources>
