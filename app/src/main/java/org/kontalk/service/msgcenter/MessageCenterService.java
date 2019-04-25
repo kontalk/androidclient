@@ -149,7 +149,6 @@ import org.kontalk.provider.MessagesProviderClient.MessageUpdater;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Requests;
-import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.KeyPairGeneratorService;
@@ -1810,7 +1809,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 final XMPPConnection conn = mConnection;
                 if (conn != null && conn.isConnected()) {
                     Jid jid = conn.getXMPPServiceDomain();
-                    if (Keyring.getPublicKey(MessageCenterService.this, jid.toString(), MyUsers.Keys.TRUST_UNKNOWN) == null) {
+                    if (Keyring.getPublicKey(MessageCenterService.this, jid.toString(), Keyring.TRUST_UNKNOWN) == null) {
                         BUS.post(new PublicKeyRequest(jid));
                     }
                 }

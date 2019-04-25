@@ -53,6 +53,10 @@ public class Keyring {
 
     private static final String TAG = Keyring.class.getSimpleName();
 
+    public static final int TRUST_UNKNOWN = 0;
+    public static final int TRUST_IGNORED = 1;
+    public static final int TRUST_VERIFIED = 2;
+
     /**
      * Special value used in the fingerprint column so the first key that comes
      * in is automatically trusted.
@@ -70,7 +74,7 @@ public class Keyring {
                 if (recipients.length == 1 || recipients[0].equals(connection.getUser().asBareJid())) {
                     throw new IllegalArgumentException("OMEMO with yourself is not supported");
                 }
-                return new OmemoCoder(connection, recipients);
+                return new OmemoCoder(connection, getTrustedRecipients(context, recipients));
             }
             catch (Exception e) {
                 Log.w(TAG, "unable to setup advanced coder, falling back to basic", e);
@@ -83,7 +87,7 @@ public class Keyring {
             // get recipients public keys from users database
             PGPPublicKeyRing[] keys = new PGPPublicKeyRing[recipients.length];
             for (int i = 0; i < recipients.length; i++) {
-                PGPPublicKeyRing ring = getPublicKey(context, recipients[i].toString(), MyUsers.Keys.TRUST_UNKNOWN);
+                PGPPublicKeyRing ring = getPublicKey(context, recipients[i].toString(), Keyring.TRUST_UNKNOWN);
                 if (ring == null)
                     throw new IllegalArgumentException("public key not found for user " + recipients[i]);
 
@@ -98,15 +102,24 @@ public class Keyring {
         }
     }
 
+    private static OmemoCoder.TrustedRecipient[] getTrustedRecipients(Context context, Jid[] recipients) {
+        OmemoCoder.TrustedRecipient[] trustedRecipients = new OmemoCoder.TrustedRecipient[recipients.length];
+        for (int i = 0; i < recipients.length; i++) {
+            TrustedPublicKeyData keyInfo = getPublicKeyData(context, recipients[i].asBareJid().toString(), TRUST_UNKNOWN);
+            trustedRecipients[i] = new OmemoCoder.TrustedRecipient(recipients[i], keyInfo.trustLevel, keyInfo.manualTrust);
+        }
+        return trustedRecipients;
+    }
+
     /** Returns a {@link Coder} instance for decrypting data. */
     public static Coder getDecryptCoder(Context context, EndpointServer server, PersonalKey key, String sender) {
-        PGPPublicKeyRing senderKey = getPublicKey(context, sender, MyUsers.Keys.TRUST_IGNORED);
+        PGPPublicKeyRing senderKey = getPublicKey(context, sender, Keyring.TRUST_IGNORED);
         return new PGPCoder(server, key, senderKey);
     }
 
     /** Returns a {@link Coder} instance for verifying data. */
     public static Coder getVerifyCoder(Context context, EndpointServer server, String sender) {
-        PGPPublicKeyRing senderKey = getPublicKey(context, sender, MyUsers.Keys.TRUST_UNKNOWN);
+        PGPPublicKeyRing senderKey = getPublicKey(context, sender, Keyring.TRUST_UNKNOWN);
         return new PGPCoder(server, null, senderKey);
     }
 
@@ -353,7 +366,7 @@ public class Keyring {
             if (!TextUtils.isEmpty(value)) {
                 String[] parsed = value.split("\\|");
                 String fingerprint = parsed[0];
-                int trustLevel = MyUsers.Keys.TRUST_UNKNOWN;
+                int trustLevel = Keyring.TRUST_UNKNOWN;
                 if (parsed.length > 1) {
                     String _trustLevel = parsed[1];
                     try {

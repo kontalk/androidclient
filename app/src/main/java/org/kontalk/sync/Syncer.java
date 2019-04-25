@@ -52,7 +52,6 @@ import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PGPUserID;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.Keyring;
-import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.XMPPUtils;
@@ -283,7 +282,7 @@ public class Syncer {
                                 PGPPublicKey pubKey = PGP.getMasterKey(entry.publicKey);
                                 // trust our own key blindly
                                 int trustLevel = Authenticator.isSelfJID(mContext, entry.from) ?
-                                    MyUsers.Keys.TRUST_VERIFIED : -1;
+                                    Keyring.TRUST_VERIFIED : -1;
                                 // update keys table immediately
                                 Keyring.setKey(mContext, entry.from.toString(), entry.publicKey, trustLevel);
 

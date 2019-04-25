@@ -63,7 +63,6 @@ import org.kontalk.message.CompositeMessage;
 import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Groups;
-import org.kontalk.provider.MyUsers;
 import org.kontalk.service.msgcenter.event.NoPresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceEvent;
 import org.kontalk.service.msgcenter.event.PresenceRequest;
@@ -432,7 +431,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
             else {
                 // autotrust the key we are about to request
                 // but set the trust level to ignored because we didn't really verify it
-                Keyring.setAutoTrustLevel(context, event.jid.toString(), MyUsers.Keys.TRUST_IGNORED);
+                Keyring.setAutoTrustLevel(context, event.jid.toString(), Keyring.TRUST_IGNORED);
                 requestPublicKey(event.jid);
             }
         }

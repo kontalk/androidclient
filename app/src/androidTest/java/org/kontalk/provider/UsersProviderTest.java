@@ -478,7 +478,7 @@ public class UsersProviderTest extends ProviderTestCase2<UsersProvider> {
 
     @Test
     public void testAutotrustedLevel() throws IOException, PGPException {
-        Keyring.setAutoTrustLevel(getMockContext(), TEST_USERID, MyUsers.Keys.TRUST_VERIFIED);
+        Keyring.setAutoTrustLevel(getMockContext(), TEST_USERID, Keyring.TRUST_VERIFIED);
         assertQueryValues(MyUsers.Keys.getUri(TEST_USERID, Keyring.VALUE_AUTOTRUST),
             MyUsers.Keys.JID, TEST_USERID,
             MyUsers.Keys.FINGERPRINT, Keyring.VALUE_AUTOTRUST);
@@ -486,7 +486,7 @@ public class UsersProviderTest extends ProviderTestCase2<UsersProvider> {
         byte[] keydata = Base64.decode(TEST_KEYDATA, Base64.DEFAULT);
         PGPPublicKeyRing originalKey = PGP.readPublicKeyring(keydata);
         Keyring.setKey(getMockContext(), TEST_USERID, keydata);
-        PGPPublicKeyRing publicKey = Keyring.getPublicKey(getMockContext(), TEST_USERID, MyUsers.Keys.TRUST_VERIFIED);
+        PGPPublicKeyRing publicKey = Keyring.getPublicKey(getMockContext(), TEST_USERID, Keyring.TRUST_VERIFIED);
         assertNotNull(publicKey);
         assertTrue(Arrays.equals(publicKey.getEncoded(), originalKey.getEncoded()));
 

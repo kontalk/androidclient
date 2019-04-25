@@ -44,6 +44,8 @@ import org.jivesoftware.smackx.omemo.util.OmemoConstants;
 import org.jxmpp.jid.Jid;
 import org.jxmpp.jid.impl.JidCreate;
 
+import org.kontalk.provider.Keyring;
+
 
 /**
  * OMEMO coder implementation.
@@ -52,9 +54,9 @@ import org.jxmpp.jid.impl.JidCreate;
 public class OmemoCoder extends Coder {
 
     private final OmemoManager mManager;
-    private final Jid[] mRecipients;
+    private final TrustedRecipient[] mRecipients;
 
-    public OmemoCoder(XMPPConnection connection, Jid[] recipients) throws XMPPException.XMPPErrorException,
+    public OmemoCoder(XMPPConnection connection, TrustedRecipient[] recipients) throws XMPPException.XMPPErrorException,
             SmackException.NotConnectedException, InterruptedException, SmackException.NoResponseException {
         mManager = OmemoManager.getInstanceFor(connection);
         if (!OmemoManager.serverSupportsOmemo(connection, connection.getXMPPServiceDomain())) {
@@ -63,11 +65,25 @@ public class OmemoCoder extends Coder {
 
         mRecipients = recipients;
         if (recipients != null) {
-            for (Jid jid : recipients) {
+            for (TrustedRecipient rcpt : recipients) {
                 Map<OmemoDevice, OmemoFingerprint> fingerprints = mManager
-                    .getActiveFingerprints(JidCreate.bareFromOrThrowUnchecked(jid));
+                    .getActiveFingerprints(JidCreate.bareFromOrThrowUnchecked(rcpt.jid));
                 if (fingerprints.size() == 0) {
-                    throw new UnsupportedOperationException("Recipient " + jid + " does not support OMEMO");
+                    throw new UnsupportedOperationException("Recipient " + rcpt.jid + " does not support OMEMO");
+                }
+
+                // Trust the OMEMO fingerprints by looking at user trust information.
+                // Unknown trust level means a new key came in recently and was not ignored nor verified.
+                // When that meets manual trust, it means user exited from Blind Trust Before Verification.
+                // In that case, identities will not be trusted and encryption will fail.
+                boolean willTrust = !(rcpt.trustLevel == Keyring.TRUST_UNKNOWN && rcpt.manualTrust);
+                for (Map.Entry<OmemoDevice, OmemoFingerprint> device : fingerprints.entrySet()) {
+                    if (willTrust) {
+                        mManager.trustOmemoIdentity(device.getKey(), device.getValue());
+                    }
+                    else {
+                        mManager.distrustOmemoIdentity(device.getKey(), device.getValue());
+                    }
                 }
             }
         }
@@ -160,5 +176,23 @@ public class OmemoCoder extends Coder {
     public VerifyOutput verifyText(byte[] signed, boolean verify) throws GeneralSecurityException {
         // TODO
         return null;
+    }
+
+    /**
+     * Recipient information for encryption.
+     * The trust level is considered blocking if TRUST_UKNOWN and manualTrust is true,
+     * meaning we manually verified a previous key and thus overridden Blind Trust
+     * Before Verification.
+     */
+    public static class TrustedRecipient {
+        public final Jid jid;
+        public final int trustLevel;
+        public final boolean manualTrust;
+
+        public TrustedRecipient(Jid jid, int trustLevel, boolean manualTrust) {
+            this.jid = jid;
+            this.trustLevel = trustLevel;
+            this.manualTrust = manualTrust;
+        }
     }
 }

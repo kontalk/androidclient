@@ -59,7 +59,6 @@ import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGPLazyPublicKeyRingLoader;
 import org.kontalk.provider.Keyring;
-import org.kontalk.provider.MyUsers.Keys;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Permissions;
@@ -730,9 +729,9 @@ public class Contact {
 
     private static void retrieveKeyInfo(Context context, Contact c) {
         // trusted key
-        Keyring.TrustedPublicKeyData trustedKeyring = Keyring.getPublicKeyData(context, c.getJID(), Keys.TRUST_IGNORED);
+        Keyring.TrustedPublicKeyData trustedKeyring = Keyring.getPublicKeyData(context, c.getJID(), Keyring.TRUST_IGNORED);
         // latest (possibly unknown) fingerprint
-        c.mFingerprint = Keyring.getFingerprint(context, c.getJID(), Keys.TRUST_UNKNOWN);
+        c.mFingerprint = Keyring.getFingerprint(context, c.getJID(), Keyring.TRUST_UNKNOWN);
         if (trustedKeyring != null) {
             c.mTrustedKeyRing = new PGPLazyPublicKeyRingLoader(trustedKeyring.keyData);
             c.mTrustedLevel = trustedKeyring.trustLevel;

@@ -63,7 +63,6 @@ import org.kontalk.provider.Keyring;
 import org.kontalk.provider.KontalkGroupCommands;
 import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.provider.MyMessages;
-import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.MediaService;
@@ -284,7 +283,7 @@ public class MessagesController {
             throw new NullPointerException("fingerprint");
 
         Keyring.setTrustLevel(mContext, jid, fingerprint, trustLevel);
-        if (trustLevel >= MyUsers.Keys.TRUST_IGNORED) {
+        if (trustLevel >= Keyring.TRUST_IGNORED) {
             retryMessagesTo(jid);
             return true;
         }

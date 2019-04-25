@@ -33,7 +33,6 @@ import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.X509Bridge;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.Keyring;
-import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.event.PublicKeyEvent;
 import org.kontalk.sync.SyncAdapter;
@@ -102,7 +101,7 @@ class PublicKeyListener extends MessageCenterPacketListener implements Exception
                     Log.v("pubkey", "Updating server key for " + from);
                     try {
                         Keyring.setKey(getContext(), from.toString(), _publicKey,
-                            MyUsers.Keys.TRUST_VERIFIED);
+                            Keyring.TRUST_VERIFIED);
                     }
                     catch (Exception e) {
                         // TODO warn user
@@ -114,7 +113,7 @@ class PublicKeyListener extends MessageCenterPacketListener implements Exception
                     try {
                         Log.v("pubkey", "Updating key for " + from);
                         Keyring.setKey(getContext(), from.toString(), _publicKey,
-                            selfJid ? MyUsers.Keys.TRUST_VERIFIED : -1);
+                            selfJid ? Keyring.TRUST_VERIFIED : -1);
 
                         // update display name with uid (if empty)
                         PGPUserID keyUid = PGP.parseUserId(_publicKey, getConnection().getXMPPServiceDomain().toString());

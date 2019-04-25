@@ -76,7 +76,6 @@ import org.kontalk.provider.KontalkGroupCommands;
 import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Threads;
-import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.PrivacyCommand;
@@ -513,7 +512,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
                 else {
                     // autotrust the key we are about to request
                     // but set the trust level to ignored because we didn't really verify it
-                    Keyring.setAutoTrustLevel(context, event.jid.toString(), MyUsers.Keys.TRUST_IGNORED);
+                    Keyring.setAutoTrustLevel(context, event.jid.toString(), Keyring.TRUST_IGNORED);
                     requestPublicKey(event.jid);
                 }
             }
@@ -773,7 +772,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
             if (fingerprint != null) {
                 Kontalk.get().getMessagesController()
                     .setTrustLevelAndRetryMessages(mUserJID,
-                        fingerprint, MyUsers.Keys.TRUST_VERIFIED);
+                        fingerprint, Keyring.TRUST_VERIFIED);
             }
         }
 
@@ -879,7 +878,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         String fingerprint;
         String uid;
 
-        PGPPublicKeyRing publicKey = Keyring.getPublicKey(getActivity(), mUserJID, MyUsers.Keys.TRUST_UNKNOWN);
+        PGPPublicKeyRing publicKey = Keyring.getPublicKey(getActivity(), mUserJID, Keyring.TRUST_UNKNOWN);
         if (publicKey != null) {
             PGPPublicKey pk = PGP.getMasterKey(publicKey);
             fingerprint = PGP.formatFingerprint(PGP.getFingerprint(pk));
@@ -956,7 +955,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         if (fingerprint == null)
             fingerprint = getContact().getFingerprint();
         Kontalk.get().getMessagesController()
-            .setTrustLevelAndRetryMessages(mUserJID, fingerprint, MyUsers.Keys.TRUST_VERIFIED);
+            .setTrustLevelAndRetryMessages(mUserJID, fingerprint, Keyring.TRUST_VERIFIED);
         // reload contact
         invalidateContact();
     }
