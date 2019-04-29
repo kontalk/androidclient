@@ -71,7 +71,7 @@ public class Keyring {
     public static Coder getEncryptCoder(Context context, int securityFlags, XMPPConnection connection, EndpointServer server, PersonalKey key, Jid[] recipients) {
         if ((securityFlags & Coder.SECURITY_ADVANCED) != 0) {
             try {
-                if (recipients.length == 1 || recipients[0].equals(connection.getUser().asBareJid())) {
+                if (recipients.length == 1 && recipients[0].equals(connection.getUser().asBareJid())) {
                     throw new IllegalArgumentException("OMEMO with yourself is not supported");
                 }
                 return new OmemoCoder(connection, getTrustedRecipients(context, recipients));
