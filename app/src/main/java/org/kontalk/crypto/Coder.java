@@ -42,6 +42,7 @@ public abstract class Coder {
     /** Cleartext messages. Not encrypted nor signed. */
     public static final int SECURITY_CLEARTEXT = 0;
     /** Legacy (2.x) encryption method. For compatibility with old messages. */
+    @Deprecated
     public static final int SECURITY_LEGACY_ENCRYPTED = 1;
     /** Basic encryption (e.g. PGP encrypted). Safe enough. */
     public static final int SECURITY_BASIC_ENCRYPTED = 1 << 1;
