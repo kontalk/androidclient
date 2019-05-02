@@ -591,7 +591,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
             // clear components (we are adding new ones)
             msg.clearComponents();
             // decrypted text
-            if (result.cleartext != null)
+            if (result.cleartext != null && result.cleartext.getBody() != null)
                 msg.addComponent(new TextComponent(result.cleartext.getBody()));
 
             // import security flags from coder
