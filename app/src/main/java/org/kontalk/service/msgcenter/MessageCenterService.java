@@ -62,11 +62,11 @@ import org.jivesoftware.smack.sm.StreamManagementException;
 import org.jivesoftware.smack.util.Async;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smack.util.SuccessCallback;
-import org.jivesoftware.smackx.caps.packet.CapsExtension;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.csi.ClientStateIndicationManager;
 import org.jivesoftware.smackx.delay.packet.DelayInformation;
+import org.jivesoftware.smackx.disco.ServiceDiscoveryManager;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.disco.packet.DiscoverItems;
 import org.jivesoftware.smackx.forward.packet.Forwarded;
@@ -121,6 +121,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.BlockingCommand;
 import org.kontalk.client.EndpointServer;
+import org.kontalk.client.HTTPFileUpload;
 import org.kontalk.client.KontalkConnection;
 import org.kontalk.client.OutOfBandData;
 import org.kontalk.client.PublicKeyPublish;
@@ -191,6 +192,7 @@ import org.kontalk.service.msgcenter.group.GroupControllerFactory;
 import org.kontalk.service.msgcenter.group.PartCommand;
 import org.kontalk.service.msgcenter.group.SetSubjectCommand;
 import org.kontalk.ui.MessagingNotification;
+import org.kontalk.upload.HTTPFileUploadService;
 import org.kontalk.util.EventBusIndex;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
@@ -1722,7 +1724,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         filter = new StanzaTypeFilter(Presence.class);
         connection.addAsyncStanzaListener(presenceListener, filter);
 
-        filter = new StanzaTypeFilter(org.jivesoftware.smack.packet.Message.class);
+        filter = new StanzaFilter() {
+            @Override
+            public boolean accept(Stanza stanza) {
+                // ignore OMEMO messages, they will be processed by smack-omemo
+                // except delayed messages which must be processed manually via decrypt()
+                // .......ARGH!!!
+                return stanza instanceof org.jivesoftware.smack.packet.Message &&
+                    (!OmemoManager.stanzaContainsOmemoElement(stanza) ||
+                        stanza.hasExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE));
+            }
+        };
         connection.addSyncStanzaListener(new MessageListener(this), filter);
 
         // this is used as a reply callback
@@ -1863,30 +1875,108 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Discovers info and items.
      */
     private void discovery() {
-        StanzaFilter filter;
+        // FIXME some messed up, absolutely unmodular code here
 
-        Jid to;
-        try {
-            to = JidCreate.domainBareFrom(mServer.getNetwork());
+        final XMPPConnection connection = mConnection;
+        if (connection != null) {
+            Async.go(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        ServiceDiscoveryManager manager = ServiceDiscoveryManager
+                            .getInstanceFor(connection);
+
+                        DiscoverInfo info = manager.discoverInfo(connection.getXMPPServiceDomain());
+
+                        if (info.containsFeature(PushRegistration.NAMESPACE)) {
+                            discoverPushRegistration(connection);
+                        }
+                    }
+                    catch (SmackException.NoResponseException e) {
+                        Log.w(TAG, "No response for discovery of info was received", e);
+                    }
+                    catch (XMPPException.XMPPErrorException e) {
+                        Log.w(TAG, "Error requesting discovery of info", e);
+                    }
+                    catch (NotConnectedException ignored) {
+                    }
+                    catch (InterruptedException ignored) {
+                    }
+                }
+            }, "ServerDiscoveryInfo");
+
+            Async.go(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        ServiceDiscoveryManager manager = ServiceDiscoveryManager
+                            .getInstanceFor(connection);
+
+                        List<DiscoverItems.Item> items = manager.
+                            discoverItems(connection.getXMPPServiceDomain()).getItems();
+
+                        for (DiscoverItems.Item item : items) {
+                            DiscoverInfo info = manager.discoverInfo(item.getEntityID());
+
+                            if (info.containsFeature(HTTPFileUpload.NAMESPACE)) {
+                                Log.d(MessageCenterService.TAG, "got upload service: " + item.getEntityID());
+                                addUploadService(new HTTPFileUploadService(connection,
+                                    item.getEntityID().asBareJid()), 0);
+                                // MessagesController will send pending messages
+                            }
+                        }
+                    }
+                    catch (SmackException.NoResponseException e) {
+                        Log.w(TAG, "No response for discovery of items was received", e);
+                    }
+                    catch (XMPPException.XMPPErrorException e) {
+                        Log.w(TAG, "Error requesting discovery of items", e);
+                    }
+                    catch (NotConnectedException ignored) {
+                    }
+                    catch (InterruptedException ignored) {
+                    }
+                }
+            }, "ServerDiscoveryItems");
         }
-        catch (XmppStringprepException e) {
-            Log.w(TAG, "error parsing JID: " + e.getCausingString(), e);
-            // report it because it's a big deal
-            ReportingManager.logException(e);
-            return;
+    }
+
+    /** For call by {@link #discovery()} listeners. */
+    void discoverPushRegistration(XMPPConnection connection) throws XMPPException.XMPPErrorException,
+            NotConnectedException, InterruptedException, SmackException.NoResponseException {
+        ServiceDiscoveryManager manager = ServiceDiscoveryManager.getInstanceFor(connection);
+        List<DiscoverItems.Item> items = manager.discoverItems(connection.getXMPPServiceDomain(),
+            PushRegistration.NAMESPACE).getItems();
+
+        for (DiscoverItems.Item item : items) {
+            String jid = item.getEntityID().toString();
+            // google push notifications
+            if (("gcm.push." + connection.getXMPPServiceDomain().toString()).equals(jid)) {
+                String senderId = item.getNode();
+                MessageCenterService.sPushSenderId = senderId;
+
+                if (mPushNotifications) {
+                    String oldSender = Preferences.getPushSenderId();
+
+                    // store the new sender id
+                    Preferences.setPushSenderId(senderId);
+
+                    // begin a registration cycle if senderId is different
+                    if (oldSender != null && !oldSender.equals(senderId)) {
+                        IPushService service = PushServiceManager.getInstance(this);
+                        if (service != null)
+                            service.unregister(sPushListener);
+                        // unregister will see this as an attempt to register again
+                        mPushRegistrationCycle = true;
+                    }
+                    else {
+                        // begin registration immediately
+                        pushRegister();
+                    }
+                }
+            }
         }
 
-        DiscoverInfo info = new DiscoverInfo();
-        info.setTo(to);
-        filter = new StanzaIdFilter(info.getStanzaId());
-        mConnection.addAsyncStanzaListener(new DiscoverInfoListener(this), filter);
-        sendPacket(info);
-
-        DiscoverItems items = new DiscoverItems();
-        items.setTo(to);
-        filter = new StanzaIdFilter(items.getStanzaId());
-        mConnection.addAsyncStanzaListener(new DiscoverItemsListener(this), filter);
-        sendPacket(items);
     }
 
     synchronized void active(boolean available) {
@@ -1979,10 +2069,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             p.setStatus(status);
         if (mode != null)
             p.setMode(mode);
-
-        // TODO find a place for this
-        p.addExtension(new CapsExtension("http://www.kontalk.org/", "none", "sha-1"));
-
         return p;
     }
 

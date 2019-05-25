@@ -22,14 +22,20 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
+import org.jivesoftware.smack.ConnectionListener;
 import org.jivesoftware.smack.SmackException;
+import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.forward.packet.Forwarded;
+import org.jivesoftware.smackx.omemo.OmemoManager;
 import org.jivesoftware.smackx.omemo.element.OmemoElement;
+import org.jivesoftware.smackx.omemo.internal.CipherAndAuthTag;
+import org.jivesoftware.smackx.omemo.internal.OmemoMessageInformation;
+import org.jivesoftware.smackx.omemo.listener.OmemoMessageListener;
 import org.jivesoftware.smackx.omemo.util.OmemoConstants;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
@@ -56,7 +62,6 @@ import org.kontalk.client.OutOfBandData;
 import org.kontalk.client.UserLocation;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.DecryptException;
-import org.kontalk.crypto.OmemoCoder;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.VerifyException;
 import org.kontalk.data.Contact;
@@ -92,10 +97,24 @@ import org.kontalk.util.XMPPUtils;
  * Packet listener for message stanzas.
  * @author Daniele Ricci
  */
-class MessageListener extends WakefulMessageCenterPacketListener {
+class MessageListener extends WakefulMessageCenterPacketListener implements ConnectionListener, OmemoMessageListener {
+
+    private OmemoManager mOmemoManager;
 
     public MessageListener(MessageCenterService instance) {
         super(instance, "RECV");
+        getConnection().addConnectionListener(this);
+    }
+
+    @Override
+    public void authenticated(XMPPConnection connection, boolean resumed) {
+        // Because of the way the smack-omemo is designed, we can't separate
+        // incoming message handling from decryption.
+        // We'll have a local OmemoManager to inject decrypted messages in the
+        // incoming message processing workflow.
+        mOmemoManager = OmemoManager.getInstanceFor(connection);
+        mOmemoManager.removeOmemoMessageListener(this);
+        mOmemoManager.addOmemoMessageListener(this);
     }
 
     private static final class GroupMessageProcessingResult {
@@ -244,6 +263,27 @@ class MessageListener extends WakefulMessageCenterPacketListener {
     }
 
     /**
+     * Process an incoming OMEMO message.
+     */
+    @Override
+    public void onOmemoMessageReceived(String decryptedBody, Message encryptedMessage, Message wrappingMessage, OmemoMessageInformation omemoInformation) {
+        // duplicates the message to fool real processing
+        Message output = new Message(encryptedMessage);
+        output.setBody(decryptedBody);
+
+        try {
+            processWakefulStanza(output);
+        }
+        catch (SmackException.NotConnectedException ignored) {
+        }
+    }
+
+    @Override
+    public void onOmemoKeyTransportReceived(CipherAndAuthTag cipherAndAuthTag, Message message, Message wrappingMessage, OmemoMessageInformation omemoInformation) {
+        // not used for now.
+    }
+
+    /**
      * Process an incoming message packet.
      * @param m the message
      * @param chatStateEvent a chat state event that will be returned with missing information (e.g. group info in encrypted message)
@@ -302,52 +342,19 @@ class MessageListener extends WakefulMessageCenterPacketListener {
 
             try {
                 Coder coder = null;
+                int securityFlags = 0;
+                boolean verifyOnly = false;
+
                 if (m.hasExtension(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE)) {
-                    Context context = getContext();
-                    EndpointServer server = getServer();
-                    if (server == null)
-                        server = Preferences.getEndpointServer(context);
-
-                    PersonalKey key = Kontalk.get().getPersonalKey();
-
-                    coder = Keyring.getDecryptCoder(context, server, key, msg.getSender(true));
+                    securityFlags = Coder.SECURITY_BASIC;
                 }
 
                 else if (m.hasExtension(OmemoElement.ENCRYPTED, OmemoConstants.OMEMO_NAMESPACE_V_AXOLOTL)) {
-                    coder = new OmemoCoder(getConnection(), null);
+                    securityFlags = Coder.SECURITY_ADVANCED;
                 }
 
                 else if (m.hasExtension(OpenPGPSignedMessage.ELEMENT_NAME, OpenPGPSignedMessage.NAMESPACE)) {
-                    // FIXME not using a Coder here
-
-                    // use message body
-                    if (body != null)
-                        msg.addComponent(new TextComponent(body));
-
-                    // old PGP signature
-                    ExtensionElement _pgpSigned = m.getExtension(OpenPGPSignedMessage.ELEMENT_NAME, OpenPGPSignedMessage.NAMESPACE);
-                    if (_pgpSigned instanceof OpenPGPSignedMessage) {
-                        OpenPGPSignedMessage pgpSigned = (OpenPGPSignedMessage) _pgpSigned;
-                        byte[] signedData = pgpSigned.getData();
-
-                        // signed message
-                        msg.setSecurityFlags(Coder.SECURITY_BASIC_SIGNED);
-
-                        if (signedData != null) {
-                            // check signature
-                            try {
-                                checkSignedMessage(msg, pgpSigned.getData());
-                                // at this point our message should be filled with the verified body
-                            }
-
-                            catch (Exception exc) {
-                                Log.e(MessageCenterService.TAG, "signature check failed", exc);
-                                // TODO what to do here?
-                                msg.setSecurityFlags(msg.getSecurityFlags() |
-                                    Coder.SECURITY_ERROR_INVALID_SIGNATURE);
-                            }
-                        }
-                    }
+                    securityFlags = Coder.SECURITY_BASIC_SIGNED;
                 }
                 else {
                     // use message body
@@ -355,17 +362,67 @@ class MessageListener extends WakefulMessageCenterPacketListener {
                         msg.addComponent(new TextComponent(body));
                 }
 
-                if (coder != null) {
-                    Message innerStanza = decryptMessage(msg, coder, m);
-                    // copy some attributes over
-                    innerStanza.setTo(m.getTo());
-                    innerStanza.setFrom(m.getFrom());
-                    innerStanza.setType(m.getType());
-                    m = innerStanza;
+                if (securityFlags > 0) {
+                    Context context = getContext();
+                    EndpointServer server = getServer();
+                    if (server == null)
+                        server = Preferences.getEndpointServer(context);
 
-                    if (!needAck) {
-                        // try the decrypted message
-                        needAck = m.hasExtension(DeliveryReceiptRequest.ELEMENT, DeliveryReceipt.NAMESPACE);
+                    PersonalKey key = Kontalk.get().getPersonalKey();
+
+                    if ((securityFlags & Coder.SECURITY_ADVANCED_ENCRYPTED) != 0 || (securityFlags & Coder.SECURITY_BASIC_ENCRYPTED) != 0) {
+                        coder = Keyring.getDecryptCoder(context, securityFlags, getConnection(),
+                            server, key, JidCreate.bareFromOrThrowUnchecked(msg.getSender(true)));
+                    }
+                    else {
+                        coder = Keyring.getVerifyCoder(context, server, msg.getSender(true));
+                        verifyOnly = true;
+                    }
+                }
+
+                if (coder != null) {
+                    if (verifyOnly) {
+                        // use message body
+                        if (body != null)
+                            msg.addComponent(new TextComponent(body));
+
+                        // old PGP signature
+                        ExtensionElement _pgpSigned = m.getExtension(OpenPGPSignedMessage.ELEMENT_NAME, OpenPGPSignedMessage.NAMESPACE);
+                        if (_pgpSigned instanceof OpenPGPSignedMessage) {
+                            OpenPGPSignedMessage pgpSigned = (OpenPGPSignedMessage) _pgpSigned;
+                            byte[] signedData = pgpSigned.getData();
+
+                            // signed message
+                            msg.setSecurityFlags(Coder.SECURITY_BASIC_SIGNED);
+
+                            if (signedData != null) {
+                                // check signature
+                                try {
+                                    checkSignedMessage(msg, pgpSigned.getData());
+                                    // at this point our message should be filled with the verified body
+                                }
+
+                                catch (Exception exc) {
+                                    Log.e(MessageCenterService.TAG, "signature check failed", exc);
+                                    // TODO what to do here?
+                                    msg.setSecurityFlags(msg.getSecurityFlags() |
+                                        Coder.SECURITY_ERROR_INVALID_SIGNATURE);
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        Message innerStanza = decryptMessage(msg, coder, m);
+                        // copy some attributes over
+                        innerStanza.setTo(m.getTo());
+                        innerStanza.setFrom(m.getFrom());
+                        innerStanza.setType(m.getType());
+                        m = innerStanza;
+
+                        if (!needAck) {
+                            // try the decrypted message
+                            needAck = m.hasExtension(DeliveryReceiptRequest.ELEMENT, DeliveryReceipt.NAMESPACE);
+                        }
                     }
                 }
             }
@@ -741,4 +798,17 @@ class MessageListener extends WakefulMessageCenterPacketListener {
         }
     }
 
+    // methods not used.
+
+    @Override
+    public void connected(XMPPConnection connection) {
+    }
+
+    @Override
+    public void connectionClosed() {
+    }
+
+    @Override
+    public void connectionClosedOnError(Exception e) {
+    }
 }

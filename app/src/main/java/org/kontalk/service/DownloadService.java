@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.greenrobot.eventbus.EventBus;
+import org.jxmpp.jid.impl.JidCreate;
 
 import android.app.IntentService;
 import android.app.Notification;
@@ -325,25 +326,23 @@ public class DownloadService extends IntentService implements DownloadListener {
             try {
                 EndpointServer server = Preferences.getEndpointServer(this);
                 PersonalKey key = Kontalk.get().getPersonalKey();
-                Coder coder = Keyring.getDecryptCoder(this, server, key, mPeer);
-                if (coder != null) {
-                    in = new FileInputStream(destination);
+                Coder coder = Keyring.getDecryptCoder(this, Coder.SECURITY_BASIC, null, server, key, JidCreate.fromOrThrowUnchecked(mPeer));
+                in = new FileInputStream(destination);
 
-                    File outFile = new File(destination + ".new");
-                    out = new FileOutputStream(outFile);
-                    List<DecryptException> errors = new LinkedList<>();
-                    coder.decryptFile(in, true, out, errors);
+                File outFile = new File(destination + ".new");
+                out = new FileOutputStream(outFile);
+                List<DecryptException> errors = new LinkedList<>();
+                coder.decryptFile(in, true, out, errors);
 
-                    // TODO process errors
+                // TODO process errors
 
-                    // delete old file and rename the decrypted one
-                    destination.delete();
-                    outFile.renameTo(destination);
+                // delete old file and rename the decrypted one
+                destination.delete();
+                outFile.renameTo(destination);
 
-                    // save this for later
-                    destinationEncrypted = false;
-                    destinationLength = destination.length();
-                }
+                // save this for later
+                destinationEncrypted = false;
+                destinationLength = destination.length();
             }
             catch (Exception e) {
                 Log.e(TAG, "decryption failed!", e);

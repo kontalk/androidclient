@@ -32,6 +32,7 @@ import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smackx.delay.packet.DelayInformation;
 import org.jivesoftware.smackx.omemo.OmemoFingerprint;
 import org.jivesoftware.smackx.omemo.OmemoManager;
 import org.jivesoftware.smackx.omemo.element.OmemoElement;
@@ -41,6 +42,7 @@ import org.jivesoftware.smackx.omemo.exceptions.UndecidedOmemoIdentityException;
 import org.jivesoftware.smackx.omemo.internal.ClearTextMessage;
 import org.jivesoftware.smackx.omemo.internal.OmemoDevice;
 import org.jivesoftware.smackx.omemo.util.OmemoConstants;
+import org.jxmpp.jid.BareJid;
 import org.jxmpp.jid.Jid;
 import org.jxmpp.jid.impl.JidCreate;
 
@@ -53,17 +55,19 @@ import org.kontalk.provider.Keyring;
  */
 public class OmemoCoder extends Coder {
 
-    private final OmemoManager mManager;
     private final TrustedRecipient[] mRecipients;
+    private final BareJid mSender;
 
+    private OmemoManager mManager;
+
+    /** For encryption. */
     public OmemoCoder(XMPPConnection connection, TrustedRecipient[] recipients) throws XMPPException.XMPPErrorException,
             SmackException.NotConnectedException, InterruptedException, SmackException.NoResponseException {
-        mManager = OmemoManager.getInstanceFor(connection);
-        if (!OmemoManager.serverSupportsOmemo(connection, connection.getXMPPServiceDomain())) {
-            throw new UnsupportedOperationException("Server does not support OMEMO");
-        }
+        init(connection);
 
+        mSender = null;
         mRecipients = recipients;
+
         if (recipients != null) {
             for (TrustedRecipient rcpt : recipients) {
                 Map<OmemoDevice, OmemoFingerprint> fingerprints = mManager
@@ -86,6 +90,23 @@ public class OmemoCoder extends Coder {
                     }
                 }
             }
+        }
+    }
+
+    /** For decryption. */
+    public OmemoCoder(XMPPConnection connection, Jid sender) throws XMPPException.XMPPErrorException,
+            SmackException.NotConnectedException, InterruptedException, SmackException.NoResponseException {
+        init(connection);
+
+        mSender = sender.asBareJid();
+        mRecipients = null;
+    }
+
+    private void init(XMPPConnection connection) throws XMPPException.XMPPErrorException,
+            SmackException.NotConnectedException, InterruptedException, SmackException.NoResponseException {
+        mManager = OmemoManager.getInstanceFor(connection);
+        if (!OmemoManager.serverSupportsOmemo(connection, connection.getXMPPServiceDomain())) {
+            throw new UnsupportedOperationException("Server does not support OMEMO");
         }
     }
 
@@ -130,52 +151,62 @@ public class OmemoCoder extends Coder {
             output.setFrom(message.getFrom());
             output.setTo(message.getTo());
             output.setType(message.getType());
+            output.addExtensions(message.getExtensions());
         }
 
         return output;
     }
 
+    /**
+     * For now just here to fool {@link org.jivesoftware.smack.MessageListener}.
+     */
     @Override
     public DecryptOutput decryptMessage(Message message, boolean verify) throws GeneralSecurityException {
-        ClearTextMessage cleartext;
-        try {
-            cleartext = mManager.decrypt(null, message);
-        }
-        catch (Exception e) {
-            throw new GeneralSecurityException("OMEMO decryption failed", e);
-        }
+        if (message.hasExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE)) {
+            // offline message - decrypt manually
+            ClearTextMessage cleartext;
+            try {
+                cleartext = mManager.decrypt(mSender, message);
+            }
+            catch (Exception e) {
+                throw new GeneralSecurityException("OMEMO decryption failed", e);
+            }
 
-        if (cleartext.getBody() == null) {
-            throw new DecryptException(DecryptException.DECRYPT_EXCEPTION_PRIVATE_KEY_NOT_FOUND);
-        }
+            if (cleartext.getBody() == null) {
+                throw new DecryptException(DecryptException.DECRYPT_EXCEPTION_PRIVATE_KEY_NOT_FOUND);
+            }
 
-        // simple text message
-        Message output = new Message();
-        output.setType(message.getType());
-        output.setFrom(message.getFrom());
-        output.setTo(message.getTo());
-        output.setBody(cleartext.getBody());
-        // copy extensions and remove our own
-        output.addExtensions(message.getExtensions());
-        output.removeExtension(OmemoElement.ENCRYPTED, OmemoConstants.OMEMO_NAMESPACE_V_AXOLOTL);
-        return new DecryptOutput(output, "text/plain", new Date(), SECURITY_ADVANCED, Collections.emptyList());
+            // simple text message
+            Message output = new Message();
+            output.setStanzaId(message.getStanzaId());
+            output.setType(message.getType());
+            output.setFrom(message.getFrom());
+            output.setTo(message.getTo());
+            output.setBody(cleartext.getBody());
+            // copy extensions and remove our own
+            output.addExtensions(message.getExtensions());
+            output.removeExtension(OmemoElement.ENCRYPTED, OmemoConstants.OMEMO_NAMESPACE_V_AXOLOTL);
+            return new DecryptOutput(output, "text/plain", new Date(), SECURITY_ADVANCED, Collections.emptyList());
+        }
+        else {
+            // online message - already decrypted by smack-omemo
+            return new DecryptOutput(message, "text/plain", new Date(), SECURITY_ADVANCED, Collections.emptyList());
+        }
     }
 
     @Override
     public void encryptFile(InputStream input, OutputStream output) throws GeneralSecurityException {
-        // TODO
+        throw new UnsupportedOperationException("OMEMO does not support file encryption");
     }
 
     @Override
     public void decryptFile(InputStream input, boolean verify, OutputStream output, List<DecryptException> errors) throws GeneralSecurityException {
-        // TODO
-
+        throw new UnsupportedOperationException("OMEMO does not support file encryption");
     }
 
     @Override
     public VerifyOutput verifyText(byte[] signed, boolean verify) throws GeneralSecurityException {
-        // TODO
-        return null;
+        throw new UnsupportedOperationException("OMEMO does not support verification and signing");
     }
 
     /**

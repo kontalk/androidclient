@@ -112,9 +112,26 @@ public class Keyring {
     }
 
     /** Returns a {@link Coder} instance for decrypting data. */
-    public static Coder getDecryptCoder(Context context, EndpointServer server, PersonalKey key, String sender) {
-        PGPPublicKeyRing senderKey = getPublicKey(context, sender, Keyring.TRUST_IGNORED);
-        return new PGPCoder(server, key, senderKey);
+    public static Coder getDecryptCoder(Context context, int securityFlags, XMPPConnection connection, EndpointServer server, PersonalKey key, Jid sender) {
+        if ((securityFlags & Coder.SECURITY_ADVANCED) != 0) {
+            try {
+                return new OmemoCoder(connection, sender);
+            }
+            catch (Exception e) {
+                Log.w(TAG, "unable to setup advanced coder, falling back to basic", e);
+                securityFlags = Coder.SECURITY_BASIC;
+            }
+        }
+
+        // used also as fallback
+        if ((securityFlags & Coder.SECURITY_BASIC) != 0) {
+            PGPPublicKeyRing senderKey = getPublicKey(context, sender.toString(), Keyring.TRUST_IGNORED);
+            return new PGPCoder(server, key, senderKey);
+        }
+
+        else {
+            throw new IllegalArgumentException("Invalid security flags. No Coder found.");
+        }
     }
 
     /** Returns a {@link Coder} instance for verifying data. */
