@@ -141,6 +141,7 @@ import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.jid.parts.Resourcepart;
 import org.jxmpp.stringprep.XmppStringprepException;
 import org.jxmpp.util.XmppStringUtils;
+import org.minidns.dnsname.DnsName;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -518,18 +519,12 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
         shutdown(false);
     }
 
-    /**
-     * Performs an unclean disconnect and shutdown of the connection. Does not send a closing stream stanza.
-     */
+    @Override
     public synchronized void instantShutdown() {
         shutdown(true);
     }
 
     private void shutdown(boolean instant) {
-        if (disconnectedButResumeable) {
-            return;
-        }
-
         // First shutdown the writer, this will result in a closing stream element getting send to
         // the server
         LOGGER.finer("PacketWriter shutdown()");
@@ -552,13 +547,25 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
         packetReader.shutdown();
         LOGGER.finer("PacketReader has been shut down");
 
-        try {
+        final Socket socket = this.socket;
+        if (socket != null && socket.isConnected()) {
+            try {
                 socket.close();
-        } catch (Exception e) {
+            } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "shutdown", e);
+            }
         }
 
         setWasAuthenticated();
+
+        // Wait for reader and writer threads to be terminated.
+        readerWriterSemaphore.acquireUninterruptibly(2);
+        readerWriterSemaphore.release(2);
+
+        if (disconnectedButResumeable) {
+            return;
+        }
+
         // If we are able to resume the stream, then don't set
         // connected/authenticated/usingTLS to false since we like behave like we are still
         // connected (e.g. sendStanza should not throw a NotConnectedException).
@@ -661,6 +668,7 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                     proxyInfo.getProxySocketConnection().connect(socket, host, port, timeout);
                 } catch (IOException e) {
                     hostAddress.setException(e);
+                    failedAddresses.add(hostAddress);
                     continue;
                 }
                 LOGGER.finer("Established TCP connection to " + hostAndPort);
@@ -870,8 +878,31 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
         final HostnameVerifier verifier = getConfiguration().getHostnameVerifier();
         if (verifier == null) {
                 throw new IllegalStateException("No HostnameVerifier set. Use connectionConfiguration.setHostnameVerifier() to configure.");
-        } else if (!verifier.verify(getXMPPServiceDomain().toString(), sslSocket.getSession())) {
-            throw new CertificateException("Hostname verification of certificate failed. Certificate does not authenticate " + getXMPPServiceDomain());
+        }
+
+        final String verifierHostname;
+        {
+            DnsName xmppServiceDomainDnsName = getConfiguration().getXmppServiceDomainAsDnsNameIfPossible();
+            // Try to convert the XMPP service domain, which potentially includes Unicode characters, into ASCII
+            // Compatible Encoding (ACE) to match RFC3280 dNSname IA5String constraint.
+            // See also: https://bugzilla.mozilla.org/show_bug.cgi?id=280839#c1
+            if (xmppServiceDomainDnsName != null) {
+                verifierHostname = xmppServiceDomainDnsName.ace;
+            }
+            else {
+                LOGGER.log(Level.WARNING, "XMPP service domain name '" + getXMPPServiceDomain()
+                                + "' can not be represented as DNS name. TLS X.509 certificate validiation may fail.");
+                verifierHostname = getXMPPServiceDomain().toString();
+            }
+        }
+
+        final boolean verificationSuccessful;
+        // Verify the TLS session.
+        verificationSuccessful = verifier.verify(verifierHostname, sslSocket.getSession());
+        if (!verificationSuccessful) {
+            throw new CertificateException(
+                            "Hostname verification of certificate failed. Certificate does not authenticate "
+                                            + getXMPPServiceDomain());
         }
 
         // Set that TLS was successful
@@ -971,7 +1002,7 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
      *
      * @param e the exception that causes the connection close event.
      */
-    private synchronized void notifyConnectionError(final Exception e) {
+    private void notifyConnectionError(final Exception e) {
         ASYNC_BUT_ORDERED.performAsyncButOrdered(this, new Runnable() {
             @Override
             public void run() {
@@ -996,10 +1027,6 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                     // Note that a connection listener of XMPPTCPConnection will drop the SM state in
                     // case the Exception is a StreamErrorException.
                     instantShutdown();
-
-                    // Wait for reader and writer threads to be terminated.
-                    readerWriterSemaphore.acquireUninterruptibly(2);
-                    readerWriterSemaphore.release(2);
                 }
 
                 Async.go(new Runnable() {
@@ -1080,6 +1107,8 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
 
     protected class PacketReader {
 
+        private final String threadName = "Smack Reader (" + getConnectionCounter() + ')';
+
         XmlPullParser parser;
 
         private volatile boolean done;
@@ -1094,13 +1123,15 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
             Async.go(new Runnable() {
                 @Override
                 public void run() {
+                    LOGGER.finer(threadName + " start");
                     try {
                         parsePackets();
                     } finally {
+                        LOGGER.finer(threadName + " exit");
                         XMPPTCPConnection.this.readerWriterSemaphore.release();
                     }
                 }
-            }, "Smack Reader (" + getConnectionCounter() + ")");
+            }, threadName);
          }
 
         /**
@@ -1363,6 +1394,8 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
     protected class PacketWriter {
         public static final int QUEUE_SIZE = XMPPTCPConnection.QUEUE_SIZE;
 
+        private final String threadName = "Smack Writer (" + getConnectionCounter() + ')';
+
         private final ArrayBlockingQueueWithShutdown<Element> queue = new ArrayBlockingQueueWithShutdown<>(
                         QUEUE_SIZE, true);
 
@@ -1408,13 +1441,15 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
             Async.go(new Runnable() {
                 @Override
                 public void run() {
+                    LOGGER.finer(threadName + " start");
                     try {
                         writePackets();
                     } finally {
+                        LOGGER.finer(threadName + " exit");
                         XMPPTCPConnection.this.readerWriterSemaphore.release();
                     }
                 }
-            }, "Smack Writer (" + getConnectionCounter() + ")");
+            }, threadName);
         }
 
         private boolean done() {
