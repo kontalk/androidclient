@@ -42,12 +42,15 @@ import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.SASLAuthentication;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.StanzaListener;
+import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.StanzaFilter;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.sm.StreamManagementException;
 import org.jivesoftware.smack.sm.predicates.ForMatchingPredicateOrAfterXStanzas;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
+import org.jivesoftware.smackx.disco.ServiceDiscoveryManager;
+import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 import org.jxmpp.stringprep.XmppStringprepException;
@@ -65,6 +68,8 @@ public class KontalkConnection extends XMPPTCPConnection {
 
     /** Packet reply timeout. */
     public static final int DEFAULT_PACKET_TIMEOUT = 15000;
+
+    private DiscoverInfo mDiscoverInfoCache;
 
     protected EndpointServer mServer;
 
@@ -246,8 +251,39 @@ public class KontalkConnection extends XMPPTCPConnection {
         }
     }
 
+    @Override
+    protected void shutdown() {
+        purgeCaches();
+        super.shutdown();
+    }
+
+    @Override
+    public synchronized void instantShutdown() {
+        purgeCaches();
+        super.instantShutdown();
+    }
+
+    private synchronized void purgeCaches() {
+        mDiscoverInfoCache = null;
+    }
+
     public EndpointServer getServer() {
         return mServer;
+    }
+
+    public synchronized DiscoverInfo getDiscoverInfo() throws XMPPException.XMPPErrorException,
+            SmackException.NotConnectedException, InterruptedException, SmackException.NoResponseException {
+        if (mDiscoverInfoCache == null) {
+            mDiscoverInfoCache = ServiceDiscoveryManager.getInstanceFor(this)
+                .discoverInfo(getXMPPServiceDomain());
+        }
+        return mDiscoverInfoCache;
+    }
+
+    public boolean supportsFeature(String feature) throws XMPPException.XMPPErrorException,
+            SmackException.NotConnectedException, InterruptedException, SmackException.NoResponseException {
+        DiscoverInfo cache = getDiscoverInfo();
+        return cache.containsFeature(feature);
     }
 
     @Override

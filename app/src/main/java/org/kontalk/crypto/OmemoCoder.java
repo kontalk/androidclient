@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -42,10 +41,11 @@ import org.jivesoftware.smackx.omemo.exceptions.UndecidedOmemoIdentityException;
 import org.jivesoftware.smackx.omemo.internal.ClearTextMessage;
 import org.jivesoftware.smackx.omemo.internal.OmemoDevice;
 import org.jivesoftware.smackx.omemo.util.OmemoConstants;
+import org.jivesoftware.smackx.pubsub.packet.PubSub;
 import org.jxmpp.jid.BareJid;
 import org.jxmpp.jid.Jid;
-import org.jxmpp.jid.impl.JidCreate;
 
+import org.kontalk.client.KontalkConnection;
 import org.kontalk.provider.Keyring;
 
 
@@ -70,10 +70,17 @@ public class OmemoCoder extends Coder {
 
         if (recipients != null) {
             for (TrustedRecipient rcpt : recipients) {
+                BareJid user = rcpt.jid.asBareJid();
                 Map<OmemoDevice, OmemoFingerprint> fingerprints = mManager
-                    .getActiveFingerprints(JidCreate.bareFromOrThrowUnchecked(rcpt.jid));
-                if (fingerprints.size() == 0) {
-                    throw new UnsupportedOperationException("Recipient " + rcpt.jid + " does not support OMEMO");
+                    .getActiveFingerprints(user);
+
+                if (fingerprints.isEmpty()) {
+                    if (!mManager.contactSupportsOmemo(user)) {
+                        throw new UnsupportedOperationException("Recipient " + user + " does not support OMEMO");
+                    }
+
+                    // fingerprints should be available after contactSupportsOmemo()
+                    fingerprints = mManager.getActiveFingerprints(user);
                 }
 
                 // Trust the OMEMO fingerprints by looking at user trust information.
@@ -105,7 +112,8 @@ public class OmemoCoder extends Coder {
     private void init(XMPPConnection connection) throws XMPPException.XMPPErrorException,
             SmackException.NotConnectedException, InterruptedException, SmackException.NoResponseException {
         mManager = OmemoManager.getInstanceFor(connection);
-        if (!OmemoManager.serverSupportsOmemo(connection, connection.getXMPPServiceDomain())) {
+        // FIXME should be: if (!OmemoManager.serverSupportsOmemo(connection, connection.getXMPPServiceDomain())) {
+        if (!((KontalkConnection) connection).supportsFeature(PubSub.NAMESPACE)) {
             throw new UnsupportedOperationException("Server does not support OMEMO");
         }
     }
@@ -119,7 +127,11 @@ public class OmemoCoder extends Coder {
     @Override
     public Message encryptMessage(Message message, String placeholder) throws GeneralSecurityException {
         Message output;
-        ArrayList recipients = new ArrayList(Arrays.asList(mRecipients));
+        ArrayList<BareJid> recipients = new ArrayList(mRecipients.length);
+        for (TrustedRecipient rcpt : mRecipients) {
+            recipients.add(rcpt.jid.asBareJid());
+        }
+
         try {
             output = mManager.encrypt(recipients, message.getBody());
         }

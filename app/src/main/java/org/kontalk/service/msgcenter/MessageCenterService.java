@@ -1877,16 +1877,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private void discovery() {
         // FIXME some messed up, absolutely unmodular code here
 
-        final XMPPConnection connection = mConnection;
+        final KontalkConnection connection = mConnection;
         if (connection != null) {
             Async.go(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        ServiceDiscoveryManager manager = ServiceDiscoveryManager
-                            .getInstanceFor(connection);
-
-                        DiscoverInfo info = manager.discoverInfo(connection.getXMPPServiceDomain());
+                        DiscoverInfo info = connection.getDiscoverInfo();
 
                         if (info.containsFeature(PushRegistration.NAMESPACE)) {
                             discoverPushRegistration(connection);
@@ -2460,6 +2457,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             attachment.getMime(), attachment.getLength(),
                             attachment.getSecurityFlags() != Coder.SECURITY_CLEARTEXT));
                     }
+
+                    // fall back to basic until we'll have a XEP for this
+                    message.setSecurityFlags(Coder.SECURITY_BASIC);
                 }
 
                 // add location data if present
@@ -2470,6 +2470,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     UserLocation userLocation = new UserLocation(lat, lon,
                         location.getText(), location.getStreet());
                     m.addExtension(userLocation);
+
+                    // fall back to basic until we'll have a XEP for this
+                    message.setSecurityFlags(Coder.SECURITY_BASIC);
                 }
 
                 // add referenced message if any
@@ -2534,6 +2537,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     encryptError = true;
                 }
                 catch (GeneralSecurityException e) {
+                    Log.w(TAG, "encryption failed!", e);
+
                     // warn user: message will not be sent
                     if (MessagingNotification.isPaused(convJid)) {
                         Toast.makeText(this, R.string.warn_encryption_failed,

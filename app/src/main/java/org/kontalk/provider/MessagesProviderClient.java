@@ -125,7 +125,7 @@ public class MessagesProviderClient {
         values.put(Messages.UNREAD, false);
         // of course outgoing messages are not encrypted in database
         values.put(Messages.ENCRYPTED, false);
-        values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+        values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_ADVANCED : Coder.SECURITY_CLEARTEXT);
         values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
         values.put(Messages.TIMESTAMP, System.currentTimeMillis());
         values.put(Messages.STATUS, Messages.STATUS_QUEUED);
@@ -137,7 +137,7 @@ public class MessagesProviderClient {
         values.put(Messages.ATTACHMENT_LOCAL_URI, uri.toString());
         values.put(Messages.ATTACHMENT_LENGTH, length);
         values.put(Messages.ATTACHMENT_COMPRESS, compress);
-        values.put(Messages.ATTACHMENT_SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+        values.put(Messages.ATTACHMENT_SECURITY_FLAGS, encrypted ? Coder.SECURITY_ADVANCED : Coder.SECURITY_CLEARTEXT);
 
         return context.getContentResolver().insert(Messages.CONTENT_URI, values);
     }
@@ -167,7 +167,7 @@ public class MessagesProviderClient {
         // of course outgoing messages are not encrypted in database
         values.put(Messages.ENCRYPTED, false);
         values.put(Threads.ENCRYPTION, encrypted);
-        values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+        values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_ADVANCED : Coder.SECURITY_CLEARTEXT);
         return context.getContentResolver().insert(
                 Messages.CONTENT_URI, values);
     }
@@ -462,7 +462,7 @@ public class MessagesProviderClient {
     public static int retryMessage(Context context, Uri uri, boolean encrypted) {
         ContentValues values = new ContentValues(2);
         values.put(Messages.STATUS, Messages.STATUS_SENDING);
-        values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+        values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_ADVANCED : Coder.SECURITY_CLEARTEXT);
         return context.getContentResolver().update(uri, values, null, null);
     }
 
@@ -501,7 +501,7 @@ public class MessagesProviderClient {
         boolean encrypted = Preferences.getEncryptionEnabled(context);
         ContentValues values = new ContentValues(2);
         values.put(Messages.STATUS, Messages.STATUS_SENDING);
-        values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+        values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_ADVANCED : Coder.SECURITY_CLEARTEXT);
         return context.getContentResolver().update(Messages.CONTENT_URI, values,
             Messages.STATUS + "=" + Messages.STATUS_PENDING,
             null);
