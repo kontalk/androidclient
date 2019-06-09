@@ -118,24 +118,22 @@ public class OmemoCoder extends Coder {
     @SuppressWarnings("unchecked")
     @Override
     public Message encryptMessage(Message message, String placeholder) throws GeneralSecurityException {
-        // FIXME test code
-        Message output = null;
+        Message output;
         ArrayList recipients = new ArrayList(Arrays.asList(mRecipients));
         try {
             output = mManager.encrypt(recipients, message.getBody());
         }
         catch (UndecidedOmemoIdentityException e) {
-            // TODO rethrow?
-            e.printStackTrace();
+            // TODO experimenting; crash for now
+            throw new RuntimeException("Impossible: we should have decided already!", e);
         }
         catch (CannotEstablishOmemoSessionException e) {
-            // TODO rethrow?
             try {
                 output = mManager.encryptForExistingSessions(e, message.getBody());
             }
             catch (UndecidedOmemoIdentityException e1) {
-                // TODO rethrow?
-                e1.printStackTrace();
+                // TODO experimenting; crash for now
+                throw new RuntimeException("Impossible: we should have decided already!", e1);
             }
             catch (CryptoFailedException e1) {
                 throw new GeneralSecurityException(e1);
