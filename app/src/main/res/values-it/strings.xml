@@ -762,4 +762,6 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
 
     <string name="err_emoji_disabled_in_multiwindow">Le emoji non possono essere usate in modalità multi-window.</string>
 
+    <string name="pref_service_terms">Termini di servizio</string>
+
     </resources>
