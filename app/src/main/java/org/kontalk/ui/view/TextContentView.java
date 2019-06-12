@@ -126,17 +126,6 @@ public class TextContentView extends EmojiTextView
         }
     }
 
-    private float getMaxLineWidth(Layout layout) {
-        float max_width = 0.0f;
-        int lines = layout.getLineCount();
-        for (int i = 0; i < lines; i++) {
-            if (layout.getLineWidth(i) > max_width) {
-                max_width = layout.getLineWidth(i);
-            }
-        }
-        return max_width;
-    }
-
     @Override
     public void bind(long databaseId, TextComponent component, Pattern highlight) {
         mComponent = component;

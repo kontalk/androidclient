@@ -83,7 +83,7 @@ public class ReplyBar extends RelativeLayout {
     }
 
     private void initAttributes(TypedArray attrs) {
-        mDividerViewId = attrs.getResourceId(R.styleable.ReplyBar_dividerView, 0);
+        mDividerViewId = attrs.getResourceId(R.styleable.ReplyBar_dividerView, View.NO_ID);
     }
 
     @Override
@@ -104,7 +104,7 @@ public class ReplyBar extends RelativeLayout {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        if (mDividerViewId > 0) {
+        if (mDividerViewId != View.NO_ID) {
             ViewParent parent = getParent();
             if (parent instanceof View) {
                 mDividerView = ((View) parent).findViewById(mDividerViewId);

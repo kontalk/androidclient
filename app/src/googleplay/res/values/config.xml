@@ -19,5 +19,5 @@
 
 <resources>
     <!-- location settings defaults -->
-    <string name="pref_default_maps_service">google</string>
+    <string name="pref_default_maps_service" translatable="false">google</string>
 </resources>
