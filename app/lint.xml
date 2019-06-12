@@ -8,4 +8,7 @@
 
     <!-- Hardcoded text is a serious matter -->
     <issue id="HardcodedText" severity="error" />
+
+    <!-- Bad string format makes the app crash -->
+    <issue id="StringFormatInvalid" severity="fatal" />
 </lint>
