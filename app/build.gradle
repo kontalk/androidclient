@@ -183,7 +183,7 @@ dependencies {
 
     // UI libraries
     implementation 'pub.devrel:easypermissions:2.0.1'
-    implementation 'com.github.machinarius:preferencefragment:0.1.1'
+    implementation 'com.github.machinarius:preferencefragment:0.1.2'
     implementation 'com.afollestad.material-dialogs:core:0.9.6.0'
     implementation 'com.afollestad.material-dialogs:commons:0.9.6.0'
     implementation 'com.github.castorflex.smoothprogressbar:library:1.1.0'
@@ -203,8 +203,8 @@ dependencies {
     implementation 'de.hdodenhof:circleimageview:2.1.0'
 
     // other libraries
-    implementation 'com.googlecode.libphonenumber:libphonenumber:8.10.8'
-    implementation 'com.google.zxing:core:3.3.1'
+    implementation 'com.googlecode.libphonenumber:libphonenumber:8.10.13'
+    implementation 'com.google.zxing:core:3.3.3'
     implementation 'me.dm7.barcodescanner:zxing:1.9.8'
     implementation 'com.github.instacart.truetime-android:library:3.3'
     implementation 'org.greenrobot:eventbus:3.1.1'
@@ -222,9 +222,9 @@ dependencies {
     googleplayImplementation "com.google.android.gms:play-services-base:16.1.0"
     googleplayImplementation "com.google.android.gms:play-services-maps:16.1.0"
     googleplayImplementation "com.google.android.gms:play-services-location:16.0.0"
-    googleplayImplementation "com.google.firebase:firebase-core:16.0.8"
-    googleplayImplementation "com.google.firebase:firebase-messaging:17.6.0"
-    googleplayImplementation('com.crashlytics.sdk.android:crashlytics:2.9.9@aar') {
+    googleplayImplementation 'com.google.firebase:firebase-core:16.0.9'
+    googleplayImplementation 'com.google.firebase:firebase-messaging:18.0.0'
+    googleplayImplementation('com.crashlytics.sdk.android:crashlytics:2.10.1@aar') {
         transitive = true
     }
 
