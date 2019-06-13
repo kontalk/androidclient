@@ -663,30 +663,30 @@ public class MessagesController {
         Cursor c = mContext.getContentResolver().query(ContentUris
             .withAppendedId(MyMessages.Messages.CONTENT_URI, databaseId), RESEND_PROJECTION, null, null, null);
 
-        sendMessages(c, false);
+        sendMessages(c);
 
         c.close();
     }
 
 
-    private void resendPending(final boolean retrying, final boolean forcePending, final String to) {
-        resendPendingMessages(retrying, forcePending, to);
+    private void resendPending(final boolean retryingMedia, final boolean forcePending, final String to) {
+        resendPendingMessages(retryingMedia, forcePending, to);
         resendPendingReceipts();
     }
 
-    private void resendPendingMessages(boolean retrying, boolean forcePending) {
-        resendPendingMessages(retrying, forcePending, null);
+    private void resendPendingMessages(boolean retryingMedia, boolean forcePending) {
+        resendPendingMessages(retryingMedia, forcePending, null);
     }
 
     /**
      * Queries for pending messages and send them through.
      *
-     * @param retrying     if true, we are retrying to send media messages after
-     *                     receiving upload info (non-media messages will be filtered out)
-     * @param forcePending true to include pending user review messages
-     * @param to           filter by recipient (optional)
+     * @param retryingMedia if true, we are retrying to send media messages after
+     *                      receiving upload info (non-media messages will be filtered out)
+     * @param forcePending  true to include pending user review messages
+     * @param to            filter by recipient (optional)
      */
-    private void resendPendingMessages(boolean retrying, boolean forcePending, String to) {
+    private void resendPendingMessages(boolean retryingMedia, boolean forcePending, String to) {
         String[] filterArgs = null;
 
         StringBuilder filter = new StringBuilder()
@@ -718,13 +718,26 @@ public class MessagesController {
             .append("<>")
             .append(MyMessages.Messages.STATUS_PENDING);
 
-        // filter out non-media non-uploaded messages
-        if (retrying) filter
-            .append(" AND ")
-            .append(MyMessages.Messages.ATTACHMENT_FETCH_URL)
-            .append(" IS NULL AND ")
-            .append(MyMessages.Messages.ATTACHMENT_LOCAL_URI)
-            .append(" IS NOT NULL");
+        // include only messages that need to be uploaded
+        if (retryingMedia) {
+            filter.append(" AND ")
+                // null fetch URL: message hasn't been uploaded yet
+                .append(MyMessages.Messages.ATTACHMENT_FETCH_URL)
+                .append(" IS NULL AND ")
+                // non-null local URI: media message
+                .append(MyMessages.Messages.ATTACHMENT_LOCAL_URI)
+                .append(" IS NOT NULL");
+        }
+        // include only messages that don't require upload
+        else {
+            filter.append(" AND (")
+                // non-media messages or...
+                .append(MyMessages.Messages.ATTACHMENT_LOCAL_URI)
+                .append(" IS NULL OR ")
+                // ...already uploaded messages
+                .append(MyMessages.Messages.ATTACHMENT_FETCH_URL)
+                .append(" IS NOT NULL)");
+        }
 
         if (to != null) {
             filter
@@ -743,13 +756,13 @@ public class MessagesController {
         Cursor c = mContext.getContentResolver().query(MyMessages.Messages.CONTENT_URI,
             RESEND_PROJECTION, filter.toString(), filterArgs, MyMessages.Messages._ID);
 
-        sendMessages(c, retrying);
+        sendMessages(c);
 
         c.close();
     }
 
     /** A somewhat smart send message procedure. Consumes all rows in cursor. */
-    private void sendMessages(Cursor c, boolean retrying) {
+    private void sendMessages(Cursor c) {
         // this set will cache thread IDs within this cursor with
         // pending group commands (i.e. just processed group commands)
         // This will be looked up when sending consecutive messages in the group
@@ -814,7 +827,7 @@ public class MessagesController {
             }
 
             // media message encountered and no upload service available - delay message
-            if (attFileUri != null && attFetchUrl == null && !mUploadServiceFound && !retrying) {
+            if (attFileUri != null && attFetchUrl == null && !mUploadServiceFound) {
                 Log.w(TAG, "no upload info received yet, delaying media message");
                 continue;
             }
