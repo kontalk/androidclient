@@ -62,6 +62,7 @@ import org.kontalk.sync.Syncer;
 import org.kontalk.ui.prefs.HelpPreference;
 import org.kontalk.ui.prefs.PreferencesActivity;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.SystemUtils;
 import org.kontalk.util.XMPPUtils;
 
 
@@ -128,13 +129,17 @@ public class ConversationsActivity extends MainActivity
                     Cursor c = getContentResolver().query(intent.getData(),
                         new String[]{Syncer.DATA_COLUMN_PHONE},
                         null, null, null);
-                    if (c.moveToFirst()) {
-                        String phone = c.getString(0);
-                        String userJID = XMPPUtils.createLocalJID(this,
-                            XMPPUtils.createLocalpart(phone));
-                        uri = Threads.getUri(userJID);
+                    try {
+                        if (c != null && c.moveToFirst()) {
+                            String phone = c.getString(0);
+                            String userJID = XMPPUtils.createLocalJID(this,
+                                XMPPUtils.createLocalpart(phone));
+                            uri = Threads.getUri(userJID);
+                        }
                     }
-                    c.close();
+                    finally {
+                        SystemUtils.close(c);
+                    }
                 }
                 else {
                     uri = intent.getData();

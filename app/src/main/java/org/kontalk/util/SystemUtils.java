@@ -350,11 +350,17 @@ public final class SystemUtils {
         return count;
     }
 
-    /** Closes the given stream, ignoring any errors. */
+    /** @deprecated Use {@link #close(Closeable)} */
+    @Deprecated
     public static void closeStream(Closeable stream) {
-        if (stream != null) {
+        close(stream);
+    }
+
+    /** Closes the given closeable object, ignoring any errors. */
+    public static void close(Closeable object) {
+        if (object != null) {
             try {
-                stream.close();
+                object.close();
             }
             catch (Exception ignored) {
             }
