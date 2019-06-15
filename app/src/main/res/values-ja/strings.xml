@@ -737,4 +737,12 @@ http://kontalk.org/</string>
 	<item quantity="other">%d オンライン</item>
 </plurals>
 
-</resources>
+<string name="pref_service_terms">サービス利用規約</string>
+
+    <string name="err_storage_denied_interactive">メディアを保存するために Kontalk はローカルストレージにアクセスする必要があります。 アクセス許可の確認をします。</string>
+
+    <string name="notify_ticker_download_permission_denied_error">メディアをダウンロードするためにアクセス許可が必要です</string>
+    <string name="notify_title_download_permission_denied_error">アクセス許可が必要です</string>
+    <string name="notify_summary_download_permission_denied_error">タップすると詳細を表示します。</string>
+
+    </resources>

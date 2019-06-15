@@ -767,4 +767,12 @@ Desactivar a cifraxe só se o contacto non ten unha chave persoal.</string>
     <string name="registration_accept_terms_title">¿Aceptar as condicions do servizo\?</string>
     <string name="registration_accept_terms_text">O servidor en %1$s &lt;b&gt;&lt;/b&gt; solicita &lt;a href=%2$s&gt;aceptar os términos do servizo &lt;/a&gt;.</string>
 
+    <string name="pref_service_terms">Condicións do servizo</string>
+
+    <string name="err_storage_denied_interactive">Kontalk necesita acceso ao almacenamiento local para almacenar medios. Agora pediremos permiso.</string>
+
+    <string name="notify_ticker_download_permission_denied_error">Requírese permiso para descargar arquivos multimedia</string>
+    <string name="notify_title_download_permission_denied_error">Requírese permiso</string>
+    <string name="notify_summary_download_permission_denied_error">Pulse para saber máis.</string>
+
     </resources>

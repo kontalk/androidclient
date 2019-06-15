@@ -35,24 +35,24 @@
     <bool name="pref_default_server_messages">true</bool>
 
     <!-- appearance settings defaults -->
-    <string name="pref_default_font_size">medium</string>
-    <string name="pref_default_balloons">hangout</string>
-    <string name="pref_default_balloons_groups">hangout</string>
-    <string name="pref_default_text_enter">default</string>
+    <string name="pref_default_font_size" translatable="false">medium</string>
+    <string name="pref_default_balloons" translatable="false">hangout</string>
+    <string name="pref_default_balloons_groups" translatable="false">hangout</string>
+    <string name="pref_default_text_enter" translatable="false">default</string>
     <bool name="pref_default_emoji_converter">false</bool>
 
     <!-- media settings defaults -->
     <integer name="pref_default_image_resize">1920</integer>
-    <string name="pref_default_media_autodownload">wifi</string>
+    <string name="pref_default_media_autodownload" translatable="false">wifi</string>
     <integer name="pref_default_media_autodownload_threshold">100</integer>
 
     <!-- location settings defaults -->
-    <string name="pref_default_maps_service">osm</string>
+    <string name="pref_default_maps_service" translatable="false">osm</string>
 
     <!-- notification settings defaults -->
     <bool name="pref_default_enable_notifications">true</bool>
-    <string name="pref_default_ringtone">content://settings/system/notification_sound</string>
-    <string name="pref_default_vibrate">always</string>
+    <string name="pref_default_ringtone" translatable="false">content://settings/system/notification_sound</string>
+    <string name="pref_default_vibrate" translatable="false">always</string>
     <bool name="pref_default_enable_notification_led">true</bool>
     <integer name="pref_default_notification_led_color">-48060</integer>
     <bool name="pref_default_enable_outgoing_sound">false</bool>

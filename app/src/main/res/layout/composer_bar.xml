@@ -19,8 +19,9 @@
 <org.kontalk.ui.view.ComposerBar
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="horizontal"
-    android:layout_width="fill_parent"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?attr/colorBackgroundFloating">
 
@@ -54,8 +55,10 @@
         android:nextFocusRight="@+id/attach_button"
         android:hint="@string/hint_enter_text"
         android:minHeight="48dip"
+        android:maxLines="4"
         android:inputType="textAutoCorrect|textCapSentences|textMultiLine"
         android:imeOptions="actionSend|flagNoEnterAction|flagNoExtractUi|flagNoFullscreen"
+        tools:text="Composing my message"
         />
 
     <org.kontalk.ui.FrameLayoutFixed

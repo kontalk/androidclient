@@ -411,7 +411,7 @@ public abstract class SendPositionAbstractFragment extends Fragment
             ((IPlacesAdapter) mAdapter).searchPlaces(mMyLocation);
             ((IPlacesAdapter) mAdapter).setGpsPosition(mMyLocation);
         }
-        else {
+        else if (!mUserLocationMoved) {
             mSendLocationRow.setText(getString(R.string.send_location),
                 getString(R.string.accurate_to, String.valueOf((int) location.getAccuracy())));
         }

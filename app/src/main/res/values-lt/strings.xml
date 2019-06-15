@@ -546,4 +546,68 @@
     <string name="authenticator_name">Tapatybės nustatymo tarnyba</string>
     <string name="download_service">Atsisiuntimo tarnyba</string>
     <string name="share">Bendrinti</string>
+    <string name="notify_ticker_upload_error">Įkėlimas nepavyko</string>
+    <string name="notify_title_upload_error">Įkėlimo klaida</string>
+    <string name="notify_text_upload_error">Priedo įkėlimas nepavyko</string>
+    <string name="pref_title_custom_background">Pasirinkite foną, naudodami parinktį žemiau</string>
+    <string name="pref_image_resize_label_original">Pradinis</string>
+    <string name="pref_image_resize_label_small">Mažas (0.4MP)</string>
+    <string name="pref_image_resize_label_medium">Vidutinis (1.0MP)</string>
+    <string name="pref_image_resize_label_large">Didelis (2.0MP)</string>
+    <string name="pref_balloons">Pokalbio burbulų apipavidalinimas</string>
+    <string name="pref_balloons_groups">Grupės pokalbių burbulų apipavidalinimas</string>
+
+    <string name="err_location_access_unknown_error">Nepavyko užklausti įrenginio vietos paslaugų aktyvavimo.</string>
+    <string name="msg_location_disabled">Reikalinga prieiga prie įrenginio vietos. Pasirinkite Gerai, kad pereitumėte į nustatymus ir ją leistumėte.</string>
+
+    <string name="chooser_error_no_dialer">Skambučiams inicijuoti nėra prieinama jokia numerio rinkimo programėlė arba šiame įrenginyje nėra prieinama telefonija.</string>
+    <string name="chooser_select_link">Pasirinkite veiksmą</string>
+
+    <string name="msg_gen_keypair_complete">Asmeninio rakto regeneravimas užbaigtas.</string>
+    <string name="security_error_invalid_signature">" (negaliojantis parašas)"</string>
+    <string name="security_error_integrity_check">" (vientisumo patikrinimas)"</string>
+    <string name="pref_sync_sim_contacts">Sinchronizuoti iš SIM adresatų</string>
+    <string name="warn_invite_no_app">Nėra prieinamos programėlės, skirtos pakviesti naudotojus.</string>
+
+    <string name="hint_record">Bakstelėkite mikrofoną, norėdami pradėti įrašinėti.</string>
+    <string name="hint_ptt">Bakstelėkite ir laikykite mikrofoną, norėdami įrašinėti.</string>
+    <string name="err_audio_record">Klaida pradedant garso įrašinėjimą.</string>
+    <string name="err_audio_record_noaudio">Neįrašyta jokio garso įrašo.</string>
+    <string name="err_playing_audio">Klaida atkuriant garsą.</string>
+    <string name="pref_media_autodownload_label_wifi">Tik naudojant belaidį (Wi-Fi)</string>
+    <string name="group_untitled">Grupė be pavadinimo</string>
+    <string name="group_command_text_subject">Grupės tema pakeista</string>
+    <string name="title_huawei_protected_apps">Huawei apsaugotos programėlės</string>
+    <string name="btn_huawei_protected_apps">Apsaugotos programėlės</string>
+    <string name="title_doze_mode">Akumuliatoriaus optimizavimas</string>
+    <string name="msg_request_doze_failed_all">Nepavyko rasti akumuliatoriaus optimizavimo nustatymų, perkeliame jus į sistemos nustatymus.</string>
+
+    <string name="import_device_instructions">Žemiau įveskite prašomus duomenis tokiu pavidalu, kokiu jie yra rodomi jūsų kitame įrenginyje.</string>
+    <string name="import_device_invalid_barcode">Brūkšniniame kode nerasta jokių teisingų duomenų.</string>
+    <string name="import_device_btn_scan">Skenuoti brūkšninį kodą</string>
+    <string name="notification_group_title">%1$s @ %2$s</string>
+
+    <string name="notify_ticker_download_permission_denied_error">Medijos atsiuntimui reikalingas leidimas</string>
+    <string name="notify_title_download_permission_denied_error">Reikalingas leidimas</string>
+    <string name="notify_summary_download_permission_denied_error">Bakstelėkite, norėdami sužinoti daugiau.</string>
+
+    <string name="notify_incoming_message_channel_description">Gaunamos žinutės</string>
+
+    <string name="notify_media_download_channel_description">Medijos atsiuntimai</string>
+
+    <string name="notify_media_upload_channel_name">Įkėlimai</string>
+    <string name="notify_media_upload_channel_description">Medijos įkėlimai</string>
+
+    <plurals name="unread_messages">
+	<item quantity="one">%d neskaityta žinutė</item>
+	<item quantity="few">%d neskaitytos žinutės</item>
+	<item quantity="other">%d neskaitytų žinučių</item>
+</plurals>
+
+    <plurals name="unread_messages_group">
+	<item quantity="one">%1$d žinutės(-ių) @ %2$s</item>
+	<item quantity="few"></item>
+	<item quantity="other"></item>
+</plurals>
+
     </resources>
