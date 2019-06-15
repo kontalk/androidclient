@@ -1,8 +1,10 @@
-apply plugin: 'com.android.application'
-apply plugin: 'checkstyle'
-apply plugin: 'com.github.triplet.play'
-apply plugin: 'io.fabric'
-apply plugin: 'jacoco-android'
+plugins {
+    id 'com.android.application'
+    id 'checkstyle'
+    id 'com.github.triplet.play' version '2.2.0'
+    id 'io.fabric'
+    id 'jacoco-android'
+}
 
 check.dependsOn 'checkstyle'
 
