@@ -76,7 +76,7 @@ public class UsersProvider extends ContentProvider {
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".users";
 
     @VisibleForTesting
-    static final int DATABASE_VERSION = 13;
+    static final int DATABASE_VERSION = 14;
     @VisibleForTesting
     static final String DATABASE_NAME = "users.db";
     private static final String TABLE_USERS = "users";
@@ -157,6 +157,14 @@ public class UsersProvider extends ContentProvider {
             "UPDATE keys SET trust_level = 2 WHERE jid NOT LIKE '%@%'"
         };
 
+        /**
+         * Upgrade: fix for missing manual_trust column when upgrading from 4.1.6.
+         * Errors from this upgrade are ignored.
+         */
+        private static final String[] SCHEMA_UPGRADE_V13 = {
+            "ALTER TABLE keys ADD COLUMN manual_trust INTEGER NOT NULL DEFAULT 0",
+        };
+
         // any upgrade - just re-create all tables
         private static final String[] SCHEMA_UPGRADE = {
             "DROP TABLE IF EXISTS " + TABLE_USERS,
@@ -202,7 +210,16 @@ public class UsersProvider extends ContentProvider {
                 case 12:
                     for (String sql : SCHEMA_UPGRADE_V12)
                         db.execSQL(sql);
-                    break;
+                    // fall through
+                case 13:
+                    try {
+                        for (String sql : SCHEMA_UPGRADE_V13)
+                            db.execSQL(sql);
+                    }
+                    catch (SQLException e) {
+                        Log.i(Kontalk.TAG, "ignoring database fix error", e);
+                    }
+                    // fall through
                 default:
                     for (String sql : SCHEMA_UPGRADE)
                         db.execSQL(sql);
