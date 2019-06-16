@@ -353,18 +353,6 @@ public class Keyring {
         return keys;
     }
 
-    /** Converts a {@link TrustedFingerprint} map to a raw-string trusted fingerprint map. */
-    public static Map<String, String> toTrustedFingerprintMap(Map<String, TrustedFingerprint> props) {
-        Map<String, String> keys = new HashMap<>(props.size());
-        for (Map.Entry<String, TrustedFingerprint> e : props.entrySet()) {
-            TrustedFingerprint fingerprint = e.getValue();
-            if (fingerprint != null) {
-                keys.put(e.getKey(), e.toString());
-            }
-        }
-        return keys;
-    }
-
     public static final class TrustedFingerprint {
         public final String fingerprint;
         public final int trustLevel;
