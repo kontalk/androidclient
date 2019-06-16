@@ -20,16 +20,29 @@ package org.kontalk.crypto;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Date;
 
 import org.junit.Test;
+import org.spongycastle.openpgp.PGPSecretKeyRing;
+import org.spongycastle.openpgp.operator.PBESecretKeyDecryptor;
+import org.spongycastle.openpgp.operator.PGPDigestCalculatorProvider;
+import org.spongycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
+import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
 
-import static org.junit.Assert.*;
+import org.kontalk.util.ByteArrayInOutStream;
+import org.kontalk.util.MessageUtils;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 
 public class PGPTest {
+
+    private static final String TEST_PRIVATE_FILENAME = "/sample_private.key";
+    private static final String TEST_PRIVATE_FINGERPRINT = "9DEFD2DEFEE26B413F04A1F9BF68B5FB16CFC215";
 
     @Test
     public void testFormatFingerprint() throws Exception {
@@ -51,5 +64,26 @@ public class PGPTest {
         final PGP.PGPDecryptedKeyPairRing serializedKey = PGP.unserialize(src);
 
         assertNotNull(serializedKey);
+    }
+
+    @Test
+    public void testChangePassphrase() throws Exception {
+        PGP.registerProvider();
+        String oldPassphrase = "oldtest";
+        String newPassphrase = "newtest";
+
+        InputStream in = getClass().getResourceAsStream(TEST_PRIVATE_FILENAME);
+        final ByteArrayInOutStream privateKeyDataBuf = MessageUtils.readFully(in, 102400);
+        byte[] privateKeyData = privateKeyDataBuf.toByteArray();
+        byte[] newPrivateKeyData = PGP.changePassphrase(privateKeyData, oldPassphrase, newPassphrase);
+
+        PGPDigestCalculatorProvider digestCalcProv = new JcaPGPDigestCalculatorProviderBuilder().build();
+        PBESecretKeyDecryptor decryptor = new JcePBESecretKeyDecryptorBuilder(digestCalcProv)
+            .setProvider(PGP.PROVIDER)
+            .build(newPassphrase.toCharArray());
+
+        PGPSecretKeyRing secRing = new PGPSecretKeyRing(newPrivateKeyData, PGP.sFingerprintCalculator);
+        // an exception will be thrown if anything went wrong
+        secRing.getSecretKey().extractPrivateKey(decryptor);
     }
 }

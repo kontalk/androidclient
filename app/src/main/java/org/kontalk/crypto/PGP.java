@@ -666,6 +666,28 @@ public class PGP {
         return sKeyConverter.getPublicKey(key);
     }
 
+    public static byte[] changePassphrase(byte[] privateKeyData, String oldPassphrase, String newPassphrase)
+            throws IOException, PGPException {
+        KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
+        PGPSecretKeyRing oldSecRing = new PGPSecretKeyRing(privateKeyData, fpr);
+
+        // old decryptor
+        PGPDigestCalculatorProvider calcProv = new JcaPGPDigestCalculatorProviderBuilder().build();
+        PBESecretKeyDecryptor oldDecryptor = new JcePBESecretKeyDecryptorBuilder(calcProv)
+            .setProvider(PGP.PROVIDER)
+            .build(oldPassphrase.toCharArray());
+
+        // new encryptor
+        PGPDigestCalculator sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build().get(HashAlgorithmTags.SHA1);
+        PBESecretKeyEncryptor newEncryptor = new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, sha1Calc)
+            .setProvider(PGP.PROVIDER).build(newPassphrase.toCharArray());
+
+        // create new secret key ring
+        PGPSecretKeyRing newSecRing = PGPSecretKeyRing.copyWithNewPassword(oldSecRing, oldDecryptor, newEncryptor);
+
+        return newSecRing.getEncoded();
+    }
+
     public static PGPSecretKeyRing copySecretKeyRingWithNewPassword(byte[] privateKeyData,
             String oldPassphrase, String newPassphrase) throws PGPException, IOException {
 
