@@ -219,7 +219,7 @@ public class UsersProvider extends ContentProvider {
                     catch (SQLException e) {
                         Log.i(Kontalk.TAG, "ignoring database fix error", e);
                     }
-                    // fall through
+                    break;
                 default:
                     for (String sql : SCHEMA_UPGRADE)
                         db.execSQL(sql);
