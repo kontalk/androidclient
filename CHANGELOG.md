@@ -16,6 +16,7 @@
 - Generate QR codes in the background (#1237)
 - Move some account-related preferences into their own new section
 - Ask user to accept service terms if server requests it (#1211)
+- Internal refactoring of registration process (#1241)
 
 ### Fixed
 - Sort search results in inverted timestamp order (#1223)
@@ -30,6 +31,11 @@
 - Fix crash on invoking camera app (#1231)
 - Fix crash when sending debug log (#1239)
 - Fix dangling download notification
+- Fix crash when chatting with XMPP users (#1242)
+- Fix OpenStreetMap static maps (#1251)
+- Fix Google Maps static maps (#1254)
+- Fix double upload of media (#1259)
+- Fix database upgrade crash when upgrading from 4.1.6 (#1262)
 
 ## [4.2.0] - 2018-09-04
 ### Changed
