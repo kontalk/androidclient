@@ -730,6 +730,10 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                 if (!TextUtils.isEmpty(phoneNumber)) {
                     cstate.phoneNumber = phoneNumber;
                 }
+                String displayName = accountInfo.get("displayName");
+                if (!TextUtils.isEmpty(displayName)) {
+                    cstate.displayName = displayName;
+                }
             }
 
             // personal key corrupted or too old
@@ -743,7 +747,6 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             cstate.server = (request.server != null) ? request.server :
                 new EndpointServer(XmppStringUtils.parseDomain(uid.getEmail()));
 
-            cstate.displayName = uid.getName();
             cstate.passphrase = request.passphrase;
             // copy over the parsed keys (imported keys may be armored)
             cstate.privateKey = privateKeyBuf.toByteArray();
@@ -962,7 +965,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                 // needed for connection
                 String userId = XMPPUtils.createLocalpart(cstate.phoneNumber);
                 keyRing = cstate.key.storeNetwork(userId, mConnector.getNetwork(),
-                    cstate.displayName, cstate.passphrase);
+                    cstate.passphrase);
             }
             else {
                 keyRing = PersonalKey.test(cstate.privateKey, cstate.publicKey, cstate.passphrase, null);
@@ -1192,7 +1195,6 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             cstate.server = (cstate.server != null) ? cstate.server :
                 new EndpointServer(XmppStringUtils.parseDomain(uid.getEmail()));
 
-            cstate.displayName = uid.getName();
             // copy over the parsed keys (it should be the same, but you never know...)
             cstate.privateKey = privateKeyBuf.toByteArray();
             cstate.publicKey = publicKeyBuf.toByteArray();
