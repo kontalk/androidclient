@@ -194,7 +194,7 @@ public class UsersProvider extends ContentProvider {
                     for (String sql : SCHEMA_UPGRADE_V10)
                         db.execSQL(sql);
                     mNew = true;
-                    break;
+                    // fall through
                 case 11:
                     for (String sql : SCHEMA_UPGRADE_V11)
                         db.execSQL(sql);
