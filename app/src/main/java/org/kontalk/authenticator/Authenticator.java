@@ -27,19 +27,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.jxmpp.jid.BareJid;
-import org.spongycastle.bcpg.HashAlgorithmTags;
-import org.spongycastle.openpgp.PGPEncryptedData;
 import org.spongycastle.openpgp.PGPException;
-import org.spongycastle.openpgp.PGPSecretKeyRing;
-import org.spongycastle.openpgp.operator.KeyFingerPrintCalculator;
-import org.spongycastle.openpgp.operator.PBESecretKeyDecryptor;
-import org.spongycastle.openpgp.operator.PBESecretKeyEncryptor;
-import org.spongycastle.openpgp.operator.PGPDigestCalculator;
-import org.spongycastle.openpgp.operator.PGPDigestCalculatorProvider;
-import org.spongycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
-import org.spongycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
-import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
-import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyEncryptorBuilder;
 
 import android.accounts.AbstractAccountAuthenticator;
 import android.accounts.Account;
@@ -262,35 +250,17 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static void changePassphrase(Context ctx, String oldPassphrase, String newPassphrase, boolean fromUser)
             throws PGPException, IOException {
 
-        // TODO let handle this to PGP or PersonalKey
-
         AccountManager am = AccountManager.get(ctx);
         Account acc = getDefaultAccount(am);
 
         // get old secret key ring
         String privKeyData = am.getUserData(acc, DATA_PRIVATEKEY);
         byte[] privateKeyData = Base64.decode(privKeyData, Base64.DEFAULT);
-        KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
-        PGPSecretKeyRing oldSecRing = new PGPSecretKeyRing(privateKeyData, fpr);
 
-        // old decryptor
-        PGPDigestCalculatorProvider calcProv = new JcaPGPDigestCalculatorProviderBuilder().build();
-        PBESecretKeyDecryptor oldDecryptor = new JcePBESecretKeyDecryptorBuilder(calcProv)
-                .setProvider(PGP.PROVIDER)
-                .build(oldPassphrase.toCharArray());
-
-        // new encryptor
-        PGPDigestCalculator sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build().get(HashAlgorithmTags.SHA1);
-        PBESecretKeyEncryptor newEncryptor = new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, sha1Calc)
-                .setProvider(PGP.PROVIDER).build(newPassphrase.toCharArray());
-
-        // create new secret key ring
-        PGPSecretKeyRing newSecRing = PGPSecretKeyRing.copyWithNewPassword(oldSecRing, oldDecryptor, newEncryptor);
+        byte[] newPrivateKeyData = PGP.changePassphrase(privateKeyData, oldPassphrase, newPassphrase);
 
         // replace key data in AccountManager
-        byte[] newPrivateKeyData = newSecRing.getEncoded();
         am.setUserData(acc, DATA_PRIVATEKEY, Base64.encodeToString(newPrivateKeyData, Base64.NO_WRAP));
-
         am.setUserData(acc, DATA_USER_PASSPHRASE, String.valueOf(fromUser));
 
         // replace password for account
