@@ -933,6 +933,8 @@ public class MessagingNotification {
                 if (!supportsDirectReply())
                     allContent = new SpannableStringBuilder();
 
+                String name = null;
+
                 // single image media, use big picture style
                 NotificationConversation.ConversationMessage soloMessage = content.get(0);
                 if (unread == 1 && soloMessage.media != null && ImageComponent.supportsMimeType(soloMessage.mime)) {
@@ -943,6 +945,14 @@ public class MessagingNotification {
 
                         style = new BigPictureStyle()
                             .bigPicture(bitmap);
+
+                        // show the group name next to the sender in this case
+                        if (conv.groupJid != null) {
+                            Contact contact = Contact.findByUserId(mContext, soloMessage.peer);
+                            name = mContext.getResources().getString(R.string.notification_group_title,
+                                contact.getDisplayName(), (TextUtils.isEmpty(conv.groupSubject) ?
+                                    mContext.getString(R.string.group_untitled) : conv.groupSubject));
+                        }
                     }
                     catch (Exception e) {
                         // unable to load big picture
@@ -953,10 +963,9 @@ public class MessagingNotification {
                     }
                 }
 
-                String name = null;
                 if (style == null) {
                     MessagingStyle msgStyle = new MessagingStyle(mContext.getString(R.string.person_me));
-                    int start = 0;
+                    int start;
                     for (NotificationConversation.ConversationMessage message : content) {
                         Contact contact = Contact.findByUserId(mContext, message.peer);
                         name = contact.getDisplayName();
@@ -985,7 +994,7 @@ public class MessagingNotification {
 
                     style = msgStyle;
                 }
-                else {
+                else if (name == null) {
                     NotificationConversation.ConversationMessage message = content.get(content.size()-1);
                     Contact contact = Contact.findByUserId(mContext, message.peer);
                     name = contact.getDisplayName();
