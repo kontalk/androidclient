@@ -111,11 +111,12 @@ public class OmemoCoder extends Coder {
 
     private void init(XMPPConnection connection) throws XMPPException.XMPPErrorException,
             SmackException.NotConnectedException, InterruptedException, SmackException.NoResponseException {
-        mManager = OmemoManager.getInstanceFor(connection);
         // FIXME should be: if (!OmemoManager.serverSupportsOmemo(connection, connection.getXMPPServiceDomain())) {
         if (!((KontalkConnection) connection).supportsFeature(PubSub.NAMESPACE)) {
             throw new UnsupportedOperationException("Server does not support OMEMO");
         }
+
+        mManager = OmemoManager.getInstanceFor(connection);
     }
 
     @Override
