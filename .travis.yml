@@ -18,7 +18,7 @@ android:
 before_install:
   - yes | sdkmanager "platforms;android-28"
 script:
-  - ./gradlew --stacktrace --info clean build jacocoTestReport
+  - ./gradlew --stacktrace clean build jacocoTestReport
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 before_deploy:
