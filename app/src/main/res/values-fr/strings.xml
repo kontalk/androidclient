@@ -94,7 +94,7 @@
   <string name="pref_idle_time">Déconnecter quand inactif</string>
   <string name="pref_title_idle_time">Combien de temps attendre avant de se déconnecter pour inactivité</string>
   <string name="pref_wakeup_time">Se reconnecter au serveur</string>
-  <string name="pref_title_wakeup_time">Combien de temps attendre avant de se reconnecter au serveur après une période d\'inactivité. Ne fonctionne que si les notifications Push sont indisponibles</string>
+  <string name="pref_title_wakeup_time">Combien de temps attendre avant de se reconnecter au serveur après une période d\'inactivité. Est utilisé que si les notifications Push sont indisponibles ou que la connexion est très mauvaise</string>
   <string name="pref_maintenance">Maintenance</string>
   <string name="pref_regenerate_keypair">Régénérer la clé personnelle</string>
   <string name="pref_title_regenerate_keypair">Utilisez ceci si votre clé personnelle a été compromise</string>
@@ -443,4 +443,10 @@
 <string name="reply">Répondre</string>
     <string name="menu_ctx_sticky">Favoris</string>
     <string name="delete_thread_messages">Supprimer l\'historique de la conversation</string>
+    <string name="menu_import_device">Ajouter un autre appareil</string>
+    <string name="pref_account_settings">Compte</string>
+    <string name="code_validation_intro_callerid">Vous devriez recevoir un appel manqué de ce numéro rapidement. <b>NE REPONDEZ PAS S\'IL VOUS PLAIT.</b></string>
+    <string name="code_validation_intro2_callerid">Après avoir mis fin à l\'appel, revenez ici et appuyez sur le bouton de vérification ci-dessous.</string>
+    <string name="menu_ctx_archive_threads">Archiver</string>
+    <string name="position_screen_title">Position</string>
     </resources>
