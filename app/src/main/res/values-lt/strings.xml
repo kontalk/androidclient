@@ -606,8 +606,12 @@
 
     <plurals name="unread_messages_group">
 	<item quantity="one">%1$d žinutės(-ių) @ %2$s</item>
-	<item quantity="few"></item>
-	<item quantity="other"></item>
+	<item quantity="few"/>
+	<item quantity="other"/>
 </plurals>
 
+    <string name="mark_read">Skaityta</string>
+    <string name="open_conversation">Žiūrėti</string>
+    <string name="sending_label">"Siunčiama: "</string>
+    <string name="contacts_list_title">Pasirinkti adresatą</string>
     </resources>
