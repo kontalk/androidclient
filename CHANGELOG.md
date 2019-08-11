@@ -36,6 +36,8 @@
 - Fix Google Maps static maps (#1254)
 - Fix double upload of media (#1259)
 - Fix database upgrade crash when upgrading from 4.1.6 (#1262)
+- Fix message center crashing while in background (#1264)
+- Picture notification for groups showing group title (#1230)
 
 ## [4.2.0] - 2018-09-04
 ### Changed
