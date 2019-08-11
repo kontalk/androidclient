@@ -564,8 +564,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         // trigger inactive timer only if connected
                         // the authenticated callback will ensure it will trigger anyway
                         MessageCenterService service = s.get();
-                        if (service != null && !service.isInactive() && service.isConnected()) {
-                            queueInactive();
+                        if (service != null) {
+                            // restart in foreground if needed
+                            // this is used to keep the service alive for the necessary time
+                            startForegroundIfNeeded(service, getStartIntent(service));
+
+                            if (!service.isInactive() && service.isConnected()) {
+                                queueInactive();
+                            }
                         }
                     }
                 });
