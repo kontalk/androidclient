@@ -1,5 +1,5 @@
 language: android
-jdk: oraclejdk8
+jdk: openjdk8
 android:
   components:
     - tools
@@ -18,7 +18,7 @@ android:
 before_install:
   - yes | sdkmanager "platforms;android-28"
 script:
-  - ./gradlew --stacktrace clean build jacocoTestReport
+  - ./gradlew clean build jacocoTestReport
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 before_deploy:
