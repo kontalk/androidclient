@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Next]
+
+## [4.3.0] - 2019-08-17
 ### Changed
 - Group chat indicator in chat list (#818)
 - Allow more control over search query
@@ -566,6 +568,7 @@
 - Fix crash during sync (#454)
 
 [Next]: https://github.com/kontalk/androidclient/compare/v4.2.0...HEAD
+[4.3.0]: https://github.com/kontalk/androidclient/compare/v4.2.0...v4.3.0
 [4.2.0]: https://github.com/kontalk/androidclient/compare/v4.2.0-beta4...v4.2.0
 [4.2.0-beta4]: https://github.com/kontalk/androidclient/compare/v4.2.0-beta3...v4.2.0-beta4
 [4.2.0-beta3]: https://github.com/kontalk/androidclient/compare/v4.2.0-beta2...v4.2.0-beta3
