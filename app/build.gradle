@@ -181,7 +181,8 @@ dependencies {
 
     // storage/persistence libraries
     implementation 'android.arch.persistence:db:1.1.1'
-    implementation 'io.requery:sqlite-android:3.24.0'
+    // latest version requires AndroidX
+    implementation 'io.requery:sqlite-android:3.25.2'
 
     // UI libraries
     implementation 'pub.devrel:easypermissions:2.0.1'
