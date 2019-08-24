@@ -42,8 +42,8 @@ import android.database.sqlite.SQLiteDiskIOException;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.support.annotation.WorkerThread;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.annotation.WorkerThread;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.text.TextUtils;
 
 import org.kontalk.authenticator.Authenticator;

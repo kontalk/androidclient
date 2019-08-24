@@ -32,7 +32,7 @@ import com.google.firebase.iid.InstanceIdResult;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.kontalk.Kontalk;
 import org.kontalk.Log;

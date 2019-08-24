@@ -19,13 +19,13 @@
 package org.kontalk.ui.model;
 
 import android.annotation.SuppressLint;
-import android.arch.lifecycle.LiveData;
+import androidx.lifecycle.LiveData;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Handler;
-import android.support.v4.os.CancellationSignal;
-import android.support.v4.os.OperationCanceledException;
+import androidx.core.os.CancellationSignal;
+import androidx.core.os.OperationCanceledException;
 
 
 /**

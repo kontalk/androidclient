@@ -32,8 +32,8 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jxmpp.jid.BareJid;
 import org.jxmpp.jid.Jid;
 
-import android.support.annotation.Nullable;
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.event.BlocklistEvent;

@@ -32,9 +32,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import android.content.Intent;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.LargeTest;
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.filters.LargeTest;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.kontalk.DefaultAccountTest;
 import org.kontalk.TestServerTest;
@@ -82,8 +82,8 @@ public class RegistrationServiceTest extends TestServerTest {
     }
 
     private void startService() {
-        InstrumentationRegistry.getTargetContext()
-            .startService(new Intent(InstrumentationRegistry.getTargetContext(),
+        InstrumentationRegistry.getInstrumentation().getTargetContext()
+            .startService(new Intent(InstrumentationRegistry.getInstrumentation().getTargetContext(),
                 RegistrationService.class));
         try {
             Thread.sleep(1000);
@@ -93,8 +93,8 @@ public class RegistrationServiceTest extends TestServerTest {
     }
 
     private void stopService() {
-        InstrumentationRegistry.getTargetContext()
-            .stopService(new Intent(InstrumentationRegistry.getTargetContext(),
+        InstrumentationRegistry.getInstrumentation().getTargetContext()
+            .stopService(new Intent(InstrumentationRegistry.getInstrumentation().getTargetContext(),
                 RegistrationService.class));
         try {
             Thread.sleep(1000);
@@ -204,7 +204,7 @@ public class RegistrationServiceTest extends TestServerTest {
         RequestVerificationTestListener listener = new RequestVerificationTestListener();
         mBus.register(listener);
 
-        InputStream keyPackInput = InstrumentationRegistry.getContext().getAssets().open("keys/kontalk-keys.zip");
+        InputStream keyPackInput = InstrumentationRegistry.getInstrumentation().getContext().getAssets().open("keys/kontalk-keys.zip");
 
         mBus.post(new ImportKeyRequest(mTestServerProvider.next(),
             keyPackInput, DefaultAccountTest.TEST_PASSPHRASE,
@@ -258,7 +258,7 @@ public class RegistrationServiceTest extends TestServerTest {
         RequestVerificationTestListener listener = new RequestVerificationTestListener();
         mBus.register(listener);
 
-        InputStream keyPackInput = InstrumentationRegistry.getContext().getAssets().open("keys/kontalk-keys.zip");
+        InputStream keyPackInput = InstrumentationRegistry.getInstrumentation().getContext().getAssets().open("keys/kontalk-keys.zip");
 
         mBus.post(new ImportKeyRequest(mTestServerProvider.next(),
             keyPackInput, DefaultAccountTest.TEST_PASSPHRASE,

@@ -20,7 +20,7 @@ package org.kontalk.service.registration.event;
 
 import java.io.InputStream;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.kontalk.client.EndpointServer;
 import org.kontalk.service.registration.RegistrationService;

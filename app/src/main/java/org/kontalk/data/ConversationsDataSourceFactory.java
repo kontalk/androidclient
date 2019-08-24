@@ -18,7 +18,7 @@
 
 package org.kontalk.data;
 
-import android.arch.paging.DataSource;
+import androidx.paging.DataSource;
 import android.content.Context;
 import android.os.Handler;
 

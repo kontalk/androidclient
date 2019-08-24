@@ -31,7 +31,7 @@ import android.content.SyncResult;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.ContactsContract;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import org.kontalk.Log;
 import org.kontalk.authenticator.Authenticator;

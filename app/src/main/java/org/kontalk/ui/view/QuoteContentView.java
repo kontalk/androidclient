@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 
 import android.content.Context;
 import android.graphics.Typeface;
-import android.support.v4.text.util.LinkifyCompat;
+import androidx.core.text.util.LinkifyCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;

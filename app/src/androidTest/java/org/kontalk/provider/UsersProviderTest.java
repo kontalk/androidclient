@@ -34,8 +34,9 @@ import android.annotation.TargetApi;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+
 import android.test.ProviderTestCase2;
 import android.util.Base64;
 
@@ -452,7 +453,7 @@ public class UsersProviderTest extends ProviderTestCase2<UsersProvider> {
     @Before
     @Override
     public void setUp() throws Exception {
-        setContext(InstrumentationRegistry.getTargetContext());
+        setContext(InstrumentationRegistry.getInstrumentation().getTargetContext());
         super.setUp();
     }
 

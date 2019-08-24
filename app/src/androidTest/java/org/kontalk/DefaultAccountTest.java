@@ -28,7 +28,7 @@ import org.junit.BeforeClass;
 import android.accounts.AccountManager;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.test.InstrumentationRegistry;
+import androidx.test.platform.app.InstrumentationRegistry;
 import android.util.Base64;
 
 import org.kontalk.authenticator.Authenticator;
@@ -50,7 +50,7 @@ public abstract class DefaultAccountTest extends TestServerTest {
     @BeforeClass
     public static void setUpAccount() throws Exception {
         createFakeAccount(TEST_USERNAME, TEST_USERID);
-        Kontalk.setServicesEnabled(InstrumentationRegistry.getTargetContext(), true);
+        Kontalk.setServicesEnabled(InstrumentationRegistry.getInstrumentation().getTargetContext(), true);
     }
 
     @AfterClass
@@ -61,9 +61,9 @@ public abstract class DefaultAccountTest extends TestServerTest {
     private static void createFakeAccount(String displayName, String phoneNumber) throws IOException, InterruptedException {
         TestUtils.removeDefaultAccount();
 
-        InputStream privateInput = InstrumentationRegistry.getContext().getAssets().open("keys/private.key");
-        InputStream publicInput = InstrumentationRegistry.getContext().getAssets().open("keys/public.key");
-        InputStream bridgeCertInput = InstrumentationRegistry.getContext().getAssets().open("keys/login.crt");
+        InputStream privateInput = InstrumentationRegistry.getInstrumentation().getContext().getAssets().open("keys/private.key");
+        InputStream publicInput = InstrumentationRegistry.getInstrumentation().getContext().getAssets().open("keys/public.key");
+        InputStream bridgeCertInput = InstrumentationRegistry.getInstrumentation().getContext().getAssets().open("keys/login.crt");
 
         ByteArrayInOutStream privateKeyData = MessageUtils.readFully(privateInput, MAX_KEY_SIZE);
         ByteArrayInOutStream publicKeyData = MessageUtils.readFully(publicInput, MAX_KEY_SIZE);
@@ -76,7 +76,7 @@ public abstract class DefaultAccountTest extends TestServerTest {
         final android.accounts.Account account = new android.accounts
             .Account(phoneNumber, Authenticator.ACCOUNT_TYPE);
 
-        AccountManager am = (AccountManager) InstrumentationRegistry.getContext()
+        AccountManager am = (AccountManager) InstrumentationRegistry.getInstrumentation().getContext()
             .getSystemService(Context.ACCOUNT_SERVICE);
 
         // account userdata
@@ -100,7 +100,7 @@ public abstract class DefaultAccountTest extends TestServerTest {
         am.setUserData(account, Authenticator.DATA_SERVER_URI, TEST_SERVER_URI);
 
         // clear old roster information
-        SQLiteRosterStore.purge(InstrumentationRegistry.getTargetContext());
+        SQLiteRosterStore.purge(InstrumentationRegistry.getInstrumentation().getTargetContext());
     }
 
 }

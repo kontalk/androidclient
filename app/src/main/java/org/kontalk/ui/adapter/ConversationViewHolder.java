@@ -21,7 +21,7 @@ package org.kontalk.ui.adapter;
 import com.bignerdranch.android.multiselector.MultiSelector;
 
 import android.content.Context;
-import android.support.v4.content.res.ResourcesCompat;
+import androidx.core.content.res.ResourcesCompat;
 import android.view.View;
 
 import org.kontalk.R;

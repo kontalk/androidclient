@@ -24,7 +24,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.support.test.espresso.IdlingResource;
+import androidx.test.espresso.IdlingResource;
 
 
 /**

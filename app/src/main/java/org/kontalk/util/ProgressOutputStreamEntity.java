@@ -25,7 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.kontalk.service.DownloadListener;
 

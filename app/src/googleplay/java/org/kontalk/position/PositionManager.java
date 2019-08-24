@@ -25,8 +25,8 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.support.v4.app.Fragment;
-import android.support.v7.widget.RecyclerView;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 import android.widget.Toast;
 
 import org.kontalk.R;

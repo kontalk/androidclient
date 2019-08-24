@@ -28,10 +28,10 @@ import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.content.Context;
 import android.database.Cursor;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.IdlingPolicies;
-import android.support.test.espresso.IdlingRegistry;
-import android.support.test.espresso.IdlingResource;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.espresso.IdlingPolicies;
+import androidx.test.espresso.IdlingRegistry;
+import androidx.test.espresso.IdlingResource;
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.AdapterView;
@@ -58,19 +58,19 @@ public class TestUtils {
     public static void skipIfDefaultAccountDoesNotExist() {
         assumeFalse("default account does not exist - skipping test",
             Authenticator.getDefaultAccount
-                (InstrumentationRegistry.getTargetContext()) == null);
+                (InstrumentationRegistry.getInstrumentation().getTargetContext()) == null);
     }
 
     public static void skipIfDefaultAccountExists() {
         assumeTrue("default account exists - skipping test",
             Authenticator.getDefaultAccount
-                (InstrumentationRegistry.getTargetContext()) == null);
+                (InstrumentationRegistry.getInstrumentation().getTargetContext()) == null);
     }
 
     public static void assertDefaultAccountExists() {
         assertThat("default account does not exist",
             Authenticator.getDefaultAccount
-                (InstrumentationRegistry.getTargetContext()),
+                (InstrumentationRegistry.getInstrumentation().getTargetContext()),
             notNullValue());
     }
 
@@ -83,7 +83,7 @@ public class TestUtils {
                 }
             }
         };
-        Authenticator.removeDefaultAccount(InstrumentationRegistry.getTargetContext(), callback);
+        Authenticator.removeDefaultAccount(InstrumentationRegistry.getInstrumentation().getTargetContext(), callback);
         synchronized (monitor) {
             monitor.wait(3000);
         }

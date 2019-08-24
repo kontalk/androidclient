@@ -50,15 +50,15 @@ import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationCompat.BigPictureStyle;
-import android.support.v4.app.NotificationCompat.InboxStyle;
-import android.support.v4.app.NotificationCompat.MessagingStyle;
-import android.support.v4.app.NotificationCompat.Style;
-import android.support.v4.app.NotificationManagerCompat;
-import android.support.v4.app.TaskStackBuilder;
-import android.support.v4.content.ContextCompat;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationCompat.BigPictureStyle;
+import androidx.core.app.NotificationCompat.InboxStyle;
+import androidx.core.app.NotificationCompat.MessagingStyle;
+import androidx.core.app.NotificationCompat.Style;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.TaskStackBuilder;
+import androidx.core.content.ContextCompat;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -1061,7 +1061,7 @@ public class MessagingNotification {
                         .getBroadcast(mContext, 0, replyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
                     // reply action
-                    mBuilder.addAction(new android.support.v4.app.NotificationCompat
+                    mBuilder.addAction(new androidx.core.app.NotificationCompat
                         .Action.Builder(R.drawable.ic_menu_reply, mContext.getString(R.string.reply), replyPendingIntent)
                         .addRemoteInput(NotificationActionReceiver.buildReplyInput(mContext))
                         .build()

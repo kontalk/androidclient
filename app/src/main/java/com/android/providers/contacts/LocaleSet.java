@@ -19,7 +19,7 @@ package com.android.providers.contacts;
 import java.util.Locale;
 
 import android.os.Build;
-import android.support.v4.text.ICUCompat;
+import androidx.core.text.ICUCompat;
 import android.text.TextUtils;
 
 public class LocaleSet {

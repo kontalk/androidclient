@@ -41,8 +41,8 @@ import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.annotation.RequiresApi;
-import android.support.multidex.MultiDexApplication;
+import androidx.annotation.RequiresApi;
+import androidx.multidex.MultiDexApplication;
 
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGP;

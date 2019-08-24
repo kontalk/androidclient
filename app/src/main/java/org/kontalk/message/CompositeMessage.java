@@ -34,7 +34,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Parcelable;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.client.GroupExtension;
