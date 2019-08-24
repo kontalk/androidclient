@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Next]
+### Fixed
+- Fix crash caused by database access from multiple threads (#1268)
 
 ## [4.3.0] - 2019-08-17
 ### Changed
