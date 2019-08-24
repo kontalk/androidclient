@@ -743,8 +743,8 @@ public class GroupInfoFragment extends ListFragment
             synchronized (mMembers) {
                 for (GroupMember m : mMembers) {
                     Contact c = m.contact;
-                    if (c.isKeyChanged() || c.getTrustedLevel() == MyUsers.Keys.TRUST_UNKNOWN) {
-                        String fingerprint = c.getFingerprint();
+                    String fingerprint = c.getFingerprint();
+                    if (fingerprint != null && (c.isKeyChanged() || c.getTrustedLevel() == MyUsers.Keys.TRUST_UNKNOWN)) {
                         Keyring.setTrustLevel(mContext, c.getJID(), fingerprint, MyUsers.Keys.TRUST_IGNORED);
                         Contact.invalidate(c.getJID());
                     }
