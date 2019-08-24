@@ -3,6 +3,7 @@
 ## [Next]
 ### Fixed
 - Fix crash caused by database access from multiple threads (#1268)
+- Fix crash when managing non-Kontalk users in a group (#1270)
 
 ## [4.3.0] - 2019-08-17
 ### Changed
