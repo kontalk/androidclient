@@ -1,11 +1,9 @@
 Registrierungsverfahren angeboten von https://JMP.Chat
-
-Helfen Sie uns bei Verbesserungen und Fehlerbehebungen indem Sie Fehlerreports auf Github posten oder in unserem Forum darüber diskutieren: https://forum.kontalk.org
-
-* NEU: Chats archivieren
-* NEU: Mehrere Nachrichten in die Zwischenablage kopieren
-* Unterstützung für Benachrichtigungskategorien
-* Reibungsloserer Chat-Workflow: Keine Chateinladung mehr nötig
-* Neue Emojis
-* Verbesserte Chat-Liste
-* Einige Fehler behoben
+Helfen Sie uns bei Verbesserungen und mit Fehlerreports:  https://forum.kontalk.org
+* Gruppen-Chat-Anzeige in der Chat-Liste
+* Unterstützung für Android Oreo
+* Unterstützung für mehrere Fenster
+* Verbessere den Registrierungsbildschirm
+* Schnellere Wiederverbindung bei schlechtem Netzwerk
+* Mehrere Abstürze und andere Fehler behoben
+* Kartenanzeige repariert

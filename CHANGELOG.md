@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Next]
+
+## [4.3.1] - 2019-08-24
 ### Fixed
 - Fix crash caused by database access from multiple threads (#1268)
 - Fix crash when managing non-Kontalk users in a group (#1270)
@@ -570,7 +572,8 @@
 - Fix draft saving on incoming message (#448)
 - Fix crash during sync (#454)
 
-[Next]: https://github.com/kontalk/androidclient/compare/v4.2.0...HEAD
+[Next]: https://github.com/kontalk/androidclient/compare/v4.3.1...HEAD
+[4.3.1]: https://github.com/kontalk/androidclient/compare/v4.3.0...v4.3.1
 [4.3.0]: https://github.com/kontalk/androidclient/compare/v4.2.0...v4.3.0
 [4.2.0]: https://github.com/kontalk/androidclient/compare/v4.2.0-beta4...v4.2.0
 [4.2.0-beta4]: https://github.com/kontalk/androidclient/compare/v4.2.0-beta3...v4.2.0-beta4
