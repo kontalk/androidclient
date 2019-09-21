@@ -18,11 +18,11 @@
 
 package org.kontalk.ui;
 
-import java.util.List;
-
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.view.ActionMode;
+import androidx.recyclerview.selection.Selection;
+
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -85,9 +85,9 @@ public class ArchivedConversationsFragment extends AbstractConversationsFragment
     }
 
     private void unarchiveSelectedThreads() {
-        List<Integer> selected = getSelectedPositions();
-        for (int position: selected) {
-            getViewModel().getData().getValue().get(position)
+        Selection<Long> selected = getSelectedPositions();
+        for (long position: selected) {
+            getViewModel().getData().getValue().get((int) position)
                 .unarchive();
         }
     }

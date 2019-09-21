@@ -152,6 +152,7 @@ dependencies {
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
     implementation 'androidx.exifinterface:exifinterface:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview-selection:1.0.0'
     implementation 'androidx.dynamicanimation:dynamicanimation:1.0.0'
     // these are actually to override an emoji dependency
     implementation 'androidx.cardview:cardview:1.0.0'
@@ -198,7 +199,6 @@ dependencies {
     // waiting for our pull request to be accepted
     implementation 'com.github.kontalk:CircularReveal:bc59b8dfcf'
     implementation 'me.leolin:ShortcutBadger:1.1.22@aar'
-    implementation 'com.bignerdranch.android:recyclerview-multiselect:0.2'
     implementation 'androidx.lifecycle:lifecycle-runtime:2.0.0'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
     implementation 'androidx.paging:paging-runtime:2.1.0'

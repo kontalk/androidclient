@@ -23,8 +23,6 @@ import java.util.List;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.bignerdranch.android.multiselector.ModalMultiSelectorCallback;
-import com.bignerdranch.android.multiselector.MultiSelector;
 
 import android.app.Activity;
 import androidx.lifecycle.Observer;
@@ -36,16 +34,25 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.view.ActionMode;
+import androidx.recyclerview.selection.ItemDetailsLookup;
+import androidx.recyclerview.selection.OnItemActivatedListener;
+import androidx.recyclerview.selection.Selection;
+import androidx.recyclerview.selection.SelectionPredicates;
+import androidx.recyclerview.selection.SelectionTracker;
+import androidx.recyclerview.selection.StableIdKeyProvider;
+import androidx.recyclerview.selection.StorageStrategy;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
@@ -59,17 +66,14 @@ public abstract class AbstractConversationsFragment extends Fragment
         implements Contact.ContactChangeListener, ConversationListAdapter.OnItemClickListener {
     static final String TAG = ConversationsActivity.TAG;
 
-    private static final String STATE_MULTISELECTOR = AbstractConversationsFragment.class
-        .getName() + ".multiselector";
-
     private View mEmptyView;
     private RecyclerView mListView;
     private ConversationListAdapter mListAdapter;
     private ConversationsViewModel mViewModel;
     private RecyclerView.AdapterDataObserver mObserver;
 
-    private HybridMultiSelector mMultiSelector;
-    private ModalMultiSelectorCallback mActionModeCallback;
+    private SelectionTracker<Long> mSelectionTracker;
+    private ActionModeCallback mActionModeCallback;
     private ActionMode mActionMode;
 
     private Handler mHandler;
@@ -138,13 +142,34 @@ public abstract class AbstractConversationsFragment extends Fragment
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mMultiSelector = new HybridMultiSelector(isSingleSelection());
-        mListAdapter = new ConversationListAdapter(getContext(), mMultiSelector);
+        mListAdapter = new ConversationListAdapter(getContext());
         mListAdapter.setItemListener(this);
         onAdapterCreated(mListAdapter);
 
         mListView.setAdapter(mListAdapter);
         mActionModeCallback = new ActionModeCallback();
+
+        mSelectionTracker = new SelectionTracker.Builder<>(
+                "conversation-selector",
+                mListView,
+                new StableIdKeyProvider(mListView),
+                new ConversationListAdapter.ConversationItemDetailsLookup(mListView),
+                StorageStrategy.createLongStorage())
+            .withSelectionPredicate(SelectionPredicates.createSelectAnything())
+            .withOnItemActivatedListener(new OnItemActivatedListener<Long>() {
+                @Override
+                public boolean onItemActivated(@NonNull ItemDetailsLookup.ItemDetails<Long> item, @NonNull MotionEvent e) {
+                    Log.d(TAG, "Selected ItemId: " + item.getSelectionKey());
+                    return true;
+                }
+            })
+            .build();
+        mSelectionTracker.addObserver(new SelectionTracker.SelectionObserver() {
+            @Override
+            public void onItemStateChanged(@NonNull Object key, boolean selected) {
+                onItemSelected();
+            }
+        });
 
         mViewModel.load(getContext(), isArchived());
         mViewModel.getData().observe(getViewLifecycleOwner(), new Observer<PagedList<Conversation>>() {
@@ -158,15 +183,20 @@ public abstract class AbstractConversationsFragment extends Fragment
         mListAdapter.registerAdapterDataObserver(mObserver);
 
         if (savedInstanceState != null) {
-            mMultiSelector.restoreSelectionStates(savedInstanceState
-                .getBundle(STATE_MULTISELECTOR));
+            mSelectionTracker.onRestoreInstanceState(savedInstanceState);
         }
 
+        if (mSelectionTracker.hasSelection()){
+            mActionMode = getParentCallback().startSupportActionMode(mActionModeCallback);
+            updateActionModeTitle(mSelectionTracker.getSelection().size());
+        }
+        /*
         if (mMultiSelector.isSelectable()) {
             mActionModeCallback.setClearOnPrepare(false);
             mActionMode = getParentCallback().startSupportActionMode(mActionModeCallback);
             updateActionModeTitle(mMultiSelector.getSelectedPositions().size());
         }
+         */
     }
 
     /** Whether to enable hybrid single and multiple selection. */
@@ -181,7 +211,7 @@ public abstract class AbstractConversationsFragment extends Fragment
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBundle(STATE_MULTISELECTOR, mMultiSelector.saveSelectionStates());
+        mSelectionTracker.onSaveInstanceState(outState);
     }
 
     @Override
@@ -212,12 +242,8 @@ public abstract class AbstractConversationsFragment extends Fragment
         return mListAdapter;
     }
 
-    public List<Integer> getSelectedPositions() {
-        return mMultiSelector.getSelectedPositions();
-    }
-
-    public void setSelectedPosition(int selectedPosition) {
-        mMultiSelector.setSelectedPosition(selectedPosition);
+    public Selection<Long> getSelectedPositions() {
+        return mSelectionTracker.getSelection();
     }
 
     @Override
@@ -238,7 +264,7 @@ public abstract class AbstractConversationsFragment extends Fragment
 
         ConversationsCallback parent = getParentCallback();
         if (parent != null) {
-            mMultiSelector.setSelectedPosition(position);
+            //mMultiSelector.setSelectedPosition(position);
             parent.openConversation(conv);
         }
     }
@@ -251,10 +277,9 @@ public abstract class AbstractConversationsFragment extends Fragment
         }
     }
 
-    @Override
-    public void onItemSelected(ConversationListItem item, int position) {
+    public void onItemSelected() {
         if (mActionMode != null) {
-            int count = mMultiSelector.getSelectedPositions().size();
+            int count = mSelectionTracker.getSelection().size();
             if (count == 0) {
                 mActionMode.finish();
             }
@@ -262,6 +287,10 @@ public abstract class AbstractConversationsFragment extends Fragment
                 updateActionModeTitle(count);
                 mActionMode.invalidate();
             }
+        }
+        else {
+            mActionMode = getParentCallback().startSupportActionMode(mActionModeCallback);
+            updateActionModeTitle(mSelectionTracker.getSelection().size());
         }
     }
 
@@ -293,10 +322,10 @@ public abstract class AbstractConversationsFragment extends Fragment
         boolean addGroupCheckbox = false;
         int checkedCount = 0;
 
-        final List<Integer> selected = getSelectedPositions();
+        final Selection<Long> selected = getSelectedPositions();
         final List<Conversation> list = new ArrayList<>(selected.size());
-        for (int position: selected) {
-            Conversation conv = getViewModel().getData().getValue().get(position);
+        for (long position: selected) {
+            Conversation conv = getViewModel().getData().getValue().get((int) position);
             if (!addGroupCheckbox && conv.isGroupChat() &&
                 conv.getGroupMembership() == MyMessages.Groups.MEMBERSHIP_MEMBER) {
                 addGroupCheckbox = true;
@@ -360,11 +389,7 @@ public abstract class AbstractConversationsFragment extends Fragment
     /** For use to child classes. */
     protected abstract boolean onActionItemClicked(ActionMode mode, MenuItem item);
 
-    private final class ActionModeCallback extends ModalMultiSelectorCallback {
-
-        public ActionModeCallback() {
-            super(mMultiSelector);
-        }
+    private final class ActionModeCallback implements ActionMode.Callback {
 
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
@@ -374,79 +399,18 @@ public abstract class AbstractConversationsFragment extends Fragment
 
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-            super.onCreateActionMode(mode, menu);
             return AbstractConversationsFragment.this.onCreateActionMode(mode, menu);
         }
 
         @Override
         public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-            super.onPrepareActionMode(mode, menu);
             return AbstractConversationsFragment.this.onPrepareActionMode(mode, menu);
         }
 
         @Override
         public void onDestroyActionMode(ActionMode actionMode) {
             mActionMode = null;
-            super.onDestroyActionMode(actionMode);
-            // this will restore the selected item if any
-            mMultiSelector.clearSelections();
-        }
-    }
-
-    private static final class HybridMultiSelector extends MultiSelector {
-        private final boolean mSingleSelection;
-
-        private int mSelectedPosition = -1;
-
-        HybridMultiSelector(boolean singleSelection) {
-            mSingleSelection = singleSelection;
-        }
-
-        public void setSelectedPosition(int selectedPosition) {
-            if (mSingleSelection) {
-                super.clearSelections();
-                mSelectedPosition = selectedPosition;
-                setSelectedPosition();
-            }
-        }
-
-        private void setSelectedPosition() {
-            setSelected(mSelectedPosition, 0, true);
-        }
-
-        @Override
-        public void clearSelections() {
-            super.clearSelections();
-            if (mSingleSelection && !isSelectable() && mSelectedPosition >= 0) {
-                // restore single selection item
-                setSelectedPosition();
-            }
-        }
-
-        @Override
-        public void setSelectable(boolean isSelectable) {
-            if (mSingleSelection && isSelectable) {
-                // clear any selection first
-                super.clearSelections();
-            }
-            super.setSelectable(isSelectable);
-        }
-
-        @Override
-        public Bundle saveSelectionStates() {
-            Bundle state = super.saveSelectionStates();
-            if (mSingleSelection) {
-                state.putInt("singleSelection", mSelectedPosition);
-            }
-            return state;
-        }
-
-        @Override
-        public void restoreSelectionStates(Bundle savedStates) {
-            super.restoreSelectionStates(savedStates);
-            if (mSingleSelection) {
-                mSelectedPosition = savedStates.getInt("singleSelection", -1);
-            }
+            mSelectionTracker.clearSelection();
         }
     }
 

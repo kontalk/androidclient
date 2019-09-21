@@ -18,13 +18,13 @@
 
 package org.kontalk.ui;
 
-import java.util.List;
-
 import com.github.clans.fab.FloatingActionMenu;
 
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.view.ActionMode;
+import androidx.recyclerview.selection.Selection;
+
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -138,19 +138,19 @@ public class ConversationsFragment extends AbstractConversationsFragment
     }
 
     private void archiveSelectedThreads() {
-        List<Integer> selected = getSelectedPositions();
-        for (int position: selected) {
-            getViewModel().getData().getValue().get(position)
+        Selection<Long> selected = getSelectedPositions();
+        for (long position: selected) {
+            getViewModel().getData().getValue().get((int) position)
                 .archive();
         }
     }
 
     private Conversation getCheckedItem() {
-        List<Integer> selected = getSelectedPositions();
+        Selection<Long> selected = getSelectedPositions();
         if (selected.size() != 1)
             throw new IllegalStateException("checked items count must be exactly 1");
 
-        return getViewModel().getData().getValue().get(selected.get(0));
+        return getViewModel().getData().getValue().get(selected.iterator().next().intValue());
     }
 
     private void stickSelectedThread() {

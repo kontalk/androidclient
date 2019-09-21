@@ -18,33 +18,28 @@
 
 package org.kontalk.ui.adapter;
 
-import com.bignerdranch.android.multiselector.MultiSelector;
-
 import android.content.Context;
-import androidx.core.content.res.ResourcesCompat;
 import android.view.View;
 
-import org.kontalk.R;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.selection.ItemDetailsLookup;
+import androidx.recyclerview.widget.RecyclerView;
+
 import org.kontalk.data.Conversation;
 import org.kontalk.ui.view.ConversationListItem;
 
 
-class ConversationViewHolder extends SwappingHolder implements
-        View.OnClickListener, View.OnLongClickListener {
+class ConversationViewHolder extends RecyclerView.ViewHolder implements
+        View.OnClickListener {
 
-    private final MultiSelector mMultiSelector;
     private final ConversationListAdapter.OnItemClickListener mListener;
 
-    ConversationViewHolder(ConversationListItem itemView, MultiSelector multiSelector,
-            ConversationListAdapter.OnItemClickListener listener) {
-        super(itemView, multiSelector);
-        mMultiSelector = multiSelector;
+    ConversationViewHolder(ConversationListItem itemView,
+        ConversationListAdapter.OnItemClickListener listener) {
+        super(itemView);
         mListener = listener;
         itemView.setOnClickListener(this);
-        itemView.setOnLongClickListener(this);
-        // TODO this is not compatible with theme change (e.g. dark theme)
-        setSelectionModeBackgroundDrawable(ResourcesCompat.getDrawable(itemView.getResources(),
-            R.drawable.list_item_background, itemView.getContext().getTheme()));
+        //itemView.setOnLongClickListener(this);
     }
 
     void bindView(Context context, Conversation conversation) {
@@ -59,35 +54,30 @@ class ConversationViewHolder extends SwappingHolder implements
 
     @Override
     public void onClick(View v) {
-        if (!mMultiSelector.tapSelection(this)) {
-            if (mListener != null) {
-                mListener.onItemClick((ConversationListItem) itemView,
-                    getAdapterPosition());
-            }
+        /*
+        if (mListener != null) {
+            mListener.onItemClick((ConversationListItem) itemView,
+                getAdapterPosition());
         }
-        else {
-            // multiselecting
-            if (mListener != null) {
-                mListener.onItemSelected((ConversationListItem) itemView,
-                    getAdapterPosition());
-            }
-        }
+         */
     }
 
-    @Override
-    public boolean onLongClick(View v) {
-        if (!mMultiSelector.isSelectable()) {
-            if (mListener != null) {
-                mListener.onStartMultiselect();
+    public ItemDetailsLookup.ItemDetails<Long> getItemDetails() {
+        return new ItemDetailsLookup.ItemDetails<Long>() {
+            @Override
+            public int getPosition() {
+                return getAdapterPosition();
             }
-            mMultiSelector.setSelectable(true);
-            mMultiSelector.setSelected(this, true);
-            if (mListener != null) {
-                mListener.onItemSelected((ConversationListItem) itemView,
-                    getAdapterPosition());
+
+            @Nullable
+            @Override
+            public Long getSelectionKey() {
+                Conversation conv = ((ConversationListItem) itemView).getConversation();
+                return conv != null ? conv.getThreadId() : null;
             }
-            return true;
-        }
-        return false;
+        };
     }
+
+
 }
+
