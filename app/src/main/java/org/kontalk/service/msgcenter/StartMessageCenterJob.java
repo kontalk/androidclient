@@ -35,7 +35,7 @@ import android.os.Build;
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class StartMessageCenterJob extends JobService {
 
-    public static int JOB_ID = 1000;
+    private static int JOB_ID = 1000;
 
     @Override
     public boolean onStartJob(JobParameters params) {
