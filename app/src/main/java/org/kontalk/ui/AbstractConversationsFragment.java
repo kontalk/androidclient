@@ -52,7 +52,6 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
-import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
