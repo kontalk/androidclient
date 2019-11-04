@@ -540,8 +540,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             mRefCount++;
             if (mRefCount > 0) {
                 MessageCenterService service = s.get();
-                if (service != null && service.isInactive() && service.isConnected()) {
-                    service.active(activate);
+                if (service != null) {
+                    if (service.isConnected() && service.isInactive()) {
+                        service.active(activate);
+                    }
+                    /*
+                     * test if the connection helper is waiting for exponential backoff for more time that
+                     * we'd like the user to wait for. In that case, restart the connection immediately
+                     */
+                    else if (service.mHelper != null && service.mHelper.isBackingOff(SLOW_PING_TIMEOUT)) {
+                        service.quit(true);
+                    }
                 }
             }
             post(new Runnable() {
