@@ -159,8 +159,14 @@ public abstract class AbstractConversationsFragment extends Fragment
             .withOnItemActivatedListener(new OnItemActivatedListener<Long>() {
                 @Override
                 public boolean onItemActivated(@NonNull ItemDetailsLookup.ItemDetails<Long> item, @NonNull MotionEvent e) {
-                    Log.d(TAG, "Selected ItemId: " + item.getSelectionKey());
-                    return true;
+                    View view = mListView.findChildViewUnder(e.getX(), e.getY());
+                    if (view instanceof ConversationListItem) {
+                        onItemClick((ConversationListItem) view, item.getPosition());
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
                 }
             })
             .build();

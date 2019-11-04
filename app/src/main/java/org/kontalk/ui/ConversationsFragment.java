@@ -150,6 +150,7 @@ public class ConversationsFragment extends AbstractConversationsFragment
         if (selected.size() != 1)
             throw new IllegalStateException("checked items count must be exactly 1");
 
+        // FIXME doesn't work with stable IDs
         return getViewModel().getData().getValue().get(selected.iterator().next().intValue());
     }
 
