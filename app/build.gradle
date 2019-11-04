@@ -147,7 +147,7 @@ dependencies {
 
     // support libraries
     implementation 'androidx.multidex:multidex:2.0.1'
-    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
     implementation 'androidx.exifinterface:exifinterface:1.0.0'
@@ -156,7 +156,7 @@ dependencies {
     implementation 'androidx.dynamicanimation:dynamicanimation:1.0.0'
     // these are actually to override an emoji dependency
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'androidx.vectordrawable:vectordrawable-animated:1.0.0'
+    implementation 'androidx.vectordrawable:vectordrawable-animated:1.1.0'
     implementation 'androidx.legacy:legacy-support-v13:1.0.0'
 
     // network/protocol libraries
@@ -185,8 +185,9 @@ dependencies {
     implementation 'io.requery:sqlite-android:3.29.0'
 
     // UI libraries
-    implementation 'pub.devrel:easypermissions:2.0.1'
+    implementation 'pub.devrel:easypermissions:3.0.0'
     implementation 'com.github.machinarius:preferencefragment:0.1.2'
+    // TODO MaterialDialogs broke the API in version 3
     implementation 'com.afollestad.material-dialogs:core:0.9.6.0'
     implementation 'com.afollestad.material-dialogs:commons:0.9.6.0'
     implementation 'com.github.castorflex.smoothprogressbar:library:1.1.0'
@@ -199,8 +200,8 @@ dependencies {
     // waiting for our pull request to be accepted
     implementation 'com.github.kontalk:CircularReveal:bc59b8dfcf'
     implementation 'me.leolin:ShortcutBadger:1.1.22@aar'
-    implementation 'androidx.lifecycle:lifecycle-runtime:2.0.0'
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime:2.1.0'
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
     implementation 'androidx.paging:paging-runtime:2.1.0'
     implementation 'de.hdodenhof:circleimageview:2.1.0'
 
@@ -223,7 +224,7 @@ dependencies {
     googleplayImplementation "com.google.android.gms:play-services-base:17.1.0"
     googleplayImplementation "com.google.android.gms:play-services-maps:17.0.0"
     googleplayImplementation "com.google.android.gms:play-services-location:17.0.0"
-    googleplayImplementation 'com.google.firebase:firebase-core:17.1.0'
+    googleplayImplementation 'com.google.firebase:firebase-core:17.2.1'
     googleplayImplementation 'com.google.firebase:firebase-messaging:20.0.0'
     googleplayImplementation('com.crashlytics.sdk.android:crashlytics:2.10.1@aar') {
         transitive = true
@@ -236,7 +237,7 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test:rules:1.2.0'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.annotation:annotation:1.0.2'
+    androidTestImplementation 'androidx.annotation:annotation:1.1.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-intents:3.2.0'
     androidTestImplementation 'androidx.test:monitor:1.2.0'
