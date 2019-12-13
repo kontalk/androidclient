@@ -94,10 +94,10 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
         }
     }
 
-    public final void bind(Context context, final Conversation conv) {
+    public final void bind(Context context, final Conversation conv, boolean selected) {
         mConversation = conv;
 
-        setChecked(false);
+        setChecked(selected);
 
         Contact contact;
         // used for the conversation subject: either group subject or contact name

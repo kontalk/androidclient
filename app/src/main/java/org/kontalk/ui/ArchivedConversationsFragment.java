@@ -31,6 +31,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.kontalk.R;
+import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.ui.adapter.ConversationListAdapter;
 
 
@@ -86,9 +87,8 @@ public class ArchivedConversationsFragment extends AbstractConversationsFragment
 
     private void unarchiveSelectedThreads() {
         Selection<Long> selected = getSelectedPositions();
-        for (long position: selected) {
-            getViewModel().getData().getValue().get((int) position)
-                .unarchive();
+        for (long id: selected) {
+            MessagesProviderClient.setArchived(getContext(), id, false);
         }
     }
 

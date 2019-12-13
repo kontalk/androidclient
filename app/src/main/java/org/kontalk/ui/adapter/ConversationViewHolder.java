@@ -38,13 +38,13 @@ class ConversationViewHolder extends RecyclerView.ViewHolder implements
         ConversationListAdapter.OnItemClickListener listener) {
         super(itemView);
         mListener = listener;
-        itemView.setOnClickListener(this);
+        //itemView.setOnClickListener(this);
         //itemView.setOnLongClickListener(this);
     }
 
-    void bindView(Context context, Conversation conversation) {
+    void bindView(Context context, Conversation conversation, boolean selected) {
         if (conversation != null) {
-            ((ConversationListItem) itemView).bind(context, conversation);
+            ((ConversationListItem) itemView).bind(context, conversation, selected);
         }
     }
 

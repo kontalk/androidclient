@@ -20,6 +20,7 @@ package org.kontalk.ui;
 
 import com.github.clans.fab.FloatingActionMenu;
 
+import android.content.Context;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.view.ActionMode;
@@ -35,6 +36,7 @@ import android.view.ViewGroup;
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
+import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.ui.adapter.ConversationListAdapter;
 
 
@@ -138,10 +140,13 @@ public class ConversationsFragment extends AbstractConversationsFragment
     }
 
     private void archiveSelectedThreads() {
+        final Context context = getContext();
+        if (context == null)
+            return;
+
         Selection<Long> selected = getSelectedPositions();
-        for (long position: selected) {
-            getViewModel().getData().getValue().get((int) position)
-                .archive();
+        for (long id: selected) {
+            MessagesProviderClient.setArchived(context, id, true);
         }
     }
 
@@ -150,8 +155,7 @@ public class ConversationsFragment extends AbstractConversationsFragment
         if (selected.size() != 1)
             throw new IllegalStateException("checked items count must be exactly 1");
 
-        // FIXME doesn't work with stable IDs
-        return getViewModel().getData().getValue().get(selected.iterator().next().intValue());
+        return Conversation.loadFromId(getContext(), selected.iterator().next());
     }
 
     private void stickSelectedThread() {

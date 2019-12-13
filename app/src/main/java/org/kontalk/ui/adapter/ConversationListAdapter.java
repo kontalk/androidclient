@@ -23,6 +23,7 @@ import androidx.paging.PagedListAdapter;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.selection.ItemDetailsLookup;
+import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -64,6 +65,7 @@ public class ConversationListAdapter extends PagedListAdapter<Conversation, Recy
     };
 
     private final LayoutInflater mFactory;
+    private SelectionTracker mSelectionTracker;
     private OnItemClickListener mItemListener;
     private OnFooterClickListener mFooterListener;
 
@@ -71,6 +73,10 @@ public class ConversationListAdapter extends PagedListAdapter<Conversation, Recy
         super(sDiffCallback);
         mFactory = LayoutInflater.from(context);
         setHasStableIds(true);
+    }
+
+    public void setSelectionTracker(SelectionTracker selectionTracker) {
+        mSelectionTracker = selectionTracker;
     }
 
     public void setItemListener(OnItemClickListener itemListener) {
@@ -124,7 +130,8 @@ public class ConversationListAdapter extends PagedListAdapter<Conversation, Recy
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof ConversationViewHolder) {
-            ((ConversationViewHolder) holder).bindView(mFactory.getContext(), getItem(position));
+            boolean selected = mSelectionTracker.isSelected(getItemId(position));
+            ((ConversationViewHolder) holder).bindView(mFactory.getContext(), getItem(position), selected);
         }
         else if (holder instanceof ConversationFooterViewHolder) {
             Conversation archivedCount = getItem(position);
@@ -165,8 +172,10 @@ public class ConversationListAdapter extends PagedListAdapter<Conversation, Recy
         public ItemDetails<Long> getItemDetails(@NonNull MotionEvent event) {
             View view = mListView.findChildViewUnder(event.getX(), event.getY());
             if (view != null) {
-                return ((ConversationViewHolder) mListView.getChildViewHolder(view))
-                    .getItemDetails();
+                RecyclerView.ViewHolder holder = mListView.getChildViewHolder(view);
+                if (holder instanceof ConversationViewHolder) {
+                    return ((ConversationViewHolder) holder).getItemDetails();
+                }
             }
             return null;
         }

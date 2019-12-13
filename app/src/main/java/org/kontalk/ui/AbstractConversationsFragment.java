@@ -35,11 +35,10 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.view.ActionMode;
 import androidx.recyclerview.selection.ItemDetailsLookup;
+import androidx.recyclerview.selection.ItemKeyProvider;
 import androidx.recyclerview.selection.OnItemActivatedListener;
 import androidx.recyclerview.selection.Selection;
-import androidx.recyclerview.selection.SelectionPredicates;
 import androidx.recyclerview.selection.SelectionTracker;
-import androidx.recyclerview.selection.StableIdKeyProvider;
 import androidx.recyclerview.selection.StorageStrategy;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -52,6 +51,7 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
+import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
@@ -148,13 +148,42 @@ public abstract class AbstractConversationsFragment extends Fragment
         mListView.setAdapter(mListAdapter);
         mActionModeCallback = new ActionModeCallback();
 
+        final ItemKeyProvider<Long> keyProvider = new ItemKeyProvider<Long>(ItemKeyProvider.SCOPE_MAPPED) {
+            @Override
+            public Long getKey(int position) {
+                return mListAdapter.getItemId(position);
+            }
+
+            @Override
+            public int getPosition(@NonNull Long key) {
+                RecyclerView.ViewHolder viewHolder = mListView.findViewHolderForItemId(key);
+                return viewHolder == null ? RecyclerView.NO_POSITION : viewHolder.getLayoutPosition();
+            }
+        };
+
         mSelectionTracker = new SelectionTracker.Builder<>(
                 "conversation-selector",
                 mListView,
-                new StableIdKeyProvider(mListView),
+                keyProvider,
                 new ConversationListAdapter.ConversationItemDetailsLookup(mListView),
                 StorageStrategy.createLongStorage())
-            .withSelectionPredicate(SelectionPredicates.createSelectAnything())
+            .withSelectionPredicate(new SelectionTracker.SelectionPredicate<Long>() {
+                @Override
+                public boolean canSetStateForKey(@NonNull Long key, boolean nextState) {
+                    return key > 0;
+                }
+
+                @Override
+                public boolean canSetStateAtPosition(int position, boolean nextState) {
+                    Long key = keyProvider.getKey(position);
+                    return key != null && key > 0;
+                }
+
+                @Override
+                public boolean canSelectMultiple() {
+                    return true;
+                }
+            })
             .withOnItemActivatedListener(new OnItemActivatedListener<Long>() {
                 @Override
                 public boolean onItemActivated(@NonNull ItemDetailsLookup.ItemDetails<Long> item, @NonNull MotionEvent e) {
@@ -169,12 +198,14 @@ public abstract class AbstractConversationsFragment extends Fragment
                 }
             })
             .build();
-        mSelectionTracker.addObserver(new SelectionTracker.SelectionObserver() {
+        mSelectionTracker.addObserver(new SelectionTracker.SelectionObserver<Long>() {
             @Override
-            public void onItemStateChanged(@NonNull Object key, boolean selected) {
-                onItemSelected();
+            public void onSelectionChanged() {
+                AbstractConversationsFragment.this.onSelectionChanged();
             }
         });
+
+        mListAdapter.setSelectionTracker(mSelectionTracker);
 
         mViewModel.load(getContext(), isArchived());
         mViewModel.getData().observe(getViewLifecycleOwner(), new Observer<PagedList<Conversation>>() {
@@ -282,20 +313,21 @@ public abstract class AbstractConversationsFragment extends Fragment
         }
     }
 
-    public void onItemSelected() {
-        if (mActionMode != null) {
-            int count = mSelectionTracker.getSelection().size();
-            if (count == 0) {
-                mActionMode.finish();
-            }
-            else {
-                updateActionModeTitle(count);
-                mActionMode.invalidate();
-            }
-        }
-        else {
+    public void onSelectionChanged() {
+        if (mSelectionTracker.hasSelection() && mActionMode == null) {
             mActionMode = getParentCallback().startSupportActionMode(mActionModeCallback);
             updateActionModeTitle(mSelectionTracker.getSelection().size());
+        }
+        else if (!mSelectionTracker.hasSelection() && mActionMode != null) {
+            mActionMode.finish();
+            mActionMode = null;
+        }
+        else if (mActionMode != null) {
+            updateActionModeTitle(mSelectionTracker.getSelection().size());
+        }
+
+        for (Long id : mSelectionTracker.getSelection()) {
+            Log.i(TAG, "Selected: " + id);
         }
     }
 
@@ -329,8 +361,8 @@ public abstract class AbstractConversationsFragment extends Fragment
 
         final Selection<Long> selected = getSelectedPositions();
         final List<Conversation> list = new ArrayList<>(selected.size());
-        for (long position: selected) {
-            Conversation conv = getViewModel().getData().getValue().get((int) position);
+        for (long id: selected) {
+            Conversation conv = Conversation.loadFromId(getContext(), id);
             if (!addGroupCheckbox && conv.isGroupChat() &&
                 conv.getGroupMembership() == MyMessages.Groups.MEMBERSHIP_MEMBER) {
                 addGroupCheckbox = true;
