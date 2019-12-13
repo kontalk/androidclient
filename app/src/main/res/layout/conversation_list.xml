@@ -34,6 +34,7 @@
         android:divider="@null"
         android:dividerHeight="0dp"
         android:clipToPadding="false"
+        android:descendantFocusability="afterDescendants"
         android:fadingEdgeLength="8dp"/>
 
     <TextView android:id="@android:id/empty"
