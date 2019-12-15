@@ -152,7 +152,7 @@ dependencies {
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
     implementation 'androidx.exifinterface:exifinterface:1.1.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
-    implementation 'androidx.recyclerview:recyclerview-selection:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview-selection:1.1.0-beta01'
     implementation 'androidx.dynamicanimation:dynamicanimation:1.0.0'
     // these are actually to override an emoji dependency
     implementation 'androidx.cardview:cardview:1.0.0'
