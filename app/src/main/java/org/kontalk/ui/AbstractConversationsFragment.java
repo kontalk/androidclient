@@ -34,9 +34,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.view.ActionMode;
-import androidx.recyclerview.selection.ItemDetailsLookup;
 import androidx.recyclerview.selection.ItemKeyProvider;
-import androidx.recyclerview.selection.OnItemActivatedListener;
 import androidx.recyclerview.selection.Selection;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.selection.StorageStrategy;
@@ -45,13 +43,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
-import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
@@ -184,19 +180,6 @@ public abstract class AbstractConversationsFragment extends Fragment
                     return true;
                 }
             })
-            .withOnItemActivatedListener(new OnItemActivatedListener<Long>() {
-                @Override
-                public boolean onItemActivated(@NonNull ItemDetailsLookup.ItemDetails<Long> item, @NonNull MotionEvent e) {
-                    View view = mListView.findChildViewUnder(e.getX(), e.getY());
-                    if (view instanceof ConversationListItem) {
-                        onItemClick((ConversationListItem) view, item.getPosition());
-                        return true;
-                    }
-                    else {
-                        return false;
-                    }
-                }
-            })
             .build();
         mSelectionTracker.addObserver(new SelectionTracker.SelectionObserver<Long>() {
             @Override
@@ -226,13 +209,6 @@ public abstract class AbstractConversationsFragment extends Fragment
             mActionMode = getParentCallback().startSupportActionMode(mActionModeCallback);
             updateActionModeTitle(mSelectionTracker.getSelection().size());
         }
-        /*
-        if (mMultiSelector.isSelectable()) {
-            mActionModeCallback.setClearOnPrepare(false);
-            mActionMode = getParentCallback().startSupportActionMode(mActionModeCallback);
-            updateActionModeTitle(mMultiSelector.getSelectedPositions().size());
-        }
-         */
     }
 
     /** Whether to enable hybrid single and multiple selection. */
@@ -296,20 +272,15 @@ public abstract class AbstractConversationsFragment extends Fragment
 
     @Override
     public void onItemClick(ConversationListItem item, int position) {
+        if (mActionMode != null)
+            return;
+
         Conversation conv = item.getConversation();
 
         ConversationsCallback parent = getParentCallback();
         if (parent != null) {
             //mMultiSelector.setSelectedPosition(position);
             parent.openConversation(conv);
-        }
-    }
-
-    @Override
-    public void onStartMultiselect() {
-        ConversationsCallback parent = getParentCallback();
-        if (parent != null) {
-            mActionMode = parent.startSupportActionMode(mActionModeCallback);
         }
     }
 
@@ -324,10 +295,6 @@ public abstract class AbstractConversationsFragment extends Fragment
         }
         else if (mActionMode != null) {
             updateActionModeTitle(mSelectionTracker.getSelection().size());
-        }
-
-        for (Long id : mSelectionTracker.getSelection()) {
-            Log.i(TAG, "Selected: " + id);
         }
     }
 

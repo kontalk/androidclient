@@ -150,10 +150,6 @@ public class ConversationListAdapter extends PagedListAdapter<Conversation, Recy
 
     public interface OnItemClickListener {
         void onItemClick(ConversationListItem item, int position);
-
-        void onStartMultiselect();
-
-        //void onItemSelected(ConversationListItem item, int position);
     }
 
     public interface OnFooterClickListener {

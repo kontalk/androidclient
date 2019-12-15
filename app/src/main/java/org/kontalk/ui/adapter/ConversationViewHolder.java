@@ -38,8 +38,7 @@ class ConversationViewHolder extends RecyclerView.ViewHolder implements
         ConversationListAdapter.OnItemClickListener listener) {
         super(itemView);
         mListener = listener;
-        //itemView.setOnClickListener(this);
-        //itemView.setOnLongClickListener(this);
+        itemView.setOnClickListener(this);
     }
 
     void bindView(Context context, Conversation conversation, boolean selected) {
@@ -54,12 +53,10 @@ class ConversationViewHolder extends RecyclerView.ViewHolder implements
 
     @Override
     public void onClick(View v) {
-        /*
         if (mListener != null) {
             mListener.onItemClick((ConversationListItem) itemView,
                 getAdapterPosition());
         }
-         */
     }
 
     public ItemDetailsLookup.ItemDetails<Long> getItemDetails() {
