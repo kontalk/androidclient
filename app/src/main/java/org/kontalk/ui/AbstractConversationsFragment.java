@@ -448,6 +448,7 @@ public abstract class AbstractConversationsFragment extends Fragment
         public void onDestroyActionMode(ActionMode actionMode) {
             mActionMode = null;
             mSelectionTracker.clearSelection();
+            mListAdapter.notifyDataSetChanged();
         }
     }
 
