@@ -207,7 +207,7 @@ public abstract class AbstractConversationsFragment extends Fragment
 
         if (mSelectionTracker.hasSelection()){
             mActionMode = getParentCallback().startSupportActionMode(mActionModeCallback);
-            updateActionModeTitle(mSelectionTracker.getSelection().size());
+            updateActionModeSelectionCount(mSelectionTracker.getSelection().size());
         }
     }
 
@@ -287,21 +287,22 @@ public abstract class AbstractConversationsFragment extends Fragment
     public void onSelectionChanged() {
         if (mSelectionTracker.hasSelection() && mActionMode == null) {
             mActionMode = getParentCallback().startSupportActionMode(mActionModeCallback);
-            updateActionModeTitle(mSelectionTracker.getSelection().size());
+            updateActionModeSelectionCount(mSelectionTracker.getSelection().size());
         }
         else if (!mSelectionTracker.hasSelection() && mActionMode != null) {
             mActionMode.finish();
             mActionMode = null;
         }
         else if (mActionMode != null) {
-            updateActionModeTitle(mSelectionTracker.getSelection().size());
+            updateActionModeSelectionCount(mSelectionTracker.getSelection().size());
         }
     }
 
-    private void updateActionModeTitle(int count) {
+    private void updateActionModeSelectionCount(int count) {
         mActionMode.setTitle(getResources()
             .getQuantityString(R.plurals.context_selected,
                 count, count));
+        mActionMode.invalidate();
     }
 
     @Override
