@@ -96,8 +96,10 @@
             <meta-data android:name="android.provider.CONTACTS_STRUCTURE" android:resource="@xml/contacts"/>
         </service>
         <service android:name=".service.DownloadService"
-            android:label="@string/download_service"/>
-        <service android:name=".service.UploadService"/>
+            android:label="@string/download_service"
+            android:permission="android.permission.BIND_JOB_SERVICE"/>
+        <service android:name=".service.UploadService"
+            android:permission="android.permission.BIND_JOB_SERVICE"/>
         <service android:name=".service.KeyPairGeneratorService"/>
         <service android:name=".service.registration.RegistrationService"/>
         <service android:name=".service.MediaService"
@@ -126,7 +128,7 @@
             android:authorities="${applicationId}.users"/>
 
         <provider
-            android:name="android.support.v4.content.FileProvider"
+            android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">

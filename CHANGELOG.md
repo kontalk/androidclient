@@ -1,6 +1,13 @@
 # Changelog
 
 ## [Next]
+
+## [4.3.1] - 2019-08-24
+### Fixed
+- Fix crash caused by database access from multiple threads (#1268)
+- Fix crash when managing non-Kontalk users in a group (#1270)
+
+## [4.3.0] - 2019-08-17
 ### Changed
 - Group chat indicator in chat list (#818)
 - Allow more control over search query
@@ -36,6 +43,8 @@
 - Fix Google Maps static maps (#1254)
 - Fix double upload of media (#1259)
 - Fix database upgrade crash when upgrading from 4.1.6 (#1262)
+- Fix message center crashing while in background (#1264)
+- Picture notification for groups showing group title (#1230)
 
 ## [4.2.0] - 2018-09-04
 ### Changed
@@ -563,7 +572,9 @@
 - Fix draft saving on incoming message (#448)
 - Fix crash during sync (#454)
 
-[Next]: https://github.com/kontalk/androidclient/compare/v4.2.0...HEAD
+[Next]: https://github.com/kontalk/androidclient/compare/v4.3.1...HEAD
+[4.3.1]: https://github.com/kontalk/androidclient/compare/v4.3.0...v4.3.1
+[4.3.0]: https://github.com/kontalk/androidclient/compare/v4.2.0...v4.3.0
 [4.2.0]: https://github.com/kontalk/androidclient/compare/v4.2.0-beta4...v4.2.0
 [4.2.0-beta4]: https://github.com/kontalk/androidclient/compare/v4.2.0-beta3...v4.2.0-beta4
 [4.2.0-beta3]: https://github.com/kontalk/androidclient/compare/v4.2.0-beta2...v4.2.0-beta3

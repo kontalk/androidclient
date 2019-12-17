@@ -25,7 +25,7 @@ import org.kontalk.data.Contact.ContactCallback;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
-import android.support.v4.content.ContextCompat;
+import androidx.core.content.ContextCompat;
 import android.util.AttributeSet;
 import android.widget.RelativeLayout;
 

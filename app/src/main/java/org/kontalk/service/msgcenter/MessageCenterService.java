@@ -106,10 +106,10 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.Process;
 import android.os.SystemClock;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ServiceCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.annotation.Nullable;
+import androidx.core.app.ServiceCompat;
+import androidx.core.content.ContextCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.widget.Toast;
 
@@ -542,8 +542,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             mRefCount++;
             if (mRefCount > 0) {
                 MessageCenterService service = s.get();
-                if (service != null && service.isInactive() && service.isConnected()) {
-                    service.active(activate);
+                if (service != null) {
+                    if (service.isConnected() && service.isInactive()) {
+                        service.active(activate);
+                    }
+                    /*
+                     * test if the connection helper is waiting for exponential backoff for more time that
+                     * we'd like the user to wait for. In that case, restart the connection immediately
+                     */
+                    else if (service.mHelper != null && service.mHelper.isBackingOff(SLOW_PING_TIMEOUT)) {
+                        service.quit(true);
+                    }
                 }
             }
             post(new Runnable() {
@@ -566,8 +575,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         // trigger inactive timer only if connected
                         // the authenticated callback will ensure it will trigger anyway
                         MessageCenterService service = s.get();
-                        if (service != null && !service.isInactive() && service.isConnected()) {
-                            queueInactive();
+                        if (service != null) {
+                            // restart in foreground if needed
+                            // this is used to keep the service alive for the necessary time
+                            startForegroundIfNeeded(service, getStartIntent(service));
+
+                            if (!service.isInactive() && service.isConnected()) {
+                                queueInactive();
+                            }
                         }
                     }
                 });

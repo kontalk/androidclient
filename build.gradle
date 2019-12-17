@@ -6,8 +6,8 @@ buildscript {
         maven { url 'https://maven.fabric.io/public' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.4.2'
-        classpath 'com.google.gms:google-services:4.2.0'
+        classpath 'com.android.tools.build:gradle:3.5.3'
+        classpath 'com.google.gms:google-services:4.3.3'
         classpath 'io.fabric.tools:gradle:1.+'
         classpath('com.dicedmelon.gradle:jacoco-android:0.1.4') {
             exclude group: 'org.codehaus.groovy', module: 'groovy-all'
@@ -27,14 +27,13 @@ allprojects {
     evaluationDependsOn ":client-common-java"
     ext {
         applicationId = 'org.kontalk'
-        versionCode = 425
-        versionName = '4.3.0-alpha4'
+        versionCode = 441
+        versionName = '4.3.1-next'
         minSdkVersion = 16
         targetSdkVersion = 27
         compileSdkVersion = 28
         smackVersion = project(':client-common-java').smackVersion
         spongyCastleVersion = '1.58.0.0'
-        appcompatVersion = '28.0.0'
         anyMapsVersion = '962c4b5cf8'
 
         travisBuild = System.getenv("TRAVIS") == "true"

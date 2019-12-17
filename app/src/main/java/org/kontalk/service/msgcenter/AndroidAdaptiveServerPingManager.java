@@ -32,7 +32,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.SystemClock;
-import android.support.v4.app.AlarmManagerCompat;
+import androidx.core.app.AlarmManagerCompat;
 
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.util.Preferences;

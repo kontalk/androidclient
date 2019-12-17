@@ -29,7 +29,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.text.style.URLSpan;
 import android.util.AttributeSet;
 import android.view.View;

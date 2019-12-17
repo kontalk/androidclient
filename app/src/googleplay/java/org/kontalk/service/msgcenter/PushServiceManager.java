@@ -19,7 +19,7 @@
 package org.kontalk.service.msgcenter;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.kontalk.service.gcm.DefaultGcmListener;
 import org.kontalk.service.gcm.GcmPushService;

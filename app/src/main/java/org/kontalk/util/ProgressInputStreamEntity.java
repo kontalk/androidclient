@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.kontalk.service.ProgressListener;
 import org.kontalk.upload.UploadConnection;

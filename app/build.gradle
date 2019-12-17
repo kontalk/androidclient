@@ -1,7 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'checkstyle'
-    id 'com.github.triplet.play' version '2.2.0'
+    id 'com.github.triplet.play' version '2.3.0'
     id 'io.fabric'
     id 'jacoco-android'
 }
@@ -54,7 +54,7 @@ android {
         buildConfigField "String", "ACCOUNT_TYPE", '"' + applicationId + '.account"'
         vectorDrawables.useSupportLibrary = true
         multiDexEnabled true
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         javaCompileOptions {
             annotationProcessorOptions {
@@ -146,17 +146,18 @@ dependencies {
     }
 
     // support libraries
-    implementation 'com.android.support:multidex:1.0.3'
-    implementation "com.android.support:appcompat-v7:$appcompatVersion"
-    implementation "com.android.support:design:$appcompatVersion"
-    implementation "com.android.support:gridlayout-v7:$appcompatVersion"
-    implementation "com.android.support:exifinterface:$appcompatVersion"
-    implementation "com.android.support:recyclerview-v7:$appcompatVersion"
-    implementation "com.android.support:support-dynamic-animation:$appcompatVersion"
+    implementation 'androidx.multidex:multidex:2.0.1'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'androidx.gridlayout:gridlayout:1.0.0'
+    implementation 'androidx.exifinterface:exifinterface:1.1.0'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
+    implementation 'androidx.recyclerview:recyclerview-selection:1.1.0-beta01'
+    implementation 'androidx.dynamicanimation:dynamicanimation:1.0.0'
     // these are actually to override an emoji dependency
-    implementation "com.android.support:cardview-v7:$appcompatVersion"
-    implementation "com.android.support:animated-vector-drawable:$appcompatVersion"
-    implementation "com.android.support:support-v13:$appcompatVersion"
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.vectordrawable:vectordrawable-animated:1.1.0'
+    implementation 'androidx.legacy:legacy-support-v13:1.0.0'
 
     // network/protocol libraries
     implementation "org.igniterealtime.smack:smack-tcp:$smackVersion"
@@ -168,7 +169,7 @@ dependencies {
     implementation 'info.guardianproject.netcipher:netcipher:1.2.1'
     implementation 'com.squareup.okhttp3:okhttp:3.10.0'
     implementation 'com.segment.backo:backo:1.0.0'
-    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'com.google.code.gson:gson:2.8.6'
 
     // encryption libraries
     implementation "com.madgag.spongycastle:core:$spongyCastleVersion"
@@ -183,12 +184,13 @@ dependencies {
     }
 
     // storage/persistence libraries
-    implementation 'android.arch.persistence:db:1.1.1'
-    implementation 'io.requery:sqlite-android:3.24.0'
+    implementation 'androidx.sqlite:sqlite:2.0.1'
+    implementation 'io.requery:sqlite-android:3.29.0'
 
     // UI libraries
-    implementation 'pub.devrel:easypermissions:2.0.1'
+    implementation 'pub.devrel:easypermissions:3.0.0'
     implementation 'com.github.machinarius:preferencefragment:0.1.2'
+    // TODO MaterialDialogs broke the API in version 3
     implementation 'com.afollestad.material-dialogs:core:0.9.6.0'
     implementation 'com.afollestad.material-dialogs:commons:0.9.6.0'
     implementation 'com.github.castorflex.smoothprogressbar:library:1.1.0'
@@ -201,10 +203,9 @@ dependencies {
     // waiting for our pull request to be accepted
     implementation 'com.github.kontalk:CircularReveal:bc59b8dfcf'
     implementation 'me.leolin:ShortcutBadger:1.1.22@aar'
-    implementation 'com.bignerdranch.android:recyclerview-multiselect:0.2'
-    implementation "android.arch.lifecycle:runtime:1.1.1"
-    implementation "android.arch.lifecycle:extensions:1.1.1"
-    implementation 'android.arch.paging:runtime:1.0.1'
+    implementation 'androidx.lifecycle:lifecycle-runtime:2.1.0'
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
+    implementation 'androidx.paging:paging-runtime:2.1.0'
     implementation 'de.hdodenhof:circleimageview:2.1.0'
 
     // other libraries
@@ -214,9 +215,8 @@ dependencies {
     implementation 'com.github.instacart.truetime-android:library:3.3'
     implementation 'org.greenrobot:eventbus:3.1.1'
     annotationProcessor 'org.greenrobot:eventbus-annotation-processor:3.1.1'
-    // version 10 needs AndroidX
-    implementation 'com.jakewharton:butterknife:9.0.0'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:9.0.0'
+    implementation 'com.jakewharton:butterknife:10.2.0'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.0'
 
     // maps libraries
     implementation "com.github.kontalk.AnyMaps:anymaps-base:$anyMapsVersion"
@@ -224,24 +224,26 @@ dependencies {
     googleplayImplementation "com.github.kontalk.AnyMaps:anymaps-google:$anyMapsVersion"
 
     // Google Play Services
-    googleplayImplementation "com.google.android.gms:play-services-base:16.1.0"
-    googleplayImplementation "com.google.android.gms:play-services-maps:16.1.0"
-    googleplayImplementation "com.google.android.gms:play-services-location:16.0.0"
-    googleplayImplementation 'com.google.firebase:firebase-core:16.0.9'
-    googleplayImplementation 'com.google.firebase:firebase-messaging:18.0.0'
+    googleplayImplementation "com.google.android.gms:play-services-base:17.1.0"
+    googleplayImplementation "com.google.android.gms:play-services-maps:17.0.0"
+    googleplayImplementation "com.google.android.gms:play-services-location:17.0.0"
+    googleplayImplementation 'com.google.firebase:firebase-core:17.2.1'
+    googleplayImplementation 'com.google.firebase:firebase-messaging:20.1.0'
     googleplayImplementation('com.crashlytics.sdk.android:crashlytics:2.10.1@aar') {
         transitive = true
     }
 
     // test dependencies
     testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support:multidex-instrumentation:1.0.3'
     androidTestImplementation 'com.google.android:android-test:4.1.1.4'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test:rules:1.0.2'
-    androidTestImplementation "com.android.support:support-annotations:$appcompatVersion"
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-intents:3.0.2'
-    androidTestImplementation 'com.android.support.test:monitor:1.0.2'
+    androidTestImplementation 'androidx.test:runner:1.2.0'
+    androidTestImplementation 'androidx.test:rules:1.2.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.annotation:annotation:1.1.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-intents:3.2.0'
+    androidTestImplementation 'androidx.test:monitor:1.2.0'
     androidTestImplementation 'com.jayway.android.robotium:robotium-solo:5.6.3'
 }
 

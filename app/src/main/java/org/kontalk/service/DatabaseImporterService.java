@@ -30,8 +30,8 @@ import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.os.IBinder;
 import android.os.Process;
-import android.support.annotation.Nullable;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.annotation.Nullable;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import org.kontalk.util.SystemUtils;
 

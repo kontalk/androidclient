@@ -20,8 +20,8 @@ package org.kontalk.ui.view;
 
 import android.content.Context;
 import android.graphics.Typeface;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.widget.TextViewCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.widget.TextViewCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -29,7 +29,6 @@ import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
-import android.widget.Checkable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -45,9 +44,8 @@ import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.util.MessageUtils;
 
 
-public class ConversationListItem extends AvatarListItem implements Checkable {
+public class ConversationListItem extends AvatarListItem {
 
-    private static final int[] CHECKED_STATE_SET = { android.R.attr.state_checked };
     private static final StyleSpan STYLE_BOLD = new StyleSpan(Typeface.BOLD);
     private static final StyleSpan STYLE_ITALIC = new StyleSpan(Typeface.ITALIC);
 
@@ -58,8 +56,6 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
     private ImageView mSticky;
     private ImageView mErrorIndicator;
     private TextView mCounterView;
-
-    private boolean mChecked;
 
     public ConversationListItem(Context context) {
         super(context);
@@ -94,10 +90,10 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
         }
     }
 
-    public final void bind(Context context, final Conversation conv) {
+    public final void bind(Context context, final Conversation conv, boolean selected) {
         mConversation = conv;
 
-        setChecked(false);
+        setActivated(selected);
 
         Contact contact;
         // used for the conversation subject: either group subject or contact name
@@ -306,33 +302,6 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
     @Override
     protected boolean isGroupChat() {
         return mConversation != null && mConversation.isGroupChat();
-    }
-
-    @Override
-    public boolean isChecked() {
-        return mChecked;
-    }
-
-    @Override
-    public void setChecked(boolean checked) {
-        if (checked != mChecked) {
-            mChecked = checked;
-            refreshDrawableState();
-        }
-    }
-
-    @Override
-    protected int[] onCreateDrawableState(int extraSpace) {
-        final int[] drawableState = super.onCreateDrawableState(extraSpace + 1);
-        if (isChecked()) {
-            mergeDrawableStates(drawableState, CHECKED_STATE_SET);
-        }
-        return drawableState;
-    }
-
-    @Override
-    public void toggle() {
-        setChecked(!mChecked);
     }
 
 }

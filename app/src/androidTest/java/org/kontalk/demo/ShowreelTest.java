@@ -30,11 +30,11 @@ import android.Manifest;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.LargeTest;
-import android.support.test.rule.ActivityTestRule;
-import android.support.test.rule.GrantPermissionRule;
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.filters.LargeTest;
+import androidx.test.rule.ActivityTestRule;
+import androidx.test.rule.GrantPermissionRule;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.kontalk.TestServerTest;
 import org.kontalk.TestUtils;
@@ -220,12 +220,12 @@ public class ShowreelTest extends TestServerTest {
     private void markAllUsersRegistered() {
         ContentValues registered = new ContentValues(1);
         registered.put(MyUsers.Users.REGISTERED, 1);
-        InstrumentationRegistry.getTargetContext()
+        InstrumentationRegistry.getInstrumentation().getTargetContext()
             .getContentResolver().update(MyUsers.Users.CONTENT_URI, registered, null, null);
     }
 
     private void deleteAllThreads() {
-        InstrumentationRegistry.getTargetContext()
+        InstrumentationRegistry.getInstrumentation().getTargetContext()
             .getContentResolver().delete(MyMessages.Threads.Conversations.CONTENT_URI, null, null);
     }
 
@@ -267,7 +267,7 @@ public class ShowreelTest extends TestServerTest {
         values.put(MyMessages.Messages.DIRECTION, direction);
         values.put(MyMessages.Messages.TIMESTAMP, time);
 
-        return InstrumentationRegistry.getTargetContext()
+        return InstrumentationRegistry.getInstrumentation().getTargetContext()
             .getContentResolver().insert(MyMessages.Messages.CONTENT_URI, values);
     }
 
@@ -276,7 +276,7 @@ public class ShowreelTest extends TestServerTest {
         markAllUsersRegistered();
         deleteAllThreads();
 
-        Cursor users = InstrumentationRegistry.getTargetContext()
+        Cursor users = InstrumentationRegistry.getInstrumentation().getTargetContext()
             .getContentResolver().query(MyUsers.Users.CONTENT_URI,
                 new String[]{MyUsers.Users.JID}, null, null, null);
         assertNotNull(users);

@@ -35,7 +35,7 @@ import android.os.Build;
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class StartMessageCenterJob extends JobService {
 
-    public static int JOB_ID = 1000;
+    private static int JOB_ID = 1000;
 
     @Override
     public boolean onStartJob(JobParameters params) {
@@ -50,9 +50,13 @@ public class StartMessageCenterJob extends JobService {
 
     public static void schedule(Context context) {
         JobScheduler scheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
-        scheduler.schedule(new JobInfo.Builder(JOB_ID, new ComponentName(context, StartMessageCenterJob.class))
-            // TODO for API level 28 -- .setImportantWhileForeground(true)
-            .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-            .build());
+        JobInfo.Builder builder = new JobInfo
+            .Builder(JOB_ID, new ComponentName(context, StartMessageCenterJob.class))
+            .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            builder.setImportantWhileForeground(true);
+        }
+
+        scheduler.schedule(builder.build());
     }
 }

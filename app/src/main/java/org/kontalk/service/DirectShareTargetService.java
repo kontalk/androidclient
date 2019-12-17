@@ -38,7 +38,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.service.chooser.ChooserTarget;
 import android.service.chooser.ChooserTargetService;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MessagesProviderClient;

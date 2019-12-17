@@ -50,15 +50,15 @@ import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationCompat.BigPictureStyle;
-import android.support.v4.app.NotificationCompat.InboxStyle;
-import android.support.v4.app.NotificationCompat.MessagingStyle;
-import android.support.v4.app.NotificationCompat.Style;
-import android.support.v4.app.NotificationManagerCompat;
-import android.support.v4.app.TaskStackBuilder;
-import android.support.v4.content.ContextCompat;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationCompat.BigPictureStyle;
+import androidx.core.app.NotificationCompat.InboxStyle;
+import androidx.core.app.NotificationCompat.MessagingStyle;
+import androidx.core.app.NotificationCompat.Style;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.TaskStackBuilder;
+import androidx.core.content.ContextCompat;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -933,6 +933,8 @@ public class MessagingNotification {
                 if (!supportsDirectReply())
                     allContent = new SpannableStringBuilder();
 
+                String name = null;
+
                 // single image media, use big picture style
                 NotificationConversation.ConversationMessage soloMessage = content.get(0);
                 if (unread == 1 && soloMessage.media != null && ImageComponent.supportsMimeType(soloMessage.mime)) {
@@ -943,6 +945,14 @@ public class MessagingNotification {
 
                         style = new BigPictureStyle()
                             .bigPicture(bitmap);
+
+                        // show the group name next to the sender in this case
+                        if (conv.groupJid != null) {
+                            Contact contact = Contact.findByUserId(mContext, soloMessage.peer);
+                            name = mContext.getResources().getString(R.string.notification_group_title,
+                                contact.getDisplayName(), (TextUtils.isEmpty(conv.groupSubject) ?
+                                    mContext.getString(R.string.group_untitled) : conv.groupSubject));
+                        }
                     }
                     catch (Exception e) {
                         // unable to load big picture
@@ -953,10 +963,9 @@ public class MessagingNotification {
                     }
                 }
 
-                String name = null;
                 if (style == null) {
                     MessagingStyle msgStyle = new MessagingStyle(mContext.getString(R.string.person_me));
-                    int start = 0;
+                    int start;
                     for (NotificationConversation.ConversationMessage message : content) {
                         Contact contact = Contact.findByUserId(mContext, message.peer);
                         name = contact.getDisplayName();
@@ -985,7 +994,7 @@ public class MessagingNotification {
 
                     style = msgStyle;
                 }
-                else {
+                else if (name == null) {
                     NotificationConversation.ConversationMessage message = content.get(content.size()-1);
                     Contact contact = Contact.findByUserId(mContext, message.peer);
                     name = contact.getDisplayName();
@@ -1052,7 +1061,7 @@ public class MessagingNotification {
                         .getBroadcast(mContext, 0, replyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
                     // reply action
-                    mBuilder.addAction(new android.support.v4.app.NotificationCompat
+                    mBuilder.addAction(new androidx.core.app.NotificationCompat
                         .Action.Builder(R.drawable.ic_menu_reply, mContext.getString(R.string.reply), replyPendingIntent)
                         .addRemoteInput(NotificationActionReceiver.buildReplyInput(mContext))
                         .build()

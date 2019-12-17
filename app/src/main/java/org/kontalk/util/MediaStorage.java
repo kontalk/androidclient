@@ -45,10 +45,10 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.annotation.RawRes;
-import android.support.media.ExifInterface;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.FileProvider;
+import androidx.annotation.RawRes;
+import androidx.exifinterface.media.ExifInterface;
+import androidx.fragment.app.Fragment;
+import androidx.core.content.FileProvider;
 import android.webkit.MimeTypeMap;
 
 import org.kontalk.BuildConfig;

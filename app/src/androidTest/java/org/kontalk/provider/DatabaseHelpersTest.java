@@ -30,9 +30,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.LargeTest;
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.filters.LargeTest;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+
 import android.util.Log;
 
 
@@ -47,7 +48,7 @@ public class DatabaseHelpersTest {
     @Test
     public void testMessagesDatabaseUpgrades() throws IOException {
         // ensure database is closed
-        new MessagesProvider.DatabaseHelper(InstrumentationRegistry.getTargetContext()).close();
+        new MessagesProvider.DatabaseHelper(InstrumentationRegistry.getInstrumentation().getTargetContext()).close();
 
         for (int i = 8; i < MessagesProvider.DatabaseHelper.DATABASE_VERSION; i++) {
             MessagesProvider.DatabaseHelper dbHelper = null;
@@ -62,7 +63,7 @@ public class DatabaseHelpersTest {
 
             try {
                 dbHelper = new MessagesProvider
-                    .DatabaseHelper(InstrumentationRegistry.getTargetContext());
+                    .DatabaseHelper(InstrumentationRegistry.getInstrumentation().getTargetContext());
                 Assert.assertEquals(MessagesProvider.DatabaseHelper.DATABASE_VERSION,
                     dbHelper.getWritableDatabase().getVersion());
             }
@@ -75,7 +76,7 @@ public class DatabaseHelpersTest {
 
     @Test
     public void testUsersDatabaseUpgrades() throws IOException {
-        new UsersProvider.DatabaseHelper(InstrumentationRegistry.getTargetContext()).close();
+        new UsersProvider.DatabaseHelper(InstrumentationRegistry.getInstrumentation().getTargetContext()).close();
 
         for (int i = 7; i < UsersProvider.DATABASE_VERSION; i++) {
             UsersProvider.DatabaseHelper dbHelper = null;
@@ -90,7 +91,7 @@ public class DatabaseHelpersTest {
 
             try {
                 dbHelper = new UsersProvider
-                    .DatabaseHelper(InstrumentationRegistry.getTargetContext());
+                    .DatabaseHelper(InstrumentationRegistry.getInstrumentation().getTargetContext());
                 Assert.assertEquals(UsersProvider.DATABASE_VERSION,
                     dbHelper.getWritableDatabase().getVersion());
             }
@@ -102,11 +103,11 @@ public class DatabaseHelpersTest {
     }
 
     private void copyDatabase(String prefix, String dbNameDest, int version) throws IOException {
-        String dbPath = InstrumentationRegistry.getTargetContext()
+        String dbPath = InstrumentationRegistry.getInstrumentation().getTargetContext()
             .getDatabasePath(dbNameDest).getAbsolutePath();
 
         String dbName = String.format(Locale.US, prefix + "_v%d.db", version);
-        InputStream mInput = InstrumentationRegistry.getContext().getAssets().open(dbName);
+        InputStream mInput = InstrumentationRegistry.getInstrumentation().getContext().getAssets().open(dbName);
 
         File db = new File(dbPath);
         if (!db.exists()){

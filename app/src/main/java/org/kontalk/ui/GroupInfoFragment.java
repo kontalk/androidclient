@@ -40,9 +40,9 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ListFragment;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.ListFragment;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -742,8 +742,8 @@ public class GroupInfoFragment extends ListFragment
             synchronized (mMembers) {
                 for (GroupMember m : mMembers) {
                     Contact c = m.contact;
-                    if (c.isKeyChanged() || c.getTrustedLevel() == Keyring.TRUST_UNKNOWN) {
-                        String fingerprint = c.getFingerprint();
+                    String fingerprint = c.getFingerprint();
+                    if (fingerprint != null && (c.isKeyChanged() || c.getTrustedLevel() == Keyring.TRUST_UNKNOWN)) {
                         Keyring.setTrustLevel(mContext, c.getJID(), fingerprint, Keyring.TRUST_IGNORED);
                         Contact.invalidate(c.getJID());
                     }

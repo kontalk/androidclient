@@ -33,7 +33,6 @@ import java.util.Map;
 import org.greenrobot.eventbus.EventBus;
 import org.jxmpp.jid.impl.JidCreate;
 
-import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -41,8 +40,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.ContextCompat;
+
+import androidx.annotation.NonNull;
+import androidx.core.app.JobIntentService;
+import androidx.core.app.NotificationCompat;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
@@ -76,8 +77,10 @@ import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOAD_OK;
  * TODO implement multiple downloads in queue or in parallel
  * @author Daniele Ricci
  */
-public class DownloadService extends IntentService implements DownloadListener {
+public class DownloadService extends JobIntentService implements DownloadListener {
     private static final String TAG = MessageCenterService.TAG;
+
+    private static final int JOB_ID = 1001;
 
     // used only for events to UI
     private static final EventBus BUS;
@@ -123,41 +126,22 @@ public class DownloadService extends IntentService implements DownloadListener {
     private ClientHTTPConnection mDownloadClient;
     private boolean mCanceled;
 
-    public DownloadService() {
-        super(DownloadService.class.getSimpleName());
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        if (mNotificationManager == null)
+            mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        // crappy firmware - as per docs, intent can't be null in this case
-        if (intent != null) {
-            if (mNotificationManager == null)
-                mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-            if (ACTION_DOWNLOAD_ABORT.equals(intent.getAction())) {
-                final Uri uri = intent.getData();
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        onDownloadAbort(uri);
-                    }
-                }).start();
-            }
-        }
-
-        return super.onStartCommand(intent, flags, startId);
-    }
-
-    @Override
-    protected void onHandleIntent(Intent intent) {
-        // crappy firmware - as per docs, intent can't be null in this case
-        if (intent == null)
-            return;
-
+    protected void onHandleWork(@NonNull Intent intent) {
         String action = intent.getAction();
 
         if (ACTION_DOWNLOAD_URL.equals(action)) {
             onDownloadURL(intent.getData(), intent.getExtras());
+        }
+        else if (ACTION_DOWNLOAD_ABORT.equals(intent.getAction())) {
+            onDownloadAbort(intent.getData());
         }
     }
 
@@ -484,14 +468,14 @@ public class DownloadService extends IntentService implements DownloadListener {
         i.putExtra(EXTRA_MSG_ENCRYPTED, encrypted);
         i.putExtra(EXTRA_NOTIFY, notify);
         i.setData(Uri.parse(url));
-        ContextCompat.startForegroundService(context, i);
+        enqueueWork(context, DownloadService.class, JOB_ID, i);
     }
 
     public static void abort(Context context, Uri uri) {
         Intent i = new Intent(context, DownloadService.class);
         i.setAction(ACTION_DOWNLOAD_ABORT);
         i.setData(uri);
-        ContextCompat.startForegroundService(context, i);
+        enqueueWork(context, DownloadService.class, JOB_ID, i);
     }
 
     public static class WritePermissionDenied {

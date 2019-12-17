@@ -43,11 +43,10 @@ import android.provider.BaseColumns;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.RawContacts;
-import android.support.annotation.NonNull;
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 
 import io.requery.android.database.sqlite.SQLiteDatabase;
-import io.requery.android.database.sqlite.SQLiteDatabaseConfiguration;
 import io.requery.android.database.sqlite.SQLiteOpenHelper;
 import io.requery.android.database.sqlite.SQLiteQueryBuilder;
 import io.requery.android.database.sqlite.SQLiteStatement;
@@ -175,16 +174,16 @@ public class UsersProvider extends ContentProvider {
             SCHEMA_KEYS,
         };
 
-        private Context mContext;
-
         /** This will be set to true when database is new. */
         private boolean mNew;
-        /** A read-only connection to the database. */
-        private SQLiteDatabase dbReader;
 
         DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
-            mContext = context;
+        }
+
+        @Override
+        public void onOpen(SQLiteDatabase db) {
+            db.enableWriteAheadLogging();
         }
 
         @Override
@@ -227,33 +226,8 @@ public class UsersProvider extends ContentProvider {
             }
         }
 
-        @Override
-        public void onOpen(SQLiteDatabase db) {
-            String path = mContext.getDatabasePath(DATABASE_NAME).getPath();
-            SQLiteDatabaseConfiguration configuration =
-                createConfiguration(path, SQLiteDatabase.OPEN_READONLY);
-            dbReader = SQLiteDatabase.openDatabase(configuration, null, null);
-        }
-
         public boolean isNew() {
             return mNew;
-        }
-
-        @Override
-        public synchronized void close() {
-            try {
-                dbReader.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-            dbReader = null;
-            super.close();
-        }
-
-        @Override
-        public synchronized SQLiteDatabase getReadableDatabase() {
-            return (dbReader != null) ? dbReader : super.getReadableDatabase();
         }
     }
 

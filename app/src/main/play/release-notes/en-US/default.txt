@@ -1,11 +1,12 @@
 Registration provider kindly offered by https://JMP.Chat
 Help us improve and fix bugs by reporting them on GitHub or discussing them on our forum!
 
-* NEW: archive chats
-* NEW: copy multiple messages to clipboard
-* Support for notification categories
-* Smoother first-time chat workflow: accepted invitation is no longer required to chat
-* New emojis
-* Improved chat list screen
-* Several performance improvements
-* Lots of bugs fixed
+* Group chat indicator in chat list
+* Support for Android Oreo
+* Support for multiwindow
+* Improve registration screen
+* Smack upgraded to 4.3.1
+* Faster reconnection on faulty networks
+* Fix several crashes and other bugs
+* Fix broken static maps
+* Picture notification for groups now correctly shows group title

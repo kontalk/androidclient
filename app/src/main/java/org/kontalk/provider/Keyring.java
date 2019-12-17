@@ -33,7 +33,7 @@ import org.spongycastle.openpgp.PGPPublicKeyRing;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
 import android.text.TextUtils;
 
 import org.kontalk.Log;

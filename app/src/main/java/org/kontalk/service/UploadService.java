@@ -27,15 +27,17 @@ import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.ContextCompat;
+import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.core.app.JobIntentService;
+import androidx.core.app.NotificationCompat;
 
 import org.kontalk.Log;
 import org.kontalk.R;
@@ -59,8 +61,10 @@ import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_UPLOAD_ERROR;
  * TODO implement multiple concurrent uploads
  * @author Daniele Ricci
  */
-public class UploadService extends IntentService implements ProgressListener {
+public class UploadService extends JobIntentService implements ProgressListener {
     private static final String TAG = MessageCenterService.TAG;
+
+    private static final int JOB_ID = 1002;
 
     /** A map to avoid duplicate uploads. */
     private static final Map<String, Long> queue = new LinkedHashMap<>();
@@ -91,8 +95,11 @@ public class UploadService extends IntentService implements ProgressListener {
     private UploadConnection mConn;
     private boolean mCanceled;
 
-    public UploadService() {
-        super(UploadService.class.getSimpleName());
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        if (mNotificationManager == null)
+            mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
     @Override
@@ -124,27 +131,31 @@ public class UploadService extends IntentService implements ProgressListener {
     }
 
     @Override
-    protected void onHandleIntent(Intent intent) {
-        // crappy firmware - as per docs, intent can't be null in this case
-        if (intent == null)
-            return;
-        // check for unknown action
-        if (!ACTION_UPLOAD.equals(intent.getAction()))
-            return;
+    protected void onHandleWork(@NonNull Intent intent) {
+        String action = intent.getAction();
 
+        if (ACTION_UPLOAD.equals(action)) {
+            onUploadURL(intent.getData(), intent.getExtras());
+        }
+        else if (ACTION_UPLOAD_ABORT.equals(intent.getAction())) {
+            onUploadAbort(intent.getData());
+        }
+
+    }
+
+    private void onUploadURL(Uri file, Bundle args) {
         // local file to upload
-        Uri file = intent.getData();
         String filename = file.toString();
         // message database id
-        long databaseId = intent.getLongExtra(EXTRA_DATABASE_ID, 0);
+        long databaseId = args.getLong(EXTRA_DATABASE_ID, 0);
         // url to post to
-        String url = intent.getStringExtra(EXTRA_POST_URL);
+        String url = args.getString(EXTRA_POST_URL);
         // url to fetch from (will be requested to the connection if null)
-        String fetchUrl = intent.getStringExtra(EXTRA_GET_URL);
+        String fetchUrl = args.getString(EXTRA_GET_URL);
         // media mime type
-        String mime = intent.getStringExtra(EXTRA_MIME);
+        String mime = args.getString(EXTRA_MIME);
         // delete original
-        boolean deleteOriginal = intent.getBooleanExtra(EXTRA_DELETE_ORIGINAL, false);
+        boolean deleteOriginal = args.getBoolean(EXTRA_DELETE_ORIGINAL, false);
 
         // check if upload has already been queued
         if (queue.get(filename) != null) return;
@@ -191,6 +202,22 @@ public class UploadService extends IntentService implements ProgressListener {
 
             queue.remove(filename);
             mMessageId = 0;
+        }
+    }
+
+    private void onUploadAbort(Uri uri) {
+        String filename = uri.toString();
+        // TODO check for race conditions on queue
+        Long msgId = queue.get(filename);
+        if (msgId != null) {
+            // interrupt worker if running
+            if (msgId == mMessageId) {
+                mConn.abort();
+                mCanceled = true;
+            }
+            // remove from queue - will never be processed
+            else
+                queue.remove(filename);
         }
     }
 
@@ -320,6 +347,6 @@ public class UploadService extends IntentService implements ProgressListener {
         i.putExtra(UploadService.EXTRA_MIME, mime);
         // delete original (actually it's the encrypted temp file) if we already encrypted it
         i.putExtra(UploadService.EXTRA_DELETE_ORIGINAL, deleteOriginal);
-        ContextCompat.startForegroundService(context, i);
+        enqueueWork(context, UploadService.class, JOB_ID, i);
     }
 }
