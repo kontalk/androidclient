@@ -22,8 +22,6 @@ import org.kontalk.R;
 import org.kontalk.util.SystemUtils;
 
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
@@ -104,8 +102,7 @@ public class AboutFragment extends Fragment implements OnClickListener {
     }
 
     private void startUrl(String url) {
-        Intent link = SystemUtils.externalIntent(Intent.ACTION_VIEW, Uri.parse(url));
-        startActivity(link);
+        SystemUtils.openURL(getContext(), url);
     }
 
 }
