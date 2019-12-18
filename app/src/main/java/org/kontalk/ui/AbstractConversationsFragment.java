@@ -171,8 +171,11 @@ public abstract class AbstractConversationsFragment extends Fragment
 
                 @Override
                 public boolean canSetStateAtPosition(int position, boolean nextState) {
-                    Long key = keyProvider.getKey(position);
-                    return key != null && key > 0;
+                    if (position >= 0) {
+                        Long key = keyProvider.getKey(position);
+                        return key != null && key > 0;
+                    }
+                    return false;
                 }
 
                 @Override
