@@ -173,7 +173,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     public static boolean isThrottling() {
         long lastSync = Preferences.getLastSyncTimestamp();
-        float diff = (System.currentTimeMillis() - lastSync) / 1000;
+        float diff = (System.currentTimeMillis() - lastSync) / 1000f;
         return (lastSync >= 0 && diff < MAX_SYNC_DELAY);
     }
 
