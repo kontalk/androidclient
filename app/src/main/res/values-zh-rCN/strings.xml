@@ -152,7 +152,7 @@
     <string name="err_validation_nonetwork">没有可用的因特网连接。Kontalk需要一个活动的因特网连接才能工作。</string>
     <string name="err_validation_network_error">无法连接到服务器。请稍后重试。</string>
     <string name="err_validation_server_not_supported">选择的服务器不支持注册。请在设置页面设置新的服务器。</string>
-    <string name="err_validation_user_exists"><b>你使用的手机号码已经被注册到了Kontalk.</b>如果你已经注册了另一个设备，继续注册将会将原始设备从Kontalk网络注销。请参考我们的文档，有关如何在多设备间复制账户。选择确定强制继续。</string>
+    <string name="err_validation_user_exists"><b>你使用的手机号码已经被注册到了Kontalk.</b>如果你已经注册了另一个设备，继续注册将会使原账户从Kontalk网络注销。如果你准备注册到你的新设备，请选择传送账户。</string>
     <string name="text_encrypted">（已加密）</string>
     <string name="peer_unknown">（未知）</string>
     <string name="msg_draft_saved">消息已被存为草稿。</string>
@@ -172,7 +172,7 @@
     <string name="title_invalid_number">无效的号码</string>
     <string name="err_store_message_failed">无法将消息存储到发件箱。</string>
     <string name="msg_invalid_number">请输入有效的手机号码。</string>
-    <string name="msg_invalid_cc">请输入有效的国家代码。</string>
+    <string name="msg_invalid_cc">请选择一个国家。</string>
     <string name="title_invalid_code">无效的代码</string>
     <string name="msg_invalid_code">请输入有效的代码。</string>
     <string name="title_nonetwork">没有因特网连接</string>
@@ -630,4 +630,154 @@
 
     <string name="audio_duration_max">%1$s / %2$s</string>
 
-    </resources>
+    <string name="menu_import_device">从另一个设备注册</string>
+    <string name="pref_account_settings">账户</string>
+    <string name="open_conversation">查看</string>
+    <string name="menu_ctx_archive_threads">归档</string>
+    <string name="menu_ctx_unarchive_threads">解档</string>
+    <string name="menu_ctx_delete_threads">删除</string>
+    <string name="location_message">位置信息</string>
+    <string name="position_screen_title">位置</string>
+    <string name="text_archived_conversations_empty">要归档聊天信息，从主屏幕选择它们，并使用工具栏的<b>归档</b>按键。</string>
+    <string name="seen_offline_label">离线</string>
+    <string name="seen_group_typing_label_one">%s 正在输入……</string>
+    <string name="seen_group_typing_label_two">%1$s 与 %2$s 正在输入……</string>
+    <string name="seen_group_typing_label_more">%d 人正在输入……</string>
+    <string name="pref_maps_google_label">Google Maps</string>
+    <string name="pref_maps_osm_label">OpenStreetMap</string>
+
+    <string name="notification_location">已向你发送了位置</string>
+    <string name="location_no_result">没有结果</string>
+    <string name="places_nearby">附近有什么</string>
+    <string name="send_selected_location">发送已选位置</string>
+    <string name="send_location">发送你的当前位置</string>
+    <string name="accurate_to">精确到%1$s米</string>
+    <string name="meters_away">%d米远</string>
+    <string name="kilometers_away">%.2f公里远</string>
+    <string name="loading">正在载入……</string>
+    <string name="your_position">你</string>
+    <string name="err_googlemaps_fallback_osm">Google Maps不可用，正在回退到OpenStreetMap。</string>
+    <string name="err_location_no_providers">没有位置提供商，找不到当前位置。</string>
+    <string name="err_location_access_unknown_error">无法请求到位置服务。</string>
+    <string name="err_location_permission">获取位置被拒绝。</string>
+    <string name="msg_location_disabled">我们需要获取位置，确认选择后前去设置界面并启用它。</string>
+
+    <string name="menu_open_map">在地图中打开</string>
+    <string name="menu_map">地图</string>
+    <string name="menu_satellite">卫星</string>
+
+    <string name="pref_server_messages">接收服务器信息</string>
+    <string name="pref_title_server_messages">允许服务器管理员的消息推送，禁用该特性将导致错过重要信息。</string>
+
+    <string name="notification_ticker_service_running">Kontalk正在后台运行</string>
+    <string name="notification_text_service_running">触摸以打开</string>
+
+    <string name="err_audio_record_permission">麦克风访问被拒绝。</string>
+    <string name="err_audio_record_writing_permission">外置存储器访问被拒绝。</string>
+    <string name="pref_location_settings">位置</string>
+    <string name="pref_maps_service">服务提供商</string>
+
+    <string name="msg_request_doze_failed_manual">请在下一个屏幕将Kontalk标记为未优化的。</string>
+    <string name="msg_request_doze_failed_all">找不到电池优化设置，将切回系统设置界面。</string>
+
+    <string name="pref_foreground_service">启用前台服务</string>
+    <string name="pref_title_foreground_service">如果你想让Kontalk驻扎在后台时占用较低资源可以启动该选项，这样就会显示一个类似告示贴的提醒。</string>
+    <string name="pref_title_foreground_service_mandatory">Kontalk需要这些设置才能正常工作</string>
+
+    <string name="menu_import_messages">导入信息</string>
+
+    <string name="pref_copy_database">拷贝数据库</string>
+    <string name="msg_copy_database_success">数据库拷贝到了：%s</string>
+    <string name="msg_copy_database_failed">数据库拷贝失败：%s</string>
+
+    <string name="registration_accept_terms_title">接受服务条款？</string>
+    <string name="registration_accept_terms_text">位于&lt;b&gt;%1$s&lt;/b&gt;的服务器正在申请&lt;a href=%2$s&gt;接受服务条款&lt;/a&gt;。</string>
+
+    <string name="pref_service_terms">服务条款</string>
+
+    <string name="pref_register_device">注册设备</string>
+    <string name="register_device_title">注册设备</string>
+    <string name="register_device_instructions">扫描下面的二维码或者手动从其它设备输入下列数据。</string>
+    <string name="register_device_request_error">申请设备注册时发生错误。</string>
+    <string name="register_device_requesting">正在申请注册……</string>
+    <string name="register_device_nonetwork">没有网络，请稍后重试。</string>
+    <string name="register_device_offline">离线模式已启用。</string>
+
+    <string name="import_device_title">导入账户</string>
+    <string name="import_device_instructions">输入其它设备出现的申请数据。</string>
+    <string name="import_device_hint_account">手机号码</string>
+    <string name="import_device_hint_server">服务器名</string>
+    <string name="import_device_hint_token">秘码</string>
+    <string name="err_import_device_fill_all">请填入所有字段。</string>
+    <string name="import_device_requesting">正在申请账户……</string>
+    <string name="import_device_invalid_barcode">未在二维码中发现有效数据。</string>
+    <string name="import_device_scan_screen_title">扫描秘码</string>
+    <string name="import_device_btn_scan">扫描二维码</string>
+    <string name="import_device_btn_input">手动输入</string>
+    <string name="import_device_message">要在在另一设备打开Kontalk，选择菜单&gt;设置&gt;维护&gt;注册设备后将会显示一个秘码和条形码。</string>
+
+    <string name="btn_device_overwrite">我丢失了旧帐户或者设备</string>
+    <string name="btn_device_import">传送账户</string>
+
+    <string name="contactinfo_activity_title">联系人信息</string>
+    <string name="contactinfo_last_seen">最后上线 %s</string>
+    <string name="contactinfo_phone_number">手机号码</string>
+    <string name="contactinfo_fingerprint">指纹</string>
+    <string name="contactinfo_userid">用户ID</string>
+
+    <string name="btn_reply_cancel_description">取消回复</string>
+    <string name="reply_message_deleted">信息已被删除。</string>
+
+    <string name="title_archived_threads">归档的信息</string>
+    <string name="footer_archived_threads">归档的信息 （%d）</string>
+
+    <string name="err_validation_contacts_denied">Kontalk需要或者获取联系人的权限才能正确工作，否则如何才能知道你和谁聊天呢？你可以现在取消，但是一旦你注册成功后还会被再次提醒。</string>
+    <string name="err_contacts_denied">Kontalk需要或者获取联系人的权限才能正确工作，否则如何才能知道你和谁聊天呢？你可以现在取消，但是一旦你注册成功后还会被再次提醒。</string>
+    <string name="warn_contacts_denied">你禁用了获取联系人的权限，将不再在这里看到联系人的变动。</string>
+    <string name="err_camera_scanner_denied">为了从别的设备扫描二维码，我们需要取得你的摄像头权限。</string>
+    <string name="err_camera_picture_denied">我们需要获取你的摄像头权限来拍照。</string>
+
+    <string name="err_audio_or_storage_denied">我们需要获取麦克风权限来录制你的声音，以及外置存储器权限来保存你的声音。</string>
+
+    <string name="err_storage_denied">Kontalk需要获取本地存储器权限来存储媒体文件，你可以从安卓设置里面允许这项权限。</string>
+    <string name="err_storage_denied_interactive">Kontalk需要从本地存储器里保存媒体文件，我们现在请求获取。</string>
+
+    <string name="err_location_denied">如果你想要分享位置，我们需要取得权限。</string>
+
+    <string name="err_validation_phone_state_denied">如果你允许Kontalk处理电话呼叫，它将会自动检测到你的电话号码。Kontalk不会使用获取的权限干一些其它的事情。</string>
+
+    <string name="notify_ticker_download_permission_denied_error">下载媒体文件需要获取权限</string>
+    <string name="notify_title_download_permission_denied_error">需要权限</string>
+    <string name="notify_summary_download_permission_denied_error">触摸了解更多。</string>
+
+    <string name="err_emoji_disabled_in_multiwindow">无法在多窗口模式使用Emoji表情。</string>
+
+    <string name="permission_messages_label">获取Kontalk信息</string>
+    <string name="permission_messages_description">允许读取和写入Kontalk信息数据库</string>
+    <string name="permission_users_label">获取Kontalk用户信息</string>
+    <string name="permission_users_description">允许从Kontalk用户数据库和Keyring里面读取写入</string>
+
+    <string name="pref_enable_outgoing_sound">发出信息后播放声音</string>
+
+    <string name="contact_name_server">你的服务器</string>
+
+    <string name="notify_incoming_message_channel_name">信息</string>
+    <string name="notify_incoming_message_channel_description">接收到的信息</string>
+
+    <string name="notify_media_download_channel_name">下载</string>
+    <string name="notify_media_download_channel_description">媒体下载</string>
+
+    <string name="notify_media_upload_channel_name">上传</string>
+    <string name="notify_media_upload_channel_description">媒体上传</string>
+
+    <string name="notify_message_center_channel_name">信息中心</string>
+    <string name="notify_message_center_channel_description">（必须）使Kontalk服务常驻</string>
+
+    <string name="notify_other_channel_name">其它</string>
+    <string name="notify_other_channel_description">其它提示</string>
+
+    <plurals name="group_people_online">
+	<item quantity="other">%d 在线</item>
+</plurals>
+
+</resources>
