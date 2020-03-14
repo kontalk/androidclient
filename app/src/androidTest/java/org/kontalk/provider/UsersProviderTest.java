@@ -27,8 +27,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jxmpp.util.XmppStringUtils;
 import org.kontalk.util.XMPPUtils;
-import org.spongycastle.openpgp.PGPException;
-import org.spongycastle.openpgp.PGPPublicKeyRing;
+import org.bouncycastle.openpgp.PGPException;
+import org.bouncycastle.openpgp.PGPPublicKeyRing;
 
 import android.annotation.TargetApi;
 import android.database.Cursor;

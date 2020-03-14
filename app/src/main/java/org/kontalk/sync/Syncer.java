@@ -25,7 +25,7 @@ import java.util.Map;
 
 import org.greenrobot.eventbus.EventBus;
 import org.jxmpp.util.XmppStringUtils;
-import org.spongycastle.openpgp.PGPPublicKey;
+import org.bouncycastle.openpgp.PGPPublicKey;
 
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;

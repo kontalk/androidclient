@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.jxmpp.jid.BareJid;
-import org.spongycastle.openpgp.PGPException;
+import org.bouncycastle.openpgp.PGPException;
 
 import android.accounts.AbstractAccountAuthenticator;
 import android.accounts.Account;

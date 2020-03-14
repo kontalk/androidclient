@@ -25,7 +25,7 @@ import org.kontalk.R;
 import org.kontalk.crypto.PersonalKeyImporter;
 
 import org.jivesoftware.smack.packet.Stanza;
-import org.spongycastle.openpgp.PGPException;
+import org.bouncycastle.openpgp.PGPException;
 
 import java.io.IOException;
 import java.security.NoSuchProviderException;

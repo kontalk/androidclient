@@ -32,7 +32,7 @@ import com.amulyakhare.textdrawable.util.ColorGenerator;
 import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.stringprep.XmppStringprepException;
 import org.jxmpp.util.XmppStringUtils;
-import org.spongycastle.openpgp.PGPPublicKeyRing;
+import org.bouncycastle.openpgp.PGPPublicKeyRing;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;

@@ -33,9 +33,9 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.spongycastle.bcpg.ArmoredInputStream;
-import org.spongycastle.openpgp.PGPException;
-import org.spongycastle.operator.OperatorCreationException;
+import org.bouncycastle.bcpg.ArmoredInputStream;
+import org.bouncycastle.openpgp.PGPException;
+import org.bouncycastle.operator.OperatorCreationException;
 
 import org.kontalk.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.provider.Keyring;

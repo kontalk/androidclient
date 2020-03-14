@@ -169,14 +169,13 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
 
     // encryption libraries
-    implementation "com.madgag.spongycastle:core:$spongyCastleVersion"
-    implementation ("com.madgag.spongycastle:prov:$spongyCastleVersion") {
+    implementation ("org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion") {
         exclude group: 'junit'
     }
-    implementation ("com.madgag.spongycastle:bcpkix-jdk15on:$spongyCastleVersion") {
+    implementation ("org.bouncycastle:bcpkix-jdk15on:$bouncyCastleVersion") {
         exclude group: 'junit'
     }
-    implementation ("com.madgag.spongycastle:bcpg-jdk15on:$spongyCastleVersion") {
+    implementation ("org.bouncycastle:bcpg-jdk15on:$bouncyCastleVersion") {
         exclude group: 'junit'
     }
 

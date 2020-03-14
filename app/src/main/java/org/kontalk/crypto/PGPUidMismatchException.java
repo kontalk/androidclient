@@ -18,7 +18,7 @@
 
 package org.kontalk.crypto;
 
-import org.spongycastle.openpgp.PGPException;
+import org.bouncycastle.openpgp.PGPException;
 
 
 /**

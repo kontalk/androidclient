@@ -35,7 +35,7 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.sasl.SASLError;
 import org.jivesoftware.smack.sasl.SASLErrorException;
-import org.spongycastle.openpgp.PGPException;
+import org.bouncycastle.openpgp.PGPException;
 
 import android.annotation.SuppressLint;
 import android.content.Context;

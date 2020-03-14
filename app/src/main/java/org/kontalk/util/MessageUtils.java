@@ -34,7 +34,7 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 
 import org.jivesoftware.smack.util.StringUtils;
-import org.spongycastle.openpgp.PGPException;
+import org.bouncycastle.openpgp.PGPException;
 
 import android.content.ContentValues;
 import android.content.Context;

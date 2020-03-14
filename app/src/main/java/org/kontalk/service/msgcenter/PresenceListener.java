@@ -28,8 +28,8 @@ import org.jivesoftware.smack.roster.SubscribeListener;
 import org.jivesoftware.smack.roster.packet.RosterPacket;
 import org.jivesoftware.smackx.delay.packet.DelayInformation;
 import org.jxmpp.jid.Jid;
-import org.spongycastle.openpgp.PGPPublicKey;
-import org.spongycastle.openpgp.PGPPublicKeyRing;
+import org.bouncycastle.openpgp.PGPPublicKey;
+import org.bouncycastle.openpgp.PGPPublicKeyRing;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;

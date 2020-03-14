@@ -61,8 +61,8 @@ import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.jxmpp.util.XmppStringUtils;
-import org.spongycastle.openpgp.PGPException;
-import org.spongycastle.operator.OperatorCreationException;
+import org.bouncycastle.openpgp.PGPException;
+import org.bouncycastle.operator.OperatorCreationException;
 
 import android.Manifest;
 import android.accounts.AccountManager;

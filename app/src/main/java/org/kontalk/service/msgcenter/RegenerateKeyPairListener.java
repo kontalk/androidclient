@@ -26,7 +26,7 @@ import java.security.cert.CertificateException;
 import org.jivesoftware.smack.packet.Stanza;
 import org.kontalk.Kontalk;
 import org.kontalk.util.XMPPUtils;
-import org.spongycastle.openpgp.PGPException;
+import org.bouncycastle.openpgp.PGPException;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;

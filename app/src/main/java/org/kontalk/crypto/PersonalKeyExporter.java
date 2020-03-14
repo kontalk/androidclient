@@ -33,10 +33,10 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.spongycastle.bcpg.ArmoredOutputStream;
-import org.spongycastle.openpgp.PGPException;
-import org.spongycastle.util.io.pem.PemObject;
-import org.spongycastle.util.io.pem.PemWriter;
+import org.bouncycastle.bcpg.ArmoredOutputStream;
+import org.bouncycastle.openpgp.PGPException;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemWriter;
 
 import org.kontalk.provider.Keyring;
 

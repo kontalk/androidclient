@@ -33,7 +33,7 @@ allprojects {
         targetSdkVersion = 27
         compileSdkVersion = 29
         smackVersion = project(':client-common-java').smackVersion
-        spongyCastleVersion = '1.58.0.0'
+        bouncyCastleVersion = '1.64'
         anyMapsVersion = '962c4b5cf8'
 
         travisBuild = System.getenv("TRAVIS") == "true"

@@ -35,8 +35,8 @@ import org.jivesoftware.smackx.iqregister.packet.Registration;
 import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
-import org.spongycastle.openpgp.PGPException;
-import org.spongycastle.openpgp.PGPPublicKey;
+import org.bouncycastle.openpgp.PGPException;
+import org.bouncycastle.openpgp.PGPPublicKey;
 
 import android.text.TextUtils;
 import android.util.Base64;
