@@ -29,6 +29,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.PublicKey;
+import java.security.Security;
 import java.security.SignatureException;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Date;
@@ -158,8 +159,9 @@ public class PGP {
 
     public static void registerProvider() {
         // create Bouncy Castle provider
-        // do not register it as can cause issues on some devices
         PROVIDER = new BouncyCastleProvider();
+        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+        Security.addProvider(PROVIDER);
         try {
             // apply RNG fixes
             PRNGFixes.apply();
