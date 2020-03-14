@@ -28,6 +28,7 @@ import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smackx.iqregister.provider.RegistrationProvider;
 import org.jivesoftware.smackx.iqversion.VersionManager;
 import org.jivesoftware.smackx.xdata.provider.DataFormProvider;
+import org.minidns.dnsserverlookup.android21.AndroidUsingLinkProperties;
 
 import android.content.Context;
 
@@ -45,6 +46,10 @@ public class SmackInitializer {
     public static void initialize(Context context) {
         if (!sInitialized) {
             disableSmackDefault();
+
+            // DNS for Android stuff
+            // won't be used if not needed/available
+            AndroidUsingLinkProperties.setup(context);
 
             InputStream is = context.getResources().openRawResource(R.raw.service);
             ProviderManager.addLoader(new ProviderFileLoader(is));
