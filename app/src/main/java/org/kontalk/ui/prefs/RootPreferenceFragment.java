@@ -18,8 +18,6 @@
 
 package org.kontalk.ui.prefs;
 
-import com.github.machinarius.preferencefragment.PreferenceFragment;
-
 import android.content.Context;
 import android.os.Bundle;
 import android.view.MenuItem;
