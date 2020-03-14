@@ -29,9 +29,7 @@ import org.kontalk.R;
 public class LocationFragment extends RootPreferenceFragment {
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         // Load the preferences from an XML resource
         addPreferencesFromResource(R.xml.preferences_location);
     }

@@ -25,10 +25,11 @@ import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceManager;
-import androidx.core.content.ContextCompat;
 import android.text.TextUtils;
+
+import androidx.preference.Preference;
+import androidx.preference.PreferenceManager;
+import androidx.core.content.ContextCompat;
 
 import com.afollestad.materialdialogs.color.ColorChooserDialog;
 
@@ -45,9 +46,7 @@ public class NotificationFragment extends RootPreferenceFragment {
     private static final int REQUEST_PICK_RINGTONE = Activity.RESULT_FIRST_USER + 2;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         // Load the preferences from an XML resource
         addPreferencesFromResource(R.xml.preferences_notification);
 

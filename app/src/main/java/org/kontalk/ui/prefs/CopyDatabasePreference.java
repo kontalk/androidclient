@@ -22,7 +22,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 import android.os.Environment;
-import android.preference.Preference;
+import androidx.preference.Preference;
 import android.util.AttributeSet;
 import android.widget.Toast;
 

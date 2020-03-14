@@ -24,11 +24,12 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.preference.Preference;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
-import android.widget.Toast;
+import androidx.preference.Preference;
 
 import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
@@ -47,9 +48,7 @@ public class NetworkFragment extends RootPreferenceFragment {
     ServerListUpdater mServerlistUpdater;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         // Load the preferences from an XML resource
         addPreferencesFromResource(R.xml.preferences_network);
 

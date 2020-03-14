@@ -19,7 +19,7 @@
 package org.kontalk.ui.prefs;
 
 import android.os.Bundle;
-import android.preference.Preference;
+import androidx.preference.Preference;
 
 import org.kontalk.R;
 
@@ -29,9 +29,7 @@ import org.kontalk.R;
 public class MessagingFragment extends RootPreferenceFragment {
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         // Load the preferences from an XML resource
         addPreferencesFromResource(R.xml.preferences_messaging);
     }

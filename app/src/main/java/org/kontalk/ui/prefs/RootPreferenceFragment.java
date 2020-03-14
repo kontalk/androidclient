@@ -24,12 +24,14 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.MenuItem;
 
+import androidx.preference.PreferenceFragmentCompat;
+
 
 /**
  * Base class for root preference fragments.
  * @author Daniele Ricci
  */
-public abstract class RootPreferenceFragment extends PreferenceFragment {
+public abstract class RootPreferenceFragment extends PreferenceFragmentCompat {
 
     private Callback mCallback;
 

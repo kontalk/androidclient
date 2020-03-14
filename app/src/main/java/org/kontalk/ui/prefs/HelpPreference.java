@@ -21,7 +21,7 @@ package org.kontalk.ui.prefs;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
-import android.preference.Preference;
+import androidx.preference.Preference;
 import android.util.AttributeSet;
 
 import org.kontalk.R;

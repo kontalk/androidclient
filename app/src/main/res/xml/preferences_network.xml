@@ -20,8 +20,8 @@
 
     <Preference android:key="pref_update_server_list"
         android:title="@string/pref_update_server_list"
-        android:layout="@layout/md_preference_custom"/>
-    <com.afollestad.materialdialogs.prefs.MaterialEditTextPreference
+        />
+    <EditTextPreference
         android:key="pref_network_uri"
         android:dialogTitle="@string/pref_network_uri"
         android:positiveButtonText="@android:string/ok"
@@ -32,15 +32,15 @@
     <Preference android:key="pref_push_notifications_parent"
         android:title="@string/pref_push_notifications"
         android:persistent="false"
-        android:layout="@layout/md_preference_custom"/>
-    <com.afollestad.materialdialogs.prefs.MaterialListPreference
+        />
+    <ListPreference
         android:key="pref_idle_time"
         android:title="@string/pref_idle_time"
         android:summary="@string/pref_title_idle_time"
         android:entries="@array/idle_time_labels"
         android:entryValues="@array/idle_time_values"
         android:defaultValue="@integer/pref_default_idle_time"/>
-    <com.afollestad.materialdialogs.prefs.MaterialListPreference
+    <ListPreference
         android:key="pref_wakeup_time"
         android:title="@string/pref_wakeup_time"
         android:summary="@string/pref_title_wakeup_time"
@@ -50,6 +50,6 @@
     <CheckBoxPreference android:key="pref_accept_any_certificate"
         android:title="@string/pref_accept_any_certificate"
         android:defaultValue="@bool/pref_default_accept_any_certificate"
-        android:layout="@layout/md_preference_custom"/>
+        />
 
 </PreferenceScreen>

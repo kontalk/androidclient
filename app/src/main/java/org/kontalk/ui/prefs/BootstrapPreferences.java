@@ -19,8 +19,9 @@
 package org.kontalk.ui.prefs;
 
 import android.os.Bundle;
-import android.preference.Preference;
 import android.view.MenuItem;
+
+import androidx.preference.Preference;
 
 import org.kontalk.R;
 
@@ -33,8 +34,7 @@ import org.kontalk.R;
 public class BootstrapPreferences extends RootPreferenceFragment {
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         addPreferencesFromResource(R.xml.bootstrap_preferences);
     }
 

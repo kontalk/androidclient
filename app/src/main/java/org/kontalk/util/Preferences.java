@@ -37,11 +37,12 @@ import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.preference.Preference;
-import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceManager;
+
 import android.text.TextUtils;
 import android.view.Display;
 import android.view.WindowManager;

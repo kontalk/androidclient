@@ -21,12 +21,12 @@
     <org.kontalk.ui.prefs.PushNotificationsPreference
         android:key="pref_push_notifications"
         android:defaultValue="@bool/pref_default_push_notifications"
-        android:layout="@layout/md_preference_custom"/>
+        />
 
     <org.kontalk.ui.prefs.TextMessagePreference
         android:key="pref_push_notifications_title"
         android:persistent="false"
         android:title="@string/pref_push_notifications_title_default"
-        android:layout="@layout/md_preference_custom"/>
+        />
 
 </PreferenceScreen>

@@ -20,9 +20,10 @@ package org.kontalk.ui.prefs;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceManager;
 import android.view.MenuItem;
+
+import androidx.preference.Preference;
+import androidx.preference.PreferenceManager;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
@@ -38,9 +39,7 @@ public final class PreferencesFragment extends RootPreferenceFragment {
     static final String TAG = Kontalk.TAG;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         // upgrade from old version: pref_text_enter becomes string
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         try {

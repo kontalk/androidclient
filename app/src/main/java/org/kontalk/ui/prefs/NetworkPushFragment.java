@@ -20,8 +20,9 @@ package org.kontalk.ui.prefs;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
-import android.preference.Preference;
+
+import androidx.preference.CheckBoxPreference;
+import androidx.preference.Preference;
 
 import org.kontalk.R;
 import org.kontalk.service.msgcenter.IPushService;
@@ -35,9 +36,7 @@ import org.kontalk.service.msgcenter.PushServiceManager;
 public class NetworkPushFragment extends RootPreferenceFragment {
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         addPreferencesFromResource(R.xml.preferences_network_push);
 
         // push notifications checkbox

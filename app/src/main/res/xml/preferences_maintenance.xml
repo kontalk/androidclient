@@ -21,23 +21,23 @@
     <Preference android:key="pref_restart_msgcenter"
         android:summary="@string/pref_title_restart_msgcenter"
         android:title="@string/pref_restart_msgcenter"
-        android:layout="@layout/md_preference_custom"/>
+        />
     <CheckBoxPreference android:key="pref_foreground_service"
         android:title="@string/pref_foreground_service"
         android:summary="@string/pref_title_foreground_service"
         android:defaultValue="@bool/pref_default_foreground_service"
-        android:layout="@layout/md_preference_custom"/>
+        />
     <CheckBoxPreference android:key="pref_debug_log"
         android:title="@string/pref_debug_log"
         android:defaultValue="@bool/pref_default_debug_log"
-        android:layout="@layout/md_preference_custom"/>
+        />
     <org.kontalk.ui.prefs.SendDebugLogPreference android:key="pref_send_debug_log"
         android:title="@string/pref_send_debug_log"
         android:dependency="pref_debug_log"
-        android:layout="@layout/md_preference_custom"/>
+        />
     <org.kontalk.ui.prefs.CopyDatabasePreference android:key="pref_copy_database"
         android:title="@string/pref_copy_database"
         android:summary="Copy the messages database to the external storage. Mainly for debug purposes."
-        android:layout="@layout/md_preference_custom"/>
+        />
 
 </PreferenceScreen>

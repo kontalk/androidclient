@@ -21,7 +21,7 @@
     <CheckBoxPreference android:key="pref_encrypt"
         android:title="@string/pref_encrypt"
         android:defaultValue="@bool/pref_default_encrypt"
-        android:layout="@layout/md_preference_custom"/>
+        />
     <!--
     <CheckBoxPreference android:key="pref_encrypt_userdata"
         android:summaryOff="@string/pref_title_off_encrypt_userdata"
@@ -32,11 +32,11 @@
     <CheckBoxPreference android:key="pref_auto_accept_subscriptions"
         android:title="@string/pref_auto_accept_subscriptions"
         android:defaultValue="@bool/pref_default_auto_accept_subscriptions"
-        android:layout="@layout/md_preference_custom"/>
+        />
     <CheckBoxPreference android:key="pref_send_typing"
         android:title="@string/pref_send_typing"
         android:defaultValue="@bool/pref_default_send_typing"
-        android:layout="@layout/md_preference_custom"/>
+        />
     <!--
     <CheckBoxPreference android:key="pref_hide_presence"
         android:summaryOff="@string/pref_title_off_hide_presence"

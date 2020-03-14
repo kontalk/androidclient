@@ -39,8 +39,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.preference.Preference;
 import androidx.annotation.NonNull;
+import androidx.preference.Preference;
+
 import android.text.InputType;
 import android.widget.Toast;
 
@@ -81,9 +82,7 @@ public class AccountFragment extends RootPreferenceFragment {
     private EventBus mServiceBus = MessageCenterService.bus();
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         if (savedInstanceState != null) {
             mPassphrase = savedInstanceState.getString("passphrase");
         }

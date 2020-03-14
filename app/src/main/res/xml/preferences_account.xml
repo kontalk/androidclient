@@ -24,25 +24,25 @@
         android:selectable="false"
         android:persistent="false"
         android:icon="@drawable/ic_default_contact"
-        android:layout="@layout/md_preference_custom"/>
+        />
     <Preference android:key="pref_change_passphrase"
         android:title="@string/pref_change_passphrase"
-        android:layout="@layout/md_preference_custom"/>
+        />
     <Preference android:key="pref_regenerate_keypair"
         android:summary="@string/pref_title_regenerate_keypair"
         android:title="@string/pref_regenerate_keypair"
-        android:layout="@layout/md_preference_custom"/>
+        />
     <Preference android:key="pref_export_keypair"
         android:title="@string/pref_export_keypair"
-        android:layout="@layout/md_preference_custom"/>
+        />
     <Preference android:key="pref_register_device"
         android:title="@string/pref_register_device"
-        android:layout="@layout/md_preference_custom"/>
+        />
     <org.kontalk.ui.prefs.ServiceTermsPreference android:key="pref_service_terms"
         android:title="@string/pref_service_terms"
-        android:layout="@layout/md_preference_custom"/>
+        />
     <Preference android:key="pref_delete_account"
         android:title="@string/pref_delete_account"
-        android:layout="@layout/md_preference_custom"/>
+        />
 
 </PreferenceScreen>

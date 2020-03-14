@@ -18,7 +18,7 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:key="pref_key_network_settings" android:title="@string/pref_network_settings">
-        <com.afollestad.materialdialogs.prefs.MaterialEditTextPreference
+        <EditTextPreference
             android:dialogTitle="@string/pref_network_uri"
             android:positiveButtonText="@android:string/ok"
             android:negativeButtonText="@android:string/cancel"
@@ -31,15 +31,15 @@
             android:summary="@string/pref_title_push_notifications"
             android:title="@string/pref_push_notifications"
             android:defaultValue="@bool/pref_default_push_notifications"
-            android:layout="@layout/md_preference_custom"/>
-        <com.afollestad.materialdialogs.prefs.MaterialListPreference
+            />
+        <ListPreference
             android:key="pref_idle_time"
             android:title="@string/pref_idle_time"
             android:summary="@string/pref_title_idle_time"
             android:entries="@array/idle_time_labels"
             android:entryValues="@array/idle_time_values"
             android:defaultValue="@integer/pref_default_idle_time"/>
-        <com.afollestad.materialdialogs.prefs.MaterialListPreference
+        <ListPreference
             android:key="pref_wakeup_time"
             android:title="@string/pref_wakeup_time"
             android:summary="@string/pref_title_wakeup_time"
@@ -49,7 +49,7 @@
         <CheckBoxPreference android:key="pref_accept_any_certificate"
             android:title="@string/pref_accept_any_certificate"
             android:defaultValue="@bool/pref_default_accept_any_certificate"
-            android:layout="@layout/md_preference_custom"/>
+            />
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_messaging_settings"
@@ -57,8 +57,8 @@
         <Preference android:key="pref_privacy_settings"
             android:title="@string/pref_privacy_settings"
             android:persistent="false"
-            android:layout="@layout/md_preference_custom"/>
-        <com.afollestad.materialdialogs.prefs.MaterialEditTextPreference
+            />
+        <EditTextPreference
             android:key="pref_remove_prefix"
             android:dialogTitle="@string/pref_remove_prefix"
             android:positiveButtonText="@android:string/ok"
@@ -70,12 +70,12 @@
             android:summary="@string/pref_title_sync_sim_contacts"
             android:title="@string/pref_sync_sim_contacts"
             android:defaultValue="@bool/pref_default_sync_sim_contacts"
-            android:layout="@layout/md_preference_custom"/>
+            />
         <CheckBoxPreference android:key="pref_sync_nonvisible_contacts"
             android:summary="@string/pref_title_sync_invisible_contacts"
             android:title="@string/pref_sync_invisible_contacts"
             android:defaultValue="@bool/pref_default_sync_invisible_contacts"
-            android:layout="@layout/md_preference_custom"/>
+            />
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_maintenance"
@@ -83,21 +83,21 @@
         <CheckBoxPreference android:key="pref_debug_log"
             android:title="@string/pref_debug_log"
             android:defaultValue="@bool/pref_default_debug_log"
-            android:layout="@layout/md_preference_custom"/>
+            />
         <org.kontalk.ui.prefs.SendDebugLogPreference android:key="pref_send_debug_log"
             android:title="@string/pref_send_debug_log"
             android:dependency="pref_debug_log"
-            android:layout="@layout/md_preference_custom"/>
+            />
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_other"
         android:title="@string/pref_other">
         <org.kontalk.ui.prefs.HelpPreference android:key="pref_help"
             android:title="@string/pref_help"
-            android:layout="@layout/md_preference_custom"/>
+            />
         <Preference android:key="pref_donate"
             android:title="@string/pref_donate"
-            android:layout="@layout/md_preference_custom">
+            >
             <intent
              android:targetClass="org.kontalk.ui.AboutActivity"
              android:targetPackage="@string/application_id"
@@ -105,7 +105,7 @@
         </Preference>
         <Preference android:key="pref_about"
             android:title="@string/pref_about"
-            android:layout="@layout/md_preference_custom">
+            >
             <intent
              android:targetClass="org.kontalk.ui.AboutActivity"
              android:targetPackage="@string/application_id" />

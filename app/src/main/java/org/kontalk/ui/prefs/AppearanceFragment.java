@@ -25,9 +25,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceManager;
 import android.widget.Toast;
+
+import androidx.preference.Preference;
+import androidx.preference.PreferenceManager;
 
 import org.kontalk.R;
 import org.kontalk.util.Preferences;
@@ -43,9 +44,7 @@ public class AppearanceFragment extends RootPreferenceFragment {
     private static final int REQUEST_PICK_BACKGROUND = Activity.RESULT_FIRST_USER + 1;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         addPreferencesFromResource(R.xml.preferences_appearance);
 
         // use custom background

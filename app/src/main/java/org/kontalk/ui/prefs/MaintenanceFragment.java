@@ -20,9 +20,10 @@ package org.kontalk.ui.prefs;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
-import android.preference.Preference;
 import android.widget.Toast;
+
+import androidx.preference.CheckBoxPreference;
+import androidx.preference.Preference;
 
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
@@ -37,9 +38,7 @@ public class MaintenanceFragment extends RootPreferenceFragment {
     static final String TAG = Kontalk.TAG;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         // Load the preferences from an XML resource
         addPreferencesFromResource(R.xml.preferences_maintenance);
 

@@ -21,58 +21,58 @@
     <Preference android:key="pref_account_settings"
         android:title="@string/pref_account_settings"
         android:persistent="false"
-        android:layout="@layout/md_preference_custom"/>
+        />
 
     <Preference android:key="pref_network_settings"
         android:title="@string/pref_network_settings"
         android:persistent="false"
-        android:layout="@layout/md_preference_custom"/>
+        />
 
     <Preference android:key="pref_messaging_settings"
         android:title="@string/pref_messaging_settings"
         android:persistent="false"
-        android:layout="@layout/md_preference_custom"/>
+        />
 
     <Preference android:key="pref_appearance_settings"
         android:title="@string/pref_appearance_settings"
         android:persistent="false"
-        android:layout="@layout/md_preference_custom"/>
+        />
 
     <Preference android:key="pref_media_settings"
         android:title="@string/pref_media_settings"
         android:persistent="false"
-        android:layout="@layout/md_preference_custom"/>
+        />
 
     <Preference android:key="pref_location_settings"
         android:title="@string/pref_location_settings"
         android:persistent="false"
-        android:layout="@layout/md_preference_custom"/>
+        />
 
     <Preference android:key="pref_notification_settings"
         android:title="@string/pref_notification_settings"
         android:persistent="false"
-        android:layout="@layout/md_preference_custom"/>
+        />
 
     <Preference android:key="pref_maintenance_settings"
         android:title="@string/pref_maintenance"
         android:persistent="false"
-        android:layout="@layout/md_preference_custom"/>
+        />
 
     <CheckBoxPreference
         android:key="pref_reporting"
         android:summary="@string/pref_title_reporting"
         android:title="@string/pref_reporting"
         android:defaultValue="@bool/pref_default_reporting"
-        android:layout="@layout/md_preference_custom"/>
+        />
 
     <PreferenceCategory android:key="pref_other"
         android:title="@string/pref_other">
         <org.kontalk.ui.prefs.HelpPreference android:key="pref_help"
             android:title="@string/pref_help"
-            android:layout="@layout/md_preference_custom"/>
+            />
         <Preference android:key="pref_donate"
             android:title="@string/pref_donate"
-            android:layout="@layout/md_preference_custom">
+            >
             <intent
              android:targetClass="org.kontalk.ui.AboutActivity"
              android:targetPackage="@string/application_id"
@@ -80,7 +80,7 @@
         </Preference>
         <Preference android:key="pref_about"
             android:title="@string/pref_about"
-            android:layout="@layout/md_preference_custom">
+            >
             <intent
              android:targetClass="org.kontalk.ui.AboutActivity"
              android:targetPackage="@string/application_id" />
