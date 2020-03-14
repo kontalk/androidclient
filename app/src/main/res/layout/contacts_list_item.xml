@@ -54,7 +54,7 @@
                 android:id="@+id/checkbox"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:civ_fill_color="?attr/colorPrimaryDark"
+                app:civ_circle_background_color="?attr/colorPrimaryDark"
                 android:visibility="gone"/>
 
         </FrameLayout>
