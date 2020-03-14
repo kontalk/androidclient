@@ -22,6 +22,7 @@
         android:key="pref_font_size"
         android:title="@string/pref_font_size"
         android:summary="%s"
+        android:icon="@drawable/ic_pref_font_size"
         android:entries="@array/fontsize_labels"
         android:entryValues="@array/fontsize_values"
         android:defaultValue="@string/pref_default_font_size"/>
@@ -38,6 +39,7 @@
         android:key="pref_balloons"
         android:title="@string/pref_balloons"
         android:summary="%s"
+        android:icon="@drawable/ic_pref_balloons"
         android:entries="@array/balloons_labels"
         android:entryValues="@array/balloons_values"
         android:defaultValue="@string/pref_default_balloons"/>

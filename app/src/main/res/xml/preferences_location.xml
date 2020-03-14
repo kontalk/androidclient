@@ -22,6 +22,7 @@
         android:key="pref_maps_service"
         android:title="@string/pref_maps_service"
         android:summary="%s"
+        android:icon="@drawable/ic_pref_maps_service"
         android:entries="@array/maps_provider_labels"
         android:entryValues="@array/maps_provider_values"
         android:defaultValue="@string/pref_default_maps_service" />

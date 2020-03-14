@@ -37,12 +37,14 @@
         />
     <Preference android:key="pref_register_device"
         android:title="@string/pref_register_device"
+        android:icon="@drawable/ic_pref_register_device"
         />
     <org.kontalk.ui.prefs.ServiceTermsPreference android:key="pref_service_terms"
         android:title="@string/pref_service_terms"
         />
     <Preference android:key="pref_delete_account"
         android:title="@string/pref_delete_account"
+        android:icon="@drawable/ic_pref_delete_account"
         />
 
 </PreferenceScreen>

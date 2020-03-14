@@ -21,6 +21,7 @@
     <Preference android:key="pref_privacy_settings"
         android:title="@string/pref_privacy_settings"
         android:persistent="false"
+        android:icon="@drawable/ic_pref_privacy"
         />
     <CheckBoxPreference android:key="pref_show_blocked_users"
         android:title="@string/pref_show_blocked_users"

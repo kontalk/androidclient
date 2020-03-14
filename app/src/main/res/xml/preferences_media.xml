@@ -22,6 +22,7 @@
         android:key="pref_image_resize"
         android:title="@string/pref_image_resize"
         android:summary="%s"
+        android:icon="@drawable/ic_pref_image_resize"
         android:entries="@array/image_resize_labels"
         android:entryValues="@array/image_resize_values"
         android:defaultValue="@integer/pref_default_image_resize"/>

@@ -21,7 +21,7 @@
     <CheckBoxPreference
         android:defaultValue="@bool/pref_default_enable_notifications"
         android:key="pref_enable_notifications"
-
+        android:icon="@drawable/ic_pref_notification"
         android:summary="@string/pref_title_enable_notifications"
         android:title="@string/pref_enable_notifications"/>
     <Preference android:key="pref_ringtone"
@@ -34,6 +34,7 @@
         android:dependency="pref_enable_notifications"
         android:title="@string/pref_vibrate"
         android:summary="@string/pref_title_vibrate"
+        android:icon="@drawable/ic_pref_vibrate"
         android:entries="@array/vibrate_labels"
         android:entryValues="@array/vibrate_values"
         android:defaultValue="@string/pref_default_vibrate"/>

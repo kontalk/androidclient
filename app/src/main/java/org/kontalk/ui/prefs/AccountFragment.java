@@ -229,6 +229,7 @@ public class AccountFragment extends RootPreferenceFragment {
         });
 
         // delete account
+        // TODO should be a custom class and a big red glowing text :)
         final Preference deleteAccount = findPreference("pref_delete_account");
         deleteAccount.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
