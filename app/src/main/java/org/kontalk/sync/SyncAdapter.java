@@ -140,7 +140,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onSyncCanceled() {
         super.onSyncCanceled();
-        mSyncer.onSyncCanceled();
+        if (mSyncer != null) {
+            mSyncer.onSyncCanceled();
+        }
     }
 
     /**
