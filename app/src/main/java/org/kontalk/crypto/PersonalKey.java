@@ -153,9 +153,13 @@ public class PersonalKey implements Parcelable {
      */
     public PGPPublicKeyRing update(byte[] keyData) throws IOException {
         PGPPublicKeyRing ring = new PGPPublicKeyRing(keyData, sFingerprintCalculator);
-        // FIXME should loop through the ring and check for master/subkey
-        mPair.authKey = new PGPKeyPair(ring.getPublicKey(), mPair.authKey.getPrivateKey());
-        return ring;
+        PGPPublicKey authKey = PGP.getAuthenticationKey(ring);
+        PGPPublicKey encKey = PGP.getEncryptionKey(ring);
+        PGPPublicKey signKey = PGP.getSigningKey(ring);
+        mPair.authKey = new PGPKeyPair(authKey, mPair.authKey.getPrivateKey());
+        mPair.encryptKey = new PGPKeyPair(encKey, mPair.encryptKey.getPrivateKey());
+        mPair.signKey = new PGPKeyPair(signKey, mPair.signKey.getPrivateKey());
+        return getPublicKeyRing();
     }
 
     public PersonalKey copy(X509Certificate bridgeCert) {

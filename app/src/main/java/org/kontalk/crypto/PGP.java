@@ -541,7 +541,6 @@ public class PGP {
 
     /** Returns the first master key found in the given public keyring. */
     public static PGPPublicKey getMasterKey(PGPPublicKeyRing publicKeyring) {
-        @SuppressWarnings("unchecked")
         Iterator<PGPPublicKey> iter = publicKeyring.getPublicKeys();
         while (iter.hasNext()) {
             PGPPublicKey pk = iter.next();
@@ -557,8 +556,21 @@ public class PGP {
         return getMasterKey(readPublicKeyring(publicKeyring));
     }
 
+    public static PGPPublicKey getAuthenticationKey(PGPPublicKeyRing publicKeyring) {
+        Iterator<PGPPublicKey> iter = publicKeyring.getPublicKeys();
+        while (iter.hasNext()) {
+            PGPPublicKey pk = iter.next();
+            if (pk.isMasterKey()) {
+                int keyFlags = getKeyFlags(pk);
+                if ((keyFlags & PGPKeyFlags.CAN_AUTHENTICATE) == PGPKeyFlags.CAN_AUTHENTICATE)
+                    return pk;
+            }
+        }
+
+        return null;
+    }
+
     public static PGPPublicKey getSigningKey(PGPPublicKeyRing publicKeyring) {
-        @SuppressWarnings("unchecked")
         Iterator<PGPPublicKey> iter = publicKeyring.getPublicKeys();
         while (iter.hasNext()) {
             PGPPublicKey pk = iter.next();
@@ -574,7 +586,6 @@ public class PGP {
     }
 
     public static PGPPublicKey getEncryptionKey(PGPPublicKeyRing publicKeyring) {
-        @SuppressWarnings("unchecked")
         Iterator<PGPPublicKey> iter = publicKeyring.getPublicKeys();
         while (iter.hasNext()) {
             PGPPublicKey pk = iter.next();
@@ -591,7 +602,6 @@ public class PGP {
     }
 
     private static PGPPublicKey getLegacyEncryptionKey(PGPPublicKeyRing publicKeyring) {
-        @SuppressWarnings("unchecked")
         Iterator<PGPPublicKey> iter = publicKeyring.getPublicKeys();
         while (iter.hasNext()) {
             PGPPublicKey pk = iter.next();
@@ -603,7 +613,6 @@ public class PGP {
     }
 
     private static PGPPublicKey getLegacySigningKey(PGPPublicKeyRing publicKeyring) {
-        @SuppressWarnings("unchecked")
         Iterator<PGPPublicKey> iter = publicKeyring.getPublicKeys();
         while (iter.hasNext()) {
             PGPPublicKey pk = iter.next();
