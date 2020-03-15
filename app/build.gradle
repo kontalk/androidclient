@@ -39,6 +39,14 @@ checkstyle {
     configFile = new File(projectDir, "config/checkstyle/checkstyle.xml")
 }
 
+jacoco {
+    toolVersion = "0.8.4"
+}
+
+tasks.withType(Test) {
+    jacoco.includeNoLocationClasses = true
+}
+
 android {
     compileSdkVersion project.compileSdkVersion
 
