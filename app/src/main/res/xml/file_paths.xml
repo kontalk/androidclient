@@ -22,6 +22,7 @@
       This configuration must match paths used in MediaStorage methods!
     -->
 
+    <external-path name="ext_storage" path="." />
     <external-path name="my_music" path="Music/Kontalk" />
     <external-path name="my_pictures" path="Pictures/Kontalk" />
     <external-path name="my_downloads" path="Download/Kontalk" />
