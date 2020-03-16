@@ -511,6 +511,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
 
     @Override
     protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
         setIntent(intent);
         loadConversation();
     }

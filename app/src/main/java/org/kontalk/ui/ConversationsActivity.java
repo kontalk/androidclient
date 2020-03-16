@@ -110,6 +110,7 @@ public class ConversationsActivity extends MainActivity
     /** Called when a new intent is sent to the activity (if already started). */
     @Override
     protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
         handleIntent(intent);
     }
 
