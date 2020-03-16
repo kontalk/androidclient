@@ -36,11 +36,15 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+
+import android.os.IBinder;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -76,6 +80,16 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity {
     Map<String, String> mTrustedKeys;
 
     private EventBus mServiceBus = RegistrationService.bus();
+    /** Just a dummy service connection to keep the service alive. */
+    private ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+        }
+    };
 
     private static final class RetainData {
         Map<String, String> trustedKeys;
@@ -311,6 +325,8 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity {
         super.onStart();
         // start a users resync in the meantime
         new UsersResyncTask().execute(getApplicationContext());
+        // be sure to bind to the registration service so it's not killed by the OS
+        bindService(new Intent(this, RegistrationService.class), mServiceConnection, BIND_IMPORTANT);
     }
 
     @Override
@@ -318,6 +334,12 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity {
         super.onStop();
         if (isFinishing())
             abort(true);
+
+        try {
+            unbindService(mServiceConnection);
+        }
+        catch (IllegalArgumentException ignored) {
+        }
     }
 
     void keepScreenOn(boolean active) {

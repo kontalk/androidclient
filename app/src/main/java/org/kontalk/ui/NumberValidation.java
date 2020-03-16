@@ -48,12 +48,14 @@ import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -63,6 +65,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.core.text.HtmlCompat;
+
+import android.os.IBinder;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
 import android.text.Editable;
@@ -190,6 +194,16 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private BroadcastReceiver mMessagesImporterReceiver;
 
     private EventBus mServiceBus = RegistrationService.bus();
+    /** Just a dummy service connection to keep the service alive. */
+    private ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+        }
+    };
 
     private static final class RetainData {
         /** @deprecated Use saved instance state. */
@@ -400,6 +414,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
         // start registration service immediately
         RegistrationService.start(this);
+        // be sure to bind to the registration service so it's not killed by the OS
+        bindService(new Intent(this, RegistrationService.class), mServiceConnection, BIND_IMPORTANT);
     }
 
     @Override
@@ -407,6 +423,12 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         super.onStop();
         keepScreenOn(false);
         mServiceBus.unregister(this);
+
+        try {
+            unbindService(mServiceConnection);
+        }
+        catch (IllegalArgumentException ignored) {
+        }
 
         stopMessagesImporterReceiver();
 
