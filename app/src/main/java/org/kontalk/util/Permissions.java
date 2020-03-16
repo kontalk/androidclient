@@ -154,9 +154,8 @@ public class Permissions {
 
     @SuppressLint("InlinedApi")
     public static void requestRecordAudio(Activity activity, String rationale) {
-        if (EasyPermissions.permissionPermanentlyDenied(activity, Manifest.permission.RECORD_AUDIO) ||
-                EasyPermissions.permissionPermanentlyDenied(activity, Manifest.permission.READ_EXTERNAL_STORAGE) ||
-                EasyPermissions.permissionPermanentlyDenied(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+        if (recordAudioPermissionPermanentlyDenied(activity) ||
+            externalStoragePermissionsPermanentlyDenied(activity)) {
             new AppSettingsDialog.Builder(activity)
                 .setRationale(rationale)
                 .build()
@@ -168,6 +167,23 @@ public class Permissions {
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE);
         }
+    }
+
+    private static boolean recordAudioPermissionPermanentlyDenied(Activity activity) {
+        if (!EasyPermissions.hasPermissions(activity, Manifest.permission.RECORD_AUDIO)) {
+            return !Preferences.isPermissionAsked(Manifest.permission.RECORD_AUDIO) &&
+                EasyPermissions.permissionPermanentlyDenied(activity, Manifest.permission.RECORD_AUDIO);
+        }
+        return false;
+    }
+
+    private static boolean externalStoragePermissionsPermanentlyDenied(Activity activity) {
+        if (!EasyPermissions.hasPermissions(activity, Manifest.permission.READ_EXTERNAL_STORAGE) &&
+            !EasyPermissions.hasPermissions(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            return EasyPermissions.permissionPermanentlyDenied(activity, Manifest.permission.READ_EXTERNAL_STORAGE) ||
+                EasyPermissions.permissionPermanentlyDenied(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
+        return false;
     }
 
     public static boolean canAccessLocation(Context context) {
