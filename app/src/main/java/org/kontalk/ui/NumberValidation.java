@@ -891,9 +891,16 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
      * Opens a screen for shooting a QR code or typing in a secure token from
      * another device.
      */
+    @SuppressLint("UnsupportedChromeOsCameraSystemFeature")
     void importDevice() {
         PackageManager pm = getPackageManager();
-        boolean hasCamera = pm.hasSystemFeature(PackageManager.FEATURE_CAMERA);
+        boolean hasCamera;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            hasCamera = pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY);
+        }
+        else {
+            hasCamera = pm.hasSystemFeature(PackageManager.FEATURE_CAMERA);
+        }
 
         MaterialDialog.Builder builder = new MaterialDialog.Builder(this)
             .title(R.string.menu_import_device)
