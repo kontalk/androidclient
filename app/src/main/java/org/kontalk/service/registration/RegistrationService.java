@@ -373,17 +373,20 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         unconfigure();
 
         final HandlerThread serviceHandler = mServiceHandler;
-        mInternalHandler.post(new Runnable() {
-            public void run() {
-                try {
-                    serviceHandler.quit();
-                    reset();
+        final Handler internalHandler = mInternalHandler;
+        if (serviceHandler != null && internalHandler != null) {
+            mInternalHandler.post(new Runnable() {
+                public void run() {
+                    try {
+                        serviceHandler.quit();
+                        reset();
+                    }
+                    catch (Exception e) {
+                        // ignored
+                    }
                 }
-                catch (Exception e) {
-                    // ignored
-                }
-            }
-        });
+            });
+        }
 
         mInternalHandler = null;
         mServiceHandler = null;
