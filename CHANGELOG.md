@@ -1,6 +1,20 @@
 # Changelog
 
 ## [Next]
+### Changed
+- Migrate to AndroidX (#1269)
+- Support for Android 10 (#1282)
+- Improved multiselection experience
+- Revamped settings appearance
+
+### Fixed
+- Fix crash on devices without a browser
+- Fix message center service crash (#1265)
+- Fix emoji popup not visible on Android 4.4 (#1267)
+- Fix crash on accessing files on external storage (#1273)
+- Fix some registration issues (#1271, #1272, #1274, #1275)
+- Fix storage permission issue (#1277)
+- Contact pictures in notification on Android 9+ (#1288)
 
 ## [4.3.1] - 2019-08-24
 ### Fixed
