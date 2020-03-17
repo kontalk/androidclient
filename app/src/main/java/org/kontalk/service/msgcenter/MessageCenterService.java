@@ -3066,12 +3066,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return getBaseIntent(context);
     }
 
-    /** @deprecated Must go away ASAP. */
-    @Deprecated
-    public static void startService(Context context, Intent intent) {
-        startForegroundIfNeeded(context, intent);
-    }
-
     private static void startForegroundIfNeeded(Context context, Intent intent) {
         if (shouldStartInForeground(context)) {
             startForegroundForced(context, intent);

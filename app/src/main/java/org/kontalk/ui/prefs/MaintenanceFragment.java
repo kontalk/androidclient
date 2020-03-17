@@ -57,7 +57,7 @@ public class MaintenanceFragment extends RootPreferenceFragment {
 
         // explain the user that the foreground service is mandatory
         if (MessageCenterService.mustSetForeground(getContext())) {
-            final CheckBoxPreference foregroundService = (CheckBoxPreference) findPreference("pref_foreground_service");
+            final CheckBoxPreference foregroundService = findPreference("pref_foreground_service");
             foregroundService.setEnabled(false);
             foregroundService.setSummary(R.string.pref_title_foreground_service_mandatory);
         }
