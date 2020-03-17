@@ -359,7 +359,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
         mComposer = view.findViewById(R.id.composer_bar);
         mComposer.setComposerListener(this);
-        mComposer.setRootView(view);
+        mComposer.setRootView(container.getRootView().findViewById(R.id.root_view));
 
         Configuration config = getResources().getConfiguration();
         mComposer.onKeyboardStateChanged(config.keyboardHidden == KEYBOARDHIDDEN_NO);

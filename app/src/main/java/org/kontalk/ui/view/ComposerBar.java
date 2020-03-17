@@ -105,7 +105,6 @@ public class ComposerBar extends RelativeLayout implements
     // for Emoji drawer
     private ImageButton mEmojiButton;
     private EmojiPopup mEmojiView;
-    RelativeLayout mRootView;
 
     // for PTT message
     Handler mHandler;
@@ -412,13 +411,9 @@ public class ComposerBar extends RelativeLayout implements
     }
 
     public void setRootView(View rootView) {
-        if (rootView.getId() != R.id.root_view) {
-            rootView = rootView.findViewById(R.id.root_view);
-        }
-        mRootView = (RelativeLayout) rootView;
         // this will handle closing of keyboard while emoji drawer is open
         /* TODO port to EmojiPopup listener?
-        mRootView.setOnKeyboardShownListener(new KeyboardAwareRelativeLayout.OnKeyboardShownListener() {
+        rootView.setOnKeyboardShownListener(new KeyboardAwareRelativeLayout.OnKeyboardShownListener() {
             @Override
             public void onKeyboardShown(boolean visible) {
                 if (!visible && mRootView.getPaddingBottom() == 0 && isEmojiVisible()) {
@@ -429,7 +424,7 @@ public class ComposerBar extends RelativeLayout implements
         */
 
         // initialize emoji popup immediately because the library asked that
-        mEmojiView = EmojiPopup.Builder.fromRootView(mRootView)
+        mEmojiView = EmojiPopup.Builder.fromRootView(rootView)
             .setOnEmojiPopupShownListener(this)
             .setOnEmojiPopupDismissListener(this)
             .build(mTextEntry);
