@@ -2946,11 +2946,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     /**
      * If the user ignored our request to not be optimized, we must become a foreground service.
-     * @return true if the user decided to battery optimize us and with no hope of push notifications
+     * @return true if the user decided to battery optimize us
      */
     public static boolean mustSetForeground(Context context) {
-        return !SystemUtils.isIgnoringBatteryOptimizations(context) &&
-            !isPushNotificationsAvailable(context);
+        return !SystemUtils.isIgnoringBatteryOptimizations(context);
     }
 
     /** Return true if the service should be started in foreground. */
