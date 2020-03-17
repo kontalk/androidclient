@@ -999,6 +999,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAccountCreated(AccountCreatedEvent event) {
         RegistrationService.stop(this);
+        String challenge = RegistrationService.currentState().challenge;
 
         // send back result
         final Intent intent = new Intent();
@@ -1008,7 +1009,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         setAccountAuthenticatorResult(intent.getExtras());
         setResult(RESULT_OK, intent);
 
-        ReportingManager.logSignUp(RegistrationService.currentState().challenge);
+        ReportingManager.logSignUp(challenge);
 
         // manual sync starter
         delayedSync();
