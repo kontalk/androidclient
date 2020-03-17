@@ -972,11 +972,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             disconnectThread.joinTimeout(500);
 
             // clear the connection only if we are quitting
-            if (!restarting) {
-                // clear the roster store since we are about to close it
-                getRoster().setRosterStore(null);
+            if (!restarting)
                 mConnection = null;
-            }
         }
 
         if (mUploadServices != null) {
