@@ -1255,11 +1255,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     public void onAcceptTermsCancel() {
-        abort();
-    }
-
-    public void onAcceptTermsDismiss() {
         mWaitingAcceptTerms = false;
+        abort();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -1393,14 +1390,14 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                         }
                     }
                 })
-                .dismissListener(new OnDismissListener() {
-                    @Override
-                    public void onDismiss(DialogInterface dialog) {
-                        ((NumberValidation) getActivity())
-                            .onAcceptTermsDismiss();
-                    }
-                })
                 .build();
+        }
+
+        @Override
+        public void onCancel(@NonNull DialogInterface dialog) {
+            super.onCancel(dialog);
+            ((NumberValidation) getActivity())
+                .onAcceptTermsCancel();
         }
 
         public static AcceptTermsDialogFragment newInstance(String network, String termsUrl) {
