@@ -482,7 +482,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_MANUAL_VALIDATION) {
             if (resultCode == RESULT_OK) {
@@ -521,6 +520,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
                 requestPrivateKey(account, server, token);
             }
+        }
+        else {
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
