@@ -412,10 +412,17 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             }
         }
 
-        // start registration service immediately
-        RegistrationService.start(this);
-        // be sure to bind to the registration service so it's not killed by the OS
-        bindService(new Intent(this, RegistrationService.class), mServiceConnection, BIND_IMPORTANT);
+        // workaround for https://issuetracker.google.com/issues/110237673
+        // I know I should start the service in onResume, but I like to cheat
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                // start registration service immediately
+                RegistrationService.start(NumberValidation.this);
+                // be sure to bind to the registration service so it's not killed by the OS
+                bindService(new Intent(NumberValidation.this, RegistrationService.class), mServiceConnection, BIND_IMPORTANT);
+            }
+        }, 200);
     }
 
     @Override
