@@ -51,6 +51,7 @@ import android.os.Handler;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.PhoneLookup;
+
 import androidx.annotation.NonNull;
 import androidx.collection.LruCache;
 
@@ -61,6 +62,7 @@ import org.kontalk.crypto.PGPLazyPublicKeyRingLoader;
 import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MyUsers.Keys;
 import org.kontalk.provider.MyUsers.Users;
+import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Permissions;
 import org.kontalk.util.Preferences;
@@ -567,7 +569,7 @@ public class Contact {
      * Public version of {@link #loadAvatarBitmap} which includes the random
      * avatar generation.
      * @param context a context
-     * @param resizeForNotification true for resizing the avatar to the large icon size 128x128
+     * @param resizeForNotification true for resizing the avatar to the large icon size defined by system
      * @return a newly-allocated {@link Bitmap}
      */
     @NonNull
@@ -586,7 +588,7 @@ public class Contact {
                 res.getDimensionPixelSize(android.R.dimen.notification_large_icon_height);
             final int idealIconWidth =
                 res.getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
-            if (avatar.getHeight() < idealIconHeight) {
+            if (avatar.getHeight() != idealIconHeight || avatar.getWidth() != idealIconWidth) {
                 // Scale this image to fit the intended size
                 Bitmap scaledAvatar = Bitmap.createScaledBitmap(
                     avatar, idealIconWidth, idealIconHeight, true);
@@ -598,7 +600,20 @@ public class Contact {
             }
         }
 
+        if (isRoundedAvatars()) {
+            Bitmap circleAvatar = MediaStorage.createRoundBitmap(avatar);
+            if (circleAvatar != avatar)
+                avatar.recycle();
+            avatar = circleAvatar;
+        }
+
         return avatar;
+    }
+
+    /** Roughly the Android version when the rounded avatar concept was introduced. */
+    private static boolean isRoundedAvatars() {
+        return android.os.Build.VERSION.SDK_INT >=
+            android.os.Build.VERSION_CODES.LOLLIPOP;
     }
 
     /**

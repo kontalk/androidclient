@@ -57,6 +57,7 @@ import androidx.core.app.NotificationCompat.InboxStyle;
 import androidx.core.app.NotificationCompat.MessagingStyle;
 import androidx.core.app.NotificationCompat.Style;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.Person;
 import androidx.core.app.TaskStackBuilder;
 import androidx.core.content.ContextCompat;
 import android.text.Spannable;
@@ -65,6 +66,7 @@ import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 
+import androidx.core.graphics.drawable.IconCompat;
 import me.leolin.shortcutbadger.ShortcutBadger;
 
 import org.kontalk.R;
@@ -532,7 +534,8 @@ public class MessagingNotification {
             builder.setTicker(accumulator.getTicker());
             Contact contact = accumulator.getContact();
             if (contact != null) {
-                Bitmap avatar = contact.getAvatarBitmap(context, true);
+                // setLargeIcon will resize the icon
+                Bitmap avatar = contact.getAvatarBitmap(context, false);
                 builder.setLargeIcon(avatar);
             }
             builder.setNumber(accumulator.unreadCount);
@@ -699,7 +702,8 @@ public class MessagingNotification {
             .setContentIntent(pi);
 
         // include an avatar if any
-        Bitmap avatar = contact.getAvatarBitmap(context, true);
+        // setLargeIcon will resize the icon
+        Bitmap avatar = contact.getAvatarBitmap(context, false);
         builder.setLargeIcon(avatar);
 
         // alerts (sound, vibration, lights)
@@ -964,13 +968,25 @@ public class MessagingNotification {
                 }
 
                 if (style == null) {
-                    MessagingStyle msgStyle = new MessagingStyle(mContext.getString(R.string.person_me));
+                    MessagingStyle msgStyle = new MessagingStyle(new Person
+                        .Builder()
+                        .setName(mContext.getString(R.string.person_me))
+                        //.setIcon(...no icon for now)
+                        .build()
+                    );
                     int start;
                     for (NotificationConversation.ConversationMessage message : content) {
                         Contact contact = Contact.findByUserId(mContext, message.peer);
                         name = contact.getDisplayName();
 
-                        msgStyle.addMessage(message.content, message.timestamp, name);
+                        Person person = new Person.Builder()
+                            .setName(name)
+                            .setUri(contact.getUri().toString())
+                            .setKey(contact.getJID())
+                            .setIcon(IconCompat.createWithBitmap(contact.getAvatarBitmap(mContext, true)))
+                            .build();
+
+                        msgStyle.addMessage(message.content, message.timestamp, person);
 
                         if (allContent != null) {
                             if (allContent.length() > 0)
@@ -1019,7 +1035,8 @@ public class MessagingNotification {
 
                     // avatar (non-group)
                     if (conv.groupJid == null) {
-                        Bitmap avatar = contact.getAvatarBitmap(mContext, true);
+                        // setLargeIcon will resize the icon
+                        Bitmap avatar = contact.getAvatarBitmap(mContext, false);
                         mBuilder.setLargeIcon(avatar);
                     }
                 }

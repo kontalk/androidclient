@@ -37,7 +37,13 @@ import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BitmapShader;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.Shader;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaScannerConnection;
@@ -45,6 +51,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.RawRes;
 import androidx.exifinterface.media.ExifInterface;
 import androidx.fragment.app.Fragment;
@@ -664,6 +672,19 @@ public abstract class MediaStorage {
             SystemUtils.closeStream(out);
         }
 
+    }
+
+    public static Bitmap createRoundBitmap(@NonNull Bitmap source) {
+        Bitmap result = Bitmap.createBitmap(source.getWidth(), source.getHeight(), Bitmap.Config.ARGB_8888);
+        result.eraseColor(Color.TRANSPARENT);
+        Canvas canvas = new Canvas(result);
+        BitmapShader shader = new BitmapShader(source, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+        Paint roundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        RectF bitmapRect = new RectF();
+        roundPaint.setShader(shader);
+        bitmapRect.set(0, 0, source.getWidth(), source.getHeight());
+        canvas.drawRoundRect(bitmapRect, source.getWidth(), source.getHeight(), roundPaint);
+        return result;
     }
 
     /**
