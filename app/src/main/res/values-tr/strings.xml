@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
@@ -34,7 +34,7 @@
     <string name="menu_online">Çevrimiçi ol</string>
     <string name="menu_import_key">Anahtarı içe aktar</string>
     <string name="menu_manual_verification">Zaten kodunuz var mı?</string>
-    <string name="pref_network_settings">Ağ ayarları</string>
+    <string name="pref_network_settings">Ağ</string>
     <string name="pref_network_uri">Elle sunucu adresi</string>
     <string name="pref_title_network_uri">Bunu yapmak, otomatik servis listesi yönetiminin üzerine yazacak</string>
     <string name="number_validation_intro1">Lütfen isminizi giriniz, ülke kodunuzu seçiniz ve mobil telefon numaranızı yazınız. Gelecek ekranda daha fazla yönerge sağlanacaktır.</string>
@@ -119,4 +119,10 @@
         <item quantity="other">Seçilmiş konuşmalar silinmiş olacak.</item>
     </plurals>
 
-</resources>
+<string name="app_name_offline">Kontalk (çevrimdışı)</string>
+    <string name="menu_create_group">Grup oluştur</string>
+    <string name="menu_import_device">Başka bir aygıttan kaydol</string>
+    <string name="pref_account_settings">Hesap</string>
+    <string name="code_validation_intro">Kısa sürede numaranıza bir SMS ya da bir arama almalısınız.</string>
+    <string name="code_validation_intro3">SMS\'in ya da aramanın yabancı bir numaradan gelebileceğini unutmayın.</string>
+    </resources>
