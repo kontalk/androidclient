@@ -122,8 +122,9 @@ public class AppearanceFragment extends RootPreferenceFragment {
                         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
                         prefs.edit()
                                 .putString("pref_background_uri", Uri.fromFile(image).toString())
-                                .commit();
-                    } catch (Exception e) {
+                                .apply();
+                    }
+                    catch (Exception e) {
                         Toast.makeText(ctx, R.string.err_custom_background,
                                 Toast.LENGTH_LONG).show();
                     }

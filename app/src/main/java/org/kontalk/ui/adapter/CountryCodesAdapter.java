@@ -60,7 +60,7 @@ public class CountryCodesAdapter extends BaseAdapter {
             if (this == o)
                 return true;
 
-            if (o != null && o instanceof CountryCode) {
+            if (o instanceof CountryCode) {
                 CountryCode other = (CountryCode) o;
 
                 return regionCode != null &&
@@ -77,7 +77,7 @@ public class CountryCodesAdapter extends BaseAdapter {
     }
 
     public CountryCodesAdapter(Context context, int viewId, int dropdownViewId) {
-        this(context, new ArrayList<CountryCode>(), viewId, dropdownViewId);
+        this(context, new ArrayList<>(), viewId, dropdownViewId);
     }
 
     public CountryCodesAdapter(Context context, List<CountryCode> data, int viewId, int dropdownViewId) {

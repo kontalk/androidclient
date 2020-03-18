@@ -42,6 +42,8 @@ import android.util.Base64;
 
 import org.kontalk.crypto.PGP;
 
+import static org.junit.Assert.assertArrayEquals;
+
 
 @RunWith(AndroidJUnit4.class)
 public class UsersProviderTest extends ProviderTestCase2<UsersProvider> {
@@ -489,7 +491,7 @@ public class UsersProviderTest extends ProviderTestCase2<UsersProvider> {
         Keyring.setKey(getMockContext(), TEST_USERID, keydata);
         PGPPublicKeyRing publicKey = Keyring.getPublicKey(getMockContext(), TEST_USERID, MyUsers.Keys.TRUST_VERIFIED);
         assertNotNull(publicKey);
-        assertTrue(Arrays.equals(publicKey.getEncoded(), originalKey.getEncoded()));
+        assertArrayEquals(publicKey.getEncoded(), originalKey.getEncoded());
 
         String testFingerprint = PGP.getFingerprint(originalKey.getPublicKey());
         getMockContentResolver().delete(MyUsers.Keys.getUri(TEST_USERID, testFingerprint), null, null);

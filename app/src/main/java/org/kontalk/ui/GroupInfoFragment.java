@@ -401,7 +401,7 @@ public class GroupInfoFragment extends ListFragment
         }
 
         if (users.size() > 0) {
-            mConversation.removeUsers(users.toArray(new String[users.size()]));
+            mConversation.removeUsers(users.toArray(new String[0]));
             reload();
         }
 
@@ -595,7 +595,7 @@ public class GroupInfoFragment extends ListFragment
         }
 
         if (users.size() > 0) {
-            mConversation.addUsers(users.toArray(new String[users.size()]));
+            mConversation.addUsers(users.toArray(new String[0]));
         }
 
         getActivity().finish();

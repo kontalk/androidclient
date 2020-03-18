@@ -18,6 +18,7 @@
 
 package org.kontalk.ui.view;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Typeface;
 import androidx.core.content.ContextCompat;
@@ -65,6 +66,7 @@ public class ConversationListItem extends AvatarListItem {
         super(context, attrs);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();

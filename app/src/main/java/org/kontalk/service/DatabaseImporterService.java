@@ -146,8 +146,8 @@ public abstract class DatabaseImporterService extends Service {
                     error = "Invalid database.";
                 }
                 finally {
-                    SystemUtils.closeStream(in);
-                    SystemUtils.closeStream(out);
+                    SystemUtils.close(in);
+                    SystemUtils.close(out);
                     service.unlockDestinationDatabase();
                     service.broadcastFinish(error);
                     service.stopSelf();

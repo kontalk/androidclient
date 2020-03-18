@@ -293,7 +293,6 @@ public class PersonalKey implements Parcelable {
         return load(secRing, pubRing, passphrase, bridgeCert);
     }
 
-    @SuppressWarnings("unchecked")
     public static PersonalKey load(PGPSecretKeyRing secRing, PGPPublicKeyRing pubRing, String passphrase, X509Certificate bridgeCert)
             throws PGPException {
 

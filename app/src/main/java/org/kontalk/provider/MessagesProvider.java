@@ -1431,7 +1431,7 @@ public class MessagesProvider extends ContentProvider {
                 SQLiteDatabase db = dbHelper.getWritableDatabase();
                 boolean keepGroup = Boolean.parseBoolean(uri.getQueryParameter(Messages.KEEP_GROUP));
 
-                int num = 0;
+                int num;
                 db.beginTransactionNonExclusive();
                 try {
                     // rows count will be conversations
@@ -1465,7 +1465,7 @@ public class MessagesProvider extends ContentProvider {
                 throw new IllegalArgumentException("Unknown URI " + uri);
         }
 
-        int rows = 0;
+        int rows;
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         List<Uri> notifications = new ArrayList<>();
 

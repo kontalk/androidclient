@@ -47,7 +47,7 @@ public class PasswordInputDialog {
     }
 
     public interface OnPasswordInputListener {
-        public void onClick(DialogInterface dialog, int which, String password);
+        void onClick(DialogInterface dialog, int which, String password);
     }
 
     public static class Builder extends MaterialDialog.Builder {

@@ -324,7 +324,7 @@ public class ConversationsActivity extends MainActivity
                 @Override
                 public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                     String title = !TextUtils.isEmpty(input) ? input.toString() : null;
-                    String[] users = usersList.toArray(new String[usersList.size()]);
+                    String[] users = usersList.toArray(new String[0]);
 
                     try {
                         Uri cmdMsg;

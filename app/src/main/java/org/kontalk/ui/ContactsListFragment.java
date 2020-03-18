@@ -334,7 +334,7 @@ public class ContactsListFragment extends ListFragment implements
                     for (Intent intent : targets)
                         intent.removeExtra("org.kontalk.invite.label");
 
-                    Parcelable[] extraIntents = targets.toArray(new Parcelable[targets.size()]);
+                    Parcelable[] extraIntents = targets.toArray(new Parcelable[0]);
                     chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
                 }
 

@@ -312,8 +312,8 @@ public abstract class MediaStorage {
         finally {
             if (tmp != null)
                 tmp.delete();
-            SystemUtils.closeStream(in);
-            SystemUtils.closeStream(out);
+            SystemUtils.close(in);
+            SystemUtils.close(out);
         }
     }
 
@@ -600,7 +600,7 @@ public abstract class MediaStorage {
         }
 
         // open image again for the actual scaling
-        Bitmap bitmap = null;
+        Bitmap bitmap;
 
         try {
             in = cr.openInputStream(uri);
@@ -668,8 +668,8 @@ public abstract class MediaStorage {
             return outFile;
         }
         finally {
-            SystemUtils.closeStream(in);
-            SystemUtils.closeStream(out);
+            SystemUtils.close(in);
+            SystemUtils.close(out);
         }
 
     }

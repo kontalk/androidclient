@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<paths xmlns:android="http://schemas.android.com/apk/res/android">
+<paths>
     <!--
       Paths that can be shared with the outside world.
       This configuration must match paths used in MediaStorage methods!

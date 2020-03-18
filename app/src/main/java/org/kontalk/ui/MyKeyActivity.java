@@ -84,7 +84,7 @@ public class MyKeyActivity extends ToolbarActivity implements ViewUtils.OnQRCode
 
         String fingerprint = key.getFingerprint();
         mTextFingerprint.setText(PGP.formatFingerprint(fingerprint)
-            .replaceFirst("  ", "\n"));
+            .replaceFirst(" {2}", "\n"));
 
         ViewUtils.getQRCodeBitmapAsync(this, mViewport,
             PGP.createFingerprintURI(fingerprint), this);

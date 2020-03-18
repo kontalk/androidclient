@@ -30,6 +30,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import androidx.annotation.NonNull;
@@ -145,6 +146,7 @@ public class GcmPushService implements IPushService {
             status == ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED;
     }
 
+    @SuppressLint("ApplySharedPref")
     @Override
     public void setRegisteredOnServer(boolean flag) {
         final SharedPreferences prefs = getGCMPreferences(mContext);
@@ -205,6 +207,7 @@ public class GcmPushService implements IPushService {
         return lifespan;
     }
 
+    @SuppressLint("ApplySharedPref")
     @Override
     public void setRegisterOnServerLifespan(long lifespan) {
         final SharedPreferences prefs = getGCMPreferences(mContext);
@@ -213,6 +216,7 @@ public class GcmPushService implements IPushService {
         editor.commit();
     }
 
+    @SuppressLint("ApplySharedPref")
     private void storeRegistrationId(String regId) {
         final SharedPreferences prefs = getGCMPreferences(mContext);
         int appVersion = SystemUtils.getVersionCode();

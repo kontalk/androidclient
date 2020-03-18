@@ -10,8 +10,6 @@ import androidx.preference.PreferenceViewHolder;
 
 import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 
 

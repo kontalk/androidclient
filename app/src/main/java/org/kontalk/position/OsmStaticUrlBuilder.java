@@ -48,7 +48,7 @@ public class OsmStaticUrlBuilder {
     }
 
     public OsmStaticUrlBuilder setMarker(double lat, double lon) {
-        mMarker = String.valueOf(lat) + "," + lon;
+        mMarker = lat + "," + lon;
         return this;
     }
 

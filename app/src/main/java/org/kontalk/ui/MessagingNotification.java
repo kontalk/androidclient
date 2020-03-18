@@ -555,7 +555,7 @@ public class MessagingNotification {
         // build on delete intent for conversations
         Intent notificationDeleteIntent = new Intent(context, NotificationActionReceiver.class);
         notificationDeleteIntent.setAction(ACTION_NOTIFICATION_DELETED);
-        notificationDeleteIntent.putExtra("org.kontalk.datalist", conversationIds.toArray(new Uri[conversationIds.size()]));
+        notificationDeleteIntent.putExtra("org.kontalk.datalist", conversationIds.toArray(new Uri[0]));
         builder.setDeleteIntent(PendingIntent.getBroadcast(context, 0,
             notificationDeleteIntent, PendingIntent.FLAG_UPDATE_CURRENT));
 
@@ -796,7 +796,7 @@ public class MessagingNotification {
             String key = conversationKey(peer, groupJid);
             NotificationConversation conv = mConversations.get(key);
             if (conv == null) {
-                conv = new NotificationConversation(new LinkedList<NotificationConversation.ConversationMessage>(),
+                conv = new NotificationConversation(new LinkedList<>(),
                     null, groupJid, groupSubject);
                 mConversations.put(key, conv);
             }
@@ -963,7 +963,7 @@ public class MessagingNotification {
                         // will go on with normal notification
                     }
                     finally {
-                        SystemUtils.closeStream(in);
+                        SystemUtils.close(in);
                     }
                 }
 
@@ -1123,7 +1123,7 @@ public class MessagingNotification {
      * Used only for legacy notifications (pre-JB).
      */
     private static final class MessageAccumulator {
-        final class ConversationStub {
+        static final class ConversationStub {
             public long id;
             public String peer;
             public String content;

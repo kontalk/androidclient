@@ -746,8 +746,8 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
     <string name="pref_title_foreground_service_mandatory">Kontalk requereix que aquesta configuració funcioni correctament en aquest dispositiu</string>
 
     <string name="pref_copy_database">Copiar la base de dades</string>
-    <string name="msg_copy_database_success">Base de dades copiada a: %</string>
-    <string name="msg_copy_database_failed">Va fallar la còpia de base de dades a: %</string>
+    <string name="msg_copy_database_success">Base de dades copiada a: %s</string>
+    <string name="msg_copy_database_failed">Va fallar la còpia de base de dades a: %s</string>
 
     <string name="err_emoji_disabled_in_multiwindow">Emoji no pot ser usat en manera multi-finestra.</string>
 

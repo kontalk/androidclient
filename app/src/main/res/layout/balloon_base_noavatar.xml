@@ -27,7 +27,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="end">
+        android:gravity="end"
+        tools:ignore="UselessParent">
 
         <TextView android:id="@+id/contact_name"
             style="?android:attr/textAppearance"

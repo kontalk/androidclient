@@ -200,7 +200,7 @@ public class AccountFragment extends RootPreferenceFragment {
                         if (ctx != null) {
                             new FolderChooserDialog.Builder(ctx)
                                     .initialPath(PersonalKeyPack.DEFAULT_KEYPACK.getParent())
-                                    .show(getFragmentManager());
+                                    .show(getParentFragmentManager());
                         }
                     }
                 };

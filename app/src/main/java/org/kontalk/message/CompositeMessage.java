@@ -302,6 +302,7 @@ public class CompositeMessage {
     }
 
     /** Returns the first component of the given type. */
+    @SuppressWarnings("unchecked")
     public <T extends MessageComponent<?>> T getComponent(Class<T> type) {
         for (MessageComponent<?> cmp : mComponents) {
             if (type.isInstance(cmp))
@@ -635,7 +636,7 @@ public class CompositeMessage {
         return null;
     }
 
-    /** Still unused.
+    /* Still unused.
     public static void startQuery(AsyncQueryHandler handler, int token, String peer) {
         // cancel previous operations
         handler.cancelOperation(token);

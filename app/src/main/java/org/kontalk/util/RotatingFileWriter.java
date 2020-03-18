@@ -132,8 +132,8 @@ public class RotatingFileWriter implements Flushable, Closeable {
                 }
             }
             finally {
-                SystemUtils.closeStream(oldLog);
-                SystemUtils.closeStream(rotatedLog);
+                SystemUtils.close(oldLog);
+                SystemUtils.close(rotatedLog);
                 oldFile.delete();
             }
 

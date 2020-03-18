@@ -27,12 +27,12 @@ import android.content.Context;
  */
 public interface IPushListener {
 
-    public void onRegistered(Context context, String registrationId);
+    void onRegistered(Context context, String registrationId);
 
-    public void onUnregistered(Context context);
+    void onUnregistered(Context context);
 
-    public void onError(Context context, String errorId);
+    void onError(Context context, String errorId);
 
-    public String getSenderId(Context context);
+    String getSenderId(Context context);
 
 }

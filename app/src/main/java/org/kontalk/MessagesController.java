@@ -512,7 +512,7 @@ public class MessagesController {
         }
     }
 
-    private final class MessageQueueThread extends HandlerThread {
+    private static final class MessageQueueThread extends HandlerThread {
         private Handler mHandler;
 
         MessageQueueThread() {

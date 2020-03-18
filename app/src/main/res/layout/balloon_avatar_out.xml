@@ -72,7 +72,7 @@
             <TextView android:id="@+id/date_view"
                 style="@android:style/TextAppearance.Small"
                 android:textSize="@dimen/dateview_text_size"
-                android:maxLines="1"
+                android:singleLine="true"
                 android:ellipsize="none"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />

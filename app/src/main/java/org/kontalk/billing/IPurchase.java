@@ -21,15 +21,15 @@ package org.kontalk.billing;
  */
 public interface IPurchase {
 
-    public String getItemType();
-    public String getOrderId();
-    public String getPackageName();
-    public String getProduct();
-    public long getPurchaseTime();
-    public int getPurchaseState();
-    public String getDeveloperPayload();
-    public String getToken();
-    public String getOriginalJson();
-    public String getSignature();
+    String getItemType();
+    String getOrderId();
+    String getPackageName();
+    String getProduct();
+    long getPurchaseTime();
+    int getPurchaseState();
+    String getDeveloperPayload();
+    String getToken();
+    String getOriginalJson();
+    String getSignature();
 
 }

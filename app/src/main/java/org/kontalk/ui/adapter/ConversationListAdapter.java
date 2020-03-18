@@ -65,7 +65,7 @@ public class ConversationListAdapter extends PagedListAdapter<Conversation, Recy
     };
 
     private final LayoutInflater mFactory;
-    private SelectionTracker mSelectionTracker;
+    private SelectionTracker<Long> mSelectionTracker;
     private OnItemClickListener mItemListener;
     private OnFooterClickListener mFooterListener;
 
@@ -75,7 +75,7 @@ public class ConversationListAdapter extends PagedListAdapter<Conversation, Recy
         setHasStableIds(true);
     }
 
-    public void setSelectionTracker(SelectionTracker selectionTracker) {
+    public void setSelectionTracker(SelectionTracker<Long> selectionTracker) {
         mSelectionTracker = selectionTracker;
     }
 

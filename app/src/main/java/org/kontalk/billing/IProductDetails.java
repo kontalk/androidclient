@@ -21,10 +21,10 @@ package org.kontalk.billing;
  */
 public interface IProductDetails {
 
-    public String getId();
-    public String getType();
-    public String getPrice();
-    public String getTitle();
-    public String getDescription();
+    String getId();
+    String getType();
+    String getPrice();
+    String getTitle();
+    String getDescription();
 
 }

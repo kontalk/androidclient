@@ -61,7 +61,7 @@
         android:id="@+id/fab_my_position"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="top|right|end"
+        android:layout_gravity="top|end"
         android:layout_margin="16dp"
         app:backgroundTint="@android:color/white"
         app:fabSize="normal"

@@ -67,7 +67,7 @@ public class ConversationsDataSource extends PositionalDataSource<Conversation> 
                 return;
             }
 
-            callback.onResult(Collections.<Conversation>emptyList(), 0, 0);
+            callback.onResult(Collections.emptyList(), 0, 0);
             return;
         }
 

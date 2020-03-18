@@ -93,7 +93,7 @@ public class AboutActivity extends ToolbarActivity {
 
     private class AboutPagerAdapter extends FragmentPagerAdapter {
         AboutPagerAdapter(FragmentManager fm) {
-            super(fm);
+            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         }
 
         @Override

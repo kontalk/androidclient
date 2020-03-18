@@ -74,7 +74,7 @@ public class SimpleMessageTheme extends BaseMessageTheme {
         if (mBalloonView != null) {
             mBalloonView.setBackgroundResource(mIncomingDrawableId);
         }
-        mParentView.setGravity(Gravity.LEFT);
+        mParentView.setGravity(Gravity.START);
 
         super.setIncoming(contact, sameMessageBlock);
     }
@@ -84,7 +84,7 @@ public class SimpleMessageTheme extends BaseMessageTheme {
         if (mBalloonView != null) {
             mBalloonView.setBackgroundResource(mOutgoingDrawableId);
         }
-        mParentView.setGravity(Gravity.RIGHT);
+        mParentView.setGravity(Gravity.END);
 
         super.setOutgoing(contact, status, sameMessageBlock);
     }

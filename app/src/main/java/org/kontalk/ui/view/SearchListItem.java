@@ -20,6 +20,7 @@ package org.kontalk.ui.view;
 
 import org.kontalk.data.SearchItem;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.RelativeLayout;
@@ -40,6 +41,7 @@ public class SearchListItem extends RelativeLayout {
         super(context, attrs);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();

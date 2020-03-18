@@ -28,13 +28,13 @@ import org.kontalk.upload.UploadConnection;
 public interface ProgressListener {
 
     /** Called when operation is starting (before writeTo happens). */
-    public void start(UploadConnection conn);
+    void start(UploadConnection conn);
 
     /**
      * Called now and then while processing data.
      * Useful for checking the upload progress.
      * @param bytes how many bytes have been uploaded so far
      */
-    public void progress(UploadConnection conn, long bytes);
+    void progress(UploadConnection conn, long bytes);
 
 }

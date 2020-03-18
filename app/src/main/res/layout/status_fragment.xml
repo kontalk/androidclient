@@ -32,7 +32,7 @@
         android:layout_marginRight="4dp"
         android:layout_marginTop="4dp"
         android:hint="@string/hint_status_entry"
-        android:gravity="left|top"
+        android:gravity="start|top"
         android:lines="3"
         android:maxLines="3"
         android:maxLength="140"
@@ -48,6 +48,7 @@
         android:paddingTop="2dip"
         android:paddingBottom="2dip"
         android:paddingLeft="5dip"
+        android:paddingStart="5dip"
         android:text="@string/header_recent_status"
         style="?android:attr/listSeparatorTextViewStyle" />
 

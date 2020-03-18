@@ -495,7 +495,7 @@ public class PGPCoder extends Coder {
         }
 
         finally {
-            SystemUtils.closeStream(cDataIn);
+            SystemUtils.close(cDataIn);
         }
 
         return new DecryptOutput(out, mime, timestamp, errors);
@@ -725,7 +725,7 @@ public class PGPCoder extends Coder {
         }
 
         finally {
-            SystemUtils.closeStream(cDataIn);
+            SystemUtils.close(cDataIn);
         }
     }
 

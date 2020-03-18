@@ -26,5 +26,5 @@ public interface OnConsumeFinishedListener {
      * @param purchase The purchase that was (or was to be) consumed.
      * @param result The result of the consumption operation.
      */
-    public void onConsumeFinished(IPurchase purchase, BillingResult result);
+    void onConsumeFinished(IPurchase purchase, BillingResult result);
 }

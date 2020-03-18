@@ -46,6 +46,7 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.AsyncQueryHandler;
 import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
@@ -68,7 +69,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.ListFragment;
 import androidx.core.content.ContextCompat;
-import android.text.ClipboardManager;
 import android.text.TextUtils;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
@@ -608,7 +608,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     private void copyMessage(CompositeMessage msg) {
         ClipboardManager cpm = (ClipboardManager) getActivity()
             .getSystemService(Context.CLIPBOARD_SERVICE);
-        cpm.setText(msg.toTextContent());
+        cpm.setPrimaryClip(ClipData.newPlainText(null, msg.toTextContent()));
 
         Toast.makeText(getContext(), R.string.message_text_copied,
             Toast.LENGTH_SHORT).show();
@@ -655,7 +655,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
         ClipboardManager cpm = (ClipboardManager) getActivity()
             .getSystemService(Context.CLIPBOARD_SERVICE);
-        cpm.setText(massText.toString());
+        cpm.setPrimaryClip(ClipData.newPlainText(null, massText.toString()));
 
         Toast.makeText(getContext(), R.string.message_text_copied,
             Toast.LENGTH_SHORT).show();
@@ -1362,8 +1362,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     }
 
     private AudioFragment getAudioFragment() {
-        FragmentManager fm = getFragmentManager();
-        if (fm != null) {
+        if (isAdded()) {
+            FragmentManager fm = getParentFragmentManager();
             AudioFragment found = (AudioFragment) fm.findFragmentByTag("audio");
             if (found != null) {
                 mAudioFragment = found;
@@ -2055,7 +2055,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             SnackbarManager.show(bar);
         }
         else {
-            SnackbarManager.show(bar, (ViewGroup) view.findViewById(R.id.warning_bar));
+            SnackbarManager.show(bar, view.findViewById(R.id.warning_bar));
         }
     }
 
@@ -2242,11 +2242,9 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         if (audio != null) {
             stopMediaPlayerUpdater();
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                if (!getActivity().isChangingConfigurations()) {
-                    audio.setMessageId(-1);
-                    audio.finish(true);
-                }
+            if (!getActivity().isChangingConfigurations()) {
+                audio.setMessageId(-1);
+                audio.finish(true);
             }
         }
     }

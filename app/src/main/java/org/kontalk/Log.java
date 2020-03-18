@@ -127,7 +127,7 @@ public final class Log {
                 }
                 catch (IOException e) {
                     // disable logging but keep the file
-                    SystemUtils.closeStream(sLogFileWriter);
+                    SystemUtils.close(sLogFileWriter);
                     sLogFileWriter = null;
                 }
             }

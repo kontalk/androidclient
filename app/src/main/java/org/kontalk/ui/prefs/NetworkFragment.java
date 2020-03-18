@@ -157,7 +157,7 @@ public class NetworkFragment extends RootPreferenceFragment {
                     }
                 });
 
-                diag.show(getFragmentManager(), DialogHelperFragment.class.getSimpleName());
+                diag.show(getParentFragmentManager(), DialogHelperFragment.class.getSimpleName());
                 mServerlistUpdater.start();
                 return true;
             }

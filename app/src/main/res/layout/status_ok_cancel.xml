@@ -17,19 +17,22 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="?android:attr/buttonBarStyle"
     android:orientation="horizontal"
     android:layout_marginLeft="4dp"
     android:layout_marginRight="4dp"
     android:layout_marginBottom="4dp"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
-    <Button android:id="@+id/button_ok"
-        android:text="@android:string/ok"
+    <Button android:id="@+id/button_cancel"
+        style="?android:attr/buttonBarButtonStyle"
+        android:text="@android:string/cancel"
         android:layout_weight="1"
         android:layout_width="0dp"
         android:layout_height="wrap_content"/>
-    <Button android:id="@+id/button_cancel"
-        android:text="@android:string/cancel"
+    <Button android:id="@+id/button_ok"
+        style="?android:attr/buttonBarButtonStyle"
+        android:text="@android:string/ok"
         android:layout_weight="1"
         android:layout_width="0dp"
         android:layout_height="wrap_content"/>

@@ -96,8 +96,8 @@ public class CopyDatabasePreference extends Preference {
                 .show();
         }
         finally {
-            SystemUtils.closeStream(dbIn);
-            SystemUtils.closeStream(dbOut);
+            SystemUtils.close(dbIn);
+            SystemUtils.close(dbOut);
         }
 
         MessagesProvider.unlockForImport(context);

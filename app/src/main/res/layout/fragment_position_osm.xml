@@ -77,7 +77,7 @@
         app:backgroundTint="@android:color/white"
         app:fabSize="normal"
         app:srcCompat="@drawable/ic_my_location"
-        android:layout_gravity="top|right|end"/>
+        android:layout_gravity="top|end"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_route"

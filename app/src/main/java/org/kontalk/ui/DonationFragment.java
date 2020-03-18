@@ -39,6 +39,8 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import android.app.Dialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -47,7 +49,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import android.text.ClipboardManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -174,7 +175,7 @@ public class DonationFragment extends Fragment implements OnClickListener {
                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                         ClipboardManager cpm = (ClipboardManager) getActivity()
                             .getSystemService(Context.CLIPBOARD_SERVICE);
-                        cpm.setText(address);
+                        cpm.setPrimaryClip(ClipData.newPlainText(null, address));
 
                         Toast.makeText(getActivity(), R.string.bitcoin_clipboard_copied,
                             Toast.LENGTH_LONG).show();

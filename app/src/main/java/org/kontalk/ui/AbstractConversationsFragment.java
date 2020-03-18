@@ -26,6 +26,7 @@ import com.afollestad.materialdialogs.MaterialDialog;
 
 import android.app.Activity;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.paging.PagedList;
 import android.os.Bundle;
@@ -77,7 +78,7 @@ public abstract class AbstractConversationsFragment extends Fragment
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mHandler = new Handler();
-        mViewModel = ViewModelProviders.of(this).get(ConversationsViewModel.class);
+        mViewModel = new ViewModelProvider(this).get(ConversationsViewModel.class);
         mObserver = new RecyclerView.AdapterDataObserver() {
             @Override
             public void onChanged() {

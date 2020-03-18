@@ -478,7 +478,6 @@ public class PGP {
     public static String getUserId(PGPPublicKey key, String host) {
         String first = null;
 
-        @SuppressWarnings("unchecked")
         Iterator<String> uids = key.getUserIDs();
         while (uids.hasNext()) {
             String uid = uids.next();
@@ -646,7 +645,6 @@ public class PGP {
         return sKeyConverter.getPrivateKey(key);
     }
 
-    @SuppressWarnings("unchecked")
     public static PrivateKey convertPrivateKey(byte[] privateKeyData, String passphrase)
             throws PGPException, IOException {
 

@@ -850,7 +850,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
                 public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                     String title = !TextUtils.isEmpty(input) ? input.toString() : null;
 
-                    String[] users = usersList.toArray(new String[usersList.size()]);
+                    String[] users = usersList.toArray(new String[0]);
                     long groupThreadId = Conversation.initGroupChat(getContext(),
                         groupJid, title, users,
                         mComposer.getText().toString());

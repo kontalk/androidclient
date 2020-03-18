@@ -57,7 +57,7 @@ public final class RunnableBroadcastReceiver extends BroadcastReceiver {
     }
 
     public interface ActionRunnable {
-        public void run(String action);
+        void run(String action);
     }
 
 }

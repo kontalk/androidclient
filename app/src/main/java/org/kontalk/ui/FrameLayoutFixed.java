@@ -19,7 +19,7 @@ import android.widget.FrameLayout;
 import org.kontalk.Log;
 
 public class FrameLayoutFixed extends FrameLayout {
-    private final ArrayList<View> mMatchParentChildren = new ArrayList<View>(1);
+    private final ArrayList<View> mMatchParentChildren = new ArrayList<>(1);
 
     public FrameLayoutFixed(Context context) {
         super(context);

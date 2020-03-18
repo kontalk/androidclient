@@ -100,7 +100,7 @@ public class LocationContentView extends RelativeLayout
 
         Drawable drawable = createRoundRectDrawableWithIcon(0, R.drawable.ic_pin);
 
-        mContent.setBackgroundDrawable(drawable);
+        mContent.setBackground(drawable);
 
         if (mComponent.getText() != null) {
             mName.setVisibility(VISIBLE);

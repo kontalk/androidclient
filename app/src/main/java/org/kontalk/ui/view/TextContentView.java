@@ -240,8 +240,7 @@ public class TextContentView extends EmojiTextView
          * http://code.google.com/p/android/issues/detail?id=22493
          * applies from Honeycomb to JB 4.2.2 afaik
          */
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB &&
-            android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1)
+        if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1)
             // from http://stackoverflow.com/a/12303155/1045199
             formattedMessage.append("\u200b"); // was: \u2060
     }

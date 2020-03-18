@@ -107,7 +107,7 @@
   <string name="pref_title_on_encrypt_userdata">Statusnachricht nur Kontakten anzeigen, die meine Telefonnummer im Adressbuch haben</string>
   <string name="pref_title_off_encrypt_userdata">Statusnachricht ist für jeden sichtbar</string>
   <string name="pref_auto_accept_subscriptions">Einladungen automatisch annehmen</string>
-  <string name="pref_send_typing">\"Schreibt...\" -Benachrichtigung anzeigen</string>
+  <string name="pref_send_typing">\"Schreibt…\" -Benachrichtigung anzeigen</string>
   <string name="pref_hide_presence">Anwesenheit verbergen</string>
   <string name="pref_title_on_hide_presence">Sie werden anderen Nutzern als offline angezeigt</string>
   <string name="pref_title_off_hide_presence">"Andere Nutzer können sehen, wenn Sie online sind bzw.  wann Sie zuletzt verbunden waren"</string>

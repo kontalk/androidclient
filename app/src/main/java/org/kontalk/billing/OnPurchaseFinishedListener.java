@@ -29,5 +29,5 @@ public interface OnPurchaseFinishedListener {
      * @param result The result of the purchase.
      * @param info The purchase information (null if purchase failed)
      */
-    public void onPurchaseFinished(BillingResult result, IPurchase info);
+    void onPurchaseFinished(BillingResult result, IPurchase info);
 }

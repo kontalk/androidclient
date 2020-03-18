@@ -183,7 +183,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         }
 
         if (usersList.size() > 0) {
-            String[] users = usersList.toArray(new String[usersList.size()]);
+            String[] users = usersList.toArray(new String[0]);
             mConversation.addUsers(users);
             // reload conversation
             ((ComposeMessageParent) getActivity()).loadConversation(getThreadId(), false);

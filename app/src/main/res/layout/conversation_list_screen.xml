@@ -16,7 +16,8 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.fragment.app.FragmentContainerView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:name="org.kontalk.ui.ConversationsFragment"
     android:id="@+id/fragment_conversation_list"
     android:layout_width="fill_parent"

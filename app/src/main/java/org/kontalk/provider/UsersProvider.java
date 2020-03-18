@@ -298,8 +298,8 @@ public class UsersProvider extends ContentProvider {
             }
 
             int numLabels = groups.size();
-            String labels[] = new String[numLabels];
-            int counts[] = new int[numLabels];
+            String[] labels = new String[numLabels];
+            int[] counts = new int[numLabels];
             int i = 0;
             for (Map.Entry<String, Counter> entry : groups.entrySet()) {
                 labels[i] = entry.getKey();

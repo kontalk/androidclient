@@ -60,7 +60,7 @@ public class Keyring {
     /** Returns a {@link Coder} instance for encrypting data. */
     public static Coder getEncryptCoder(Context context, EndpointServer server, PersonalKey key, String[] recipients) {
         // get recipients public keys from users database
-        PGPPublicKeyRing keys[] = new PGPPublicKeyRing[recipients.length];
+        PGPPublicKeyRing[] keys = new PGPPublicKeyRing[recipients.length];
         for (int i = 0; i < recipients.length; i++) {
             PGPPublicKeyRing ring = getPublicKey(context, recipients[i], MyUsers.Keys.TRUST_UNKNOWN);
             if (ring == null)

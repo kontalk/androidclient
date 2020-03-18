@@ -86,6 +86,7 @@ import org.jxmpp.stringprep.XmppStringprepException;
 import org.bouncycastle.openpgp.PGPException;
 
 import android.accounts.Account;
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -1244,6 +1245,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
+    @SuppressLint("WakelockTimeout")
     @CommandHandler(name = ACTION_PING)
     private boolean handlePing(boolean canConnect) {
         if (isConnected()) {
@@ -1340,7 +1342,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         preMediaUri = Uri.fromFile(encrypted);
                     }
                     finally {
-                        SystemUtils.closeStream(in);
+                        SystemUtils.close(in);
                     }
                 }
                 else {
@@ -1633,6 +1635,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /**
      * Creates a connection to server if needed.
      */
+    @SuppressLint("WakelockTimeout")
     private synchronized void createConnection() {
         // connection is null or disconnected and no helper is currently running
         if ((mConnection == null || !mConnection.isConnected()) && mHelper == null) {

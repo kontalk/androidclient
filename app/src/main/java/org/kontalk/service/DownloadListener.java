@@ -29,7 +29,7 @@ public interface DownloadListener {
      * @param destination
      * @param length the declared Content-Length
      */
-    public void start(String url, File destination, long length);
+    void start(String url, File destination, long length);
 
     /**
      * Called now and then while receiving data in.
@@ -37,14 +37,14 @@ public interface DownloadListener {
      * @param destination
      * @param bytes how many bytes have been downloaded so far
      */
-    public void progress(String url, File destination, long bytes);
+    void progress(String url, File destination, long bytes);
 
     /**
      * Called when the download has been completed.
      * @param url
      * @param destination
      */
-    public void completed(String url, String mime, File destination);
+    void completed(String url, String mime, File destination);
 
     /**
      * Called if an error occured while download.
@@ -52,6 +52,6 @@ public interface DownloadListener {
      * @param destination
      * @param exc the exception occured
      */
-    public void error(String url, File destination, Throwable exc);
+    void error(String url, File destination, Throwable exc);
 
 }

@@ -55,7 +55,7 @@ public class SQLitePagedQueryBuilder extends SQLiteQueryBuilder {
                 newSelection
                     .append(mLastColumn)
                     .append(" < ")
-                    .append(String.valueOf(mLastValue));
+                    .append(mLastValue);
             }
 
             String query = super.buildQuery(projectionIn, newSelection.toString(), groupBy, having, mLastColumn + " DESC", String.valueOf(mCount));

@@ -34,7 +34,7 @@ import org.kontalk.util.MediaStorage;
 
 public class AudioComponent extends AttachmentComponent {
 
-    static Map<String, String> MIME_TYPES = new HashMap<String, String>();
+    static Map<String, String> MIME_TYPES = new HashMap<>();
 
     static {
         MIME_TYPES.put("audio/3gpp", "3gp");

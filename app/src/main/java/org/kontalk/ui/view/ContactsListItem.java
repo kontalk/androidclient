@@ -23,6 +23,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers;
 import org.kontalk.util.SystemUtils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import androidx.core.content.ContextCompat;
 import android.text.SpannableString;
@@ -54,6 +55,7 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
         super(context, attrs);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();

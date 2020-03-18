@@ -409,8 +409,8 @@ public class Contact {
                 return new StructuredName(displayName, givenName, middleName, familyName);
             }
         }
-        catch (Exception ignored) {
-            Log.e("CONTACT", "error loading contact data", ignored);
+        catch (Exception e) {
+            Log.e("CONTACT", "error loading contact data", e);
         }
         finally {
             if (nameQuery != null) {
@@ -580,7 +580,7 @@ public class Contact {
             avatar = MessageUtils.drawableToBitmap(d);
         }
 
-        if (resizeForNotification && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+        if (resizeForNotification) {
             // Contact bitmaps are 96x96 so we have to scale 'em up to 128x128 to fill the whole notification large icon.
             // inspired by the AOSP Mms app
             final Resources res = context.getResources();

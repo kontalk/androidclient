@@ -126,7 +126,6 @@ public class ClientHTTPConnection {
         return new IOException(detail, cause);
     }
 
-    @SuppressWarnings("deprecation")
     @SuppressLint("AllowAllHostnameVerifier")
     private void setupClient(HttpURLConnection conn, boolean acceptAnyCertificate)
             throws CertificateException, UnrecoverableKeyException,

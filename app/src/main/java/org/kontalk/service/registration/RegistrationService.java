@@ -285,6 +285,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             this.passphrase = cs.passphrase;
             this.importFallbackVerification = cs.importFallbackVerification;
             this.trustedKeys = cs.trustedKeys;
+            this.restored = cs.restored;
         }
     }
 

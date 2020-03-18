@@ -171,7 +171,6 @@ public class X509Bridge {
 
         PGPPublicKey publicKey = null;
 
-        @SuppressWarnings("unchecked")
         Iterator<PGPPublicKey> iter = publicKeyRing.getPublicKeys();
         while (iter.hasNext()) {
             PGPPublicKey pk = iter.next();
@@ -185,7 +184,7 @@ public class X509Bridge {
             throw new IllegalArgumentException("no master key found");
 
         List<String> xmppAddrs = new LinkedList<>();
-        for (@SuppressWarnings("unchecked") Iterator<String> it = publicKey.getUserIDs(); it.hasNext();) {
+        for (Iterator<String> it = publicKey.getUserIDs(); it.hasNext();) {
             String attrib = it.next();
             x500NameBuilder.addRDN(BCStyle.CN, attrib);
             // extract email for the subjectAltName

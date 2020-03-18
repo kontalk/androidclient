@@ -99,7 +99,7 @@ public class NotificationFragment extends RootPreferenceFragment {
                         .preselect(Preferences.getNotificationLEDColor(getContext()))
                         .allowUserColorInput(false)
                         .dynamicButtonColor(false)
-                        .show(getFragmentManager());
+                        .show(getParentFragmentManager());
                 }
                 catch (IllegalStateException e) {
                     // fragment is being destroyed - ignore

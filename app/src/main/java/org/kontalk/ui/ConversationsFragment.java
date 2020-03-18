@@ -201,7 +201,10 @@ public class ConversationsFragment extends AbstractConversationsFragment
 
     /** Used only in fragment contexts. */
     public void endConversation(AbstractComposeFragment composer) {
-        getFragmentManager().beginTransaction().remove(composer).commit();
+        getParentFragmentManager()
+            .beginTransaction()
+            .remove(composer)
+            .commit();
     }
 
 }

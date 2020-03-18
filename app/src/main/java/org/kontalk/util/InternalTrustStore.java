@@ -111,23 +111,8 @@ public class InternalTrustStore {
             CertificateException,
             IOException {
 
-        KeyStore ks;
-
-        if (Build.VERSION.SDK_INT >= 14) {
-            ks = KeyStore.getInstance("AndroidCAStore");
-            ks.load(null, null);
-        }
-
-        else {
-            ks = KeyStore.getInstance("BKS");
-            String path = System.getProperty("javax.net.ssl.trustStore");
-            if (path == null)
-            path = System.getProperty("java.home") + File.separator + "etc"
-                + File.separator + "security" + File.separator
-                + "cacerts.bks";
-            ks.load(new FileInputStream(path), null);
-        }
-
+        KeyStore ks = KeyStore.getInstance("AndroidCAStore");
+        ks.load(null, null);
         return ks;
     }
 }

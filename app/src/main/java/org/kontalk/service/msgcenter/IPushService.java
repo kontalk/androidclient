@@ -31,27 +31,27 @@ public interface IPushService {
      * Default lifespan (7 days) of the {@link #isRegisteredOnServer()}
      * flag until it is considered expired.
      */
-    public static final long DEFAULT_ON_SERVER_LIFESPAN_MS = TimeUnit.DAYS.toMillis(7);
+    long DEFAULT_ON_SERVER_LIFESPAN_MS = TimeUnit.DAYS.toMillis(7);
 
     /** Begin the registration process to the push service. */
-    public void register(IPushListener listener, String senderId);
+    void register(IPushListener listener, String senderId);
 
     /** Begin the unregistration process from the push service. */
-    public void unregister(IPushListener listener);
+    void unregister(IPushListener listener);
 
     /** Retry last (un)registration attempt. */
-    public void retry();
+    void retry();
 
     /** Returns true if the device is registered with the push service. */
-    public boolean isRegistered();
+    boolean isRegistered();
 
     /** Returns true if the push service is available on the device. */
-    public boolean isServiceAvailable();
+    boolean isServiceAvailable();
 
     /**
      * Sets whether the device was successfully registered in the server side.
      */
-    public void setRegisteredOnServer(boolean flag);
+    void setRegisteredOnServer(boolean flag);
 
     /**
      * Checks whether the device was successfully registered in the server side,
@@ -62,7 +62,7 @@ public interface IPushService {
      * is {@link #DEFAULT_ON_SERVER_LIFESPAN_MS} by default (but can be changed
      * by {@link #setRegisterOnServerLifespan(long)}).
      */
-    public boolean isRegisteredOnServer();
+    boolean isRegisteredOnServer();
 
     /**
      * Gets how long (in milliseconds) the {@link #isRegistered()}
@@ -71,14 +71,14 @@ public interface IPushService {
      * @return value set by {@link #setRegisteredOnServer(boolean)} or
      *      {@link #DEFAULT_ON_SERVER_LIFESPAN_MS} if not set.
      */
-    public long getRegisterOnServerLifespan();
+    long getRegisterOnServerLifespan();
 
     /**
      * Sets how long (in milliseconds) the {@link #isRegistered()}
      * flag is valid.
      */
-    public void setRegisterOnServerLifespan(long lifespan);
+    void setRegisterOnServerLifespan(long lifespan);
 
-    public String getRegistrationId();
+    String getRegistrationId();
 
 }

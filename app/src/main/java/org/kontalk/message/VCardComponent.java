@@ -45,9 +45,10 @@ public class VCardComponent extends AttachmentComponent {
     }
 
     public static boolean supportsMimeType(String mime) {
-        for (int i = 0; i < MIME_TYPES.length; i++)
-            if (MIME_TYPES[i].equalsIgnoreCase(mime))
+        for (String mimeType : MIME_TYPES) {
+            if (mimeType.equalsIgnoreCase(mime))
                 return true;
+        }
 
         return false;
     }

@@ -67,12 +67,9 @@ public class ProximityScreenLockerFallback implements ProximityScreenLocker, Sen
 
 	private void showNavigationBar(final boolean visible)
 	{
-	    // WARNING not supported on Gingerbread
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            mActivity.getWindow().getDecorView()
-                .setSystemUiVisibility(visible ?
-                    View.SYSTEM_UI_FLAG_VISIBLE : View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-        }
+        mActivity.getWindow().getDecorView()
+            .setSystemUiVisibility(visible ?
+                View.SYSTEM_UI_FLAG_VISIBLE : View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
     }
 
 	//

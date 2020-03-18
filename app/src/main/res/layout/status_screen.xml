@@ -21,7 +21,8 @@
               android:layout_width="match_parent"
               android:orientation="vertical">
     <include layout="@layout/toolbar_simple"/>
-    <fragment android:name="org.kontalk.ui.StatusFragment"
+    <androidx.fragment.app.FragmentContainerView
+              android:name="org.kontalk.ui.StatusFragment"
               android:id="@+id/fragment_status"
               android:layout_width="fill_parent"
               android:layout_height="fill_parent"/>

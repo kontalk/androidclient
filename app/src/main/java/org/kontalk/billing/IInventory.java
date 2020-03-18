@@ -23,16 +23,16 @@ package org.kontalk.billing;
 public interface IInventory {
 
     /** Returns the listing details for an in-app product. */
-    public IProductDetails getSkuDetails(String sku);
+    IProductDetails getSkuDetails(String sku);
 
     /** Returns purchase information for a given product, or null if there is no purchase. */
-    public IPurchase getPurchase(String sku);
+    IPurchase getPurchase(String sku);
 
     /** Returns whether or not there exists a purchase of the given product. */
-    public boolean hasPurchase(String sku);
+    boolean hasPurchase(String sku);
 
     /** Return whether or not details about the given product are available. */
-    public boolean hasDetails(String sku);
+    boolean hasDetails(String sku);
 
     /**
      * Erase a purchase (locally) from the inventory, given its product ID. This just
@@ -42,6 +42,6 @@ public interface IInventory {
      * purchase data from the Inventory you already have is quicker than querying for
      * a new Inventory.
      */
-    public void erasePurchase(String sku);
+    void erasePurchase(String sku);
 
 }

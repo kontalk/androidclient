@@ -66,32 +66,17 @@ public class ProgressNotificationBuilder extends NotificationCompat.Builder {
      * @param progress if less than 0, progress bar will be indeterminate
      */
     public ProgressNotificationBuilder progress(int progress, int contentTitle, int contentText) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            this.setSmallIcon(R.drawable.ic_stat_notify)
-                .setContentTitle(mContext.getString(contentTitle))
-                .setContentText(mContext.getString(contentText));
+        this.setSmallIcon(R.drawable.ic_stat_notify)
+            .setContentTitle(mContext.getString(contentTitle))
+            .setContentText(mContext.getString(contentText));
 
-            if (progress < 0)
-                setProgress(0, 0, true);
-            else
-                setProgress(100, progress, false);
+        if (progress < 0)
+            setProgress(0, 0, true);
+        else
+            setProgress(100, progress, false);
 
-            // not using custom content view
-            mContentView = null;
-        }
-        else {
-            mContentView = new RemoteViews(mContext.getPackageName(), mLayout);
-            // this should not be needed -- contentView.setOnClickPendingIntent(R.id.progress_notification, null);
-            mContentView.setTextViewText(R.id.title, mContext.getString(contentText));
-            mContentView.setTextViewText(R.id.progress_text, (progress < 0) ? "" : String.format(Locale.US, "%d%%", progress));
-
-            if (progress < 0)
-                mContentView.setProgressBar(R.id.progress_bar, 0, 0, true);
-            else
-                mContentView.setProgressBar(R.id.progress_bar, 100, progress, false);
-
-            setContent(mContentView);
-        }
+        // not using custom content view
+        mContentView = null;
 
         return this;
     }
@@ -101,7 +86,7 @@ public class ProgressNotificationBuilder extends NotificationCompat.Builder {
         Notification no = super.build();
 
         if (mContentView != null) {
-            /**
+            /*
              * HACK working around bug #30495
              * @see https://code.google.com/p/android/issues/detail?id=30495
              */

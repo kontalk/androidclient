@@ -30,9 +30,9 @@ public interface IBillingService {
     /**
      * Enables or disable debug logging through LogCat.
      */
-    public void enableDebugLogging(boolean enable, String tag);
+    void enableDebugLogging(boolean enable, String tag);
 
-    public void enableDebugLogging(boolean enable);
+    void enableDebugLogging(boolean enable);
 
     /**
      * Starts the setup process. This will start up the setup process asynchronously.
@@ -41,17 +41,17 @@ public interface IBillingService {
      *
      * @param listener The listener to notify when the setup process is complete.
      */
-    public void startSetup(OnBillingSetupFinishedListener listener);
+    void startSetup(OnBillingSetupFinishedListener listener);
 
-    public void launchPurchaseFlow(Activity act, String sku, int requestCode, OnPurchaseFinishedListener listener);
+    void launchPurchaseFlow(Activity act, String sku, int requestCode, OnPurchaseFinishedListener listener);
 
-    public void launchPurchaseFlow(Activity act, String sku, int requestCode,
+    void launchPurchaseFlow(Activity act, String sku, int requestCode,
         OnPurchaseFinishedListener listener, String extraData);
 
-    public void launchSubscriptionPurchaseFlow(Activity act, String sku, int requestCode,
+    void launchSubscriptionPurchaseFlow(Activity act, String sku, int requestCode,
         OnPurchaseFinishedListener listener);
 
-    public void launchSubscriptionPurchaseFlow(Activity act, String sku, int requestCode,
+    void launchSubscriptionPurchaseFlow(Activity act, String sku, int requestCode,
         OnPurchaseFinishedListener listener, String extraData);
 
     /**
@@ -72,8 +72,8 @@ public interface IBillingService {
      *     when the purchase completes. This extra data will be permanently bound to that purchase
      *     and will always be returned when the purchase is queried.
      */
-    public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode,
-                                   OnPurchaseFinishedListener listener, String extraData);
+    void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode,
+        OnPurchaseFinishedListener listener, String extraData);
 
     /**
      * Handles an activity result that's part of the purchase flow in in-app billing. If you
@@ -88,9 +88,9 @@ public interface IBillingService {
      *     false if the result was not related to a purchase, in which case you should
      *     handle it normally.
      */
-    public boolean handleActivityResult(int requestCode, int resultCode, Intent data);
+    boolean handleActivityResult(int requestCode, int resultCode, Intent data);
 
-    public IInventory queryInventory(boolean querySkuDetails, List<String> moreSkus)
+    IInventory queryInventory(boolean querySkuDetails, List<String> moreSkus)
         throws BillingException;
 
     /**
@@ -106,8 +106,8 @@ public interface IBillingService {
      *     Ignored if null or if querySkuDetails is false.
      * @throws BillingException if a problem occurs while refreshing the inventory.
      */
-    public IInventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus,
-                                    List<String> moreSubsSkus) throws BillingException;
+    IInventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus,
+        List<String> moreSubsSkus) throws BillingException;
 
     /**
      * Asynchronous wrapper for inventory query. This will perform an inventory
@@ -119,17 +119,17 @@ public interface IBillingService {
      * @param moreSkus as in {@link #queryInventory}
      * @param listener The listener to notify when the refresh operation completes.
      */
-    public void queryInventoryAsync(final boolean querySkuDetails,
-                                    final List<String> moreSkus,
-                                    final QueryInventoryFinishedListener listener);
+    void queryInventoryAsync(final boolean querySkuDetails,
+        final List<String> moreSkus,
+        final QueryInventoryFinishedListener listener);
 
-    public void queryInventoryAsync(QueryInventoryFinishedListener listener);
+    void queryInventoryAsync(QueryInventoryFinishedListener listener);
 
-    public void queryInventoryAsync(boolean querySkuDetails, QueryInventoryFinishedListener listener);
+    void queryInventoryAsync(boolean querySkuDetails, QueryInventoryFinishedListener listener);
 
-    public void consumeAsync(IPurchase purchase, OnConsumeFinishedListener listener);
+    void consumeAsync(IPurchase purchase, OnConsumeFinishedListener listener);
 
-    public void endAsyncOperation();
+    void endAsyncOperation();
 
     /**
      * Dispose of object, releasing resources. It's very important to call this
@@ -137,8 +137,8 @@ public interface IBillingService {
      * used by it such as service connections. Naturally, once the object is
      * disposed of, it can't be used again.
      */
-    public void dispose();
+    void dispose();
 
-    public boolean isDisposed();
+    boolean isDisposed();
 
 }
