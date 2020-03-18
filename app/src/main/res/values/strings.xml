@@ -460,7 +460,7 @@
     <string name="pref_title_sync_sim_contacts">Include SIM contacts when checking for registered users</string>
 
     <string name="pref_sync_invisible_contacts">Include invisible contacts</string>
-    <string name="pref_title_sync_invisible_contacts">Include contacts not displayed in Contacts app. Enable if you use DAVDroid</string>
+    <string name="pref_title_sync_invisible_contacts">Include contacts not displayed in Contacts app. Enable if you use DAVx⁵ or other contacts sync app</string>
 
     <string name="pref_server_messages">Receive server messages</string>
     <string name="pref_title_server_messages">Allow messages from server administrators. You might miss important news if you disable this</string>
