@@ -27,7 +27,6 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import android.app.Activity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelProviders;
 import androidx.paging.PagedList;
 import android.os.Bundle;
 import android.os.Handler;

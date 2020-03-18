@@ -18,8 +18,6 @@
 
 package org.kontalk.util;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyManagementException;
@@ -39,7 +37,6 @@ import org.kontalk.R;
 import org.kontalk.crypto.PGP;
 
 import android.content.Context;
-import android.os.Build;
 
 
 /** Some trust store utilities. */

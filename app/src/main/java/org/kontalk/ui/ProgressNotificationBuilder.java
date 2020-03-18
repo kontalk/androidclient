@@ -18,8 +18,6 @@
 
 package org.kontalk.ui;
 
-import java.util.Locale;
-
 import org.kontalk.R;
 
 import android.app.Notification;

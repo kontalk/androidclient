@@ -19,7 +19,6 @@
 package org.kontalk.provider;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.junit.After;
 import org.junit.Before;
