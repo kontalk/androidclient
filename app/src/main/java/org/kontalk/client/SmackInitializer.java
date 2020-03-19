@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@ import org.jivesoftware.smackx.iqversion.VersionManager;
 import org.jivesoftware.smackx.omemo.OmemoConfiguration;
 import org.jivesoftware.smackx.omemo.signal.SignalOmemoService;
 import org.jivesoftware.smackx.xdata.provider.DataFormProvider;
+import org.minidns.dnsserverlookup.android21.AndroidUsingLinkProperties;
 
 import android.content.Context;
 
@@ -48,6 +49,10 @@ public class SmackInitializer {
     public static void initialize(Context context) {
         if (!sInitialized) {
             disableSmackDefault();
+
+            // DNS for Android stuff
+            // won't be used if not needed/available
+            AndroidUsingLinkProperties.setup(context);
 
             InputStream is = context.getResources().openRawResource(R.raw.service);
             ProviderManager.addLoader(new ProviderFileLoader(is));

@@ -39,6 +39,14 @@ checkstyle {
     configFile = new File(projectDir, "config/checkstyle/checkstyle.xml")
 }
 
+jacoco {
+    toolVersion = "0.8.4"
+}
+
+tasks.withType(Test) {
+    jacoco.includeNoLocationClasses = true
+}
+
 android {
     compileSdkVersion project.compileSdkVersion
 
@@ -148,11 +156,11 @@ dependencies {
     // support libraries
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'com.google.android.material:material:1.1.0'
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
     implementation 'androidx.exifinterface:exifinterface:1.1.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
-    implementation 'androidx.recyclerview:recyclerview-selection:1.1.0-beta01'
+    implementation 'androidx.recyclerview:recyclerview-selection:1.1.0-rc01'
     implementation 'androidx.dynamicanimation:dynamicanimation:1.0.0'
     // these are actually to override an emoji dependency
     implementation 'androidx.cardview:cardview:1.0.0'
@@ -167,24 +175,23 @@ dependencies {
     implementation fileTree(dir: 'libs', include: "smack-omemo-signal-${smackVersion}.jar")
     implementation 'org.whispersystems:signal-protocol-java:2.4.0'
     implementation 'info.guardianproject.netcipher:netcipher:1.2.1'
-    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.4.1'
     implementation 'com.segment.backo:backo:1.0.0'
     implementation 'com.google.code.gson:gson:2.8.6'
 
     // encryption libraries
-    implementation "com.madgag.spongycastle:core:$spongyCastleVersion"
-    implementation ("com.madgag.spongycastle:prov:$spongyCastleVersion") {
+    implementation ("org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion") {
         exclude group: 'junit'
     }
-    implementation ("com.madgag.spongycastle:bcpkix-jdk15on:$spongyCastleVersion") {
+    implementation ("org.bouncycastle:bcpkix-jdk15on:$bouncyCastleVersion") {
         exclude group: 'junit'
     }
-    implementation ("com.madgag.spongycastle:bcpg-jdk15on:$spongyCastleVersion") {
+    implementation ("org.bouncycastle:bcpg-jdk15on:$bouncyCastleVersion") {
         exclude group: 'junit'
     }
 
     // storage/persistence libraries
-    implementation 'androidx.sqlite:sqlite:2.0.1'
+    implementation 'androidx.sqlite:sqlite:2.1.0'
     implementation 'io.requery:sqlite-android:3.29.0'
 
     // UI libraries
@@ -203,20 +210,21 @@ dependencies {
     // waiting for our pull request to be accepted
     implementation 'com.github.kontalk:CircularReveal:bc59b8dfcf'
     implementation 'me.leolin:ShortcutBadger:1.1.22@aar'
-    implementation 'androidx.lifecycle:lifecycle-runtime:2.1.0'
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
-    implementation 'androidx.paging:paging-runtime:2.1.0'
-    implementation 'de.hdodenhof:circleimageview:2.1.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime:2.2.0'
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+    implementation 'androidx.paging:paging-runtime:2.1.1'
+    implementation 'androidx.preference:preference:1.1.0'
+    implementation 'de.hdodenhof:circleimageview:3.1.0'
 
     // other libraries
-    implementation 'com.googlecode.libphonenumber:libphonenumber:8.10.13'
-    implementation 'com.google.zxing:core:3.3.3'
+    implementation 'com.googlecode.libphonenumber:libphonenumber:8.11.5'
+    implementation 'com.google.zxing:core:3.4.0'
     implementation 'me.dm7.barcodescanner:zxing:1.9.8'
     implementation 'com.github.instacart.truetime-android:library:3.3'
-    implementation 'org.greenrobot:eventbus:3.1.1'
-    annotationProcessor 'org.greenrobot:eventbus-annotation-processor:3.1.1'
-    implementation 'com.jakewharton:butterknife:10.2.0'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.0'
+    implementation 'org.greenrobot:eventbus:3.2.0'
+    annotationProcessor 'org.greenrobot:eventbus-annotation-processor:3.2.0'
+    implementation 'com.jakewharton:butterknife:10.2.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.1'
 
     // maps libraries
     implementation "com.github.kontalk.AnyMaps:anymaps-base:$anyMapsVersion"
@@ -227,14 +235,14 @@ dependencies {
     googleplayImplementation "com.google.android.gms:play-services-base:17.1.0"
     googleplayImplementation "com.google.android.gms:play-services-maps:17.0.0"
     googleplayImplementation "com.google.android.gms:play-services-location:17.0.0"
-    googleplayImplementation 'com.google.firebase:firebase-core:17.2.1'
-    googleplayImplementation 'com.google.firebase:firebase-messaging:20.1.0'
+    googleplayImplementation 'com.google.firebase:firebase-core:17.2.3'
+    googleplayImplementation 'com.google.firebase:firebase-messaging:20.1.2'
     googleplayImplementation('com.crashlytics.sdk.android:crashlytics:2.10.1@aar') {
         transitive = true
     }
 
     // test dependencies
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13'
     androidTestImplementation 'com.android.support:multidex-instrumentation:1.0.3'
     androidTestImplementation 'com.google.android:android-test:4.1.1.4'
     androidTestImplementation 'androidx.test:runner:1.2.0'

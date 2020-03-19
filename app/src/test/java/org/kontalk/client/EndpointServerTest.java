@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -74,12 +74,12 @@ public class EndpointServerTest {
         EndpointServer s1, s2;
         s1 = new EndpointServer("beta.kontalk.net");
         s2 = new EndpointServer("beta.kontalk.net|127.0.0.1");
-        assertFalse(s1.equals(s2));
-        assertFalse(s2.equals(s1));
+        assertNotEquals(s1, s2);
+        assertNotEquals(s2, s1);
         s1 = new EndpointServer("beta.kontalk.net");
         s2 = new EndpointServer("beta.kontalk.net");
-        assertTrue(s1.equals(s2));
-        assertTrue(s2.equals(s1));
+        assertEquals(s1, s2);
+        assertEquals(s2, s1);
     }
 
     @Test

@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ package org.kontalk.crypto;
  * PGP key flags not supported by Bouncy Castle.
  * @author Daniele
  */
-public class PGPKeyFlags implements org.spongycastle.openpgp.PGPKeyFlags {
+public class PGPKeyFlags implements org.bouncycastle.openpgp.PGPKeyFlags {
 
     public static final int CAN_AUTHENTICATE = 0x20; // This key may be used for authentication.
 

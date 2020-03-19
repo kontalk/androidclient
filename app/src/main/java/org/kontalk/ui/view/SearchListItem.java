@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@ package org.kontalk.ui.view;
 
 import org.kontalk.data.SearchItem;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.RelativeLayout;
@@ -40,6 +41,7 @@ public class SearchListItem extends RelativeLayout {
         super(context, attrs);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();

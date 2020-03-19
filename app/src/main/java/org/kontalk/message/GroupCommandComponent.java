@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -120,7 +120,7 @@ public class GroupCommandComponent extends MessageComponent<GroupExtension> {
             if (user.operation == operation)
                 output.add(user.jid.toString());
         }
-        return output.toArray(new String[output.size()]);
+        return output.toArray(new String[0]);
     }
 
     /** Returns the text to be used as the body content in the database. */
@@ -181,7 +181,7 @@ public class GroupCommandComponent extends MessageComponent<GroupExtension> {
                 if (m.length() > 0)
                     members.add(m);
             }
-            return members.toArray(new String[members.size()]);
+            return members.toArray(new String[0]);
         }
         return null;
     }
@@ -194,7 +194,7 @@ public class GroupCommandComponent extends MessageComponent<GroupExtension> {
                 members.add(param.substring(prefix.length()));
         }
         return (members.size() > 0) ?
-            members.toArray(new String[members.size()]) : null;
+            members.toArray(new String[0]) : null;
     }
 
     public static String[] getAddCommandMembers(String body) {

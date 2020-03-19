@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,18 +25,18 @@ import android.os.Environment;
 
 public interface PersonalKeyPack {
 
-    public static final String PUBLIC_KEY_FILENAME = "kontalk-public.asc";
-    public static final String PRIVATE_KEY_FILENAME = "kontalk-private.asc";
-    public static final String BRIDGE_CERT_FILENAME = "kontalk-login.crt";
-    public static final String BRIDGE_KEY_FILENAME = "kontalk-login.key";
-    public static final String BRIDGE_CERTPACK_FILENAME = "kontalk-login.p12";
-    public static final String TRUSTED_KEYS_FILENAME = "trusted.properties";
-    public static final String ACCOUNT_INFO_FILENAME = "account-info.properties";
+    String PUBLIC_KEY_FILENAME = "kontalk-public.asc";
+    String PRIVATE_KEY_FILENAME = "kontalk-private.asc";
+    String BRIDGE_CERT_FILENAME = "kontalk-login.crt";
+    String BRIDGE_KEY_FILENAME = "kontalk-login.key";
+    String BRIDGE_CERTPACK_FILENAME = "kontalk-login.p12";
+    String TRUSTED_KEYS_FILENAME = "trusted.properties";
+    String ACCOUNT_INFO_FILENAME = "account-info.properties";
 
-    public static final String KEYPACK_FILENAME = "kontalk-keys.zip";
-    public static final String KEYPACK_MIME = "application/zip";
+    String KEYPACK_FILENAME = "kontalk-keys.zip";
+    String KEYPACK_MIME = "application/zip";
 
-    public static final File DEFAULT_KEYPACK = new File(Environment
+    File DEFAULT_KEYPACK = new File(Environment
         .getExternalStorageDirectory(), KEYPACK_FILENAME);
 
 }

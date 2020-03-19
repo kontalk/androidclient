@@ -855,7 +855,7 @@ public class CircularSeekBar extends View {
 
 	public interface OnCircularSeekBarChangeListener {
 
-		public abstract void onProgressChanged(CircularSeekBar circularSeekBar, float mProgress, boolean fromUser);
+		void onProgressChanged(CircularSeekBar circularSeekBar, float mProgress, boolean fromUser);
 
 	}
 

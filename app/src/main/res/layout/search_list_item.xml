@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -19,7 +19,8 @@
 <org.kontalk.ui.view.SearchListItem xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="?android:attr/listPreferredItemHeight"
-    android:paddingRight="10dip" >
+    android:paddingRight="10dip"
+    android:paddingEnd="10dip">
 
     <TextView android:id="@android:id/text1"
         android:layout_width="wrap_content"
@@ -28,7 +29,9 @@
         android:singleLine="true"
         android:layout_marginTop="6dip"
         android:layout_marginRight="5dip"
+        android:layout_marginEnd="5dip"
         android:layout_marginLeft="7dip"
+        android:layout_marginStart="7dip"
         android:layout_alignParentTop="true"
         android:layout_alignWithParentIfMissing="true"
         android:ellipsize="marquee"  />

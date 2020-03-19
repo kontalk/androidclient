@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,15 +26,16 @@ import java.io.ObjectOutputStream;
 import java.util.Date;
 
 import org.junit.Test;
-import org.spongycastle.openpgp.PGPSecretKeyRing;
-import org.spongycastle.openpgp.operator.PBESecretKeyDecryptor;
-import org.spongycastle.openpgp.operator.PGPDigestCalculatorProvider;
-import org.spongycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
-import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
+import org.bouncycastle.openpgp.PGPSecretKeyRing;
+import org.bouncycastle.openpgp.operator.PBESecretKeyDecryptor;
+import org.bouncycastle.openpgp.operator.PGPDigestCalculatorProvider;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
 
 import org.kontalk.util.ByteArrayInOutStream;
 import org.kontalk.util.MessageUtils;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -64,6 +65,33 @@ public class PGPTest {
         final PGP.PGPDecryptedKeyPairRing serializedKey = PGP.unserialize(src);
 
         assertNotNull(serializedKey);
+
+        assertEquals(serializedKey.authKey.getPrivateKey().getKeyID(),
+            createdKey.authKey.getPrivateKey().getKeyID());
+        assertArrayEquals(serializedKey.authKey.getPrivateKey().getPrivateKeyDataPacket().getEncoded(),
+            createdKey.authKey.getPrivateKey().getPrivateKeyDataPacket().getEncoded());
+        assertArrayEquals(serializedKey.authKey.getPrivateKey().getPublicKeyPacket().getEncoded(),
+            createdKey.authKey.getPrivateKey().getPublicKeyPacket().getEncoded());
+        assertArrayEquals(serializedKey.authKey.getPublicKey().getEncoded(),
+            createdKey.authKey.getPublicKey().getEncoded());
+
+        assertEquals(serializedKey.signKey.getPrivateKey().getKeyID(),
+            createdKey.signKey.getPrivateKey().getKeyID());
+        assertArrayEquals(serializedKey.signKey.getPrivateKey().getPrivateKeyDataPacket().getEncoded(),
+            createdKey.signKey.getPrivateKey().getPrivateKeyDataPacket().getEncoded());
+        assertArrayEquals(serializedKey.signKey.getPrivateKey().getPublicKeyPacket().getEncoded(),
+            createdKey.signKey.getPrivateKey().getPublicKeyPacket().getEncoded());
+        assertArrayEquals(serializedKey.signKey.getPublicKey().getEncoded(),
+            createdKey.signKey.getPublicKey().getEncoded());
+
+        assertEquals(serializedKey.encryptKey.getPrivateKey().getKeyID(),
+            createdKey.encryptKey.getPrivateKey().getKeyID());
+        assertArrayEquals(serializedKey.encryptKey.getPrivateKey().getPrivateKeyDataPacket().getEncoded(),
+            createdKey.encryptKey.getPrivateKey().getPrivateKeyDataPacket().getEncoded());
+        assertArrayEquals(serializedKey.encryptKey.getPrivateKey().getPublicKeyPacket().getEncoded(),
+            createdKey.encryptKey.getPrivateKey().getPublicKeyPacket().getEncoded());
+        assertArrayEquals(serializedKey.encryptKey.getPublicKey().getEncoded(),
+            createdKey.encryptKey.getPublicKey().getEncoded());
     }
 
     @Test

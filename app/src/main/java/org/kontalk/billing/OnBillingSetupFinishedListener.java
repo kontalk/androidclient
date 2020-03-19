@@ -27,6 +27,6 @@ public interface OnBillingSetupFinishedListener {
      *
      * @param result The result of the setup process.
      */
-    public void onSetupFinished(BillingResult result);
+    void onSetupFinished(BillingResult result);
 
 }

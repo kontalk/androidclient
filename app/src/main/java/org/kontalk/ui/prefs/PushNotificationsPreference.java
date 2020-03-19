@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +21,11 @@ package org.kontalk.ui.prefs;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
-import android.preference.CheckBoxPreference;
-import android.preference.Preference;
-import androidx.appcompat.widget.SwitchCompat;
+
+import androidx.preference.CheckBoxPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceViewHolder;
+
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -72,9 +74,9 @@ public class PushNotificationsPreference extends CheckBoxPreference implements V
     }
 
     @Override
-    protected void onBindView(View view) {
-        super.onBindView(view);
-        SwitchCompat checkbox = view.findViewById(android.R.id.checkbox);
+    public void onBindViewHolder(PreferenceViewHolder holder) {
+        super.onBindViewHolder(holder);
+        View checkbox = holder.findViewById(android.R.id.checkbox);
         checkbox.setOnClickListener(this);
     }
 

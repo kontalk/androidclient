@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jxmpp.jid.Jid;
 import org.jxmpp.jid.impl.JidCreate;
-import org.spongycastle.openpgp.PGPPublicKeyRing;
+import org.bouncycastle.openpgp.PGPPublicKeyRing;
 
 import android.app.Activity;
 import android.content.Context;
@@ -182,7 +182,7 @@ public class GroupMessageFragment extends AbstractComposeFragment {
         }
 
         if (usersList.size() > 0) {
-            String[] users = usersList.toArray(new String[usersList.size()]);
+            String[] users = usersList.toArray(new String[0]);
             mConversation.addUsers(users);
             // reload conversation
             ((ComposeMessageParent) getActivity()).loadConversation(getThreadId(), false);

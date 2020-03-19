@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@ package org.kontalk.position;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import android.content.Context;
 
@@ -42,13 +43,13 @@ public class PlacesRestClient {
 
     public static void getPlacesByLocation(Context context, double lat, double lon, int limit, Callback callback) {
         Date date = new Date();
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd", Locale.US);
         format.format(date);
 
         OkHttpClient client = new OkHttpClient();
         HttpUrl.Builder urlBuilder = HttpUrl.parse("https://api.foursquare.com/v2/venues/search").newBuilder();
         urlBuilder.addQueryParameter("v", format.format(date));
-        urlBuilder.addQueryParameter("ll", String.valueOf(lat + "," + lon));
+        urlBuilder.addQueryParameter("ll", lat + "," + lon);
         urlBuilder.addQueryParameter("limit", String.valueOf(limit));
         urlBuilder.addQueryParameter("client_id", CLIENT_ID);
         urlBuilder.addQueryParameter("client_secret", CLIENT_SECRET);
@@ -64,13 +65,13 @@ public class PlacesRestClient {
 
     public static void getPlacesByQuery(Context context, double lat, double lon, String query, Callback callback) {
         Date date = new Date();
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd", Locale.US);
         format.format(date);
 
         OkHttpClient client = new OkHttpClient();
         HttpUrl.Builder urlBuilder = HttpUrl.parse("https://api.foursquare.com/v2/venues/search").newBuilder();
         urlBuilder.addQueryParameter("v", format.format(date));
-        urlBuilder.addQueryParameter("ll", String.valueOf(lat + "," + lon));
+        urlBuilder.addQueryParameter("ll", lat + "," + lon);
         urlBuilder.addQueryParameter("query", query);
         urlBuilder.addQueryParameter("client_id", CLIENT_ID);
         urlBuilder.addQueryParameter("client_secret", CLIENT_SECRET);

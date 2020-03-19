@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,8 +31,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.jxmpp.util.XmppStringUtils;
-import org.spongycastle.openpgp.PGPPublicKey;
-import org.spongycastle.openpgp.PGPPublicKeyRing;
+import org.bouncycastle.openpgp.PGPPublicKey;
+import org.bouncycastle.openpgp.PGPPublicKeyRing;
 
 import android.app.Activity;
 import android.content.Context;
@@ -400,7 +400,7 @@ public class GroupInfoFragment extends ListFragment
         }
 
         if (users.size() > 0) {
-            mConversation.removeUsers(users.toArray(new String[users.size()]));
+            mConversation.removeUsers(users.toArray(new String[0]));
             reload();
         }
 
@@ -594,7 +594,7 @@ public class GroupInfoFragment extends ListFragment
         }
 
         if (users.size() > 0) {
-            mConversation.addUsers(users.toArray(new String[users.size()]));
+            mConversation.addUsers(users.toArray(new String[0]));
         }
 
         getActivity().finish();

@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,8 +34,8 @@ import org.jxmpp.jid.BareJid;
 import org.jxmpp.jid.Jid;
 import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.util.XmppStringUtils;
-import org.spongycastle.openpgp.PGPPublicKey;
-import org.spongycastle.openpgp.PGPPublicKeyRing;
+import org.bouncycastle.openpgp.PGPPublicKey;
+import org.bouncycastle.openpgp.PGPPublicKeyRing;
 
 import android.Manifest;
 import android.app.Activity;
@@ -849,7 +849,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
                 public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                     String title = !TextUtils.isEmpty(input) ? input.toString() : null;
 
-                    String[] users = usersList.toArray(new String[usersList.size()]);
+                    String[] users = usersList.toArray(new String[0]);
                     long groupThreadId = Conversation.initGroupChat(getContext(),
                         groupJid, title, users,
                         mComposer.getText().toString());

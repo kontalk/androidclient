@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -140,7 +140,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onSyncCanceled() {
         super.onSyncCanceled();
-        mSyncer.onSyncCanceled();
+        if (mSyncer != null) {
+            mSyncer.onSyncCanceled();
+        }
     }
 
     /**
@@ -171,7 +173,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     public static boolean isThrottling() {
         long lastSync = Preferences.getLastSyncTimestamp();
-        float diff = (System.currentTimeMillis() - lastSync) / 1000;
+        float diff = (System.currentTimeMillis() - lastSync) / 1000f;
         return (lastSync >= 0 && diff < MAX_SYNC_DELAY);
     }
 

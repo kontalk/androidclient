@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ public class EndpointServer {
      * Validation pattern. Very basic.
      */
     // TODO use this also for parsing
-    private static final Pattern sPattern = Pattern.compile("^[A-Za-z0-9\\-\\.]+(\\|[A-Za-z0-9\\-\\.]+(:\\d+)?)?$");
+    private static final Pattern sPattern = Pattern.compile("^[A-Za-z0-9\\-.]+(\\|[A-Za-z0-9\\-.]+(:\\d+)?)?$");
 
     private String mHost;
     private int mPort;
@@ -64,7 +64,7 @@ public class EndpointServer {
 
     @Override
     public boolean equals(Object o) {
-        return o != null && o instanceof EndpointServer &&
+        return o instanceof EndpointServer &&
             (mHost == ((EndpointServer) o).mHost ||
                 (mHost != null && mHost.equalsIgnoreCase(((EndpointServer) o).mHost))) &&
             (((EndpointServer) o).mNetwork == mNetwork ||
@@ -113,12 +113,12 @@ public class EndpointServer {
         /**
          * Returns the next server that hasn't been picked yet.
          */
-        public EndpointServer next();
+        EndpointServer next();
 
         /**
          * Resets the provider to its initial state.
          */
-        public void reset();
+        void reset();
     }
 
     /**

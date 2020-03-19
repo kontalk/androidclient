@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -21,19 +21,20 @@
     <CheckBoxPreference
         android:defaultValue="@bool/pref_default_enable_notifications"
         android:key="pref_enable_notifications"
-        android:layout="@layout/md_preference_custom"
+        android:icon="@drawable/ic_pref_notification"
         android:summary="@string/pref_title_enable_notifications"
         android:title="@string/pref_enable_notifications"/>
     <Preference android:key="pref_ringtone"
         android:dependency="pref_enable_notifications"
         android:title="@string/pref_ringtone"
         android:defaultValue="@string/pref_default_ringtone"
-        android:layout="@layout/md_preference_custom"/>
-    <com.afollestad.materialdialogs.prefs.MaterialListPreference
+        />
+    <ListPreference
         android:key="pref_vibrate"
         android:dependency="pref_enable_notifications"
         android:title="@string/pref_vibrate"
         android:summary="@string/pref_title_vibrate"
+        android:icon="@drawable/ic_pref_vibrate"
         android:entries="@array/vibrate_labels"
         android:entryValues="@array/vibrate_values"
         android:defaultValue="@string/pref_default_vibrate"/>
@@ -41,15 +42,15 @@
         android:title="@string/pref_enable_notification_led"
         android:dependency="pref_enable_notifications"
         android:defaultValue="@bool/pref_default_enable_notification_led"
-        android:layout="@layout/md_preference_custom"/>
+        />
     <Preference android:key="pref_notification_led_color"
         android:dependency="pref_enable_notification_led"
         android:title="@string/pref_notification_led_color"
         android:defaultValue="@integer/pref_default_notification_led_color"
-        android:layout="@layout/md_preference_custom"/>
+        />
     <CheckBoxPreference android:key="pref_enable_outgoing_sound"
         android:title="@string/pref_enable_outgoing_sound"
         android:defaultValue="@bool/pref_default_enable_outgoing_sound"
-        android:layout="@layout/md_preference_custom"/>
+        />
 
 </PreferenceScreen>

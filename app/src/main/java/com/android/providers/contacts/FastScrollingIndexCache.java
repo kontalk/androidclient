@@ -22,7 +22,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 import android.text.TextUtils;
 import org.kontalk.Log;
 
@@ -223,7 +223,7 @@ public class FastScrollingIndexCache {
         }
     }
 
-    @SuppressLint("CommitPrefEdits")
+    @SuppressLint("ApplySharedPref")
     public void invalidate() {
         synchronized (mCache) {
             mPrefs.edit().remove(PREFERENCE_KEY).commit();

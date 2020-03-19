@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -146,8 +146,8 @@ public abstract class DatabaseImporterService extends Service {
                     error = "Invalid database.";
                 }
                 finally {
-                    SystemUtils.closeStream(in);
-                    SystemUtils.closeStream(out);
+                    SystemUtils.close(in);
+                    SystemUtils.close(out);
                     service.unlockDestinationDatabase();
                     service.broadcastFinish(error);
                     service.stopSelf();

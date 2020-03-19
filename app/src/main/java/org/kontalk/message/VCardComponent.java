@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,9 +45,10 @@ public class VCardComponent extends AttachmentComponent {
     }
 
     public static boolean supportsMimeType(String mime) {
-        for (int i = 0; i < MIME_TYPES.length; i++)
-            if (MIME_TYPES[i].equalsIgnoreCase(mime))
+        for (String mimeType : MIME_TYPES) {
+            if (mimeType.equalsIgnoreCase(mime))
                 return true;
+        }
 
         return false;
     }

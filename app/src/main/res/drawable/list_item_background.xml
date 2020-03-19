@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -16,10 +16,12 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
+<selector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:exitFadeDuration="@android:integer/config_shortAnimTime">
     <item android:state_pressed="false" android:state_selected="true" android:drawable="@drawable/list_item_focused_background" />
     <item android:state_pressed="false" android:state_focused="true" android:drawable="@drawable/list_item_focused_background" />
     <item android:state_pressed="true" android:drawable="@drawable/list_item_pressed_background" />
+    <item android:state_activated="true" android:drawable="@drawable/list_item_focused_background" />
     <item android:state_checked="true" android:drawable="@drawable/list_item_focused_background" />
     <item android:drawable="@android:color/transparent" />
 </selector>

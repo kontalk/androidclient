@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -334,7 +334,7 @@ public class ContactsListFragment extends ListFragment implements
                     for (Intent intent : targets)
                         intent.removeExtra("org.kontalk.invite.label");
 
-                    Parcelable[] extraIntents = targets.toArray(new Parcelable[targets.size()]);
+                    Parcelable[] extraIntents = targets.toArray(new Parcelable[0]);
                     chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
                 }
 

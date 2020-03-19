@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -21,12 +21,13 @@
     <Preference android:key="pref_privacy_settings"
         android:title="@string/pref_privacy_settings"
         android:persistent="false"
-        android:layout="@layout/md_preference_custom"/>
+        android:icon="@drawable/ic_pref_privacy"
+        />
     <CheckBoxPreference android:key="pref_show_blocked_users"
         android:title="@string/pref_show_blocked_users"
         android:defaultValue="@bool/pref_default_show_blocked_users"
-        android:layout="@layout/md_preference_custom"/>
-    <com.afollestad.materialdialogs.prefs.MaterialEditTextPreference
+        />
+    <EditTextPreference
         android:key="pref_remove_prefix"
         android:dialogTitle="@string/pref_remove_prefix"
         android:positiveButtonText="@android:string/ok"
@@ -38,16 +39,16 @@
         android:summary="@string/pref_title_sync_sim_contacts"
         android:title="@string/pref_sync_sim_contacts"
         android:defaultValue="@bool/pref_default_sync_sim_contacts"
-        android:layout="@layout/md_preference_custom"/>
+        />
     <CheckBoxPreference android:key="pref_sync_invisible_contacts"
         android:summary="@string/pref_title_sync_invisible_contacts"
         android:title="@string/pref_sync_invisible_contacts"
         android:defaultValue="@bool/pref_default_sync_invisible_contacts"
-        android:layout="@layout/md_preference_custom"/>
+        />
     <CheckBoxPreference android:key="pref_server_messages"
         android:summary="@string/pref_title_server_messages"
         android:title="@string/pref_server_messages"
         android:defaultValue="@bool/pref_default_server_messages"
-        android:layout="@layout/md_preference_custom"/>
+        />
 
 </PreferenceScreen>

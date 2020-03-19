@@ -5,11 +5,11 @@
 package org.kontalk.ui.prefs;
 
 import android.content.Context;
-import android.preference.Preference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceViewHolder;
+
 import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 
 
@@ -27,12 +27,11 @@ public class TextMessagePreference extends Preference {
     }
 
     @Override
-    protected View onCreateView(ViewGroup parent) {
-        View view = super.onCreateView(parent);
-        TextView textView = view.findViewById(android.R.id.title);
+    public void onBindViewHolder(PreferenceViewHolder holder) {
+        super.onBindViewHolder(holder);
+        TextView textView = (TextView) holder.findViewById(android.R.id.title);
         textView.setSingleLine(false);
         textView.setMaxLines(Integer.MAX_VALUE);
         textView.setMovementMethod(LinkMovementMethod.getInstance());
-        return view;
     }
 }

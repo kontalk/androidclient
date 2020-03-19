@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kontalk Android client
+     Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- actions -->
+    <item android:icon="@drawable/ic_menu_call" android:title="@string/call" android:id="@+id/call_contact" app:showAsAction="ifRoom"/>
+    <item android:icon="@drawable/ic_menu_contact" android:title="@string/view_contact" android:id="@+id/view_contact" app:showAsAction="ifRoom"/>
+
+    <!-- menu -->
+    <item android:icon="@drawable/ic_menu_delete" android:title="@string/delete_thread" android:id="@+id/delete_thread"/>
+    <item android:icon="@drawable/ic_menu_invite" android:title="@string/menu_start_group" android:id="@+id/invite_group"/>
+    <item android:icon="@drawable/ic_menu_block" android:title="@string/menu_block_user" android:id="@+id/block_user"/>
+    <item android:icon="@drawable/ic_menu_block" android:title="@string/menu_unblock_user" android:id="@+id/unblock_user"/>
+    <item android:icon="@drawable/ic_menu_unlock" android:title="@string/menu_encryption" android:id="@+id/toggle_encryption" android:checkable="true"/>
+</menu>

@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,9 +25,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceManager;
 import android.widget.Toast;
+
+import androidx.preference.Preference;
+import androidx.preference.PreferenceManager;
 
 import org.kontalk.R;
 import org.kontalk.util.Preferences;
@@ -43,9 +44,7 @@ public class AppearanceFragment extends RootPreferenceFragment {
     private static final int REQUEST_PICK_BACKGROUND = Activity.RESULT_FIRST_USER + 1;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         addPreferencesFromResource(R.xml.preferences_appearance);
 
         // use custom background
@@ -123,8 +122,9 @@ public class AppearanceFragment extends RootPreferenceFragment {
                         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
                         prefs.edit()
                                 .putString("pref_background_uri", Uri.fromFile(image).toString())
-                                .commit();
-                    } catch (Exception e) {
+                                .apply();
+                    }
+                    catch (Exception e) {
                         Toast.makeText(ctx, R.string.err_custom_background,
                                 Toast.LENGTH_LONG).show();
                     }

@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.PublicKey;
+import java.security.Security;
 import java.security.SignatureException;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Date;
@@ -37,43 +38,43 @@ import java.util.Locale;
 
 import org.jivesoftware.smack.util.StringUtils;
 import org.jxmpp.util.XmppStringUtils;
-import org.spongycastle.bcpg.ArmoredInputStream;
-import org.spongycastle.bcpg.BCPGInputStream;
-import org.spongycastle.bcpg.BCPGKey;
-import org.spongycastle.bcpg.DSASecretBCPGKey;
-import org.spongycastle.bcpg.ECSecretBCPGKey;
-import org.spongycastle.bcpg.ElGamalSecretBCPGKey;
-import org.spongycastle.bcpg.HashAlgorithmTags;
-import org.spongycastle.bcpg.PublicKeyPacket;
-import org.spongycastle.bcpg.RSASecretBCPGKey;
-import org.spongycastle.jce.provider.BouncyCastleProvider;
-import org.spongycastle.openpgp.PGPEncryptedData;
-import org.spongycastle.openpgp.PGPException;
-import org.spongycastle.openpgp.PGPKeyPair;
-import org.spongycastle.openpgp.PGPKeyRingGenerator;
-import org.spongycastle.openpgp.PGPObjectFactory;
-import org.spongycastle.openpgp.PGPPrivateKey;
-import org.spongycastle.openpgp.PGPPublicKey;
-import org.spongycastle.openpgp.PGPPublicKeyRing;
-import org.spongycastle.openpgp.PGPSecretKey;
-import org.spongycastle.openpgp.PGPSecretKeyRing;
-import org.spongycastle.openpgp.PGPSignature;
-import org.spongycastle.openpgp.PGPSignatureGenerator;
-import org.spongycastle.openpgp.PGPSignatureSubpacketGenerator;
-import org.spongycastle.openpgp.PGPSignatureSubpacketVector;
-import org.spongycastle.openpgp.PGPUtil;
-import org.spongycastle.openpgp.operator.KeyFingerPrintCalculator;
-import org.spongycastle.openpgp.operator.PBESecretKeyDecryptor;
-import org.spongycastle.openpgp.operator.PBESecretKeyEncryptor;
-import org.spongycastle.openpgp.operator.PGPDigestCalculator;
-import org.spongycastle.openpgp.operator.PGPDigestCalculatorProvider;
-import org.spongycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
-import org.spongycastle.openpgp.operator.jcajce.JcaPGPContentSignerBuilder;
-import org.spongycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
-import org.spongycastle.openpgp.operator.jcajce.JcaPGPKeyConverter;
-import org.spongycastle.openpgp.operator.jcajce.JcaPGPKeyPair;
-import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
-import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyEncryptorBuilder;
+import org.bouncycastle.bcpg.ArmoredInputStream;
+import org.bouncycastle.bcpg.BCPGInputStream;
+import org.bouncycastle.bcpg.BCPGKey;
+import org.bouncycastle.bcpg.DSASecretBCPGKey;
+import org.bouncycastle.bcpg.ECSecretBCPGKey;
+import org.bouncycastle.bcpg.ElGamalSecretBCPGKey;
+import org.bouncycastle.bcpg.HashAlgorithmTags;
+import org.bouncycastle.bcpg.PublicKeyPacket;
+import org.bouncycastle.bcpg.RSASecretBCPGKey;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openpgp.PGPEncryptedData;
+import org.bouncycastle.openpgp.PGPException;
+import org.bouncycastle.openpgp.PGPKeyPair;
+import org.bouncycastle.openpgp.PGPKeyRingGenerator;
+import org.bouncycastle.openpgp.PGPObjectFactory;
+import org.bouncycastle.openpgp.PGPPrivateKey;
+import org.bouncycastle.openpgp.PGPPublicKey;
+import org.bouncycastle.openpgp.PGPPublicKeyRing;
+import org.bouncycastle.openpgp.PGPSecretKey;
+import org.bouncycastle.openpgp.PGPSecretKeyRing;
+import org.bouncycastle.openpgp.PGPSignature;
+import org.bouncycastle.openpgp.PGPSignatureGenerator;
+import org.bouncycastle.openpgp.PGPSignatureSubpacketGenerator;
+import org.bouncycastle.openpgp.PGPSignatureSubpacketVector;
+import org.bouncycastle.openpgp.PGPUtil;
+import org.bouncycastle.openpgp.operator.KeyFingerPrintCalculator;
+import org.bouncycastle.openpgp.operator.PBESecretKeyDecryptor;
+import org.bouncycastle.openpgp.operator.PBESecretKeyEncryptor;
+import org.bouncycastle.openpgp.operator.PGPDigestCalculator;
+import org.bouncycastle.openpgp.operator.PGPDigestCalculatorProvider;
+import org.bouncycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPContentSignerBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPKeyConverter;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPKeyPair;
+import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyEncryptorBuilder;
 
 import android.os.Parcel;
 
@@ -81,7 +82,7 @@ import android.os.Parcel;
 /** Some PGP utility method, mainly for use by {@link PersonalKey}. */
 public class PGP {
 
-    /** Security provider: Spongy Castle. */
+    /** Security provider: Bouncy Castle. */
     public static Provider PROVIDER;
 
     /** Default EC curve used. */
@@ -157,9 +158,10 @@ public class PGP {
     }
 
     public static void registerProvider() {
-        // create spongy castle provider
-        // do not register it as can cause issues on some devices
+        // create Bouncy Castle provider
         PROVIDER = new BouncyCastleProvider();
+        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+        Security.addProvider(PROVIDER);
         try {
             // apply RNG fixes
             PRNGFixes.apply();
@@ -476,7 +478,6 @@ public class PGP {
     public static String getUserId(PGPPublicKey key, String host) {
         String first = null;
 
-        @SuppressWarnings("unchecked")
         Iterator<String> uids = key.getUserIDs();
         while (uids.hasNext()) {
             String uid = uids.next();
@@ -539,7 +540,6 @@ public class PGP {
 
     /** Returns the first master key found in the given public keyring. */
     public static PGPPublicKey getMasterKey(PGPPublicKeyRing publicKeyring) {
-        @SuppressWarnings("unchecked")
         Iterator<PGPPublicKey> iter = publicKeyring.getPublicKeys();
         while (iter.hasNext()) {
             PGPPublicKey pk = iter.next();
@@ -555,8 +555,21 @@ public class PGP {
         return getMasterKey(readPublicKeyring(publicKeyring));
     }
 
+    public static PGPPublicKey getAuthenticationKey(PGPPublicKeyRing publicKeyring) {
+        Iterator<PGPPublicKey> iter = publicKeyring.getPublicKeys();
+        while (iter.hasNext()) {
+            PGPPublicKey pk = iter.next();
+            if (pk.isMasterKey()) {
+                int keyFlags = getKeyFlags(pk);
+                if ((keyFlags & PGPKeyFlags.CAN_AUTHENTICATE) == PGPKeyFlags.CAN_AUTHENTICATE)
+                    return pk;
+            }
+        }
+
+        return null;
+    }
+
     public static PGPPublicKey getSigningKey(PGPPublicKeyRing publicKeyring) {
-        @SuppressWarnings("unchecked")
         Iterator<PGPPublicKey> iter = publicKeyring.getPublicKeys();
         while (iter.hasNext()) {
             PGPPublicKey pk = iter.next();
@@ -572,7 +585,6 @@ public class PGP {
     }
 
     public static PGPPublicKey getEncryptionKey(PGPPublicKeyRing publicKeyring) {
-        @SuppressWarnings("unchecked")
         Iterator<PGPPublicKey> iter = publicKeyring.getPublicKeys();
         while (iter.hasNext()) {
             PGPPublicKey pk = iter.next();
@@ -589,7 +601,6 @@ public class PGP {
     }
 
     private static PGPPublicKey getLegacyEncryptionKey(PGPPublicKeyRing publicKeyring) {
-        @SuppressWarnings("unchecked")
         Iterator<PGPPublicKey> iter = publicKeyring.getPublicKeys();
         while (iter.hasNext()) {
             PGPPublicKey pk = iter.next();
@@ -601,7 +612,6 @@ public class PGP {
     }
 
     private static PGPPublicKey getLegacySigningKey(PGPPublicKeyRing publicKeyring) {
-        @SuppressWarnings("unchecked")
         Iterator<PGPPublicKey> iter = publicKeyring.getPublicKeys();
         while (iter.hasNext()) {
             PGPPublicKey pk = iter.next();
@@ -635,7 +645,6 @@ public class PGP {
         return sKeyConverter.getPrivateKey(key);
     }
 
-    @SuppressWarnings("unchecked")
     public static PrivateKey convertPrivateKey(byte[] privateKeyData, String passphrase)
             throws PGPException, IOException {
 

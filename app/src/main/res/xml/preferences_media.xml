@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -18,21 +18,22 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <com.afollestad.materialdialogs.prefs.MaterialListPreference
+    <ListPreference
         android:key="pref_image_resize"
         android:title="@string/pref_image_resize"
         android:summary="%s"
+        android:icon="@drawable/ic_pref_image_resize"
         android:entries="@array/image_resize_labels"
         android:entryValues="@array/image_resize_values"
         android:defaultValue="@integer/pref_default_image_resize"/>
-    <com.afollestad.materialdialogs.prefs.MaterialListPreference
+    <ListPreference
         android:key="pref_media_autodownload"
         android:title="@string/pref_media_autodownload"
         android:summary="%s"
         android:entries="@array/media_autodownload_labels"
         android:entryValues="@array/media_autodownload_values"
         android:defaultValue="@string/pref_default_media_autodownload"/>
-    <com.afollestad.materialdialogs.prefs.MaterialEditTextPreference
+    <EditTextPreference
         android:key="pref_media_autodownload_threshold"
         android:dialogTitle="@string/pref_media_autodownload_threshold"
         android:positiveButtonText="@android:string/ok"

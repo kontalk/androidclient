@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Kontalk Android client
-     Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -760,7 +760,7 @@ Desactivar a cifraxe só se o contacto non ten unha chave persoal.</string>
 
     <string name="pref_copy_database">Copiar a base de datos</string>
     <string name="msg_copy_database_success">Base de datos copiada a: %s</string>
-    <string name="msg_copy_database_failed">Fallou a copia de base de datos a: %</string>
+    <string name="msg_copy_database_failed">Fallou a copia de base de datos a: %s</string>
 
     <string name="err_emoji_disabled_in_multiwindow">Emoji non pode ser usado en modo multi-fiestra.</string>
 

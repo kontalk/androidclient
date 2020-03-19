@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -67,7 +67,6 @@ import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
 
 
 /**
@@ -78,8 +77,6 @@ public final class SystemUtils {
 
     private static final Pattern VERSION_CODE_MATCH = Pattern
         .compile("\\(([0-9]+)\\)$");
-
-    private static Uri sProfileUri;
 
     private SystemUtils() {
     }
@@ -220,41 +217,29 @@ public final class SystemUtils {
 
     public static Bitmap getProfilePhoto(Context context) {
         // profile photo is available only since API level 14
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            ContentResolver cr = context.getContentResolver();
-            InputStream input = ContactsContract.Contacts
-                .openContactPhotoInputStream(cr, ContactsContract.Profile.CONTENT_URI);
-            if (input != null) {
-                try {
-                    return BitmapFactory.decodeStream(input);
-                }
-                finally {
-                    try {
-                        input.close();
-                    }
-                    catch (IOException ignore) {
-                    }
-                }
+        ContentResolver cr = context.getContentResolver();
+        InputStream input = ContactsContract.Contacts
+            .openContactPhotoInputStream(cr, ContactsContract.Profile.CONTENT_URI);
+        if (input != null) {
+            try {
+                return BitmapFactory.decodeStream(input);
+            }
+            finally {
+                SystemUtils.close(input);
             }
         }
 
         return null;
     }
 
+    /**
+     * Returns the system profile Uri. This will be replaced by the users's
+     * personal avatar - when there will be such a feature.
+     * @param context not used really
+     * @return the profile Uri
+     */
     public static Uri getProfileUri(Context context) {
-        if (sProfileUri == null) {
-            // profile contact is available only since API level 14
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-                sProfileUri = ContactsContract.Profile.CONTENT_URI;
-            }
-            else {
-                // try with the phone number
-                String phoneNumber = Authenticator.getDefaultAccountName(context);
-                sProfileUri = lookupPhoneNumber(context, phoneNumber);
-            }
-        }
-
-        return sProfileUri;
+        return ContactsContract.Profile.CONTENT_URI;
     }
 
     public static Uri lookupPhoneNumber(Context context, String phoneNumber) {
@@ -348,12 +333,6 @@ public final class SystemUtils {
             count += n;
         }
         return count;
-    }
-
-    /** @deprecated Use {@link #close(Closeable)} */
-    @Deprecated
-    public static void closeStream(Closeable stream) {
-        close(stream);
     }
 
     /** Closes the given closeable object, ignoring any errors. */

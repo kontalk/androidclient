@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,7 +57,7 @@ public final class RunnableBroadcastReceiver extends BroadcastReceiver {
     }
 
     public interface ActionRunnable {
-        public void run(String action);
+        void run(String action);
     }
 
 }

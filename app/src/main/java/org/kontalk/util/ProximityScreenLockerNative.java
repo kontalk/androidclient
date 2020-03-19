@@ -23,6 +23,7 @@ package org.kontalk.util;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 import android.os.PowerManager;
@@ -116,7 +117,8 @@ public final class ProximityScreenLockerNative implements ProximityScreenLocker 
 		}
 	}
 
-	@Override
+	@SuppressLint("WakelockTimeout")
+    @Override
 	public void acquire()
 	{
 		if (mProximityWakeLock == null) {

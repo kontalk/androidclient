@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,11 +24,12 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.preference.Preference;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
-import android.widget.Toast;
+import androidx.preference.Preference;
 
 import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
@@ -47,9 +48,7 @@ public class NetworkFragment extends RootPreferenceFragment {
     ServerListUpdater mServerlistUpdater;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         // Load the preferences from an XML resource
         addPreferencesFromResource(R.xml.preferences_network);
 
@@ -158,7 +157,7 @@ public class NetworkFragment extends RootPreferenceFragment {
                     }
                 });
 
-                diag.show(getFragmentManager(), DialogHelperFragment.class.getSimpleName());
+                diag.show(getParentFragmentManager(), DialogHelperFragment.class.getSimpleName());
                 mServerlistUpdater.start();
                 return true;
             }

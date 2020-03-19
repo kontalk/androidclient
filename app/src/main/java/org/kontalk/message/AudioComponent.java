@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ import org.kontalk.util.MediaStorage;
 
 public class AudioComponent extends AttachmentComponent {
 
-    static Map<String, String> MIME_TYPES = new HashMap<String, String>();
+    static Map<String, String> MIME_TYPES = new HashMap<>();
 
     static {
         MIME_TYPES.put("audio/3gpp", "3gp");

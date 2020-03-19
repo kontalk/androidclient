@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -74,7 +74,7 @@ public class SimpleMessageTheme extends BaseMessageTheme {
         if (mBalloonView != null) {
             mBalloonView.setBackgroundResource(mIncomingDrawableId);
         }
-        mParentView.setGravity(Gravity.LEFT);
+        mParentView.setGravity(Gravity.START);
 
         super.setIncoming(contact, sameMessageBlock);
     }
@@ -84,7 +84,7 @@ public class SimpleMessageTheme extends BaseMessageTheme {
         if (mBalloonView != null) {
             mBalloonView.setBackgroundResource(mOutgoingDrawableId);
         }
-        mParentView.setGravity(Gravity.RIGHT);
+        mParentView.setGravity(Gravity.END);
 
         super.setOutgoing(contact, status, sameMessageBlock);
     }

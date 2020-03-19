@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.provider.Keyring;
 import org.kontalk.util.SystemUtils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import androidx.core.content.ContextCompat;
 import android.text.SpannableString;
@@ -54,6 +55,7 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
         super(context, attrs);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();

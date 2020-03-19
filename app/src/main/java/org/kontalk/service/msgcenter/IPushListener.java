@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,12 +27,12 @@ import android.content.Context;
  */
 public interface IPushListener {
 
-    public void onRegistered(Context context, String registrationId);
+    void onRegistered(Context context, String registrationId);
 
-    public void onUnregistered(Context context);
+    void onUnregistered(Context context);
 
-    public void onError(Context context, String errorId);
+    void onError(Context context, String errorId);
 
-    public String getSenderId(Context context);
+    String getSenderId(Context context);
 
 }

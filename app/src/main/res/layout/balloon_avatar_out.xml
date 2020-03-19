@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -72,7 +72,7 @@
             <TextView android:id="@+id/date_view"
                 style="@android:style/TextAppearance.Small"
                 android:textSize="@dimen/dateview_text_size"
-                android:maxLines="1"
+                android:singleLine="true"
                 android:ellipsize="none"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />

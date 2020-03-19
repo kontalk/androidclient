@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,12 +48,14 @@ import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -63,6 +65,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.core.text.HtmlCompat;
+
+import android.os.IBinder;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
 import android.text.Editable;
@@ -190,6 +194,16 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private BroadcastReceiver mMessagesImporterReceiver;
 
     private EventBus mServiceBus = RegistrationService.bus();
+    /** Just a dummy service connection to keep the service alive. */
+    private ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+        }
+    };
 
     private static final class RetainData {
         /** @deprecated Use saved instance state. */
@@ -398,8 +412,17 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             }
         }
 
-        // start registration service immediately
-        RegistrationService.start(this);
+        // workaround for https://issuetracker.google.com/issues/110237673
+        // I know I should start the service in onResume, but I like to cheat
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                // start registration service immediately
+                RegistrationService.start(NumberValidation.this);
+                // be sure to bind to the registration service so it's not killed by the OS
+                bindService(new Intent(NumberValidation.this, RegistrationService.class), mServiceConnection, BIND_IMPORTANT);
+            }
+        }, 200);
     }
 
     @Override
@@ -407,6 +430,12 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         super.onStop();
         keepScreenOn(false);
         mServiceBus.unregister(this);
+
+        try {
+            unbindService(mServiceConnection);
+        }
+        catch (IllegalArgumentException ignored) {
+        }
 
         stopMessagesImporterReceiver();
 
@@ -460,7 +489,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_MANUAL_VALIDATION) {
             if (resultCode == RESULT_OK) {
@@ -499,6 +527,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
                 requestPrivateKey(account, server, token);
             }
+        }
+        else {
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -869,9 +900,16 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
      * Opens a screen for shooting a QR code or typing in a secure token from
      * another device.
      */
+    @SuppressLint("UnsupportedChromeOsCameraSystemFeature")
     void importDevice() {
         PackageManager pm = getPackageManager();
-        boolean hasCamera = pm.hasSystemFeature(PackageManager.FEATURE_CAMERA);
+        boolean hasCamera;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            hasCamera = pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY);
+        }
+        else {
+            hasCamera = pm.hasSystemFeature(PackageManager.FEATURE_CAMERA);
+        }
 
         MaterialDialog.Builder builder = new MaterialDialog.Builder(this)
             .title(R.string.menu_import_device)
@@ -968,6 +1006,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAccountCreated(AccountCreatedEvent event) {
         RegistrationService.stop(this);
+        String challenge = RegistrationService.currentState().challenge;
 
         // send back result
         final Intent intent = new Intent();
@@ -977,7 +1016,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         setAccountAuthenticatorResult(intent.getExtras());
         setResult(RESULT_OK, intent);
 
-        ReportingManager.logSignUp(RegistrationService.currentState().challenge);
+        ReportingManager.logSignUp(challenge);
 
         // manual sync starter
         delayedSync();
@@ -1224,11 +1263,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     public void onAcceptTermsCancel() {
-        abort();
-    }
-
-    public void onAcceptTermsDismiss() {
         mWaitingAcceptTerms = false;
+        abort();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -1362,14 +1398,14 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                         }
                     }
                 })
-                .dismissListener(new OnDismissListener() {
-                    @Override
-                    public void onDismiss(DialogInterface dialog) {
-                        ((NumberValidation) getActivity())
-                            .onAcceptTermsDismiss();
-                    }
-                })
                 .build();
+        }
+
+        @Override
+        public void onCancel(@NonNull DialogInterface dialog) {
+            super.onCancel(dialog);
+            ((NumberValidation) getActivity())
+                .onAcceptTermsCancel();
         }
 
         public static AcceptTermsDialogFragment newInstance(String network, String termsUrl) {

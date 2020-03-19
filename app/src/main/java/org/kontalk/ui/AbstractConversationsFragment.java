@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ import com.afollestad.materialdialogs.MaterialDialog;
 
 import android.app.Activity;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
 import android.os.Bundle;
 import android.os.Handler;
@@ -77,7 +77,7 @@ public abstract class AbstractConversationsFragment extends Fragment
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mHandler = new Handler();
-        mViewModel = ViewModelProviders.of(this).get(ConversationsViewModel.class);
+        mViewModel = new ViewModelProvider(this).get(ConversationsViewModel.class);
         mObserver = new RecyclerView.AdapterDataObserver() {
             @Override
             public void onChanged() {
@@ -171,8 +171,11 @@ public abstract class AbstractConversationsFragment extends Fragment
 
                 @Override
                 public boolean canSetStateAtPosition(int position, boolean nextState) {
-                    Long key = keyProvider.getKey(position);
-                    return key != null && key > 0;
+                    if (position >= 0) {
+                        Long key = keyProvider.getKey(position);
+                        return key != null && key > 0;
+                    }
+                    return false;
                 }
 
                 @Override

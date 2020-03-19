@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 package org.kontalk.util;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyManagementException;
@@ -39,7 +37,6 @@ import org.kontalk.R;
 import org.kontalk.crypto.PGP;
 
 import android.content.Context;
-import android.os.Build;
 
 
 /** Some trust store utilities. */
@@ -111,23 +108,8 @@ public class InternalTrustStore {
             CertificateException,
             IOException {
 
-        KeyStore ks;
-
-        if (Build.VERSION.SDK_INT >= 14) {
-            ks = KeyStore.getInstance("AndroidCAStore");
-            ks.load(null, null);
-        }
-
-        else {
-            ks = KeyStore.getInstance("BKS");
-            String path = System.getProperty("javax.net.ssl.trustStore");
-            if (path == null)
-            path = System.getProperty("java.home") + File.separator + "etc"
-                + File.separator + "security" + File.separator
-                + "cacerts.bks";
-            ks.load(new FileInputStream(path), null);
-        }
-
+        KeyStore ks = KeyStore.getInstance("AndroidCAStore");
+        ks.load(null, null);
         return ks;
     }
 }

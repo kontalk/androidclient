@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,18 +31,18 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Iterator;
 
-import org.spongycastle.openpgp.PGPException;
-import org.spongycastle.openpgp.PGPKeyPair;
-import org.spongycastle.openpgp.PGPPrivateKey;
-import org.spongycastle.openpgp.PGPPublicKey;
-import org.spongycastle.openpgp.PGPPublicKeyRing;
-import org.spongycastle.openpgp.PGPSecretKey;
-import org.spongycastle.openpgp.PGPSecretKeyRing;
-import org.spongycastle.openpgp.operator.KeyFingerPrintCalculator;
-import org.spongycastle.openpgp.operator.PBESecretKeyDecryptor;
-import org.spongycastle.openpgp.operator.PGPDigestCalculatorProvider;
-import org.spongycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
-import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
+import org.bouncycastle.openpgp.PGPException;
+import org.bouncycastle.openpgp.PGPKeyPair;
+import org.bouncycastle.openpgp.PGPPrivateKey;
+import org.bouncycastle.openpgp.PGPPublicKey;
+import org.bouncycastle.openpgp.PGPPublicKeyRing;
+import org.bouncycastle.openpgp.PGPSecretKey;
+import org.bouncycastle.openpgp.PGPSecretKeyRing;
+import org.bouncycastle.openpgp.operator.KeyFingerPrintCalculator;
+import org.bouncycastle.openpgp.operator.PBESecretKeyDecryptor;
+import org.bouncycastle.openpgp.operator.PGPDigestCalculatorProvider;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -141,9 +141,13 @@ public class PersonalKey implements Parcelable {
      */
     public PGPPublicKeyRing update(byte[] keyData) throws IOException {
         PGPPublicKeyRing ring = new PGPPublicKeyRing(keyData, sFingerprintCalculator);
-        // FIXME should loop through the ring and check for master/subkey
-        mPair.authKey = new PGPKeyPair(ring.getPublicKey(), mPair.authKey.getPrivateKey());
-        return ring;
+        PGPPublicKey authKey = PGP.getAuthenticationKey(ring);
+        PGPPublicKey encKey = PGP.getEncryptionKey(ring);
+        PGPPublicKey signKey = PGP.getSigningKey(ring);
+        mPair.authKey = new PGPKeyPair(authKey, mPair.authKey.getPrivateKey());
+        mPair.encryptKey = new PGPKeyPair(encKey, mPair.encryptKey.getPrivateKey());
+        mPair.signKey = new PGPKeyPair(signKey, mPair.signKey.getPrivateKey());
+        return getPublicKeyRing();
     }
 
     public PersonalKey copy(X509Certificate bridgeCert) {
@@ -277,7 +281,6 @@ public class PersonalKey implements Parcelable {
         return load(secRing, pubRing, passphrase, bridgeCert);
     }
 
-    @SuppressWarnings("unchecked")
     public static PersonalKey load(PGPSecretKeyRing secRing, PGPPublicKeyRing pubRing, String passphrase, X509Certificate bridgeCert)
             throws PGPException {
 

@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -134,7 +134,7 @@ public abstract class LegacyAbstractMessage<T> {
 
         this.id = id;
         this.sender = sender;
-        this.recipients = new ArrayList<String>();
+        this.recipients = new ArrayList<>();
         // will be updated if necessary
         this.timestamp = System.currentTimeMillis();
         this.serverTimestamp = timestamp;
@@ -312,7 +312,7 @@ public abstract class LegacyAbstractMessage<T> {
         timestamp = c.getLong(COLUMN_TIMESTAMP);
         statusChanged = c.getLong(COLUMN_STATUS_CHANGED);
         status = c.getInt(COLUMN_STATUS);
-        recipients = new ArrayList<String>();
+        recipients = new ArrayList<>();
         encrypted = (c.getShort(COLUMN_ENCRYPTED) > 0);
         security = c.getInt(COLUMN_SECURITY);
         serverTimestamp = c.getLong(COLUMN_SERVER_TIMESTAMP);
@@ -376,7 +376,7 @@ public abstract class LegacyAbstractMessage<T> {
         return null;
     }
 
-    /** Still unused.
+    /* Still unused.
     public static void startQuery(AsyncQueryHandler handler, int token, String peer) {
         // cancel previous operations
         handler.cancelOperation(token);

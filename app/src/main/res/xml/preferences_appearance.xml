@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -18,37 +18,39 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <com.afollestad.materialdialogs.prefs.MaterialListPreference
+    <ListPreference
         android:key="pref_font_size"
         android:title="@string/pref_font_size"
         android:summary="%s"
+        android:icon="@drawable/ic_pref_font_size"
         android:entries="@array/fontsize_labels"
         android:entryValues="@array/fontsize_values"
         android:defaultValue="@string/pref_default_font_size"/>
     <CheckBoxPreference android:key="pref_custom_background"
         android:title="@string/pref_custom_background"
         android:summary="@string/pref_title_custom_background"
-        android:layout="@layout/md_preference_custom"/>
+        />
     <Preference android:key="pref_background_uri"
         android:title="@string/pref_background_uri"
         android:summary="@string/pref_title_background_uri"
         android:dependency="pref_custom_background"
-        android:layout="@layout/md_preference_custom"/>
-    <com.afollestad.materialdialogs.prefs.MaterialListPreference
+        />
+    <ListPreference
         android:key="pref_balloons"
         android:title="@string/pref_balloons"
         android:summary="%s"
+        android:icon="@drawable/ic_pref_balloons"
         android:entries="@array/balloons_labels"
         android:entryValues="@array/balloons_values"
         android:defaultValue="@string/pref_default_balloons"/>
-    <com.afollestad.materialdialogs.prefs.MaterialListPreference
+    <ListPreference
         android:key="pref_balloons_groups"
         android:title="@string/pref_balloons_groups"
         android:summary="%s"
         android:entries="@array/balloons_labels_groups"
         android:entryValues="@array/balloons_values_groups"
         android:defaultValue="@string/pref_default_balloons_groups"/>
-    <com.afollestad.materialdialogs.prefs.MaterialListPreference
+    <ListPreference
         android:key="pref_text_enter"
         android:title="@string/pref_text_enter"
         android:summary="@string/pref_title_text_enter"

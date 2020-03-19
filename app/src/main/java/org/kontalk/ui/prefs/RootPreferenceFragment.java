@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,18 +18,18 @@
 
 package org.kontalk.ui.prefs;
 
-import com.github.machinarius.preferencefragment.PreferenceFragment;
-
 import android.content.Context;
 import android.os.Bundle;
 import android.view.MenuItem;
+
+import androidx.preference.PreferenceFragmentCompat;
 
 
 /**
  * Base class for root preference fragments.
  * @author Daniele Ricci
  */
-public abstract class RootPreferenceFragment extends PreferenceFragment {
+public abstract class RootPreferenceFragment extends PreferenceFragmentCompat {
 
     private Callback mCallback;
 

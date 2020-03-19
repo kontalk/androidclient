@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,16 +28,16 @@ import java.util.regex.Pattern;
 public interface MessageContentView<T> {
 
     /** Binds the given component with this view. */
-    public void bind(long id, T component, Pattern highlight);
+    void bind(long id, T component, Pattern highlight);
 
     /** Unbinds and release all resources from this view. */
-    public void unbind();
+    void unbind();
 
     /** Returns the component associated with this view. */
-    public T getComponent();
+    T getComponent();
 
     /** Returns the priority of the view. Lower values means higher position. */
-    public int getPriority();
+    int getPriority();
 
     // TODO
 

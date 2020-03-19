@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -84,9 +84,10 @@ import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.jid.parts.Domainpart;
 import org.jxmpp.jid.parts.Localpart;
 import org.jxmpp.stringprep.XmppStringprepException;
-import org.spongycastle.openpgp.PGPException;
+import org.bouncycastle.openpgp.PGPException;
 
 import android.accounts.Account;
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -979,8 +980,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             // clear the connection only if we are quitting
             if (!restarting) {
-                // clear the roster store since we are about to close it
-                getRoster().setRosterStore(null);
                 mOmemoManager = null;
                 mConnection = null;
             }
@@ -1254,6 +1253,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
+    @SuppressLint("WakelockTimeout")
     @CommandHandler(name = ACTION_PING)
     private boolean handlePing(boolean canConnect) {
         if (isConnected()) {
@@ -1349,7 +1349,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         preMediaUri = Uri.fromFile(encrypted);
                     }
                     finally {
-                        SystemUtils.closeStream(in);
+                        SystemUtils.close(in);
                     }
                 }
                 else {
@@ -1642,6 +1642,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /**
      * Creates a connection to server if needed.
      */
+    @SuppressLint("WakelockTimeout")
     private synchronized void createConnection() {
         // connection is null or disconnected and no helper is currently running
         if ((mConnection == null || !mConnection.isConnected()) && mHelper == null) {
@@ -3058,11 +3059,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     /**
      * If the user ignored our request to not be optimized, we must become a foreground service.
-     * @return true if the user decided to battery optimize us and with no hope of push notifications
+     * @return true if the user decided to battery optimize us
      */
     public static boolean mustSetForeground(Context context) {
-        return !SystemUtils.isIgnoringBatteryOptimizations(context) &&
-            !isPushNotificationsAvailable(context);
+        return !SystemUtils.isIgnoringBatteryOptimizations(context);
     }
 
     /** Return true if the service should be started in foreground. */
@@ -3176,12 +3176,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private static Intent getStartIntent(Context context) {
         return getBaseIntent(context);
-    }
-
-    /** @deprecated Must go away ASAP. */
-    @Deprecated
-    public static void startService(Context context, Intent intent) {
-        startForegroundIfNeeded(context, intent);
     }
 
     private static void startForegroundIfNeeded(Context context, Intent intent) {

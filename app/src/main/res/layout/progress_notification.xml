@@ -18,21 +18,21 @@
 -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@android:drawable/status_bar_item_app_background"
     android:id="@+id/progress_notification">
 
     <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:orientation="horizontal"
         >
 
         <LinearLayout
             android:layout_width="40dp"
-            android:layout_height="fill_parent"
+            android:layout_height="match_parent"
             android:orientation="vertical"
             android:paddingTop="8dp"
             android:focusable="true"
@@ -48,22 +48,21 @@
             <TextView android:id="@+id/progress_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#ff000000"
+                style="@android:style/TextAppearance.StatusBar.EventContent"
                 android:singleLine="true"
-                android:textSize="14sp"
                 android:layout_gravity="center_horizontal"
                 />
         </LinearLayout>
 
         <RelativeLayout
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:orientation="vertical"
             android:focusable="true"
             android:clickable="true"
             >
             <LinearLayout
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:focusable="true"
@@ -74,34 +73,46 @@
                 <TextView android:id="@+id/title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    style="@android:style/TextAppearance.StatusBar.EventContent.Title"
                     android:singleLine="true"
-                    android:textSize="18sp"
-                    android:textColor="#ff000000"
                     android:paddingLeft="2dp"
+                    android:paddingStart="2dp"
                     android:text="@string/downloading_attachment"
                     />
                 <TextView android:id="@+id/description"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#ff000000"
+                    style="@android:style/TextAppearance.StatusBar.EventContent"
                     android:singleLine="true"
-                    android:textSize="14sp"
                     android:paddingLeft="5dp"
+                    android:paddingStart="5dp"
                     />
             </LinearLayout>
+            <!-- Only one of progress_bar and paused_text will be visible. -->
             <ProgressBar android:id="@+id/progress_bar"
                 style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
                 android:paddingBottom="8dp"
                 android:paddingRight="25dp"
+                android:paddingEnd="25dp"
+                />
+            <TextView android:id="@+id/paused_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:paddingBottom="8dp"
+                android:singleLine="true"
+                style="@android:style/TextAppearance.StatusBar.EventContent"
+                android:paddingLeft="5dp"
+                android:paddingStart="5dp"
                 />
         </RelativeLayout>
     </LinearLayout>
 
     <ImageView
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:src="@android:drawable/divider_horizontal_bright"
         />

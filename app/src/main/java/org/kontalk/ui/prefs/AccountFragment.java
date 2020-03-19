@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,8 +39,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.preference.Preference;
 import androidx.annotation.NonNull;
+import androidx.preference.Preference;
+
 import android.text.InputType;
 import android.widget.Toast;
 
@@ -81,9 +82,7 @@ public class AccountFragment extends RootPreferenceFragment {
     private EventBus mServiceBus = MessageCenterService.bus();
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         if (savedInstanceState != null) {
             mPassphrase = savedInstanceState.getString("passphrase");
         }
@@ -201,7 +200,7 @@ public class AccountFragment extends RootPreferenceFragment {
                         if (ctx != null) {
                             new FolderChooserDialog.Builder(ctx)
                                     .initialPath(PersonalKeyPack.DEFAULT_KEYPACK.getParent())
-                                    .show(getFragmentManager());
+                                    .show(getParentFragmentManager());
                         }
                     }
                 };
@@ -230,6 +229,7 @@ public class AccountFragment extends RootPreferenceFragment {
         });
 
         // delete account
+        // TODO should be a custom class and a big red glowing text :)
         final Preference deleteAccount = findPreference("pref_delete_account");
         deleteAccount.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override

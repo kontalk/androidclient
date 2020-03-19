@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,11 +37,12 @@ import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.preference.Preference;
-import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceManager;
+
 import android.text.TextUtils;
 import android.view.Display;
 import android.view.WindowManager;
@@ -66,7 +67,7 @@ public final class Preferences {
     private static String sBalloonTheme;
     private static String sBalloonGroupsTheme;
 
-    @SuppressLint("CommitPrefEdits")
+    @SuppressLint("ApplySharedPref")
     public static void init(@NonNull Context context) {
         if (sPreferences == null) {
             sPreferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -113,7 +114,7 @@ public final class Preferences {
         String val = getString(key, null);
         int nval;
         try {
-            nval = Integer.valueOf(val);
+            nval = Integer.parseInt(val);
         }
         catch (Exception e) {
             nval = defaultValue;
@@ -126,7 +127,7 @@ public final class Preferences {
     }
 
     /** Retrieves a long and if >= 0 it sets it to -1. */
-    @SuppressLint("CommitPrefEdits")
+    @SuppressLint("ApplySharedPref")
     private static long getLongOnce(String key) {
         long value = sPreferences.getLong(key, -1);
         if (value >= 0)
@@ -139,7 +140,7 @@ public final class Preferences {
     }
 
     /** Retrieve a boolean and if false set it to true. */
-    @SuppressLint("CommitPrefEdits")
+    @SuppressLint("ApplySharedPref")
     private static boolean getBooleanOnce(String key) {
         boolean value = sPreferences.getBoolean(key, false);
         if (!value)
@@ -347,16 +348,10 @@ public final class Preferences {
             Display display = wm.getDefaultDisplay();
             int width;
             int height;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB_MR2) {
-                Point size = new Point();
-                display.getSize(size);
-                width = size.x;
-                height = size.y;
-            }
-            else {
-                width = display.getWidth();
-                height = display.getHeight();
-            }
+            Point size = new Point();
+            display.getSize(size);
+            width = size.x;
+            height = size.y;
 
             BitmapFactory.Options options;
             try {
@@ -367,7 +362,7 @@ public final class Preferences {
                 throw new IOException(e);
             }
             finally {
-                SystemUtils.closeStream(in);
+                SystemUtils.close(in);
             }
 
             Bitmap bitmap;
@@ -380,7 +375,7 @@ public final class Preferences {
                 throw new IOException(e);
             }
             finally {
-                SystemUtils.closeStream(in);
+                SystemUtils.close(in);
             }
 
             Bitmap tn = ThumbnailUtils.extractThumbnail(bitmap, width, height);
@@ -397,7 +392,7 @@ public final class Preferences {
             return outFile;
         }
         finally {
-            SystemUtils.closeStream(out);
+            SystemUtils.close(out);
         }
     }
 
@@ -420,7 +415,7 @@ public final class Preferences {
             // ignored
         }
         finally {
-            SystemUtils.closeStream(in);
+            SystemUtils.close(in);
         }
         return null;
     }

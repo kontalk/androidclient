@@ -26,5 +26,5 @@ public interface QueryInventoryFinishedListener {
      * @param result The result of the operation.
      * @param inv The inventory.
      */
-    public void onQueryInventoryFinished(BillingResult result, IInventory inv);
+    void onQueryInventoryFinished(BillingResult result, IInventory inv);
 }

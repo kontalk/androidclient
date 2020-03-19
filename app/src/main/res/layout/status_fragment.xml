@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
      Kontalk Android client
-     Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@
         android:layout_marginRight="4dp"
         android:layout_marginTop="4dp"
         android:hint="@string/hint_status_entry"
-        android:gravity="left|top"
+        android:gravity="start|top"
         android:lines="3"
         android:maxLines="3"
         android:maxLength="140"
@@ -48,6 +48,7 @@
         android:paddingTop="2dip"
         android:paddingBottom="2dip"
         android:paddingLeft="5dip"
+        android:paddingStart="5dip"
         android:text="@string/header_recent_status"
         style="?android:attr/listSeparatorTextViewStyle" />
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -40,7 +40,8 @@
         android:id="@+id/balloon_audio_player"
         android:focusable="false"
         android:background="@drawable/play_balloon"
-        android:layout_alignParentLeft="true" />
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"/>
 
     <SeekBar
         android:id="@+id/balloon_audio_seekbar"
@@ -48,7 +49,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:focusable="false"
-        android:layout_toRightOf="@+id/balloon_audio_player"/>
+        android:layout_toRightOf="@+id/balloon_audio_player"
+        android:layout_toEndOf="@+id/balloon_audio_player"/>
 
     <TextView
         android:id="@+id/balloon_audio_time"
@@ -58,6 +60,7 @@
         android:layout_below="@id/balloon_audio_player"
         android:layout_marginTop="8dp"
         android:layout_alignLeft="@id/balloon_audio_player"
+        android:layout_alignStart="@id/balloon_audio_player"
         android:textSize="11sp"
         android:gravity="center_horizontal"
         tools:ignore="HardcodedText"/>

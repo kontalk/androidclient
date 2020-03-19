@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,9 +20,10 @@ package org.kontalk.ui.prefs;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
-import android.preference.Preference;
 import android.widget.Toast;
+
+import androidx.preference.CheckBoxPreference;
+import androidx.preference.Preference;
 
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
@@ -37,9 +38,7 @@ public class MaintenanceFragment extends RootPreferenceFragment {
     static final String TAG = Kontalk.TAG;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         // Load the preferences from an XML resource
         addPreferencesFromResource(R.xml.preferences_maintenance);
 
@@ -58,7 +57,7 @@ public class MaintenanceFragment extends RootPreferenceFragment {
 
         // explain the user that the foreground service is mandatory
         if (MessageCenterService.mustSetForeground(getContext())) {
-            final CheckBoxPreference foregroundService = (CheckBoxPreference) findPreference("pref_foreground_service");
+            final CheckBoxPreference foregroundService = findPreference("pref_foreground_service");
             foregroundService.setEnabled(false);
             foregroundService.setSummary(R.string.pref_title_foreground_service_mandatory);
         }

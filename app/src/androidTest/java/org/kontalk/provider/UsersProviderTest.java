@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 package org.kontalk.provider;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.junit.After;
 import org.junit.Before;
@@ -27,8 +26,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jxmpp.util.XmppStringUtils;
 import org.kontalk.util.XMPPUtils;
-import org.spongycastle.openpgp.PGPException;
-import org.spongycastle.openpgp.PGPPublicKeyRing;
+import org.bouncycastle.openpgp.PGPException;
+import org.bouncycastle.openpgp.PGPPublicKeyRing;
 
 import android.annotation.TargetApi;
 import android.database.Cursor;
@@ -41,6 +40,8 @@ import android.test.ProviderTestCase2;
 import android.util.Base64;
 
 import org.kontalk.crypto.PGP;
+
+import static org.junit.Assert.assertArrayEquals;
 
 
 @RunWith(AndroidJUnit4.class)
@@ -489,7 +490,7 @@ public class UsersProviderTest extends ProviderTestCase2<UsersProvider> {
         Keyring.setKey(getMockContext(), TEST_USERID, keydata);
         PGPPublicKeyRing publicKey = Keyring.getPublicKey(getMockContext(), TEST_USERID, Keyring.TRUST_VERIFIED);
         assertNotNull(publicKey);
-        assertTrue(Arrays.equals(publicKey.getEncoded(), originalKey.getEncoded()));
+        assertArrayEquals(publicKey.getEncoded(), originalKey.getEncoded());
 
         String testFingerprint = PGP.getFingerprint(originalKey.getPublicKey());
         getMockContentResolver().delete(MyUsers.Keys.getUri(TEST_USERID, testFingerprint), null, null);

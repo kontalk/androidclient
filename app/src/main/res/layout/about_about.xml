@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -24,8 +24,10 @@
     tools:context=".ui.AboutActivity"
     android:id="@+id/scroller"
     android:layout_alignParentTop="true"
+    android:layout_alignParentStart="true"
     android:layout_alignParentLeft="true"
     android:layout_alignParentRight="true"
+    android:layout_alignParentEnd="true"
     android:isScrollContainer="true">
 
     <LinearLayout
@@ -113,6 +115,7 @@
                 android:layout_height="48dp"
                 android:layout_width="48dp"
                 android:background="@android:drawable/list_selector_background"
+                android:layout_marginEnd="10dp"
                 android:layout_marginRight="10dp"
                 android:longClickable="false"
                 android:src="@drawable/social_twitter"/>
@@ -122,6 +125,7 @@
                 android:layout_height="48dp"
                 android:layout_width="48dp"
                 android:background="@android:drawable/list_selector_background"
+                android:layout_marginEnd="10dp"
                 android:layout_marginRight="10dp"
                 android:longClickable="false"
                 android:src="@drawable/social_googleplus"/>
@@ -132,6 +136,7 @@
                 android:layout_width="48dp"
                 android:background="@android:drawable/list_selector_background"
                 android:layout_marginRight="10dp"
+                android:layout_marginEnd="10dp"
                 android:longClickable="false"
                 android:src="@drawable/social_facebook"/>
 
@@ -141,6 +146,7 @@
                 android:layout_width="48dp"
                 android:background="@android:drawable/list_selector_background"
                 android:layout_marginRight="10dp"
+                android:layout_marginEnd="10dp"
                 android:longClickable="false"
                 android:src="@drawable/social_identica"/>
 

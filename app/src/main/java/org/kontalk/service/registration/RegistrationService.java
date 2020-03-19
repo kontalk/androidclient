@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,8 +61,8 @@ import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.jxmpp.util.XmppStringUtils;
-import org.spongycastle.openpgp.PGPException;
-import org.spongycastle.operator.OperatorCreationException;
+import org.bouncycastle.openpgp.PGPException;
+import org.bouncycastle.operator.OperatorCreationException;
 
 import android.Manifest;
 import android.accounts.AccountManager;
@@ -285,6 +285,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             this.passphrase = cs.passphrase;
             this.importFallbackVerification = cs.importFallbackVerification;
             this.trustedKeys = cs.trustedKeys;
+            this.restored = cs.restored;
         }
     }
 
@@ -373,17 +374,20 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         unconfigure();
 
         final HandlerThread serviceHandler = mServiceHandler;
-        mInternalHandler.post(new Runnable() {
-            public void run() {
-                try {
-                    serviceHandler.quit();
-                    reset();
+        final Handler internalHandler = mInternalHandler;
+        if (serviceHandler != null && internalHandler != null) {
+            mInternalHandler.post(new Runnable() {
+                public void run() {
+                    try {
+                        serviceHandler.quit();
+                        reset();
+                    }
+                    catch (Exception e) {
+                        // ignored
+                    }
                 }
-                catch (Exception e) {
-                    // ignored
-                }
-            }
-        });
+            });
+        }
 
         mInternalHandler = null;
         mServiceHandler = null;

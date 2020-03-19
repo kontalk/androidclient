@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 import android.os.Environment;
-import android.preference.Preference;
+import androidx.preference.Preference;
 import android.util.AttributeSet;
 import android.widget.Toast;
 
@@ -96,8 +96,8 @@ public class CopyDatabasePreference extends Preference {
                 .show();
         }
         finally {
-            SystemUtils.closeStream(dbIn);
-            SystemUtils.closeStream(dbOut);
+            SystemUtils.close(dbIn);
+            SystemUtils.close(dbOut);
         }
 
         MessagesProvider.unlockForImport(context);

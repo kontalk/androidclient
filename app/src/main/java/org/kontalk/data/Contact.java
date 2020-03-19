@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ import com.amulyakhare.textdrawable.util.ColorGenerator;
 import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.stringprep.XmppStringprepException;
 import org.jxmpp.util.XmppStringUtils;
-import org.spongycastle.openpgp.PGPPublicKeyRing;
+import org.bouncycastle.openpgp.PGPPublicKeyRing;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -46,11 +46,11 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.PhoneLookup;
+
 import androidx.annotation.NonNull;
 import androidx.collection.LruCache;
 
@@ -60,6 +60,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGPLazyPublicKeyRingLoader;
 import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MyUsers.Users;
+import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Permissions;
 import org.kontalk.util.Preferences;
@@ -406,8 +407,8 @@ public class Contact {
                 return new StructuredName(displayName, givenName, middleName, familyName);
             }
         }
-        catch (Exception ignored) {
-            Log.e("CONTACT", "error loading contact data", ignored);
+        catch (Exception e) {
+            Log.e("CONTACT", "error loading contact data", e);
         }
         finally {
             if (nameQuery != null) {
@@ -566,7 +567,7 @@ public class Contact {
      * Public version of {@link #loadAvatarBitmap} which includes the random
      * avatar generation.
      * @param context a context
-     * @param resizeForNotification true for resizing the avatar to the large icon size 128x128
+     * @param resizeForNotification true for resizing the avatar to the large icon size defined by system
      * @return a newly-allocated {@link Bitmap}
      */
     @NonNull
@@ -577,7 +578,7 @@ public class Contact {
             avatar = MessageUtils.drawableToBitmap(d);
         }
 
-        if (resizeForNotification && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+        if (resizeForNotification) {
             // Contact bitmaps are 96x96 so we have to scale 'em up to 128x128 to fill the whole notification large icon.
             // inspired by the AOSP Mms app
             final Resources res = context.getResources();
@@ -585,7 +586,7 @@ public class Contact {
                 res.getDimensionPixelSize(android.R.dimen.notification_large_icon_height);
             final int idealIconWidth =
                 res.getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
-            if (avatar.getHeight() < idealIconHeight) {
+            if (avatar.getHeight() != idealIconHeight || avatar.getWidth() != idealIconWidth) {
                 // Scale this image to fit the intended size
                 Bitmap scaledAvatar = Bitmap.createScaledBitmap(
                     avatar, idealIconWidth, idealIconHeight, true);
@@ -597,7 +598,20 @@ public class Contact {
             }
         }
 
+        if (isRoundedAvatars()) {
+            Bitmap circleAvatar = MediaStorage.createRoundBitmap(avatar);
+            if (circleAvatar != avatar)
+                avatar.recycle();
+            avatar = circleAvatar;
+        }
+
         return avatar;
+    }
+
+    /** Roughly the Android version when the rounded avatar concept was introduced. */
+    private static boolean isRoundedAvatars() {
+        return android.os.Build.VERSION.SDK_INT >=
+            android.os.Build.VERSION_CODES.LOLLIPOP;
     }
 
     /**

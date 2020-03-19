@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,19 +26,13 @@ import android.annotation.TargetApi;
 import android.content.ComponentName;
 import android.content.IntentFilter;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapShader;
-import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
-import android.graphics.Shader;
 import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.os.Bundle;
 import android.service.chooser.ChooserTarget;
 import android.service.chooser.ChooserTargetService;
-import androidx.annotation.NonNull;
 
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MessagesProviderClient;
@@ -79,29 +73,13 @@ public class DirectShareTargetService extends ChooserTargetService {
                 Bundle extras = new Bundle();
                 extras.putString(ComposeMessage.EXTRA_USERID, userId);
                 targets.add(new ChooserTarget(contact.getDisplayName(),
-                    Icon.createWithBitmap(createRoundBitmap(contact.getAvatarBitmap(this))), 0.5f,
+                    Icon.createWithBitmap(contact.getAvatarBitmap(this)), 0.5f,
                     componentName, extras));
             } while (cursor.moveToNext());
             return targets;
         }
 
         return Collections.emptyList();
-    }
-
-    // thanks to Telegram source code :)
-    private Bitmap createRoundBitmap(@NonNull Bitmap source) {
-        Bitmap result = Bitmap.createBitmap(source.getWidth(), source.getHeight(), Bitmap.Config.ARGB_8888);
-        result.eraseColor(Color.TRANSPARENT);
-        Canvas canvas = new Canvas(result);
-        BitmapShader shader = new BitmapShader(source, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
-        if (roundPaint == null) {
-            roundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            bitmapRect = new RectF();
-        }
-        roundPaint.setShader(shader);
-        bitmapRect.set(0, 0, source.getWidth(), source.getHeight());
-        canvas.drawRoundRect(bitmapRect, source.getWidth(), source.getHeight(), roundPaint);
-        return result;
     }
 
 }

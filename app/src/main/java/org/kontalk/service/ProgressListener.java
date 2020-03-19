@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2018 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,13 +28,13 @@ import org.kontalk.upload.UploadConnection;
 public interface ProgressListener {
 
     /** Called when operation is starting (before writeTo happens). */
-    public void start(UploadConnection conn);
+    void start(UploadConnection conn);
 
     /**
      * Called now and then while processing data.
      * Useful for checking the upload progress.
      * @param bytes how many bytes have been uploaded so far
      */
-    public void progress(UploadConnection conn, long bytes);
+    void progress(UploadConnection conn, long bytes);
 
 }
