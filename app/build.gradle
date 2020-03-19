@@ -216,7 +216,7 @@ dependencies {
     implementation 'de.hdodenhof:circleimageview:3.1.0'
 
     // other libraries
-    implementation 'com.googlecode.libphonenumber:libphonenumber:8.11.5'
+    implementation 'com.googlecode.libphonenumber:libphonenumber:8.12.0'
     implementation 'com.google.zxing:core:3.4.0'
     implementation 'me.dm7.barcodescanner:zxing:1.9.8'
     implementation 'com.github.instacart.truetime-android:library:3.3'
