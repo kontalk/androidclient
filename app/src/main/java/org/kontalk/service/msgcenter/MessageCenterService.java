@@ -1357,6 +1357,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     fileLength = MediaStorage.getLength(this, preMediaUri);
                 }
             }
+            catch (SmackException.NotConnectedException e) {
+                // will retry at next reconnection
+                Log.w(TAG, "not connected, encryption failed, will send message later", e);
+                return;
+            }
             catch (Exception e) {
                 Log.w(TAG, "error preprocessing media: " + preMediaUri, e);
                 // simulate upload error
@@ -2562,6 +2567,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             Toast.LENGTH_LONG).show();
                     }
                     encryptError = true;
+                }
+                catch (SmackException.NotConnectedException e) {
+                    // will retry at next reconnection
+                    Log.w(TAG, "not connected, encryption failed, will send message later", e);
+                    mIdleHandler.release();
+                    return;
                 }
 
                 if (encryptError) {

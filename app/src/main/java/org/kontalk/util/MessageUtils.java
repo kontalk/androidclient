@@ -33,6 +33,7 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 
+import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jxmpp.jid.Jid;
 import org.bouncycastle.openpgp.PGPException;
@@ -581,7 +582,7 @@ public final class MessageUtils {
     }
 
     public static File encryptFile(Context context, InputStream in, Jid[] users)
-            throws GeneralSecurityException, IOException, PGPException {
+        throws GeneralSecurityException, IOException, PGPException, SmackException.NotConnectedException {
         PersonalKey key = Kontalk.get().getPersonalKey();
         EndpointServer server = Preferences.getEndpointServer(context);
         // TODO advanced coder not supported yet

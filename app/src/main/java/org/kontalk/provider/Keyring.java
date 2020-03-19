@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jxmpp.jid.Jid;
 import org.bouncycastle.openpgp.PGPException;
@@ -68,13 +69,21 @@ public class Keyring {
     }
 
     /** Returns a {@link Coder} instance for encrypting data. */
-    public static Coder getEncryptCoder(Context context, int securityFlags, XMPPConnection connection, EndpointServer server, PersonalKey key, Jid[] recipients) {
+    public static Coder getEncryptCoder(Context context, int securityFlags,
+            XMPPConnection connection, EndpointServer server, PersonalKey key, Jid[] recipients)
+            throws SmackException.NotConnectedException {
+
         if ((securityFlags & Coder.SECURITY_ADVANCED) != 0) {
             try {
                 if (recipients.length == 1 && recipients[0].equals(connection.getUser().asBareJid())) {
                     throw new IllegalArgumentException("OMEMO with yourself is not supported");
                 }
                 return new OmemoCoder(connection, getTrustedRecipients(context, recipients));
+            }
+            catch (SmackException.NotConnectedException e) {
+                // not connected to the server, notify to the caller
+                // so it can skip the message and let it retry later
+                throw e;
             }
             catch (Exception e) {
                 Log.w(TAG, "unable to setup advanced coder, falling back to basic", e);
