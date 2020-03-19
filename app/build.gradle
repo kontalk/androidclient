@@ -1,9 +1,11 @@
 plugins {
     id 'com.android.application'
     id 'checkstyle'
-    id 'com.github.triplet.play' version '2.3.0'
+    id 'com.github.triplet.play' version '2.7.2'
     id 'io.fabric'
-    id 'jacoco-android'
+    // waiting for https://github.com/arturdm/jacoco-android-gradle-plugin/pull/75
+    //id 'jacoco-android'
+    id 'com.hiya.jacoco-android'
 }
 
 check.dependsOn 'checkstyle'
