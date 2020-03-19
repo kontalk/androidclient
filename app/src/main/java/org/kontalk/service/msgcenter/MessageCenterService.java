@@ -675,8 +675,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // configure XMPP client
         configure();
 
-        BUS.register(this);
-
         // create the roster store
         mRosterStore = new SQLiteRosterStore(this);
 
@@ -704,6 +702,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // register screen off listener for manual inactivation
         registerInactivity();
+
+        // we can now begin to receive events
+        BUS.register(this);
     }
 
     void queueTask(Runnable task) {
