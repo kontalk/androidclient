@@ -21,7 +21,6 @@ package org.kontalk.ui;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
-import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -85,12 +84,12 @@ public class DonationFragment extends Fragment implements OnClickListener {
         Uri uri = Uri.parse("bitcoin:" + address);
         Intent intent = SystemUtils.externalIntent(Intent.ACTION_VIEW, Uri.parse(uri.toString()));
 
-        Activity ctx = getActivity();
+        final Context ctx = getContext();
         final PackageManager pm = ctx.getPackageManager();
         if (pm.resolveActivity(intent, 0) != null)
             startActivity(intent);
         else
-            new MaterialDialog.Builder(getActivity())
+            new MaterialDialog.Builder(ctx)
                 .title(R.string.title_bitcoin_dialog)
                 .content(getString(R.string.text_bitcoin_dialog, address))
                 .positiveText(android.R.string.ok)
@@ -98,11 +97,12 @@ public class DonationFragment extends Fragment implements OnClickListener {
                 .onNeutral(new MaterialDialog.SingleButtonCallback() {
                     @Override
                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                        ClipboardManager cpm = (ClipboardManager) getActivity()
+                        Context ctx = dialog.getContext();
+                        ClipboardManager cpm = (ClipboardManager) ctx
                             .getSystemService(Context.CLIPBOARD_SERVICE);
                         cpm.setPrimaryClip(ClipData.newPlainText(null, address));
 
-                        Toast.makeText(getActivity(), R.string.bitcoin_clipboard_copied,
+                        Toast.makeText(ctx, R.string.bitcoin_clipboard_copied,
                             Toast.LENGTH_LONG).show();
                     }
                 })
@@ -115,7 +115,7 @@ public class DonationFragment extends Fragment implements OnClickListener {
     }
 
     private void alert(String message) {
-        new MaterialDialog.Builder(getActivity())
+        new MaterialDialog.Builder(getContext())
             .content(message)
             .positiveText(android.R.string.ok)
             .show();
