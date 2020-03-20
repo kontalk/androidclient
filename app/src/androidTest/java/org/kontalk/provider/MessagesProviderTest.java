@@ -18,21 +18,23 @@
 
 package org.kontalk.provider;
 
+import java.lang.reflect.Field;
+
 import org.jivesoftware.smack.util.StringUtils;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jxmpp.util.XmppStringUtils;
 
 import android.annotation.TargetApi;
 import android.content.ContentUris;
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
-import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import android.test.ProviderTestCase2;
+import androidx.test.rule.provider.ProviderTestRule;
 
 import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
@@ -43,29 +45,27 @@ import org.kontalk.util.XMPPUtils;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
+import static org.junit.Assert.*;
 
 
 @RunWith(AndroidJUnit4.class)
-public class MessagesProviderTest extends ProviderTestCase2<MessagesProvider> {
+public class MessagesProviderTest {
+
+    @Rule
+    public ProviderTestRule mProviderRule =
+        new ProviderTestRule.Builder(MessagesProvider.class, MessagesProvider.AUTHORITY).build();
+
+    private Context mContext;
 
     private static final String TEST_USERID = XmppStringUtils
         .completeJidFrom(XMPPUtils.createLocalpart("+15555215554"), "prime.kontalk.net");
 
-    public MessagesProviderTest() {
-        super(MessagesProvider.class, MessagesProvider.AUTHORITY);
-    }
-
     @Before
-    @Override
-    public void setUp() throws Exception {
-        setContext(InstrumentationRegistry.getInstrumentation().getTargetContext());
-        super.setUp();
-    }
-
-    @After
-    @Override
-    public void tearDown() throws Exception {
-        super.tearDown();
+    public void setUp() throws ReflectiveOperationException {
+        // damn it Google..
+        final Field contextField = mProviderRule.getClass().getDeclaredField("context");
+        contextField.setAccessible(true);
+        mContext = (Context) contextField.get(mProviderRule);
     }
 
     @Test
@@ -77,7 +77,7 @@ public class MessagesProviderTest extends ProviderTestCase2<MessagesProvider> {
     @Test
     public void testInsertMessages() {
         String msgId = MessageUtils.messageId();
-        Uri msg = MessagesProviderClient.newOutgoingMessage(getMockContext(),
+        Uri msg = MessagesProviderClient.newOutgoingMessage(mContext,
             msgId, TEST_USERID, "Test message for you", true, 0);
         assertNotNull(msg);
         assertQueryValues(msg,
@@ -90,22 +90,23 @@ public class MessagesProviderTest extends ProviderTestCase2<MessagesProvider> {
     @Test
     public void testDeleteMessage() {
         String msgId = MessageUtils.messageId();
-        Uri msg = MessagesProviderClient.newOutgoingMessage(getMockContext(),
+
+        Uri msg = MessagesProviderClient.newOutgoingMessage(mContext,
             msgId, TEST_USERID, "Test message for you", true, 0);
         assertNotNull(msg);
-        MessagesProviderClient.deleteMessage(getMockContext(), ContentUris.parseId(msg));
+        MessagesProviderClient.deleteMessage(mContext, ContentUris.parseId(msg));
         assertQueryCount(msg, 0);
     }
 
     @Test
     public void testDeleteThread() {
         String msgId = MessageUtils.messageId();
-        Uri msg = MessagesProviderClient.newOutgoingMessage(getMockContext(),
+        Uri msg = MessagesProviderClient.newOutgoingMessage(mContext,
             msgId, TEST_USERID, "Test message for you", true, 0);
         assertNotNull(msg);
-        long threadId = MessagesProviderClient.getThreadByMessage(getMockContext(), msg);
+        long threadId = MessagesProviderClient.getThreadByMessage(mContext, msg);
         assertTrue(threadId > 0);
-        MessagesProviderClient.deleteThread(getMockContext(), threadId, false);
+        MessagesProviderClient.deleteThread(mContext, threadId, false);
         assertQueryCount(msg, 0);
         assertQueryCount(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId), 0);
     }
@@ -120,7 +121,7 @@ public class MessagesProviderTest extends ProviderTestCase2<MessagesProvider> {
             "bob@prime.kontalk.net",
             "charlie@prime.kontalk.net",
         };
-        long threadId = MessagesProviderClient.createGroupThread(getMockContext(), groupJid, null,
+        long threadId = MessagesProviderClient.createGroupThread(mContext, groupJid, null,
             members, "");
         assertTrue(threadId > 0);
         assertQueryCount(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId), 1);
@@ -128,7 +129,7 @@ public class MessagesProviderTest extends ProviderTestCase2<MessagesProvider> {
         assertQueryValues(Groups.getUri(groupJid),
             Groups.THREAD_ID, String.valueOf(threadId));
 
-        String[] actualMembers = MessagesProviderClient.getGroupMembers(getMockContext(), groupJid, 0);
+        String[] actualMembers = MessagesProviderClient.getGroupMembers(mContext, groupJid, 0);
         assertThat(actualMembers, arrayContainingInAnyOrder(members));
     }
 
@@ -141,27 +142,27 @@ public class MessagesProviderTest extends ProviderTestCase2<MessagesProvider> {
             "alice@prime.kontalk.net",
             "bob@prime.kontalk.net",
         };
-        long threadId = MessagesProviderClient.createGroupThread(getMockContext(), groupJid, null,
+        long threadId = MessagesProviderClient.createGroupThread(mContext, groupJid, null,
             members, "");
         assertTrue(threadId > 0);
 
         // add a user now
-        MessagesProviderClient.addGroupMembers(getMockContext(), groupJid,
+        MessagesProviderClient.addGroupMembers(mContext, groupJid,
             new String[] { "charlie@prime.kontalk.net" }, true);
 
         // user list should return the same list as per create message
-        String[] actualMembers = MessagesProviderClient.getGroupMembers(getMockContext(), groupJid, 0);
+        String[] actualMembers = MessagesProviderClient.getGroupMembers(mContext, groupJid, 0);
         assertThat(actualMembers, arrayContainingInAnyOrder(members));
 
         // clear pending flag
-        getMockContext().getContentResolver().update(Groups
+        mContext.getContentResolver().update(Groups
             .getMembersUri(groupJid).buildUpon()
             .appendPath("charlie@prime.kontalk.net")
             .appendQueryParameter(Messages.CLEAR_PENDING, String.valueOf(Groups.MEMBER_PENDING_ADDED))
             .build(), null, null, null);
 
         // user list should return charlie too now
-        actualMembers = MessagesProviderClient.getGroupMembers(getMockContext(), groupJid, 0);
+        actualMembers = MessagesProviderClient.getGroupMembers(mContext, groupJid, 0);
         members = SystemUtils.concatenate(members, "charlie@prime.kontalk.net");
         assertThat(actualMembers, arrayContainingInAnyOrder(members));
     }
@@ -175,23 +176,23 @@ public class MessagesProviderTest extends ProviderTestCase2<MessagesProvider> {
             " AND " + MyMessages.Threads.PEER + " <> ? AND " +
             Groups.GROUP_JID + " <> ?";
         String[] args = { "", "" };
-        Cursor c = getMockContentResolver().query(Threads.CONTENT_URI, null, query, args, null);
+        Cursor c = mProviderRule.getResolver().query(Threads.CONTENT_URI, null, query, args, null);
         assertNotNull(c);
         c.close();
         args = new String[] { "   ", "       " };
-        c = getMockContentResolver().query(Threads.CONTENT_URI, null, query, args, null);
+        c = mProviderRule.getResolver().query(Threads.CONTENT_URI, null, query, args, null);
         assertNotNull(c);
         c.close();
     }
 
     private void assertQuery(Uri uri) {
-        Cursor c = getMockContentResolver().query(uri, null, null, null, null);
+        Cursor c = mProviderRule.getResolver().query(uri, null, null, null, null);
         assertNotNull(c);
         c.close();
     }
 
     private void assertQueryCount(Uri uri, int count) {
-        Cursor c = getMockContentResolver().query(uri, null, null, null, null);
+        Cursor c = mProviderRule.getResolver().query(uri, null, null, null, null);
         assertNotNull(c);
         assertEquals(count, c.getCount());
         c.close();
@@ -203,7 +204,7 @@ public class MessagesProviderTest extends ProviderTestCase2<MessagesProvider> {
         for (int i = 0; i < columns.length; i++)
             columns[i] = columnsExpected[i*2];
 
-        Cursor c = getMockContentResolver().query(uri, columns, null, null, null);
+        Cursor c = mProviderRule.getResolver().query(uri, columns, null, null, null);
         assertNotNull(c);
         assertTrue(c.moveToFirst());
 
