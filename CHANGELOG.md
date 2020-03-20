@@ -6,6 +6,7 @@
 - Support for Android 10 (#1282)
 - Improved multiselection experience
 - Revamped settings appearance
+- Removed Google Play donation
 
 ### Fixed
 - Fix crash on devices without a browser
