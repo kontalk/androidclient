@@ -20,7 +20,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="org.kontalk">
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
-    <uses-permission android:name="com.android.vending.BILLING" />
 
     <application tools:ignore="GoogleAppIndexingWarning">
 

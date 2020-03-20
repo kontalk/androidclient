@@ -445,9 +445,6 @@
     <string name="msg_iab_thankyou">Thank you!</string>
     <string name="msg_iab_thankyou_warning">Something went wrong, but the donation went through. Thank you!</string>
 
-    <string name="iab_error_setup">Error during in-app billing setup (%d)</string>
-    <string name="iab_error_query">Failed to query in-app billing inventory (%d)</string>
-
     <string name="copy_clipboard">Copy to clipboard</string>
     <string name="bitcoin_clipboard_copied">Bitcoin address copied to clipboard.</string>
 

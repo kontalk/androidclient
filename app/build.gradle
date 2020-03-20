@@ -17,12 +17,7 @@ task checkstyle(type: Checkstyle) {
     exclude 'main/java/org/kontalk/util/ThumbnailUtils.java',
         'main/java/org/kontalk/crypto/PRNGFixes.java',
         'main/java/org/kontalk/ui/AccountAuthenticatorActionBarActivity.java',
-        'main/java/org/kontalk/ui/prefs/TextMessagePreference.java',
-        'main/java/org/kontalk/billing/*.java',
-        '*/java/org/kontalk/billing/GoogleBillingService.java',
-        '*/java/org/kontalk/billing/Inventory.java',
-        '*/java/org/kontalk/billing/ProductDetails.java',
-        '*/java/org/kontalk/billing/Purchase.java'
+        'main/java/org/kontalk/ui/prefs/TextMessagePreference.java'
     // 3rd-party code
     exclude '**/CircularSeekBar.java',
         '**/FrameLayoutFixed.java',

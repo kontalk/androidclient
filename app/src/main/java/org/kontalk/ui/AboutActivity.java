@@ -27,8 +27,6 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import org.kontalk.R;
-import org.kontalk.billing.BillingServiceManager;
-import org.kontalk.billing.IBillingService;
 
 
 /**
@@ -82,13 +80,6 @@ public class AboutActivity extends ToolbarActivity {
     @Override
     protected boolean isNormalUpNavigation() {
         return true;
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        IBillingService service = BillingServiceManager.getInstance(this);
-        if (service == null || !service.handleActivityResult(requestCode, resultCode, data))
-            super.onActivityResult(requestCode, resultCode, data);
     }
 
     private class AboutPagerAdapter extends FragmentPagerAdapter {
