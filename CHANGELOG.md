@@ -2,6 +2,7 @@
 
 ## [Next]
 ### Changed
+- Sharing to groups (#864)
 - Migrate to AndroidX (#1269)
 - Support for Android 10 (#1282)
 - Improved multiselection experience
