@@ -38,6 +38,7 @@ import android.os.Parcelable;
 import androidx.fragment.app.ListFragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -66,6 +67,8 @@ public class ContactsListFragment extends ListFragment implements
         ContactsListAdapter.OnContentChangedListener,
         ContactsSyncer {
 
+    private static final int MAX_RECENT_CONVERSATIONS = 25;
+
     private Cursor mCursor;
     private ContactsListAdapter mListAdapter;
     private SwipeRefreshLayout mRefresher;
@@ -78,6 +81,7 @@ public class ContactsListFragment extends ListFragment implements
     private MenuItem mSyncButton;
 
     private boolean mMultiselect;
+    private boolean mRecents;
 
     private final RunnableBroadcastReceiver.ActionRunnable mPostSyncAction =
             new RunnableBroadcastReceiver.ActionRunnable() {
@@ -92,10 +96,11 @@ public class ContactsListFragment extends ListFragment implements
         }
     };
 
-    public static ContactsListFragment newInstance(boolean multiselect) {
+    public static ContactsListFragment newInstance(boolean multiselect, boolean recents) {
         ContactsListFragment f = new ContactsListFragment();
         Bundle args = new Bundle();
         args.putBoolean("multiselect", multiselect);
+        args.putBoolean("recents", recents);
         f.setArguments(args);
         return f;
     }
@@ -106,9 +111,11 @@ public class ContactsListFragment extends ListFragment implements
         setHasOptionsMenu(true);
         if (savedInstanceState == null) {
             mMultiselect = getArguments().getBoolean("multiselect", false);
+            mRecents = getArguments().getBoolean("recents", false);
         }
         else {
             mMultiselect = savedInstanceState.getBoolean("multiselect", false);
+            mRecents = savedInstanceState.getBoolean("recents", false);
         }
     }
 
@@ -288,7 +295,13 @@ public class ContactsListFragment extends ListFragment implements
     public void startQuery() {
         final Context context = getContext();
         if (context != null) {
-            mCursor = Contact.queryContacts(context);
+            if (mRecents) {
+                mCursor = Contact.queryRecentThreads(context, MAX_RECENT_CONVERSATIONS);
+            }
+            else {
+                mCursor = Contact.queryContacts(context);
+            }
+
             mListAdapter.changeCursor(mCursor);
         }
     }

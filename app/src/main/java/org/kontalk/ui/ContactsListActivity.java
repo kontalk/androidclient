@@ -43,6 +43,7 @@ public class ContactsListActivity extends ToolbarActivity
 
     public static final String MODE_MULTI_SELECT = "org.kontalk.contacts.MULTI_SELECT";
     public static final String MODE_ADD_USERS = "org.kontalk.contacts.ADD_USERS";
+    public static final String MODE_SHARE = "org.kontalk.contacts.SHARE";
 
     private ContactsListFragment mFragment;
 
@@ -61,8 +62,14 @@ public class ContactsListActivity extends ToolbarActivity
             setTitle(addUsers ? R.string.menu_invite_group : R.string.action_compose_group);
         }
 
+        boolean share = getIntent().getBooleanExtra(MODE_SHARE, false);
+        if (share) {
+            // TODO i18n
+            setTitle("Recent chats");
+        }
+
         if (savedInstanceState == null) {
-            mFragment = ContactsListFragment.newInstance(multiselect);
+            mFragment = ContactsListFragment.newInstance(multiselect, share);
             getSupportFragmentManager().beginTransaction()
                 .add(R.id.fragment_contacts_list, mFragment)
                 .commitAllowingStateLoss();

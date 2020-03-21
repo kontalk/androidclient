@@ -44,6 +44,7 @@
             android:layout_toEndOf="@id/avatar"
             android:layout_toStartOf="@+id/trust_status"
             android:layout_toLeftOf="@+id/trust_status"
+            android:drawablePadding="2dp"
             android:ellipsize="marquee"
             android:singleLine="true" />
 

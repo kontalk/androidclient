@@ -60,6 +60,7 @@ public class DirectShareTargetService extends ChooserTargetService {
         ComponentName componentName = new ComponentName(getPackageName(),
             ComposeMessage.class.getCanonicalName());
 
+        // TODO to use includeGroups we need to adapt Contact to use a group avatar icon
         Cursor cursor = MessagesProviderClient.getLatestThreads(this, false, MAX_TARGETS);
         if (cursor.moveToFirst()) {
             List<ChooserTarget> targets = new ArrayList<>(MAX_TARGETS);

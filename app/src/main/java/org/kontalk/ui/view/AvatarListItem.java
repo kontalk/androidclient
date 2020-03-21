@@ -55,7 +55,6 @@ public abstract class AvatarListItem extends RelativeLayout implements ContactCa
 
     private void init(Context context) {
         mHandler = new Handler();
-
     }
 
     private Drawable getDefaultContactImage() {
@@ -87,7 +86,8 @@ public abstract class AvatarListItem extends RelativeLayout implements ContactCa
         Drawable defaultIcon = isGroupChat() ?
             getDefaultGroupImage() : getDefaultContactImage();
 
-        if (contact != null) {
+        // TODO group chats don't have avatars yet
+        if (contact != null && !isGroupChat()) {
             // null tag - first time loading: set default
             if (mAvatarView.getTag() == null)
                 mAvatarView.setImageDrawable(defaultIcon);
