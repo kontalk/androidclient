@@ -35,6 +35,8 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
+
+import androidx.annotation.NonNull;
 import androidx.fragment.app.ListFragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -47,6 +49,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import lb.library.PinnedHeaderListView;
@@ -120,9 +123,10 @@ public class ContactsListFragment extends ListFragment implements
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean("multiselect", mMultiselect);
+        outState.putBoolean("recents", mRecents);
     }
 
     @Override
@@ -133,7 +137,7 @@ public class ContactsListFragment extends ListFragment implements
     // lint bug: for setChoiceMode which is actually available in API level 9
     @SuppressLint("NewApi")
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         PinnedHeaderListView list = (PinnedHeaderListView) getListView();
@@ -146,6 +150,14 @@ public class ContactsListFragment extends ListFragment implements
 
         mRefresher = view.findViewById(R.id.refresher);
         mRefresher.setEnabled(false);
+
+        TextView emptyText = view.findViewById(android.R.id.empty);
+        if (isRecentsMode()) {
+            emptyText.setText(R.string.text_contacts_recents_empty);
+        }
+        else {
+            emptyText.setText(R.string.text_contacts_empty);
+        }
     }
 
     @Override
@@ -201,19 +213,26 @@ public class ContactsListFragment extends ListFragment implements
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.contacts_list_menu, menu);
         mSyncButton = menu.findItem(R.id.menu_refresh);
 
-        Context ctx = getActivity();
-        if (ctx != null)
-            mSyncButton.setVisible(!SyncAdapter.isActive(getActivity()) && !mMultiselect);
-
         // multiselect mode needs the confirm action
+        // we can do this here because it's not dynamic
         menu.findItem(R.id.menu_compose).setVisible(mMultiselect);
         menu.findItem(R.id.menu_invite).setVisible(!mMultiselect);
 
         super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(@NonNull Menu menu) {
+        Context ctx = getContext();
+        if (ctx != null) {
+            mSyncButton.setVisible(!SyncAdapter
+                .isActive(ctx) && !mMultiselect && !mRecents);
+        }
+        super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -235,6 +254,10 @@ public class ContactsListFragment extends ListFragment implements
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public boolean isRecentsMode() {
+        return mRecents;
     }
 
     private void openSelectedContacts(SparseBooleanArray checked) {
