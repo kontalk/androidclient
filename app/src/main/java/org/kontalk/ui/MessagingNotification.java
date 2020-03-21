@@ -1043,9 +1043,18 @@ public class MessagingNotification {
 
                 // group avatar and ticker
                 if (conv.groupJid != null) {
-                    mBuilder.setLargeIcon(MessageUtils
-                        .drawableToBitmap(ContextCompat
-                            .getDrawable(mContext, R.drawable.ic_default_group)));
+                    // default group avatar
+                    Bitmap defaultGroupAvatar = MessageUtils.drawableToBitmap(ContextCompat
+                            .getDrawable(mContext, R.drawable.ic_default_group));
+
+                    if (Contact.isRoundedAvatars()) {
+                        Bitmap roundedAvatar = MediaStorage.createRoundBitmap(defaultGroupAvatar);
+                        if (roundedAvatar != defaultGroupAvatar)
+                            defaultGroupAvatar.recycle();
+                        defaultGroupAvatar = roundedAvatar;
+                    }
+
+                    mBuilder.setLargeIcon(defaultGroupAvatar);
                 }
 
                 SpannableStringBuilder buf = new SpannableStringBuilder();
