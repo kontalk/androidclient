@@ -391,7 +391,7 @@
 
     <string name="pref_title_sync_sim_contacts">Включать контакты с SIM-карты при поиске зарегистрированных пользователей</string>
 
-    <string name="pref_title_sync_invisible_contacts">Добавлять контакты, не занесённые в приложении Контакты. Включите, если используете DAVdroid</string>
+    <string name="pref_title_sync_invisible_contacts">Добавлять контакты, не занесённые в приложении Контакты. Включите, если используете DAVdroid или другие приложения для синхронизации</string>
 
     <string name="title_block_user_warning">Действительно заблокировать этого пользователя?</string>
     <string name="title_unblock_user_warning">Действительно разблокировать этого пользователя?</string>
@@ -748,5 +748,25 @@
     <string name="text_archived_conversations_empty">Чтобы добавить разговоры в архив, отметьте их на главном экране и нажмите кнопку <b>добавить в архив</b> на панели инструментов.</string>
     <string name="title_archived_threads">Сохранённые разговоры</string>
     <string name="footer_archived_threads">Сохранённые разговоры (%d)</string>
+
+    <string name="pref_account_settings">Учётная запись</string>
+    <string name="pref_title_foreground_service_mandatory">Эти настройки нужны Kontalk для корректной работы на вашем устройстве</string>
+
+    <string name="pref_copy_database">Копировать базу данных</string>
+    <string name="msg_copy_database_success">Копия базы данных: %s</string>
+    <string name="msg_copy_database_failed">Ошибка при копировании базы данных: %s</string>
+
+    <string name="registration_accept_terms_title">Принять условия обслуживания\?</string>
+    <string name="registration_accept_terms_text">Сервер &lt;b&gt;%1$s&lt;/b&gt; запрашивает &lt;a href=%2$s&gt;принять условия обслуживания&lt;/a&gt;.</string>
+
+    <string name="pref_service_terms">Условия обслуживания</string>
+
+    <string name="err_storage_denied_interactive">Чтобы сохранять медиа-файлы, Kontalk нужен доступ к внутреннему хранилищу устройства. Мы просим разрешить доступ.</string>
+
+    <string name="notify_ticker_download_permission_denied_error">Чтобы загружать медиа-файлы, нужно разрешение</string>
+    <string name="notify_title_download_permission_denied_error">Необходимо разрешение</string>
+    <string name="notify_summary_download_permission_denied_error">Подробнее.</string>
+
+    <string name="err_emoji_disabled_in_multiwindow">В оконном режиме использовать эмоджи нельзя.</string>
 
     </resources>
