@@ -408,7 +408,7 @@
     <string name="pref_title_custom_background">Wählen Sie einen Hintergrund mit untenstehender Option</string>
     <string name="pref_title_sync_sim_contacts">SIM-Kontakte mit einbeziehen um nach registrierten Nutzern zu suchen</string>
 
-    <string name="pref_title_sync_invisible_contacts">Im Adressbuch ausgeblendete Kontakte einbeziehen. Aktivieren wenn DAVDroid verwendet wird</string>
+    <string name="pref_title_sync_invisible_contacts">Im Adressbuch ausgeblendete Kontakte einbeziehen. Aktivieren wenn DAVx⁵ oder eine andere Kontaktapp verwendet wird</string>
 
     <string name="pref_show_blocked_users">Blockierte Nutzer anzeigen</string>
 

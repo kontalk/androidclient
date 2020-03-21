@@ -413,7 +413,7 @@
 
     <string name="pref_title_sync_sim_contacts">Zahrnout kontakty na SIM při zjišťování registrovaných uživatelů</string>
 
-    <string name="pref_title_sync_invisible_contacts">Zahrnout kontakty nezobrazené v aplikaci Kontakty. Zapněte, pokud používáte DAVDroid</string>
+    <string name="pref_title_sync_invisible_contacts">Zahrnout kontakty nezobrazené v aplikaci Kontakty. Zapněte, pokud používáte DAVx⁵ nebo jinou aplikaci pro synchronizaci kontaktů</string>
 
     <string name="warning_public_key_changed">Osobní klíč se změnil</string>
     <string name="title_public_key_changed_warning">Osobní klíč byl změněn</string>
