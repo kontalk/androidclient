@@ -623,7 +623,7 @@ public class Contact {
     }
 
     /** Roughly the Android version when the rounded avatar concept was introduced. */
-    private static boolean isRoundedAvatars() {
+    public static boolean isRoundedAvatars() {
         return android.os.Build.VERSION.SDK_INT >=
             android.os.Build.VERSION_CODES.LOLLIPOP;
     }

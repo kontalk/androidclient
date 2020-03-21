@@ -26,6 +26,7 @@ import android.annotation.TargetApi;
 import android.content.ComponentName;
 import android.content.IntentFilter;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.drawable.Icon;
@@ -34,9 +35,14 @@ import android.os.Bundle;
 import android.service.chooser.ChooserTarget;
 import android.service.chooser.ChooserTargetService;
 
+import androidx.core.content.ContextCompat;
+
+import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.ui.ComposeMessage;
+import org.kontalk.util.MediaStorage;
+import org.kontalk.util.MessageUtils;
 
 
 /**
@@ -60,27 +66,56 @@ public class DirectShareTargetService extends ChooserTargetService {
         ComponentName componentName = new ComponentName(getPackageName(),
             ComposeMessage.class.getCanonicalName());
 
-        // TODO to use includeGroups we need to adapt Contact to use a group avatar icon
-        Cursor cursor = MessagesProviderClient.getLatestThreads(this, false, MAX_TARGETS);
+        Cursor cursor = MessagesProviderClient.getLatestThreads(this, true, MAX_TARGETS);
         if (cursor.moveToFirst()) {
             List<ChooserTarget> targets = new ArrayList<>(MAX_TARGETS);
             do {
                 String userId = cursor.getString(MessagesProviderClient.LATEST_THREADS_COLUMN_PEER);
+                boolean isGroup = cursor.getString(MessagesProviderClient.LATEST_THREADS_COLUMN_GROUP_JID) != null;
 
-                Contact contact = Contact.findByUserId(this, userId);
+                String displayName;
+                Icon avatar;
+                if (!isGroup) {
+                    Contact contact = Contact.findByUserId(this, userId);
+                    displayName = contact.getDisplayName();
+                    avatar = Icon.createWithBitmap(contact.getAvatarBitmap(this));
+                }
+                else {
+                    displayName = cursor.getString(MessagesProviderClient.LATEST_THREADS_COLUMN_GROUP_SUBJECT);
+                    // groups don't have avatars yet, for now we use the default icon
+                    avatar = getGroupAvatar();
+                }
 
                 // ComposeMessage will get an ACTION_SEND intent with a user id extra.
                 // This will skip the chooseContact() step and go directly to the conversation
                 Bundle extras = new Bundle();
                 extras.putString(ComposeMessage.EXTRA_USERID, userId);
-                targets.add(new ChooserTarget(contact.getDisplayName(),
-                    Icon.createWithBitmap(contact.getAvatarBitmap(this)), 0.5f,
-                    componentName, extras));
+                targets.add(new ChooserTarget(displayName, avatar, 0.5f, componentName, extras));
             } while (cursor.moveToNext());
             return targets;
         }
 
         return Collections.emptyList();
+    }
+
+    /**
+     * @deprecated This will go away when groups will have their own avatars and will be
+     * retrieved by {@link Contact}.
+     */
+    @Deprecated
+    private Icon getGroupAvatar() {
+        // optimize for rounded avatars
+        if (Contact.isRoundedAvatars()) {
+            Bitmap avatarOriginal = MessageUtils.drawableToBitmap(ContextCompat
+                .getDrawable(this, R.drawable.ic_default_group));
+            Bitmap avatarRounded = MediaStorage.createRoundBitmap(avatarOriginal);
+            if (avatarRounded != avatarOriginal)
+                avatarOriginal.recycle();
+            return Icon.createWithBitmap(avatarRounded);
+        }
+        else {
+            return Icon.createWithResource(this, R.drawable.ic_default_group);
+        }
     }
 
 }
