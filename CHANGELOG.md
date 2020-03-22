@@ -17,6 +17,7 @@
 - Fix some registration issues (#1271, #1272, #1274, #1275)
 - Fix storage permission issue (#1277)
 - Contact pictures in notification on Android 9+ (#1288)
+- Fix deadlock in faulty networks
 
 ## [4.3.1] - 2019-08-24
 ### Fixed
