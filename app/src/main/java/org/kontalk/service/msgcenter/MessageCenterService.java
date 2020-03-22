@@ -106,6 +106,8 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.Process;
 import android.os.SystemClock;
+
+import androidx.annotation.CheckResult;
 import androidx.annotation.Nullable;
 import androidx.core.app.ServiceCompat;
 import androidx.core.content.ContextCompat;
@@ -948,7 +950,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             abortThread.start();
             mHelper = null;
             try {
-                abortThread.join();
+                abortThread.join(500);
+                // istantShutdown is synchronized
+                abortThread.interrupt();
             }
             catch (InterruptedException ignored) {
             }
@@ -961,17 +965,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 .getInstanceFor(mConnection, this)
                 .setEnabled(false);
 
-            // synchronize with listener creation in connected()
-            synchronized (mConnection) {
-                PingManager.getInstanceFor(mConnection)
-                    .unregisterPingFailedListener(mPingFailedListener);
-                mPingFailedListener = null;
-            }
+            PingManager.getInstanceFor(mConnection)
+                .unregisterPingFailedListener(mPingFailedListener);
+            mPingFailedListener = null;
 
             // this is because of NetworkOnMainThreadException
             DisconnectThread disconnectThread = new DisconnectThread(mConnection);
             disconnectThread.start();
-            disconnectThread.joinTimeout(500);
+            if (!disconnectThread.joinTimeout(500)) {
+                // we didn't succeed in terminating the connection
+                // discard it and we'll create a new one
+                mConnection = null;
+            }
 
             // clear the connection only if we are quitting
             if (!restarting)
@@ -1034,15 +1039,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
         }
 
-        public void joinTimeout(long millis) {
+        @CheckResult
+        public boolean joinTimeout(long millis) {
             try {
                 // we must wait for the connection to actually close
                 join(millis);
                 // this won't send the last sm ack, preventing another interruptable zone
                 mConn.suspendSmAck();
                 interrupt();
+                return !isAlive();
             }
             catch (InterruptedException ignored) {
+                return false;
             }
         }
     }
@@ -1744,8 +1752,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         connection.addAsyncStanzaListener(new VersionListener(), filter);
     }
 
+    /**
+     * Synchronized with {@link #quit}.
+     */
     @Override
-    public void connected(final XMPPConnection connection) {
+    public synchronized void connected(final XMPPConnection connection) {
         // enable ping manager
         AndroidAdaptiveServerPingManager
             .getInstanceFor(connection, this)
@@ -1754,22 +1765,20 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // save the network we connected through
         mCurrentNetwork = SystemUtils.getCurrentNetworkName(this);
 
-        synchronized (connection) {
-            if (mPingFailedListener == null) {
-                mPingFailedListener = new PingFailedListener() {
-                    @Override
-                    public void pingFailed() {
-                        if (isStarted() && mConnection == connection) {
-                            Log.v(TAG, "ping failed, restarting message center");
-                            // restart message center
-                            restart(getApplicationContext());
-                        }
+        if (mPingFailedListener == null) {
+            mPingFailedListener = new PingFailedListener() {
+                @Override
+                public void pingFailed() {
+                    if (isStarted() && mConnection == connection) {
+                        Log.v(TAG, "ping failed, restarting message center");
+                        // restart message center
+                        restart(getApplicationContext());
                     }
-                };
-                PingManager pingManager = PingManager.getInstanceFor(connection);
-                pingManager.registerPingFailedListener(mPingFailedListener);
-                pingManager.setPingInterval(0);
-            }
+                }
+            };
+            PingManager pingManager = PingManager.getInstanceFor(connection);
+            pingManager.registerPingFailedListener(mPingFailedListener);
+            pingManager.setPingInterval(0);
         }
     }
 
