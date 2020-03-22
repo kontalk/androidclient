@@ -776,4 +776,8 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
 
     <string name="pref_service_terms">Podmínky služby</string>
 
+    <string name="contacts_list_recents_title">Nedávné konverzace</string>
+    <string name="menu_switch_contacts">Kontakty</string>
+    <string name="menu_switch_recents">Nedávné</string>
+    <string name="text_contacts_recents_empty">Zde se budou objevovat nedávné konverzace. Můžete <b>přepnout na kontakty</b> pomocí tlačítka výše.</string>
     </resources>
