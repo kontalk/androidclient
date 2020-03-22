@@ -44,6 +44,7 @@ import org.kontalk.crypto.OmemoCoder;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PGPCoder;
 import org.kontalk.crypto.PersonalKey;
+import org.kontalk.data.Contact;
 
 
 /**
@@ -72,6 +73,10 @@ public class Keyring {
     public static Coder getEncryptCoder(Context context, int securityFlags,
             XMPPConnection connection, EndpointServer server, PersonalKey key, Jid[] recipients)
             throws SmackException.NotConnectedException {
+
+        // calculate supported security flags given previous discoveries
+        int[] supportedFlags = Contact.getSecurityFlags(recipients);
+        securityFlags = Coder.getCompatibleSecurityFlags(securityFlags, supportedFlags);
 
         if ((securityFlags & Coder.SECURITY_ADVANCED) != 0) {
             try {

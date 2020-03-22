@@ -119,6 +119,42 @@ public abstract class Coder {
             (securityFlags & SECURITY_ERROR_PUBLIC_KEY_UNAVAILABLE) != 0;
     }
 
+    /**
+     * Calculate the common security flags supported by all given users flags.
+     * @param requestedFlags what flags we would like
+     * @param supportedFlags what flags users support
+     * @return calculated flags
+     */
+    public static int getCompatibleSecurityFlags(int requestedFlags, int[] supportedFlags) {
+        // FIXME not really checking flags, but I know what I'm doing here and also I'm lazy
+        int finalFlags = -1;
+        for (int flags : supportedFlags) {
+            if (flags < 0) {
+                // unknown security, just skip it
+                continue;
+            }
+            int calculatedFlags = getCompatibleSecurityFlags(requestedFlags, flags);
+            if (finalFlags >= 0) {
+                finalFlags = Math.min(finalFlags, calculatedFlags);
+            }
+            else {
+                finalFlags = calculatedFlags;
+            }
+        }
+        return finalFlags < 0 ? requestedFlags : finalFlags;
+    }
+
+    /**
+     * Calculate the security flags supported by the given users flags.
+     * @param requestedFlags what flags we would like
+     * @param supportedFlags what flags the user supports
+     * @return calculated flags
+     */
+    public static int getCompatibleSecurityFlags(int requestedFlags, int supportedFlags) {
+        // FIXME not really checking flags, but I know what I'm doing here and also I'm lazy
+        return Math.min(requestedFlags, supportedFlags);
+    }
+
     public static class DecryptOutput {
         public final String mime;
         public final Message cleartext;

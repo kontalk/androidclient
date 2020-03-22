@@ -2535,6 +2535,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 try {
                     Coder coder = Keyring.getEncryptCoder(this, message.getSecurityFlags(),
                         mConnection, mServer, key, toGroup);
+                    // cache security flags
+                    for (Jid jid : toGroup) {
+                        Contact.findByUserId(this, jid.asBareJid().toString())
+                            .setSecurityFlags(coder.getSupportedFlags());
+                    }
 
                     // security flags changed (most probably because of coder fallback)
                     // update message accordingly
