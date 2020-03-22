@@ -978,10 +978,11 @@ public class MessagingNotification {
                     for (NotificationConversation.ConversationMessage message : content) {
                         Contact contact = Contact.findByUserId(mContext, message.peer);
                         name = contact.getDisplayName();
+                        String uri = contact.getUri() != null ? contact.getUri().toString() : null;
 
                         Person person = new Person.Builder()
                             .setName(name)
-                            .setUri(contact.getUri().toString())
+                            .setUri(uri)
                             .setKey(contact.getJID())
                             .setIcon(IconCompat.createWithBitmap(contact.getAvatarBitmap(mContext, true)))
                             .build();
