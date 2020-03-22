@@ -769,4 +769,8 @@
 
     <string name="err_emoji_disabled_in_multiwindow">В оконном режиме использовать эмоджи нельзя.</string>
 
+    <string name="contacts_list_recents_title">Недавние чаты</string>
+    <string name="menu_switch_contacts">Контакты</string>
+    <string name="menu_switch_recents">Недавние</string>
+    <string name="text_contacts_recents_empty">Здесь видны недавние чаты. С помощью кнопки вверху можно перейти в <b>Контакты</b>.</string>
     </resources>
