@@ -19,9 +19,10 @@
 package org.kontalk.provider;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jxmpp.util.XmppStringUtils;
@@ -30,22 +31,28 @@ import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
 
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
-import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.rule.provider.ProviderTestRule;
 
-import android.test.ProviderTestCase2;
 import android.util.Base64;
 
 import org.kontalk.crypto.PGP;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.*;
 
 
 @RunWith(AndroidJUnit4.class)
-public class UsersProviderTest extends ProviderTestCase2<UsersProvider> {
+public class UsersProviderTest {
+
+    @Rule
+    public ProviderTestRule mProviderRule =
+        new ProviderTestRule.Builder(UsersProvider.class, UsersProvider.AUTHORITY).build();
+
+    private Context mContext;
 
     private static final String TEST_USERID = XmppStringUtils
         .completeJidFrom(XMPPUtils.createLocalpart("+15555215554"), "prime.kontalk.net");
@@ -447,21 +454,12 @@ public class UsersProviderTest extends ProviderTestCase2<UsersProvider> {
         "iWyz93dtfgCGQmAMvOoYGu4QDuGyIpsiWib3wpTAP92TLQG5skEqBCNWzU7wMpU7s0YPgTh9NBbR\n" +
         "eiy71AHnPDvE1l4=";
 
-    public UsersProviderTest() {
-        super(UsersProvider.class, UsersProvider.AUTHORITY);
-    }
-
     @Before
-    @Override
-    public void setUp() throws Exception {
-        setContext(InstrumentationRegistry.getInstrumentation().getTargetContext());
-        super.setUp();
-    }
-
-    @After
-    @Override
-    public void tearDown() throws Exception {
-        super.tearDown();
+    public void setUp() throws ReflectiveOperationException {
+        // damn it Google..
+        final Field contextField = mProviderRule.getClass().getDeclaredField("context");
+        contextField.setAccessible(true);
+        mContext = (Context) contextField.get(mProviderRule);
     }
 
     @Test
@@ -480,24 +478,24 @@ public class UsersProviderTest extends ProviderTestCase2<UsersProvider> {
 
     @Test
     public void testAutotrustedLevel() throws IOException, PGPException {
-        Keyring.setAutoTrustLevel(getMockContext(), TEST_USERID, Keyring.TRUST_VERIFIED);
+        Keyring.setAutoTrustLevel(mContext, TEST_USERID, Keyring.TRUST_VERIFIED);
         assertQueryValues(MyUsers.Keys.getUri(TEST_USERID, Keyring.VALUE_AUTOTRUST),
             MyUsers.Keys.JID, TEST_USERID,
             MyUsers.Keys.FINGERPRINT, Keyring.VALUE_AUTOTRUST);
 
         byte[] keydata = Base64.decode(TEST_KEYDATA, Base64.DEFAULT);
         PGPPublicKeyRing originalKey = PGP.readPublicKeyring(keydata);
-        Keyring.setKey(getMockContext(), TEST_USERID, keydata);
-        PGPPublicKeyRing publicKey = Keyring.getPublicKey(getMockContext(), TEST_USERID, Keyring.TRUST_VERIFIED);
+        Keyring.setKey(mContext, TEST_USERID, keydata);
+        PGPPublicKeyRing publicKey = Keyring.getPublicKey(mContext, TEST_USERID, Keyring.TRUST_VERIFIED);
         assertNotNull(publicKey);
         assertArrayEquals(publicKey.getEncoded(), originalKey.getEncoded());
 
         String testFingerprint = PGP.getFingerprint(originalKey.getPublicKey());
-        getMockContentResolver().delete(MyUsers.Keys.getUri(TEST_USERID, testFingerprint), null, null);
+        mProviderRule.getResolver().delete(MyUsers.Keys.getUri(TEST_USERID, testFingerprint), null, null);
     }
 
     private void assertQuery(Uri uri) {
-        Cursor c = getMockContentResolver().query(uri, null, null, null, null);
+        Cursor c = mProviderRule.getResolver().query(uri, null, null, null, null);
         assertNotNull(c);
         c.close();
     }
@@ -508,7 +506,7 @@ public class UsersProviderTest extends ProviderTestCase2<UsersProvider> {
         for (int i = 0; i < columns.length; i++)
             columns[i] = columnsExpected[i*2];
 
-        Cursor c = getMockContentResolver().query(uri, columns, null, null, null);
+        Cursor c = mProviderRule.getResolver().query(uri, columns, null, null, null);
         assertNotNull(c);
         assertTrue(c.moveToFirst());
 

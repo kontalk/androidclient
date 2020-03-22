@@ -123,6 +123,7 @@
     <string name="pref_title_regenerate_keypair">Use this in case your personal key has been compromised</string>
     <string name="pref_regenerate_keypair_confirm">A new key pair will be generated and assigned to your account. Your old key will become invalid.</string>
     <string name="contacts_list_title">Choose a contact</string>
+    <string name="contacts_list_recents_title">Recent chats</string>
     <string name="position_screen_title">Position</string>
     <string name="pref_messaging_settings">Messaging</string>
     <string name="pref_privacy_settings">Privacy</string>
@@ -212,6 +213,8 @@
     <string name="msg_no_name">Please insert a name.</string>
     <string name="menu_refresh">Refresh</string>
     <string name="menu_invite">Invite users</string>
+    <string name="menu_switch_contacts">Contacts</string>
+    <string name="menu_switch_recents">Recents</string>
     <string name="title_error">Error</string>
     <string name="person_me">Me</string>
     <string name="msg_do_refresh">Use Menu > Refresh to update contact list.</string>
@@ -220,6 +223,7 @@
     <string name="err_sync_nonetwork">Network not available. Please retry later.</string>
     <string name="text_invite_message">Hey! Check out Kontalk, a free messaging app! http://kontalk.org/</string>
     <string name="text_contacts_empty">New users will be automatically added to this list.\n\nUse <b>Menu</b> > <b>Invite users</b> to send an invitation message to someone.</string>
+    <string name="text_contacts_recents_empty">Recent chats will appear here. You can <b>switch to contacts</b> by using the button above.</string>
     <string name="text_conversations_empty">To start writing messages use the <b>new message</b> button below.</string>
     <string name="text_archived_conversations_empty">To archive chats, select them from the main screen and use the <b>archive</b> button in the toolbar.</string>
     <string name="notify_ticker_external_storage">External storage not available</string>
@@ -445,9 +449,6 @@
     <string name="msg_connecting_iab">Connecting to Google Play&#8230;</string>
     <string name="msg_iab_thankyou">Thank you!</string>
     <string name="msg_iab_thankyou_warning">Something went wrong, but the donation went through. Thank you!</string>
-
-    <string name="iab_error_setup">Error during in-app billing setup (%d)</string>
-    <string name="iab_error_query">Failed to query in-app billing inventory (%d)</string>
 
     <string name="copy_clipboard">Copy to clipboard</string>
     <string name="bitcoin_clipboard_copied">Bitcoin address copied to clipboard.</string>

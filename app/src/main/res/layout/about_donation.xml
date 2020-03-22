@@ -50,16 +50,6 @@
             android:text="@string/donate_text" />
 
         <Button
-            android:id="@+id/donate_google"
-            android:text="@string/donate_wallet"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="12dp"
-            android:drawableLeft="@drawable/donate_wallet"
-            android:drawableStart="@drawable/donate_wallet"/>
-
-        <Button
             android:id="@+id/donate_paypal"
             android:text="@string/donate_paypal"
             android:layout_width="fill_parent"

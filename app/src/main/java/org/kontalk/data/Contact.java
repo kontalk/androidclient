@@ -29,6 +29,7 @@ import java.util.Set;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 
+import org.bouncycastle.util.Arrays;
 import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.stringprep.XmppStringprepException;
 import org.jxmpp.util.XmppStringUtils;
@@ -41,6 +42,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -59,6 +61,8 @@ import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGPLazyPublicKeyRingLoader;
 import org.kontalk.provider.Keyring;
+import org.kontalk.provider.MessagesProviderClient;
+import org.kontalk.provider.MyUsers.Keys;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
@@ -83,6 +87,7 @@ public class Contact {
         Users.REGISTERED,
         Users.STATUS,
         Users.BLOCKED,
+        //GROUP -- injected by queryRecentThreads into the cursor
     };
 
     public static final int COLUMN_ID = 0;
@@ -94,6 +99,10 @@ public class Contact {
     public static final int COLUMN_REGISTERED = 6;
     public static final int COLUMN_STATUS = 7;
     public static final int COLUMN_BLOCKED = 8;
+    /**
+     * Injected by {@link #queryRecentThreads} into the cursor.
+     */
+    public static final int COLUMN_GROUP = 9;
 
     /** The aggregated Contact id identified by this object. */
     private final long mContactId;
@@ -108,6 +117,7 @@ public class Contact {
     private String mStatus;
 
     private boolean mBlocked;
+    private boolean mGroup;
 
     private Drawable mAvatar;
     private byte [] mAvatarData;
@@ -439,6 +449,10 @@ public class Contact {
         return mBlocked;
     }
 
+    public boolean isGroup() {
+        return mGroup;
+    }
+
     public PGPPublicKeyRing getTrustedPublicKeyRing() {
         try {
             if (mTrustedKeyRing != null)
@@ -609,7 +623,7 @@ public class Contact {
     }
 
     /** Roughly the Android version when the rounded avatar concept was introduced. */
-    private static boolean isRoundedAvatars() {
+    public static boolean isRoundedAvatars() {
         return android.os.Build.VERSION.SDK_INT >=
             android.os.Build.VERSION_CODES.LOLLIPOP;
     }
@@ -686,10 +700,18 @@ public class Contact {
             final boolean registered = (cursor.getInt(COLUMN_REGISTERED) != 0);
             final String status = cursor.getString(COLUMN_STATUS);
             final boolean blocked = (cursor.getInt(COLUMN_BLOCKED) != 0);
+            boolean group = false;
+            try {
+                group = (cursor.getInt(COLUMN_GROUP) != 0);
+            }
+            catch (Exception ignored) {
+            }
+
 
             c = new Contact(contactId, key, name, number, jid, blocked);
             c.mRegistered = registered;
             c.mStatus = status;
+            c.mGroup = group;
 
             Uri uri = c.getUri();
             if (uri != null) {
@@ -846,6 +868,65 @@ public class Contact {
             ALL_CONTACTS_PROJECTION,
             selection, null,
             Users.DISPLAY_NAME + " COLLATE NOCASE," + Users.NUMBER + " COLLATE NOCASE");
+    }
+
+    /**
+     * Query recent threads from {@link org.kontalk.provider.MessagesProvider}.
+     * Although this class should handle only the users provider, this cursor
+     * will have a {@link org.kontalk.provider.UsersProvider} compatible cursor.
+     */
+    public static Cursor queryRecentThreads(Context context, int limit) {
+        MatrixCursor recents = new MatrixCursor(Arrays
+            .append(ALL_CONTACTS_PROJECTION, "group"));
+
+        Cursor cursor = MessagesProviderClient.getLatestThreads(context, true, limit);
+        try {
+            while (cursor.moveToNext()) {
+                String userId = cursor.getString(MessagesProviderClient.LATEST_THREADS_COLUMN_PEER);
+                String groupJid = cursor.getString(MessagesProviderClient.LATEST_THREADS_COLUMN_GROUP_JID);
+                if (groupJid != null) {
+                    // group chat
+                    recents.addRow(new Object[] {
+                        0,
+                        0,
+                        null,
+                        cursor.getString(MessagesProviderClient.LATEST_THREADS_COLUMN_GROUP_SUBJECT),
+                        null,
+                        groupJid,
+                        1,
+                        null,
+                        0,
+                        1 // group
+                    });
+                }
+                else {
+                    // private chat
+                    // Unfortunately we have to do one more query because
+                    // user information is in another database
+                    Contact contact = Contact.findByUserId(context, userId);
+
+                    recents.addRow(new Object[] {
+                        contact.getId(),
+                        contact.mContactId,
+                        contact.mLookupKey,
+                        contact.getDisplayName(),
+                        contact.getNumber(),
+                        contact.getJID(),
+                        contact.isRegistered() ? 1 : 0,
+                        contact.getStatus(),
+                        contact.isBlocked() ? 1: 0,
+                        0 // group
+                    });
+                }
+            }
+        }
+        finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+
+        return recents;
     }
 
 }

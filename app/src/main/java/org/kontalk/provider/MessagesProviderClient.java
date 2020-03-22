@@ -56,10 +56,14 @@ public class MessagesProviderClient {
     private static final String[] LATEST_THREADS_PROJ = {
         Threads._ID,
         Threads.PEER,
+        Groups.GROUP_JID,
+        Groups.SUBJECT,
     };
 
     public static final int LATEST_THREADS_COLUMN_ID = 0;
     public static final int LATEST_THREADS_COLUMN_PEER = 1;
+    public static final int LATEST_THREADS_COLUMN_GROUP_JID = 2;
+    public static final int LATEST_THREADS_COLUMN_GROUP_SUBJECT = 3;
 
     private MessagesProviderClient() {
     }

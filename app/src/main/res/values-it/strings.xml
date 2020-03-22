@@ -408,7 +408,7 @@
     <string name="err_import_keypair_read">Impossibile leggere la chiave personale dalla memoria esterna.</string>
     <string name="pref_title_sync_sim_contacts">Includi i contatti dalla SIM durante il controllo degli utenti registrati</string>
 
-    <string name="pref_title_sync_invisible_contacts">Includi contatti non visualizzati in rubrica. Abilita se usi DAVDroid</string>
+    <string name="pref_title_sync_invisible_contacts">Includi contatti non visualizzati in rubrica. Abilita se usi DAVx⁵ o altre app per sincronizzare contatti</string>
 
     <string name="pref_show_blocked_users">Mostra utenti bloccati</string>
 
@@ -764,4 +764,8 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
 
     <string name="pref_service_terms">Termini di servizio</string>
 
+    <string name="contacts_list_recents_title">Chat recenti</string>
+    <string name="menu_switch_contacts">Contatti</string>
+    <string name="menu_switch_recents">Recenti</string>
+    <string name="text_contacts_recents_empty">Le chat recenti appariranno qui. Puoi <b>passare ai contatti</b> usando il tasto in alto.</string>
     </resources>

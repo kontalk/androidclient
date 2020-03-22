@@ -2,10 +2,12 @@
 
 ## [Next]
 ### Changed
+- Sharing to groups (#864)
 - Migrate to AndroidX (#1269)
 - Support for Android 10 (#1282)
 - Improved multiselection experience
 - Revamped settings appearance
+- Removed Google Play donation
 
 ### Fixed
 - Fix crash on devices without a browser
@@ -15,6 +17,7 @@
 - Fix some registration issues (#1271, #1272, #1274, #1275)
 - Fix storage permission issue (#1277)
 - Contact pictures in notification on Android 9+ (#1288)
+- Fix deadlock in faulty networks
 
 ## [4.3.1] - 2019-08-24
 ### Fixed

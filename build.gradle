@@ -4,14 +4,21 @@ buildscript {
         jcenter()
         google()
         maven { url 'https://maven.fabric.io/public' }
+        // waiting for https://github.com/arturdm/jacoco-android-gradle-plugin/pull/75
+        maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.6.1'
         classpath 'com.google.gms:google-services:4.3.3'
         classpath 'io.fabric.tools:gradle:1.+'
+        classpath('com.hiya:jacoco-android:0.2') {
+            exclude group: 'org.codehaus.groovy', module: 'groovy-all'
+        }
+        /* waiting for https://github.com/arturdm/jacoco-android-gradle-plugin/pull/75
         classpath('com.dicedmelon.gradle:jacoco-android:0.1.4') {
             exclude group: 'org.codehaus.groovy', module: 'groovy-all'
         }
+        */
     }
 }
 
@@ -27,8 +34,8 @@ allprojects {
     evaluationDependsOn ":client-common-java"
     ext {
         applicationId = 'org.kontalk'
-        versionCode = 441
-        versionName = '4.3.1-next'
+        versionCode = 453
+        versionName = '4.4.0-beta3'
         minSdkVersion = 16
         targetSdkVersion = 29
         compileSdkVersion = 29

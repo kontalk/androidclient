@@ -24,6 +24,8 @@ import java.util.List;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import org.kontalk.R;
@@ -43,8 +45,15 @@ public class ContactsListActivity extends ToolbarActivity
 
     public static final String MODE_MULTI_SELECT = "org.kontalk.contacts.MULTI_SELECT";
     public static final String MODE_ADD_USERS = "org.kontalk.contacts.ADD_USERS";
+    public static final String MODE_RECENTS = "org.kontalk.contacts.RECENTS";
+
+    private static final int VIEW_MODE_CONTACTS = 0;
+    private static final int VIEW_MODE_RECENTS = 1;
 
     private ContactsListFragment mFragment;
+
+    private MenuItem mSwitchContacts;
+    private MenuItem mSwitchRecents;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -61,8 +70,16 @@ public class ContactsListActivity extends ToolbarActivity
             setTitle(addUsers ? R.string.menu_invite_group : R.string.action_compose_group);
         }
 
+        boolean recents = getIntent().getBooleanExtra(MODE_RECENTS, false);
+        if (recents) {
+            setTitle(R.string.contacts_list_recents_title);
+        }
+        else {
+            setTitle(R.string.contacts_list_title);
+        }
+
         if (savedInstanceState == null) {
-            mFragment = ContactsListFragment.newInstance(multiselect);
+            mFragment = ContactsListFragment.newInstance(multiselect, recents);
             getSupportFragmentManager().beginTransaction()
                 .add(R.id.fragment_contacts_list, mFragment)
                 .commitAllowingStateLoss();
@@ -78,6 +95,60 @@ public class ContactsListActivity extends ToolbarActivity
         if (!Preferences.getContactsListVisited())
             Toast.makeText(this, R.string.msg_do_refresh,
                     Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (isRecentsMode()) {
+            getMenuInflater().inflate(R.menu.contacts_list_parent_menu, menu);
+            mSwitchContacts = menu.findItem(R.id.menu_switch_contacts);
+            mSwitchRecents = menu.findItem(R.id.menu_switch_recents);
+        }
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if (isRecentsMode()) {
+            int viewMode = getCurrentViewMode();
+            mSwitchContacts.setVisible(viewMode == VIEW_MODE_RECENTS);
+            mSwitchRecents.setVisible(viewMode == VIEW_MODE_CONTACTS);
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_switch_contacts:
+                switchToContacts();
+                return true;
+
+            case R.id.menu_switch_recents:
+                switchToRecents();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void switchToContacts() {
+        setTitle(R.string.contacts_list_title);
+        replaceView(false);
+    }
+
+    private void switchToRecents() {
+        setTitle(R.string.contacts_list_recents_title);
+        replaceView(true);
+    }
+
+    private void replaceView(boolean recents) {
+        boolean multiselect = getIntent().getBooleanExtra(MODE_MULTI_SELECT, false);
+        mFragment = ContactsListFragment.newInstance(multiselect, recents);
+        getSupportFragmentManager().beginTransaction()
+            .replace(R.id.fragment_contacts_list, mFragment)
+            .commitAllowingStateLoss();
     }
 
     @Override
@@ -109,6 +180,14 @@ public class ContactsListActivity extends ToolbarActivity
         MessageCenterService.hold(this, true);
 
         mFragment.startQuery();
+    }
+
+    private boolean isRecentsMode() {
+        return getIntent().getBooleanExtra(MODE_RECENTS, false);
+    }
+
+    private int getCurrentViewMode() {
+        return mFragment.isRecentsMode() ? VIEW_MODE_RECENTS : VIEW_MODE_CONTACTS;
     }
 
     @Override

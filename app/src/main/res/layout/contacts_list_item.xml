@@ -68,6 +68,7 @@
             android:layout_alignWithParentIfMissing="true"
             android:layout_toEndOf="@id/avatar_container"
             android:layout_toRightOf="@id/avatar_container"
+            android:drawablePadding="2dp"
             android:ellipsize="marquee"
             android:singleLine="true"/>
 

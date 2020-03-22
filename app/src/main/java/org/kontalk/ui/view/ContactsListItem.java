@@ -26,6 +26,8 @@ import org.kontalk.util.SystemUtils;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import androidx.core.content.ContextCompat;
+import androidx.core.widget.TextViewCompat;
+
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.CharacterStyle;
@@ -88,28 +90,38 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
 
         mText1.setText(contact.getDisplayName());
 
-        CharSequence text2 = contact.getStatus();
-        if (text2 == null) {
-            text2 = contact.getNumber();
-            if (text2 == null)
-                text2 = contact.getJID();
-            mText2.setTextColor(ContextCompat.getColor(context, R.color.grayed_out));
+        if (isGroupChat()) {
+            // group chats have no subtitle
+            mText2.setText("");
+
+            // enable group chat marker
+            TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(mText1,
+                R.drawable.ic_indicator_group, 0, 0, 0);
         }
         else {
-            int color = ContextCompat.getColor(context,
-                SystemUtils.getThemedResource(getContext(), android.R.attr.textColorSecondary));
-            mText2.setTextColor(color);
-        }
-        if (prependStatus != null) {
-            if (prependStyle != null) {
-                text2 = new SpannableString(prependStatus + " " + text2);
-                ((SpannableString) text2).setSpan(prependStyle, 0, prependStatus.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            CharSequence text2 = contact.getStatus();
+            if (text2 == null) {
+                text2 = contact.getNumber();
+                if (text2 == null)
+                    text2 = contact.getJID();
+                mText2.setTextColor(ContextCompat.getColor(context, R.color.grayed_out));
             }
             else {
-                text2 = prependStatus + " " + text2;
+                int color = ContextCompat.getColor(context,
+                    SystemUtils.getThemedResource(getContext(), android.R.attr.textColorSecondary));
+                mText2.setTextColor(color);
             }
+            if (prependStatus != null) {
+                if (prependStyle != null) {
+                    text2 = new SpannableString(prependStatus + " " + text2);
+                    ((SpannableString) text2).setSpan(prependStyle, 0, prependStatus.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }
+                else {
+                    text2 = prependStatus + " " + text2;
+                }
+            }
+            mText2.setText(text2);
         }
-        mText2.setText(text2);
 
         if (mTrustStatus != null) {
             int resId;
@@ -168,7 +180,7 @@ public class ContactsListItem extends AvatarListItem implements Checkable {
 
     @Override
     protected boolean isGroupChat() {
-        return false;
+        return mContact.isGroup();
     }
 
     @Override

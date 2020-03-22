@@ -1,9 +1,11 @@
 plugins {
     id 'com.android.application'
     id 'checkstyle'
-    id 'com.github.triplet.play' version '2.3.0'
+    id 'com.github.triplet.play' version '2.7.2'
     id 'io.fabric'
-    id 'jacoco-android'
+    // waiting for https://github.com/arturdm/jacoco-android-gradle-plugin/pull/75
+    //id 'jacoco-android'
+    id 'com.hiya.jacoco-android'
 }
 
 check.dependsOn 'checkstyle'
@@ -15,12 +17,7 @@ task checkstyle(type: Checkstyle) {
     exclude 'main/java/org/kontalk/util/ThumbnailUtils.java',
         'main/java/org/kontalk/crypto/PRNGFixes.java',
         'main/java/org/kontalk/ui/AccountAuthenticatorActionBarActivity.java',
-        'main/java/org/kontalk/ui/prefs/TextMessagePreference.java',
-        'main/java/org/kontalk/billing/*.java',
-        '*/java/org/kontalk/billing/GoogleBillingService.java',
-        '*/java/org/kontalk/billing/Inventory.java',
-        '*/java/org/kontalk/billing/ProductDetails.java',
-        '*/java/org/kontalk/billing/Purchase.java'
+        'main/java/org/kontalk/ui/prefs/TextMessagePreference.java'
     // 3rd-party code
     exclude '**/CircularSeekBar.java',
         '**/FrameLayoutFixed.java',
@@ -217,7 +214,7 @@ dependencies {
     implementation 'de.hdodenhof:circleimageview:3.1.0'
 
     // other libraries
-    implementation 'com.googlecode.libphonenumber:libphonenumber:8.11.5'
+    implementation 'com.googlecode.libphonenumber:libphonenumber:8.12.0'
     implementation 'com.google.zxing:core:3.4.0'
     implementation 'me.dm7.barcodescanner:zxing:1.9.8'
     implementation 'com.github.instacart.truetime-android:library:3.3'
@@ -244,7 +241,7 @@ dependencies {
     // test dependencies
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'com.android.support:multidex-instrumentation:1.0.3'
-    androidTestImplementation 'com.google.android:android-test:4.1.1.4'
+    androidTestImplementation 'androidx.test:core:1.2.0'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test:rules:1.2.0'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
