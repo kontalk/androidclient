@@ -116,7 +116,7 @@ android {
             testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg', 'proguard-test.cfg'
             ext.enableCrashlytics = false
             ext.alwaysUpdateBuildId = false
-            testCoverageEnabled true
+            testCoverageEnabled false
         }
     }
 
