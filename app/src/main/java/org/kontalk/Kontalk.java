@@ -64,6 +64,7 @@ import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.SearchActivity;
 import org.kontalk.util.CustomSimpleXmppStringprep;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.Showcase;
 import org.kontalk.util.SystemUtils;
 
 
@@ -174,6 +175,7 @@ public class Kontalk extends MultiDexApplication {
 
         // hacks
         CustomSimpleXmppStringprep.setup();
+        disableHintsForUpgrade();
 
         // register security provider
         SecureConnectionManager.init(this);
@@ -262,6 +264,16 @@ public class Kontalk extends MultiDexApplication {
         // disable backend services in offline mode (helps after installs)
         if (account != null && Preferences.getOfflineMode())
             setBackendEnabled(this, false);
+    }
+
+    /**
+     * @deprecated To be removed after the first release it gets into.
+     */
+    @Deprecated
+    private void disableHintsForUpgrade() {
+        if (Authenticator.getDefaultAccount(this) != null) {
+            Showcase.disableAllHints();
+        }
     }
 
     public PersonalKey getPersonalKey() throws PGPException, IOException, CertificateException {

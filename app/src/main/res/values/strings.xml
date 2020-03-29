@@ -724,6 +724,19 @@
     <string name="notify_other_channel_name">Other</string>
     <string name="notify_other_channel_description">Other notifications</string>
 
+    <string name="pref_reset_hints">Reset hints</string>
+    <string name="pref_title_reset_hints">Show again tutorial hints throughout the app</string>
+    <string name="msg_hints_reset">Tutorial hints reset.</string>
+
+    <string name="showcase_conversations_compose_title">Start chatting</string>
+    <string name="showcase_conversations_compose_message">Use this button to open a chat with another person.</string>
+    <string name="showcase_composer_attach_title">Not only text</string>
+    <string name="showcase_composer_attach_message">You can share other pictures, recordings and more.</string>
+    <string name="showcase_composer_toolbar_single_title">Contact info</string>
+    <string name="showcase_composer_toolbar_single_message">Tap the toolbar to view contact information.</string>
+    <string name="showcase_composer_toolbar_group_title">Group info</string>
+    <string name="showcase_composer_toolbar_group_message">Tap the toolbar to view members and edit your group.</string>
+
     <plurals name="confirm_will_delete_threads">
         <item quantity="one">The selected chat will be deleted.</item>
         <item quantity="other">The selected chats will be deleted.</item>
