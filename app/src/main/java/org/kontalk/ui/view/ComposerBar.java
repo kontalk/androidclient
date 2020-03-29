@@ -543,7 +543,7 @@ public class ComposerBar extends RelativeLayout implements
 
     private void doStartRecording() {
         try {
-            mRecordFile = MediaStorage.getOutgoingAudioFile();
+            mRecordFile = MediaStorage.getOutgoingAudioFile(mContext);
         }
         catch (IOException e) {
             Log.e(TAG, "error creating audio file", e);

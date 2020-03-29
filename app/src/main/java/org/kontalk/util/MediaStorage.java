@@ -77,6 +77,10 @@ public abstract class MediaStorage {
 
     public static final String UNKNOWN_FILENAME = "unknown_file.bin";
 
+    private static final String RECORDING_ROOT_TYPE = null;
+    private static final String RECORDING_ROOT = "Recordings";
+    private static final String RECORDING_SENT_ROOT = RECORDING_ROOT + File.separator + "Sent";
+
     private static final File DCIM_ROOT = new File(Environment
         .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
         "Kontalk");
@@ -85,12 +89,6 @@ public abstract class MediaStorage {
         "Kontalk");
     private static final File PICTURES_SENT_ROOT = new File(new File(Environment
         .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-        "Kontalk"), "Sent");
-    private static final File AUDIO_ROOT = new File(Environment
-        .getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
-        "Kontalk");
-    private static final File AUDIO_SENT_ROOT = new File(new File(Environment
-        .getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
         "Kontalk"), "Sent");
     private static final File DOWNLOADS_ROOT = new File(Environment
         .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
@@ -449,14 +447,15 @@ public abstract class MediaStorage {
     }
 
     /** Creates a temporary 3gp file. */
-    public static File getOutgoingAudioFile() throws IOException {
-        return getOutgoingAudioFile(new Date());
+    public static File getOutgoingAudioFile(Context context) throws IOException {
+        return getOutgoingAudioFile(context, new Date());
     }
 
-    private static File getOutgoingAudioFile(Date date) throws IOException {
-        createNoMedia(AUDIO_SENT_ROOT);
+    private static File getOutgoingAudioFile(Context context, Date date) throws IOException {
+        File path = new File(context.getExternalFilesDir(RECORDING_ROOT_TYPE), RECORDING_SENT_ROOT);
+        createNoMedia(path);
         String timeStamp = sDateFormat.format(date);
-        File f = new File(AUDIO_SENT_ROOT, "record_" + timeStamp + ".3gp");
+        File f = new File(path, "record_" + timeStamp + ".3gp");
         f.createNewFile();
         return f;
     }
@@ -467,10 +466,11 @@ public abstract class MediaStorage {
     }
 
     /** Creates a file object for an incoming audio file. */
-    public static File getIncomingAudioFile(Date date, String extension) {
-        createNoMedia(AUDIO_ROOT);
+    public static File getIncomingAudioFile(Context context, Date date, String extension) {
+        File path = new File(context.getExternalFilesDir(RECORDING_ROOT_TYPE), RECORDING_ROOT);
+        createNoMedia(path);
         String timeStamp = sDateFormat.format(date);
-        return new File(AUDIO_ROOT, "audio_" + timeStamp + "." + extension);
+        return new File(path, "audio_" + timeStamp + "." + extension);
     }
 
     public static File getIncomingFile(Date date, String extension) {

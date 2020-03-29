@@ -365,7 +365,7 @@ public class AudioDialog extends AlertDialog {
      * @throws IOException if writing to storage failed
      */
     void startRecord() throws IOException {
-        mFile = MediaStorage.getOutgoingAudioFile();
+        mFile = MediaStorage.getOutgoingAudioFile(getContext());
         setupViewForRecording(0);
 
         try {

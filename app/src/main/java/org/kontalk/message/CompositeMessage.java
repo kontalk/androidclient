@@ -603,7 +603,7 @@ public class CompositeMessage {
      * @param mime MIME type of the incoming attachment
      * @param timestamp timestamp of the message
      */
-    public static File getIncomingFile(String mime, @NonNull Date timestamp) {
+    public static File getIncomingFile(Context context, String mime, @NonNull Date timestamp) {
         if (mime != null) {
             if (ImageComponent.supportsMimeType(mime)) {
                 String ext = ImageComponent.getFileExtension(mime);
@@ -611,7 +611,7 @@ public class CompositeMessage {
             }
             else if (AudioComponent.supportsMimeType(mime)) {
                 String ext = AudioComponent.getFileExtension(mime);
-                return MediaStorage.getIncomingAudioFile(timestamp, ext);
+                return MediaStorage.getIncomingAudioFile(context, timestamp, ext);
             }
             // TODO maybe other file types?
         }
