@@ -410,7 +410,7 @@
     <string name="pref_title_custom_background">Elija un fondo personalizado en la opción bajo esta</string>
     <string name="pref_title_sync_sim_contacts">Incluir contactos de la tarjeta SIM cuando se busquen usuarios registrados</string>
 
-    <string name="pref_title_sync_invisible_contacts">Incluir contactos no mostrados en la aplicación de Contactos. Activa esto si usas DAVDroid</string>
+    <string name="pref_title_sync_invisible_contacts">Incluir contactos no mostrados en la aplicación de Contactos. Activa esto si usas DAVx⁵</string>
 
     <string name="warning_public_key_changed">La clave personal ha cambiado</string>
     <string name="title_public_key_changed_warning">Clave personal modificada</string>
@@ -763,4 +763,8 @@ Deshabilite el cifrado sólo si su contacto no tiene una clave personal.</string
     <string name="notify_title_download_permission_denied_error">Se requiere permiso</string>
     <string name="notify_summary_download_permission_denied_error">Pulse para saber más.</string>
 
+    <string name="contacts_list_recents_title">Chats recientes</string>
+    <string name="menu_switch_contacts">Contactos</string>
+    <string name="menu_switch_recents">Recientes</string>
+    <string name="text_contacts_recents_empty">"Los chats recientes aparecerán aquí.  Puedes "<b>cambiar a contactos</b> utilizando el botón de encima.</string>
     </resources>
