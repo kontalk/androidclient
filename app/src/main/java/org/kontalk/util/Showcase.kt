@@ -66,10 +66,6 @@ class Showcase {
             )
         }
 
-        private fun getPreferenceKey(parent: String, hint: Hint): String {
-            return "showcase_${parent}_${hint.key}"
-        }
-
         /**
          * Checks if the given hint was already showed by looking in preferences.
          */
@@ -81,11 +77,19 @@ class Showcase {
             return Preferences.setShowcaseShowed(parent, hint.key, true)
         }
 
-        // TODO to be used from a preference
         fun resetAllHints() {
             HINTS.forEach { hints ->
                 hints.value.forEach { hint ->
                     Preferences.setShowcaseShowed(hints.key, hint.key, false)
+                }
+            }
+        }
+
+        @JvmStatic
+        fun disableAllHints() {
+            HINTS.forEach { hints ->
+                hints.value.forEach { hint ->
+                    setHintShowed(hints.key, hint)
                 }
             }
         }
