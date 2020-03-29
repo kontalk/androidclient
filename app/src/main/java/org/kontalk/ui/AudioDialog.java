@@ -67,8 +67,6 @@ public class AudioDialog extends AlertDialog {
 
     private static final String STATE_PREFIX = "AudioDialog_";
 
-    public static final String DEFAULT_MIME = "audio/3gpp";
-
     private static final int STATUS_IDLE = 0;
     private static final int STATUS_RECORDING = 1;
     private static final int STATUS_STOPPED = 2;
@@ -374,9 +372,6 @@ public class AudioDialog extends AlertDialog {
             // start recording
             mData.startRecording();
             mStatus = STATUS_RECORDING;
-        }
-        catch (IllegalStateException e) {
-            Log.e(TAG, "error starting audio recording", e);
         }
         catch (IOException e) {
             Log.e(TAG, "error writing on external storage", e);

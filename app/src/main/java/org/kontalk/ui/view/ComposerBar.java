@@ -573,9 +573,6 @@ public class ComposerBar extends RelativeLayout implements
             lockScreen();
             disableTextEntry();
         }
-        catch (IllegalStateException e) {
-            Log.e(TAG, "error starting audio recording:", e);
-        }
         catch (IOException e) {
             Log.e(TAG, "error writing on external storage:", e);
             Toast.makeText(mContext, R.string.err_audio_record_writing,
@@ -615,7 +612,7 @@ public class ComposerBar extends RelativeLayout implements
                 if (canSend) {
                     if (mListener != null) {
                         mListener.sendBinaryMessage(Uri.fromFile(mRecordFile),
-                            AudioDialog.DEFAULT_MIME, false, AudioComponent.class);
+                            AudioRecording.MIME_TYPE, false, AudioComponent.class);
                     }
                 }
                 else if (send) {

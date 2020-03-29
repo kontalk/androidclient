@@ -29,13 +29,20 @@ import java.io.File
 class AudioRecording {
 
     companion object {
+        /** TODO change to m4a after some time (this is for backward compatibility) */
+        const val MIME_TYPE = "audio/mp4"
+        const val FILE_EXTENSION = "mp4";
 
         @JvmStatic
         fun setupMediaRecorder(recorder: MediaRecorder, outputFile: File): MediaRecorder {
             recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+            recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
             recorder.setOutputFile(outputFile.absolutePath);
-            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+            recorder.setAudioChannels(1);
+            // TODO we need further study for these
+            //recorder.setAudioSamplingRate(48000);
+            //recorder.setAudioEncodingBitRate(96000);
             return recorder;
         }
 

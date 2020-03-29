@@ -446,7 +446,7 @@ public abstract class MediaStorage {
         return new File(PICTURES_ROOT, "IMG_" + timeStamp + "." + extension);
     }
 
-    /** Creates a temporary 3gp file. */
+    /** Creates a temporary audio file. */
     public static File getOutgoingAudioFile(Context context) throws IOException {
         return getOutgoingAudioFile(context, new Date());
     }
@@ -455,7 +455,7 @@ public abstract class MediaStorage {
         File path = new File(context.getExternalFilesDir(RECORDING_ROOT_TYPE), RECORDING_SENT_ROOT);
         createNoMedia(path);
         String timeStamp = sDateFormat.format(date);
-        File f = new File(path, "record_" + timeStamp + ".3gp");
+        File f = new File(path, "record_" + timeStamp + "." + AudioRecording.FILE_EXTENSION);
         f.createNewFile();
         return f;
     }
