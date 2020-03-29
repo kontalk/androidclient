@@ -18,7 +18,9 @@
 
 package org.kontalk.util
 
+import android.graphics.Rect
 import android.view.View
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import com.getkeepsafe.taptargetview.TapTarget
 import com.getkeepsafe.taptargetview.TapTargetView
@@ -26,6 +28,7 @@ import com.github.clans.fab.FloatingActionMenu
 import org.kontalk.R
 import org.kontalk.ui.ComposeMessageFragment
 import org.kontalk.ui.ConversationsFragment
+import org.kontalk.ui.GroupMessageFragment
 
 
 class Showcase {
@@ -34,6 +37,8 @@ class Showcase {
     private class FloatingActionMenuHint(override val key: String, override val view: Int, override val title: Int, override val message: Int):
             Hint(key, view, title, message)
     private class ViewHint(override val key: String, override val view: Int, override val title: Int, override val message: Int):
+            Hint(key, view, title, message)
+    private class ToolbarHint(override val key: String, override val view: Int, override val title: Int, override val message: Int):
             Hint(key, view, title, message)
 
     companion object {
@@ -46,11 +51,18 @@ class Showcase {
                             R.string.showcase_conversations_compose_title,
                             R.string.showcase_conversations_compose_message)
             )
-
             HINTS[ComposeMessageFragment::class.java.name] = arrayOf(
                     ViewHint("attach", R.id.attach_button,
                             R.string.showcase_composer_attach_title,
-                            R.string.showcase_composer_attach_message)
+                            R.string.showcase_composer_attach_message),
+                    ToolbarHint("contact_info", R.id.toolbar,
+                        R.string.showcase_composer_toolbar_single_title,
+                        R.string.showcase_composer_toolbar_single_message)
+            )
+            HINTS[GroupMessageFragment::class.java.name] = arrayOf(
+                    ToolbarHint("group_info", R.id.toolbar,
+                            R.string.showcase_composer_toolbar_group_title,
+                            R.string.showcase_composer_toolbar_group_message)
             )
         }
 
@@ -90,26 +102,44 @@ class Showcase {
                 val nextHint = hints.find { !isHintShowed(parent, it) }
 
                 nextHint?.let { hint ->
-                    val view: View = when (hint) {
+                    val view: View? = when (hint) {
                         is FloatingActionMenuHint -> {
-                            val fab = fragment.view!!.findViewById<FloatingActionMenu>(hint.view)
-                            fab.menuIconView
+                            val fab = fragment.view?.findViewById<FloatingActionMenu>(hint.view)
+                            fab?.menuIconView
                         }
                         is ViewHint -> {
-                            fragment.view!!.findViewById(hint.view)
+                            fragment.view?.findViewById(hint.view)
+                        }
+                        is ToolbarHint -> {
+                            fragment.activity?.findViewById<Toolbar>(hint.view)
+                        }
+                        else -> null
+                    }
+                    // for when we'll need it...
+                    val rect: Rect? = null
+
+                    val targetConfig: TapTarget? = when {
+                        view != null -> {
+                            TapTarget.forView(view,
+                                    fragment.getString(hint.title), fragment.getString(hint.message))
+                        }
+                        rect != null -> {
+                            TapTarget.forBounds(rect,
+                                    fragment.getString(hint.title), fragment.getString(hint.message))
                         }
                         else -> {
-                            throw IllegalArgumentException("no view found to showcase")
+                            null
                         }
                     }
 
-                    TapTargetView.showFor(fragment.activity, TapTarget
-                            .forView(view, fragment.getString(hint.title), fragment.getString(hint.message))
-                            .transparentTarget(true)
-                            .cancelable(true)
-                            // TODO other settings
-                            .targetRadius(60)
-                    )
+                    targetConfig?.let {
+                        TapTargetView.showFor(fragment.activity, it
+                                .transparentTarget(true)
+                                .cancelable(true)
+                                // TODO other settings
+                                .targetRadius(60)
+                        )
+                    }
                     setHintShowed(parent, hint)
                 }
             }
