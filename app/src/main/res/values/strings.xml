@@ -725,6 +725,7 @@
 
     <string name="pref_reset_hints">Reset hints</string>
     <string name="pref_title_reset_hints">Show again tutorial hints throughout the app</string>
+    <string name="msg_hints_reset">Tutorial hints reset.</string>
 
     <string name="showcase_conversations_compose_title">Start chatting</string>
     <string name="showcase_conversations_compose_message">Use this button to open a chat with another person.</string>

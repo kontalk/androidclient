@@ -22,7 +22,9 @@ import android.annotation.TargetApi
 import android.content.Context
 import android.os.Build
 import android.util.AttributeSet
+import android.widget.Toast
 import androidx.preference.Preference
+import org.kontalk.R
 import org.kontalk.util.Showcase
 
 
@@ -43,6 +45,7 @@ class ResetHintsPreference : Preference {
 
     override fun onClick() {
         Showcase.resetAllHints()
+        Toast.makeText(context, R.string.msg_hints_reset, Toast.LENGTH_SHORT).show()
     }
 
 }
