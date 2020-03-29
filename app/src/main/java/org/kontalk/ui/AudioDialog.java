@@ -52,6 +52,7 @@ import android.widget.Toast;
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.ui.view.CircularSeekBar;
+import org.kontalk.util.AudioRecording;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.Permissions;
 
@@ -369,11 +370,7 @@ public class AudioDialog extends AlertDialog {
         setupViewForRecording(0);
 
         try {
-            MediaRecorder recorder = mData.getRecorder();
-            recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-            recorder.setOutputFile(mFile.getAbsolutePath());
-            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+            AudioRecording.setupMediaRecorder(mData.getRecorder(), mFile);
             // start recording
             mData.startRecording();
             mStatus = STATUS_RECORDING;
