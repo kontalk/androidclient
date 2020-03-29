@@ -35,7 +35,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
-import android.media.MediaRecorder;
 import android.os.Bundle;
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.AlertDialog;
@@ -83,26 +82,28 @@ public class AudioDialog extends AlertDialog {
         .formatElapsedTime(MAX_AUDIO_DURATION / 1000);
 
     private CircularSeekBar mProgressBar;
+    /** @deprecated Can't rely on animations for this. This must go away. */
+    @Deprecated
     ObjectAnimator mProgressBarAnimator;
-    ImageView mImageButton;
-    TextView mTimeTxt;
+    private ImageView mImageButton;
+    private TextView mTimeTxt;
     private TextView mHintTxt;
 
     /** Flag indicating that we are stopping due to activity lifecycle. */
     private boolean mSaved;
 
-    File mFile;
+    private File mFile;
 
     /** The current status. */
-    int mStatus;
+    private int mStatus;
 
     /** Holds the status while dragging the circular progress bar. */
-    int mCheckSeek;
+    private int mCheckSeek;
 
-    float mTimeCircle;
-    int mPlayerSeekTo;
-    AudioDialogListener mListener;
-    AudioFragment mData;
+    private float mTimeCircle;
+    private int mPlayerSeekTo;
+    private AudioDialogListener mListener;
+    private AudioFragment mData;
 
     public AudioDialog(Context context, AudioFragment data, AudioDialogListener result) {
         super(context);
@@ -478,6 +479,8 @@ public class AudioDialog extends AlertDialog {
         mStatus = STATUS_PLAYING;
     }
 
+    /** @deprecated Can't rely on animations for this. This must go away. */
+    @Deprecated
     private void animate(final CircularSeekBar progressBar, final AnimatorListener listener,
             final float progress, final float maxProgress, final long duration) {
         mProgressBarAnimator = ObjectAnimator.ofFloat(progressBar, "progress", maxProgress);
