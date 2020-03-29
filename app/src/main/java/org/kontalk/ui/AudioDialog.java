@@ -35,7 +35,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
-import android.media.MediaRecorder;
 import android.os.Bundle;
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.AlertDialog;
@@ -52,6 +51,7 @@ import android.widget.Toast;
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.ui.view.CircularSeekBar;
+import org.kontalk.util.AudioRecording;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.Permissions;
 
@@ -65,8 +65,6 @@ public class AudioDialog extends AlertDialog {
     static final String TAG = ComposeMessage.TAG;
 
     private static final String STATE_PREFIX = "AudioDialog_";
-
-    public static final String DEFAULT_MIME = "audio/3gpp";
 
     private static final int STATUS_IDLE = 0;
     private static final int STATUS_RECORDING = 1;
@@ -84,26 +82,28 @@ public class AudioDialog extends AlertDialog {
         .formatElapsedTime(MAX_AUDIO_DURATION / 1000);
 
     private CircularSeekBar mProgressBar;
+    /** @deprecated Can't rely on animations for this. This must go away. */
+    @Deprecated
     ObjectAnimator mProgressBarAnimator;
-    ImageView mImageButton;
-    TextView mTimeTxt;
+    private ImageView mImageButton;
+    private TextView mTimeTxt;
     private TextView mHintTxt;
 
     /** Flag indicating that we are stopping due to activity lifecycle. */
     private boolean mSaved;
 
-    File mFile;
+    private File mFile;
 
     /** The current status. */
-    int mStatus;
+    private int mStatus;
 
     /** Holds the status while dragging the circular progress bar. */
-    int mCheckSeek;
+    private int mCheckSeek;
 
-    float mTimeCircle;
-    int mPlayerSeekTo;
-    AudioDialogListener mListener;
-    AudioFragment mData;
+    private float mTimeCircle;
+    private int mPlayerSeekTo;
+    private AudioDialogListener mListener;
+    private AudioFragment mData;
 
     public AudioDialog(Context context, AudioFragment data, AudioDialogListener result) {
         super(context);
@@ -365,21 +365,14 @@ public class AudioDialog extends AlertDialog {
      * @throws IOException if writing to storage failed
      */
     void startRecord() throws IOException {
-        mFile = MediaStorage.getOutgoingAudioFile();
+        mFile = MediaStorage.getOutgoingAudioFile(getContext());
         setupViewForRecording(0);
 
         try {
-            MediaRecorder recorder = mData.getRecorder();
-            recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-            recorder.setOutputFile(mFile.getAbsolutePath());
-            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+            AudioRecording.setupMediaRecorder(mData.getRecorder(), mFile);
             // start recording
             mData.startRecording();
             mStatus = STATUS_RECORDING;
-        }
-        catch (IllegalStateException e) {
-            Log.e(TAG, "error starting audio recording", e);
         }
         catch (IOException e) {
             Log.e(TAG, "error writing on external storage", e);
@@ -486,6 +479,8 @@ public class AudioDialog extends AlertDialog {
         mStatus = STATUS_PLAYING;
     }
 
+    /** @deprecated Can't rely on animations for this. This must go away. */
+    @Deprecated
     private void animate(final CircularSeekBar progressBar, final AnimatorListener listener,
             final float progress, final float maxProgress, final long duration) {
         mProgressBarAnimator = ObjectAnimator.ofFloat(progressBar, "progress", maxProgress);

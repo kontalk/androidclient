@@ -40,6 +40,7 @@ public class AudioComponent extends AttachmentComponent {
         MIME_TYPES.put("audio/3gpp", "3gp");
         MIME_TYPES.put("audio/mpeg", "mp3");
         MIME_TYPES.put("audio/mp4", "mp4");
+        MIME_TYPES.put("audio/m4a", "m4a");
         MIME_TYPES.put("audio/wav", "wav");
         MIME_TYPES.put("audio/aac", "aac");
         MIME_TYPES.put("audio/flac", "flac");

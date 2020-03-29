@@ -128,6 +128,7 @@ import org.kontalk.ui.view.ComposerBar;
 import org.kontalk.ui.view.ComposerListener;
 import org.kontalk.ui.view.MessageListItem;
 import org.kontalk.ui.view.ReplyBar;
+import org.kontalk.util.AudioRecording;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Permissions;
@@ -2419,7 +2420,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     @Override
     public void onRecordingSuccessful(File file) {
         if (file != null)
-            sendBinaryMessage(Uri.fromFile(file), AudioDialog.DEFAULT_MIME, false, AudioComponent.class);
+            sendBinaryMessage(Uri.fromFile(file), AudioRecording.MIME_TYPE, false, AudioComponent.class);
     }
 
     @Override

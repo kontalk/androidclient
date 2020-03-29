@@ -227,7 +227,7 @@ public class ClientHTTPConnection {
             String contentType = currentRequest.getContentType();
             File destination = null;
             if (contentType != null) {
-                destination = CompositeMessage.getIncomingFile(contentType,
+                destination = CompositeMessage.getIncomingFile(mContext, contentType,
                     timestamp != null ? timestamp : new Date());
             }
 

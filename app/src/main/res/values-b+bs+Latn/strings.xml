@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2020 Kontalk Devteam <devteam@kontalk.org>
 
@@ -15,6 +15,8 @@
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
-
 <resources>
-</resources>
+<string name="app_name">Kontalk</string>
+    <string name="app_name_offline">Stacey</string>
+    <string name="service_name">Message Center</string>
+    </resources>

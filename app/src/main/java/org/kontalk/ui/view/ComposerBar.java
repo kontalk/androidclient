@@ -62,6 +62,7 @@ import org.kontalk.R;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.ui.AudioDialog;
 import org.kontalk.ui.ComposeMessage;
+import org.kontalk.util.AudioRecording;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Permissions;
@@ -543,7 +544,7 @@ public class ComposerBar extends RelativeLayout implements
 
     private void doStartRecording() {
         try {
-            mRecordFile = MediaStorage.getOutgoingAudioFile();
+            mRecordFile = MediaStorage.getOutgoingAudioFile(mContext);
         }
         catch (IOException e) {
             Log.e(TAG, "error creating audio file", e);
@@ -562,10 +563,7 @@ public class ComposerBar extends RelativeLayout implements
 
         mRecord = new MediaRecorder();
         try {
-            mRecord.setAudioSource(MediaRecorder.AudioSource.MIC);
-            mRecord.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-            mRecord.setOutputFile(mRecordFile.getAbsolutePath());
-            mRecord.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+            AudioRecording.setupMediaRecorder(mRecord, mRecordFile);
             mVibrator.vibrate(AUDIO_RECORD_VIBRATION);
             startTimer();
             mRecord.prepare();
@@ -574,9 +572,6 @@ public class ComposerBar extends RelativeLayout implements
             mIsRecordingAudio = true;
             lockScreen();
             disableTextEntry();
-        }
-        catch (IllegalStateException e) {
-            Log.e(TAG, "error starting audio recording:", e);
         }
         catch (IOException e) {
             Log.e(TAG, "error writing on external storage:", e);
@@ -617,7 +612,7 @@ public class ComposerBar extends RelativeLayout implements
                 if (canSend) {
                     if (mListener != null) {
                         mListener.sendBinaryMessage(Uri.fromFile(mRecordFile),
-                            AudioDialog.DEFAULT_MIME, false, AudioComponent.class);
+                            AudioRecording.MIME_TYPE, false, AudioComponent.class);
                     }
                 }
                 else if (send) {

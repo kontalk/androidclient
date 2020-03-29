@@ -369,7 +369,7 @@
     <string name="pref_title_sync_sim_contacts">Incluir os contactos da SIM, cando se verifiquen usuarios rexistrados</string>
 
     <string name="pref_sync_invisible_contacts">Incluír contactos invisibles</string>
-    <string name="pref_title_sync_invisible_contacts">Incluír contactos que non aparecen na aplicación Contactos. Activar a utilización de DAVDroid</string>
+    <string name="pref_title_sync_invisible_contacts">Incluír contactos que non aparecen na aplicación Contactos. Activar a utilización de DAVx⁵</string>
 
     <string name="pref_accept_any_certificate">Aceptar calquera certificado SSL</string>
 
@@ -775,4 +775,8 @@ Desactivar a cifraxe só se o contacto non ten unha chave persoal.</string>
     <string name="notify_title_download_permission_denied_error">Requírese permiso</string>
     <string name="notify_summary_download_permission_denied_error">Pulse para saber máis.</string>
 
+    <string name="contacts_list_recents_title">Conversas recentes</string>
+    <string name="menu_switch_contacts">Contactos</string>
+    <string name="menu_switch_recents">Recentes</string>
+    <string name="text_contacts_recents_empty">As conversas recentes aparecerán aquí. Podes <b>cambiar a contactos</b> dándolle ó botón encima.</string>
     </resources>

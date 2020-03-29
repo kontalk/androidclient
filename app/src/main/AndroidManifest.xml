@@ -19,7 +19,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:tools="http://schemas.android.com/tools"
           package="org.kontalk"
-      android:installLocation="internalOnly">
+      android:installLocation="internalOnly"
+      android:requestLegacyExternalStorage="true">
 
     <!-- internal permissions -->
     <permission android:name="${applicationId}.permission.NOTIFICATION_ACTION" android:protectionLevel="signature" />

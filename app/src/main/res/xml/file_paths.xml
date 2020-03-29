@@ -23,7 +23,7 @@
     -->
 
     <external-path name="ext_storage" path="." />
-    <external-path name="my_music" path="Music/Kontalk" />
+    <external-files-path name="my_recordings" path="Recordings" />
     <external-path name="my_pictures" path="Pictures/Kontalk" />
     <external-path name="my_downloads" path="Download/Kontalk" />
     <external-path name="my_photos" path="DCIM/Kontalk" />

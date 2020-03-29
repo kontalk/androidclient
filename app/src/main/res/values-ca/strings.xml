@@ -412,7 +412,7 @@
     <string name="pref_title_custom_background">Esculli un fons amb l\'opció de sota</string>
     <string name="pref_title_sync_sim_contacts">Incloure els contactes SIM a la comprovació d\'usuaris registrats</string>
 
-    <string name="pref_title_sync_invisible_contacts">Incloure els contactes que no apareixen a l\'aplicació Contactes. Habilitar si utilitza DAVDroid</string>
+    <string name="pref_title_sync_invisible_contacts">Incloure els contactes que no apareixen a l\'aplicació Contactes. Habilitar si utilitza DAVx⁵</string>
 
     <string name="pref_media_autodownload_threshold">Llindar de descàrrega automàtica</string>
     <string name="pref_title_media_autodownload_threshold">Els arxius més petits que aquesta mida sempre es descarreguen automàticament</string>
@@ -762,4 +762,8 @@ Deshabiliti el xifrat només si el seu contacte no té una clau personal.</strin
     <string name="notify_title_download_permission_denied_error">Es requereix permís</string>
     <string name="notify_summary_download_permission_denied_error">Premi per saber més.</string>
 
+    <string name="contacts_list_recents_title">Xats recents</string>
+    <string name="menu_switch_contacts">Contactes</string>
+    <string name="menu_switch_recents">Recents</string>
+    <string name="text_contacts_recents_empty">Els xats recents apareixeran aquí. Pots <b>canviar a contactes</b> per utilitzar el botó damunt.</string>
     </resources>
