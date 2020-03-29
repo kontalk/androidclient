@@ -723,6 +723,9 @@
     <string name="notify_other_channel_name">Other</string>
     <string name="notify_other_channel_description">Other notifications</string>
 
+    <string name="pref_reset_hints">Reset hints</string>
+    <string name="pref_title_reset_hints">Show again tutorial hints throughout the app</string>
+
     <string name="showcase_conversations_compose_title">Start chatting</string>
     <string name="showcase_conversations_compose_message">Use this button to open a chat with another person.</string>
     <string name="showcase_composer_attach_title">Not only text</string>
