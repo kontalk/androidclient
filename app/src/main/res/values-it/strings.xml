@@ -768,4 +768,10 @@ Disattiva la cifratura solo con contatti che non posseggono una chiave personale
     <string name="menu_switch_contacts">Contatti</string>
     <string name="menu_switch_recents">Recenti</string>
     <string name="text_contacts_recents_empty">Le chat recenti appariranno qui. Puoi <b>passare ai contatti</b> usando il tasto in alto.</string>
+    <string name="pref_reset_hints">Reimposta suggerimenti</string>
+    <string name="pref_title_reset_hints">Mostra di nuovo i suggerimenti nell\'app</string>
+    <string name="msg_hints_reset">Suggerimenti reimpostati.</string>
+
+    <string name="showcase_conversations_compose_title">Inizia una chat</string>
+    <string name="showcase_conversations_compose_message">Use questo pulsante per aprire una chat con qualcuno.</string>
     </resources>

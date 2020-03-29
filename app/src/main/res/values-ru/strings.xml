@@ -773,4 +773,11 @@
     <string name="menu_switch_contacts">Контакты</string>
     <string name="menu_switch_recents">Недавние</string>
     <string name="text_contacts_recents_empty">Здесь видны недавние чаты. С помощью кнопки вверху можно перейти в <b>Контакты</b>.</string>
+    <string name="pref_reset_hints">Сброс подсказок</string>
+    <string name="pref_title_reset_hints">Показывать подсказки при работе с приложением</string>
+    <string name="msg_hints_reset">Показывать подсказки.</string>
+
+    <string name="showcase_conversations_compose_title">Начать разговор</string>
+    <string name="showcase_conversations_compose_message">Нажмите на эту кнопку, чтобы вступить в разговор.</string>
+    <string name="showcase_composer_attach_title">Не только текст</string>
     </resources>
