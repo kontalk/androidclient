@@ -9,6 +9,7 @@
 - Revamped settings appearance
 - Removed Google Play donation
 - Add tutorial hints (#1014)
+- Improve audio recordings quality
 
 ### Fixed
 - Fix crash on devices without a browser
@@ -19,6 +20,7 @@
 - Fix storage permission issue (#1277)
 - Contact pictures in notification on Android 9+ (#1288)
 - Fix deadlock in faulty networks
+- Fix audio recordings permission problem on Android 10
 
 ## [4.3.1] - 2019-08-24
 ### Fixed
