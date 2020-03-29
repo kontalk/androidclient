@@ -139,6 +139,20 @@ public final class Preferences {
         return sPreferences.getBoolean(key, defaultValue);
     }
 
+    private static String getShowcaseKey(String parent, String key) {
+        return "showcase_" + parent + "_" + key;
+    }
+
+    public static boolean getShowcaseShowed(String parent, String key) {
+        return Preferences.getBoolean(getShowcaseKey(parent, key), false);
+    }
+
+    public static boolean setShowcaseShowed(String parent, String key, boolean value) {
+        return sPreferences.edit()
+            .putBoolean(getShowcaseKey(parent, key), value)
+            .commit();
+    }
+
     /** Retrieve a boolean and if false set it to true. */
     @SuppressLint("ApplySharedPref")
     private static boolean getBooleanOnce(String key) {

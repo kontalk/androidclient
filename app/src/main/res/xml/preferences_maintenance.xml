@@ -28,6 +28,10 @@
         android:summary="@string/pref_title_foreground_service"
         android:defaultValue="@bool/pref_default_foreground_service"
         />
+    <org.kontalk.ui.prefs.ResetHintsPreference android:key="pref_reset_hints"
+        android:title="@string/pref_reset_hints"
+        android:summary="@string/pref_title_reset_hints"
+        />
     <CheckBoxPreference android:key="pref_debug_log"
         android:title="@string/pref_debug_log"
         android:defaultValue="@bool/pref_default_debug_log"
@@ -37,6 +41,7 @@
         android:dependency="pref_debug_log"
         android:icon="@drawable/ic_pref_send_debug_log"
         />
+    <!-- TODO i18n -->
     <org.kontalk.ui.prefs.CopyDatabasePreference android:key="pref_copy_database"
         android:title="@string/pref_copy_database"
         android:summary="Copy the messages database to the external storage. Mainly for debug purposes."

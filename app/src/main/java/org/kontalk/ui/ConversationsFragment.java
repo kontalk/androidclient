@@ -38,6 +38,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.ui.adapter.ConversationListAdapter;
+import org.kontalk.util.Showcase;
 
 
 public class ConversationsFragment extends AbstractConversationsFragment
@@ -181,6 +182,7 @@ public class ConversationsFragment extends AbstractConversationsFragment
     public void onStart() {
         super.onStart();
         Contact.registerContactChangeListener(this);
+        Showcase.showNextHint(this);
     }
 
     @Override

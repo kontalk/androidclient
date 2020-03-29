@@ -132,6 +132,7 @@ import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Permissions;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.Showcase;
 import org.kontalk.util.SystemUtils;
 
 import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
@@ -2136,6 +2137,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         if (activity == null || !activity.hasLostFocus() || activity.hasWindowFocus()) {
             onFocus();
         }
+
+        Showcase.showNextHint(this);
     }
 
     public void onFocus() {
