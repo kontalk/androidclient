@@ -1128,7 +1128,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
             else {
                 // immediately setup (or disable) the foreground notification if requested
-                setForeground(intent.getBooleanExtra(EXTRA_FOREGROUND, false));
+                setForeground(shouldStartInForeground(this) ||
+                    intent.getBooleanExtra(EXTRA_FOREGROUND, false));
             }
 
             mFirstStart = false;
