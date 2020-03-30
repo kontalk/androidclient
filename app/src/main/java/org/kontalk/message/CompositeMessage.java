@@ -607,7 +607,7 @@ public class CompositeMessage {
         if (mime != null) {
             if (ImageComponent.supportsMimeType(mime)) {
                 String ext = ImageComponent.getFileExtension(mime);
-                return MediaStorage.getIncomingImageFile(timestamp, ext);
+                return MediaStorage.getIncomingImageFile(context, timestamp, ext);
             }
             else if (AudioComponent.supportsMimeType(mime)) {
                 String ext = AudioComponent.getFileExtension(mime);

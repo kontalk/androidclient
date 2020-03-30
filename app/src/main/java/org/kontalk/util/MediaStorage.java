@@ -82,13 +82,11 @@ public abstract class MediaStorage {
     private static final String RECORDING_SENT_ROOT = RECORDING_ROOT + File.separator + "Sent";
 
     private static final String PICTURES_ROOT_TYPE = Environment.DIRECTORY_PICTURES;
+    private static final String PICTURES_ROOT = "";
     private static final String PICTURES_SENT_ROOT = "Sent";
 
     private static final File DCIM_ROOT = new File(Environment
         .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
-        "Kontalk");
-    private static final File PICTURES_ROOT = new File(Environment
-        .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
         "Kontalk");
     private static final File DOWNLOADS_ROOT = new File(Environment
         .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
@@ -441,10 +439,11 @@ public abstract class MediaStorage {
     }
 
     /** Creates a file object for an incoming image file. */
-    public static File getIncomingImageFile(Date date, String extension) {
-        createMedia(PICTURES_ROOT);
+    public static File getIncomingImageFile(Context context, Date date, String extension) {
+        File path = new File(context.getExternalFilesDir(PICTURES_ROOT_TYPE), PICTURES_ROOT);
+        createMedia(path);
         String timeStamp = sDateFormat.format(date);
-        return new File(PICTURES_ROOT, "IMG_" + timeStamp + "." + extension);
+        return new File(path, "IMG_" + timeStamp + "." + extension);
     }
 
     /** Creates a temporary audio file. */
