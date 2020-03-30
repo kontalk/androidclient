@@ -22,11 +22,13 @@
       This configuration must match paths used in MediaStorage methods!
     -->
 
+    <!-- TODO we should remove this one -->
     <external-path name="ext_storage" path="." />
-    <external-files-path name="my_recordings" path="Recordings" />
-    <external-path name="my_pictures" path="Pictures/Kontalk" />
-    <external-path name="my_downloads" path="Download/Kontalk" />
-    <external-path name="my_photos" path="DCIM/Kontalk" />
 
-    <cache-path name="debug" path="debug" />
+    <external-files-path name="kontalk_recordings" path="Recordings" />
+    <external-files-path name="kontalk_pictures" path="Pictures" />
+    <external-path name="kontalk_downloads" path="Download/Kontalk" />
+    <external-path name="kontalk_photos" path="DCIM/Kontalk" />
+
+    <cache-path name="kontalk_debug" path="debug" />
 </paths>
