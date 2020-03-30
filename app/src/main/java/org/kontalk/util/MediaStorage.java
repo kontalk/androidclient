@@ -81,15 +81,15 @@ public abstract class MediaStorage {
     private static final String RECORDING_ROOT = "Recordings";
     private static final String RECORDING_SENT_ROOT = RECORDING_ROOT + File.separator + "Sent";
 
+    private static final String PICTURES_ROOT_TYPE = Environment.DIRECTORY_PICTURES;
+    private static final String PICTURES_SENT_ROOT = "Sent";
+
     private static final File DCIM_ROOT = new File(Environment
         .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
         "Kontalk");
     private static final File PICTURES_ROOT = new File(Environment
         .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
         "Kontalk");
-    private static final File PICTURES_SENT_ROOT = new File(new File(Environment
-        .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-        "Kontalk"), "Sent");
     private static final File DOWNLOADS_ROOT = new File(Environment
         .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
         "Kontalk");
@@ -417,13 +417,14 @@ public abstract class MediaStorage {
     }
 
     /** Creates a temporary JPEG file for a picture (Pictures). */
-    public static File getOutgoingPictureFile() throws IOException {
-        return getOutgoingPictureFile(new Date());
+    public static File getOutgoingPictureFile(Context context) throws IOException {
+        return getOutgoingPictureFile(context, new Date());
     }
 
-    private static File getOutgoingPictureFile(Date date) throws IOException {
-        createNoMedia(PICTURES_SENT_ROOT);
-        return createImageFile(PICTURES_SENT_ROOT, date);
+    private static File getOutgoingPictureFile(Context context, Date date) throws IOException {
+        File path = new File(context.getExternalFilesDir(PICTURES_ROOT_TYPE), PICTURES_SENT_ROOT);
+        createNoMedia(path);
+        return createImageFile(path, date);
     }
 
     private static File createImageFile(File path, Date date) throws IOException {
@@ -547,7 +548,7 @@ public abstract class MediaStorage {
 
         FileOutputStream stream = null;
         try {
-            final File file = getOutgoingPictureFile();
+            final File file = getOutgoingPictureFile(context);
             stream = new FileOutputStream(file);
             resizeImage(context, uri, maxWidth, maxHeight,
                 Bitmap.CompressFormat.JPEG, quality, stream);
@@ -659,7 +660,7 @@ public abstract class MediaStorage {
     }
 
     public static File copyOutgoingMedia(Context context, Uri media) throws IOException {
-        final File outFile = getOutgoingPictureFile();
+        final File outFile = getOutgoingPictureFile(context);
         InputStream in = context.getContentResolver().openInputStream(media);
         OutputStream out = null;
         try {
