@@ -28,11 +28,12 @@ import androidx.annotation.NonNull;
 import androidx.core.app.JobIntentService;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import org.kontalk.R;
+import org.kontalk.Log;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.provider.MessagesProviderClient.MessageUpdater;
 import org.kontalk.provider.MyMessages;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.Preferences;
@@ -116,6 +117,8 @@ public class MediaService extends JobIntentService {
             LocalBroadcastManager.getInstance(this).sendBroadcast(i);
         }
         catch (Exception e) {
+            Log.w(TAG, "unable to prepare media for sending", e);
+            ReportingManager.logException(e);
             MessageUpdater.forMessage(this, databaseId)
                 .setStatus(MyMessages.Messages.STATUS_ERROR)
                 .commit();
