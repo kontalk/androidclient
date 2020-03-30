@@ -1222,7 +1222,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             return;
 
         try {
-            mCurrentPhoto = MediaStorage.getOutgoingPhotoFile();
+            mCurrentPhoto = MediaStorage.getOutgoingPhotoFile(context);
 
             final Intent intent = SystemUtils.externalIntent(MediaStore.ACTION_IMAGE_CAPTURE);
             Uri uri = MediaStorage.getWorldWritableUri(getContext(),
@@ -1528,6 +1528,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                 // returning from camera
                 if (requestCode == SELECT_ATTACHMENT_PHOTO) {
                     if (mCurrentPhoto != null) {
+                        // TODO move this elsewhere and remember about scoped storage
                         Uri uri = Uri.fromFile(mCurrentPhoto);
                         // notify media scanner
                         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);

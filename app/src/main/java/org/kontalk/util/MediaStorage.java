@@ -85,9 +85,9 @@ public abstract class MediaStorage {
     private static final String PICTURES_ROOT = "";
     private static final String PICTURES_SENT_ROOT = "Sent";
 
-    private static final File DCIM_ROOT = new File(Environment
-        .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
-        "Kontalk");
+    private static final String DCIM_ROOT_TYPE = Environment.DIRECTORY_DCIM;
+    private static final String DCIM_ROOT = "";
+
     private static final File DOWNLOADS_ROOT = new File(Environment
         .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
         "Kontalk");
@@ -406,12 +406,14 @@ public abstract class MediaStorage {
     }
 
     /** Creates a temporary JPEG file for a photo (DCIM). */
-    public static File getOutgoingPhotoFile() throws IOException {
-        return getOutgoingPhotoFile(new Date());
+    public static File getOutgoingPhotoFile(Context context) throws IOException {
+        return getOutgoingPhotoFile(context, new Date());
     }
 
-    private static File getOutgoingPhotoFile(Date date) throws IOException {
-        return createImageFile(DCIM_ROOT, date);
+    private static File getOutgoingPhotoFile(Context context, Date date) throws IOException {
+        File path = new File(context.getExternalFilesDir(DCIM_ROOT_TYPE), DCIM_ROOT);
+        createDirectories(path);
+        return createImageFile(path, date);
     }
 
     /** Creates a temporary JPEG file for a picture (Pictures). */
@@ -421,12 +423,12 @@ public abstract class MediaStorage {
 
     private static File getOutgoingPictureFile(Context context, Date date) throws IOException {
         File path = new File(context.getExternalFilesDir(PICTURES_ROOT_TYPE), PICTURES_SENT_ROOT);
-        createNoMedia(path);
+        createDirectories(path);
         return createImageFile(path, date);
     }
 
     private static File createImageFile(File path, Date date) throws IOException {
-        createMedia(path);
+        createDirectories(path);
         String timeStamp = sDateFormat.format(date);
         File f = new File(path, "IMG_" + timeStamp + ".jpg");
         f.createNewFile();
@@ -441,7 +443,7 @@ public abstract class MediaStorage {
     /** Creates a file object for an incoming image file. */
     public static File getIncomingImageFile(Context context, Date date, String extension) {
         File path = new File(context.getExternalFilesDir(PICTURES_ROOT_TYPE), PICTURES_ROOT);
-        createMedia(path);
+        createDirectories(path);
         String timeStamp = sDateFormat.format(date);
         return new File(path, "IMG_" + timeStamp + "." + extension);
     }
@@ -453,7 +455,7 @@ public abstract class MediaStorage {
 
     private static File getOutgoingAudioFile(Context context, Date date) throws IOException {
         File path = new File(context.getExternalFilesDir(RECORDING_ROOT_TYPE), RECORDING_SENT_ROOT);
-        createNoMedia(path);
+        createDirectories(path);
         String timeStamp = sDateFormat.format(date);
         File f = new File(path, "record_" + timeStamp + "." + AudioRecording.FILE_EXTENSION);
         f.createNewFile();
@@ -468,26 +470,27 @@ public abstract class MediaStorage {
     /** Creates a file object for an incoming audio file. */
     public static File getIncomingAudioFile(Context context, Date date, String extension) {
         File path = new File(context.getExternalFilesDir(RECORDING_ROOT_TYPE), RECORDING_ROOT);
-        createNoMedia(path);
+        createDirectories(path);
         String timeStamp = sDateFormat.format(date);
         return new File(path, "audio_" + timeStamp + "." + extension);
     }
 
     public static File getIncomingFile(Date date, String extension) {
-        createMedia(DOWNLOADS_ROOT);
+        createNoMedia(DOWNLOADS_ROOT);
         String timeStamp = sDateFormat.format(date);
         return new File(DOWNLOADS_ROOT, "file_" + timeStamp + "." + extension);
     }
 
     /** Ensures that the given path exists. */
-    private static boolean createMedia(File path) {
+    private static boolean createDirectories(File path) {
         return path.isDirectory() || path.mkdirs();
     }
 
     /** Ensures that the given path exists and a .nomedia file exists. */
+    @Deprecated
     private static boolean createNoMedia(File path) {
         try {
-            if (createMedia(path)) {
+            if (createDirectories(path)) {
                 File nomedia = new File(path, ".nomedia");
                 return nomedia.isFile() || nomedia.createNewFile();
             }
