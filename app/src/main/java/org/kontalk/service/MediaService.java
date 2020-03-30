@@ -24,6 +24,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.core.app.JobIntentService;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -63,6 +64,13 @@ public class MediaService extends JobIntentService {
      */
     @Deprecated
     public static final String ACTION_MEDIA_READY = "org.kontalk.action.MEDIA_READY";
+
+    /**
+     * Broadcasted when a media message preparation failed.
+     * @deprecated We should use the event bus.
+     */
+    @Deprecated
+    public static final String ACTION_MEDIA_FAILED = "org.kontalk.action.MEDIA_FAILED";
 
     @Override
     protected void onHandleWork(@NonNull Intent intent) {
@@ -120,10 +128,13 @@ public class MediaService extends JobIntentService {
             Log.w(TAG, "unable to prepare media for sending", e);
             ReportingManager.logException(e);
             MessageUpdater.forMessage(this, databaseId)
-                .setStatus(MyMessages.Messages.STATUS_ERROR)
+                .setStatus(MyMessages.Messages.STATUS_NOTACCEPTED)
                 .commit();
-            // simulate upload error
-            UploadService.genericErrorNotification(this);
+
+            // TODO post event to message center bus
+            Intent i = new Intent(ACTION_MEDIA_FAILED);
+            i.putExtra("org.kontalk.message.msgId", databaseId);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(i);
         }
     }
 

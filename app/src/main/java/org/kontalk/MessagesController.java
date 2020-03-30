@@ -45,6 +45,7 @@ import android.os.HandlerThread;
 import androidx.annotation.WorkerThread;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.text.TextUtils;
+import android.widget.Toast;
 
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.Coder;
@@ -490,6 +491,7 @@ public class MessagesController {
         MessageCenterListener(Context context) {
             IntentFilter filter = new IntentFilter();
             filter.addAction(MediaService.ACTION_MEDIA_READY);
+            filter.addAction(MediaService.ACTION_MEDIA_FAILED);
             LocalBroadcastManager.getInstance(context)
                 .registerReceiver(this, filter);
         }
@@ -506,6 +508,12 @@ public class MessagesController {
                             readyMedia(messageId);
                         }
                     });
+                    break;
+                }
+                case MediaService.ACTION_MEDIA_FAILED: {
+                    Toast.makeText(context,
+                        R.string.err_store_message_failed,
+                        Toast.LENGTH_LONG).show();
                     break;
                 }
             }
