@@ -378,16 +378,8 @@ public class AudioDialog extends AlertDialog {
             Log.e(TAG, "error writing on external storage", e);
             cancel();
 
-            int resId;
-            if (Permissions.canWriteExternalStorage(getContext())) {
-                resId = R.string.err_audio_record_writing;
-            }
-            else {
-                resId = R.string.err_audio_record_writing_permission;
-            }
-
             new MaterialDialog.Builder(getContext())
-                .content(resId)
+                .content(R.string.err_audio_record_writing)
                 .positiveText(android.R.string.ok)
                 .show();
         }
@@ -396,7 +388,7 @@ public class AudioDialog extends AlertDialog {
             cancel();
 
             int resId;
-            if (Permissions.canRecordAudioOnly(getContext())) {
+            if (Permissions.canRecordAudio(getContext())) {
                 resId = R.string.err_audio_record;
             }
             else {

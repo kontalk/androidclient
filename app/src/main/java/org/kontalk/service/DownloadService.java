@@ -53,7 +53,9 @@ import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.DecryptException;
 import org.kontalk.crypto.PersonalKey;
+import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.ImageComponent;
 import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.reporting.ReportingManager;
@@ -181,7 +183,8 @@ public class DownloadService extends JobIntentService implements DownloadListene
 
             // check for write permission
             // an event will be sent to the compose activity if present
-            if (!Permissions.canWriteExternalStorage(this)) {
+            String mime = args.getString(EXTRA_MSG_MIME);
+            if (needsStoragePermission(mime) && !Permissions.canWriteExternalStorage(this)) {
                 writePermissionDenied();
                 return;
             }
@@ -198,7 +201,6 @@ public class DownloadService extends JobIntentService implements DownloadListene
             else
                 date = new Date();
 
-            String mime = args.getString(EXTRA_MSG_MIME);
             // this will be used if the server doesn't provide one
             // if the server provides a filename, only the path will be used
             File defaultFile = CompositeMessage.getIncomingFile(this, mime, date);
@@ -234,6 +236,13 @@ public class DownloadService extends JobIntentService implements DownloadListene
             else
                 sQueue.remove(url);
         }
+    }
+
+    /** @deprecated Soon to go away. */
+    @Deprecated
+    private boolean needsStoragePermission(String mime) {
+        return !ImageComponent.supportsMimeType(mime) &&
+            !AudioComponent.supportsMimeType(mime);
     }
 
     private void writePermissionDenied() {
