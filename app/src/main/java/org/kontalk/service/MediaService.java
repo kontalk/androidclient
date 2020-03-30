@@ -28,6 +28,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.JobIntentService;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import org.kontalk.R;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.provider.MessagesProviderClient.MessageUpdater;
@@ -118,7 +119,8 @@ public class MediaService extends JobIntentService {
             MessageUpdater.forMessage(this, databaseId)
                 .setStatus(MyMessages.Messages.STATUS_ERROR)
                 .commit();
-            // TODO notify error in some way?
+            // simulate upload error
+            UploadService.genericErrorNotification(this);
         }
     }
 

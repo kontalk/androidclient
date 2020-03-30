@@ -285,6 +285,12 @@ public class UploadService extends JobIntentService implements ProgressListener 
         errorNotification(this, mNotificationManager, ticker, text);
     }
 
+    public static void genericErrorNotification(Context context) {
+        errorNotification(context,
+            context.getString(R.string.notify_ticker_upload_error),
+            context.getString(R.string.notify_text_upload_error));
+    }
+
     public static void errorNotification(Context context, String ticker, String text) {
         errorNotification(context,
             ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)),
