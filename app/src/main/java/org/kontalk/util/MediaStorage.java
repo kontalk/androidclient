@@ -19,6 +19,8 @@
 package org.kontalk.util;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +33,7 @@ import java.util.Locale;
 
 import android.annotation.TargetApi;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
@@ -87,6 +90,12 @@ public abstract class MediaStorage {
 
     private static final String DCIM_ROOT_TYPE = Environment.DIRECTORY_DCIM;
     private static final String DCIM_ROOT = "";
+
+    private static final File DCIM_PUBLIC_ROOT = new File(Environment
+        .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
+        "Kontalk");
+    private static final String DCIM_PUBLIC_RELATIVE_PATH = new File
+        (Environment.DIRECTORY_DCIM, "Kontalk").toString();
 
     private static final File DOWNLOADS_ROOT = new File(Environment
         .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
@@ -411,7 +420,13 @@ public abstract class MediaStorage {
     }
 
     private static File getOutgoingPhotoFile(Context context, Date date) throws IOException {
-        File path = new File(context.getExternalFilesDir(DCIM_ROOT_TYPE), DCIM_ROOT);
+        File path;
+        if (SystemUtils.supportsScopedStorage()) {
+            path = new File(context.getExternalFilesDir(DCIM_ROOT_TYPE), DCIM_ROOT);
+        }
+        else {
+            path = DCIM_PUBLIC_ROOT;
+        }
         createDirectories(path);
         return createImageFile(path, date);
     }
@@ -539,6 +554,66 @@ public abstract class MediaStorage {
             // try Java detection
             mime = URLConnection.guessContentTypeFromName(url.toLowerCase());
         return mime;
+    }
+
+    /**
+     * Publishes some media to the {@link MediaStore}.
+     */
+    public static void publishImage(Context context, File file, boolean photo) throws IOException {
+        Uri uri = Uri.fromFile(file);
+        if (SystemUtils.supportsScopedStorage()) {
+            // publish to the media store
+            ContentResolver resolver = context.getContentResolver();
+
+            Uri imageCollection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.DISPLAY_NAME, uri.getLastPathSegment());
+            values.put(MediaStore.Images.Media.IS_PENDING, 1);
+            if (photo) {
+                values.put(MediaStore.Images.Media.RELATIVE_PATH, DCIM_PUBLIC_RELATIVE_PATH);
+            }
+            // TODO other attributes maybe?
+
+            Uri imageFile = resolver.insert(imageCollection, values);
+            if (imageFile == null) {
+                throw new FileNotFoundException("Unable to create media");
+            }
+
+            OutputStream imageOut = null;
+            InputStream imageIn = null;
+            try {
+                imageOut = resolver.openOutputStream(imageFile);
+                if (imageOut == null) {
+                    throw new FileNotFoundException("Unable to create media");
+                }
+
+                imageIn = new FileInputStream(file);
+                SystemUtils.copy(imageIn, imageOut);
+
+                values.clear();
+                values.put(MediaStore.Images.Media.IS_PENDING, 0);
+                context.getContentResolver().update(imageFile, values, null, null);
+            }
+            catch (RuntimeException e) {
+                // something went wrong, delete dangling media
+                try {
+                    resolver.delete(imageFile, null, null);
+                }
+                catch (Exception ignored) {
+                }
+                throw e;
+            }
+            finally {
+                SystemUtils.close(imageIn);
+                SystemUtils.close(imageOut);
+            }
+        }
+        else {
+            // notify media scanner
+            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            mediaScanIntent.setData(uri);
+            context.sendBroadcast(mediaScanIntent);
+        }
     }
 
     public static File resizeImage(Context context, Uri uri, int maxSize) throws IOException {

@@ -1528,12 +1528,15 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                 // returning from camera
                 if (requestCode == SELECT_ATTACHMENT_PHOTO) {
                     if (mCurrentPhoto != null) {
-                        // TODO move this elsewhere and remember about scoped storage
                         Uri uri = Uri.fromFile(mCurrentPhoto);
-                        // notify media scanner
-                        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                        mediaScanIntent.setData(uri);
-                        getActivity().sendBroadcast(mediaScanIntent);
+                        try {
+                            MediaStorage.publishImage(getContext(), mCurrentPhoto, true);
+                        }
+                        catch (Exception e) {
+                            Toast.makeText(getContext(),
+                                // TODO i18n
+                                "Unable to save your photo to the gallery.", Toast.LENGTH_LONG).show();
+                        }
                         mCurrentPhoto = null;
 
                         uris = new Uri[]{uri};
