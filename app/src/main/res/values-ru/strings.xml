@@ -780,4 +780,10 @@
     <string name="showcase_conversations_compose_title">Начать разговор</string>
     <string name="showcase_conversations_compose_message">Нажмите на эту кнопку, чтобы вступить в разговор.</string>
     <string name="showcase_composer_attach_title">Не только текст</string>
+    <string name="showcase_composer_attach_message">Можно поделиться изображениями, звукозаписями и т.п.</string>
+    <string name="showcase_composer_toolbar_single_title">Информация о контакте</string>
+    <string name="showcase_composer_toolbar_single_message">Нажмите на панель, чтобы посмотреть информацию о контакте.</string>
+    <string name="showcase_composer_toolbar_group_title">Информация о группе</string>
+    <string name="showcase_composer_toolbar_group_message">Нажмите на панель, чтобы просмотреть или изменить состав участников.</string>
+
     </resources>
