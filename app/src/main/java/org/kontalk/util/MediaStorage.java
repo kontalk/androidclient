@@ -120,11 +120,6 @@ public abstract class MediaStorage {
     /** Media player used by {@link #playNotificationSound}. */
     private static QuickMediaPlayer mMediaPlayer;
 
-    public static boolean isExternalStorageAvailable() {
-        return Environment.getExternalStorageState()
-            .equals(Environment.MEDIA_MOUNTED);
-    }
-
     public static File getInternalMediaFile(Context context, String filename) {
         return new File(context.getCacheDir(), filename);
     }

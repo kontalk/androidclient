@@ -53,9 +53,7 @@ import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.DecryptException;
 import org.kontalk.crypto.PersonalKey;
-import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
-import org.kontalk.message.ImageComponent;
 import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.reporting.ReportingManager;
@@ -65,7 +63,6 @@ import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.ProgressNotificationBuilder;
 import org.kontalk.util.EventBusIndex;
 import org.kontalk.util.MediaStorage;
-import org.kontalk.util.Permissions;
 import org.kontalk.util.Preferences;
 
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOADING;
@@ -171,23 +168,8 @@ public class DownloadService extends JobIntentService implements DownloadListene
         }
 
         try {
-            // check if external storage is available
-            if (!MediaStorage.isExternalStorageAvailable()) {
-                errorNotification(getString(R.string.notify_ticker_external_storage),
-                    getString(R.string.notify_text_external_storage));
-                return;
-            }
-
             // needed in case the next if triggers
             mConversation = args.getString(EXTRA_MSG_CONVERSATION);
-
-            // check for write permission
-            // an event will be sent to the compose activity if present
-            String mime = args.getString(EXTRA_MSG_MIME);
-            if (needsStoragePermission(mime) && !Permissions.canWriteExternalStorage(this)) {
-                writePermissionDenied();
-                return;
-            }
 
             mMessageId = args.getLong(EXTRA_MSG_ID, 0);
             mPeer = args.getString(EXTRA_MSG_SENDER);
@@ -200,6 +182,8 @@ public class DownloadService extends JobIntentService implements DownloadListene
                 date = new Date(timestamp);
             else
                 date = new Date();
+
+            String mime = args.getString(EXTRA_MSG_MIME);
 
             // this will be used if the server doesn't provide one
             // if the server provides a filename, only the path will be used
@@ -235,22 +219,6 @@ public class DownloadService extends JobIntentService implements DownloadListene
             // remove from queue - will never be processed
             else
                 sQueue.remove(url);
-        }
-    }
-
-    /** @deprecated Soon to go away. */
-    @Deprecated
-    private boolean needsStoragePermission(String mime) {
-        return !ImageComponent.supportsMimeType(mime) &&
-            !AudioComponent.supportsMimeType(mime);
-    }
-
-    private void writePermissionDenied() {
-        if (MessagingNotification.isPaused(mConversation)) {
-            BUS.post(new WritePermissionDenied());
-        }
-        else {
-            permissionDeniedNotification();
         }
     }
 
@@ -441,13 +409,6 @@ public class DownloadService extends JobIntentService implements DownloadListene
         mNotificationManager.notify(NOTIFICATION_ID_DOWNLOAD_ERROR, builder.build());
     }
 
-    private void permissionDeniedNotification() {
-        errorNotification(getString(R.string.notify_ticker_download_permission_denied_error),
-            getString(R.string.notify_summary_download_permission_denied_error),
-            getString(R.string.notify_title_download_permission_denied_error),
-            ConversationsActivity.writeStoragePermissionRequest(this));
-    }
-
     @Override
     public void progress(String url, File destination, long bytes) {
         if (mCurrentNotification != null) {
@@ -486,9 +447,6 @@ public class DownloadService extends JobIntentService implements DownloadListene
         i.setAction(ACTION_DOWNLOAD_ABORT);
         i.setData(uri);
         enqueueWork(context, DownloadService.class, JOB_ID, i);
-    }
-
-    public static class WritePermissionDenied {
     }
 
     public static class DownloadStarted {
