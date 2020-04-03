@@ -81,25 +81,17 @@ public abstract class MediaStorage {
 
     public static final String UNKNOWN_FILENAME = "unknown_file.bin";
 
-    private static final String RECORDING_ROOT_TYPE = null;
     private static final String RECORDING_ROOT = "Recordings";
-    private static final String RECORDING_SENT_ROOT = RECORDING_ROOT + File.separator + "Sent";
+    private static final String RECORDING_SENT_ROOT = new File(RECORDING_ROOT, "Sent").toString();
 
-    private static final String PICTURES_ROOT_TYPE = Environment.DIRECTORY_PICTURES;
-    private static final String PICTURES_ROOT = "";
-    private static final String PICTURES_SENT_ROOT = "Sent";
+    private static final String PICTURES_ROOT = Environment.DIRECTORY_PICTURES;
+    private static final String PICTURES_SENT_ROOT = new File(PICTURES_ROOT, "Sent").toString();
 
-    private static final String DCIM_ROOT_TYPE = Environment.DIRECTORY_DCIM;
-    private static final String DCIM_ROOT = "";
-
-    private static final File DCIM_PUBLIC_ROOT = new File(Environment
-        .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
-        "Kontalk");
+    private static final String DCIM_ROOT = Environment.DIRECTORY_DCIM;
     private static final String DCIM_PUBLIC_RELATIVE_PATH = new File
         (Environment.DIRECTORY_DCIM, "Kontalk").toString();
 
-    private static final String DOWNLOADS_ROOT_TYPE = Environment.DIRECTORY_DOWNLOADS;
-    private static final String DOWNLOADS_ROOT = "";
+    private static final String DOWNLOADS_ROOT = Environment.DIRECTORY_DOWNLOADS;
 
     private static final DateFormat sDateFormat =
         new SimpleDateFormat("yyyyMMdd_HHmmssSSS", Locale.US);
@@ -415,13 +407,7 @@ public abstract class MediaStorage {
     }
 
     private static File getOutgoingPhotoFile(Context context, Date date) throws IOException {
-        File path;
-        if (SystemUtils.supportsScopedStorage()) {
-            path = new File(context.getExternalFilesDir(DCIM_ROOT_TYPE), DCIM_ROOT);
-        }
-        else {
-            path = DCIM_PUBLIC_ROOT;
-        }
+        File path = new File(context.getCacheDir(), DCIM_ROOT);
         createDirectories(path);
         return createImageFile(path, date);
     }
@@ -432,7 +418,7 @@ public abstract class MediaStorage {
     }
 
     private static File getOutgoingPictureFile(Context context, Date date) throws IOException {
-        File path = new File(context.getExternalFilesDir(PICTURES_ROOT_TYPE), PICTURES_SENT_ROOT);
+        File path = new File(context.getFilesDir(), PICTURES_SENT_ROOT);
         createDirectories(path);
         return createImageFile(path, date);
     }
@@ -452,7 +438,7 @@ public abstract class MediaStorage {
 
     /** Creates a file object for an incoming image file. */
     public static File getIncomingImageFile(Context context, Date date, String extension) {
-        File path = new File(context.getExternalFilesDir(PICTURES_ROOT_TYPE), PICTURES_ROOT);
+        File path = new File(context.getFilesDir(), PICTURES_ROOT);
         createDirectories(path);
         String timeStamp = sDateFormat.format(date);
         return new File(path, "IMG_" + timeStamp + "." + extension);
@@ -464,7 +450,7 @@ public abstract class MediaStorage {
     }
 
     private static File getOutgoingAudioFile(Context context, Date date) throws IOException {
-        File path = new File(context.getExternalFilesDir(RECORDING_ROOT_TYPE), RECORDING_SENT_ROOT);
+        File path = new File(context.getFilesDir(), RECORDING_SENT_ROOT);
         createDirectories(path);
         String timeStamp = sDateFormat.format(date);
         File f = new File(path, "record_" + timeStamp + "." + AudioRecording.FILE_EXTENSION);
@@ -479,17 +465,17 @@ public abstract class MediaStorage {
 
     /** Creates a file object for an incoming audio file. */
     public static File getIncomingAudioFile(Context context, Date date, String extension) {
-        File path = new File(context.getExternalFilesDir(RECORDING_ROOT_TYPE), RECORDING_ROOT);
+        File path = new File(context.getFilesDir(), RECORDING_ROOT);
         createDirectories(path);
         String timeStamp = sDateFormat.format(date);
         return new File(path, "audio_" + timeStamp + "." + extension);
     }
 
     public static File getIncomingFile(Context context, Date date, String extension) {
-        File path = new File(context.getExternalFilesDir(DOWNLOADS_ROOT_TYPE), DOWNLOADS_ROOT);
+        File path = new File(context.getFilesDir(), DOWNLOADS_ROOT);
         createDirectories(path);
         String timeStamp = sDateFormat.format(date);
-        return new File(DOWNLOADS_ROOT, "file_" + timeStamp + "." + extension);
+        return new File(path, "file_" + timeStamp + "." + extension);
     }
 
     /** Ensures that the given path exists. */

@@ -1537,6 +1537,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                                 // TODO i18n
                                 "Unable to save your photo to the gallery.", Toast.LENGTH_LONG).show();
                         }
+                        mCurrentPhoto.delete();
                         mCurrentPhoto = null;
 
                         uris = new Uri[]{uri};
@@ -1883,11 +1884,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         if (event.id == mWaitingDownload) {
             mWaitingDownload = 0;
         }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
-    public void onDownloadWritePermissionDenied(DownloadService.WritePermissionDenied event) {
-        Permissions.requestWriteExternalStorage(this, getString(R.string.err_storage_denied_interactive));
     }
 
     @AfterPermissionGranted(Permissions.RC_WRITE_EXT_STORAGE)
