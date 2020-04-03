@@ -205,7 +205,7 @@ public class DownloadService extends JobIntentService implements DownloadListene
             // if the server provides a filename, only the path will be used
             File defaultFile = CompositeMessage.getIncomingFile(this, mime, date);
             if (defaultFile == null) {
-                defaultFile = MediaStorage.getIncomingFile(date, "bin");
+                defaultFile = MediaStorage.getIncomingFile(this, date, "bin");
             }
 
             BUS.post(new DownloadStarted(mMessageId));

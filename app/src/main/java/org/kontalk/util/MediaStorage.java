@@ -55,6 +55,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 
+import androidx.annotation.CheckResult;
 import androidx.annotation.NonNull;
 import androidx.annotation.RawRes;
 import androidx.exifinterface.media.ExifInterface;
@@ -97,9 +98,8 @@ public abstract class MediaStorage {
     private static final String DCIM_PUBLIC_RELATIVE_PATH = new File
         (Environment.DIRECTORY_DCIM, "Kontalk").toString();
 
-    private static final File DOWNLOADS_ROOT = new File(Environment
-        .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-        "Kontalk");
+    private static final String DOWNLOADS_ROOT_TYPE = Environment.DIRECTORY_DOWNLOADS;
+    private static final String DOWNLOADS_ROOT = "";
 
     private static final DateFormat sDateFormat =
         new SimpleDateFormat("yyyyMMdd_HHmmssSSS", Locale.US);
@@ -490,30 +490,17 @@ public abstract class MediaStorage {
         return new File(path, "audio_" + timeStamp + "." + extension);
     }
 
-    public static File getIncomingFile(Date date, String extension) {
-        createNoMedia(DOWNLOADS_ROOT);
+    public static File getIncomingFile(Context context, Date date, String extension) {
+        File path = new File(context.getExternalFilesDir(DOWNLOADS_ROOT_TYPE), DOWNLOADS_ROOT);
+        createDirectories(path);
         String timeStamp = sDateFormat.format(date);
         return new File(DOWNLOADS_ROOT, "file_" + timeStamp + "." + extension);
     }
 
     /** Ensures that the given path exists. */
+    @CheckResult
     private static boolean createDirectories(File path) {
         return path.isDirectory() || path.mkdirs();
-    }
-
-    /** Ensures that the given path exists and a .nomedia file exists. */
-    @Deprecated
-    private static boolean createNoMedia(File path) {
-        try {
-            if (createDirectories(path)) {
-                File nomedia = new File(path, ".nomedia");
-                return nomedia.isFile() || nomedia.createNewFile();
-            }
-            return false;
-        }
-        catch (Exception e) {
-            return false;
-        }
     }
 
     /** Guesses the MIME type of an {@link Uri}. */
