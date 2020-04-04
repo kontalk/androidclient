@@ -25,12 +25,11 @@
     <!-- TODO we should remove this one -->
     <external-path name="ext_storage" path="." />
 
-    <external-files-path name="kontalk_recordings" path="Recordings" />
-    <external-files-path name="kontalk_pictures" path="Pictures" />
-    <external-files-path name="kontalk_photos" path="DCIM/Kontalk" />
+    <files-path name="kontalk_recordings" path="Recordings" />
+    <files-path name="kontalk_pictures" path="Pictures" />
+    <files-path name="kontalk_photos" path="DCIM" />
+    <files-path name="kontalk_downloads" path="Download" />
 
-    <!-- FIXME won't work on API level 29 -->
-    <external-files-path name="kontalk_downloads" path="Download/Kontalk" />
-
+    <cache-path name="kontalk_camera" path="DCIM"/>
     <cache-path name="kontalk_debug" path="debug" />
 </paths>

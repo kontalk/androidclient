@@ -90,6 +90,8 @@ public abstract class MediaStorage {
     private static final String DCIM_ROOT = Environment.DIRECTORY_DCIM;
     private static final String DCIM_PUBLIC_RELATIVE_PATH = new File
         (Environment.DIRECTORY_DCIM, "Kontalk").toString();
+    private static final File DCIM_PUBLIC_PATH = new File
+        (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "Kontalk");
 
     private static final String DOWNLOADS_ROOT = Environment.DIRECTORY_DOWNLOADS;
 
@@ -112,10 +114,16 @@ public abstract class MediaStorage {
     /** Media player used by {@link #playNotificationSound}. */
     private static QuickMediaPlayer mMediaPlayer;
 
+    public static boolean isExternalStorageAvailable() {
+        return Environment.getExternalStorageState()
+            .equals(Environment.MEDIA_MOUNTED);
+    }
+
     public static File getInternalMediaFile(Context context, String filename) {
         return new File(context.getCacheDir(), filename);
     }
 
+    @Deprecated
     private static boolean isFileUriAllowed() {
         return Build.VERSION.SDK_INT < Build.VERSION_CODES.N;
     }
@@ -125,13 +133,10 @@ public abstract class MediaStorage {
      * @param context any context, used for {@link FileProvider#getUriForFile}
      * @param uri Uri to be converted
      * @param intent if not null, appropriate flags will be added
-     * @param opening true if the Uri will be used for opening (ACTION_VIEW).
-     *                In that case, if file-based Uris are allowed on the device,
-     *                the original Uri will be returned.
      * @return the converted Uri, or the original one if not needed to be converted
      */
-    public static Uri getWorldReadableUri(Context context, Uri uri, Intent intent, boolean opening) {
-        return getWorldAccessibleUri(context, uri, intent, opening,
+    public static Uri getWorldReadableUri(Context context, Uri uri, Intent intent) {
+        return getWorldAccessibleUri(context, uri, intent,
             Intent.FLAG_GRANT_READ_URI_PERMISSION);
     }
 
@@ -140,20 +145,14 @@ public abstract class MediaStorage {
      * @param context any context, used for {@link FileProvider#getUriForFile}
      * @param uri Uri to be converted
      * @param intent if not null, appropriate flags will be added
-     * @param opening true if the Uri will be used for opening (ACTION_VIEW).
-     *                In that case, if file-based Uris are allowed on the device,
-     *                the original Uri will be returned.
      * @return the converted Uri, or the original one if not needed to be converted
      */
-    public static Uri getWorldWritableUri(Context context, Uri uri, Intent intent, boolean opening) {
-        return getWorldAccessibleUri(context, uri, intent, opening,
+    public static Uri getWorldWritableUri(Context context, Uri uri, Intent intent) {
+        return getWorldAccessibleUri(context, uri, intent,
             Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
     }
 
-    private static Uri getWorldAccessibleUri(Context context, Uri uri, Intent intent, boolean opening, int flags) {
-        if (isFileUriAllowed() && opening)
-            return uri;
-
+    private static Uri getWorldAccessibleUri(Context context, Uri uri, Intent intent, int flags) {
         if ("file".equals(uri.getScheme())) {
             uri = FileProvider.getUriForFile(context, MediaStorage.FILE_AUTHORITY,
                 new File(uri.getPath()));
@@ -527,15 +526,18 @@ public abstract class MediaStorage {
     /**
      * Publishes some media to the {@link MediaStore}.
      */
-    public static void publishImage(Context context, File file, boolean photo) throws IOException {
-        Uri uri = Uri.fromFile(file);
+    public static Uri publishImage(Context context, File file, boolean photo) throws IOException {
+        if (!isExternalStorageAvailable()) {
+            throw new IOException("external storage not available.");
+        }
+
         if (SystemUtils.supportsScopedStorage()) {
             // publish to the media store
             ContentResolver resolver = context.getContentResolver();
 
             Uri imageCollection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
             ContentValues values = new ContentValues();
-            values.put(MediaStore.Images.Media.DISPLAY_NAME, uri.getLastPathSegment());
+            values.put(MediaStore.Images.Media.DISPLAY_NAME, file.getName());
             values.put(MediaStore.Images.Media.IS_PENDING, 1);
             if (photo) {
                 values.put(MediaStore.Images.Media.RELATIVE_PATH, DCIM_PUBLIC_RELATIVE_PATH);
@@ -561,6 +563,7 @@ public abstract class MediaStorage {
                 values.clear();
                 values.put(MediaStore.Images.Media.IS_PENDING, 0);
                 context.getContentResolver().update(imageFile, values, null, null);
+                return imageFile;
             }
             catch (RuntimeException e) {
                 // something went wrong, delete dangling media
@@ -577,10 +580,35 @@ public abstract class MediaStorage {
             }
         }
         else {
+            // copy file to external storage
+            // requires external storage write permission
+            File path = DCIM_PUBLIC_PATH;
+            if (!createDirectories(path)) {
+                throw new IOException("unable to write to external storage.");
+            }
+
+            File publicFile = new File(path, file.getName());
+            InputStream in = new FileInputStream(file);
+            OutputStream out = new FileOutputStream(publicFile);
+            try {
+                SystemUtils.copy(in, out);
+            }
+            catch (IOException e) {
+                // try to delete the public file
+                publicFile.delete();
+            }
+            finally {
+                SystemUtils.close(in);
+                SystemUtils.close(out);
+            }
+
             // notify media scanner
+            // TODO actually just notify MediaStore about the new file
+            Uri uri = Uri.fromFile(publicFile);
             Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
             mediaScanIntent.setData(uri);
             context.sendBroadcast(mediaScanIntent);
+            return uri;
         }
     }
 

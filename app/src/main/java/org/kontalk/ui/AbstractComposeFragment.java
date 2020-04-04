@@ -1167,7 +1167,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         if (attachment != null) {
             Intent i = new Intent(Intent.ACTION_VIEW);
             Uri uri = MediaStorage.getWorldReadableUri(getContext(),
-                attachment.getLocalUri(), i, true);
+                attachment.getLocalUri(), i);
             i.setDataAndType(uri, attachment.getMime());
             try {
                 startActivity(i);
@@ -1226,7 +1226,8 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
             final Intent intent = SystemUtils.externalIntent(MediaStore.ACTION_IMAGE_CAPTURE);
             Uri uri = MediaStorage.getWorldWritableUri(getContext(),
-                Uri.fromFile(mCurrentPhoto), intent, true);
+                Uri.fromFile(mCurrentPhoto), intent);
+            Log.d(TAG, "opening camera with uri: " + uri);
 
             intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -1533,11 +1534,11 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                             MediaStorage.publishImage(getContext(), mCurrentPhoto, true);
                         }
                         catch (Exception e) {
+                            Log.w(TAG, "unable to publish photo to media store", e);
                             Toast.makeText(getContext(),
                                 // TODO i18n
                                 "Unable to save your photo to the gallery.", Toast.LENGTH_LONG).show();
                         }
-                        mCurrentPhoto.delete();
                         mCurrentPhoto = null;
 
                         uris = new Uri[]{uri};
