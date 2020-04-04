@@ -768,4 +768,21 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
 
     <string name="pref_service_terms">Nutzungsbedingungen</string>
 
+    <string name="contacts_list_recents_title">Neueste Chats</string>
+    <string name="menu_switch_contacts">Kontakte</string>
+    <string name="menu_switch_recents">Neueste</string>
+    <string name="text_contacts_recents_empty">Die neuesten Chats werden hier erscheinen. Sie können hier durch den Button oben<b>zu den Kontakten wechseln</b>.</string>
+    <string name="pref_reset_hints">Neueste Tipps</string>
+    <string name="pref_title_reset_hints">Tipps in der App anzeigen</string>
+    <string name="msg_hints_reset">Tipps zurücksetzen.</string>
+
+    <string name="showcase_conversations_compose_title">Chatten beginnen</string>
+    <string name="showcase_conversations_compose_message">Button benutzen um einen Chat zu öffnen.</string>
+    <string name="showcase_composer_attach_title">Nicht nur Text</string>
+    <string name="showcase_composer_attach_message">Sie können andere Bilder, Aufnahmen und mehr teilen.</string>
+    <string name="showcase_composer_toolbar_single_title">Kontakt-Info</string>
+    <string name="showcase_composer_toolbar_single_message">Toolbar antippen um Kontaktinformationen anzuzeigen.</string>
+    <string name="showcase_composer_toolbar_group_title">Gruppen-Info</string>
+    <string name="showcase_composer_toolbar_group_message">Toolbar antippen um Mitglieder zu sehen und die Gruppe zu bearbeiten.</string>
+
     </resources>
