@@ -66,7 +66,6 @@ public abstract class MainActivity extends ToolbarActivity {
 
     private static final String ACTION_AUTH_ERROR_WARNING = "org.kontalk.AUTH_ERROR_WARN";
     private static final String ACTION_AUTH_REQUEST_PASSWORD = "org.kontalk.AUTH_REQUEST_PASSWORD";
-    private static final String ACTION_WRITE_STORAGE_PERMISSION = "org.kontalk.WRITE_STORAGE_PERMISSION";
 
     /**
      * Doesn't really matter because subclasses should not use use setDisplayHomeAsUpEnabled.
@@ -105,14 +104,16 @@ public abstract class MainActivity extends ToolbarActivity {
             }
         }
 
-        if (!Preferences.isPermissionAsked(Manifest.permission.READ_EXTERNAL_STORAGE) ||
-            !Preferences.isPermissionAsked(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+        if (!SystemUtils.supportsScopedStorage()) {
+            if (!Preferences.isPermissionAsked(Manifest.permission.READ_EXTERNAL_STORAGE) ||
+                !Preferences.isPermissionAsked(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 
-            if (!Permissions.canWriteExternalStorage(this)) {
-                Permissions.requestWriteExternalStorage(this, getString(R.string.err_storage_denied));
+                if (!Permissions.canWriteExternalStorage(this)) {
+                    Permissions.requestWriteExternalStorage(this, getString(R.string.err_storage_denied));
 
-                Preferences.setPermissionAsked(Manifest.permission.READ_EXTERNAL_STORAGE);
-                Preferences.setPermissionAsked(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                    Preferences.setPermissionAsked(Manifest.permission.READ_EXTERNAL_STORAGE);
+                    Preferences.setPermissionAsked(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                }
             }
         }
     }
@@ -329,11 +330,6 @@ public abstract class MainActivity extends ToolbarActivity {
                 showDialog(DIALOG_AUTH_REQUEST_PASSWORD);
                 return true;
             }
-            else if (ACTION_WRITE_STORAGE_PERMISSION.equals(action)) {
-                Permissions.requestWriteExternalStorage(this,
-                    getString(R.string.err_storage_denied_interactive));
-                return true;
-            }
         }
 
         return false;
@@ -348,12 +344,6 @@ public abstract class MainActivity extends ToolbarActivity {
     public static Intent passwordRequest(Context context) {
         Intent i = new Intent(context.getApplicationContext(), ConversationsActivity.class);
         i.setAction(ACTION_AUTH_REQUEST_PASSWORD);
-        return i;
-    }
-
-    public static Intent writeStoragePermissionRequest(Context context) {
-        Intent i = new Intent(context.getApplicationContext(), ConversationsActivity.class);
-        i.setAction(ACTION_WRITE_STORAGE_PERMISSION);
         return i;
     }
 

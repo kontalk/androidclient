@@ -1136,7 +1136,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
             else {
                 // immediately setup (or disable) the foreground notification if requested
-                setForeground(intent.getBooleanExtra(EXTRA_FOREGROUND, false));
+                setForeground(shouldStartInForeground(this) ||
+                    intent.getBooleanExtra(EXTRA_FOREGROUND, false));
             }
 
             mFirstStart = false;
@@ -1373,9 +1374,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             catch (Exception e) {
                 Log.w(TAG, "error preprocessing media: " + preMediaUri, e);
                 // simulate upload error
-                UploadService.errorNotification(this,
-                    getString(R.string.notify_ticker_upload_error),
-                    getString(R.string.notify_text_upload_error));
+                UploadService.genericErrorNotification(this);
                 return;
             }
 

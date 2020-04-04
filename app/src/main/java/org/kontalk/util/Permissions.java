@@ -126,7 +126,7 @@ public class Permissions {
         }
     }
 
-    public static void requestCamera(Fragment fragment, String rationale) {
+    public static void requestCamera(Fragment fragment, String rationale, boolean externalStorage) {
         if (EasyPermissions.permissionPermanentlyDenied(fragment, Manifest.permission.CAMERA)) {
             new AppSettingsDialog.Builder(fragment)
                 .setRationale(rationale)
@@ -134,28 +134,32 @@ public class Permissions {
                 .show();
         }
         else {
+            String[] permissions;
+            if (externalStorage) {
+                permissions = new String[] {
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                };
+            }
+            else {
+                permissions = new String[] {
+                    Manifest.permission.CAMERA
+                };
+            }
             EasyPermissions.requestPermissions(fragment, rationale, RC_CAMERA,
-                Manifest.permission.CAMERA);
+                permissions);
         }
     }
 
-    @SuppressLint("InlinedApi")
     public static boolean canRecordAudio(Context context) {
-        return EasyPermissions.hasPermissions(context,
-            Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE);
-    }
-
-    public static boolean canRecordAudioOnly(Context context) {
         return EasyPermissions.hasPermissions(context,
             Manifest.permission.RECORD_AUDIO);
     }
 
     @SuppressLint("InlinedApi")
     public static void requestRecordAudio(Activity activity, String rationale) {
-        if (recordAudioPermissionPermanentlyDenied(activity) ||
-            externalStoragePermissionsPermanentlyDenied(activity)) {
+        if (recordAudioPermissionPermanentlyDenied(activity)) {
             new AppSettingsDialog.Builder(activity)
                 .setRationale(rationale)
                 .build()
@@ -163,9 +167,7 @@ public class Permissions {
         }
         else {
             EasyPermissions.requestPermissions(activity, rationale, RC_RECORD_AUDIO,
-                Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                Manifest.permission.RECORD_AUDIO);
         }
     }
 
@@ -173,15 +175,6 @@ public class Permissions {
         if (!EasyPermissions.hasPermissions(activity, Manifest.permission.RECORD_AUDIO)) {
             return !Preferences.isPermissionAsked(Manifest.permission.RECORD_AUDIO) &&
                 EasyPermissions.permissionPermanentlyDenied(activity, Manifest.permission.RECORD_AUDIO);
-        }
-        return false;
-    }
-
-    private static boolean externalStoragePermissionsPermanentlyDenied(Activity activity) {
-        if (!EasyPermissions.hasPermissions(activity, Manifest.permission.READ_EXTERNAL_STORAGE) &&
-            !EasyPermissions.hasPermissions(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            return EasyPermissions.permissionPermanentlyDenied(activity, Manifest.permission.READ_EXTERNAL_STORAGE) ||
-                EasyPermissions.permissionPermanentlyDenied(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         }
         return false;
     }

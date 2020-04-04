@@ -492,4 +492,8 @@ public final class SystemUtils {
         return Build.VERSION.SDK_INT < Build.VERSION_CODES.N;
     }
 
+    public static boolean supportsScopedStorage() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
+    }
+
 }

@@ -70,7 +70,7 @@ public class SendDebugLogPreference extends Preference {
             i.putExtra(Intent.EXTRA_EMAIL, new String[] { context.getString(R.string.mailto) });
             i.putExtra(Intent.EXTRA_SUBJECT, "Kontalk debug log");
             Uri uri = MediaStorage.getWorldReadableUri(context,
-                Uri.fromFile(file), i, true);
+                Uri.fromFile(file), i);
             i.putExtra(Intent.EXTRA_STREAM, uri);
             context.startActivity(i);
         }

@@ -24,14 +24,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.core.app.JobIntentService;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import org.kontalk.Log;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.provider.MessagesProviderClient.MessageUpdater;
 import org.kontalk.provider.MyMessages;
+import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.Preferences;
@@ -61,6 +64,13 @@ public class MediaService extends JobIntentService {
      */
     @Deprecated
     public static final String ACTION_MEDIA_READY = "org.kontalk.action.MEDIA_READY";
+
+    /**
+     * Broadcasted when a media message preparation failed.
+     * @deprecated We should use the event bus.
+     */
+    @Deprecated
+    public static final String ACTION_MEDIA_FAILED = "org.kontalk.action.MEDIA_FAILED";
 
     @Override
     protected void onHandleWork(@NonNull Intent intent) {
@@ -115,10 +125,16 @@ public class MediaService extends JobIntentService {
             LocalBroadcastManager.getInstance(this).sendBroadcast(i);
         }
         catch (Exception e) {
+            Log.w(TAG, "unable to prepare media for sending", e);
+            ReportingManager.logException(e);
             MessageUpdater.forMessage(this, databaseId)
-                .setStatus(MyMessages.Messages.STATUS_ERROR)
+                .setStatus(MyMessages.Messages.STATUS_NOTACCEPTED)
                 .commit();
-            // TODO notify error in some way?
+
+            // TODO post event to message center bus
+            Intent i = new Intent(ACTION_MEDIA_FAILED);
+            i.putExtra("org.kontalk.message.msgId", databaseId);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(i);
         }
     }
 

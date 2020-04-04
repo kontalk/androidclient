@@ -1167,7 +1167,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         if (attachment != null) {
             Intent i = new Intent(Intent.ACTION_VIEW);
             Uri uri = MediaStorage.getWorldReadableUri(getContext(),
-                attachment.getLocalUri(), i, true);
+                attachment.getLocalUri(), i);
             i.setDataAndType(uri, attachment.getMime());
             try {
                 startActivity(i);
@@ -1222,11 +1222,12 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             return;
 
         try {
-            mCurrentPhoto = MediaStorage.getOutgoingPhotoFile();
+            mCurrentPhoto = MediaStorage.getOutgoingPhotoFile(context);
 
             final Intent intent = SystemUtils.externalIntent(MediaStore.ACTION_IMAGE_CAPTURE);
             Uri uri = MediaStorage.getWorldWritableUri(getContext(),
-                Uri.fromFile(mCurrentPhoto), intent, true);
+                Uri.fromFile(mCurrentPhoto), intent);
+            Log.d(TAG, "opening camera with uri: " + uri);
 
             intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -1246,7 +1247,11 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
     private void requestCameraPermission() {
         if (!Permissions.canUseCamera(getContext())) {
-            Permissions.requestCamera(this, getString(R.string.err_camera_picture_denied));
+            boolean requestStorage = !SystemUtils.supportsScopedStorage();
+            int resId = requestStorage ?
+                R.string.err_camera_picture_storage_denied :
+                R.string.err_camera_picture_denied;
+            Permissions.requestCamera(this, getString(resId), requestStorage);
         }
         else {
             startCameraAttachment();
@@ -1529,10 +1534,19 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                 if (requestCode == SELECT_ATTACHMENT_PHOTO) {
                     if (mCurrentPhoto != null) {
                         Uri uri = Uri.fromFile(mCurrentPhoto);
-                        // notify media scanner
-                        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                        mediaScanIntent.setData(uri);
-                        getActivity().sendBroadcast(mediaScanIntent);
+
+                        if (SystemUtils.supportsScopedStorage() || Permissions.canWriteExternalStorage(getContext())) {
+                            try {
+                                MediaStorage.publishImage(getContext(), mCurrentPhoto, true);
+                            }
+                            catch (Exception e) {
+                                Log.w(TAG, "unable to publish photo to media store", e);
+                                Toast.makeText(getContext(),
+                                    // TODO i18n
+                                    "Unable to save your photo to the gallery.", Toast.LENGTH_LONG).show();
+                            }
+                        }
+
                         mCurrentPhoto = null;
 
                         uris = new Uri[]{uri};
@@ -1879,11 +1893,6 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         if (event.id == mWaitingDownload) {
             mWaitingDownload = 0;
         }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
-    public void onDownloadWritePermissionDenied(DownloadService.WritePermissionDenied event) {
-        Permissions.requestWriteExternalStorage(this, getString(R.string.err_storage_denied_interactive));
     }
 
     @AfterPermissionGranted(Permissions.RC_WRITE_EXT_STORAGE)

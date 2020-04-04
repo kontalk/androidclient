@@ -548,16 +548,7 @@ public class ComposerBar extends RelativeLayout implements
         }
         catch (IOException e) {
             Log.e(TAG, "error creating audio file", e);
-
-            int resId;
-            if (Permissions.canWriteExternalStorage(getContext())) {
-                resId = R.string.err_audio_record_writing;
-            }
-            else {
-                resId = R.string.err_audio_record_writing_permission;
-            }
-
-            Toast.makeText(mContext, resId, Toast.LENGTH_LONG).show();
+            Toast.makeText(mContext, R.string.err_audio_record_writing, Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -582,7 +573,7 @@ public class ComposerBar extends RelativeLayout implements
             Log.e(TAG, "error starting audio recording:", e);
 
             int resId;
-            if (Permissions.canRecordAudioOnly(getContext())) {
+            if (Permissions.canRecordAudio(getContext())) {
                 resId = R.string.err_audio_record;
             }
             else {

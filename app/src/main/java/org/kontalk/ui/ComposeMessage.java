@@ -493,7 +493,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
         Intent i = SystemUtils.externalIntent(Intent.ACTION_SEND);
         i.setType(mime);
         i.putExtra(Intent.EXTRA_STREAM, MediaStorage
-            .getWorldReadableUri(context, uri, i, false));
+            .getWorldReadableUri(context, uri, i));
         return i;
     }
 

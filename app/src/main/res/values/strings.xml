@@ -362,7 +362,7 @@
     <string name="msg_not_implemented">Not implemented yet.</string>
 
     <string name="chooser_send_picture">Send picture</string>
-    <string name="chooser_error_no_camera">External storage not available. Taking picture from camera will not be enabled.</string>
+    <string name="chooser_error_no_camera">Unable to write picture file. Taking picture from camera will not be enabled.</string>
     <string name="chooser_error_no_camera_app">No camera app available.</string>
     <string name="chooser_error_no_gallery_app">No gallery app available.</string>
     <string name="chooser_error_no_app">No suitable app available to open the file.</string>
@@ -684,6 +684,7 @@
     <string name="warn_contacts_denied">You denied access to contacts. You won\'t be able to see changes in contacts here.</string>
     <string name="err_camera_scanner_denied">We need access to your camera in order to scan the barcode from the other device.</string>
     <string name="err_camera_picture_denied">We need access to your camera to take pictures.</string>
+    <string name="err_camera_picture_storage_denied">We need access to your camera to take pictures. Also, if you grant write access to storage, we will publish pictures to your gallery automatically.</string>
 
     <string name="err_audio_or_storage_denied">We need access to the microphone for recording your voice and access to external storage to save your recordings.</string>
 

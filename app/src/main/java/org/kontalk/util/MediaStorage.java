@@ -19,6 +19,8 @@
 package org.kontalk.util;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +33,7 @@ import java.util.Locale;
 
 import android.annotation.TargetApi;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
@@ -52,6 +55,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 
+import androidx.annotation.CheckResult;
 import androidx.annotation.NonNull;
 import androidx.annotation.RawRes;
 import androidx.exifinterface.media.ExifInterface;
@@ -77,22 +81,19 @@ public abstract class MediaStorage {
 
     public static final String UNKNOWN_FILENAME = "unknown_file.bin";
 
-    private static final String RECORDING_ROOT_TYPE = null;
     private static final String RECORDING_ROOT = "Recordings";
-    private static final String RECORDING_SENT_ROOT = RECORDING_ROOT + File.separator + "Sent";
+    private static final String RECORDING_SENT_ROOT = new File(RECORDING_ROOT, "Sent").toString();
 
-    private static final File DCIM_ROOT = new File(Environment
-        .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
-        "Kontalk");
-    private static final File PICTURES_ROOT = new File(Environment
-        .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-        "Kontalk");
-    private static final File PICTURES_SENT_ROOT = new File(new File(Environment
-        .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-        "Kontalk"), "Sent");
-    private static final File DOWNLOADS_ROOT = new File(Environment
-        .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-        "Kontalk");
+    private static final String PICTURES_ROOT = Environment.DIRECTORY_PICTURES;
+    private static final String PICTURES_SENT_ROOT = new File(PICTURES_ROOT, "Sent").toString();
+
+    private static final String DCIM_ROOT = Environment.DIRECTORY_DCIM;
+    private static final String DCIM_PUBLIC_RELATIVE_PATH = new File
+        (Environment.DIRECTORY_DCIM, "Kontalk").toString();
+    private static final File DCIM_PUBLIC_PATH = new File
+        (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "Kontalk");
+
+    private static final String DOWNLOADS_ROOT = Environment.DIRECTORY_DOWNLOADS;
 
     private static final DateFormat sDateFormat =
         new SimpleDateFormat("yyyyMMdd_HHmmssSSS", Locale.US);
@@ -122,6 +123,7 @@ public abstract class MediaStorage {
         return new File(context.getCacheDir(), filename);
     }
 
+    @Deprecated
     private static boolean isFileUriAllowed() {
         return Build.VERSION.SDK_INT < Build.VERSION_CODES.N;
     }
@@ -131,13 +133,10 @@ public abstract class MediaStorage {
      * @param context any context, used for {@link FileProvider#getUriForFile}
      * @param uri Uri to be converted
      * @param intent if not null, appropriate flags will be added
-     * @param opening true if the Uri will be used for opening (ACTION_VIEW).
-     *                In that case, if file-based Uris are allowed on the device,
-     *                the original Uri will be returned.
      * @return the converted Uri, or the original one if not needed to be converted
      */
-    public static Uri getWorldReadableUri(Context context, Uri uri, Intent intent, boolean opening) {
-        return getWorldAccessibleUri(context, uri, intent, opening,
+    public static Uri getWorldReadableUri(Context context, Uri uri, Intent intent) {
+        return getWorldAccessibleUri(context, uri, intent,
             Intent.FLAG_GRANT_READ_URI_PERMISSION);
     }
 
@@ -146,20 +145,14 @@ public abstract class MediaStorage {
      * @param context any context, used for {@link FileProvider#getUriForFile}
      * @param uri Uri to be converted
      * @param intent if not null, appropriate flags will be added
-     * @param opening true if the Uri will be used for opening (ACTION_VIEW).
-     *                In that case, if file-based Uris are allowed on the device,
-     *                the original Uri will be returned.
      * @return the converted Uri, or the original one if not needed to be converted
      */
-    public static Uri getWorldWritableUri(Context context, Uri uri, Intent intent, boolean opening) {
-        return getWorldAccessibleUri(context, uri, intent, opening,
+    public static Uri getWorldWritableUri(Context context, Uri uri, Intent intent) {
+        return getWorldAccessibleUri(context, uri, intent,
             Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
     }
 
-    private static Uri getWorldAccessibleUri(Context context, Uri uri, Intent intent, boolean opening, int flags) {
-        if (isFileUriAllowed() && opening)
-            return uri;
-
+    private static Uri getWorldAccessibleUri(Context context, Uri uri, Intent intent, int flags) {
         if ("file".equals(uri.getScheme())) {
             uri = FileProvider.getUriForFile(context, MediaStorage.FILE_AUTHORITY,
                 new File(uri.getPath()));
@@ -408,26 +401,29 @@ public abstract class MediaStorage {
     }
 
     /** Creates a temporary JPEG file for a photo (DCIM). */
-    public static File getOutgoingPhotoFile() throws IOException {
-        return getOutgoingPhotoFile(new Date());
+    public static File getOutgoingPhotoFile(Context context) throws IOException {
+        return getOutgoingPhotoFile(context, new Date());
     }
 
-    private static File getOutgoingPhotoFile(Date date) throws IOException {
-        return createImageFile(DCIM_ROOT, date);
+    private static File getOutgoingPhotoFile(Context context, Date date) throws IOException {
+        File path = new File(context.getCacheDir(), DCIM_ROOT);
+        createDirectories(path);
+        return createImageFile(path, date);
     }
 
     /** Creates a temporary JPEG file for a picture (Pictures). */
-    public static File getOutgoingPictureFile() throws IOException {
-        return getOutgoingPictureFile(new Date());
+    public static File getOutgoingPictureFile(Context context) throws IOException {
+        return getOutgoingPictureFile(context, new Date());
     }
 
-    private static File getOutgoingPictureFile(Date date) throws IOException {
-        createNoMedia(PICTURES_SENT_ROOT);
-        return createImageFile(PICTURES_SENT_ROOT, date);
+    private static File getOutgoingPictureFile(Context context, Date date) throws IOException {
+        File path = new File(context.getFilesDir(), PICTURES_SENT_ROOT);
+        createDirectories(path);
+        return createImageFile(path, date);
     }
 
     private static File createImageFile(File path, Date date) throws IOException {
-        createMedia(path);
+        createDirectories(path);
         String timeStamp = sDateFormat.format(date);
         File f = new File(path, "IMG_" + timeStamp + ".jpg");
         f.createNewFile();
@@ -440,10 +436,11 @@ public abstract class MediaStorage {
     }
 
     /** Creates a file object for an incoming image file. */
-    public static File getIncomingImageFile(Date date, String extension) {
-        createMedia(PICTURES_ROOT);
+    public static File getIncomingImageFile(Context context, Date date, String extension) {
+        File path = new File(context.getFilesDir(), PICTURES_ROOT);
+        createDirectories(path);
         String timeStamp = sDateFormat.format(date);
-        return new File(PICTURES_ROOT, "IMG_" + timeStamp + "." + extension);
+        return new File(path, "IMG_" + timeStamp + "." + extension);
     }
 
     /** Creates a temporary audio file. */
@@ -452,8 +449,8 @@ public abstract class MediaStorage {
     }
 
     private static File getOutgoingAudioFile(Context context, Date date) throws IOException {
-        File path = new File(context.getExternalFilesDir(RECORDING_ROOT_TYPE), RECORDING_SENT_ROOT);
-        createNoMedia(path);
+        File path = new File(context.getFilesDir(), RECORDING_SENT_ROOT);
+        createDirectories(path);
         String timeStamp = sDateFormat.format(date);
         File f = new File(path, "record_" + timeStamp + "." + AudioRecording.FILE_EXTENSION);
         f.createNewFile();
@@ -467,35 +464,23 @@ public abstract class MediaStorage {
 
     /** Creates a file object for an incoming audio file. */
     public static File getIncomingAudioFile(Context context, Date date, String extension) {
-        File path = new File(context.getExternalFilesDir(RECORDING_ROOT_TYPE), RECORDING_ROOT);
-        createNoMedia(path);
+        File path = new File(context.getFilesDir(), RECORDING_ROOT);
+        createDirectories(path);
         String timeStamp = sDateFormat.format(date);
         return new File(path, "audio_" + timeStamp + "." + extension);
     }
 
-    public static File getIncomingFile(Date date, String extension) {
-        createMedia(DOWNLOADS_ROOT);
+    public static File getIncomingFile(Context context, Date date, String extension) {
+        File path = new File(context.getFilesDir(), DOWNLOADS_ROOT);
+        createDirectories(path);
         String timeStamp = sDateFormat.format(date);
-        return new File(DOWNLOADS_ROOT, "file_" + timeStamp + "." + extension);
+        return new File(path, "file_" + timeStamp + "." + extension);
     }
 
     /** Ensures that the given path exists. */
-    private static boolean createMedia(File path) {
+    @CheckResult
+    private static boolean createDirectories(File path) {
         return path.isDirectory() || path.mkdirs();
-    }
-
-    /** Ensures that the given path exists and a .nomedia file exists. */
-    private static boolean createNoMedia(File path) {
-        try {
-            if (createMedia(path)) {
-                File nomedia = new File(path, ".nomedia");
-                return nomedia.isFile() || nomedia.createNewFile();
-            }
-            return false;
-        }
-        catch (Exception e) {
-            return false;
-        }
     }
 
     /** Guesses the MIME type of an {@link Uri}. */
@@ -538,6 +523,95 @@ public abstract class MediaStorage {
         return mime;
     }
 
+    /**
+     * Publishes some media to the {@link MediaStore}.
+     */
+    public static Uri publishImage(Context context, File file, boolean photo) throws IOException {
+        if (!isExternalStorageAvailable()) {
+            throw new IOException("external storage not available.");
+        }
+
+        if (SystemUtils.supportsScopedStorage()) {
+            // publish to the media store
+            ContentResolver resolver = context.getContentResolver();
+
+            Uri imageCollection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.DISPLAY_NAME, file.getName());
+            values.put(MediaStore.Images.Media.IS_PENDING, 1);
+            if (photo) {
+                values.put(MediaStore.Images.Media.RELATIVE_PATH, DCIM_PUBLIC_RELATIVE_PATH);
+            }
+            // TODO other attributes maybe?
+
+            Uri imageFile = resolver.insert(imageCollection, values);
+            if (imageFile == null) {
+                throw new FileNotFoundException("Unable to create media");
+            }
+
+            OutputStream imageOut = null;
+            InputStream imageIn = null;
+            try {
+                imageOut = resolver.openOutputStream(imageFile);
+                if (imageOut == null) {
+                    throw new FileNotFoundException("Unable to create media");
+                }
+
+                imageIn = new FileInputStream(file);
+                SystemUtils.copy(imageIn, imageOut);
+
+                values.clear();
+                values.put(MediaStore.Images.Media.IS_PENDING, 0);
+                context.getContentResolver().update(imageFile, values, null, null);
+                return imageFile;
+            }
+            catch (RuntimeException e) {
+                // something went wrong, delete dangling media
+                try {
+                    resolver.delete(imageFile, null, null);
+                }
+                catch (Exception ignored) {
+                }
+                throw e;
+            }
+            finally {
+                SystemUtils.close(imageIn);
+                SystemUtils.close(imageOut);
+            }
+        }
+        else {
+            // copy file to external storage
+            // requires external storage write permission
+            File path = DCIM_PUBLIC_PATH;
+            if (!createDirectories(path)) {
+                throw new IOException("unable to write to external storage.");
+            }
+
+            File publicFile = new File(path, file.getName());
+            InputStream in = new FileInputStream(file);
+            OutputStream out = new FileOutputStream(publicFile);
+            try {
+                SystemUtils.copy(in, out);
+            }
+            catch (IOException e) {
+                // try to delete the public file
+                publicFile.delete();
+            }
+            finally {
+                SystemUtils.close(in);
+                SystemUtils.close(out);
+            }
+
+            // notify media scanner
+            // TODO actually just notify MediaStore about the new file
+            Uri uri = Uri.fromFile(publicFile);
+            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            mediaScanIntent.setData(uri);
+            context.sendBroadcast(mediaScanIntent);
+            return uri;
+        }
+    }
+
     public static File resizeImage(Context context, Uri uri, int maxSize) throws IOException {
         return resizeImage(context, uri, maxSize, maxSize, COMPRESSION_QUALITY);
     }
@@ -547,7 +621,7 @@ public abstract class MediaStorage {
 
         FileOutputStream stream = null;
         try {
-            final File file = getOutgoingPictureFile();
+            final File file = getOutgoingPictureFile(context);
             stream = new FileOutputStream(file);
             resizeImage(context, uri, maxWidth, maxHeight,
                 Bitmap.CompressFormat.JPEG, quality, stream);
@@ -659,7 +733,7 @@ public abstract class MediaStorage {
     }
 
     public static File copyOutgoingMedia(Context context, Uri media) throws IOException {
-        final File outFile = getOutgoingPictureFile();
+        final File outFile = getOutgoingPictureFile(context);
         InputStream in = context.getContentResolver().openInputStream(media);
         OutputStream out = null;
         try {
