@@ -253,7 +253,7 @@
   <string name="attachment_contact">Контакт</string>
   <string name="attachment_audio">Аудио</string>
   <string name="chooser_send_picture">Отправить изображение</string>
-  <string name="chooser_error_no_camera">Внешнее хранилище недоступно. Использование снимков из камеры будет отключено.</string>
+  <string name="chooser_error_no_camera">Сохранить изображение не получилось. Использование снимков камеры будет отключено.</string>
   <string name="chooser_select_link">Выбор действия</string>
   <string name="status_activity_title">Статусное сообщение</string>
   <string name="hint_status_entry">Введите здесь свое статусное сообщение</string>
@@ -785,5 +785,7 @@
     <string name="showcase_composer_toolbar_single_message">Нажмите на панель, чтобы посмотреть информацию о контакте.</string>
     <string name="showcase_composer_toolbar_group_title">Информация о группе</string>
     <string name="showcase_composer_toolbar_group_message">Нажмите на панель, чтобы просмотреть или изменить состав участников.</string>
+
+    <string name="err_camera_picture_storage_denied">Для того, чтобы использовать снимки, нам нужен доступ к камере. Если вы двдите доступ к хранилищу, мы автоматически будем добавлять туда сделанные в приложении снимки.</string>
 
     </resources>
