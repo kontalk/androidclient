@@ -104,14 +104,16 @@ public abstract class MainActivity extends ToolbarActivity {
             }
         }
 
-        if (!Preferences.isPermissionAsked(Manifest.permission.READ_EXTERNAL_STORAGE) ||
-            !Preferences.isPermissionAsked(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+        if (!SystemUtils.supportsScopedStorage()) {
+            if (!Preferences.isPermissionAsked(Manifest.permission.READ_EXTERNAL_STORAGE) ||
+                !Preferences.isPermissionAsked(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 
-            if (!Permissions.canWriteExternalStorage(this)) {
-                Permissions.requestWriteExternalStorage(this, getString(R.string.err_storage_denied));
+                if (!Permissions.canWriteExternalStorage(this)) {
+                    Permissions.requestWriteExternalStorage(this, getString(R.string.err_storage_denied));
 
-                Preferences.setPermissionAsked(Manifest.permission.READ_EXTERNAL_STORAGE);
-                Preferences.setPermissionAsked(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                    Preferences.setPermissionAsked(Manifest.permission.READ_EXTERNAL_STORAGE);
+                    Preferences.setPermissionAsked(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                }
             }
         }
     }

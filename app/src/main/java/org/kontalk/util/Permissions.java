@@ -126,7 +126,7 @@ public class Permissions {
         }
     }
 
-    public static void requestCamera(Fragment fragment, String rationale) {
+    public static void requestCamera(Fragment fragment, String rationale, boolean externalStorage) {
         if (EasyPermissions.permissionPermanentlyDenied(fragment, Manifest.permission.CAMERA)) {
             new AppSettingsDialog.Builder(fragment)
                 .setRationale(rationale)
@@ -134,8 +134,21 @@ public class Permissions {
                 .show();
         }
         else {
+            String[] permissions;
+            if (externalStorage) {
+                permissions = new String[] {
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                };
+            }
+            else {
+                permissions = new String[] {
+                    Manifest.permission.CAMERA
+                };
+            }
             EasyPermissions.requestPermissions(fragment, rationale, RC_CAMERA,
-                Manifest.permission.CAMERA);
+                permissions);
         }
     }
 

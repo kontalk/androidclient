@@ -1247,7 +1247,11 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
     private void requestCameraPermission() {
         if (!Permissions.canUseCamera(getContext())) {
-            Permissions.requestCamera(this, getString(R.string.err_camera_picture_denied));
+            boolean requestStorage = !SystemUtils.supportsScopedStorage();
+            int resId = requestStorage ?
+                R.string.err_camera_picture_storage_denied :
+                R.string.err_camera_picture_denied;
+            Permissions.requestCamera(this, getString(resId), requestStorage);
         }
         else {
             startCameraAttachment();
@@ -1530,15 +1534,19 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                 if (requestCode == SELECT_ATTACHMENT_PHOTO) {
                     if (mCurrentPhoto != null) {
                         Uri uri = Uri.fromFile(mCurrentPhoto);
-                        try {
-                            MediaStorage.publishImage(getContext(), mCurrentPhoto, true);
+
+                        if (SystemUtils.supportsScopedStorage() || Permissions.canWriteExternalStorage(getContext())) {
+                            try {
+                                MediaStorage.publishImage(getContext(), mCurrentPhoto, true);
+                            }
+                            catch (Exception e) {
+                                Log.w(TAG, "unable to publish photo to media store", e);
+                                Toast.makeText(getContext(),
+                                    // TODO i18n
+                                    "Unable to save your photo to the gallery.", Toast.LENGTH_LONG).show();
+                            }
                         }
-                        catch (Exception e) {
-                            Log.w(TAG, "unable to publish photo to media store", e);
-                            Toast.makeText(getContext(),
-                                // TODO i18n
-                                "Unable to save your photo to the gallery.", Toast.LENGTH_LONG).show();
-                        }
+
                         mCurrentPhoto = null;
 
                         uris = new Uri[]{uri};
