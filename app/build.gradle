@@ -203,8 +203,8 @@ dependencies {
     implementation 'com.afollestad.material-dialogs:commons:0.9.6.0'
     implementation 'com.github.castorflex.smoothprogressbar:library:1.1.0'
     implementation 'com.nispok:snackbar:2.11.0'
-    // TODO Glide 4 required API level 14 at the time. It needs porting now
-    implementation 'com.github.bumptech.glide:glide:3.8.0'
+    implementation 'com.github.bumptech.glide:glide:4.11.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
     implementation 'com.github.daniele-athome:FloatingActionButton:2e5bbbf155'
     implementation 'com.github.vlivanov:ListViewVariants:f606578467'
     implementation 'com.vanniktech:emoji-ios:0.6.0'

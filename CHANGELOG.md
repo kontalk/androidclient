@@ -5,6 +5,7 @@
 - Sharing to groups (#864)
 - Migrate to AndroidX (#1269)
 - Support for Android 10 (#1282)
+- Media is no longer saved on public storage (#1291)
 - Improved multiselection experience
 - Revamped settings appearance
 - Removed Google Play donation
