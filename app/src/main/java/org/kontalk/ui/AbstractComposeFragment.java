@@ -41,6 +41,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.jivesoftware.smackx.chatstates.ChatState;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -424,6 +425,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         MenuItem openMenu = menu.findItem(R.id.menu_open);
         MenuItem dlMenu = menu.findItem(R.id.menu_download);
         MenuItem cancelDlMenu = menu.findItem(R.id.menu_cancel_download);
+        MenuItem saveAttachment = menu.findItem(R.id.menu_save_attachment);
 
         // initial status
         deleteMenu.setVisible(true);
@@ -435,6 +437,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         openMenu.setVisible(false);
         dlMenu.setVisible(false);
         cancelDlMenu.setVisible(false);
+        saveAttachment.setVisible(false);
 
         boolean singleItem = (mCheckedItemCount == 1);
         if (singleItem) {
@@ -483,6 +486,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
                             openMenu.setTitle(resId);
                             openMenu.setVisible(true);
+                            saveAttachment.setVisible(true);
                         }
 
                         // message has a fetch url - add download control entry
@@ -580,6 +584,13 @@ public abstract class AbstractComposeFragment extends ListFragment implements
             case R.id.menu_details: {
                 CompositeMessage msg = getCheckedItem();
                 showMessageDetails(msg);
+                mode.finish();
+                return true;
+            }
+
+            case R.id.menu_save_attachment: {
+                CompositeMessage msg = getCheckedItem();
+                saveAttachments(msg);
                 mode.finish();
                 return true;
             }
@@ -1161,6 +1172,77 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         }
     }
 
+    private void saveAttachments(CompositeMessage msg) {
+        if (SystemUtils.supportsScopedStorage() || Permissions.canWriteExternalStorage(getContext())) {
+            doSaveAttachments(msg);
+        }
+        else {
+            Permissions.requestWriteExternalStorage(this, getString(R.string.err_storage_denied));
+            Preferences.setPermissionAsked(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            Preferences.setPermissionAsked(Manifest.permission.READ_EXTERNAL_STORAGE);
+        }
+    }
+
+    private void doSaveAttachments(CompositeMessage msg) {
+        int totalAttachments = 0;
+        int savedAttachments = 0;
+        for (MessageComponent component : msg.getComponents()) {
+            if (component instanceof AttachmentComponent) {
+                totalAttachments++;
+
+                AttachmentComponent attachment = (AttachmentComponent) component;
+                Uri fileUri = attachment.getLocalUri();
+                if (fileUri == null) {
+                    Log.d(TAG, "attachment not downloaded, skipping");
+                    continue;
+                }
+                if (!"file".equals(fileUri.getScheme())) {
+                    Log.w(TAG, "attachment comes from unknown source, skipping: " + fileUri);
+                    continue;
+                }
+
+                File file = new File(fileUri.getPath());
+
+                MediaStorage.MediaStoreType mediaType;
+                if (attachment instanceof ImageComponent) {
+                    mediaType = MediaStorage.MediaStoreType.IMAGE;
+                }
+                else if (attachment instanceof AudioComponent) {
+                    // FIXME audios are only recordings for now, but they won't be forever
+                    mediaType = MediaStorage.MediaStoreType.RECORDING;
+                }
+                else if (attachment instanceof VCardComponent) {
+                    mediaType = MediaStorage.MediaStoreType.OTHER;
+                }
+                else /*if (attachment instanceof DefaultAttachmentComponent)*/ {
+                    mediaType = MediaStorage.MediaStoreType.OTHER;
+                }
+                try {
+                    MediaStorage.publishMedia(getContext(), file, mediaType);
+                    savedAttachments++;
+                }
+                catch (IOException e) {
+                    Log.w(TAG, "unable to save attachment: " + file, e);
+                }
+            }
+        }
+
+        String message;
+        if (savedAttachments == 0 && totalAttachments == 1) {
+            message = getString(R.string.err_storage_attachment_single);
+        }
+        else if (totalAttachments > 1 && savedAttachments < totalAttachments) {
+            message = getString(R.string.err_storage_attachment_some);
+        }
+        else {
+            message = getResources()
+                .getQuantityString(R.plurals.msg_storage_attachment_saved,
+                    savedAttachments);
+        }
+
+        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+    }
+
     private void openFile(CompositeMessage msg) {
         AttachmentComponent attachment = msg.getComponent(AttachmentComponent.class);
 
@@ -1537,13 +1619,12 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
                         if (SystemUtils.supportsScopedStorage() || Permissions.canWriteExternalStorage(getContext())) {
                             try {
-                                MediaStorage.publishImage(getContext(), mCurrentPhoto, true);
+                                MediaStorage.publishMedia(getContext(), mCurrentPhoto, MediaStorage.MediaStoreType.PHOTO);
                             }
                             catch (Exception e) {
                                 Log.w(TAG, "unable to publish photo to media store", e);
-                                Toast.makeText(getContext(),
-                                    // TODO i18n
-                                    "Unable to save your photo to the gallery.", Toast.LENGTH_LONG).show();
+                                Toast.makeText(getContext(), R.string.err_storage_photo_gallery,
+                                    Toast.LENGTH_LONG).show();
                             }
                         }
 
