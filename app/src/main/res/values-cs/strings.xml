@@ -253,7 +253,7 @@
   <string name="attachment_contact">Kontakt</string>
   <string name="attachment_audio">Zvuk</string>
   <string name="chooser_send_picture">Odeslat obrázek</string>
-  <string name="chooser_error_no_camera">Externí úložiště není dostupné. Snímání fotek fotoaparátem nebude povoleno.</string>
+  <string name="chooser_error_no_camera">Není možné zapsat soubor s obrázkem. Snímání fotek fotoaparátem nebude povoleno.</string>
   <string name="chooser_select_link">Zvolte akci</string>
   <string name="status_activity_title">Stavová zpráva</string>
   <string name="hint_status_entry">Sem napište svoji stavovou zprávu</string>
@@ -693,8 +693,7 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
 \nPřístup můžete povolit z nastavení Androidu.</string>
     <string name="warn_contacts_denied">Zakázali jste přístup ke kontaktům. Neuvidíte zde změny v kontaktech.</string>
 
-    <string name="err_storage_denied">Kontalk potřebuje přístup k lokální paměti, aby mohl ukládat média.
-\nPřístup k k paměti můžete povolit z nastavení Androidu.</string>
+    <string name="err_storage_denied">Kontalk potřebuje přístup k lokální paměti, aby mohl ukládat média.</string>
 
     <string name="permission_messages_label">Přístup ke zprávám Kontalk</string>
     <string name="permission_messages_description">Může číst z a zapisovat do databáze zpráv Kontalk</string>
@@ -780,4 +779,29 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="menu_switch_contacts">Kontakty</string>
     <string name="menu_switch_recents">Nedávné</string>
     <string name="text_contacts_recents_empty">Zde se budou objevovat nedávné konverzace. Můžete <b>přepnout na kontakty</b> pomocí tlačítka výše.</string>
+    <string name="save_attachment">Uložit přílohu</string>
+    <string name="err_camera_picture_storage_denied">Potřebujeme přístup k vašemu fotoaparátu, abychom mohli snímat fotky. Pokud udělíte přístup také k externímu úložišti, budeme automaticky exportovat obrázky do galerie.</string>
+
+    <string name="err_storage_photo_gallery">Nepodařilo se uložit vaši fotografii do galerie.</string>
+    <string name="err_storage_attachment_single">Nepodařilo se uložit přílohu.</string>
+    <string name="err_storage_attachment_some">Některé přílohy nebyly uloženy z důvodu chyb.</string>
+    <plurals name="msg_storage_attachment_saved">
+	<item quantity="one">Příloha byla uložena do externího úložiště.</item>
+	<item quantity="few">Přílohy byly uloženy do externího úložiště.</item>
+	<item quantity="other">Přílohy byly uloženy do externího úložiště.</item>
+</plurals>
+
+    <string name="pref_reset_hints">Obnovit nápovědy</string>
+    <string name="pref_title_reset_hints">Znovu ukázat průvodcovské nápovědy v celé aplikaci</string>
+    <string name="msg_hints_reset">Nápovědy průvodce byly obnoveny.</string>
+
+    <string name="showcase_conversations_compose_title">Zahájit psaní zpráv</string>
+    <string name="showcase_conversations_compose_message">Pokud si s někým chcete začít psát, použijte toto tlačítko.</string>
+    <string name="showcase_composer_attach_title">Ne pouze text</string>
+    <string name="showcase_composer_attach_message">Můžete sdílet obrázky, nahrávky a další.</string>
+    <string name="showcase_composer_toolbar_single_title">Informace o kontaktu</string>
+    <string name="showcase_composer_toolbar_single_message">Pro zobrazeni informací o kontaktu klikněte na horní panel.</string>
+    <string name="showcase_composer_toolbar_group_title">Informace o skupině</string>
+    <string name="showcase_composer_toolbar_group_message">Pro zobrazeni členů skupiny a editaci skupiny klikněte na horní panel.</string>
+
     </resources>
