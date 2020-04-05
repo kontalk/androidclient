@@ -68,7 +68,6 @@ import org.kontalk.util.XMPPUtils;
 public class Authenticator extends AbstractAccountAuthenticator {
 
     public static final String ACCOUNT_TYPE = BuildConfig.ACCOUNT_TYPE;
-    public static final String ACCOUNT_TYPE_LEGACY = "org.kontalk.legacy.account";
     public static final String DATA_PRIVATEKEY = "org.kontalk.key.private";
     public static final String DATA_PUBLICKEY = "org.kontalk.key.public";
     public static final String DATA_BRIDGECERT = "org.kontalk.key.bridgeCert";

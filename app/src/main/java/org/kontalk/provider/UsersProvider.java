@@ -626,9 +626,9 @@ public class UsersProvider extends ContentProvider {
                     where + " (" +
                         // this will filter out RawContacts from Kontalk
                         RawContacts.ACCOUNT_TYPE + " IS NULL OR " +
-                        RawContacts.ACCOUNT_TYPE + " NOT IN (?, ?))",
+                        RawContacts.ACCOUNT_TYPE + " <> ?)",
                     new String[]{
-                        Authenticator.ACCOUNT_TYPE, Authenticator.ACCOUNT_TYPE_LEGACY
+                        Authenticator.ACCOUNT_TYPE
                     }, null);
 
                 if (phones != null) {
