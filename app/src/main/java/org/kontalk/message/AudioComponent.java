@@ -27,11 +27,12 @@ import android.net.Uri;
 
 import org.kontalk.util.MediaStorage;
 
+
 /**
  * Audio component.
  * @author Andrea Cappelli
+ * TODO create subclass for audio recordings
  */
-
 public class AudioComponent extends AttachmentComponent {
 
     static Map<String, String> MIME_TYPES = new HashMap<>();
