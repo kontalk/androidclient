@@ -29,6 +29,7 @@
     <files-path name="kontalk_pictures" path="Pictures" />
     <files-path name="kontalk_photos" path="DCIM" />
     <files-path name="kontalk_downloads" path="Download" />
+    <files-path name="kontalk_documents" path="Documents" />
 
     <cache-path name="kontalk_camera" path="DCIM"/>
     <cache-path name="kontalk_debug" path="debug" />

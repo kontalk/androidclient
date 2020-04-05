@@ -1537,7 +1537,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
                         if (SystemUtils.supportsScopedStorage() || Permissions.canWriteExternalStorage(getContext())) {
                             try {
-                                MediaStorage.publishImage(getContext(), mCurrentPhoto, true);
+                                MediaStorage.publishMedia(getContext(), mCurrentPhoto, MediaStorage.MediaStoreType.PHOTO);
                             }
                             catch (Exception e) {
                                 Log.w(TAG, "unable to publish photo to media store", e);

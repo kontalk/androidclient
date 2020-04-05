@@ -77,23 +77,66 @@ import org.kontalk.reporting.ReportingManager;
 public abstract class MediaStorage {
     private static final String TAG = Kontalk.TAG;
 
+    public enum MediaStoreType {
+        PHOTO,
+        IMAGE,
+        AUDIO,
+        RECORDING,
+        VIDEO,
+        DOCUMENT,
+        OTHER,
+    }
+
     public static final String FILE_AUTHORITY = BuildConfig.APPLICATION_ID + ".fileprovider";
 
     public static final String UNKNOWN_FILENAME = "unknown_file.bin";
 
-    private static final String RECORDING_ROOT = "Recordings";
-    private static final String RECORDING_SENT_ROOT = new File(RECORDING_ROOT, "Sent").toString();
+    private static final File AUDIO_PUBLIC_PATH = Environment
+        .getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
+
+    private static final String RECORDINGS_ROOT = "Recordings";
+    private static final String RECORDINGS_SENT_ROOT = new File(RECORDINGS_ROOT, "Sent").toString();
+    private static final String RECORDINGS_PUBLIC_RELATIVE_PATH =
+        new File(Environment.DIRECTORY_MUSIC, RECORDINGS_ROOT).toString();
+    private static final File RECORDINGS_PUBLIC_PATH = new File(Environment
+        .getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), RECORDINGS_ROOT);
 
     private static final String PICTURES_ROOT = Environment.DIRECTORY_PICTURES;
     private static final String PICTURES_SENT_ROOT = new File(PICTURES_ROOT, "Sent").toString();
+    private static final File PICTURES_PUBLIC_PATH = Environment
+        .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
 
-    private static final String DCIM_ROOT = Environment.DIRECTORY_DCIM;
-    private static final String DCIM_PUBLIC_RELATIVE_PATH = new File
-        (Environment.DIRECTORY_DCIM, "Kontalk").toString();
-    private static final File DCIM_PUBLIC_PATH = new File
-        (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "Kontalk");
+    private static final String PHOTOS_ROOT = Environment.DIRECTORY_DCIM;
+    private static final String PHOTOS_PUBLIC_RELATIVE_PATH = new File
+        (Environment.DIRECTORY_DCIM).toString();
+    private static final File PHOTOS_PUBLIC_PATH = Environment
+        .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+
+    private static final File VIDEO_PUBLIC_PATH = Environment
+        .getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+
+    private static final String DOCUMENTS_ROOT;
+    private static final String DOCUMENTS_PUBLIC_RELATIVE_PATH;
+    private static final File DOCUMENTS_PUBLIC_PATH;
+    static {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            DOCUMENTS_ROOT = Environment.DIRECTORY_DOCUMENTS;
+            DOCUMENTS_PUBLIC_RELATIVE_PATH = Environment.DIRECTORY_DOCUMENTS;
+            DOCUMENTS_PUBLIC_PATH = Environment
+                .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
+        }
+        else {
+            DOCUMENTS_ROOT = "Documents";
+            DOCUMENTS_PUBLIC_RELATIVE_PATH = "Documents";
+            DOCUMENTS_PUBLIC_PATH = Environment
+                .getExternalStoragePublicDirectory("Documents");
+        }
+    }
 
     private static final String DOWNLOADS_ROOT = Environment.DIRECTORY_DOWNLOADS;
+    private static final String DOWNLOADS_PUBLIC_RELATIVE_PATH = Environment.DIRECTORY_DOWNLOADS;
+    private static final File DOWNLOADS_PUBLIC_PATH = Environment
+        .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 
     private static final DateFormat sDateFormat =
         new SimpleDateFormat("yyyyMMdd_HHmmssSSS", Locale.US);
@@ -406,7 +449,7 @@ public abstract class MediaStorage {
     }
 
     private static File getOutgoingPhotoFile(Context context, Date date) throws IOException {
-        File path = new File(context.getCacheDir(), DCIM_ROOT);
+        File path = new File(context.getCacheDir(), PHOTOS_ROOT);
         createDirectories(path);
         return createImageFile(path, date);
     }
@@ -449,7 +492,7 @@ public abstract class MediaStorage {
     }
 
     private static File getOutgoingAudioFile(Context context, Date date) throws IOException {
-        File path = new File(context.getFilesDir(), RECORDING_SENT_ROOT);
+        File path = new File(context.getFilesDir(), RECORDINGS_SENT_ROOT);
         createDirectories(path);
         String timeStamp = sDateFormat.format(date);
         File f = new File(path, "record_" + timeStamp + "." + AudioRecording.FILE_EXTENSION);
@@ -464,7 +507,7 @@ public abstract class MediaStorage {
 
     /** Creates a file object for an incoming audio file. */
     public static File getIncomingAudioFile(Context context, Date date, String extension) {
-        File path = new File(context.getFilesDir(), RECORDING_ROOT);
+        File path = new File(context.getFilesDir(), RECORDINGS_ROOT);
         createDirectories(path);
         String timeStamp = sDateFormat.format(date);
         return new File(path, "audio_" + timeStamp + "." + extension);
@@ -526,7 +569,7 @@ public abstract class MediaStorage {
     /**
      * Publishes some media to the {@link MediaStore}.
      */
-    public static Uri publishImage(Context context, File file, boolean photo) throws IOException {
+    public static Uri publishMedia(Context context, File file, @NonNull MediaStoreType type) throws IOException {
         if (!isExternalStorageAvailable()) {
             throw new IOException("external storage not available.");
         }
@@ -535,54 +578,109 @@ public abstract class MediaStorage {
             // publish to the media store
             ContentResolver resolver = context.getContentResolver();
 
-            Uri imageCollection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+            Uri collection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
             ContentValues values = new ContentValues();
-            values.put(MediaStore.Images.Media.DISPLAY_NAME, file.getName());
-            values.put(MediaStore.Images.Media.IS_PENDING, 1);
-            if (photo) {
-                values.put(MediaStore.Images.Media.RELATIVE_PATH, DCIM_PUBLIC_RELATIVE_PATH);
+
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, file.getName());
+            values.put(MediaStore.MediaColumns.IS_PENDING, 1);
+
+            switch (type) {
+                case PHOTO:
+                    values.put(MediaStore.Images.Media.RELATIVE_PATH, PHOTOS_PUBLIC_RELATIVE_PATH);
+                    // a photo is also an image
+                case IMAGE:
+                    collection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+                    break;
+                case RECORDING:
+                    values.put(MediaStore.Files.FileColumns.RELATIVE_PATH, RECORDINGS_PUBLIC_RELATIVE_PATH);
+                    // a recording is also an audio
+                case AUDIO:
+                    collection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+                    break;
+                case VIDEO:
+                    collection = MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+                    break;
+                case DOCUMENT:
+                    // TODO is this supported?
+                    collection = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+                        values.put(MediaStore.Files.FileColumns.RELATIVE_PATH, DOCUMENTS_PUBLIC_RELATIVE_PATH);
+                    }
+                    break;
+                case OTHER:
+                    // TODO is this supported?
+                    collection = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+                    values.put(MediaStore.Files.FileColumns.RELATIVE_PATH, DOWNLOADS_PUBLIC_RELATIVE_PATH);
+                    break;
             }
             // TODO other attributes maybe?
 
-            Uri imageFile = resolver.insert(imageCollection, values);
-            if (imageFile == null) {
+            Uri mediaFile = resolver.insert(collection, values);
+            if (mediaFile == null) {
                 throw new FileNotFoundException("Unable to create media");
             }
 
-            OutputStream imageOut = null;
-            InputStream imageIn = null;
+            OutputStream mediaOut = null;
+            InputStream mediaIn = null;
             try {
-                imageOut = resolver.openOutputStream(imageFile);
-                if (imageOut == null) {
+                mediaOut = resolver.openOutputStream(mediaFile);
+                if (mediaOut == null) {
                     throw new FileNotFoundException("Unable to create media");
                 }
 
-                imageIn = new FileInputStream(file);
-                SystemUtils.copy(imageIn, imageOut);
+                mediaIn = new FileInputStream(file);
+                SystemUtils.copy(mediaIn, mediaOut);
 
                 values.clear();
-                values.put(MediaStore.Images.Media.IS_PENDING, 0);
-                context.getContentResolver().update(imageFile, values, null, null);
-                return imageFile;
+                values.put(MediaStore.MediaColumns.IS_PENDING, 0);
+                context.getContentResolver().update(mediaFile, values, null, null);
+                return mediaFile;
             }
             catch (RuntimeException e) {
                 // something went wrong, delete dangling media
                 try {
-                    resolver.delete(imageFile, null, null);
+                    resolver.delete(mediaFile, null, null);
                 }
                 catch (Exception ignored) {
                 }
                 throw e;
             }
             finally {
-                SystemUtils.close(imageIn);
-                SystemUtils.close(imageOut);
+                SystemUtils.close(mediaIn);
+                SystemUtils.close(mediaOut);
             }
         }
         else {
             // copy file to external storage
             // requires external storage write permission
-            File path = DCIM_PUBLIC_PATH;
+
+            File path;
+            switch (type) {
+                case PHOTO:
+                    path = PHOTOS_PUBLIC_PATH;
+                    break;
+                case IMAGE:
+                    path = PICTURES_PUBLIC_PATH;
+                    break;
+                case AUDIO:
+                    path = AUDIO_PUBLIC_PATH;
+                    break;
+                case RECORDING:
+                    path = RECORDINGS_PUBLIC_PATH;
+                    break;
+                case VIDEO:
+                    path = VIDEO_PUBLIC_PATH;
+                    break;
+                case DOCUMENT:
+                    path = DOCUMENTS_PUBLIC_PATH;
+                    break;
+                case OTHER:
+                    path = DOWNLOADS_PUBLIC_PATH;
+                    break;
+                default:
+                    throw new IllegalArgumentException("invalid media type");
+            }
+
             if (!createDirectories(path)) {
                 throw new IOException("unable to write to external storage.");
             }
