@@ -739,7 +739,7 @@
     <string name="showcase_conversations_compose_title">Start chatting</string>
     <string name="showcase_conversations_compose_message">Use this button to open a chat with someone.</string>
     <string name="showcase_composer_attach_title">Not only text</string>
-    <string name="showcase_composer_attach_message">You can share other pictures, recordings and more.</string>
+    <string name="showcase_composer_attach_message">You can share pictures, recordings and more.</string>
     <string name="showcase_composer_toolbar_single_title">Contact info</string>
     <string name="showcase_composer_toolbar_single_message">Tap the toolbar to view contact information.</string>
     <string name="showcase_composer_toolbar_group_title">Group info</string>
