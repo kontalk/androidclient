@@ -85,7 +85,6 @@ import org.jxmpp.jid.parts.Localpart;
 import org.jxmpp.stringprep.XmppStringprepException;
 import org.bouncycastle.openpgp.PGPException;
 
-import android.accounts.Account;
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -120,6 +119,7 @@ import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.authenticator.MyAccount;
 import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.BlockingCommand;
 import org.kontalk.client.E2EEncryption;
@@ -1664,8 +1664,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             mInactive = false;
 
             // retrieve account name
-            Account acc = Authenticator.getDefaultAccount(this);
-            mMyUsername = (acc != null) ? acc.name : null;
+            MyAccount account = Kontalk.get().getDefaultAccount();
+            mMyUsername = (account != null) ? account.getName() : null;
 
             // get server from preferences
             mServer = Preferences.getEndpointServer(this);
@@ -1997,14 +1997,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private boolean isAuthorized(BareJid jid) {
-        if (Authenticator.isSelfJID(this, jid))
+        if (Kontalk.get().getDefaultAccount().isSelfJID(jid))
             return true;
         RosterEntry entry = getRosterEntry(jid);
         return entry != null && isAuthorized(entry);
     }
 
     private boolean isAuthorized(RosterEntry entry) {
-        return (isRosterEntrySubscribed(entry) || Authenticator.isSelfJID(this, entry.getJid()));
+        return (isRosterEntrySubscribed(entry) || Kontalk.get().getDefaultAccount().isSelfJID(entry.getJid()));
     }
 
     private boolean isRosterEntrySubscribed(RosterEntry entry) {
@@ -2016,7 +2016,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         PresenceEvent event;
 
         // asking our own presence
-        if (Authenticator.isSelfJID(this, jid)) {
+        if (Kontalk.get().getDefaultAccount().isSelfJID(jid)) {
             return replyMyPresenceRequest(id);
         }
 
@@ -3034,7 +3034,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private void beginUploadPrivateKey(String exportPasshrase) {
         try {
-            String passphrase = Kontalk.get().getCachedPassphrase();
+            String passphrase = Kontalk.get().getDefaultAccount().getPassphrase();
             byte[] privateKeyData = Authenticator.getPrivateKeyExportData(this, passphrase, exportPasshrase);
             PrivateKeyUploadListener uploadListener = new PrivateKeyUploadListener(this, privateKeyData);
             uploadListener.uploadAndListen();

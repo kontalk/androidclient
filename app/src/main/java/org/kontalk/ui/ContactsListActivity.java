@@ -28,8 +28,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import org.kontalk.Kontalk;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.msgcenter.MessageCenterService;
@@ -170,7 +170,7 @@ public class ContactsListActivity extends ToolbarActivity
     protected void onResume() {
         super.onResume();
 
-        if (Authenticator.getDefaultAccount(this) == null) {
+        if (Kontalk.get().getDefaultAccount() == null) {
             NumberValidation.start(this);
             finish();
             return;

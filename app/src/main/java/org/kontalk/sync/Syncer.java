@@ -45,9 +45,9 @@ import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.RawContacts;
 import android.text.TextUtils;
 
+import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PGPUserID;
 import org.kontalk.data.Contact;
@@ -282,7 +282,7 @@ public class Syncer {
                             try {
                                 PGPPublicKey pubKey = PGP.getMasterKey(entry.publicKey);
                                 // trust our own key blindly
-                                int trustLevel = Authenticator.isSelfJID(mContext, entry.from) ?
+                                int trustLevel = Kontalk.get().getDefaultAccount().isSelfJID(entry.from) ?
                                     MyUsers.Keys.TRUST_VERIFIED : -1;
                                 // update keys table immediately
                                 Keyring.setKey(mContext, entry.from.toString(), entry.publicKey, trustLevel);
@@ -320,8 +320,8 @@ public class Syncer {
                          */
                         String origJid;
                         if (data != null)
-                            origJid = XMPPUtils.createLocalJID(mContext,
-                                XmppStringUtils.parseLocalpart(entry.from.toString()));
+                            origJid = XMPPUtils.createLocalJID(XmppStringUtils
+                                .parseLocalpart(entry.from.toString()));
                         else
                             origJid = entry.from.toString();
                         usersProvider.update(Users.CONTENT_URI_OFFLINE, registeredValues,
@@ -331,13 +331,15 @@ public class Syncer {
                         registeredValues.remove(Users.DISPLAY_NAME);
 
                         // if this is our own contact, trust our own key later
-                        if (Authenticator.isSelfJID(mContext, entry.from)) {
+                        if (Kontalk.get().getDefaultAccount().isSelfJID(entry.from)) {
                             // register our profile while we're at it
                             if (data != null) {
                                 // add contact
-                                addProfile(account,
-                                    Authenticator.getDefaultDisplayName(mContext),
-                                    data.number, data.jid, operations, op++);
+                                String displayName = Kontalk.get().getDefaultAccount()
+                                    .getDisplayName();
+                                addProfile(account, displayName,
+                                    data.number, data.jid,
+                                    operations, op++);
                             }
                         }
                     }

@@ -60,7 +60,7 @@ class PublicKeyListener extends MessageCenterPacketListener implements Exception
 
         if (_publicKey != null) {
             BareJid from = p.getFrom().asBareJid();
-            boolean selfJid = Authenticator.isSelfJID(getContext(), from);
+            boolean selfJid = Kontalk.get().getDefaultAccount().isSelfJID(from);
 
             // is this our key?
             if (selfJid) {

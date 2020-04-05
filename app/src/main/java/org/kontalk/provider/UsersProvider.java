@@ -55,6 +55,7 @@ import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.authenticator.MyAccount;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers.Keys;
@@ -632,6 +633,7 @@ public class UsersProvider extends ContentProvider {
                     }, null);
 
                 if (phones != null) {
+                    String myNumber = Kontalk.get().getDefaultAccount().getPhoneNumber();
                     while (phones.moveToNext()) {
                         String number = phones.getString(0);
                         String name = phones.getString(1);
@@ -651,7 +653,7 @@ public class UsersProvider extends ContentProvider {
                         // fix number
                         try {
                             number = RegistrationService.fixNumber(context, number,
-                                Authenticator.getDefaultAccountName(context), 0);
+                                myNumber, 0);
                         }
                         catch (Exception e) {
                             Log.e(SyncAdapter.TAG, "unable to normalize number: " + number + " - skipping", e);
@@ -663,7 +665,7 @@ public class UsersProvider extends ContentProvider {
                             String hash = XMPPUtils.createLocalpart(number);
                             String lookupKey = phones.getString(2);
                             long contactId = phones.getLong(3);
-                            String jid = XMPPUtils.createLocalJID(getContext(), hash);
+                            String jid = XMPPUtils.createLocalJID(hash);
 
                             addResyncContact(db, stm, onlineUpd, onlineIns,
                                 number, jid, name,
@@ -708,6 +710,7 @@ public class UsersProvider extends ContentProvider {
                     }
 
                     if (phones != null) {
+                        String myNumber = Kontalk.get().getDefaultAccount().getPhoneNumber();
                         while (phones.moveToNext()) {
                             String name = phones.getString(phones.getColumnIndex("name"));
                             String number = phones.getString(phones.getColumnIndex("number"));
@@ -726,7 +729,7 @@ public class UsersProvider extends ContentProvider {
                             // fix number
                             try {
                                 number = RegistrationService.fixNumber(context, number,
-                                    Authenticator.getDefaultAccountName(context), 0);
+                                    myNumber, 0);
                             }
                             catch (Exception e) {
                                 Log.e(SyncAdapter.TAG, "unable to normalize number: " + number + " - skipping", e);
@@ -736,7 +739,7 @@ public class UsersProvider extends ContentProvider {
 
                             try {
                                 String hash = XMPPUtils.createLocalpart(number);
-                                String jid = XMPPUtils.createLocalJID(getContext(), hash);
+                                String jid = XMPPUtils.createLocalJID(hash);
                                 long contactId = phones.getLong(phones.getColumnIndex(BaseColumns._ID));
 
                                 addResyncContact(db, stm, onlineUpd, onlineIns,
@@ -756,38 +759,42 @@ public class UsersProvider extends ContentProvider {
                 }
 
                 // try to add account number with display name
-                String ownNumber = Authenticator.getDefaultAccountName(getContext());
-                if (ownNumber != null) {
-                    String ownName = Authenticator.getDefaultDisplayName(getContext());
-                    String fingerprint = null;
-                    byte[] publicKeyData = null;
-                    try {
-                        PersonalKey myKey = Kontalk.get().getPersonalKey();
-                        if (myKey != null) {
-                            fingerprint = myKey.getFingerprint();
-                            publicKeyData = myKey.getEncodedPublicKeyRing();
-                        }
-                    }
-                    catch (Exception e) {
-                        Log.w(SyncAdapter.TAG, "unable to load personal key", e);
-                    }
-                    try {
-                        String hash = XMPPUtils.createLocalpart(ownNumber);
-                        String jid = XMPPUtils.createLocalJID(getContext(), hash);
+                MyAccount account = Kontalk.get().getDefaultAccount();
+                if (account == null) {
+                    Log.w(SyncAdapter.TAG, "no account found?!?");
+                    return 0;
+                }
 
-                        addResyncContact(db, stm, onlineUpd, onlineIns,
-                            ownNumber, jid, ownName,
-                            null, null,
-                            true);
-                        insertOrUpdateKey(jid, fingerprint, publicKeyData, false);
-                        count++;
+                String ownNumber = account.getPhoneNumber();
+                String ownName = account.getDisplayName();
+                String fingerprint = null;
+                byte[] publicKeyData = null;
+                try {
+                    PersonalKey myKey = Kontalk.get().getPersonalKey();
+                    if (myKey != null) {
+                        fingerprint = myKey.getFingerprint();
+                        publicKeyData = myKey.getEncodedPublicKeyRing();
                     }
-                    catch (IllegalArgumentException iae) {
-                        Log.w(SyncAdapter.TAG, "doing sync with no server?");
-                    }
-                    catch (SQLiteConstraintException sqe) {
-                        // skip duplicate number
-                    }
+                }
+                catch (Exception e) {
+                    Log.w(SyncAdapter.TAG, "unable to load personal key", e);
+                }
+                try {
+                    String hash = XMPPUtils.createLocalpart(ownNumber);
+                    String jid = XMPPUtils.createLocalJID(hash);
+
+                    addResyncContact(db, stm, onlineUpd, onlineIns,
+                        ownNumber, jid, ownName,
+                        null, null,
+                        true);
+                    insertOrUpdateKey(jid, fingerprint, publicKeyData, false);
+                    count++;
+                }
+                catch (IllegalArgumentException iae) {
+                    Log.w(SyncAdapter.TAG, "doing sync with no server?");
+                }
+                catch (SQLiteConstraintException sqe) {
+                    // skip duplicate number
                 }
 
                 db.setTransactionSuccessful();

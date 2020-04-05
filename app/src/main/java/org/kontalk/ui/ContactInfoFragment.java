@@ -122,7 +122,7 @@ public class ContactInfoFragment extends Fragment
 
             int resId, textId, trustButtonsVisibility;
 
-            if (mContact.isSelf(context)) {
+            if (mContact.isSelf()) {
                 resId = R.drawable.ic_trust_verified;
                 textId = R.string.trust_verified;
                 trustButtonsVisibility = View.GONE;
@@ -374,7 +374,7 @@ public class ContactInfoFragment extends Fragment
         mTrustStatus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!mContact.isSelf(view.getContext())) {
+                if (!mContact.isSelf()) {
                     // TODO animate this
                     mTrustButtons.setVisibility(mTrustButtons.getVisibility() == View.VISIBLE ?
                         View.GONE : View.VISIBLE);

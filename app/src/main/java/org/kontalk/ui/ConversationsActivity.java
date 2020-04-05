@@ -50,7 +50,6 @@ import android.widget.Toast;
 
 import org.kontalk.Kontalk;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.KontalkGroupCommands;
 import org.kontalk.provider.MessagesProviderClient;
@@ -103,7 +102,7 @@ public class ConversationsActivity extends MainActivity
         mFragment = (ConversationsFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_conversation_list);
 
-        if (Authenticator.getDefaultAccount(this) != null && !afterOnCreate())
+        if (Kontalk.get().getDefaultAccount() != null && !afterOnCreate())
             handleIntent(getIntent());
     }
 
@@ -133,8 +132,8 @@ public class ConversationsActivity extends MainActivity
                     try {
                         if (c != null && c.moveToFirst()) {
                             String phone = c.getString(0);
-                            String userJID = XMPPUtils.createLocalJID(this,
-                                XMPPUtils.createLocalpart(phone));
+                            String userJID = XMPPUtils.createLocalJID(XMPPUtils
+                                .createLocalpart(phone));
                             uri = Threads.getUri(userJID);
                         }
                     }
@@ -211,7 +210,7 @@ public class ConversationsActivity extends MainActivity
         new Thread(new Runnable() {
             @Override
             public void run() {
-                if (Authenticator.getDefaultAccount(context) != null) {
+                if (Kontalk.get().getDefaultAccount() != null) {
                     // mark all messages as old
                     MessagesProviderClient.markAllThreadsAsOld(context);
                     // update notification
@@ -220,7 +219,7 @@ public class ConversationsActivity extends MainActivity
             }
         }).start();
 
-        if (Authenticator.getDefaultAccount(this) == null) {
+        if (Kontalk.get().getDefaultAccount() == null) {
             NumberValidation.start(this);
             finish();
         }
@@ -297,7 +296,7 @@ public class ConversationsActivity extends MainActivity
     }
 
     private void startGroupChat(List<Uri> users) {
-        String selfJid = Authenticator.getSelfJID(this);
+        String selfJid = Kontalk.get().getDefaultAccount().getSelfJID();
         String groupId = StringUtils.randomString(20);
         String groupJid = KontalkGroupCommands.createGroupJid(groupId, selfJid);
 

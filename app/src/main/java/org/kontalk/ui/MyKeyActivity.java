@@ -27,7 +27,6 @@ import android.widget.TextView;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.util.ViewUtils;
@@ -66,7 +65,7 @@ public class MyKeyActivity extends ToolbarActivity implements ViewUtils.OnQRCode
     protected void onStart() {
         super.onStart();
 
-        mAccountName.setText(Authenticator.getDefaultAccountName(this));
+        mAccountName.setText(Kontalk.get().getDefaultAccount().getName());
 
         // load personal key
         PersonalKey key;

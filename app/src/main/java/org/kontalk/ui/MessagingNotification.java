@@ -34,7 +34,6 @@ import java.util.Set;
 import org.jxmpp.jid.Jid;
 import org.jxmpp.util.XmppStringUtils;
 
-import android.accounts.Account;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -69,8 +68,9 @@ import android.text.style.StyleSpan;
 import androidx.core.graphics.drawable.IconCompat;
 import me.leolin.shortcutbadger.ShortcutBadger;
 
+import org.kontalk.Kontalk;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
+import org.kontalk.authenticator.MyAccount;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.GroupCommandComponent;
@@ -354,9 +354,10 @@ public class MessagingNotification {
      */
     public static void updateMessagesNotification(Context context, boolean isNew) {
         // no default account. WTF?!?
-        Account account = Authenticator.getDefaultAccount(context);
-        if (account == null)
+        MyAccount account = Kontalk.get().getDefaultAccount();
+        if (account == null) {
             return;
+        }
 
         // if notifying new messages, wait a little bit
         // to let all incoming messages come through
@@ -838,7 +839,7 @@ public class MessagingNotification {
          * @param firstThreadUri Uri of first conversation, used for reply intent
          * @return the number of conversations (i.e. threads) involved
          */
-        int build(Account account, int unread, Uri firstThreadUri) {
+        int build(MyAccount account, int unread, Uri firstThreadUri) {
             int convCount = mConversations.size();
             Style style = null;
             CharSequence title, text, ticker;
@@ -919,7 +920,7 @@ public class MessagingNotification {
                         .getQuantityString(R.plurals.notification_more, moreCount, moreCount);
                 }
                 else {
-                    summary = account.name;
+                    summary = account.getName();
                 }
 
                 inboxStyle.setSummaryText(summary);

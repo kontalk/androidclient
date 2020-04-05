@@ -33,9 +33,9 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
+import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PersonalKeyPack;
 
 
@@ -59,7 +59,7 @@ public final class PreferencesActivity extends BasePreferencesActivity
             Fragment fragment;
 
             // no account - redirect to bootstrap preferences
-            if (Authenticator.getDefaultAccount(this) == null) {
+            if (Kontalk.get().getDefaultAccount() == null) {
                 fragment = new BootstrapPreferences();
             }
             else {

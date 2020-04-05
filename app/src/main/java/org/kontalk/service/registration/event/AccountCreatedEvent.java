@@ -18,7 +18,7 @@
 
 package org.kontalk.service.registration.event;
 
-import android.accounts.Account;
+import org.kontalk.authenticator.MyAccount;
 
 
 /**
@@ -27,9 +27,9 @@ import android.accounts.Account;
  */
 public class AccountCreatedEvent {
 
-    public final Account account;
+    public final MyAccount account;
 
-    public AccountCreatedEvent(Account account) {
+    public AccountCreatedEvent(MyAccount account) {
         this.account = account;
     }
 }

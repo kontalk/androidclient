@@ -49,6 +49,7 @@ import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.authenticator.MyAccount;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyPack;
 import org.kontalk.reporting.ReportingManager;
@@ -91,8 +92,9 @@ public class AccountFragment extends RootPreferenceFragment {
         addPreferencesFromResource(R.xml.preferences_account);
 
         // load account information
-        String displayName = Authenticator.getDefaultDisplayName(getContext());
-        String phoneNumber = Authenticator.getDefaultAccountName(getContext());
+        MyAccount account = Kontalk.get().getDefaultAccount();
+        String displayName = account.getDisplayName();
+        String phoneNumber = account.getPhoneNumber();
         final Preference accountInfo = findPreference("pref_account_info");
         accountInfo.setTitle(displayName);
         accountInfo.setSummary(RegistrationService.formatForDisplay(phoneNumber));
@@ -307,7 +309,7 @@ public class AccountFragment extends RootPreferenceFragment {
                         // user-entered passphrase is hashed, so compare with SHA-1 version
                         String hashed = SHA1.hex(passphrase);
                         if (hashed.equals(Kontalk.get()
-                                .getCachedPassphrase())) {
+                                .getDefaultAccount().getPassphrase())) {
                             action.onValidPassphrase(passphrase);
                         }
                         else {
@@ -331,7 +333,7 @@ public class AccountFragment extends RootPreferenceFragment {
                 .positiveText(android.R.string.ok, new PasswordInputDialog.OnPasswordInputListener() {
                     public void onClick(DialogInterface dialog, int which, String password) {
                         Context ctx = getActivity();
-                        String oldPassword = Kontalk.get().getCachedPassphrase();
+                        String oldPassword = Kontalk.get().getDefaultAccount().getPassphrase();
                         try {
 
                             // user-entered passphrase must be hashed

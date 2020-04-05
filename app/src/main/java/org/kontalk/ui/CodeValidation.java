@@ -450,7 +450,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity {
 
         abort(true);
         Intent i = new Intent();
-        i.putExtra(NumberValidation.PARAM_ACCOUNT_NAME, event.account.name);
+        i.putExtra(NumberValidation.PARAM_ACCOUNT_NAME, event.account.getName());
         setResult(RESULT_OK, i);
         finish();
     }

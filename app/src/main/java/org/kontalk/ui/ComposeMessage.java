@@ -40,7 +40,6 @@ import android.widget.Toast;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages.Threads;
@@ -340,9 +339,9 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
                     // a phone number should come here...
                     String number = RegistrationService.fixNumber(this,
                             uri.getSchemeSpecificPart(),
-                            Authenticator.getDefaultAccountName(this), 0);
+                            Kontalk.get().getDefaultAccount().getPhoneNumber(), 0);
                     // compute hash and open conversation
-                    String jid = XMPPUtils.createLocalJID(this, XMPPUtils.createLocalpart(number));
+                    String jid = XMPPUtils.createLocalJID(XMPPUtils.createLocalpart(number));
 
                     // two-panes UI: start conversation list
                     if (Kontalk.hasTwoPanesUI(this)) {

@@ -34,8 +34,8 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import org.kontalk.Kontalk;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
 import org.kontalk.message.InReplyToComponent;
 import org.kontalk.message.ReferencedMessage;
@@ -98,7 +98,7 @@ public class QuoteContentView extends RelativeLayout
 
             String senderId;
             if (referencedMsg.getDirection() == MyMessages.Messages.DIRECTION_OUT) {
-                senderId = Authenticator.getSelfJID(getContext());
+                senderId = Kontalk.get().getDefaultAccount().getSelfJID();
             }
             else {
                 senderId = referencedMsg.getPeer();

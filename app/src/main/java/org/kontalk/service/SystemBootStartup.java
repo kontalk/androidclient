@@ -19,10 +19,8 @@
 package org.kontalk.service;
 
 import org.kontalk.Kontalk;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.ui.MessagingNotification;
 
-import android.accounts.Account;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -37,8 +35,7 @@ public class SystemBootStartup extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
-            Account account = Authenticator.getDefaultAccount(Kontalk.get());
-            if (account != null) {
+            if (Kontalk.get().getDefaultAccount() != null) {
                 // update notifications from locally unread messages
                 MessagingNotification
                     .delayedUpdateMessagesNotification(Kontalk.get(), false);

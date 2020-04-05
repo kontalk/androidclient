@@ -65,7 +65,6 @@ import pub.devrel.easypermissions.EasyPermissions;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
@@ -330,8 +329,8 @@ public class ComposeMessageFragment extends AbstractComposeFragment
             mUserPhone = c.getString(1);
 
             // FIXME should it be retrieved from RawContacts.SYNC3 ??
-            mUserJID = XMPPUtils.createLocalJID(getContext(),
-                XMPPUtils.createLocalpart(mUserPhone));
+            mUserJID = XMPPUtils.createLocalJID(XMPPUtils
+                .createLocalpart(mUserPhone));
 
             threadId = MessagesProviderClient.findThread(getContext(), mUserJID);
         }
@@ -820,7 +819,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
 
     @Override
     protected void addUsers(String[] members) {
-        String selfJid = Authenticator.getSelfJID(getContext());
+        String selfJid = Kontalk.get().getDefaultAccount().getSelfJID();
         String groupId = StringUtils.randomString(20);
         String groupJid = KontalkGroupCommands.createGroupJid(groupId, selfJid);
 
@@ -1193,7 +1192,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         if (mBlockMenu != null) {
             Context context = getContext();
             if (context != null) {
-                if (Authenticator.isSelfJID(context, mUserJID)) {
+                if (Kontalk.get().getDefaultAccount().isSelfJID(mUserJID)) {
                     mBlockMenu.setVisible(false).setEnabled(false);
                     mUnblockMenu.setVisible(false).setEnabled(false);
                 }

@@ -49,7 +49,7 @@ import android.view.WindowManager;
 
 import org.kontalk.Kontalk;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
+import org.kontalk.authenticator.MyAccount;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.service.ServerListUpdater;
@@ -179,7 +179,13 @@ public final class Preferences {
     }
 
     /** Returns a random server from the cached list or the user-defined server. */
+    @Deprecated
     public static EndpointServer getEndpointServer(Context context) {
+        return getEndpointServer();
+    }
+
+    /** Returns a random server from the cached list or the user-defined server. */
+    public static EndpointServer getEndpointServer() {
         String customUri = getServerURI();
         if (!TextUtils.isEmpty(customUri)) {
             try {
@@ -191,7 +197,8 @@ public final class Preferences {
         }
 
         // return server stored in the default account
-        return Authenticator.getDefaultServer(context);
+        MyAccount account = Kontalk.get().getDefaultAccount();
+        return account != null ? account.getServer() : null;
     }
 
     /** Returns a server provider reflecting the current settings. */

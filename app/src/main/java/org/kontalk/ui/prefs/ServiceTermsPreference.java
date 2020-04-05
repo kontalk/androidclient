@@ -24,7 +24,7 @@ import android.os.Build;
 import androidx.preference.Preference;
 import android.util.AttributeSet;
 
-import org.kontalk.authenticator.Authenticator;
+import org.kontalk.Kontalk;
 import org.kontalk.util.SystemUtils;
 
 
@@ -58,7 +58,7 @@ public class ServiceTermsPreference extends Preference {
     }
 
     private void init() {
-        mServiceTermsUrl = Authenticator.getDefaultServiceTermsURL(getContext());
+        mServiceTermsUrl = Kontalk.get().getDefaultAccount().getServiceTermsURL();
         setEnabled(mServiceTermsUrl != null);
 
         if (mServiceTermsUrl != null) {

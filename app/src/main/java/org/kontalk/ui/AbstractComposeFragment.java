@@ -91,7 +91,6 @@ import pub.devrel.easypermissions.EasyPermissions;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.Coder;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
@@ -629,7 +628,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
 
     private void copySelectedMessages(final SparseBooleanArray checked) {
         String prevUserId = null;
-        String selfJid = Authenticator.getSelfJID(getContext());
+        String selfJid = Kontalk.get().getDefaultAccount().getSelfJID();
         StringBuilder massText = new StringBuilder();
 
         for (int i = 0, c = getListView().getCount()+getListView().getHeaderViewsCount(); i < c; ++i) {
@@ -637,7 +636,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                 Cursor cursor = (Cursor) getListView().getItemAtPosition(i);
                 CompositeMessage msg = CompositeMessage.fromCursor(getContext(), cursor);
                 String userId = msg.getDirection() == Messages.DIRECTION_IN ?
-                    msg.getSender() : Authenticator.getSelfJID(getContext());
+                    msg.getSender() : Kontalk.get().getDefaultAccount().getSelfJID();
 
                 if (prevUserId == null || !prevUserId.equalsIgnoreCase(userId)) {
                     String displayName;
@@ -646,7 +645,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                         displayName = contact.getDisplayName();
                     }
                     else {
-                        displayName = Authenticator.getDefaultDisplayName(getContext());
+                        displayName = Kontalk.get().getDefaultAccount().getDisplayName();
                     }
 
                     if (massText.length() > 0)
@@ -1131,7 +1130,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         else if (location != null) {
             String userId = item.getMessage().getSender();
             if (item.getMessage().getSender() == null)
-                userId = Authenticator.getSelfJID(getContext());
+                userId = Kontalk.get().getDefaultAccount().getSelfJID();
 
             Intent intent = new Intent(getActivity(), PositionActivity.class);
             Position p = new Position(location.getLatitude(), location.getLongitude(),
@@ -1501,7 +1500,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                 displayName = contact.getDisplayName();
             }
             else {
-                displayName = Authenticator.getDefaultDisplayName(getContext());
+                displayName = Kontalk.get().getDefaultAccount().getDisplayName();
             }
 
             mReplyBar.show(msg.getDatabaseId(), displayName, textComponent.getContent());
@@ -2213,7 +2212,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
     public void onResume() {
         super.onResume();
 
-        if (Authenticator.getDefaultAccount(getActivity()) == null) {
+        if (Kontalk.get().getDefaultAccount() == null) {
             NumberValidation.start(getActivity());
             getActivity().finish();
             return;

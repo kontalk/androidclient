@@ -91,6 +91,7 @@ import android.util.Base64;
 import org.kontalk.BuildConfig;
 import org.kontalk.Log;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.authenticator.MyAccount;
 import org.kontalk.client.Account;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.SmackInitializer;
@@ -1701,7 +1702,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             // clear old roster information
             SQLiteRosterStore.purge(context);
 
-            BUS.post(new AccountCreatedEvent(account));
+            BUS.post(new AccountCreatedEvent(new MyAccount(account, am)));
         }
     }
 

@@ -40,11 +40,14 @@ import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Handler;
+
+import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
 import androidx.annotation.RequiresApi;
 import androidx.multidex.MultiDexApplication;
 
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.authenticator.MyAccount;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
@@ -82,17 +85,7 @@ public class Kontalk extends MultiDexApplication {
      */
     private static Kontalk sInstance;
 
-    private PersonalKey mDefaultKey;
-
-    /**
-     * Passphrase to decrypt the personal private key.
-     * This should be asked to the user and stored in memory - otherwise use
-     * a dummy password if user doesn't want to remember it (or optionally do
-     * not encrypt the private key).
-     * For the moment, this is random-generated and stored as the account
-     * password in Android Account Manager.
-     */
-    private String mKeyPassphrase;
+    private MyAccount mDefaultAccount;
 
     /**
      * Keep-alive reference counter.
@@ -131,16 +124,12 @@ public class Kontalk extends MultiDexApplication {
                     }
                 }
                 // actions requiring an account
-                else if (Authenticator.getDefaultAccount(Kontalk.this) != null) {
+                else if (getDefaultAccount() != null) {
                     // manual server address
                     if ("pref_network_uri".equals(key)) {
-                        // temporary measure for users coming from old betas
-                        // this is triggered because manual server address is cleared
-                        if (Authenticator.getDefaultServer(Kontalk.this) != null) {
-                            // just restart the message center for now
-                            Log.w(TAG, "network address changed");
-                            MessageCenterService.restart(Kontalk.this);
-                        }
+                        // just restart the message center for now
+                        Log.w(TAG, "network address changed");
+                        MessageCenterService.restart(Kontalk.this);
                     }
                     // hide presence flag / encrypt user data flag
                     else if ("pref_hide_presence".equals(key) || "pref_encrypt_userdata".equals(key)) {
@@ -211,7 +200,7 @@ public class Kontalk extends MultiDexApplication {
         // TODO listen for changes to phone numbers
 
         AccountManager am = AccountManager.get(this);
-        Account account = Authenticator.getDefaultAccount(am);
+        MyAccount account = getDefaultAccount();
         if (account != null) {
             // register account change listener
             final OnAccountsUpdateListener listener = new OnAccountsUpdateListener() {
@@ -248,8 +237,9 @@ public class Kontalk extends MultiDexApplication {
             am.addOnAccountsUpdatedListener(listener, null, true);
 
             // TODO remove after a few release iterations
-            if (Authenticator.getServiceTermsURL(am, account) == null) {
-                am.setUserData(account, Authenticator.DATA_SERVICE_TERMS_URL,
+            if (Authenticator.getDefaultServiceTermsURL(this) == null) {
+                am.setUserData(account.getSystemAccount(),
+                    Authenticator.DATA_SERVICE_TERMS_URL,
                     getString(R.string.help_default_KPN_service_terms_url));
             }
         }
@@ -271,42 +261,34 @@ public class Kontalk extends MultiDexApplication {
      */
     @Deprecated
     private void disableHintsForUpgrade() {
-        if (Authenticator.getDefaultAccount(this) != null) {
+        if (getDefaultAccount() != null) {
             Showcase.disableAllHints();
         }
     }
 
+    @Nullable
+    public MyAccount getDefaultAccount() {
+        if (mDefaultAccount == null) {
+            mDefaultAccount = Authenticator.getDefaultAccount(this);
+        }
+        return mDefaultAccount;
+    }
+
     public PersonalKey getPersonalKey() throws PGPException, IOException, CertificateException {
-        if (mDefaultKey == null)
-            mDefaultKey = Authenticator.loadDefaultPersonalKey(this, getCachedPassphrase());
-        return mDefaultKey;
+        MyAccount account = getDefaultAccount();
+        return account != null ? account.getPersonalKey() : null;
     }
 
     public void exportPersonalKey(OutputStream out, String exportPassphrase)
             throws CertificateException, PGPException, IOException,
                 KeyStoreException, NoSuchAlgorithmException {
 
-        Authenticator.exportDefaultPersonalKey(this, out, getCachedPassphrase(), exportPassphrase, true);
+        Authenticator.exportDefaultPersonalKey(this, out, exportPassphrase, true);
     }
 
     /** Invalidates the cached personal key. */
     public void invalidatePersonalKey() {
-        mDefaultKey = null;
-        mKeyPassphrase = null;
-    }
-
-    private void ensureCachedPassphrase() {
-        if (mKeyPassphrase == null) {
-            AccountManager am = AccountManager.get(this);
-            Account account = Authenticator.getDefaultAccount(am);
-            // cache passphrase from account
-            mKeyPassphrase = am.getPassword(account);
-        }
-    }
-
-    public String getCachedPassphrase()  {
-        ensureCachedPassphrase();
-        return mKeyPassphrase;
+        mDefaultAccount = null;
     }
 
     private void initMessagesController() {

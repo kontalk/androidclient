@@ -26,7 +26,6 @@ import java.security.cert.CertificateException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.jxmpp.jid.BareJid;
 import org.bouncycastle.openpgp.PGPException;
 
 import android.accounts.AbstractAccountAuthenticator;
@@ -57,7 +56,6 @@ import org.kontalk.crypto.PersonalKeyExporter;
 import org.kontalk.provider.Keyring;
 import org.kontalk.ui.MainActivity;
 import org.kontalk.ui.NumberValidation;
-import org.kontalk.util.XMPPUtils;
 
 
 /**
@@ -86,56 +84,24 @@ public class Authenticator extends AbstractAccountAuthenticator {
         mHandler = new Handler(Looper.getMainLooper());
     }
 
-    public static Account getDefaultAccount(Context ctx) {
-        return getDefaultAccount(AccountManager.get(ctx));
+    @Nullable
+    public static MyAccount getDefaultAccount(Context context) {
+        AccountManager am = AccountManager.get(context);
+        Account account = getDefaultSystemAccount(am);
+        return account != null ? new MyAccount(account, am) : null;
     }
 
     @Nullable
-    public static Account getDefaultAccount(AccountManager m) {
+    private static Account getDefaultSystemAccount(AccountManager m) {
         Account[] accs = m.getAccountsByType(ACCOUNT_TYPE);
         return (accs.length > 0) ? accs[0] : null;
     }
 
-    @Nullable
-    public static String getDefaultAccountName(Context ctx) {
-        Account acc = getDefaultAccount(ctx);
-        return (acc != null) ? acc.name : null;
-    }
-
-    @Nullable
-    public static String getSelfJID(Context ctx) {
-        String name = getDefaultAccountName(ctx);
-        return (name != null) ?
-            XMPPUtils.createLocalJID(ctx, XMPPUtils.createLocalpart(name)) : null;
-    }
-
-    public static boolean isSelfJID(Context ctx, BareJid jid) {
-        String self = getSelfJID(ctx);
-        return self != null && jid.equals(self);
-    }
-
-    public static boolean isSelfJID(Context ctx, String bareJid) {
-        String jid = getSelfJID(ctx);
-        return jid != null && jid.equalsIgnoreCase(bareJid);
-    }
-
-    public static String getDefaultDisplayName(Context context) {
-        AccountManager am = AccountManager.get(context);
-        Account account = getDefaultAccount(am);
-        return getDisplayName(am, account);
-    }
-
-    public static String getDisplayName(AccountManager am, Account account) {
+    static String getDisplayName(AccountManager am, Account account) {
         return account != null ? am.getUserData(account, DATA_NAME) : null;
     }
 
-    public static EndpointServer getDefaultServer(Context context) {
-        AccountManager am = AccountManager.get(context);
-        Account account = getDefaultAccount(am);
-        return getServer(am, account);
-    }
-
-    public static EndpointServer getServer(AccountManager am, Account account) {
+    static EndpointServer getServer(AccountManager am, Account account) {
         if (account != null) {
             String uri = am.getUserData(account, DATA_SERVER_URI);
             return uri != null ? new EndpointServer(uri) : null;
@@ -143,44 +109,47 @@ public class Authenticator extends AbstractAccountAuthenticator {
         return null;
     }
 
+    /** @deprecated Still used in {@link org.kontalk.Kontalk#onCreate()}. */
+    @Deprecated
     public static String getDefaultServiceTermsURL(Context context) {
         AccountManager am = AccountManager.get(context);
-        Account account = getDefaultAccount(am);
+        Account account = getDefaultSystemAccount(am);
         return getServiceTermsURL(am, account);
     }
 
-    public static String getServiceTermsURL(AccountManager am, Account account) {
+    static String getServiceTermsURL(AccountManager am, Account account) {
         return account != null ?
             am.getUserData(account, Authenticator.DATA_SERVICE_TERMS_URL) : null;
     }
 
-    public static PersonalKey loadDefaultPersonalKey(Context ctx, String passphrase)
+    static PersonalKey loadPersonalKey(AccountManager am, Account account)
             throws PGPException, IOException, CertificateException {
-        AccountManager m = AccountManager.get(ctx);
-        Account acc = getDefaultAccount(m);
 
-        String privKeyData = m.getUserData(acc, DATA_PRIVATEKEY);
-        String pubKeyData = m.getUserData(acc, DATA_PUBLICKEY);
-        String bridgeCertData = m.getUserData(acc, DATA_BRIDGECERT);
+        String passphrase = am.getPassword(account);
+        String privKeyData = am.getUserData(account, DATA_PRIVATEKEY);
+        String pubKeyData = am.getUserData(account, DATA_PUBLICKEY);
+        String bridgeCertData = am.getUserData(account, DATA_BRIDGECERT);
 
-        if (privKeyData != null && pubKeyData != null && bridgeCertData != null)
+        if (privKeyData != null && pubKeyData != null && bridgeCertData != null) {
             return PersonalKey
                 .load(Base64.decode(privKeyData, Base64.DEFAULT),
-                      Base64.decode(pubKeyData, Base64.DEFAULT),
-                      passphrase,
-                      Base64.decode(bridgeCertData, Base64.DEFAULT)
+                    Base64.decode(pubKeyData, Base64.DEFAULT),
+                    passphrase,
+                    Base64.decode(bridgeCertData, Base64.DEFAULT)
                 );
-
-        else
+        }
+        else {
             return null;
+        }
     }
 
-    public static void exportDefaultPersonalKey(Context ctx, OutputStream dest, String passphrase, String exportPassphrase, boolean bridgeCertificate)
+    public static void exportDefaultPersonalKey(Context ctx, OutputStream dest, String exportPassphrase, boolean bridgeCertificate)
             throws CertificateException, PGPException,
                 IOException, KeyStoreException, NoSuchAlgorithmException {
 
         AccountManager m = AccountManager.get(ctx);
-        Account acc = getDefaultAccount(m);
+        Account acc = getDefaultSystemAccount(m);
+        String passphrase = m.getPassword(acc);
 
         String privKeyData = m.getUserData(acc, DATA_PRIVATEKEY);
         byte[] privateKey = Base64.decode(privKeyData, Base64.DEFAULT);
@@ -205,7 +174,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static byte[] getPrivateKeyExportData(Context ctx, String passphrase, String exportPassphrase)
             throws PGPException, IOException {
         AccountManager m = AccountManager.get(ctx);
-        Account acc = getDefaultAccount(m);
+        Account acc = getDefaultSystemAccount(m);
 
         return getPrivateKeyExportData(m, acc, passphrase, exportPassphrase);
     }
@@ -228,7 +197,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static void setDefaultPersonalKey(Context ctx, byte[] publicKeyData, byte[] privateKeyData,
             byte[] bridgeCertData, String passphrase) {
         AccountManager am = AccountManager.get(ctx);
-        Account acc = getDefaultAccount(am);
+        Account acc = getDefaultSystemAccount(am);
 
         // password is optional when updating just the public key
         if (passphrase != null)
@@ -250,7 +219,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
             throws PGPException, IOException {
 
         AccountManager am = AccountManager.get(ctx);
-        Account acc = getDefaultAccount(am);
+        Account acc = getDefaultSystemAccount(am);
 
         // get old secret key ring
         String privKeyData = am.getUserData(acc, DATA_PRIVATEKEY);
@@ -268,7 +237,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
     public static void setPassphrase(Context ctx, String passphrase, boolean fromUser) {
         AccountManager am = AccountManager.get(ctx);
-        Account acc = getDefaultAccount(am);
+        Account acc = getDefaultSystemAccount(am);
         am.setUserData(acc, DATA_USER_PASSPHRASE, String.valueOf(fromUser));
         // replace password for account
         am.setPassword(acc, passphrase);
@@ -276,13 +245,13 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
     public static boolean isUserPassphrase(Context ctx) {
         AccountManager am = AccountManager.get(ctx);
-        Account acc = getDefaultAccount(am);
+        Account acc = getDefaultSystemAccount(am);
         return Boolean.parseBoolean(am.getUserData(acc, DATA_USER_PASSPHRASE));
     }
 
     public static void removeDefaultAccount(Context ctx, AccountManagerCallback<Boolean> callback) {
         AccountManager am = AccountManager.get(ctx);
-        Account account = getDefaultAccount(am);
+        Account account = getDefaultSystemAccount(am);
 
         // there is something wrong with this, isn't it? [cit.]
         if (account == null)
@@ -318,7 +287,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
             });
         }
         else {
-            am.removeAccount(getDefaultAccount(am), callback, null);
+            am.removeAccount(getDefaultSystemAccount(am), callback, null);
         }
     }
 

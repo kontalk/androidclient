@@ -43,7 +43,6 @@ import androidx.annotation.Nullable;
 
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.EndpointServer;
@@ -158,7 +157,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
     /** Returns true if the given group command is the owner adding me to the group. */
     private boolean isAddingMe(GroupExtension ext) {
         if (ext.getType() == GroupExtension.Type.SET) {
-            String myself = Authenticator.getSelfJID(getContext());
+            String myself = Kontalk.get().getDefaultAccount().getSelfJID();
             for (GroupExtension.Member m : ext.getMembers()) {
                 if (m.operation == GroupExtension.Member.Operation.ADD &&
                         m.jid.equals(myself))
