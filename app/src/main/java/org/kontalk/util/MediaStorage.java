@@ -118,6 +118,7 @@ public abstract class MediaStorage {
     private static final String DOCUMENTS_ROOT;
     private static final String DOCUMENTS_PUBLIC_RELATIVE_PATH;
     private static final File DOCUMENTS_PUBLIC_PATH;
+
     static {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
             DOCUMENTS_ROOT = Environment.DIRECTORY_DOCUMENTS;

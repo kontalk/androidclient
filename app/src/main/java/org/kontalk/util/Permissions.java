@@ -103,9 +103,17 @@ public class Permissions {
 
     @SuppressLint("InlinedApi")
     public static void requestWriteExternalStorage(Fragment fragment, String rationale) {
-        EasyPermissions.requestPermissions(fragment, rationale, RC_WRITE_EXT_STORAGE,
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (EasyPermissions.permissionPermanentlyDenied(fragment, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            new AppSettingsDialog.Builder(fragment)
+                .setRationale(rationale)
+                .build()
+                .show();
+        }
+        else {
+            EasyPermissions.requestPermissions(fragment, rationale, RC_WRITE_EXT_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
     }
 
     public static boolean canUseCamera(Context context) {

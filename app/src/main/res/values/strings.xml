@@ -64,6 +64,7 @@
     <string name="msg_authenticated">Registered to the network!</string>
     <string name="share">Share</string>
     <string name="resend">Send again</string>
+    <string name="save_attachment">Save attachment</string>
     <string name="copy_message_text">Copy text</string>
     <string name="delete_message">Delete message</string>
     <string name="confirm_delete_all">Delete all chats</string>
@@ -687,8 +688,15 @@
 
     <string name="err_audio_or_storage_denied">We need access to the microphone for recording your voice and access to external storage to save your recordings.</string>
 
-    <string name="err_storage_denied">Kontalk needs access to local storage to store media.\nYou can allow access to storage from Android settings.</string>
-    <string name="err_storage_denied_interactive">Kontalk needs access to local storage to store media. We will now ask for permission.</string>
+    <string name="err_storage_denied">Kontalk needs access to local storage to store media.</string>
+
+    <string name="err_storage_photo_gallery">Unable to save your photo to the gallery.</string>
+    <string name="err_storage_attachment_single">Unable to save attachment.</string>
+    <string name="err_storage_attachment_some">Some attachments were not saved due to errors.</string>
+    <plurals name="msg_storage_attachment_saved">
+        <item quantity="one">Attachment saved to external storage.</item>
+        <item quantity="other">Attachments saved to external storage.</item>
+    </plurals>
 
     <string name="err_location_denied">We need access to your location if you want to share it.</string>
 

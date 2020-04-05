@@ -21,11 +21,12 @@
 
     <!-- actions -->
     <item android:id="@+id/menu_delete" android:title="@string/delete_message" android:icon="@drawable/ic_menu_delete" app:showAsAction="ifRoom"/>
-
-    <!-- menu -->
     <item android:id="@+id/menu_reply" android:title="@string/reply" android:icon="@drawable/ic_menu_reply" app:showAsAction="ifRoom"/>
     <item android:id="@+id/menu_retry" android:title="@string/resend" android:icon="@drawable/ic_menu_send" app:showAsAction="ifRoom"/>
     <item android:id="@+id/menu_share" android:title="@string/share" android:icon="@drawable/ic_menu_share" app:showAsAction="ifRoom"/>
+    <item android:id="@+id/menu_save_attachment" android:title="@string/save_attachment" android:icon="@drawable/ic_menu_save" app:showAsAction="ifRoom"/>
+
+    <!-- menu -->
     <item android:id="@+id/menu_copy_text" android:title="@string/copy_message_text" android:icon="@drawable/ic_menu_copy" app:showAsAction="never"/>
     <item android:id="@+id/menu_open" android:title="@string/open_file" android:icon="@drawable/ic_menu_open" app:showAsAction="never"/>
     <item android:id="@+id/menu_download" android:title="@string/download_file" android:icon="@drawable/ic_menu_download" app:showAsAction="never"/>
