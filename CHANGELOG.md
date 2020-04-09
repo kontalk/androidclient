@@ -11,6 +11,7 @@
 - Removed Google Play donation
 - Add tutorial hints (#1014)
 - Improve audio recordings quality
+- Delete media on message delete (#668)
 
 ### Fixed
 - Fix crash on devices without a browser
