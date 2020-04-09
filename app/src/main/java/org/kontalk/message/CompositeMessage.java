@@ -37,6 +37,7 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 
 import org.kontalk.BuildConfig;
+import org.kontalk.Log;
 import org.kontalk.client.GroupExtension;
 import org.kontalk.data.GroupInfo;
 import org.kontalk.provider.MessagesProviderClient;
@@ -55,6 +56,7 @@ import org.kontalk.util.MessageUtils;
  * @version 1.0
  */
 public class CompositeMessage {
+    private static final String TAG = CompositeMessage.class.getSimpleName();
 
     @SuppressWarnings("unchecked")
     private static final Class<AttachmentComponent>[] TRY_COMPONENTS = new Class[] {
@@ -520,18 +522,34 @@ public class CompositeMessage {
     /** Holder for message delete information. */
     public static final class DeleteMessageHolder {
         long id;
+        File[] mediaFiles;
 
         public DeleteMessageHolder(Cursor cursor) {
             id = cursor.getLong(COLUMN_ID);
+            String filePath = cursor.getString(COLUMN_ATTACHMENT_LOCAL_URI);
+            if (filePath != null) {
+                Uri fileUri = Uri.parse(filePath);
+                if ("file".equals(fileUri.getScheme())) {
+                    mediaFiles = new File[] { new File(fileUri.getPath()) };
+                }
+            }
         }
     }
 
-    public static void deleteFromCursor(Context context, DeleteMessageHolder holder) {
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public static void deleteMessage(Context context, DeleteMessageHolder holder) {
         MessagesProviderClient.deleteMessage(context, holder.id);
-    }
-
-    public static void deleteFromCursor(Context context, Cursor cursor) {
-        MessagesProviderClient.deleteMessage(context, cursor.getLong(COLUMN_ID));
+        if (holder.mediaFiles != null) {
+            // try to delete the original files, ignoring result
+            for (File media : holder.mediaFiles) {
+                try {
+                    media.delete();
+                }
+                catch (Exception e) {
+                    Log.v(TAG, "unable to delete original media: " + media);
+                }
+            }
+        }
     }
 
     public static CompositeMessage loadMessage(Context context, long id) {

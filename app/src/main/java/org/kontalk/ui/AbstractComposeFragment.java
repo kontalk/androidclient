@@ -693,7 +693,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                     Context ctx = dialog.getContext();
                     for (CompositeMessage.DeleteMessageHolder item : list) {
-                        CompositeMessage.deleteFromCursor(ctx, item);
+                        CompositeMessage.deleteMessage(ctx, item);
                     }
                     mListAdapter.notifyDataSetChanged();
                 }
