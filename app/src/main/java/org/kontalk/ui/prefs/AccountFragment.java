@@ -198,7 +198,7 @@ public class AccountFragment extends RootPreferenceFragment {
                         }
 
                         // also used as a fallback if SAF is not working properly
-                        PreferencesActivity ctx = (PreferencesActivity) getActivity();
+                        Context ctx = getContext();
                         if (ctx != null) {
                             new FolderChooserDialog.Builder(ctx)
                                     .initialPath(PersonalKeyPack.DEFAULT_KEYPACK.getParent())
@@ -278,7 +278,7 @@ public class AccountFragment extends RootPreferenceFragment {
     public void onResume() {
         super.onResume();
 
-        ((PreferencesActivity) getActivity()).getSupportActionBar()
+        ((BasePreferencesActivity) getActivity()).getSupportActionBar()
                 .setTitle(R.string.pref_account_settings);
     }
 

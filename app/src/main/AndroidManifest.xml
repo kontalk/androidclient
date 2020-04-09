@@ -273,6 +273,17 @@
                 android:value="org.kontalk.ui.ConversationsActivity" />
         </activity>
 
+        <activity android:name=".ui.prefs.AccountPreferencesActivity"
+            android:parentActivityName=".ui.ConversationsActivity"
+            tools:targetApi="jelly_bean">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.kontalk.ui.ConversationsActivity" />
+        </activity>
+
         <activity android:name=".ui.RegisterDeviceActivity"
             android:label="@string/register_device_title"
             android:parentActivityName=".ui.prefs.PreferencesActivity"

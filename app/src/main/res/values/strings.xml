@@ -39,6 +39,7 @@
     <string name="menu_import_device">Register from another device</string>
     <string name="menu_manual_verification">Already have a code?</string>
     <string name="pref_account_settings">Account</string>
+    <string name="pref_account_settings_system">Manage account</string>
     <string name="pref_network_settings">Network</string>
     <string name="pref_network_uri">Manual server address</string>
     <string name="pref_title_network_uri">This will override server list automatic management</string>
