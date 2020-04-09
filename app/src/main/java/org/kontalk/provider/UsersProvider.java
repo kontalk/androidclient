@@ -633,7 +633,8 @@ public class UsersProvider extends ContentProvider {
                     }, null);
 
                 if (phones != null) {
-                    String myNumber = Kontalk.get().getDefaultAccount().getPhoneNumber();
+                    MyAccount myAccount = Kontalk.get().getDefaultAccount();
+                    String myNumber = myAccount != null ? myAccount.getPhoneNumber() : null;
                     while (phones.moveToNext()) {
                         String number = phones.getString(0);
                         String name = phones.getString(1);
@@ -710,7 +711,8 @@ public class UsersProvider extends ContentProvider {
                     }
 
                     if (phones != null) {
-                        String myNumber = Kontalk.get().getDefaultAccount().getPhoneNumber();
+                        MyAccount myAccount = Kontalk.get().getDefaultAccount();
+                        String myNumber = myAccount != null ? myAccount.getPhoneNumber() : null;
                         while (phones.moveToNext()) {
                             String name = phones.getString(phones.getColumnIndex("name"));
                             String number = phones.getString(phones.getColumnIndex("number"));

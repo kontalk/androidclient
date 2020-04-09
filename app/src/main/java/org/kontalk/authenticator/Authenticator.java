@@ -97,6 +97,10 @@ public class Authenticator extends AbstractAccountAuthenticator {
         return (accs.length > 0) ? accs[0] : null;
     }
 
+    public static MyAccount fromSystemAccount(Context context, Account systemAccount) {
+        return new MyAccount(systemAccount, AccountManager.get(context));
+    }
+
     static String getDisplayName(AccountManager am, Account account) {
         return account != null ? am.getUserData(account, DATA_NAME) : null;
     }

@@ -48,6 +48,8 @@ import android.text.TextUtils;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
+import org.kontalk.authenticator.MyAccount;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PGPUserID;
 import org.kontalk.data.Contact;
@@ -124,6 +126,7 @@ public class Syncer {
         SyncResult syncResult)
             throws OperationCanceledException {
 
+        final MyAccount myAccount = Authenticator.fromSystemAccount(context, account);
         final Map<String, RawPhoneNumberEntry> lookupNumbers = new HashMap<>();
         final List<String> jidList = new ArrayList<>();
 
@@ -282,7 +285,7 @@ public class Syncer {
                             try {
                                 PGPPublicKey pubKey = PGP.getMasterKey(entry.publicKey);
                                 // trust our own key blindly
-                                int trustLevel = Kontalk.get().getDefaultAccount().isSelfJID(entry.from) ?
+                                int trustLevel = myAccount.isSelfJID(entry.from) ?
                                     MyUsers.Keys.TRUST_VERIFIED : -1;
                                 // update keys table immediately
                                 Keyring.setKey(mContext, entry.from.toString(), entry.publicKey, trustLevel);
@@ -331,12 +334,11 @@ public class Syncer {
                         registeredValues.remove(Users.DISPLAY_NAME);
 
                         // if this is our own contact, trust our own key later
-                        if (Kontalk.get().getDefaultAccount().isSelfJID(entry.from)) {
+                        if (myAccount.isSelfJID(entry.from)) {
                             // register our profile while we're at it
                             if (data != null) {
                                 // add contact
-                                String displayName = Kontalk.get().getDefaultAccount()
-                                    .getDisplayName();
+                                String displayName = myAccount.getDisplayName();
                                 addProfile(account, displayName,
                                     data.number, data.jid,
                                     operations, op++);
