@@ -795,4 +795,5 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
 	<item quantity="other">Anhänge auf externem Speicher gespeichert.</item>
 </plurals>
 
+    <string name="pref_account_settings_system">Konto verwalten</string>
     </resources>
