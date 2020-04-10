@@ -797,4 +797,5 @@
 	<item quantity="many">Вложений записано на внешнее хранилище.</item>
 </plurals>
 
+    <string name="pref_account_settings_system">Учётная запись</string>
     </resources>
