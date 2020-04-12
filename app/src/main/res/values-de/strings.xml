@@ -253,7 +253,7 @@
   <string name="attachment_contact">Kontakt</string>
   <string name="attachment_audio">Audio</string>
   <string name="chooser_send_picture">Bild senden</string>
-  <string name="chooser_error_no_camera">Externer Speicher nicht verfügbar. Es ist nicht möglich ein Bild von der Kamera aufzunehmen.</string>
+  <string name="chooser_error_no_camera">Nicht möglich Bilddatei zu speichern. Es ist nicht möglich ein Bild von der Kamera aufzunehmen.</string>
   <string name="chooser_select_link">Aktion wählen</string>
   <string name="status_activity_title">Statusnachricht</string>
   <string name="hint_status_entry">Geben Sie hier Ihre Statusnachricht ein</string>
@@ -687,8 +687,7 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
 \nSie können den Zugriff auf Kontakte über Android-Einstellungen zulassen."</string>
     <string name="warn_contacts_denied">Sie haben den Zugriff auf Ihre Kontakte verweigert. Änderungen der Kontakte können Sie hier nicht sehen.</string>
 
-    <string name="err_storage_denied">Kontalk benötigt Zugriff auf den lokalen Speicher, um Medien zu speichern.
-\nSie können den Speicherzugriff in den Android-Einstellungen zulassen.</string>
+    <string name="err_storage_denied">Kontalk benötigt Zugriff auf den lokalen Speicher, um Medien zu speichern.</string>
 
     <string name="open_conversation">Anschauen</string>
     <string name="permission_messages_label">Zugriff auf Kontalk-Nachrichten</string>
@@ -768,4 +767,33 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
 
     <string name="pref_service_terms">Nutzungsbedingungen</string>
 
+    <string name="contacts_list_recents_title">Neueste Chats</string>
+    <string name="menu_switch_contacts">Kontakte</string>
+    <string name="menu_switch_recents">Neueste</string>
+    <string name="text_contacts_recents_empty">Die neuesten Chats werden hier erscheinen. Sie können hier durch den Button oben<b>zu den Kontakten wechseln</b>.</string>
+    <string name="pref_reset_hints">Neueste Tipps</string>
+    <string name="pref_title_reset_hints">Tipps in der App anzeigen</string>
+    <string name="msg_hints_reset">Tipps zurücksetzen.</string>
+
+    <string name="showcase_conversations_compose_title">Chatten beginnen</string>
+    <string name="showcase_conversations_compose_message">Button benutzen um einen Chat zu öffnen.</string>
+    <string name="showcase_composer_attach_title">Nicht nur Text</string>
+    <string name="showcase_composer_attach_message">Sie können Bilder, Aufnahmen und mehr teilen.</string>
+    <string name="showcase_composer_toolbar_single_title">Kontakt-Info</string>
+    <string name="showcase_composer_toolbar_single_message">Toolbar antippen um Kontaktinformationen anzuzeigen.</string>
+    <string name="showcase_composer_toolbar_group_title">Gruppen-Info</string>
+    <string name="showcase_composer_toolbar_group_message">Toolbar antippen um Mitglieder zu sehen und die Gruppe zu bearbeiten.</string>
+
+    <string name="save_attachment">Anhang speichern</string>
+    <string name="err_camera_picture_storage_denied">Wir benötigen Zugriff auf die Kamera um Fotos aufzunehmen. Wenn Sie Zugriff auf den Speicher gewähren, werden Bilder automatisch in der Galerie angezeigt.</string>
+
+    <string name="err_storage_photo_gallery">Nicht möglich Ihr Foto in der Galerie zu speichern.</string>
+    <string name="err_storage_attachment_single">Nicht möglich den Anhang zu speichern.</string>
+    <string name="err_storage_attachment_some">Einige Anhänge wurden aufgrund von Fehlern nicht gespeichert.</string>
+    <plurals name="msg_storage_attachment_saved">
+	<item quantity="one">Anhang auf externem Speicher gespeichert.</item>
+	<item quantity="other">Anhänge auf externem Speicher gespeichert.</item>
+</plurals>
+
+    <string name="pref_account_settings_system">Konto verwalten</string>
     </resources>
