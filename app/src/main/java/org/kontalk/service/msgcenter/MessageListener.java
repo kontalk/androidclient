@@ -584,7 +584,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
 
             EndpointServer server = getServer();
             if (server == null)
-                server = Preferences.getEndpointServer(context);
+                server = Kontalk.get().getEndpointServer();
 
             Coder coder = Keyring.getDecryptCoder(context, server, key, msg.getSender(true));
 
@@ -694,7 +694,7 @@ class MessageListener extends WakefulMessageCenterPacketListener {
             Context context = getContext();
             EndpointServer server = getServer();
             if (server == null)
-                server = Preferences.getEndpointServer(context);
+                server = Kontalk.get().getEndpointServer();
 
             // retrieve a coder for verifying against the server key
             Coder coder = Keyring.getVerifyCoder(context, server, msg.getSender(true));

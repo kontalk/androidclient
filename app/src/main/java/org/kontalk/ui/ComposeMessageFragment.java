@@ -287,7 +287,7 @@ public class ComposeMessageFragment extends AbstractComposeFragment
         if (context == null)
             return contact.getDisplayName();
 
-        EndpointServer server = Preferences.getEndpointServer(context);
+        EndpointServer server = Kontalk.get().getEndpointServer();
         if (contact.getJID().equalsIgnoreCase(server.getNetwork())) {
             return context.getString(R.string.contact_name_server);
         }

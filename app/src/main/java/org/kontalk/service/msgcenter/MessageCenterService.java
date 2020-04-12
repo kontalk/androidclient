@@ -1667,8 +1667,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             MyAccount account = Kontalk.get().getDefaultAccount();
             mMyUsername = (account != null) ? account.getName() : null;
 
-            // get server from preferences
-            mServer = Preferences.getEndpointServer(this);
+            // get server from account or preferences
+            mServer = Kontalk.get().getEndpointServer();
 
             if (mConnection == null) {
                 mHelper = new XMPPConnectionHelper(this, mServer, false);

@@ -36,6 +36,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import android.content.Context;
 
+import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
@@ -83,7 +84,7 @@ public class ServerListUpdater {
          * We have a server list - either builtin or cached. Now pick a random
          * server from the list and contact it for the latest server list.
          */
-        EndpointServer random = Preferences.getEndpointServer(mContext);
+        EndpointServer random = Kontalk.get().getEndpointServer();
 
         /* no server found -- notify to user */
         if (random == null) {

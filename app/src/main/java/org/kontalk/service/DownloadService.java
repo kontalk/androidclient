@@ -63,7 +63,6 @@ import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.ProgressNotificationBuilder;
 import org.kontalk.util.EventBusIndex;
 import org.kontalk.util.MediaStorage;
-import org.kontalk.util.Preferences;
 
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOADING;
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOAD_ERROR;
@@ -284,7 +283,7 @@ public class DownloadService extends JobIntentService implements DownloadListene
             InputStream in = null;
             OutputStream out = null;
             try {
-                EndpointServer server = Preferences.getEndpointServer(this);
+                EndpointServer server = Kontalk.get().getEndpointServer();
                 PersonalKey key = Kontalk.get().getPersonalKey();
                 Coder coder = Keyring.getDecryptCoder(this, server, key, mPeer);
                 if (coder != null) {

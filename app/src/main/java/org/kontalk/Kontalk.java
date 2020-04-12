@@ -40,6 +40,7 @@ import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Handler;
+import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
@@ -48,6 +49,7 @@ import androidx.multidex.MultiDexApplication;
 
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.authenticator.MyAccount;
+import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
@@ -97,6 +99,7 @@ public class Kontalk extends MultiDexApplication {
      * Call {@link #hold} to increment the counter, {@link #release} to
      * decrement it.
      */
+    @SuppressWarnings("JavadocReference")
     private int mRefCounter;
 
     /** Messages controller singleton instance. */
@@ -277,6 +280,23 @@ public class Kontalk extends MultiDexApplication {
     public PersonalKey getPersonalKey() throws PGPException, IOException, CertificateException {
         MyAccount account = getDefaultAccount();
         return account != null ? account.getPersonalKey() : null;
+    }
+
+    /** Returns a random server from the cached list or the user-defined server. */
+    public EndpointServer getEndpointServer() {
+        String customUri = Preferences.getServerURI();
+        if (!TextUtils.isEmpty(customUri)) {
+            try {
+                return new EndpointServer(customUri);
+            }
+            catch (Exception e) {
+                // custom is not valid - take one from list
+            }
+        }
+
+        // return server stored in the default account
+        MyAccount account = getDefaultAccount();
+        return account != null ? account.getServer() : null;
     }
 
     public void exportPersonalKey(OutputStream out, String exportPassphrase)

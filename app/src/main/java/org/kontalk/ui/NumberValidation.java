@@ -1031,8 +1031,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                     startProgress(getString(R.string.msg_importing_key));
 
-                    register(new ImportKeyRequest(Preferences
-                        .getEndpointServer(NumberValidation.this),
+                    register(new ImportKeyRequest(Kontalk.get().getEndpointServer(),
                         zip, input.toString(), true, getBrandImageSize()));
                 }
             })

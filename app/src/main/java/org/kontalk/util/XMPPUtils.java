@@ -39,6 +39,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import android.graphics.Color;
 import androidx.annotation.ColorInt;
 
+import org.kontalk.Kontalk;
 import org.kontalk.client.EndpointServer;
 
 
@@ -124,7 +125,7 @@ public class XMPPUtils {
     }
 
     public static String createLocalJID(String name) {
-        EndpointServer server = Preferences.getEndpointServer();
+        EndpointServer server = Kontalk.get().getEndpointServer();
         if (server == null)
             throw new IllegalArgumentException("server is null");
         return XmppStringUtils.completeJidFrom(name, server.getNetwork());

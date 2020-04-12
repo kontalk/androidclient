@@ -49,7 +49,6 @@ import android.view.WindowManager;
 
 import org.kontalk.Kontalk;
 import org.kontalk.R;
-import org.kontalk.authenticator.MyAccount;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.service.ServerListUpdater;
@@ -176,29 +175,6 @@ public final class Preferences {
         return sPreferences.edit()
             .putString("pref_network_uri", serverURI)
             .commit();
-    }
-
-    /** Returns a random server from the cached list or the user-defined server. */
-    @Deprecated
-    public static EndpointServer getEndpointServer(Context context) {
-        return getEndpointServer();
-    }
-
-    /** Returns a random server from the cached list or the user-defined server. */
-    public static EndpointServer getEndpointServer() {
-        String customUri = getServerURI();
-        if (!TextUtils.isEmpty(customUri)) {
-            try {
-                return new EndpointServer(customUri);
-            }
-            catch (Exception e) {
-                // custom is not valid - take one from list
-            }
-        }
-
-        // return server stored in the default account
-        MyAccount account = Kontalk.get().getDefaultAccount();
-        return account != null ? account.getServer() : null;
     }
 
     /** Returns a server provider reflecting the current settings. */
