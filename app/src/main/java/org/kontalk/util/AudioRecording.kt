@@ -40,9 +40,9 @@ class AudioRecording {
             recorder.setOutputFile(outputFile.absolutePath);
             recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
             recorder.setAudioChannels(1);
-            // TODO we need further study for these
-            //recorder.setAudioSamplingRate(48000);
-            //recorder.setAudioEncodingBitRate(96000);
+            // TODO we need further study for these - using "CD quality"
+            recorder.setAudioSamplingRate(44100);
+            recorder.setAudioEncodingBitRate(192000);
             return recorder;
         }
 
