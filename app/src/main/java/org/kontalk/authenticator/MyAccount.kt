@@ -75,22 +75,27 @@ class MyAccount (val systemAccount: Account, private val accountManager: Account
 
     /* compatibility interface for android.accounts.Account */
 
+    @Deprecated("Convert to property")
     fun getName(): String {
         return this.systemAccount.name
     }
 
+    @Deprecated("Remove")
     fun getType(): String {
         return this.systemAccount.type
     }
 
+    @Deprecated("Convert to property")
     override fun equals(other: Any?): Boolean {
         return this.systemAccount == other
     }
 
+    @Deprecated("Convert to property")
     override fun hashCode(): Int {
         return this.systemAccount.hashCode()
     }
 
+    @Deprecated("Convert to property")
     override fun toString(): String {
         return this.systemAccount.toString()
     }

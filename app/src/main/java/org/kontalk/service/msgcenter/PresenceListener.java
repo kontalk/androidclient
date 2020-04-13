@@ -35,6 +35,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 
+import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.client.PublicKeyPresence;
 import org.kontalk.crypto.PGP;
@@ -87,7 +88,7 @@ class PresenceListener extends MessageCenterPacketListener implements SubscribeL
         Context ctx = getContext();
 
         // auto-accept subscription
-        if (Preferences.getAutoAcceptSubscriptions(ctx) || isAlreadyTrusted(subscribeRequest)) {
+        if (canAutoAcceptSubscription(ctx, subscribeRequest)) {
             // TODO user database entry should be stored here too
 
             ExtensionElement _pkey = subscribeRequest.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
@@ -187,6 +188,12 @@ class PresenceListener extends MessageCenterPacketListener implements SubscribeL
 
             return null;
         }
+    }
+
+    private boolean canAutoAcceptSubscription(Context context, Presence subscribeRequest) {
+        return Preferences.getAutoAcceptSubscriptions(context) ||
+            Kontalk.get().getDefaultAccount().isNetworkJID(subscribeRequest.getFrom().asBareJid()) ||
+            isAlreadyTrusted(subscribeRequest);
     }
 
     private boolean isAlreadyTrusted(Presence p) {
