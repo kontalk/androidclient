@@ -50,6 +50,7 @@ import android.widget.Toast;
 
 import org.kontalk.Kontalk;
 import org.kontalk.R;
+import org.kontalk.authenticator.MyAccount;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.KontalkGroupCommands;
 import org.kontalk.provider.MessagesProviderClient;
@@ -132,7 +133,8 @@ public class ConversationsActivity extends MainActivity
                     try {
                         if (c != null && c.moveToFirst()) {
                             String phone = c.getString(0);
-                            String userJID = XMPPUtils.createLocalJID(XMPPUtils
+                            MyAccount account = Kontalk.get().getDefaultAccount();
+                            String userJID = account.createLocalJID(XMPPUtils
                                 .createLocalpart(phone));
                             uri = Threads.getUri(userJID);
                         }

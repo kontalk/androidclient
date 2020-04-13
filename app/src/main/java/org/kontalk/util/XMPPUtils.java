@@ -124,13 +124,6 @@ public class XMPPUtils {
         return XmppStringUtils.parseDomain(jid).equalsIgnoreCase(host);
     }
 
-    public static String createLocalJID(String name) {
-        EndpointServer server = Kontalk.get().getEndpointServer();
-        if (server == null)
-            throw new IllegalArgumentException("server is null");
-        return XmppStringUtils.completeJidFrom(name, server.getNetwork());
-    }
-
     public static boolean equalsBareJID(String full, String bare) {
         return XmppStringUtils.parseBareJid(full).equalsIgnoreCase(bare);
     }

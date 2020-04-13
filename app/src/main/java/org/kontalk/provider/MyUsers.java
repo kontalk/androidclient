@@ -56,6 +56,8 @@ public class MyUsers {
         public static final String EXTRA_INDEX = "org.kontalk.provider.extra.INDEX";
         // uri parameter for update: triggers a complete resync
         public static final String RESYNC = "resync";
+        // uri parameter for update: used with resync, use this XMPP domain to generate JID when no account is registered
+        public static final String XMPP_DOMAIN = "xmppDomain";
         // uri parameter for update: used with resync, triggers a complete sync
         // only if the database is newly created
         public static final String BOOTSTRAP = "bootstrap";

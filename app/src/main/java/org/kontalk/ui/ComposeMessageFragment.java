@@ -65,6 +65,7 @@ import pub.devrel.easypermissions.EasyPermissions;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
+import org.kontalk.authenticator.MyAccount;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
@@ -329,7 +330,8 @@ public class ComposeMessageFragment extends AbstractComposeFragment
             mUserPhone = c.getString(1);
 
             // FIXME should it be retrieved from RawContacts.SYNC3 ??
-            mUserJID = XMPPUtils.createLocalJID(XMPPUtils
+            MyAccount account = Kontalk.get().getDefaultAccount();
+            mUserJID = account.createLocalJID(XMPPUtils
                 .createLocalpart(mUserPhone));
 
             threadId = MessagesProviderClient.findThread(getContext(), mUserJID);

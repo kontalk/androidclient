@@ -321,11 +321,13 @@ public class Syncer {
                          * in the where condition so we will have a match.
                          */
                         String origJid;
-                        if (data != null)
-                            origJid = XMPPUtils.createLocalJID(XmppStringUtils
+                        if (data != null) {
+                            origJid = myAccount.createLocalJID(XmppStringUtils
                                 .parseLocalpart(entry.from.toString()));
-                        else
+                        }
+                        else {
                             origJid = entry.from.toString();
+                        }
                         usersProvider.update(Users.CONTENT_URI_OFFLINE, registeredValues,
                             Users.JID + " = ?", new String[] { origJid });
 

@@ -21,6 +21,7 @@ package org.kontalk.authenticator
 import android.accounts.Account
 import android.accounts.AccountManager
 import org.jxmpp.jid.BareJid
+import org.jxmpp.util.XmppStringUtils
 import org.kontalk.client.EndpointServer
 import org.kontalk.client.ServerList
 import org.kontalk.crypto.PersonalKey
@@ -57,7 +58,7 @@ class MyAccount (val systemAccount: Account, private val accountManager: Account
     }
 
     val selfJID: String by lazy {
-        XMPPUtils.createLocalJID(XMPPUtils.createLocalpart(getName()))
+        createLocalJID(XMPPUtils.createLocalpart(getName()))
     }
 
     fun isSelfJID(bareJid: String): Boolean = selfJID.equals(bareJid, ignoreCase = true)
@@ -66,6 +67,10 @@ class MyAccount (val systemAccount: Account, private val accountManager: Account
 
     // TODO
     fun isNetworkJID(bareJid: BareJid): Boolean = true
+
+    fun createLocalJID(localpart: String): String {
+        return XmppStringUtils.completeJidFrom(localpart, server.network);
+    }
 
     /* compatibility interface for android.accounts.Account */
 

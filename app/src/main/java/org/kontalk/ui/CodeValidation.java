@@ -326,7 +326,8 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity {
     protected void onStart() {
         super.onStart();
         // start a users resync in the meantime
-        new UsersResyncTask().execute(getApplicationContext());
+        RegistrationService.CurrentState cstate = RegistrationService.currentState();
+        new UsersResyncTask(cstate.server.getNetwork()).execute(getApplicationContext());
         // be sure to bind to the registration service so it's not killed by the OS
         bindService(new Intent(this, RegistrationService.class), mServiceConnection, BIND_IMPORTANT);
     }
@@ -457,9 +458,15 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity {
 
     private static final class UsersResyncTask extends AsyncTask<Context, Void, Void> {
 
+        private final String xmppDomain;
+
+        UsersResyncTask(String xmppDomain) {
+            this.xmppDomain = xmppDomain;
+        }
+
         @Override
         protected Void doInBackground(Context... contexts) {
-            UsersProvider.resync(contexts[0]);
+            UsersProvider.resync(contexts[0], xmppDomain);
             return null;
         }
     }

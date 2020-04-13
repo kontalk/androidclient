@@ -295,7 +295,11 @@ public class Kontalk extends MultiDexApplication {
         return account != null ? account.getPersonalKey() : null;
     }
 
-    /** Returns a random server from the cached list or the user-defined server. */
+    /**
+     * Returns a random server from the cached list or the user-defined server.
+     * @deprecated Server should only be retrieved from account user data
+     */
+    @Deprecated
     public EndpointServer getEndpointServer() {
         String customUri = Preferences.getServerURI();
         if (!TextUtils.isEmpty(customUri)) {
