@@ -805,4 +805,7 @@ Pokud jsou vypnuté, způsob připojení Kontalku lze detailně nastavit v obraz
     <string name="showcase_composer_toolbar_group_message">Pro zobrazeni členů skupiny a editaci skupiny klikněte na horní panel.</string>
 
     <string name="pref_account_settings_system">Spravovat účet</string>
+    <string name="chooser_error_no_share_app">Není dostupná žádná vhodná aplikace pro sdílení tohoto souboru.</string>
+    <string name="chooser_error_share_denied">Přístup k původnímu souboru byl odepřen.</string>
+
     </resources>
