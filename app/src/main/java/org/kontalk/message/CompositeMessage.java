@@ -509,6 +509,7 @@ public class CompositeMessage {
         mEncrypted = false;
         mSecurityFlags = 0;
         mInReplyTo = 0;
+        clearComponents();
     }
 
     /** Builds an instance from a {@link Cursor} row. */
