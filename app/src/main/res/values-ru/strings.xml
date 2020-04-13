@@ -798,4 +798,7 @@
 </plurals>
 
     <string name="pref_account_settings_system">Учётная запись</string>
+    <string name="chooser_error_no_share_app">Нет подходящего приложения, чтобы поделиться этим файлом.</string>
+    <string name="chooser_error_share_denied">Нет разрешения на доступ к файлу.</string>
+
     </resources>
