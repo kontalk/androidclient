@@ -23,6 +23,8 @@
 - Contact pictures in notification on Android 9+ (#1288)
 - Fix deadlock in faulty networks
 - Fix audio recordings permission problem on Android 10
+- Fix crash sharing a file we don't have permission for
+- Fix crash on some devices generating ECC keys
 
 ## [4.3.1] - 2019-08-24
 ### Fixed
