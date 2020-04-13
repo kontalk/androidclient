@@ -18,11 +18,16 @@
 
 package org.kontalk.client;
 
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Properties;
 import java.util.Random;
 
 
@@ -32,6 +37,8 @@ import java.util.Random;
  */
 public class ServerList extends ArrayList<EndpointServer> {
     private static final long serialVersionUID = 1L;
+    private static DateFormat sTimestampFormat =
+        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", Locale.US);
 
     private final Date mDate;
 
@@ -57,6 +64,36 @@ public class ServerList extends ArrayList<EndpointServer> {
             get(mSeed.nextInt(size())) : null;
     }
 
+    public Properties toProperties() {
+        Properties prop = new Properties();
+        Date now = new Date();
+        prop.setProperty("timestamp", sTimestampFormat.format(now));
+
+        for (int i = 0; i < size(); i++) {
+            String item = get(i).toString();
+            prop.setProperty("server" + (i + 1), item);
+        }
+        return prop;
+    }
+
+    public static ServerList fromProperties(Properties props) throws IOException {
+        try {
+            Date date = sTimestampFormat.parse(props.getProperty("timestamp"));
+            ServerList list = new ServerList(date);
+            int i = 1;
+            String server;
+            while ((server = props.getProperty("server" + i)) != null) {
+                list.add(new EndpointServer(server));
+                i++;
+            }
+
+            return list;
+        }
+        catch (Exception e) {
+            throw new IOException("parse error", e);
+        }
+    }
+
     /** A simple server provider backed by a server list. */
     public static class ServerListProvider implements EndpointServer.EndpointServerProvider {
         private ServerList mList;
@@ -65,6 +102,14 @@ public class ServerList extends ArrayList<EndpointServer> {
         public ServerListProvider(ServerList list) {
             mList = new ServerList(list.getDate(), list);
             mUsed = new LinkedList<>();
+        }
+
+        @Override
+        public ServerList list() {
+            ServerList list = new ServerList(mList.getDate());
+            list.addAll(mList);
+            list.addAll(mUsed);
+            return list;
         }
 
         @Override

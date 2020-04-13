@@ -22,9 +22,12 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -343,6 +346,29 @@ public final class SystemUtils {
             }
             catch (Exception ignored) {
             }
+        }
+    }
+
+    public static String serializeProperties(Properties properties) {
+        try {
+            StringWriter writer = new StringWriter();
+            properties.store(writer, null);
+            return writer.toString();
+        }
+        catch (IOException e) {
+            throw new AssertionError("this can't happen");
+        }
+    }
+
+    public static Properties unserializeProperties(String data) {
+        try {
+            StringReader reader = new StringReader(data);
+            Properties properties = new Properties();
+            properties.load(reader);
+            return properties;
+        }
+        catch (IOException e) {
+            throw new AssertionError("this can't happen");
         }
     }
 

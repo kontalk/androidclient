@@ -71,6 +71,7 @@ public class NetworkFragment extends RootPreferenceFragment {
         });
 
         // server list last update timestamp
+        // FIXME move to account preferences
         final Preference updateServerList = findPreference("pref_update_server_list");
         updateServerList.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override

@@ -24,6 +24,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.bouncycastle.openpgp.PGPException;
@@ -50,12 +51,14 @@ import android.widget.Toast;
 import org.kontalk.BuildConfig;
 import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
+import org.kontalk.client.ServerList;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyExporter;
 import org.kontalk.provider.Keyring;
 import org.kontalk.ui.MainActivity;
 import org.kontalk.ui.NumberValidation;
+import org.kontalk.util.SystemUtils;
 
 
 /**
@@ -72,6 +75,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static final String DATA_NAME = "org.kontalk.key.name";
     public static final String DATA_USER_PASSPHRASE = "org.kontalk.userPassphrase";
     public static final String DATA_SERVER_URI = "org.kontalk.server";
+    public static final String DATA_SERVER_LIST = "org.kontalk.serverList";
     public static final String DATA_SERVICE_TERMS_URL = "org.kontalk.serviceTermsURL";
 
     @SuppressWarnings("WeakerAccess")
@@ -118,12 +122,34 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static String getDefaultServiceTermsURL(Context context) {
         AccountManager am = AccountManager.get(context);
         Account account = getDefaultSystemAccount(am);
-        return getServiceTermsURL(am, account);
+        return account != null ? getServiceTermsURL(am, account) : null;
     }
 
     static String getServiceTermsURL(AccountManager am, Account account) {
-        return account != null ?
-            am.getUserData(account, Authenticator.DATA_SERVICE_TERMS_URL) : null;
+        return am.getUserData(account, DATA_SERVICE_TERMS_URL);
+    }
+
+    /** @deprecated Still used in {@link org.kontalk.Kontalk#onCreate()}. */
+    @Deprecated
+    public static ServerList getDefaultServerList(Context context) {
+        AccountManager am = AccountManager.get(context);
+        Account account = getDefaultSystemAccount(am);
+        return account != null ? getServerList(am, account) : null;
+    }
+
+    static ServerList getServerList(AccountManager am, Account account) {
+        String serverListData = am.getUserData(account, DATA_SERVER_LIST);
+        if (serverListData != null) {
+            Properties props = SystemUtils.unserializeProperties(serverListData);
+            try {
+                return ServerList.fromProperties(props);
+            }
+            catch (IOException e) {
+                // this isn't right...
+                return null;
+            }
+        }
+        return null;
     }
 
     static PersonalKey loadPersonalKey(AccountManager am, Account account)

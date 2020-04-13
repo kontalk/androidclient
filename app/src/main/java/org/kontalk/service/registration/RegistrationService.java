@@ -94,6 +94,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.authenticator.MyAccount;
 import org.kontalk.client.Account;
 import org.kontalk.client.EndpointServer;
+import org.kontalk.client.ServerList;
 import org.kontalk.client.SmackInitializer;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PGPUidMismatchException;
@@ -128,6 +129,7 @@ import org.kontalk.service.registration.event.VerificationRequest;
 import org.kontalk.service.registration.event.VerificationRequestedEvent;
 import org.kontalk.util.EventBusIndex;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.SystemUtils;
 import org.kontalk.util.XMPPUtils;
 
 
@@ -260,7 +262,6 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         public Map<String, Keyring.TrustedFingerprint> trustedKeys;
 
         /** Will be true if the state was restored from preferences. */
-        // do not copy
         public boolean restored;
 
         CurrentState() {
@@ -471,6 +472,16 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                 }
             }
 
+            String serverProviderData = Preferences.getString("registration_serverprovider", null);
+            Properties serverProviderProps = SystemUtils.unserializeProperties(serverProviderData);
+            try {
+                state.serverProvider = new ServerList
+                    .ServerListProvider(ServerList.fromProperties(serverProviderProps));
+            }
+            catch (IOException e) {
+                throw new IllegalStateException("invalid server provider", e);
+            }
+
             String sender = Preferences.getString("registration_sender", null);
             String brandImage = Preferences.getString("registration_brandimage", null);
             String brandLink = Preferences.getString("registration_brandlink", null);
@@ -530,6 +541,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                 .putString("registration_key", state.key != null ? state.key.toBase64() : null)
                 .putString("registration_passphrase", state.passphrase)
                 .putString("registration_server", state.server.toString())
+                .putString("registration_serverprovider", SystemUtils.serializeProperties(state.serverProvider.list().toProperties()))
                 .putString("registration_sender", sender)
                 .putString("registration_challenge", state.challenge)
                 .putString("registration_brandimage", brandImage)
@@ -555,6 +567,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             .remove("registration_key")
             .remove("registration_passphrase")
             .remove("registration_server")
+            .remove("registration_serverprovider")
             .remove("registration_sender")
             .remove("registration_challenge")
             .remove("registration_brandimage")
@@ -1260,7 +1273,8 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             AccountManager.get(this).removeAccount(account,
                 new AccountRemovalCallback(this, account, cstate.passphrase,
                     cstate.privateKey, cstate.publicKey, cstate.key.getBridgeCertificate().getEncoded(),
-                    cstate.displayName, cstate.server.toString(), cstate.termsUrl, cstate.trustedKeys),
+                    cstate.displayName, cstate.server.toString(), cstate.termsUrl, cstate.trustedKeys,
+                    cstate.serverProvider.list()),
                 null);
         }
         catch (CertificateEncodingException e) {
@@ -1648,11 +1662,12 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
         private final String serverUri;
         private final String serviceTermsUrl;
         private final Map<String, Keyring.TrustedFingerprint> trustedKeys;
+        private final ServerList serverList;
 
         AccountRemovalCallback(Context context, android.accounts.Account account,
             String passphrase, byte[] privateKeyData, byte[] publicKeyData,
             byte[] bridgeCertData, String name, String serverUri, String serviceTermsUrl,
-            Map<String, Keyring.TrustedFingerprint> trustedKeys) {
+            Map<String, Keyring.TrustedFingerprint> trustedKeys, ServerList serverList) {
             this.context = context.getApplicationContext();
             this.account = account;
             this.passphrase = passphrase;
@@ -1663,6 +1678,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             this.serverUri = serverUri;
             this.serviceTermsUrl = serviceTermsUrl;
             this.trustedKeys = trustedKeys;
+            this.serverList = serverList;
         }
 
         @Override
@@ -1683,6 +1699,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             data.putString(Authenticator.DATA_NAME, name);
             data.putString(Authenticator.DATA_SERVER_URI, serverUri);
             data.putString(Authenticator.DATA_SERVICE_TERMS_URL, serviceTermsUrl);
+            data.putString(Authenticator.DATA_SERVER_LIST, SystemUtils.serializeProperties(serverList.toProperties()));
 
             // this is the password to the private key
             am.addAccountExplicitly(account, passphrase, data);
@@ -1694,6 +1711,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             am.setUserData(account, Authenticator.DATA_NAME, data.getString(Authenticator.DATA_NAME));
             am.setUserData(account, Authenticator.DATA_SERVER_URI, data.getString(Authenticator.DATA_SERVER_URI));
             am.setUserData(account, Authenticator.DATA_SERVICE_TERMS_URL, data.getString(Authenticator.DATA_SERVICE_TERMS_URL));
+            am.setUserData(account, Authenticator.DATA_SERVER_LIST, data.getString(Authenticator.DATA_SERVER_LIST));
 
             // Set contacts sync for this account.
             ContentResolver.setSyncAutomatically(account, ContactsContract.AUTHORITY, true);

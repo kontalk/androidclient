@@ -50,6 +50,7 @@ import androidx.multidex.MultiDexApplication;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.authenticator.MyAccount;
 import org.kontalk.client.EndpointServer;
+import org.kontalk.client.ServerList;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
@@ -57,6 +58,7 @@ import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.reporting.ReportingManager;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.NetworkStateReceiver;
+import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.SystemBootStartup;
 import org.kontalk.service.UploadService;
 import org.kontalk.service.msgcenter.IPushService;
@@ -241,9 +243,19 @@ public class Kontalk extends MultiDexApplication {
 
             // TODO remove after a few release iterations
             if (Authenticator.getDefaultServiceTermsURL(this) == null) {
+                // default service terms url
                 am.setUserData(account.getSystemAccount(),
                     Authenticator.DATA_SERVICE_TERMS_URL,
                     getString(R.string.help_default_KPN_service_terms_url));
+            }
+
+            // TODO remove after a few release iterations
+            if (Authenticator.getDefaultServerList(this) == null) {
+                // default server list
+                ServerList list = ServerListUpdater.getCurrentList(this);
+                am.setUserData(account.getSystemAccount(),
+                    Authenticator.DATA_SERVER_LIST,
+                    SystemUtils.serializeProperties(list.toProperties()));
             }
         }
         else {

@@ -24,10 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
 import java.util.Properties;
 
 import org.greenrobot.eventbus.EventBus;
@@ -58,13 +55,11 @@ import org.kontalk.util.SystemUtils;
  *
  * @author Daniele Ricci
  */
+// TODO downloaded list should be saved in account user data
 public class ServerListUpdater {
     private static final String TAG = ServerListUpdater.class.getSimpleName();
 
     private static ServerList sCurrentList;
-
-    private static DateFormat sTimestampFormat =
-        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", Locale.US);
 
     private final Context mContext;
     private UpdaterListener mListener;
@@ -137,16 +132,15 @@ public class ServerListUpdater {
         unregisterReceiver();
 
         if (event.servers != null && event.servers.length > 0) {
-            Properties prop = new Properties();
             Date now = new Date();
             ServerList list = new ServerList(now);
-            prop.setProperty("timestamp", sTimestampFormat.format(now));
 
             for (int i = 0; i < event.servers.length; i++) {
                 String item = event.servers[i];
-                prop.setProperty("server" + (i + 1), item);
                 list.add(new EndpointServer(item));
             }
+
+            Properties prop = list.toProperties();
 
             OutputStream out = null;
             try {
@@ -196,22 +190,7 @@ public class ServerListUpdater {
     private static ServerList parseList(InputStream in) throws IOException {
         Properties prop = new Properties();
         prop.load(in);
-
-        try {
-            Date date = sTimestampFormat.parse(prop.getProperty("timestamp"));
-            ServerList list = new ServerList(date);
-            int i = 1;
-            String server;
-            while ((server = prop.getProperty("server" + i)) != null) {
-                list.add(new EndpointServer(server));
-                i++;
-            }
-
-            return list;
-        }
-        catch (Exception e) {
-            throw new IOException("parse error", e);
-        }
+        return ServerList.fromProperties(prop);
     }
 
     private static ServerList parseBuiltinList(Context context) throws IOException {
