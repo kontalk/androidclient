@@ -60,8 +60,8 @@ import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.Syncer;
 import org.kontalk.ui.prefs.HelpPreference;
 import org.kontalk.ui.prefs.PreferencesActivity;
+import org.kontalk.util.DataUtils;
 import org.kontalk.util.Preferences;
-import org.kontalk.util.SystemUtils;
 import org.kontalk.util.XMPPUtils;
 
 
@@ -138,7 +138,7 @@ public class ConversationsActivity extends MainActivity
                         }
                     }
                     finally {
-                        SystemUtils.close(c);
+                        DataUtils.close(c);
                     }
                 }
                 else {

@@ -359,7 +359,7 @@ public final class Preferences {
                 throw new IOException(e);
             }
             finally {
-                SystemUtils.close(in);
+                DataUtils.close(in);
             }
 
             Bitmap bitmap;
@@ -372,7 +372,7 @@ public final class Preferences {
                 throw new IOException(e);
             }
             finally {
-                SystemUtils.close(in);
+                DataUtils.close(in);
             }
 
             Bitmap tn = ThumbnailUtils.extractThumbnail(bitmap, width, height);
@@ -389,7 +389,7 @@ public final class Preferences {
             return outFile;
         }
         finally {
-            SystemUtils.close(out);
+            DataUtils.close(out);
         }
     }
 
@@ -412,7 +412,7 @@ public final class Preferences {
             // ignored
         }
         finally {
-            SystemUtils.close(in);
+            DataUtils.close(in);
         }
         return null;
     }

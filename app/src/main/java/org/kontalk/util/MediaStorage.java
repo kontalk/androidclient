@@ -321,7 +321,7 @@ public abstract class MediaStorage {
             tmp = File.createTempFile("rotation", null, context.getCacheDir());
             out = new FileOutputStream(tmp);
 
-            SystemUtils.copy(in, out);
+            DataUtils.copy(in, out);
             // flush the file
             out.close();
 
@@ -347,8 +347,8 @@ public abstract class MediaStorage {
         finally {
             if (tmp != null)
                 tmp.delete();
-            SystemUtils.close(in);
-            SystemUtils.close(out);
+            DataUtils.close(in);
+            DataUtils.close(out);
         }
     }
 
@@ -630,7 +630,7 @@ public abstract class MediaStorage {
                 }
 
                 mediaIn = new FileInputStream(file);
-                SystemUtils.copy(mediaIn, mediaOut);
+                DataUtils.copy(mediaIn, mediaOut);
 
                 values.clear();
                 values.put(MediaStore.MediaColumns.IS_PENDING, 0);
@@ -647,8 +647,8 @@ public abstract class MediaStorage {
                 throw e;
             }
             finally {
-                SystemUtils.close(mediaIn);
-                SystemUtils.close(mediaOut);
+                DataUtils.close(mediaIn);
+                DataUtils.close(mediaOut);
             }
         }
         else {
@@ -690,15 +690,15 @@ public abstract class MediaStorage {
             InputStream in = new FileInputStream(file);
             OutputStream out = new FileOutputStream(publicFile);
             try {
-                SystemUtils.copy(in, out);
+                DataUtils.copy(in, out);
             }
             catch (IOException e) {
                 // try to delete the public file
                 publicFile.delete();
             }
             finally {
-                SystemUtils.close(in);
-                SystemUtils.close(out);
+                DataUtils.close(in);
+                DataUtils.close(out);
             }
 
             // notify media scanner
@@ -837,12 +837,12 @@ public abstract class MediaStorage {
         OutputStream out = null;
         try {
             out = new FileOutputStream(outFile);
-            SystemUtils.copy(in, out);
+            DataUtils.copy(in, out);
             return outFile;
         }
         finally {
-            SystemUtils.close(in);
-            SystemUtils.close(out);
+            DataUtils.close(in);
+            DataUtils.close(out);
         }
 
     }
@@ -953,7 +953,7 @@ public abstract class MediaStorage {
                 player.release();
             }
             finally {
-                SystemUtils.closeStream(afd);
+                DataUtils.closeStream(afd);
             }
 
             return null;

@@ -129,6 +129,7 @@ import org.kontalk.ui.view.ComposerListener;
 import org.kontalk.ui.view.MessageListItem;
 import org.kontalk.ui.view.ReplyBar;
 import org.kontalk.util.AudioRecording;
+import org.kontalk.util.DataUtils;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Permissions;
@@ -519,7 +520,7 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         switch (item.getItemId()) {
             case R.id.menu_delete: {
                 // using clone because listview returns its original copy
-                deleteSelectedMessages(SystemUtils
+                deleteSelectedMessages(DataUtils
                     .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
                 mode.finish();
                 return true;

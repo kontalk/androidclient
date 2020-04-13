@@ -33,7 +33,7 @@ import android.os.Process;
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import org.kontalk.util.SystemUtils;
+import org.kontalk.util.DataUtils;
 
 
 /**
@@ -130,7 +130,7 @@ public abstract class DatabaseImporterService extends Service {
                         throw new IOException("unable to open files");
 
                     // this is it
-                    SystemUtils.copy(in, out);
+                    DataUtils.copy(in, out);
 
                     // reload will return without exceptions if everything is ok
                     service.reloadDatabase();
@@ -146,8 +146,8 @@ public abstract class DatabaseImporterService extends Service {
                     error = "Invalid database.";
                 }
                 finally {
-                    SystemUtils.close(in);
-                    SystemUtils.close(out);
+                    DataUtils.close(in);
+                    DataUtils.close(out);
                     service.unlockDestinationDatabase();
                     service.broadcastFinish(error);
                     service.stopSelf();

@@ -61,7 +61,7 @@ import org.bouncycastle.openpgp.operator.bc.BcPublicKeyKeyEncryptionMethodGenera
 import org.kontalk.client.EndpointServer;
 import org.kontalk.message.TextComponent;
 import org.kontalk.util.CPIMMessage;
-import org.kontalk.util.SystemUtils;
+import org.kontalk.util.DataUtils;
 import org.kontalk.util.XMPPUtils;
 
 import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INTEGRITY_CHECK;
@@ -495,7 +495,7 @@ public class PGPCoder extends Coder {
         }
 
         finally {
-            SystemUtils.close(cDataIn);
+            DataUtils.close(cDataIn);
         }
 
         return new DecryptOutput(out, mime, timestamp, errors);
@@ -725,7 +725,7 @@ public class PGPCoder extends Coder {
         }
 
         finally {
-            SystemUtils.close(cDataIn);
+            DataUtils.close(cDataIn);
         }
     }
 

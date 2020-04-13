@@ -81,10 +81,10 @@ import org.kontalk.provider.MyMessages.Groups;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.NotificationActionReceiver;
+import org.kontalk.util.DataUtils;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
-import org.kontalk.util.SystemUtils;
 
 
 /**
@@ -964,7 +964,7 @@ public class MessagingNotification {
                         // will go on with normal notification
                     }
                     finally {
-                        SystemUtils.close(in);
+                        DataUtils.close(in);
                     }
                 }
 

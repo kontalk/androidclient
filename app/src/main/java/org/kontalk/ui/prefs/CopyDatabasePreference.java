@@ -28,7 +28,7 @@ import android.widget.Toast;
 
 import org.kontalk.R;
 import org.kontalk.provider.MessagesProvider;
-import org.kontalk.util.SystemUtils;
+import org.kontalk.util.DataUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -85,7 +85,7 @@ public class CopyDatabasePreference extends Preference {
 
             dbIn = new FileInputStream(MessagesProvider.getDatabaseUri(context));
             dbOut = new FileOutputStream(dbOutFile);
-            SystemUtils.copy(dbIn, dbOut);
+            DataUtils.copy(dbIn, dbOut);
             Toast.makeText(context, context
                 .getString(R.string.msg_copy_database_success, dbOutFile.toString()), Toast.LENGTH_LONG)
                 .show();
@@ -96,8 +96,8 @@ public class CopyDatabasePreference extends Preference {
                 .show();
         }
         finally {
-            SystemUtils.close(dbIn);
-            SystemUtils.close(dbOut);
+            DataUtils.close(dbIn);
+            DataUtils.close(dbOut);
         }
 
         MessagesProvider.unlockForImport(context);

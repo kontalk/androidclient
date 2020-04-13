@@ -77,6 +77,7 @@ import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.event.RosterStatusEvent;
 import org.kontalk.service.msgcenter.event.RosterStatusRequest;
 import org.kontalk.ui.view.ContactsListItem;
+import org.kontalk.util.DataUtils;
 import org.kontalk.util.SystemUtils;
 
 
@@ -192,11 +193,11 @@ public class GroupInfoFragment extends ListFragment
         String[] added = MessagesProviderClient.getGroupMembers(getContext(),
             mConversation.getGroupJid(), Groups.MEMBER_PENDING_ADDED);
         if (added.length > 0)
-            members = SystemUtils.concatenate(members, added);
+            members = DataUtils.concatenate(members, added);
         // if we are in the group, add ourself to the list
         if (mConversation.getGroupMembership() == Groups.MEMBERSHIP_MEMBER) {
             String selfJid = Kontalk.get().getDefaultAccount().getSelfJID();
-            members = SystemUtils.concatenate(members, selfJid);
+            members = DataUtils.concatenate(members, selfJid);
         }
         return members;
     }
@@ -330,13 +331,13 @@ public class GroupInfoFragment extends ListFragment
         switch (item.getItemId()) {
             case R.id.menu_remove:
                 // using clone because listview returns its original copy
-                removeSelectedUsers(SystemUtils
+                removeSelectedUsers(DataUtils
                     .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
                 mode.finish();
                 return true;
             case R.id.menu_add_again:
                 // using clone because listview returns its original copy
-                readdUser(SystemUtils
+                readdUser(DataUtils
                     .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
                 return true;
             case R.id.menu_chat:

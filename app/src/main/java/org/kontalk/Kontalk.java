@@ -70,6 +70,7 @@ import org.kontalk.ui.ComposeMessage;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.SearchActivity;
 import org.kontalk.util.CustomSimpleXmppStringprep;
+import org.kontalk.util.DataUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.Showcase;
 import org.kontalk.util.SystemUtils;
@@ -255,7 +256,7 @@ public class Kontalk extends MultiDexApplication {
                 ServerList list = ServerListUpdater.getCurrentList(this);
                 am.setUserData(account.getSystemAccount(),
                     Authenticator.DATA_SERVER_LIST,
-                    SystemUtils.serializeProperties(list.toProperties()));
+                    DataUtils.serializeProperties(list.toProperties()));
             }
         }
         else {

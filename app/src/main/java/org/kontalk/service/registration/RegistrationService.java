@@ -127,9 +127,9 @@ import org.kontalk.service.registration.event.UserConflictError;
 import org.kontalk.service.registration.event.VerificationError;
 import org.kontalk.service.registration.event.VerificationRequest;
 import org.kontalk.service.registration.event.VerificationRequestedEvent;
+import org.kontalk.util.DataUtils;
 import org.kontalk.util.EventBusIndex;
 import org.kontalk.util.Preferences;
-import org.kontalk.util.SystemUtils;
 import org.kontalk.util.XMPPUtils;
 
 
@@ -473,7 +473,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             }
 
             String serverProviderData = Preferences.getString("registration_serverprovider", null);
-            Properties serverProviderProps = SystemUtils.unserializeProperties(serverProviderData);
+            Properties serverProviderProps = DataUtils.unserializeProperties(serverProviderData);
             try {
                 state.serverProvider = new ServerList
                     .ServerListProvider(ServerList.fromProperties(serverProviderProps));
@@ -541,7 +541,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
                 .putString("registration_key", state.key != null ? state.key.toBase64() : null)
                 .putString("registration_passphrase", state.passphrase)
                 .putString("registration_server", state.server.toString())
-                .putString("registration_serverprovider", SystemUtils.serializeProperties(state.serverProvider.list().toProperties()))
+                .putString("registration_serverprovider", DataUtils.serializeProperties(state.serverProvider.list().toProperties()))
                 .putString("registration_sender", sender)
                 .putString("registration_challenge", state.challenge)
                 .putString("registration_brandimage", brandImage)
@@ -1699,7 +1699,7 @@ public class RegistrationService extends Service implements XMPPConnectionHelper
             data.putString(Authenticator.DATA_NAME, name);
             data.putString(Authenticator.DATA_SERVER_URI, serverUri);
             data.putString(Authenticator.DATA_SERVICE_TERMS_URL, serviceTermsUrl);
-            data.putString(Authenticator.DATA_SERVER_LIST, SystemUtils.serializeProperties(serverList.toProperties()));
+            data.putString(Authenticator.DATA_SERVER_LIST, DataUtils.serializeProperties(serverList.toProperties()));
 
             // this is the password to the private key
             am.addAccountExplicitly(account, passphrase, data);

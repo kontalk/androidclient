@@ -58,7 +58,7 @@ import org.kontalk.crypto.PersonalKeyExporter;
 import org.kontalk.provider.Keyring;
 import org.kontalk.ui.MainActivity;
 import org.kontalk.ui.NumberValidation;
-import org.kontalk.util.SystemUtils;
+import org.kontalk.util.DataUtils;
 
 
 /**
@@ -140,7 +140,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
     static ServerList getServerList(AccountManager am, Account account) {
         String serverListData = am.getUserData(account, DATA_SERVER_LIST);
         if (serverListData != null) {
-            Properties props = SystemUtils.unserializeProperties(serverListData);
+            Properties props = DataUtils.unserializeProperties(serverListData);
             try {
                 return ServerList.fromProperties(props);
             }

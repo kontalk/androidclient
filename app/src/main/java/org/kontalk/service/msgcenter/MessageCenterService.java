@@ -195,6 +195,7 @@ import org.kontalk.service.msgcenter.group.GroupControllerFactory;
 import org.kontalk.service.msgcenter.group.PartCommand;
 import org.kontalk.service.msgcenter.group.SetSubjectCommand;
 import org.kontalk.ui.MessagingNotification;
+import org.kontalk.util.DataUtils;
 import org.kontalk.util.EventBusIndex;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
@@ -1347,12 +1348,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         }
 
                         File encrypted = MessageUtils.encryptFile(this, in,
-                            SystemUtils.toString(encryptTo));
+                            DataUtils.toString(encryptTo));
                         fileLength = encrypted.length();
                         preMediaUri = Uri.fromFile(encrypted);
                     }
                     finally {
-                        SystemUtils.close(in);
+                        DataUtils.close(in);
                     }
                 }
                 else {
@@ -2410,7 +2411,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 byte[] toMessage = null;
                 boolean encryptError = false;
                 try {
-                    Coder coder = Keyring.getEncryptCoder(this, mServer, key, SystemUtils.toString(toGroup));
+                    Coder coder = Keyring.getEncryptCoder(this, mServer, key, DataUtils.toString(toGroup));
                     if (coder != null) {
 
                         // no extensions, create a simple text version to save space

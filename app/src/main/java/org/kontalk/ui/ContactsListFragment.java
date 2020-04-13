@@ -61,6 +61,7 @@ import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.adapter.ContactsListAdapter;
 import org.kontalk.ui.view.ContactPickerListener;
 import org.kontalk.ui.view.ContactsListItem;
+import org.kontalk.util.DataUtils;
 import org.kontalk.util.RunnableBroadcastReceiver;
 import org.kontalk.util.SystemUtils;
 
@@ -240,7 +241,7 @@ public class ContactsListFragment extends ListFragment implements
         switch (item.getItemId()) {
             case R.id.menu_compose:
                 // using clone because listview returns its original copy
-                openSelectedContacts(SystemUtils
+                openSelectedContacts(DataUtils
                     .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
                 return true;
 
