@@ -8,6 +8,7 @@
 - On-demand export of media to public storage (#1291)
 - Improved multiselection experience
 - Revamped settings appearance
+- Automatically accept invitations from local network users (#1294)
 - Removed Google Play donation
 - Add tutorial hints (#1014)
 - Improve audio recordings quality
