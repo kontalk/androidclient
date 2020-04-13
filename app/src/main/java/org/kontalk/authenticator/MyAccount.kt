@@ -31,6 +31,8 @@ import org.kontalk.util.XMPPUtils
 /** A Kontalk account. */
 class MyAccount (val systemAccount: Account, private val accountManager: AccountManager) {
 
+    val name: String = this.systemAccount.name
+
     val displayName: String by lazy {
         Authenticator.getDisplayName(accountManager, systemAccount)
     }
@@ -58,7 +60,7 @@ class MyAccount (val systemAccount: Account, private val accountManager: Account
     }
 
     val selfJID: String by lazy {
-        createLocalJID(XMPPUtils.createLocalpart(getName()))
+        createLocalJID(XMPPUtils.createLocalpart(name))
     }
 
     fun isSelfJID(bareJid: String): Boolean = selfJID.equals(bareJid, ignoreCase = true)
@@ -73,31 +75,10 @@ class MyAccount (val systemAccount: Account, private val accountManager: Account
         return XmppStringUtils.completeJidFrom(localpart, server.network);
     }
 
-    /* compatibility interface for android.accounts.Account */
+    override fun equals(other: Any?): Boolean = this.systemAccount == other
 
-    @Deprecated("Convert to property")
-    fun getName(): String {
-        return this.systemAccount.name
-    }
+    override fun hashCode(): Int = this.systemAccount.hashCode()
 
-    @Deprecated("Remove")
-    fun getType(): String {
-        return this.systemAccount.type
-    }
-
-    @Deprecated("Convert to property")
-    override fun equals(other: Any?): Boolean {
-        return this.systemAccount == other
-    }
-
-    @Deprecated("Convert to property")
-    override fun hashCode(): Int {
-        return this.systemAccount.hashCode()
-    }
-
-    @Deprecated("Convert to property")
-    override fun toString(): String {
-        return this.systemAccount.toString()
-    }
+    override fun toString(): String = this.systemAccount.toString()
 
 }
