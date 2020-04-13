@@ -39,9 +39,6 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import android.graphics.Color;
 import androidx.annotation.ColorInt;
 
-import org.kontalk.Kontalk;
-import org.kontalk.client.EndpointServer;
-
 
 /**
  * XMPP related functions.

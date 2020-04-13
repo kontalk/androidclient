@@ -56,7 +56,6 @@ import org.kontalk.provider.Keyring;
 import org.kontalk.provider.MyUsers;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.service.msgcenter.MessageCenterService;
-import org.kontalk.util.XMPPUtils;
 
 
 /**
