@@ -65,8 +65,9 @@ class MyAccount (val systemAccount: Account, private val accountManager: Account
 
     fun isSelfJID(bareJid: BareJid): Boolean = bareJid.equals(selfJID)
 
-    // TODO
-    fun isNetworkJID(bareJid: BareJid): Boolean = true
+    fun isNetworkJID(bareJid: BareJid): Boolean {
+        return serverList.first { it.network.equals(bareJid.domain.toString(), true) } != null
+    }
 
     fun createLocalJID(localpart: String): String {
         return XmppStringUtils.completeJidFrom(localpart, server.network);
