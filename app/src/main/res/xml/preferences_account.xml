@@ -43,6 +43,9 @@
         android:title="@string/pref_service_terms"
         android:icon="@drawable/ic_pref_service_terms"
         />
+    <Preference android:key="pref_update_server_list"
+        android:title="@string/pref_update_server_list"
+        />
     <Preference android:key="pref_delete_account"
         android:title="@string/pref_delete_account"
         android:icon="@drawable/ic_pref_delete_account"

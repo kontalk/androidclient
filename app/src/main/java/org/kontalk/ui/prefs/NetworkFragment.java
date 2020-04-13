@@ -20,32 +20,18 @@ package org.kontalk.ui.prefs;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 
-import android.app.Dialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
 import androidx.preference.Preference;
 
 import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
-import org.kontalk.client.ServerList;
-import org.kontalk.reporting.ReportingManager;
-import org.kontalk.service.ServerListUpdater;
-import org.kontalk.service.msgcenter.MessageCenterService;
-import org.kontalk.util.Preferences;
 
 
 /**
  * Network settings fragment.
  */
 public class NetworkFragment extends RootPreferenceFragment {
-
-    ServerListUpdater mServerlistUpdater;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -69,105 +55,6 @@ public class NetworkFragment extends RootPreferenceFragment {
                 return true;
             }
         });
-
-        // server list last update timestamp
-        // FIXME move to account preferences
-        final Preference updateServerList = findPreference("pref_update_server_list");
-        updateServerList.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                Context ctx = getActivity();
-                mServerlistUpdater = new ServerListUpdater(ctx);
-
-                final DialogHelperFragment diag = DialogHelperFragment
-                        .newInstance(DialogHelperFragment.DIALOG_SERVERLIST_UPDATER);
-                final Context appCtx = getContext().getApplicationContext();
-
-                mServerlistUpdater.setListener(new ServerListUpdater.UpdaterListener() {
-                    @Override
-                    public void error(Throwable t) {
-                        try {
-                            ReportingManager.logException(t);
-                            message(R.string.serverlist_update_error);
-                            diag.dismiss();
-                        }
-                        catch (Exception e) {
-                            // did our best
-                        }
-                    }
-
-                    @Override
-                    public void networkNotAvailable() {
-                        try {
-                            message(R.string.serverlist_update_nonetwork);
-                            diag.dismiss();
-                        }
-                        catch (Exception e) {
-                            // did our best
-                        }
-                    }
-
-                    @Override
-                    public void offlineModeEnabled() {
-                        try {
-                            message(R.string.serverlist_update_offline);
-                            diag.dismiss();
-                        }
-                        catch (Exception e) {
-                            // did our best
-                        }
-                    }
-
-                    @Override
-                    public void noData() {
-                        try {
-                            message(R.string.serverlist_update_nodata);
-                            diag.dismiss();
-                        }
-                        catch (Exception e) {
-                            // did our best
-                        }
-                    }
-
-                    @Override
-                    public void updated(final ServerList list) {
-                        Preferences.updateServerListLastUpdate(updateServerList, list);
-                        // restart message center
-                        MessageCenterService.restart(appCtx);
-                        try {
-                            diag.dismiss();
-                        }
-                        catch (Exception e) {
-                            // did our best
-                        }
-                    }
-
-                    private void message(final int textId) {
-                        try {
-                            diag.getActivity().runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(getActivity(), textId,
-                                            Toast.LENGTH_LONG).show();
-                                }
-                            });
-                        }
-                        catch (Exception e) {
-                            // did our best
-                        }
-                    }
-                });
-
-                diag.show(getParentFragmentManager(), DialogHelperFragment.class.getSimpleName());
-                mServerlistUpdater.start();
-                return true;
-            }
-        });
-
-        // update 'last update' string
-        ServerList list = ServerListUpdater.getCurrentList(getActivity());
-        if (list != null)
-            Preferences.updateServerListLastUpdate(updateServerList, list);
     }
 
     @Override
@@ -194,66 +81,6 @@ public class NetworkFragment extends RootPreferenceFragment {
                 return true;
             }
         });
-    }
-
-    void cancelServerlistUpdater() {
-        if (mServerlistUpdater != null) {
-            mServerlistUpdater.cancel();
-            mServerlistUpdater = null;
-        }
-    }
-
-    public static final class DialogHelperFragment extends DialogFragment {
-        public static final int DIALOG_SERVERLIST_UPDATER = 1;
-
-        public static DialogHelperFragment newInstance(int dialogId) {
-            DialogHelperFragment f = new DialogHelperFragment();
-            Bundle args = new Bundle();
-            args.putInt("id", dialogId);
-            f.setArguments(args);
-            return f;
-        }
-
-        public DialogHelperFragment() {
-        }
-
-        @Override
-        public void onCreate(@Nullable Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            setRetainInstance(true);
-        }
-
-        @Override
-        public void onDestroyView() {
-            if (getDialog() != null && getRetainInstance())
-                getDialog().setOnDismissListener(null);
-            super.onDestroyView();
-        }
-
-        @NonNull
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            Bundle args = getArguments();
-            int id = args.getInt("id");
-
-            switch (id) {
-                case DIALOG_SERVERLIST_UPDATER:
-                    return new MaterialDialog.Builder(getContext())
-                            .cancelable(true)
-                            .content(R.string.serverlist_updating)
-                            .progress(true, 0)
-                            .cancelListener(new DialogInterface.OnCancelListener() {
-                                @Override
-                                public void onCancel(DialogInterface dialog) {
-                                    ((NetworkFragment) getTargetFragment())
-                                            .cancelServerlistUpdater();
-                                }
-                            })
-                            .build();
-            }
-
-            return super.onCreateDialog(savedInstanceState);
-        }
     }
 
 }
