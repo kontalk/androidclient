@@ -195,7 +195,7 @@ public class PGP {
             encryptGen = KeyPairGenerator.getInstance("ECDH", PROVIDER);
             encryptGen.initialize(new ECGenParameterSpec(EC_CURVE));
         }
-        catch (IllegalArgumentException e) {
+        catch (Throwable e) {
             ReportingManager.logException(e);
             encryptGen = KeyPairGenerator.getInstance("RSA", PROVIDER);
             encryptGen.initialize(RSA_KEY_LENGTH);
@@ -209,7 +209,7 @@ public class PGP {
             signGen = KeyPairGenerator.getInstance("ECDSA", PROVIDER);
             signGen.initialize(new ECGenParameterSpec(EC_CURVE));
         }
-        catch (IllegalArgumentException e) {
+        catch (Throwable e) {
             ReportingManager.logException(e);
             signGen = KeyPairGenerator.getInstance("RSA", PROVIDER);
             signGen.initialize(RSA_KEY_LENGTH);
