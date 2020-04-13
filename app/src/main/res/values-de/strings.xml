@@ -796,4 +796,7 @@ Deaktivieren Sie die Verschlüsselung nur wenn Ihr Kontakt keinen persönlichen 
 </plurals>
 
     <string name="pref_account_settings_system">Konto verwalten</string>
+    <string name="chooser_error_no_share_app">Keine geeignete App verfügbar, um die Datei zu teilen.</string>
+    <string name="chooser_error_share_denied">Der Zugriff auf die Originaldatei wurde verweigert.</string>
+
     </resources>
