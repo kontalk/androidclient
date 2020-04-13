@@ -1584,11 +1584,21 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         }
 
         if (i != null) {
-            startActivity(i);
+            try {
+                startActivity(i);
+            }
+            catch (ActivityNotFoundException e) {
+                Toast.makeText(getContext(), R.string.chooser_error_no_share_app,
+                    Toast.LENGTH_LONG).show();
+            }
+            catch (SecurityException e) {
+                Toast.makeText(getContext(), R.string.chooser_error_share_denied,
+                    Toast.LENGTH_LONG).show();
+            }
         }
         else {
             // TODO ehm...
-            Log.w(TAG, "error sharing message");
+            Log.w(TAG, "unshareable message type");
         }
     }
 

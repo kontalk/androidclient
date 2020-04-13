@@ -373,6 +373,9 @@
     <string name="chooser_error_no_browser">No browser available to open link.</string>
     <string name="chooser_select_link">Choose action</string>
 
+    <string name="chooser_error_no_share_app">No suitable app available to share the file.</string>
+    <string name="chooser_error_share_denied">Access to the original file was denied.</string>
+
     <string name="status_activity_title">Status message</string>
     <string name="hint_status_entry">Type your status message here</string>
     <string name="header_recent_status">Recently used status messages</string>
