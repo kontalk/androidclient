@@ -253,7 +253,7 @@
   <string name="attachment_contact">Контакт</string>
   <string name="attachment_audio">Аудио</string>
   <string name="chooser_send_picture">Отправить изображение</string>
-  <string name="chooser_error_no_camera">Внешнее хранилище недоступно. Использование снимков из камеры будет отключено.</string>
+  <string name="chooser_error_no_camera">Сохранить изображение не получилось. Использование снимков камеры будет отключено.</string>
   <string name="chooser_select_link">Выбор действия</string>
   <string name="status_activity_title">Статусное сообщение</string>
   <string name="hint_status_entry">Введите здесь свое статусное сообщение</string>
@@ -423,7 +423,7 @@
     <string name="button_load_next_page">Загрузить больше сообщений</string>
 
     <string name="menu_create_group">Создать группу</string>
-    <string name="confirm_cancel_registration">Если вы вернётесь назад в меню, вуам придётся заново начать регистрацию. Для того, чтобы переключиться на другую программу, просто нажмите кнопку с домиком.</string>
+    <string name="confirm_cancel_registration">"Если вы вернётесь назад в меню, придётся начать регистрацию заново. Для того, чтобы переключиться на другую программу,  нажмите кнопку с домиком."</string>
     <string name="text_search_results_empty">Ни одного сообщения не найдено.</string>
     <string name="title_fallback">Имеете проблемы?</string>
     <string name="msg_fallback">Мы попробуем другой путь, чтобы подтвердить Ваш номер телефона.</string>
@@ -686,8 +686,7 @@
 \nЭто разрешение можно дать в настройках Android.</string>
     <string name="warn_contacts_denied">Вы запретили доступ к контактам. Вам не будут приходить уведомления, у кого из них появился Kontalk.</string>
 
-    <string name="err_storage_denied">Kontalk нужен доступ к внутреннему хранилищу устройства, чтобы сохранять медиа-файлы.
-\nЭто можно разрешить в настройках Android.</string>
+    <string name="err_storage_denied">Чтобы сохранять медиа-файлы, Kontalk нужен доступ к внутреннему хранилищу устройства.</string>
 
     <string name="permission_messages_label">Доступ к сообщениям Kontalk</string>
     <string name="permission_messages_description">Есть разрешение читать сообщения в базе данных Kontalk и писать в неё</string>
@@ -780,4 +779,26 @@
     <string name="showcase_conversations_compose_title">Начать разговор</string>
     <string name="showcase_conversations_compose_message">Нажмите на эту кнопку, чтобы вступить в разговор.</string>
     <string name="showcase_composer_attach_title">Не только текст</string>
+    <string name="showcase_composer_attach_message">Можно поделиться изображениями, звукозаписями и т.п.</string>
+    <string name="showcase_composer_toolbar_single_title">Информация о контакте</string>
+    <string name="showcase_composer_toolbar_single_message">Нажмите на панель, чтобы посмотреть информацию о контакте.</string>
+    <string name="showcase_composer_toolbar_group_title">Информация о группе</string>
+    <string name="showcase_composer_toolbar_group_message">Нажмите на панель, чтобы просмотреть или изменить состав участников.</string>
+
+    <string name="err_camera_picture_storage_denied">Для того, чтобы использовать снимки, нам нужен доступ к камере. Если вы двдите доступ к хранилищу, мы автоматически будем добавлять туда сделанные в приложении снимки.</string>
+
+    <string name="save_attachment">Сохранить вложение</string>
+    <string name="err_storage_photo_gallery">Сохранить фотографию в галерею не получается.</string>
+    <string name="err_storage_attachment_single">Сохранить вложение не получается.</string>
+    <string name="err_storage_attachment_some">Сохранить некоторые из вложенных файлов не удалось: ошибки при сохранении.</string>
+    <plurals name="msg_storage_attachment_saved">
+	<item quantity="one">Вложение записано на внешнее хранилище.</item>
+	<item quantity="few">Вложения записаны на внешнее хранилище.</item>
+	<item quantity="many">Вложений записано на внешнее хранилище.</item>
+</plurals>
+
+    <string name="pref_account_settings_system">Учётная запись</string>
+    <string name="chooser_error_no_share_app">Нет подходящего приложения, чтобы поделиться этим файлом.</string>
+    <string name="chooser_error_share_denied">Нет разрешения на доступ к файлу.</string>
+
     </resources>
