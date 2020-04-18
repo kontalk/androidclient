@@ -174,8 +174,9 @@ public class ViewUtils {
 
         // now apply the text size
         float textSize = context.getResources().getDimension(sizeId);
-        if (textSize > 0)
+        if (textSize > 0) {
             textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
+        }
     }
 
 }

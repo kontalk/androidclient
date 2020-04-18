@@ -38,7 +38,8 @@ public class HangoutMessageTheme extends AvatarMessageTheme {
             R.layout.balloon_avatar_in_top : R.layout.balloon_avatar_out,
             direction == MyMessages.Messages.DIRECTION_IN ?
                 R.drawable.balloon_hangout_incoming :
-                R.drawable.balloon_hangout_outgoing, true, groupChat);
+                R.drawable.balloon_hangout_outgoing, true, groupChat,
+            R.color.chat_hangout_message_text, R.color.chat_hangout_date_text);
         mDirection = direction;
     }
 
@@ -68,6 +69,6 @@ public class HangoutMessageTheme extends AvatarMessageTheme {
         else {
             mContactNameView.setVisibility(View.GONE);
         }
-
     }
+
 }

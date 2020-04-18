@@ -28,6 +28,11 @@ import android.view.ViewStub;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.ColorInt;
+import androidx.annotation.ColorRes;
+import androidx.annotation.LayoutRes;
+import androidx.core.content.res.ResourcesCompat;
+
 import org.kontalk.R;
 import org.kontalk.crypto.Coder;
 import org.kontalk.data.Contact;
@@ -43,7 +48,13 @@ import org.kontalk.util.XMPPUtils;
  */
 public abstract class BaseMessageTheme implements MessageListItemTheme {
 
+    @LayoutRes
     private final int mLayoutId;
+    @ColorRes
+    private final int mTextColorId;
+    @ColorRes
+    private final int mDateColorRes;
+
     protected Context mContext;
     protected LayoutInflater mInflater;
 
@@ -56,8 +67,10 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
     /** If true, we will show the contact name above the message content. */
     protected final boolean mGroupChat;
 
-    protected BaseMessageTheme(int layoutId, boolean groupChat) {
+    protected BaseMessageTheme(@LayoutRes int layoutId, boolean groupChat, @ColorRes int textColorRes, @ColorRes int dateColorRes) {
         mLayoutId = layoutId;
+        mTextColorId = textColorRes;
+        mDateColorRes = dateColorRes;
         mGroupChat = groupChat;
     }
 
@@ -74,6 +87,10 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
         mStatusIcon = view.findViewById(R.id.status_indicator);
         mWarningIcon = view.findViewById(R.id.warning_icon);
         mDateView = view.findViewById(R.id.date_view);
+
+        int dateTextColor = ResourcesCompat.getColor(mContext.getResources(),
+            mDateColorRes, mContext.getTheme());
+        mDateView.setTextColor(dateTextColor);
 
         return view;
     }
@@ -102,8 +119,8 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
                     highlight, args);
 
             if (view != null) {
-                processComponentView(view);
                 view.onApplyTheme(this);
+                processComponentView(view);
                 mContent.addContent(view);
             }
         }
@@ -223,4 +240,12 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
             view.unbind();
         }
     }
+
+    @Override
+    @ColorInt
+    public int getTextColor() {
+        return ResourcesCompat.getColor(mContext.getResources(),
+            mTextColorId, mContext.getTheme());
+    }
+
 }

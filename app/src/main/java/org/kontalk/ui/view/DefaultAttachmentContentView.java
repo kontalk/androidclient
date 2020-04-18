@@ -78,6 +78,7 @@ public class DefaultAttachmentContentView extends AppCompatTextView
     @Override
     public void onApplyTheme(MessageListItemTheme theme) {
         ViewUtils.setMessageBodyTextStyle(this, true);
+        setTextColor(theme.getTextColor());
     }
 
     private void clear() {

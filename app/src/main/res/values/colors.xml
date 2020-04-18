@@ -70,4 +70,21 @@
     <color name="gray_background">#F2F2F2</color>
     <color name="divider">#d9d9d9</color>
 
+    <!-- chat balloon themes colors -->
+
+    <color name="chat_hangout_message_text">@android:color/black</color>
+    <color name="chat_hangout_date_text">@color/grayed_out</color>
+
+    <color name="chat_silence_message_text">@android:color/black</color>
+    <color name="chat_silence_date_text">@color/grayed_out</color>
+
+    <color name="chat_classic_message_text">@android:color/black</color>
+    <color name="chat_classic_date_text">@color/grayed_out</color>
+
+    <color name="chat_old_classic_message_text">@android:color/black</color>
+    <color name="chat_old_classic_date_text">@color/grayed_out</color>
+
+    <color name="chat_iphone_message_text">@android:color/black</color>
+    <color name="chat_iphone_date_text">@color/grayed_out</color>
+
 </resources>

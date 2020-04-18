@@ -22,6 +22,8 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+
+import androidx.annotation.ColorRes;
 import androidx.core.content.ContextCompat;
 import android.view.View;
 import android.view.ViewStub;
@@ -50,8 +52,9 @@ public class AvatarMessageTheme extends BaseMessageTheme implements Contact.Cont
 
     private Handler mHandler;
 
-    public AvatarMessageTheme(int layoutId, int drawableId, boolean messageBlocks, boolean groupChat) {
-        super(layoutId, groupChat);
+    public AvatarMessageTheme(int layoutId, int drawableId, boolean messageBlocks, boolean groupChat,
+            @ColorRes int textColorRes, @ColorRes int dateColorRes) {
+        super(layoutId, groupChat, textColorRes, dateColorRes);
         mDrawableId = drawableId;
         mMessageBlocks = messageBlocks;
     }
@@ -81,8 +84,6 @@ public class AvatarMessageTheme extends BaseMessageTheme implements Contact.Cont
 
     @Override
     public void processComponentView(MessageContentView<?> view) {
-        super.processComponentView(view);
-
         if (view instanceof TextContentView) {
             ((TextContentView) view).enableMeasureHack(true);
         }

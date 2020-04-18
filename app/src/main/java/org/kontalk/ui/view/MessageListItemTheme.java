@@ -24,6 +24,8 @@ import java.util.regex.Pattern;
 import android.view.View;
 import android.view.ViewStub;
 
+import androidx.annotation.ColorInt;
+
 import org.kontalk.data.Contact;
 import org.kontalk.message.MessageComponent;
 
@@ -35,8 +37,6 @@ import org.kontalk.message.MessageComponent;
 public interface MessageListItemTheme {
 
     View inflate(ViewStub stub);
-
-    boolean isFullWidth();
 
     MessageContentLayout getContent();
 
@@ -56,5 +56,12 @@ public interface MessageListItemTheme {
     TextContentView getTextContentView();
 
     void unload();
+
+    // theme information
+
+    boolean isFullWidth();
+
+    @ColorInt
+    int getTextColor();
 
 }

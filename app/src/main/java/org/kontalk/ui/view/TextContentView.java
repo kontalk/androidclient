@@ -163,6 +163,7 @@ public class TextContentView extends EmojiTextView
     @Override
     public void onApplyTheme(MessageListItemTheme theme) {
         ViewUtils.setMessageBodyTextStyle(this, true);
+        setTextColor(theme.getTextColor());
     }
 
     public boolean isEncryptionPlaceholder() {
