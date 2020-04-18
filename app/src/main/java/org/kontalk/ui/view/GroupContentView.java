@@ -145,6 +145,10 @@ public class GroupContentView extends EmojiTextView
         return 7;
     }
 
+    @Override
+    public void onApplyTheme(MessageListItemTheme theme) {
+    }
+
     private void clear() {
         mComponent = null;
     }

@@ -42,6 +42,7 @@ import org.kontalk.position.PositionManager;
 import org.kontalk.position.RequestDetails;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.util.CombinedDrawable;
+import org.kontalk.util.ViewUtils;
 
 /**
  * Message component for {@link LocationComponent}.
@@ -136,6 +137,13 @@ public class LocationContentView extends RelativeLayout
     @Override
     public int getPriority() {
         return 3;
+    }
+
+    @Override
+    public void onApplyTheme(MessageListItemTheme theme) {
+        if (mPlaceholder.getVisibility() == VISIBLE) {
+            ViewUtils.setMessageBodyTextStyle(mPlaceholder, true);
+        }
     }
 
     private void clear() {

@@ -103,6 +103,7 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
 
             if (view != null) {
                 processComponentView(view);
+                view.onApplyTheme(this);
                 mContent.addContent(view);
             }
         }

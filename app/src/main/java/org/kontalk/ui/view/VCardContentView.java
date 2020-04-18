@@ -29,7 +29,7 @@ import android.view.ViewGroup;
 import org.kontalk.R;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.VCardComponent;
-import org.kontalk.util.Preferences;
+import org.kontalk.util.ViewUtils;
 
 
 /**
@@ -56,18 +56,6 @@ public class VCardContentView extends AppCompatTextView
     @Override
     public void bind(long id, VCardComponent component, Pattern highlight) {
         mComponent = component;
-
-        Context context = getContext();
-        String size = Preferences.getFontSize(context);
-        int sizeId;
-        if (size.equals("small"))
-            sizeId = android.R.style.TextAppearance_Small;
-        else if (size.equals("large"))
-            sizeId = android.R.style.TextAppearance_Large;
-        else
-            sizeId = android.R.style.TextAppearance;
-        setTextAppearance(context, sizeId);
-
         String text = CompositeMessage.getSampleTextContent(component.getMime());
         setText(text);
     }
@@ -85,6 +73,11 @@ public class VCardContentView extends AppCompatTextView
     @Override
     public int getPriority() {
         return 7;
+    }
+
+    @Override
+    public void onApplyTheme(MessageListItemTheme theme) {
+        ViewUtils.setMessageBodyTextStyle(this, true);
     }
 
     private void clear() {

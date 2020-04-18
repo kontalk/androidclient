@@ -81,6 +81,8 @@ public class AvatarMessageTheme extends BaseMessageTheme implements Contact.Cont
 
     @Override
     public void processComponentView(MessageContentView<?> view) {
+        super.processComponentView(view);
+
         if (view instanceof TextContentView) {
             ((TextContentView) view).enableMeasureHack(true);
         }

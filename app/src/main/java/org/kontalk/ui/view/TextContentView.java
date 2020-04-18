@@ -24,24 +24,22 @@ import java.util.regex.Pattern;
 import com.vanniktech.emoji.EmojiTextView;
 
 import android.content.Context;
-import android.content.res.TypedArray;
+
 import androidx.core.content.ContextCompat;
 import androidx.core.text.util.LinkifyCompat;
-import androidx.core.widget.TextViewCompat;
+
 import android.text.Editable;
 import android.text.Layout;
 import android.text.SpannableStringBuilder;
 import android.text.style.BackgroundColorSpan;
 import android.text.util.Linkify;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import org.kontalk.R;
 import org.kontalk.message.TextComponent;
-import org.kontalk.util.Preferences;
+import org.kontalk.util.ViewUtils;
 
 
 /**
@@ -130,7 +128,6 @@ public class TextContentView extends EmojiTextView
         mComponent = component;
 
         SpannableStringBuilder formattedMessage = formatMessage(highlight);
-        setTextStyle(this, true);
 
         // linkify!
         if (formattedMessage.length() < MAX_AFFORDABLE_SIZE) {
@@ -161,6 +158,11 @@ public class TextContentView extends EmojiTextView
     @Override
     public int getPriority() {
         return 10;
+    }
+
+    @Override
+    public void onApplyTheme(MessageListItemTheme theme) {
+        ViewUtils.setMessageBodyTextStyle(this, true);
     }
 
     public boolean isEncryptionPlaceholder() {
@@ -242,42 +244,6 @@ public class TextContentView extends EmojiTextView
         if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1)
             // from http://stackoverflow.com/a/12303155/1045199
             formattedMessage.append("\u200b"); // was: \u2060
-    }
-
-    /**
-     * Sets the text style based on the text size user preference.
-     * FIXME there is something weird about this method, rewrite it from scratch
-     * @param textView the view to apply the style
-     * @param applyBaseTheme true to apply a base TextAppearance first
-     */
-    static void setTextStyle(TextView textView, boolean applyBaseTheme) {
-        Context context = textView.getContext();
-        String size = Preferences.getFontSize(context);
-        int sizeId;
-        switch (size) {
-            case "small":
-                sizeId = R.dimen.message_font_size_small;
-                break;
-            case "large":
-                sizeId = R.dimen.message_font_size_large;
-                break;
-            default:
-                sizeId = R.dimen.message_font_size_normal;
-                break;
-        }
-
-        if (applyBaseTheme) {
-            // set a baseline theme
-            int[] attrs = {android.R.attr.textAppearance};
-            TypedArray ta = context.getTheme().obtainStyledAttributes(R.style.AppTheme, attrs);
-            TextViewCompat.setTextAppearance(textView, ta.getResourceId(0, 0));
-            ta.recycle();
-        }
-
-        // now apply the text size
-        float textSize = context.getResources().getDimension(sizeId);
-        if (textSize > 0)
-            textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
     }
 
 }

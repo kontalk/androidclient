@@ -39,6 +39,7 @@ public interface MessageContentView<T> {
     /** Returns the priority of the view. Lower values means higher position. */
     int getPriority();
 
-    // TODO
+    /** Called by the theme to apply post-binding style modifications. */
+    void onApplyTheme(MessageListItemTheme theme);
 
 }

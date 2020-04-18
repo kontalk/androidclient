@@ -41,6 +41,7 @@ import org.kontalk.message.InReplyToComponent;
 import org.kontalk.message.ReferencedMessage;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.util.SystemUtils;
+import org.kontalk.util.ViewUtils;
 
 
 /**
@@ -117,9 +118,6 @@ public class QuoteContentView extends RelativeLayout
             msgSender = getContext().getString(R.string.peer_unknown);
         }
 
-        TextContentView.setTextStyle(mSender, false);
-        TextContentView.setTextStyle(mContent, false);
-
         mSender.setText(msgSender);
         mContent.setText(msgText);
     }
@@ -138,6 +136,12 @@ public class QuoteContentView extends RelativeLayout
     @Override
     public int getPriority() {
         return 1;
+    }
+
+    @Override
+    public void onApplyTheme(MessageListItemTheme theme) {
+        ViewUtils.setMessageBodyTextStyle(mSender, false);
+        ViewUtils.setMessageBodyTextStyle(mContent, false);
     }
 
     private void clear() {
