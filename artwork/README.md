@@ -5,6 +5,17 @@ Here are hosted all artwork sources for the Android client.
 
 ## Icon specs
 
+### Composer bar icons
+
+Image Asset:
+
+* Format: Action Bar and Tab Icons
+* Clip-art
+* Trim: no
+* Padding: 0%
+* Color (light theme): #101010, #A0A0A0 (disabled)
+* Color (dark theme): ???
+
 ### Preference icons
 
 Image Asset:
