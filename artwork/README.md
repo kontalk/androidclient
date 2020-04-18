@@ -14,7 +14,7 @@ Image Asset:
 * Trim: no
 * Padding: 0%
 * Color (light theme): #000000, #A0A0A0 (disabled)
-* Color (dark theme): #F7F7F7, ??? (disabled)
+* Color (dark theme): #FFFFFF, #A0A0A0 (disabled)
 
 ### Preference icons
 
