@@ -13,8 +13,8 @@ Image Asset:
 * Clip-art
 * Trim: no
 * Padding: 0%
-* Color (light theme): #101010, #A0A0A0 (disabled)
-* Color (dark theme): ???
+* Color (light theme): #000000, #A0A0A0 (disabled)
+* Color (dark theme): #F7F7F7, ??? (disabled)
 
 ### Preference icons
 
