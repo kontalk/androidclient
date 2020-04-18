@@ -22,10 +22,7 @@ import android.content.Context;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.kontalk.ui.position.OsmStaticUrlBuilder;
-import org.kontalk.ui.position.OsmUrlBuilder;
 import org.kontalk.ui.position.PositionOsmFragment;
-import org.kontalk.ui.position.RequestDetails;
 import org.kontalk.ui.position.SendPositionOsmFragment;
 
 

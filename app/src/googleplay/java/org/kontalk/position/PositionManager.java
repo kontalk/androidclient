@@ -33,7 +33,6 @@ import org.kontalk.R;
 import org.kontalk.ui.position.adapter.PlacesAdapter;
 import org.kontalk.ui.position.PositionGoogleFragment;
 import org.kontalk.ui.position.PositionOsmFragment;
-import org.kontalk.ui.position.model.RequestDetails;
 import org.kontalk.ui.position.adapter.SearchPlacesAdapter;
 import org.kontalk.ui.position.SendPositionGoogleFragment;
 import org.kontalk.ui.position.SendPositionOsmFragment;

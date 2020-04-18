@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui.position.model;
+package org.kontalk.position;
 
 import com.bumptech.glide.load.model.Headers;
 

@@ -39,7 +39,7 @@ import android.widget.TextView;
 import org.kontalk.R;
 import org.kontalk.message.LocationComponent;
 import org.kontalk.position.PositionManager;
-import org.kontalk.ui.position.model.RequestDetails;
+import org.kontalk.position.RequestDetails;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.util.CombinedDrawable;
 import org.kontalk.util.ViewUtils;
