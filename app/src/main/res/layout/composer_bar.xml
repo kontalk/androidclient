@@ -159,6 +159,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:contentDescription="@string/send"
+        android:scaleType="centerCrop"
         android:nextFocusLeft="@+id/attach_button"
         tools:visibility="visible"/>
 
