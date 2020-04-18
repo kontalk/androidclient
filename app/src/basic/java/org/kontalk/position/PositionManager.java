@@ -28,10 +28,6 @@ import androidx.recyclerview.widget.RecyclerView;
  */
 public class PositionManager {
 
-    public static Fragment getMapFragment(Context context) {
-        return new SendPositionOsmFragment();
-    }
-
     public static Fragment getSendPositionFragment(Context context) {
         return new SendPositionOsmFragment();
     }

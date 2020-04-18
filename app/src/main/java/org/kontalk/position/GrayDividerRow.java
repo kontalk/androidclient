@@ -21,19 +21,20 @@ package org.kontalk.position;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
-import androidx.core.content.ContextCompat;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import androidx.core.content.ContextCompat;
+
 import org.kontalk.R;
 import org.kontalk.util.ViewUtils;
 
+
 /**
  * Gray divider row
- * @author andreacappelli
+ * @author Andrea Cappelli
  */
-
 public class GrayDividerRow extends FrameLayout {
 
     private TextView mTextView;
@@ -48,28 +49,27 @@ public class GrayDividerRow extends FrameLayout {
 
     public GrayDividerRow(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-
         init();
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public GrayDividerRow(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
-
         init();
     }
 
     private void init() {
         inflate(getContext(), R.layout.gray_divider_row, this);
 
-        setBackgroundColor(ContextCompat.getColor(getContext(), R.color.gray_background));
+        setBackgroundColor(ContextCompat.getColor(getContext(), R.color.location_item_header_background));
 
         mTextView = findViewById(R.id.text);
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(ViewUtils.dp(getContext(), 32), MeasureSpec.EXACTLY));
+        super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(ViewUtils.dp(getContext(), 32), MeasureSpec.EXACTLY));
     }
 
     public void setText(String text) {

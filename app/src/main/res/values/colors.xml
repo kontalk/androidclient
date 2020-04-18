@@ -69,8 +69,8 @@
     <color name="map_placeholder_background">#552196F3</color>
 
     <color name="gray_circular">#ECECEC</color>
-    <color name="gray_background">#F2F2F2</color>
-    <color name="divider">#d9d9d9</color>
+    <color name="location_item_header_background">#F2F2F2</color>
+    <color name="location_item_divider">#d9d9d9</color>
 
     <!-- 87% black -->
     <color name="primary_text_light">#de000000</color>

@@ -21,7 +21,6 @@ package org.kontalk.position;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
-import androidx.core.content.ContextCompat;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -30,11 +29,11 @@ import android.widget.TextView;
 import org.kontalk.R;
 import org.kontalk.util.ViewUtils;
 
+
 /**
  * Send location row
- * @author andreacappelli
+ * @author Andrea Cappelli
  */
-
 public class SendLocationRow extends RelativeLayout {
 
     private TextView mAccurateTextView;
@@ -65,12 +64,9 @@ public class SendLocationRow extends RelativeLayout {
     private void init() {
         inflate(getContext(), R.layout.send_location_row, this);
 
-        setBackgroundColor(ContextCompat.getColor(getContext(), android.R.color.white));
-
         mImageView = findViewById(R.id.image);
         mTitleTextView = findViewById(R.id.title);
         mAccurateTextView = findViewById(R.id.accurate);
-
     }
 
     @Override

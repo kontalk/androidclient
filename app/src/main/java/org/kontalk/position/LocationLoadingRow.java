@@ -21,7 +21,6 @@ package org.kontalk.position;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
-import androidx.core.content.ContextCompat;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -31,12 +30,12 @@ import me.zhanghai.android.materialprogressbar.MaterialProgressBar;
 import org.kontalk.R;
 import org.kontalk.util.ViewUtils;
 
+
 /**
  * Location loading row
  *
- * @author andreacappelli
+ * @author Andrea Cappelli
  */
-
 public class LocationLoadingRow extends FrameLayout {
 
     private MaterialProgressBar mProgressBar;
@@ -52,25 +51,20 @@ public class LocationLoadingRow extends FrameLayout {
 
     public LocationLoadingRow(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-
         init();
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public LocationLoadingRow(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
-
         init();
     }
 
     private void init() {
         inflate(getContext(), R.layout.location_loading_row, this);
 
-        setBackgroundColor(ContextCompat.getColor(getContext(), android.R.color.white));
-
         mProgressBar = findViewById(R.id.progress_bar);
         mText = findViewById(R.id.text);
-
     }
 
     @Override

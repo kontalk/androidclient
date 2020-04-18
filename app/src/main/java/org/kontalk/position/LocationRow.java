@@ -58,21 +58,17 @@ public class LocationRow extends RelativeLayout {
 
     public LocationRow(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-
         init();
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public LocationRow(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
-
         init();
     }
 
     private void init() {
         inflate(getContext(), R.layout.location_row, this);
-
-        setBackgroundColor(ContextCompat.getColor(getContext(), android.R.color.white));
 
         mImageView = findViewById(R.id.image);
         mNameTextView = findViewById(R.id.name_text);
@@ -82,7 +78,8 @@ public class LocationRow extends RelativeLayout {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(ViewUtils.dp(getContext(), 56) + (mNeedDivider ? 1 : 0), MeasureSpec.EXACTLY));
+        super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(ViewUtils.dp(getContext(), 56) + (mNeedDivider ? 1 : 0), MeasureSpec.EXACTLY));
     }
 
     public void setLocation(String iconUrl, String nameText, String addressText, boolean needDivider) {
@@ -98,7 +95,7 @@ public class LocationRow extends RelativeLayout {
             if (mLinePaint == null) {
                 mLinePaint = new Paint();
                 mLinePaint.setStrokeWidth(1);
-                mLinePaint.setColor(ContextCompat.getColor(getContext(), R.color.divider));
+                mLinePaint.setColor(ContextCompat.getColor(getContext(), R.color.location_item_divider));
             }
             canvas.drawLine(ViewUtils.dp(getContext(), 72), getHeight() - 1, getWidth(), getHeight() - 1, mLinePaint);
         }
