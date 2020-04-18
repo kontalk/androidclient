@@ -269,13 +269,13 @@ public class TextContentView extends EmojiTextView
         if (applyBaseTheme) {
             // set a baseline theme
             int[] attrs = {android.R.attr.textAppearance};
-            TypedArray ta = textView.getContext().getTheme().obtainStyledAttributes(R.style.AppTheme, attrs);
+            TypedArray ta = context.getTheme().obtainStyledAttributes(R.style.AppTheme, attrs);
             TextViewCompat.setTextAppearance(textView, ta.getResourceId(0, 0));
             ta.recycle();
         }
 
         // now apply the text size
-        float textSize = textView.getResources().getDimension(sizeId);
+        float textSize = context.getResources().getDimension(sizeId);
         if (textSize > 0)
             textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
     }
