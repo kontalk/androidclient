@@ -394,4 +394,8 @@ public final class SystemUtils {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
     }
 
+    public static boolean supportsNativeNightMode() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
+    }
+
 }

@@ -235,6 +235,7 @@
     <string name="yes_user_not_found">Contact user anyway</string>
     <string name="no_user_not_found">Send invite</string>
     <string name="pref_appearance_settings">Appearance</string>
+    <string name="pref_ui_theme">Theme</string>
     <string name="pref_font_size">Font size</string>
     <string name="menu_status">Status</string>
     <string name="menu_attachment">Attach</string>
@@ -281,6 +282,9 @@
     <string name="pref_vibrate_label_always">Always</string>
     <string name="pref_vibrate_label_silent">Only when silent</string>
     <string name="pref_vibrate_label_never">Never</string>
+    <string name="pref_uitheme_label_default">Set by Battery Saver</string>
+    <string name="pref_uitheme_label_light">Light</string>
+    <string name="pref_uitheme_label_dark">Dark</string>
     <string name="pref_fontsize_label_small">Small</string>
     <string name="pref_fontsize_label_medium">Medium</string>
     <string name="pref_fontsize_label_large">Large</string>

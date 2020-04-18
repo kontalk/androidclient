@@ -19,6 +19,14 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <ListPreference
+        android:key="pref_ui_theme"
+        android:title="@string/pref_ui_theme"
+        android:summary="%s"
+        android:icon="@drawable/ic_pref_ui_theme"
+        android:entries="@array/uitheme_labels"
+        android:entryValues="@array/uitheme_values"
+        android:defaultValue="@string/pref_default_ui_theme"/>
+    <ListPreference
         android:key="pref_font_size"
         android:title="@string/pref_font_size"
         android:summary="%s"

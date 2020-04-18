@@ -129,6 +129,10 @@ public class Kontalk extends MultiDexApplication {
                         ReportingManager.unregister(Kontalk.this);
                     }
                 }
+                // UI theme
+                else if ("pref_ui_theme".equals(key)) {
+                    Preferences.applyTheme(Kontalk.this);
+                }
                 // actions requiring an account
                 else if (getDefaultAccount() != null) {
                     // manual server address
@@ -196,9 +200,8 @@ public class Kontalk extends MultiDexApplication {
             registerNetworkStateReceiver();
         }
 
-        // init emoji manager
-        // FIXME this is taking a very long time
-        EmojiManager.install(new IosEmojiProvider());
+        // init UI settings
+        Preferences.initUI(this);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(mPrefListener);

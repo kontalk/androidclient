@@ -18,11 +18,10 @@
 
 <resources>
     <!-- default theme selector -->
-    <style name="Theme.Light" parent="Base.Theme.Light">
-    </style>
+    <style name="AppTheme" parent="Base.Theme.DayNight"/>
 
     <!-- base theme selector -->
-    <style name="Base.Theme.Light" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="Base.Theme.DayNight" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="colorPrimary">@color/app_primary</item>
         <item name="colorPrimaryDark">@color/app_primary_dark</item>
         <!-- not working pre-Lollipop
@@ -36,7 +35,7 @@
     </style>
 
     <!-- base theme for dialog activities -->
-    <style name="Theme.Light.Dialog" parent="Theme.AppCompat.Light.DialogWhenLarge">
+    <style name="AppTheme.Dialog" parent="Theme.AppCompat.DayNight.DialogWhenLarge">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="colorPrimary">@color/app_primary</item>
@@ -48,7 +47,7 @@
         <item name="colorAccent">@color/app_accent</item>
     </style>
 
-    <style name="Theme.Light.QuickReplyDialog" parent="Theme.AppCompat.Light.Dialog">
+    <style name="AppTheme.QuickReplyDialog" parent="Theme.AppCompat.DayNight.Dialog">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="colorPrimary">@color/app_primary</item>

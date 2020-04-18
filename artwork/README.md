@@ -13,4 +13,5 @@ Image Asset:
 * Clip-art
 * Trim: yes
 * Padding: 10%
-* Color: #505050
+* Color (light theme): #505050
+* Color (dark theme): ???
