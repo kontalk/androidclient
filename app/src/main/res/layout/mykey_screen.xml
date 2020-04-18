@@ -23,7 +23,6 @@
     android:orientation="vertical">
     <include layout="@layout/toolbar_simple"/>
     <ScrollView android:id="@+id/scroller"
-        android:background="#cccccc"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".ui.MyKeyActivity"
