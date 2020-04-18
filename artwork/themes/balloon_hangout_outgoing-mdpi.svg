@@ -10,10 +10,10 @@
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    width="64"
-   height="44"
-   viewBox="0 0 64 44">
+   height="48"
+   viewBox="0 0 64 48">
   <metadata
      id="metadata8">
     <rdf:RDF>
@@ -29,12 +29,17 @@
   <defs
      id="defs6" />
   <rect
-     style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-     id="rect4140"
+     style="opacity:1;fill:#cdd9dd;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     id="rect4140-6"
      width="52"
      height="44"
-     x="9"
-     y="0"
+     x="-55"
+     y="4"
      rx="7"
-     ry="8" />
+     ry="8"
+     transform="scale(-1,1)" />
+  <path
+     style="fill:#cdd9dd;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m 55.000001,22 v -4 c 0,0 -0.258049,-6 2.186153,-9.635198 C 58.846526,5.895374 60.677432,5.06264 61.132813,4.613281 61.382608,4.366791 61.233074,4 61.000001,4 h -21 z"
+     id="path4142-7" />
 </svg>
