@@ -66,7 +66,7 @@
         android:layout_width="fill_parent"
         android:layout_toStartOf="@+id/audio_send_button"
         android:layout_toLeftOf="@+id/audio_send_button"
-        android:background="@android:color/white"
+        android:background="?attr/colorBackgroundFloating"
         android:id="@+id/record_layout"
         android:clickable="true"
         android:visibility="gone">
@@ -107,7 +107,7 @@
             android:paddingStart="13dp"
             android:paddingLeft="13dp"
             android:orientation="horizontal"
-            android:background="@android:color/white">
+            android:background="?attr/colorBackgroundFloating">
 
             <ImageView
                 android:layout_height="wrap_content"
