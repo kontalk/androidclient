@@ -24,7 +24,6 @@ import java.util.regex.Pattern;
 import com.vanniktech.emoji.EmojiTextView;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.content.res.TypedArray;
 import androidx.core.content.ContextCompat;
 import androidx.core.text.util.LinkifyCompat;
@@ -257,34 +256,28 @@ public class TextContentView extends EmojiTextView
         int sizeId;
         switch (size) {
             case "small":
-                sizeId = android.R.style.TextAppearance_Small;
+                sizeId = R.dimen.message_font_size_small;
                 break;
             case "large":
-                sizeId = android.R.style.TextAppearance_Large;
+                sizeId = R.dimen.message_font_size_large;
                 break;
             default:
-                sizeId = android.R.style.TextAppearance;
+                sizeId = R.dimen.message_font_size_normal;
                 break;
         }
 
         if (applyBaseTheme) {
             // set a baseline theme
-            TextViewCompat.setTextAppearance(textView, android.R.style.TextAppearance);
+            int[] attrs = {android.R.attr.textAppearance};
+            TypedArray ta = textView.getContext().getTheme().obtainStyledAttributes(R.style.AppTheme, attrs);
+            TextViewCompat.setTextAppearance(textView, ta.getResourceId(0, 0));
+            ta.recycle();
         }
 
         // now apply the text size
-        try {
-            int[] attrs = {android.R.attr.textSize};
-            TypedArray ta = textView.getContext().getTheme().obtainStyledAttributes(sizeId, attrs);
-            float textSize = ta.getDimensionPixelSize(0, 0);
-            if (textSize > 0)
-                textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
-
-            ta.recycle();
-        }
-        catch (Resources.NotFoundException e) {
-            // nothing
-        }
+        float textSize = textView.getResources().getDimension(sizeId);
+        if (textSize > 0)
+            textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
     }
 
 }
