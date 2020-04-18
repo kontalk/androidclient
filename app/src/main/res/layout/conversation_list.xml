@@ -62,7 +62,7 @@
         app:menu_labels_singleLine="true"
         app:menu_labels_ellipsize="end"
         app:menu_labels_position="left"
-        app:menu_backgroundColor="#ccffffff"
+        app:menu_backgroundColor="@color/disabled_conversations_overlay"
         app:elevation="6dp"
         app:pressedTranslationZ="12dp"
         tools:ignore="RtlSymmetry">

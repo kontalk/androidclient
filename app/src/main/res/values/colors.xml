@@ -52,7 +52,9 @@
 
     <color name="pinned_header_text">#a7a7a7</color>
 
-    <color name="alpha_black">#66000000</color>
+    <color name="disabled_conversations_overlay">#ccffffff</color>
+    <color name="disabled_messages_overlay">#66000000</color>
+
     <color name="app_background_unsafe_filter">#23ff0000</color>
 
     <!-- notification LED colors -->

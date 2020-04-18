@@ -25,7 +25,7 @@
     android:descendantFocusability="blocksDescendants">
 
     <View android:id="@+id/attachment_overlay"
-        android:background="@color/alpha_black"
+        android:background="@color/disabled_messages_overlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
