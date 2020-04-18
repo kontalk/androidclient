@@ -41,7 +41,7 @@ checkstyle {
 
 task generateThemeDrawables(type: fr.avianey.androidsvgdrawable.gradle.SvgDrawableTask) {
     from = files('../artwork/themes')
-    to = file('build/generated/res/main')
+    to = file('build/generated/res/themes')
     createMissingDirectories = true
     overwriteMode = 'ifModified'
     targetedDensities = ['ldpi', 'hdpi', 'mdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi']
@@ -91,7 +91,7 @@ android {
     }
 
     sourceSets {
-        main.res.srcDirs = [main.res.srcDirs, "build/generated/res/main"]
+        main.res.srcDirs = [main.res.srcDirs, "build/generated/res/themes"]
     }
 
     signingConfigs {
