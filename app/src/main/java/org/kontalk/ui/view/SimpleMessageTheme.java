@@ -23,7 +23,7 @@ import android.view.View;
 import android.view.ViewStub;
 import android.widget.LinearLayout;
 
-import androidx.annotation.ColorRes;
+import androidx.annotation.AttrRes;
 
 import org.kontalk.R;
 import org.kontalk.data.Contact;
@@ -42,12 +42,12 @@ public class SimpleMessageTheme extends BaseMessageTheme {
     private LinearLayout mParentView;
 
     public SimpleMessageTheme(int incomingDrawableId, int outgoingDrawableId, boolean groupChat,
-            @ColorRes int textColorRes, @ColorRes int dateColorRes) {
+            @AttrRes int textColorRes, @AttrRes int dateColorRes) {
         this(R.layout.balloon_base_noavatar, incomingDrawableId, outgoingDrawableId, groupChat, textColorRes, dateColorRes);
     }
 
     protected SimpleMessageTheme(int layoutId, int incomingDrawableId, int outgoingDrawableId, boolean groupChat,
-            @ColorRes int textColorRes, @ColorRes int dateColorRes) {
+            @AttrRes int textColorRes, @AttrRes int dateColorRes) {
         super(layoutId, groupChat, textColorRes, dateColorRes);
         mIncomingDrawableId = incomingDrawableId;
         mOutgoingDrawableId = outgoingDrawableId;

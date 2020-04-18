@@ -39,7 +39,7 @@ public class HangoutMessageTheme extends AvatarMessageTheme {
             direction == MyMessages.Messages.DIRECTION_IN ?
                 R.drawable.balloon_hangout_incoming :
                 R.drawable.balloon_hangout_outgoing, true, groupChat,
-            R.color.chat_hangout_message_text, R.color.chat_hangout_date_text);
+            R.attr.chatThemeDayNightMessageTextColor, R.attr.chatThemeDayNightDateTextColor);
         mDirection = direction;
     }
 

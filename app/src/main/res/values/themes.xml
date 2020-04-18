@@ -32,6 +32,17 @@
 
         <item name="windowActionModeOverlay">true</item>
         <item name="android:windowContentOverlay">@null</item>
+
+        <item name="chatThemeDayNightMessageTextColor">?android:attr/textColorPrimary</item>
+        <item name="chatThemeDayNightDateTextColor">?android:attr/textColorSecondary</item>
+
+        <item name="chatThemeDayOnlyMessageTextColor">@color/primary_text_light</item>
+        <item name="chatThemeDayOnlyDateTextColor">@color/secondary_text_light</item>
+
+        <!-- TODO
+        <item name="chatThemeNightOnlyMessageTextColor"></item>
+        <item name="chatThemeNightOnlyDateTextColor"></item>
+        -->
     </style>
 
     <!-- base theme for dialog activities -->

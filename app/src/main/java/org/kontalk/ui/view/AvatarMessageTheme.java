@@ -23,7 +23,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 
-import androidx.annotation.ColorRes;
+import androidx.annotation.AttrRes;
 import androidx.core.content.ContextCompat;
 import android.view.View;
 import android.view.ViewStub;
@@ -53,7 +53,7 @@ public class AvatarMessageTheme extends BaseMessageTheme implements Contact.Cont
     private Handler mHandler;
 
     public AvatarMessageTheme(int layoutId, int drawableId, boolean messageBlocks, boolean groupChat,
-            @ColorRes int textColorRes, @ColorRes int dateColorRes) {
+            @AttrRes int textColorRes, @AttrRes int dateColorRes) {
         super(layoutId, groupChat, textColorRes, dateColorRes);
         mDrawableId = drawableId;
         mMessageBlocks = messageBlocks;

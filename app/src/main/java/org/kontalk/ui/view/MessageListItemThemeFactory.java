@@ -57,7 +57,7 @@ public class MessageListItemThemeFactory {
                     drawableId = R.drawable.balloon_silence_outgoing;
                 }
                 return new AvatarMessageTheme(layoutId, drawableId, false, groupChat,
-                    R.color.chat_silence_message_text, R.color.chat_silence_date_text);
+                    R.attr.chatThemeDayOnlyMessageTextColor, R.attr.chatThemeDayOnlyDateTextColor);
             }
         });
         mThemes.put("classic", new FactoryCreator() {
@@ -65,7 +65,7 @@ public class MessageListItemThemeFactory {
             public MessageListItemTheme create(int direction, boolean groupChat) {
                 return new SimpleMessageTheme(R.drawable.balloon_classic_incoming,
                     R.drawable.balloon_classic_outgoing, groupChat,
-                    R.color.chat_classic_message_text, R.color.chat_classic_date_text);
+                    R.attr.chatThemeDayOnlyMessageTextColor, R.attr.chatThemeDayOnlyDateTextColor);
             }
         });
         mThemes.put("old_classic", new FactoryCreator() {
@@ -73,7 +73,7 @@ public class MessageListItemThemeFactory {
             public MessageListItemTheme create(int direction, boolean groupChat) {
                 return new SimpleMessageTheme(R.drawable.balloon_old_classic_incoming,
                     R.drawable.balloon_old_classic_outgoing, groupChat,
-                    R.color.chat_old_classic_message_text, R.color.chat_old_classic_date_text);
+                    R.attr.chatThemeDayOnlyMessageTextColor, R.attr.chatThemeDayOnlyDateTextColor);
             }
         });
         mThemes.put("iphone", new FactoryCreator() {
@@ -81,7 +81,7 @@ public class MessageListItemThemeFactory {
             public MessageListItemTheme create(int direction, boolean groupChat) {
                 return new SimpleMessageTheme(R.drawable.balloon_iphone_incoming,
                     R.drawable.balloon_iphone_outgoing, groupChat,
-                    R.color.chat_iphone_message_text, R.color.chat_iphone_date_text);
+                    R.attr.chatThemeDayOnlyMessageTextColor, R.attr.chatThemeDayOnlyDateTextColor);
             }
         });
     }

@@ -28,8 +28,8 @@ import android.view.ViewStub;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.AttrRes;
 import androidx.annotation.ColorInt;
-import androidx.annotation.ColorRes;
 import androidx.annotation.LayoutRes;
 import androidx.core.content.res.ResourcesCompat;
 
@@ -39,6 +39,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.message.MessageComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages;
+import org.kontalk.util.SystemUtils;
 import org.kontalk.util.XMPPUtils;
 
 
@@ -50,9 +51,9 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
 
     @LayoutRes
     private final int mLayoutId;
-    @ColorRes
+    @AttrRes
     private final int mTextColorId;
-    @ColorRes
+    @AttrRes
     private final int mDateColorRes;
 
     protected Context mContext;
@@ -67,7 +68,7 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
     /** If true, we will show the contact name above the message content. */
     protected final boolean mGroupChat;
 
-    protected BaseMessageTheme(@LayoutRes int layoutId, boolean groupChat, @ColorRes int textColorRes, @ColorRes int dateColorRes) {
+    protected BaseMessageTheme(@LayoutRes int layoutId, boolean groupChat, @AttrRes int textColorRes, @AttrRes int dateColorRes) {
         mLayoutId = layoutId;
         mTextColorId = textColorRes;
         mDateColorRes = dateColorRes;
@@ -89,7 +90,7 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
         mDateView = view.findViewById(R.id.date_view);
 
         int dateTextColor = ResourcesCompat.getColor(mContext.getResources(),
-            mDateColorRes, mContext.getTheme());
+            SystemUtils.getThemedResource(mContext, mDateColorRes), mContext.getTheme());
         mDateView.setTextColor(dateTextColor);
 
         return view;
@@ -245,7 +246,7 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
     @ColorInt
     public int getTextColor() {
         return ResourcesCompat.getColor(mContext.getResources(),
-            mTextColorId, mContext.getTheme());
+            SystemUtils.getThemedResource(mContext, mTextColorId), mContext.getTheme());
     }
 
 }
