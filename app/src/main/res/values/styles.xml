@@ -64,7 +64,7 @@
 
     <style name="DateHeader">
         <item name="android:textSize">12sp</item>
-        <item name="android:textColor">?android:attr/textColorPrimaryInverse</item>
+        <item name="android:textColor">@android:color/white</item>
         <item name="android:background">@drawable/date_stamp</item>
     </style>
 
