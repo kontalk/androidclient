@@ -28,13 +28,11 @@
         android:defaultValue="@string/pref_default_font_size"/>
     <CheckBoxPreference android:key="pref_custom_background"
         android:title="@string/pref_custom_background"
-        android:summary="@string/pref_title_custom_background"
-        />
+        android:summary="@string/pref_title_custom_background" />
     <Preference android:key="pref_background_uri"
         android:title="@string/pref_background_uri"
         android:summary="@string/pref_title_background_uri"
-        android:dependency="pref_custom_background"
-        />
+        android:dependency="pref_custom_background" />
     <ListPreference
         android:key="pref_balloons"
         android:title="@string/pref_balloons"

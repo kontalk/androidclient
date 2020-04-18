@@ -30,8 +30,7 @@
             android:key="pref_push_notifications"
             android:summary="@string/pref_title_push_notifications"
             android:title="@string/pref_push_notifications"
-            android:defaultValue="@bool/pref_default_push_notifications"
-            />
+            android:defaultValue="@bool/pref_default_push_notifications" />
         <ListPreference
             android:key="pref_idle_time"
             android:title="@string/pref_idle_time"
@@ -48,8 +47,7 @@
             android:defaultValue="@integer/pref_default_wakeup_time"/>
         <CheckBoxPreference android:key="pref_accept_any_certificate"
             android:title="@string/pref_accept_any_certificate"
-            android:defaultValue="@bool/pref_default_accept_any_certificate"
-            />
+            android:defaultValue="@bool/pref_default_accept_any_certificate" />
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_messaging_settings"
@@ -57,8 +55,7 @@
         <Preference android:key="pref_privacy_settings"
             android:title="@string/pref_privacy_settings"
             android:persistent="false"
-            android:icon="@drawable/ic_pref_privacy"
-            />
+            android:icon="@drawable/ic_pref_privacy" />
         <EditTextPreference
             android:key="pref_remove_prefix"
             android:dialogTitle="@string/pref_remove_prefix"
@@ -70,38 +67,32 @@
         <CheckBoxPreference android:key="pref_sync_sim_contacts"
             android:summary="@string/pref_title_sync_sim_contacts"
             android:title="@string/pref_sync_sim_contacts"
-            android:defaultValue="@bool/pref_default_sync_sim_contacts"
-            />
+            android:defaultValue="@bool/pref_default_sync_sim_contacts" />
         <CheckBoxPreference android:key="pref_sync_nonvisible_contacts"
             android:summary="@string/pref_title_sync_invisible_contacts"
             android:title="@string/pref_sync_invisible_contacts"
-            android:defaultValue="@bool/pref_default_sync_invisible_contacts"
-            />
+            android:defaultValue="@bool/pref_default_sync_invisible_contacts" />
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_maintenance"
         android:title="@string/pref_maintenance">
         <CheckBoxPreference android:key="pref_debug_log"
             android:title="@string/pref_debug_log"
-            android:defaultValue="@bool/pref_default_debug_log"
-            />
+            android:defaultValue="@bool/pref_default_debug_log" />
         <org.kontalk.ui.prefs.SendDebugLogPreference android:key="pref_send_debug_log"
             android:title="@string/pref_send_debug_log"
             android:dependency="pref_debug_log"
-            android:icon="@drawable/ic_pref_send_debug_log"
-            />
+            android:icon="@drawable/ic_pref_send_debug_log" />
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_other"
         android:title="@string/pref_other">
         <org.kontalk.ui.prefs.HelpPreference android:key="pref_help"
             android:title="@string/pref_help"
-            android:icon="@drawable/ic_pref_help"
-            />
+            android:icon="@drawable/ic_pref_help" />
         <Preference android:key="pref_donate"
             android:title="@string/pref_donate"
-            android:icon="@drawable/ic_pref_donate"
-            >
+            android:icon="@drawable/ic_pref_donate">
             <intent
              android:targetClass="org.kontalk.ui.AboutActivity"
              android:targetPackage="@string/application_id"
@@ -109,8 +100,7 @@
         </Preference>
         <Preference android:key="pref_about"
             android:title="@string/pref_about"
-            android:icon="@drawable/ic_pref_about"
-            >
+            android:icon="@drawable/ic_pref_about">
             <intent
              android:targetClass="org.kontalk.ui.AboutActivity"
              android:targetPackage="@string/application_id" />
