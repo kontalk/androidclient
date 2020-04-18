@@ -103,7 +103,7 @@ import org.kontalk.message.LocationComponent;
 import org.kontalk.message.MessageComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
-import org.kontalk.position.Position;
+import org.kontalk.ui.position.model.Position;
 import org.kontalk.position.PositionManager;
 import org.kontalk.provider.MessagesProviderClient;
 import org.kontalk.provider.MyMessages.Messages;

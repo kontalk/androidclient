@@ -23,7 +23,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".position.SendPositionOsmFragment">
+    tools:context=".ui.position.SendPositionOsmFragment">
 
     <RelativeLayout
         android:id="@+id/mapview_clip"
@@ -53,7 +53,7 @@
 
     </RelativeLayout>
 
-    <org.kontalk.position.SendLocationRow
+    <org.kontalk.ui.position.SendLocationRow
         android:id="@+id/send_location"
         android:background="?android:attr/windowBackground"
         android:layout_width="match_parent"
