@@ -4,6 +4,7 @@ plugins {
     id 'kotlin-android-extensions'
     id 'checkstyle'
     id 'com.github.triplet.play' version '2.7.2'
+    id 'androidsvgdrawable'
     id 'io.fabric'
     // waiting for https://github.com/arturdm/jacoco-android-gradle-plugin/pull/75
     //id 'jacoco-android'
@@ -36,6 +37,17 @@ task checkstyle(type: Checkstyle) {
 
 checkstyle {
     configFile = new File(projectDir, "config/checkstyle/checkstyle.xml")
+}
+
+task generateThemeDrawables(type: fr.avianey.androidsvgdrawable.gradle.SvgDrawableTask) {
+    from = files('../artwork/themes')
+    to = file('build/generated/res/main')
+    createMissingDirectories = true
+    overwriteMode = 'ifModified'
+    targetedDensities = ['ldpi', 'hdpi', 'mdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi']
+    ninePatchConfig = file('../artwork/themes/9patch.json')
+    outputFormat = 'PNG'
+    outputType = 'drawable'
 }
 
 jacoco {
@@ -76,6 +88,10 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    sourceSets {
+        main.res.srcDirs = [main.res.srcDirs, "build/generated/res/main"]
     }
 
     signingConfigs {

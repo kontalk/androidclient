@@ -1,0 +1,22 @@
+[
+  {
+    "name" : "balloon_hangout_block_incoming.*",
+    "qualifiers" : [],
+    "stretch" : {
+      "x" : [
+        [34, 35]
+      ],
+      "y" : [
+        [22, 23]
+      ]
+    },
+    "content" : {
+      "x" : [
+        [17, 54]
+      ],
+      "y" : [
+        [4, 39]
+      ]
+    }
+  }
+]

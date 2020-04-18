@@ -15,6 +15,10 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath 'com.google.gms:google-services:4.3.3'
         classpath 'io.fabric.tools:gradle:1.+'
+        classpath('fr.avianey.androidsvgdrawable:gradle-plugin:+') {
+            // should be excluded to avoid conflict
+            exclude group: 'xerces'
+        }
         classpath('com.hiya:jacoco-android:0.2') {
             exclude group: 'org.codehaus.groovy', module: 'groovy-all'
         }
