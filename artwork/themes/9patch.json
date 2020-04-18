@@ -18,5 +18,25 @@
         [4, 39]
       ]
     }
+  },
+  {
+    "name" : "balloon_hangout_incoming.*",
+    "qualifiers" : [],
+    "stretch" : {
+      "x" : [
+        [34, 35]
+      ],
+      "y" : [
+        [26, 27]
+      ]
+    },
+    "content" : {
+      "x" : [
+        [17, 54]
+      ],
+      "y" : [
+        [8, 43]
+      ]
+    }
   }
 ]
