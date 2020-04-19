@@ -64,6 +64,7 @@ import org.kontalk.service.msgcenter.PushServiceManager;
 import org.kontalk.service.msgcenter.SecureConnectionManager;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.ComposeMessage;
+import org.kontalk.ui.ConversationsFragment;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.SearchActivity;
 import org.kontalk.util.CustomSimpleXmppStringprep;
@@ -278,7 +279,13 @@ public class Kontalk extends MultiDexApplication {
     @Deprecated
     private void disableHintsForUpgrade() {
         if (getDefaultAccount() != null) {
+            boolean showingHints = Preferences
+                .getShowcaseShowed(ConversationsFragment.class.getName(), "fab");
             Showcase.disableAllHints();
+            if (!showingHints) {
+                // show off the dark theme!
+                Preferences.setShowcaseShowed(ConversationsFragment.class.getName(), "dark_theme", false);
+            }
         }
     }
 
