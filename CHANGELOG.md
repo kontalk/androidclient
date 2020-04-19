@@ -2,6 +2,7 @@
 
 ## [Next]
 ### Changed
+- Dark theme (#41)
 - Sharing to groups (#864)
 - Migrate to AndroidX (#1269)
 - Support for Android 10 (#1282)
