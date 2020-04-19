@@ -143,6 +143,7 @@ public class LocationContentView extends RelativeLayout
     public void onApplyTheme(MessageListItemTheme theme) {
         if (mPlaceholder.getVisibility() == VISIBLE) {
             ViewUtils.setMessageBodyTextStyle(mPlaceholder, true);
+            mPlaceholder.setTextColor(theme.getTextColor());
         }
     }
 
