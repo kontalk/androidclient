@@ -31,9 +31,12 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceManager;
 
 import org.kontalk.R;
+import org.kontalk.ui.view.MessageListItemThemeFactory;
 import org.kontalk.util.Preferences;
 
 import java.io.File;
+
+import com.afollestad.materialdialogs.MaterialDialog;
 
 
 /**
@@ -82,7 +85,9 @@ public class AppearanceFragment extends RootPreferenceFragment {
         balloons.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                Preferences.setCachedBalloonTheme((String) newValue);
+                String theme = (String) newValue;
+                Preferences.setCachedBalloonTheme(theme);
+                unsupportedDayNightThemeSelectedWarning(theme);
                 return true;
             }
         });
@@ -92,7 +97,9 @@ public class AppearanceFragment extends RootPreferenceFragment {
         balloonsGroups.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                Preferences.setCachedBalloonGroupsTheme((String) newValue);
+                String theme = (String) newValue;
+                Preferences.setCachedBalloonGroupsTheme(theme);
+                unsupportedDayNightThemeSelectedWarning(theme);
                 return true;
             }
         });
@@ -133,6 +140,17 @@ public class AppearanceFragment extends RootPreferenceFragment {
         }
         else {
             super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    private void unsupportedDayNightThemeSelectedWarning(String theme) {
+        Context context = getContext();
+        if (!MessageListItemThemeFactory.isDayNightSupported(context, theme)) {
+            new MaterialDialog.Builder(context)
+                // TODO i18n
+                .content("The selected theme may not fully support light and dark themes. You may see some weird stuff.")
+                .positiveText(android.R.string.ok)
+                .show();
         }
     }
 }
