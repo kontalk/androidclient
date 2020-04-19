@@ -75,7 +75,8 @@
         android:theme="@style/AppTheme"
         android:fullBackupContent="false"
         android:allowBackup="false"
-        tools:replace="android:allowBackup">
+        tools:replace="android:allowBackup"
+        android:networkSecurityConfig="@xml/network_security_config">
 
         <!-- Services -->
         <service android:name=".service.msgcenter.MessageCenterService"

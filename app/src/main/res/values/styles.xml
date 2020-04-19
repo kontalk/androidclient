@@ -139,4 +139,8 @@
         <item name="windowActionBarOverlay">true</item>
     </style>
 
+    <style name="SeekBar.Audio" parent="Widget.AppCompat.SeekBar">
+        <!-- sorry < API 21 people, no tinting for you -->
+    </style>
+
 </resources>
