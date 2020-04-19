@@ -22,7 +22,7 @@ Image Asset:
 
 * Format: Action Bar and Tab Icons
 * Clip-art
-* Trim: yes
-* Padding: 10%
+* Trim: no
+* Padding: 0%
 * Color (light theme): #505050
-* Color (dark theme): ???
+* Color (dark theme): #AFAFAF

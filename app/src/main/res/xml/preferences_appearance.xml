@@ -22,7 +22,7 @@
         android:key="pref_ui_theme"
         android:title="@string/pref_ui_theme"
         android:summary="%s"
-        android:icon="@drawable/ic_pref_ui_theme"
+        android:icon="@drawable/ic_pref_appearance"
         android:entries="@array/uitheme_labels"
         android:entryValues="@array/uitheme_values"
         android:defaultValue="@string/pref_default_ui_theme"/>
