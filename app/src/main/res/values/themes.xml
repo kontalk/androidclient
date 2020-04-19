@@ -43,6 +43,8 @@
         <item name="chatThemeNightOnlyMessageTextColor"></item>
         <item name="chatThemeNightOnlyDateTextColor"></item>
         -->
+
+        <item name="chatQuoteLineColor">@color/chat_quote_line_color</item>
     </style>
 
     <!-- base theme for dialog activities -->

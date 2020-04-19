@@ -24,4 +24,6 @@
     <color name="location_item_header_background">#3C3F41</color>
     <color name="location_item_divider">#90000000</color>
 
+    <color name="chat_quote_line_color">@android:color/white</color>
+
 </resources>

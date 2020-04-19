@@ -75,4 +75,7 @@
     <attr name="chatThemeNightOnlyMessageTextColor" format="reference"/>
     <attr name="chatThemeNightOnlyDateTextColor" format="reference"/>
 
+    <!--block quote vertical line color -->
+    <attr name="chatQuoteLineColor" format="reference"/>
+
 </resources>

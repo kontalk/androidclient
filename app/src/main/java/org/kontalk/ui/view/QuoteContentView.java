@@ -22,6 +22,8 @@ import java.util.regex.Pattern;
 
 import android.content.Context;
 import android.graphics.Typeface;
+
+import androidx.annotation.NonNull;
 import androidx.core.text.util.LinkifyCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -42,6 +44,7 @@ import org.kontalk.message.ReferencedMessage;
 import org.kontalk.provider.MyMessages;
 import org.kontalk.util.SystemUtils;
 import org.kontalk.util.ViewUtils;
+import org.kontalk.util.XMPPUtils;
 
 
 /**
@@ -97,15 +100,7 @@ public class QuoteContentView extends RelativeLayout
             TextContentView.applyTextWorkarounds(formattedMessage);
             msgText = formattedMessage;
 
-            String senderId;
-            if (referencedMsg.getDirection() == MyMessages.Messages.DIRECTION_OUT) {
-                senderId = Kontalk.get().getDefaultAccount().getSelfJID();
-            }
-            else {
-                senderId = referencedMsg.getPeer();
-            }
-
-            Contact sender = Contact.findByUserId(getContext(), senderId);
+            Contact sender = getReferencedContact(referencedMsg);
             msgSender = sender.getDisplayName();
         }
         else {
@@ -141,11 +136,29 @@ public class QuoteContentView extends RelativeLayout
     @Override
     public void onApplyTheme(MessageListItemTheme theme) {
         ViewUtils.setMessageBodyTextStyle(mSender, false);
+        ReferencedMessage referencedMessage = mComponent.getContent();
+        if (referencedMessage != null) {
+            mSender.setTextColor(XMPPUtils
+                .getJIDColor(getReferencedContact(referencedMessage).getJID()));
+        }
+
         ViewUtils.setMessageBodyTextStyle(mContent, false);
     }
 
     private void clear() {
         mComponent = null;
+    }
+
+    private Contact getReferencedContact(@NonNull ReferencedMessage referencedMsg) {
+        String senderId;
+        if (referencedMsg.getDirection() == MyMessages.Messages.DIRECTION_OUT) {
+            senderId = Kontalk.get().getDefaultAccount().getSelfJID();
+        }
+        else {
+            senderId = referencedMsg.getPeer();
+        }
+
+        return Contact.findByUserId(getContext(), senderId);
     }
 
     public static QuoteContentView create(LayoutInflater inflater, ViewGroup parent) {
