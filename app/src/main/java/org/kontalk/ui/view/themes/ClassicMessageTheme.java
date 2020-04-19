@@ -19,7 +19,6 @@
 package org.kontalk.ui.view.themes;
 
 import org.kontalk.R;
-import org.kontalk.provider.MyMessages;
 import org.kontalk.ui.view.MessageListItemTheme;
 import org.kontalk.ui.view.MessageListItemThemeFactory;
 
