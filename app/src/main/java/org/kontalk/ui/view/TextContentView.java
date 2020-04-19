@@ -95,7 +95,7 @@ public class TextContentView extends EmojiTextView
      * http://stackoverflow.com/questions/7439748/why-is-wrap-content-in-multiple-line-textview-filling-parent
      * https://github.com/qklabs/qksms/blob/master/QKSMS/src/main/java/com/moez/QKSMS/ui/view/QKTextView.java
      */
-    void enableMeasureHack(boolean enabled) {
+    public void enableMeasureHack(boolean enabled) {
         mMeasureHack = enabled;
     }
 

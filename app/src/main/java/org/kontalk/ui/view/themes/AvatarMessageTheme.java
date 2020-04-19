@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui.view;
+package org.kontalk.ui.view.themes;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -31,6 +31,9 @@ import android.widget.LinearLayout;
 
 import org.kontalk.R;
 import org.kontalk.data.Contact;
+import org.kontalk.ui.view.CircleContactBadge;
+import org.kontalk.ui.view.MessageContentView;
+import org.kontalk.ui.view.TextContentView;
 import org.kontalk.util.SystemUtils;
 
 
@@ -38,7 +41,7 @@ import org.kontalk.util.SystemUtils;
  * Avatar-based message balloon theme.
  * @author Daniele Ricci
  */
-public class AvatarMessageTheme extends BaseMessageTheme implements Contact.ContactCallback {
+public abstract class AvatarMessageTheme extends BaseMessageTheme implements Contact.ContactCallback {
 
     private static Drawable sDefaultContactImage;
 
@@ -52,7 +55,7 @@ public class AvatarMessageTheme extends BaseMessageTheme implements Contact.Cont
 
     private Handler mHandler;
 
-    public AvatarMessageTheme(int layoutId, int drawableId, boolean messageBlocks, boolean groupChat,
+    protected AvatarMessageTheme(int layoutId, int drawableId, boolean messageBlocks, boolean groupChat,
             @AttrRes int textColorRes, @AttrRes int dateColorRes) {
         super(layoutId, groupChat, textColorRes, dateColorRes);
         mDrawableId = drawableId;

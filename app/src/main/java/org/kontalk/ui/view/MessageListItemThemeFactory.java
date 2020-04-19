@@ -18,11 +18,17 @@
 
 package org.kontalk.ui.view;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
+import android.content.Context;
+
 import org.kontalk.R;
-import org.kontalk.provider.MyMessages;
+import org.kontalk.ui.view.themes.ClassicMessageTheme;
+import org.kontalk.ui.view.themes.HangoutMessageTheme;
+import org.kontalk.ui.view.themes.IPhoneMessageTheme;
+import org.kontalk.ui.view.themes.OldClassicMessageTheme;
+import org.kontalk.ui.view.themes.SilenceMessageTheme;
 
 
 /**
@@ -31,65 +37,32 @@ import org.kontalk.provider.MyMessages;
  */
 public class MessageListItemThemeFactory {
 
-    private interface FactoryCreator {
+    public interface FactoryCreator {
         MessageListItemTheme create(int direction, boolean groupChat);
+
+        // creating a theme involves creating theme instances possibly for nothing
+        // so we put these here so we are able to make an early decision
+
+        boolean supportsLightTheme();
+
+        boolean supportsDarkTheme();
     }
 
-    private static final Map<String, FactoryCreator> mThemes = new HashMap<>();
+    private static final Map<String, FactoryCreator> mThemes = new LinkedHashMap<>();
 
     static {
-        mThemes.put("hangout", new FactoryCreator() {
-            @Override
-            public MessageListItemTheme create(int direction, boolean groupChat) {
-                return new HangoutMessageTheme(direction, groupChat);
-            }
-        });
-        mThemes.put("silence", new FactoryCreator() {
-            @Override
-            public MessageListItemTheme create(int direction, boolean groupChat) {
-                int layoutId, drawableId;
-                if (direction == MyMessages.Messages.DIRECTION_IN) {
-                    layoutId = R.layout.balloon_avatar_in_bottom;
-                    drawableId = R.drawable.balloon_silence_incoming;
-                }
-                else {
-                    layoutId = R.layout.balloon_avatar_out;
-                    drawableId = R.drawable.balloon_silence_outgoing;
-                }
-                return new AvatarMessageTheme(layoutId, drawableId, false, groupChat,
-                    R.attr.chatThemeDayOnlyMessageTextColor, R.attr.chatThemeDayOnlyDateTextColor);
-            }
-        });
-        mThemes.put("classic", new FactoryCreator() {
-            @Override
-            public MessageListItemTheme create(int direction, boolean groupChat) {
-                return new SimpleMessageTheme(R.drawable.balloon_classic_incoming,
-                    R.drawable.balloon_classic_outgoing, groupChat,
-                    R.attr.chatThemeDayOnlyMessageTextColor, R.attr.chatThemeDayOnlyDateTextColor);
-            }
-        });
-        mThemes.put("old_classic", new FactoryCreator() {
-            @Override
-            public MessageListItemTheme create(int direction, boolean groupChat) {
-                return new SimpleMessageTheme(R.drawable.balloon_old_classic_incoming,
-                    R.drawable.balloon_old_classic_outgoing, groupChat,
-                    R.attr.chatThemeDayOnlyMessageTextColor, R.attr.chatThemeDayOnlyDateTextColor);
-            }
-        });
-        mThemes.put("iphone", new FactoryCreator() {
-            @Override
-            public MessageListItemTheme create(int direction, boolean groupChat) {
-                return new SimpleMessageTheme(R.drawable.balloon_iphone_incoming,
-                    R.drawable.balloon_iphone_outgoing, groupChat,
-                    R.attr.chatThemeDayOnlyMessageTextColor, R.attr.chatThemeDayOnlyDateTextColor);
-            }
-        });
+        mThemes.put("hangout", new HangoutMessageTheme.FactoryCreator());
+        mThemes.put("silence", new SilenceMessageTheme.FactoryCreator());
+        mThemes.put("classic", new ClassicMessageTheme.FactoryCreator());
+        mThemes.put("old_classic", new OldClassicMessageTheme.FactoryCreator());
+        mThemes.put("iphone", new IPhoneMessageTheme.FactoryCreator());
     }
 
     private MessageListItemThemeFactory() {
     }
 
-    public static MessageListItemTheme createTheme(String theme, int direction, boolean event, boolean groupChat) {
+    public static MessageListItemTheme createTheme(Context context, String theme,
+            int direction, boolean event, boolean groupChat) {
         if (event) {
             return new EventMessageTheme(R.layout.balloon_event);
         }
@@ -100,5 +73,13 @@ public class MessageListItemThemeFactory {
 
             return factory.create(direction, groupChat);
         }
+    }
+
+    public static boolean isDayNightSupported(Context context, String theme) {
+        FactoryCreator factory = mThemes.get(theme);
+        if (factory == null)
+            throw new IllegalArgumentException("theme not found: " + theme);
+
+        return factory.supportsLightTheme() && factory.supportsDarkTheme();
     }
 }

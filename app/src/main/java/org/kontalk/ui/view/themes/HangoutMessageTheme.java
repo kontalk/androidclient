@@ -16,13 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui.view;
+package org.kontalk.ui.view.themes;
 
 import android.view.View;
 
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyMessages;
+import org.kontalk.ui.view.MessageListItemTheme;
+import org.kontalk.ui.view.MessageListItemThemeFactory;
 
 
 /**
@@ -33,7 +35,7 @@ public class HangoutMessageTheme extends AvatarMessageTheme {
 
     private final int mDirection;
 
-    public HangoutMessageTheme(int direction, boolean groupChat) {
+    private HangoutMessageTheme(int direction, boolean groupChat) {
         super(direction == MyMessages.Messages.DIRECTION_IN ?
             R.layout.balloon_avatar_in_top : R.layout.balloon_avatar_out,
             direction == MyMessages.Messages.DIRECTION_IN ?
@@ -68,6 +70,24 @@ public class HangoutMessageTheme extends AvatarMessageTheme {
         }
         else {
             mContactNameView.setVisibility(View.GONE);
+        }
+    }
+
+    public static final class FactoryCreator implements MessageListItemThemeFactory.FactoryCreator {
+
+        @Override
+        public MessageListItemTheme create(int direction, boolean groupChat) {
+            return new HangoutMessageTheme(direction, groupChat);
+        }
+
+        @Override
+        public boolean supportsLightTheme() {
+            return true;
+        }
+
+        @Override
+        public boolean supportsDarkTheme() {
+            return true;
         }
     }
 

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui.view;
+package org.kontalk.ui.view.themes;
 
 import android.view.Gravity;
 import android.view.View;
@@ -27,13 +27,15 @@ import androidx.annotation.AttrRes;
 
 import org.kontalk.R;
 import org.kontalk.data.Contact;
+import org.kontalk.ui.view.MessageContentView;
+import org.kontalk.ui.view.TextContentView;
 
 
 /**
  * Simple drawable-based message theme.
  * @author Daniele Ricci
  */
-public class SimpleMessageTheme extends BaseMessageTheme {
+public abstract class SimpleMessageTheme extends BaseMessageTheme {
 
     private final int mIncomingDrawableId;
     private final int mOutgoingDrawableId;
@@ -41,7 +43,7 @@ public class SimpleMessageTheme extends BaseMessageTheme {
     private LinearLayout mBalloonView;
     private LinearLayout mParentView;
 
-    public SimpleMessageTheme(int incomingDrawableId, int outgoingDrawableId, boolean groupChat,
+    protected SimpleMessageTheme(int incomingDrawableId, int outgoingDrawableId, boolean groupChat,
             @AttrRes int textColorRes, @AttrRes int dateColorRes) {
         this(R.layout.balloon_base_noavatar, incomingDrawableId, outgoingDrawableId, groupChat, textColorRes, dateColorRes);
     }

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui.view;
+package org.kontalk.ui.view.themes;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -39,6 +39,11 @@ import org.kontalk.data.Contact;
 import org.kontalk.message.MessageComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages;
+import org.kontalk.ui.view.MessageContentLayout;
+import org.kontalk.ui.view.MessageContentView;
+import org.kontalk.ui.view.MessageContentViewFactory;
+import org.kontalk.ui.view.MessageListItemTheme;
+import org.kontalk.ui.view.TextContentView;
 import org.kontalk.util.SystemUtils;
 import org.kontalk.util.XMPPUtils;
 

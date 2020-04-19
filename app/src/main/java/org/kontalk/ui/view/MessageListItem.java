@@ -99,7 +99,7 @@ public class MessageListItem extends RelativeLayout implements Checkable {
         String theme = groupChat ?
             Preferences.getBalloonGroupsTheme(getContext()) :
             Preferences.getBalloonTheme(getContext());
-        mBalloonTheme = MessageListItemThemeFactory.createTheme(theme, direction, event, groupChat);
+        mBalloonTheme = MessageListItemThemeFactory.createTheme(getContext(), theme, direction, event, groupChat);
         mBalloonTheme.inflate(stub);
     }
 
