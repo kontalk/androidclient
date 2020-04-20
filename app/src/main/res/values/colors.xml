@@ -22,6 +22,8 @@
     <color name="app_primary_dark">#1976D2</color>
     <color name="app_accent">#03A9F4</color>
 
+    <color name="navigation_bar">@android:color/white</color>
+
     <!-- text color -->
     <color name="text_color_draft">#ffff0000</color>
 

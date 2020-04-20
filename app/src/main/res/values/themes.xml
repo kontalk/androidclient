@@ -30,6 +30,11 @@
          -->
         <item name="colorAccent">@color/app_accent</item>
 
+        <!-- TODO apply in API level 27
+        <item name="android:navigationBarColor">@color/navigation_bar</item>
+        <item name="android:windowLightNavigationBar">?android:attr/isLightTheme</item>
+        -->
+
         <item name="windowActionModeOverlay">true</item>
         <item name="android:windowContentOverlay">@null</item>
 

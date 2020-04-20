@@ -17,6 +17,12 @@
  -->
 
 <resources>
+    <!-- application colors -->
+    <color name="app_primary">#132650</color>
+    <color name="app_primary_dark">#0F162C</color>
+    <color name="app_accent">#1B52A0</color>
+
+    <color name="navigation_bar">@android:color/black</color>
 
     <color name="disabled_conversations_overlay">#CC535353</color>
     <color name="disabled_messages_overlay">#cc000000</color>
