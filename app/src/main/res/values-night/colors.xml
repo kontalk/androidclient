@@ -26,4 +26,6 @@
 
     <color name="chat_quote_line_color">@android:color/white</color>
 
+    <color name="position_send_color">#F35446</color>
+
 </resources>
