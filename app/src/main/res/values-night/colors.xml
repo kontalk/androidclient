@@ -24,6 +24,7 @@
 
     <color name="navigation_bar">@android:color/black</color>
 
+    <color name="text_color_draft">#F35446</color>
     <color name="badge_color">#F35446</color>
 
     <color name="disabled_conversations_overlay">#CC535353</color>
