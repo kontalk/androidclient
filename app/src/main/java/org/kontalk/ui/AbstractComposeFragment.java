@@ -91,6 +91,7 @@ import pub.devrel.easypermissions.EasyPermissions;
 import org.kontalk.Kontalk;
 import org.kontalk.Log;
 import org.kontalk.R;
+import org.kontalk.authenticator.MyAccount;
 import org.kontalk.crypto.Coder;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
@@ -1495,16 +1496,20 @@ public abstract class AbstractComposeFragment extends ListFragment implements
         TextComponent textComponent = msg.getComponent(TextComponent.class);
         if (textComponent != null) {
             String displayName;
+            String jid;
             if (msg.getDirection() == Messages.DIRECTION_IN) {
                 String sender = msg.getSender();
                 Contact contact = Contact.findByUserId(getContext(), sender);
                 displayName = contact.getDisplayName();
+                jid = contact.getJID();
             }
             else {
-                displayName = Kontalk.get().getDefaultAccount().getDisplayName();
+                MyAccount myAccount = Kontalk.get().getDefaultAccount();
+                displayName = myAccount.getDisplayName();
+                jid = myAccount.getSelfJID();
             }
 
-            mReplyBar.show(msg.getDatabaseId(), displayName, textComponent.getContent());
+            mReplyBar.show(msg.getDatabaseId(), jid, displayName, textComponent.getContent());
         }
     }
 
