@@ -64,7 +64,7 @@
             android:layout_marginStart="16dp"
             android:layout_toEndOf="@+id/avatar"
             android:layout_toRightOf="@+id/avatar"
-            android:textColor="@color/app_accent"/>
+            android:textColor="?colorAccent"/>
 
     </RelativeLayout>
 
