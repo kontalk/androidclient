@@ -50,6 +50,8 @@
 
     <color name="notification_name_color">@android:color/white</color>
 
+    <color name="showcase_text_color">@android:color/white</color>
+
     <color name="button_danger">#f44336</color>
     <color name="button_success">#4caf50</color>
 

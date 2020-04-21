@@ -161,6 +161,7 @@ class Showcase {
                         TapTargetView.showFor(fragment.activity, it
                                 .transparentTarget(true)
                                 .cancelable(true)
+                                .textColor(R.color.showcase_text_color)
                                 // TODO other settings
                                 .targetRadius(60)
                         )
