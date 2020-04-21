@@ -85,7 +85,7 @@
         android:layout_margin="16dp"
         android:src="@drawable/ic_navigate"
         android:visibility="visible"
-        app:backgroundTint="@color/app_primary_dark"
+        app:backgroundTint="?colorAccent"
         app:fabSize="normal"
         app:layout_anchor="@+id/bottom_view"
         app:layout_anchorGravity="top|end"/>
